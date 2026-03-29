@@ -1165,9 +1165,35 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-11054.php'], [
 			[
+				'Strict comparison using === between mixed and array{NAN} will always evaluate to false.',
+				24,
+			],
+			[
+				'Strict comparison using === between mixed and array{NAN} will always evaluate to false.',
+				28,
+			],
+			[
 				'Strict comparison using === between mixed and array{INF} will always evaluate to false.',
 				47,
 				'Type array{INF} has already been eliminated from mixed.',
+			],
+			[
+				'Strict comparison using === between mixed and array{NAN} will always evaluate to false.',
+				55,
+			],
+		]);
+	}
+
+	public function testBug14394(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14394.php'], [
+			[
+				'Strict comparison using === between float and NAN will always evaluate to false.',
+				9,
+			],
+			[
+				'Strict comparison using === between list<mixed> and array{NAN} will always evaluate to false.',
+				11,
 			],
 		]);
 	}

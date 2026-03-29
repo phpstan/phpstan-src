@@ -248,4 +248,19 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13098.php'], []);
 	}
 
+	public function testBug14394(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-14394.php'], [
+			[
+				'Loose comparison using == between float and NAN will always evaluate to false.',
+				8,
+			],
+			[
+				'Loose comparison using == between list<mixed> and array{NAN} will always evaluate to false.',
+				10,
+			],
+		]);
+	}
+
 }

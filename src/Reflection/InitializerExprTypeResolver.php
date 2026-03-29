@@ -114,6 +114,7 @@ use function intval;
 use function is_finite;
 use function is_float;
 use function is_int;
+use function is_nan;
 use function is_numeric;
 use function is_string;
 use function max;
@@ -1944,6 +1945,10 @@ final class InitializerExprTypeResolver
 			return new TypeResult(new ConstantBooleanType(false), []);
 		}
 
+		if ($this->containsNan($leftType) || $this->containsNan($rightType)) {
+			return new TypeResult(new ConstantBooleanType(false), []);
+		}
+
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
 			return new TypeResult(new ConstantBooleanType($leftType->getValue() === $rightType->getValue()), []);
 		}
@@ -1972,6 +1977,10 @@ final class InitializerExprTypeResolver
 	 */
 	public function resolveEqualType(Type $leftType, Type $rightType): TypeResult
 	{
+		if ($this->containsNan($leftType) || $this->containsNan($rightType)) {
+			return new TypeResult(new ConstantBooleanType(false), []);
+		}
+
 		if (
 			($leftType->isEnum()->yes() && $rightType->isTrue()->no())
 			|| ($rightType->isEnum()->yes() && $leftType->isTrue()->no())
@@ -2059,6 +2068,23 @@ final class InitializerExprTypeResolver
 		}
 
 		return new TypeResult($resultType->toBoolean(), []);
+	}
+
+	private function containsNan(Type $type): bool
+	{
+		if ($type instanceof ConstantFloatType && is_nan($type->getValue())) {
+			return true;
+		}
+
+		foreach ($type->getConstantArrays() as $constantArray) {
+			foreach ($constantArray->getValueTypes() as $valueType) {
+				if ($this->containsNan($valueType)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

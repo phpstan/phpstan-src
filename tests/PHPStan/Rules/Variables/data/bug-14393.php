@@ -10,6 +10,7 @@ class MyClass
 	{
 		var_dump($this->i ?? -1);
 		var_dump(isset($this->i));
+		var_dump(empty($this->i));
 	}
 }
 
@@ -21,6 +22,7 @@ class MyClassUninitialized
 	{
 		var_dump($this->i ?? -1);
 		var_dump(isset($this->i));
+		var_dump(empty($this->i));
 	}
 }
 
@@ -33,6 +35,7 @@ class MyClassPhpDoc
 	{
 		var_dump($this->i ?? -1);
 		var_dump(isset($this->i));
+		var_dump(empty($this->i));
 	}
 }
 
@@ -44,6 +47,7 @@ class MyClassNullable
 	{
 		var_dump($this->i ?? -1);
 		var_dump(isset($this->i));
+		var_dump(empty($this->i));
 	}
 }
 
@@ -55,6 +59,7 @@ class MyClassNullableWithDefault
 	{
 		var_dump($this->i ?? -1);
 		var_dump(isset($this->i));
+		var_dump(empty($this->i));
 	}
 }
 
@@ -66,6 +71,7 @@ class MyClassNullableWithNullDefault
 	{
 		var_dump($this->i ?? -1);
 		var_dump(isset($this->i));
+		var_dump(empty($this->i));
 	}
 }
 
@@ -73,28 +79,34 @@ $o = new MyClass();
 
 var_dump($o->i ?? -1);
 var_dump(isset($o->i));
+var_dump(empty($o->i));
 
 $o2 = new MyClassUninitialized();
 
 var_dump($o2->i ?? -1);
 var_dump(isset($o2->i));
+var_dump(empty($o2->i));
 
 $o3 = new MyClassPhpDoc();
 
 var_dump($o3->i ?? -1);
 var_dump(isset($o3->i));
+var_dump(empty($o3->i));
 
 $o4 = new MyClassNullable();
 
 var_dump($o4->i ?? -1);
 var_dump(isset($o4->i));
+var_dump(empty($o4->i));
 
 $o5 = new MyClassNullableWithDefault();
 
 var_dump($o5->i ?? -1);
 var_dump(isset($o5->i));
+var_dump(empty($o5->i));
 
 $o6 = new MyClassNullableWithNullDefault();
 
 var_dump($o6->i ?? -1);
 var_dump(isset($o6->i));
+var_dump(empty($o6->i));

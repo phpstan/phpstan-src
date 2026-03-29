@@ -193,7 +193,8 @@ final class FilterFunctionReturnTypeHelper
 
 		if ($hasRequireArrayFlag->yes()) {
 			if (!$inputIsArray->no()) {
-				$type = TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
+				$nestedArrayType = $this->computeNestedArrayType($inputType, $filterType, $flagsType, $mixedType);
+				$type = TypeCombinator::union($type, $nestedArrayType);
 			}
 			$type = new ArrayType($mixedType, $type);
 			if (!$inputIsArray->yes()) {
@@ -203,7 +204,8 @@ final class FilterFunctionReturnTypeHelper
 
 		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
 			if (!$inputIsArray->no()) {
-				$type = TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
+				$nestedArrayType = $this->computeNestedArrayType($inputType, $filterType, $flagsType, $mixedType);
+				$type = TypeCombinator::union($type, $nestedArrayType);
 			}
 			return new ArrayType($mixedType, $type);
 		}
@@ -250,6 +252,26 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		return $type;
+	}
+
+	/**
+	 * Computes the nested array type for the array portion of a maybe-array input.
+	 * Uses TypeTraverser to extract array components and recursively filter them.
+	 */
+	private function computeNestedArrayType(Type $inputType, ?Type $filterType, ?Type $flagsType, MixedType $mixedType): Type
+	{
+		return TypeTraverser::map($inputType, function (Type $type, callable $traverse) use ($filterType, $flagsType, $mixedType): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+			if ($type->isArray()->yes()) {
+				return $this->getType($type, $filterType, $flagsType);
+			}
+			if ($type->isArray()->maybe()) {
+				return new ArrayType($mixedType, $mixedType);
+			}
+			return new NeverType();
+		});
 	}
 
 	/**

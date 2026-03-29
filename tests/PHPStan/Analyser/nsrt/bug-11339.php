@@ -60,3 +60,33 @@ function typedArrayInputs(array $arrayOfInt, array $arrayOfArrayOfInt, array $ar
 	$s = filter_var($arrayOfArrayOfInt, FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]);
 	assertType('array<array<int>>', $s);
 }
+
+/**
+ * Union-typed inputs (scalar | array) exercise the inputIsArray->maybe() path
+ *
+ * @param int|array<int> $intOrArrayOfInt
+ * @param string|array<string> $stringOrArrayOfString
+ */
+function unionTypedInputs(int|array $intOrArrayOfInt, string|array $stringOrArrayOfString): void
+{
+	// FORCE_ARRAY: scalar part filtered, array part recursively filtered
+	$a = filter_var($intOrArrayOfInt, FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]);
+	assertType('array<array<int>|int|false>', $a);
+
+	$b = filter_var($stringOrArrayOfString, FILTER_DEFAULT, ['flags' => FILTER_FORCE_ARRAY]);
+	assertType('array<array<string>|string|false>', $b);
+
+	// REQUIRE_ARRAY: scalar input returns false, array input recursively filtered
+	$c = filter_var($intOrArrayOfInt, FILTER_VALIDATE_INT, ['flags' => FILTER_REQUIRE_ARRAY]);
+	assertType('array<array<int>|int|false>|false', $c);
+
+	$d = filter_var($stringOrArrayOfString, FILTER_DEFAULT, ['flags' => FILTER_REQUIRE_ARRAY]);
+	assertType('array<array<string>|string|false>|false', $d);
+
+	// REQUIRE_ARRAY with NULL_ON_FAILURE
+	$e = filter_var($intOrArrayOfInt, FILTER_VALIDATE_INT, ['flags' => FILTER_REQUIRE_ARRAY|FILTER_NULL_ON_FAILURE]);
+	assertType('array<array<int>|int|null>|null', $e);
+
+	$f = filter_var($stringOrArrayOfString, FILTER_DEFAULT, ['flags' => FILTER_REQUIRE_ARRAY|FILTER_NULL_ON_FAILURE]);
+	assertType('array<array<string>|string|null>|null', $f);
+}

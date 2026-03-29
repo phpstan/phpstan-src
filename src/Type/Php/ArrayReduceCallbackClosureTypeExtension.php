@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -13,7 +15,9 @@ use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
 final class ArrayReduceCallbackClosureTypeExtension implements FunctionParameterClosureTypeExtension
@@ -42,6 +46,14 @@ final class ArrayReduceCallbackClosureTypeExtension implements FunctionParameter
 		}
 
 		$carryType = $initialType->generalize(GeneralizePrecision::templateArgument());
+
+		$callbackExpr = $args[1]->value ?? null;
+		if ($callbackExpr instanceof Closure || $callbackExpr instanceof ArrowFunction) {
+			$callbackReturnType = ParserNodeTypeToPHPStanType::resolve($callbackExpr->returnType, null);
+			if (!$callbackReturnType instanceof MixedType) {
+				$carryType = TypeCombinator::union($carryType, $callbackReturnType);
+			}
+		}
 
 		return new ClosureType(
 			[

@@ -10,7 +10,7 @@ use function PHPStan\Testing\assertType;
 $result1 = array_reduce(
 	['test1', 'test2'],
 	static function (array $carry, string $value): array {
-		assertType("array{starts: array{}, ends: array{}}", $carry);
+		assertType("array", $carry);
 		$carry['starts'][] = $value;
 		$carry['ends'][] = $value;
 
@@ -31,7 +31,7 @@ assertType('int', $result2);
 $result3 = array_reduce(
 	[1, 2, 3],
 	static function (?int $carry, int $value): int {
-		assertType('null', $carry);
+		assertType('int|null', $carry);
 		return ($carry ?? 0) + $value;
 	},
 );

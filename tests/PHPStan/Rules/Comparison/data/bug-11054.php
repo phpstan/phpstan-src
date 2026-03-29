@@ -33,10 +33,26 @@ class YYY
 	}
 }
 
+class InfTest {
+	public const DEF_VALUE = [INF];
+	public const NO_VALUE  = [INF];
+
+	/** @param mixed $v */
+	public static function test($v): void
+	{
+		if ($v === self::DEF_VALUE) { // no error expected
+			return;
+		}
+
+		if ($v === self::NO_VALUE) {} // error expected - INF === INF is true, so narrowing is correct
+	}
+}
+
 class SimpleTest {
 	/** @param mixed $v */
 	public static function test($v): void
 	{
 		if ($v === [NAN]) {} // no error expected
+		if ($v === [INF]) {} // no error expected
 	}
 }

@@ -46,6 +46,16 @@ class WithUnionObjectArray
 	}
 }
 
+class WithAssignByReference
+{
+	/** @param \ArrayObject<int, string> $array */
+	public function __construct(private \ArrayObject $array){}
+
+	public function send(string &$s) : void{
+		$this->array[] =& $s;
+	}
+}
+
 class WithUnionObjectString
 {
 	/** @var \ArrayObject<int, string>|string */

@@ -5,11 +5,21 @@ namespace Bug14393;
 class MyClass
 {
 	public int $i = 10;
+
+	public function doFoo(): void
+	{
+		var_dump($this->i ?? -1);
+	}
 }
 
 class MyClassUninitialized
 {
 	public int $i;
+
+	public function doFoo(): void
+	{
+		var_dump($this->i ?? -1);
+	}
 }
 
 $o = new MyClass();

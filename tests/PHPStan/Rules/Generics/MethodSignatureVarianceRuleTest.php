@@ -48,10 +48,6 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Template type X is declared as covariant, but occurs in contravariant position in parameter f of method MethodSignatureVariance\Covariant\C::a().',
-				35,
-			],
-			[
 				'Template type X is declared as covariant, but occurs in contravariant position in parameter h of method MethodSignatureVariance\Covariant\C::a().',
 				35,
 			],
@@ -188,10 +184,6 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				43,
 			],
 			[
-				'Template type X is declared as covariant, but occurs in contravariant position in parameter c of method MethodSignatureVariance\StaticMethod\B::a().',
-				43,
-			],
-			[
 				'Template type X is declared as covariant, but occurs in contravariant position in return type of method MethodSignatureVariance\StaticMethod\B::c().',
 				49,
 			],
@@ -233,6 +225,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				16,
 			],
 		]);
+	}
+
+	public function testBug6139(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6139.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0')]

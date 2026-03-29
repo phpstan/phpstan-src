@@ -9,6 +9,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
+use function count;
+use function in_array;
 use function sprintf;
 
 #[AutowiredService]
@@ -85,10 +87,16 @@ final class VarianceCheck
 	{
 		$errors = [];
 
+		$skipTemplates = $this->findCovariantTemplatesInCovariantGeneric($positionVariance, $type);
+
 		foreach ($type->getReferencedTemplateTypes($positionVariance) as $reference) {
 			$referredType = $reference->getType();
 			if (($referredType->getScope()->getFunctionName() !== null && !$referredType->getVariance()->invariant())
 				|| $this->isTemplateTypeVarianceValid($reference->getPositionVariance(), $referredType)) {
+				continue;
+			}
+
+			if (in_array($referredType, $skipTemplates, true)) {
 				continue;
 			}
 
@@ -102,6 +110,45 @@ final class VarianceCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * When a covariant generic type (e.g. Element<T> where Element has @template-covariant)
+	 * is used as a parameter type, covariant template type arguments should not be flagged.
+	 * The covariant generic only produces values of type T, so using it in a parameter
+	 * position does not create a true contravariant use of T.
+	 *
+	 * @return list<TemplateType>
+	 */
+	private function findCovariantTemplatesInCovariantGeneric(TemplateTypeVariance $positionVariance, Type $type): array
+	{
+		if (!$positionVariance->contravariant()) {
+			return [];
+		}
+
+		$classReflections = $type->getObjectClassReflections();
+		if (count($classReflections) !== 1) {
+			return [];
+		}
+
+		$classReflection = $classReflections[0];
+		$templateTypeMap = $classReflection->getTemplateTypeMap();
+		$skipTemplates = [];
+
+		foreach ($templateTypeMap->getTypes() as $templateName => $templateType) {
+			if (!$templateType instanceof TemplateType || !$templateType->getVariance()->covariant()) {
+				continue;
+			}
+
+			$resolvedType = $type->getTemplateType($classReflection->getName(), $templateName);
+			if (!($resolvedType instanceof TemplateType) || !$resolvedType->getVariance()->covariant()) {
+				continue;
+			}
+
+			$skipTemplates[] = $resolvedType;
+		}
+
+		return $skipTemplates;
 	}
 
 	private function isTemplateTypeVarianceValid(TemplateTypeVariance $positionVariance, TemplateType $type): bool

@@ -82,7 +82,7 @@ parameters:
 	reportWrongPhpDocTypeInVarTag: false
 	reportAnyTypeWideningInVarTag: false
 	reportNonIntStringArrayKey: false
-	reportUnsafeArrayStringKeyCasting: null
+	reportUnsafeArrayStringKeyCasting: detect
 	reportPossiblyNonexistentGeneralArrayOffset: false
 	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false

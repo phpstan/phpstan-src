@@ -110,3 +110,51 @@ $o6 = new MyClassNullableWithNullDefault();
 var_dump($o6->i ?? -1);
 var_dump(isset($o6->i));
 var_dump(empty($o6->i));
+
+class MyClassStatic
+{
+	public static int $i = 10;
+
+	public function doFoo(): void
+	{
+		var_dump(self::$i ?? -1);
+		var_dump(isset(self::$i));
+		var_dump(empty(self::$i));
+	}
+}
+
+class MyClassStaticUninitialized
+{
+	public static int $i;
+
+	public function doFoo(): void
+	{
+		var_dump(self::$i ?? -1);
+		var_dump(isset(self::$i));
+		var_dump(empty(self::$i));
+	}
+}
+
+class MyClassStaticNullable
+{
+	public static ?int $i = null;
+
+	public function doFoo(): void
+	{
+		var_dump(self::$i ?? -1);
+		var_dump(isset(self::$i));
+		var_dump(empty(self::$i));
+	}
+}
+
+var_dump(MyClassStatic::$i ?? -1);
+var_dump(isset(MyClassStatic::$i));
+var_dump(empty(MyClassStatic::$i));
+
+var_dump(MyClassStaticUninitialized::$i ?? -1);
+var_dump(isset(MyClassStaticUninitialized::$i));
+var_dump(empty(MyClassStaticUninitialized::$i));
+
+var_dump(MyClassStaticNullable::$i ?? -1);
+var_dump(isset(MyClassStaticNullable::$i));
+var_dump(empty(MyClassStaticNullable::$i));

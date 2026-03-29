@@ -10,4 +10,10 @@ class Cl {
 		if ($v2 == [NAN]) { echo "never reached\n"; }
 		if ($v2 === [NAN]) { echo "never reached\n"; }
 	}
+
+	/** @param array{NAN}|array{1} $v */
+	public static function testUnionArrayNotAlwaysFalse(array $v): void {
+		if ($v === [1]) { echo "maybe reached\n"; }
+		if ($v == [1]) { echo "maybe reached\n"; }
+	}
 }

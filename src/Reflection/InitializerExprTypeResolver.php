@@ -2076,11 +2076,29 @@ final class InitializerExprTypeResolver
 			return true;
 		}
 
-		foreach ($type->getConstantArrays() as $constantArray) {
-			foreach ($constantArray->getValueTypes() as $valueType) {
-				if ($this->containsNan($valueType)) {
-					return true;
+		$constantArrays = $type->getConstantArrays();
+		if ($constantArrays !== [] && $type->isConstantArray()->yes()) {
+			foreach ($constantArrays as $constantArray) {
+				if (!$this->constantArrayContainsNan($constantArray)) {
+					return false;
 				}
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private function constantArrayContainsNan(ConstantArrayType $constantArray): bool
+	{
+		$optionalKeys = $constantArray->getOptionalKeys();
+		foreach ($constantArray->getValueTypes() as $index => $valueType) {
+			if (in_array($index, $optionalKeys, true)) {
+				continue;
+			}
+			if ($this->containsNan($valueType)) {
+				return true;
 			}
 		}
 

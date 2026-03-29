@@ -116,6 +116,27 @@ final class NonNullabilityHelper
 	}
 
 	/**
+	 * Walk a nullsafe chain (NullsafePropertyFetch/NullsafeMethodCall) and narrow
+	 * each intermediate var to non-null. Used so that method call arguments can see
+	 * the narrowed types without affecting the scope during var processing.
+	 */
+	public function narrowNullsafeVarChain(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
+	{
+		$specifiedExpressions = [];
+		$currentExpr = $expr;
+		while ($currentExpr instanceof Expr\NullsafePropertyFetch || $currentExpr instanceof Expr\NullsafeMethodCall) {
+			$result = $this->ensureShallowNonNullability($scope, $scope, $currentExpr->var);
+			$scope = $result->getScope();
+			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
+				$specifiedExpressions[] = $specifiedExpression;
+			}
+			$currentExpr = $currentExpr->var;
+		}
+
+		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
+	}
+
+	/**
 	 * @param Closure(MutatingScope, Expr): MutatingScope $callback
 	 */
 	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope

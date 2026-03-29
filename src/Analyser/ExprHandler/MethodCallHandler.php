@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
+use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -59,6 +60,7 @@ final class MethodCallHandler implements ExprHandler
 	public function __construct(
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
+		private NonNullabilityHelper $nonNullabilityHelper,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 		#[AutowiredParameter]
@@ -139,6 +141,15 @@ final class MethodCallHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
 		}
 
+		// For virtual nullsafe method calls, narrow the vars in the nullsafe
+		// chain so arguments see non-null types. E.g. in $a?->b?->method($a),
+		// $a must be non-null when method() is reached.
+		$nullsafeNarrowingResult = null;
+		if ($expr->getAttribute('virtualNullsafeMethodCall') === true) {
+			$nullsafeNarrowingResult = $this->nonNullabilityHelper->narrowNullsafeVarChain($scope, $expr->var);
+			$scope = $nullsafeNarrowingResult->getScope();
+		}
+
 		$argsResult = $nodeScopeResolver->processArgs(
 			$stmt,
 			$methodReflection,
@@ -151,6 +162,10 @@ final class MethodCallHandler implements ExprHandler
 			$context,
 		);
 		$scope = $argsResult->getScope();
+
+		if ($nullsafeNarrowingResult !== null) {
+			$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nullsafeNarrowingResult->getSpecifiedExpressions());
+		}
 
 		if ($methodReflection !== null) {
 			$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);

@@ -2761,7 +2761,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #2 $f of function Bug11619Strict\customUsort expects callable(Stringable, Stringable): int, \'strnatcasecmp\' given.',
-				54,
+				58,
 			],
 		]);
 	}

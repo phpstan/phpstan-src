@@ -43,6 +43,10 @@ function customUsort(array &$a, callable $f): void
 			[$a[$j-1], $a[$j]] = [$a[$j], $a[$j-1]];
 }
 
+function userlandComparator(string $a, string $b): int {
+	return strnatcasecmp($a, $b);
+}
+
 function test2(): void
 {
 	$options = [
@@ -52,4 +56,7 @@ function test2(): void
 	];
 
 	customUsort($options, 'strnatcasecmp');
+
+	uasort($options, 'Bug11619Strict\userlandComparator');
+	usort($options, 'Bug11619Strict\userlandComparator');
 }

@@ -2,7 +2,7 @@
 
 namespace MethodNever;
 
-class Foo
+final class Foo
 {
 
 	public function doFoo(): never

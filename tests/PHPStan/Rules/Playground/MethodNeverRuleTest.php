@@ -36,4 +36,18 @@ class MethodNeverRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10820(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10820.php'], [
+			[
+				'Method Bug10820\NonFinalBase::doPrivate() always throws an exception, it should have return type "never".',
+				28,
+			],
+			[
+				'Method Bug10820\FinalClass::doSomething() always throws an exception, it should have return type "never".',
+				36,
+			],
+		]);
+	}
+
 }

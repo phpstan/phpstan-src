@@ -33,6 +33,10 @@ final class MethodNeverRule implements Rule
 
 		$method = $node->getMethodReflection();
 
+		if (!$method->isPrivate() && !$node->getClassReflection()->isFinal()) {
+			return [];
+		}
+
 		$returnType = $method->getReturnType();
 		$helperResult = $this->helper->shouldReturnNever($node, $returnType);
 		if ($helperResult === false) {

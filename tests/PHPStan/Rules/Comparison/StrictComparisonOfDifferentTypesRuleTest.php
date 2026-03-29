@@ -1161,4 +1161,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11054(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11054.php'], []);
+	}
+
 }

@@ -99,6 +99,15 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return new ConstantIntegerType((int) $this->value);
 	}
 
+	public function getFiniteTypes(): array
+	{
+		if (is_nan($this->value)) {
+			return [];
+		}
+
+		return [$this];
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new FloatType();

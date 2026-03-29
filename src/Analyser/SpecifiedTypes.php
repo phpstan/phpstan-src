@@ -62,6 +62,10 @@ final class SpecifiedTypes
 	 */
 	public function setRootExpr(?Expr $rootExpr): self
 	{
+		if ($this->rootExpr === $rootExpr) {
+			return $this;
+		}
+
 		$self = new self($this->sureTypes, $this->sureNotTypes);
 		$self->overwrite = $this->overwrite;
 		$self->newConditionalExpressionHolders = $this->newConditionalExpressionHolders;

@@ -184,6 +184,13 @@ class StringType implements Type
 			return $this;
 		}
 
+		$isDecimalIntString = $this->isDecimalIntegerString();
+		if ($isDecimalIntString->no()) {
+			return $this;
+		} elseif ($isDecimalIntString->yes()) {
+			return new IntegerType();
+		}
+
 		return new UnionType([
 			new IntegerType(),
 			TypeCombinator::intersect($this, new AccessoryDecimalIntegerStringType(inverse: true)),

@@ -416,10 +416,13 @@ final class NewHandler implements ExprHandler
 				$classTemplateTypes = $traverser->getClassTemplateTypes();
 
 				if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
-					$propertyType = TypeCombinator::removeNull($scope->getType($assignedToProperty));
-					$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
-					if ($nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
-						return $propertyType;
+					$propertyType = $this->resolveAssignedPropertyDeclaredType($assignedToProperty, $scope);
+					if ($propertyType !== null) {
+						$propertyType = TypeCombinator::removeNull($propertyType);
+						$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
+						if ($nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
+							return $propertyType;
+						}
 					}
 				}
 			}
@@ -588,6 +591,27 @@ final class NewHandler implements ExprHandler
 		}
 
 		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap));
+	}
+
+	private function resolveAssignedPropertyDeclaredType(Node\Expr $propertyFetch, MutatingScope $scope): ?Type
+	{
+		if ($propertyFetch instanceof Node\Expr\PropertyFetch && $propertyFetch->name instanceof Node\Identifier) {
+			$holderType = $scope->getType($propertyFetch->var);
+			$propertyName = $propertyFetch->name->name;
+			if ($holderType->hasInstanceProperty($propertyName)->yes()) {
+				return $holderType->getInstanceProperty($propertyName, $scope)->getReadableType();
+			}
+		} elseif ($propertyFetch instanceof Node\Expr\StaticPropertyFetch && $propertyFetch->name instanceof Node\VarLikeIdentifier && $propertyFetch->class instanceof Name) {
+			$className = $scope->resolveName($propertyFetch->class);
+			if ($this->reflectionProvider->hasClass($className)) {
+				$classRefl = $this->reflectionProvider->getClass($className);
+				$propertyName = $propertyFetch->name->name;
+				if ($classRefl->hasStaticProperty($propertyName)) {
+					return $classRefl->getStaticProperty($propertyName)->getReadableType();
+				}
+			}
+		}
+		return null;
 	}
 
 }

@@ -2605,9 +2605,19 @@ final class TypeSpecifier
 		$leftTypes = $this->create($expr->left, $leftType, $context, $scope)->setRootExpr($expr);
 		$rightTypes = $this->create($expr->right, $rightType, $context, $scope)->setRootExpr($expr);
 
-		return $context->true()
+		$result = $context->true()
 			? $leftTypes->unionWith($rightTypes)
 			: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+
+		if (
+			!$context->null()
+			&& ($leftTypes->getSureTypes() !== [] || $leftTypes->getSureNotTypes() !== [])
+			&& ($rightTypes->getSureTypes() !== [] || $rightTypes->getSureNotTypes() !== [])
+		) {
+			$result = $result->unionWith($this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope));
+		}
+
+		return $result;
 	}
 
 	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

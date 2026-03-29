@@ -1317,6 +1317,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'$float' => 'float',
 					'(int) $float' => 'int',
+					'$float == (int) $float' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[],
 			],

@@ -8,7 +8,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NullCoalesceRule>
@@ -114,12 +113,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 				131,
 			],
 		];
-		if (PHP_VERSION_ID < 80100) {
-			$errors[] = [
-				'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
-				136,
-			];
-		}
+		$errors[] = [
+			'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
+			136,
+		];
 		$errors[] = [
 			'Variable $foo on left side of ?? is never defined.',
 			141,
@@ -373,6 +370,16 @@ class NullCoalesceRuleTest extends RuleTestCase
 			[
 				'Offset 0 on non-empty-list<array<string|null>> on left side of ?? always exists and is not nullable.',
 				19,
+			],
+		]);
+	}
+
+	public function testBug14393(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
+			[
+				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
+				12,
 			],
 		]);
 	}

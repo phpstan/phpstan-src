@@ -202,16 +202,17 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/isset-native-property-types.php'], [
-			/*[
-				// no way to achieve this with current PHP Reflection API
-				// There's ReflectionClass::getDefaultProperties()
-				// but it cannot differentiate between `public int $foo` and `public int $foo = null`;
+			[
 				'Property IssetNativePropertyTypes\Foo::$hasDefaultValue (int) in isset() is not nullable.',
 				17,
-			],*/
+			],
 			[
 				'Property IssetNativePropertyTypes\Foo::$isAssignedBefore (int) in isset() is not nullable.',
 				20,
+			],
+			[
+				'Property IssetNativePropertyTypes\Foo::$canBeUninitialized (int) in isset() is not nullable.',
+				22,
 			],
 		]);
 	}

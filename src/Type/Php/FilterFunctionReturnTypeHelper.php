@@ -166,49 +166,29 @@ final class FilterFunctionReturnTypeHelper
 			return $mixedType;
 		}
 
-		// When input is definitely an array with REQUIRE/FORCE_ARRAY,
-		// use TypeTraverser to recursively filter each component of the value type
 		if ($inputIsArray->yes() && ($hasRequireArrayFlag->yes() || $hasForceArrayFlag->yes())) {
 			$inputArrayKeyType = $inputType->getIterableKeyType();
 			$inputValueType = $inputType->getIterableValueType();
-
-			$filteredValueType = TypeTraverser::map($inputValueType, function (Type $type, callable $traverse) use ($filterType, $flagsType, $filterValue, $defaultType, $mixedType, $hasOptions, $options): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-				if ($type->isArray()->yes()) {
-					return $this->getType($type, $filterType, $flagsType);
-				}
-				$scalarResult = $this->filterScalarType($type, $filterValue, $defaultType, $flagsType, $mixedType, $hasOptions, $options);
-				if ($type->isArray()->maybe()) {
-					return TypeCombinator::union($scalarResult, new ArrayType($mixedType, $mixedType));
-				}
-				return $scalarResult;
-			});
+			$filteredValueType = $this->filterTypeComponents($inputValueType, $filterType, $flagsType, $filterValue, $defaultType, $mixedType, $hasOptions, $options);
 
 			return new ArrayType($inputArrayKeyType, $filteredValueType);
 		}
 
-		$type = $this->filterScalarType($inputType, $filterValue, $defaultType, $flagsType, $mixedType, $hasOptions, $options);
-
 		if ($hasRequireArrayFlag->yes()) {
-			if (!$inputIsArray->no()) {
-				$nestedArrayType = $this->computeNestedArrayType($inputType, $filterType, $flagsType, $mixedType);
-				$type = TypeCombinator::union($type, $nestedArrayType);
-			}
+			$type = $this->filterTypeComponents($inputType, $filterType, $flagsType, $filterValue, $defaultType, $mixedType, $hasOptions, $options);
 			$type = new ArrayType($mixedType, $type);
 			if (!$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
+			return $type;
 		}
 
-		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
-			if (!$inputIsArray->no()) {
-				$nestedArrayType = $this->computeNestedArrayType($inputType, $filterType, $flagsType, $mixedType);
-				$type = TypeCombinator::union($type, $nestedArrayType);
-			}
+		if ($hasForceArrayFlag->yes()) {
+			$type = $this->filterTypeComponents($inputType, $filterType, $flagsType, $filterValue, $defaultType, $mixedType, $hasOptions, $options);
 			return new ArrayType($mixedType, $type);
 		}
+
+		$type = $this->filterScalarType($inputType, $filterValue, $defaultType, $flagsType, $mixedType, $hasOptions, $options);
 
 		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
 			$type = TypeCombinator::remove($type, $defaultType);
@@ -255,22 +235,27 @@ final class FilterFunctionReturnTypeHelper
 	}
 
 	/**
-	 * Computes the nested array type for the array portion of a maybe-array input.
-	 * Uses TypeTraverser to extract array components and recursively filter them.
+	 * Recursively filters each component of a type that may contain arrays.
+	 * Array components are recursively filtered via getType(), scalar components
+	 * are filtered via filterScalarType(), and maybe-array components produce
+	 * a union of both.
+	 *
+	 * @param array<string, ?Type> $options
 	 */
-	private function computeNestedArrayType(Type $inputType, ?Type $filterType, ?Type $flagsType, MixedType $mixedType): Type
+	private function filterTypeComponents(Type $type, ?Type $filterType, ?Type $flagsType, int $filterValue, Type $defaultType, MixedType $mixedType, TrinaryLogic $hasOptions, array $options): Type
 	{
-		return TypeTraverser::map($inputType, function (Type $type, callable $traverse) use ($filterType, $flagsType, $mixedType): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
+		return TypeTraverser::map($type, function (Type $innerType, callable $traverse) use ($filterType, $flagsType, $filterValue, $defaultType, $mixedType, $hasOptions, $options): Type {
+			if ($innerType instanceof UnionType || $innerType instanceof IntersectionType) {
+				return $traverse($innerType);
 			}
-			if ($type->isArray()->yes()) {
-				return $this->getType($type, $filterType, $flagsType);
+			if ($innerType->isArray()->yes()) {
+				return $this->getType($innerType, $filterType, $flagsType);
 			}
-			if ($type->isArray()->maybe()) {
-				return new ArrayType($mixedType, $mixedType);
+			$scalarResult = $this->filterScalarType($innerType, $filterValue, $defaultType, $flagsType, $mixedType, $hasOptions, $options);
+			if ($innerType->isArray()->maybe()) {
+				return TypeCombinator::union($scalarResult, new ArrayType($mixedType, $mixedType));
 			}
-			return new NeverType();
+			return $scalarResult;
 		});
 	}
 

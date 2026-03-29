@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 $var = $_GET["data"];
 $res = filter_var($var, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
-assertType('array<int|false>|false', $res);
+assertType('array<array|int|false>|false', $res);
 if (is_array($res) === false) {
 	throw new \RuntimeException();
 }

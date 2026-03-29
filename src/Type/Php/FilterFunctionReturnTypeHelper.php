@@ -198,6 +198,9 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($hasRequireArrayFlag->yes()) {
+			if (!$inputIsArray->no()) {
+				$type = TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
+			}
 			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
 			if (!$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
@@ -205,6 +208,9 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
+			if (!$inputIsArray->no()) {
+				$type = TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
+			}
 			return new ArrayType($inputArrayKeyType ?? $mixedType, $type);
 		}
 

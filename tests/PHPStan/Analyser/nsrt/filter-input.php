@@ -34,8 +34,8 @@ class FilterInput
 		assertType('int|false|null', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT));
 		assertType('int|false|null', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['flags' => FILTER_NULL_ON_FAILURE]));
 		assertType("'invalid'|int|null", filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['options' => ['default' => 'invalid']]));
-		assertType('array<int|false>|null', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]));
-		assertType('array<int|null>|false', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY|FILTER_NULL_ON_FAILURE]));
+		assertType('array<array|int|false>|null', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]));
+		assertType('array<array|int|null>|false', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY|FILTER_NULL_ON_FAILURE]));
 		assertType('0|int<17, 19>|null', filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 17, 'max_range' => 19]]));
 	}
 

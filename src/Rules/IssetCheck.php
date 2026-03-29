@@ -182,14 +182,6 @@ final class IssetCheck
 				}
 
 				if (!$scope->hasExpressionType($expr)->yes()) {
-					if (
-						$expr instanceof Node\Expr\PropertyFetch
-						&& $expr->var instanceof Expr\Variable
-						&& $expr->var->name === 'this'
-					) {
-						return $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
-					}
-
 					if ($expr instanceof Node\Expr\StaticPropertyFetch) {
 						if ($expr->class instanceof Expr) {
 							return $this->checkUndefined($expr->class, $scope, $operatorDescription, $identifier);

@@ -375,6 +375,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
 			[
 				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
+				11,
+			],
+			[
+				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
 				27,
 			],
 		]);

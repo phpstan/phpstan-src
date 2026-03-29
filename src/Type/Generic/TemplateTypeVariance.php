@@ -5,11 +5,14 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use function sprintf;
 
 /**
@@ -177,6 +180,13 @@ final class TemplateTypeVariance
 
 		if ($this->invariant()) {
 			$result = $a->equals($b);
+			if (!$result) {
+				$strippedA = self::stripHasOffsetTypes($a);
+				$strippedB = self::stripHasOffsetTypes($b);
+				if ($strippedA !== $a || $strippedB !== $b) {
+					$result = $strippedA->equals($strippedB);
+				}
+			}
 			$reasons = [];
 			if (!$result) {
 				if (
@@ -257,6 +267,17 @@ final class TemplateTypeVariance
 		}
 
 		throw new ShouldNotHappenException();
+	}
+
+	private static function stripHasOffsetTypes(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof HasOffsetValueType || $type instanceof HasOffsetType) {
+				return new MixedType();
+			}
+
+			return $traverse($type);
+		});
 	}
 
 }

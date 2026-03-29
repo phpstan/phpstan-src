@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -209,12 +210,20 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function toArrayKey(): Type
 	{
+		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();
+		if ($level !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
+			new UnionType([
+				new IntegerType(),
+				new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+				]),
+			]);
+		}
+
 		return new UnionType([
 			new IntegerType(),
-			new IntersectionType([
-				new StringType(),
-				new AccessoryNumericStringType(),
-			]),
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)]),
 		]);
 	}
 

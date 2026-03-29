@@ -10,7 +10,9 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
@@ -106,6 +108,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueOfType;
@@ -128,6 +131,9 @@ use function str_starts_with;
 use function strtolower;
 use function substr;
 
+/**
+ * @phpstan-import-type Level from ReportUnsafeArrayStringKeyCastingToggle as ReportUnsafeArrayStringKeyCastingLevel
+ */
 #[AutowiredService]
 final class TypeNodeResolver
 {
@@ -135,12 +141,17 @@ final class TypeNodeResolver
 	/** @var array<string, true> */
 	private array $genericTypeResolvingStack = [];
 
+	/**
+	 * @param ReportUnsafeArrayStringKeyCastingLevel $reportUnsafeArrayStringKeyCasting
+	 */
 	public function __construct(
 		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
 		private ConstantResolver $constantResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		#[AutowiredParameter]
+		private ?string $reportUnsafeArrayStringKeyCasting,
 	)
 	{
 	}
@@ -661,7 +672,7 @@ final class TypeNodeResolver
 	private function resolveArrayTypeNode(ArrayTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		$itemType = $this->resolve($typeNode->type, $nameScope);
-		return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $itemType);
+		return new ArrayType((new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey(), $itemType);
 	}
 
 	private function resolveGenericTypeNode(GenericTypeNode $typeNode, NameScope $nameScope): Type
@@ -686,9 +697,23 @@ final class TypeNodeResolver
 
 		if (in_array($mainTypeName, ['array', 'non-empty-array'], true)) {
 			if (count($genericTypes) === 1) { // array<ValueType>
-				$arrayType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $genericTypes[0]);
+				$arrayType = new ArrayType((new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey(), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				$keyType = TypeCombinator::intersect($genericTypes[0]->toArrayKey(), new UnionType([
+				$originalKey = $genericTypes[0];
+				if ($this->reportUnsafeArrayStringKeyCasting === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
+					$originalKey = TypeTraverser::map($originalKey, static function (Type $type, callable $traverse) {
+						if ($type instanceof UnionType || $type instanceof IntersectionType) {
+							return $traverse($type);
+						}
+
+						if ($type instanceof StringType) {
+							return TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true));
+						}
+
+						return $type;
+					});
+				}
+				$keyType = TypeCombinator::intersect($originalKey->toArrayKey(), new UnionType([
 					new IntegerType(),
 					new StringType(),
 				]))->toArrayKey();

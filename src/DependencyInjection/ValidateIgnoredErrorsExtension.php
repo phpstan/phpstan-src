@@ -139,6 +139,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 							}
 
 						}, new OversizedArrayBuilder(), true),
+						reportUnsafeArrayStringKeyCasting: null,
 					),
 				),
 			);

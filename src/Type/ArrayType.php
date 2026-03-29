@@ -34,6 +34,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 
 /** @api */
@@ -54,11 +55,11 @@ class ArrayType implements Type
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
 	{
-		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {
+		if (in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
 			$keyType = new MixedType();
 		}
 		if ($keyType instanceof StrictMixedType && !$keyType instanceof TemplateStrictMixedType) {
-			$keyType = new UnionType([new StringType(), new IntegerType()]);
+			$keyType = (new UnionType([new StringType(), new IntegerType()]))->toArrayKey();
 		}
 
 		$this->keyType = $keyType;
@@ -207,10 +208,10 @@ class ArrayType implements Type
 		}
 		$keyType = $this->keyType;
 		if ($keyType instanceof MixedType && !$keyType instanceof TemplateMixedType) {
-			$keyType = new BenevolentUnionType([new IntegerType(), new StringType()]);
+			$keyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
 		}
 		if ($keyType instanceof StrictMixedType) {
-			$keyType = new BenevolentUnionType([new IntegerType(), new StringType()]);
+			$keyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
 		}
 
 		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();

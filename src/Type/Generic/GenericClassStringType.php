@@ -18,6 +18,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -222,12 +223,14 @@ class GenericClassStringType extends ClassStringType
 
 					if ($classReflection->getAllowedSubTypes() !== null) {
 						$objectTypeToRemove = new ObjectType($typeToRemove->getValue());
-						$remainingType = TypeCombinator::remove($generic, $objectTypeToRemove);
+						$baseType = new ObjectType($genericObjectClassNames[0],
+							$generic instanceof SubtractableType ? $generic->getSubtractedType() : null);
+						$remainingType = TypeCombinator::remove($baseType, $objectTypeToRemove);
 						if ($remainingType instanceof NeverType) {
 							return new NeverType();
 						}
 
-						if (!$remainingType->equals($generic)) {
+						if (!$remainingType->equals($baseType)) {
 							return new self($remainingType);
 						}
 					}

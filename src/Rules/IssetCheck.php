@@ -182,20 +182,6 @@ final class IssetCheck
 				}
 
 				if (!$scope->hasExpressionType($expr)->yes()) {
-					if ($expr instanceof Node\Expr\PropertyFetch) {
-						$undefinedError = $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
-						if ($undefinedError !== null) {
-							return $undefinedError;
-						}
-					} elseif ($expr instanceof Node\Expr\StaticPropertyFetch) {
-						if ($expr->class instanceof Expr) {
-							$undefinedError = $this->checkUndefined($expr->class, $scope, $operatorDescription, $identifier);
-							if ($undefinedError !== null) {
-								return $undefinedError;
-							}
-						}
-					}
-
 					$nativeReflection = $propertyReflection->getNativeReflection();
 					if ($nativeReflection !== null && !$nativeReflection->getNativeReflection()->hasDefaultValue()) {
 						return null;

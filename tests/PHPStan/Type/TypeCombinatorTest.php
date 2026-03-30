@@ -4622,6 +4622,46 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [
 			[
 				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => TypeCombinator::union(new IntegerType(), new NullType())], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => TypeCombinator::union(new IntegerType(), new NullType())], ['foo']),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['bar' => new IntegerType()], ['bar']),
+			],
+			ObjectShapeType::class,
+			'object{bar?: int, foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new StringType()], ['foo']),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
 				new ObjectType(Traversable::class),
 			],
 			IntersectionType::class,

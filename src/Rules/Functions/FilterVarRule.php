@@ -46,14 +46,14 @@ final class FilterVarRule implements Rule
 
 		$args = $node->getArgs();
 
+		if (count($args) < 3) {
+			return [];
+		}
+
 		if (
 			!$this->phpVersion->hasFilterThrowOnFailureConstant()
 			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
 		) {
-			return [];
-		}
-
-		if (count($args) < 3) {
 			return [];
 		}
 

@@ -29,4 +29,38 @@ class Foo {
 			echo "...\n";
 		}
 	}
+
+	/** @param int[] $arr */
+	function errorArrayFilter(array $arr) : void {
+		$this->test = false;
+		$prices = array_filter($arr, function($elt) {
+			if ($elt === 1) {
+				$this->test = true;
+			}
+
+			return $elt === 2;
+		});
+
+
+		if ($this->test) {
+			echo "...\n";
+		}
+	}
+
+	/** @param int[] $arr */
+	function successLocal(array $arr) : void {
+		$test = false;
+		$prices = array_filter($arr, function($elt) use(&$test) {
+			if ($elt === 1) {
+				$test = true;
+			}
+
+			return $elt === 2;
+		});
+
+
+		if ($test) {
+			echo "...\n";
+		}
+	}
 }

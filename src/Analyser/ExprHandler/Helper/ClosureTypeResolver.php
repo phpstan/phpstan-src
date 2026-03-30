@@ -184,6 +184,7 @@ final class ClosureTypeResolver
 						'property assignment',
 						true,
 					);
+					$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
 				},
 				ExpressionContext::createDeep(),
 			);
@@ -257,6 +258,7 @@ final class ClosureTypeResolver
 							'property assignment',
 							true,
 						);
+						$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
 						return;
 					}
 

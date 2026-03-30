@@ -189,6 +189,24 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8926.php'], []);
 	}
 
+	public function testBug11417(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11417.php'], [
+			[
+				'If condition is always true.',
+				66,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
+	public function testBug10903(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-10903.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testBug13384b(): void
 	{

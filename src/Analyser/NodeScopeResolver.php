@@ -1146,7 +1146,7 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
 					$branchScope = $branchScopeStatementResult->getScope();
-					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
+					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope, true);
 					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
 					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
 						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
@@ -1170,7 +1170,7 @@ class NodeScopeResolver
 
 			if ($stmt->else === null) {
 				if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
-					$finalScope = $scope->mergeWith($finalScope);
+					$finalScope = $scope->mergeWith($finalScope, true);
 					$alwaysTerminating = false;
 				}
 			} else {
@@ -1182,7 +1182,7 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
 					$branchScope = $branchScopeStatementResult->getScope();
-					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
+					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope, true);
 					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
 					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
 						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());

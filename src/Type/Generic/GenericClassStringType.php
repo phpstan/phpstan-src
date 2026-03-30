@@ -94,6 +94,9 @@ class GenericClassStringType extends ClassStringType
 		if ($type instanceof ConstantStringType) {
 			$genericType = $this->type;
 			if ($genericType instanceof MixedType) {
+				if (!$type->isClassString()->yes()) {
+					return IsSuperTypeOfResult::createMaybe();
+				}
 				return IsSuperTypeOfResult::createYes();
 			}
 

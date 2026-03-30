@@ -219,6 +219,18 @@ class GenericClassStringType extends ClassStringType
 					if ($classReflection->isFinal() && $genericObjectClassNames[0] === $typeToRemove->getValue()) {
 						return new NeverType();
 					}
+
+					if ($classReflection->getAllowedSubTypes() !== null) {
+						$objectTypeToRemove = new ObjectType($typeToRemove->getValue());
+						$remainingType = TypeCombinator::remove($generic, $objectTypeToRemove);
+						if ($remainingType instanceof NeverType) {
+							return new NeverType();
+						}
+
+						if (!$remainingType->equals($generic)) {
+							return new self($remainingType);
+						}
+					}
 				}
 			} elseif (count($genericObjectClassNames) > 1) {
 				$objectTypeToRemove = new ObjectType($typeToRemove->getValue());

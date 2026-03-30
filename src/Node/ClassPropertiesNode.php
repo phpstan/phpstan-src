@@ -132,6 +132,16 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 			$originalProperties[$property->getName()] = $property;
 			$is = TrinaryLogic::createFromBoolean($property->isPromoted() && !$property->isPromotedFromTrait());
+			if (!$is->yes() && $classReflection->hasConstructor()) {
+				$constructorDeclaringClass = $classReflection->getConstructor()->getDeclaringClass();
+				if (
+					$constructorDeclaringClass->getName() !== $classReflection->getName()
+					&& $constructorDeclaringClass->hasNativeProperty($property->getName())
+					&& $constructorDeclaringClass->getNativeProperty($property->getName())->isPromoted()
+				) {
+					$is = TrinaryLogic::createYes();
+				}
+			}
 			if (!$is->yes() && $classReflection->hasNativeProperty($property->getName())) {
 				$propertyReflection = $classReflection->getNativeProperty($property->getName());
 				if ($propertyReflection->isVirtual()->yes()) {

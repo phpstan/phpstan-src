@@ -233,4 +233,14 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12547.php'], []);
 	}
 
+	public function testBug13380(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13380.php'], [
+			[
+				'Class Bug13380\Baz has an uninitialized property $prop. Give it default value or assign it in the constructor.',
+				20,
+			],
+		]);
+	}
+
 }

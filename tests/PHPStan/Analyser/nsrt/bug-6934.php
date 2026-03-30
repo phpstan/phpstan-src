@@ -10,6 +10,7 @@ use function PHPStan\Testing\assertType;
 function removeFromParent(?DOMNode $node): void {
 	$node?->parentNode?->removeChild($node);
 	assertType('DOMNode|null', $node);
+	assertType('DOMNode|null', $node?->parentNode);
 }
 
 function testNarrowing(?DOMNode $node): void {

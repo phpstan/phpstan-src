@@ -1309,12 +1309,17 @@ final class TypeCombinator
 						if (array_key_exists($propertyName, $mergedProperties)) {
 							$intersectedPropertyType = self::intersect($mergedProperties[$propertyName], $propertyType);
 							if ($intersectedPropertyType instanceof NeverType) {
+								if (in_array($propertyName, $types[$j]->getOptionalProperties(), true)) {
+									continue;
+								}
+
 								return new NeverType();
 							}
 							$mergedProperties[$propertyName] = $intersectedPropertyType;
-							$isOptionalInI = in_array($propertyName, $mergedOptionalProperties, true);
-							$isOptionalInJ = in_array($propertyName, $types[$j]->getOptionalProperties(), true);
-							if ($isOptionalInI && !$isOptionalInJ) {
+							if (
+								in_array($propertyName, $mergedOptionalProperties, true)
+								&& !in_array($propertyName, $types[$j]->getOptionalProperties(), true)
+							) {
 								$mergedOptionalProperties = array_values(array_filter(
 									$mergedOptionalProperties,
 									static fn ($p) => $p !== $propertyName,

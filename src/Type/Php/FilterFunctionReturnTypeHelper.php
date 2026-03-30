@@ -197,19 +197,20 @@ final class FilterFunctionReturnTypeHelper
 			}
 		}
 
+		$throwOnFailure = $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes();
+		if ($throwOnFailure) {
+			$type = TypeCombinator::remove($type, $defaultType);
+		}
+
 		if ($hasRequireArrayFlag->yes()) {
 			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
-			if (!$inputIsArray->yes()) {
+			if (!$throwOnFailure && !$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}
 
 		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
 			return new ArrayType($inputArrayKeyType ?? $mixedType, $type);
-		}
-
-		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
-			$type = TypeCombinator::remove($type, $defaultType);
 		}
 
 		return $type;

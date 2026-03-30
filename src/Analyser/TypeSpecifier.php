@@ -630,8 +630,20 @@ final class TypeSpecifier
 					));
 					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
+						if ($context->null()) {
+							$originalRootExpr = $specifiedTypes->getRootExpr();
+							$varTypes = $this->specifyTypesInCondition($scope, $expr->var, $context);
+							$specifiedTypes = $specifiedTypes->unionWith($varTypes)->setRootExpr($originalRootExpr);
+						}
 						return $specifiedTypes;
 					}
+				}
+			}
+
+			if ($context->null()) {
+				$varTypes = $this->specifyTypesInCondition($scope, $expr->var, $context);
+				if ($varTypes->getSureTypes() !== [] || $varTypes->getSureNotTypes() !== []) {
+					return $varTypes->setRootExpr($expr);
 				}
 			}
 
@@ -702,7 +714,7 @@ final class TypeSpecifier
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
 			$rightScope = $scope->filterByTruthyValue($expr->left);
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+			$types = $context->true() || $context->null() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;

@@ -411,4 +411,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12397.php'], []);
 	}
 
+	public function testBug13453(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13453.php'], [
+			[
+				'Function Bug13453\run() should return T of Bug13453\ResultA (function Bug13453\run(), argument) but returns T of Bug13453\ResultA (class Bug13453\I, parameter).',
+				33,
+			],
+		]);
+	}
+
 }

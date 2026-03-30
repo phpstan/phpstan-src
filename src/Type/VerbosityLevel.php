@@ -221,7 +221,13 @@ final class VerbosityLevel
 		});
 
 		if (!$containsInvariantTemplateType) {
-			return $verbosity ?? self::typeOnly();
+			$level = $verbosity ?? self::typeOnly();
+
+			if ($acceptingType->describe($level) === $acceptedType->describe($level)) {
+				return self::precise();
+			}
+
+			return $level;
 		}
 
 		/** @var bool $moreVerbose */
@@ -234,7 +240,13 @@ final class VerbosityLevel
 			return self::precise();
 		}
 
-		return $moreVerbose ? self::value() : $verbosity ?? self::typeOnly();
+		$level = $moreVerbose ? self::value() : $verbosity ?? self::typeOnly();
+
+		if ($acceptingType->describe($level) === $acceptedType->describe($level)) {
+			return self::precise();
+		}
+
+		return $level;
 	}
 
 	/**

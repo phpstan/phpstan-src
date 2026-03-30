@@ -20,6 +20,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -1503,9 +1504,42 @@ final class TypeCombinator
 					continue 2;
 				}
 
-				if ($isSuperTypeA->no()) {
-					return new NeverType();
+				if (!$isSuperTypeA->no()) {
+					continue;
 				}
+
+				if (
+					$types[$i] instanceof GenericObjectType
+					&& $types[$j] instanceof GenericObjectType
+					&& $types[$i]->getClassName() === $types[$j]->getClassName()
+					&& count($types[$i]->getTypes()) === count($types[$j]->getTypes())
+				) {
+					$mergedParams = [];
+					foreach ($types[$i]->getTypes() as $k => $paramTypeI) {
+						$paramTypeJ = $types[$j]->getTypes()[$k];
+						$merged = self::intersect($paramTypeI, $paramTypeJ);
+						if ($merged instanceof NeverType) {
+							return $merged;
+						}
+						$mergedParams[] = $merged;
+					}
+					$subtractedType = $types[$i]->getSubtractedType();
+					if ($subtractedType !== null && $types[$j]->getSubtractedType() !== null) {
+						$subtractedType = self::union($subtractedType, $types[$j]->getSubtractedType());
+					} elseif ($types[$j]->getSubtractedType() !== null) {
+						$subtractedType = $types[$j]->getSubtractedType();
+					}
+					$types[$j] = new GenericObjectType(
+						$types[$j]->getClassName(),
+						$mergedParams,
+						$subtractedType,
+					);
+					array_splice($types, $i--, 1);
+					$typesCount--;
+					continue 2;
+				}
+
+				return new NeverType();
 			}
 		}
 

@@ -182,9 +182,17 @@ final class IssetCheck
 				}
 
 				if (!$scope->hasExpressionType($expr)->yes()) {
-					if ($expr instanceof Node\Expr\StaticPropertyFetch) {
+					if ($expr instanceof Node\Expr\PropertyFetch) {
+						$undefinedError = $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
+						if ($undefinedError !== null) {
+							return $undefinedError;
+						}
+					} elseif ($expr instanceof Node\Expr\StaticPropertyFetch) {
 						if ($expr->class instanceof Expr) {
-							return $this->checkUndefined($expr->class, $scope, $operatorDescription, $identifier);
+							$undefinedError = $this->checkUndefined($expr->class, $scope, $operatorDescription, $identifier);
+							if ($undefinedError !== null) {
+								return $undefinedError;
+							}
 						}
 					}
 

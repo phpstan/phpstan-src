@@ -158,3 +158,10 @@ var_dump(empty(MyClassStaticUninitialized::$i));
 var_dump(MyClassStaticNullable::$i ?? -1);
 var_dump(isset(MyClassStaticNullable::$i));
 var_dump(empty(MyClassStaticNullable::$i));
+
+// Test undefined variable with native-typed property access
+function testUndefinedVar(): void {
+	var_dump($undefinedVar->i ?? -1);
+	var_dump(isset($undefinedVar->i));
+	var_dump(empty($undefinedVar->i));
+}

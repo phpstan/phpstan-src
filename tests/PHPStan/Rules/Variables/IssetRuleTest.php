@@ -555,6 +555,10 @@ class IssetRuleTest extends RuleTestCase
 				'Static property Bug14393\MyClassStatic::$i (int) in isset() is not nullable.',
 				151,
 			],
+			[
+				'Variable $undefinedVar in isset() is never defined.',
+				165,
+			],
 		]);
 	}
 

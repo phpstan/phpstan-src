@@ -414,6 +414,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 				'Static property Bug14393\MyClassStatic::$i (int) on left side of ?? is not nullable.',
 				150,
 			],
+			[
+				'Variable $undefinedVar on left side of ?? is never defined.',
+				164,
+			],
 		]);
 	}
 

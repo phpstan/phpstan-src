@@ -227,7 +227,12 @@ class EmptyRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 
-		$this->analyse([__DIR__ . '/data/bug-14393.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
+			[
+				'Variable $undefinedVar in empty() is never defined.',
+				166,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.0')]

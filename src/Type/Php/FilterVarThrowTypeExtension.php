@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -20,6 +21,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -28,8 +30,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 		FunctionReflection $functionReflection,
 	): bool
 	{
-		return $functionReflection->getName() === 'filter_var'
-			&& $this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null);
+		return $functionReflection->getName() === 'filter_var';
 	}
 
 	public function getThrowTypeFromFunctionCall(
@@ -39,6 +40,13 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 	): ?Type
 	{
 		if (!isset($funcCall->getArgs()[3])) {
+			return null;
+		}
+
+		if (
+			!$this->phpVersion->hasFilterThrowOnFailureConstant()
+			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
+		) {
 			return null;
 		}
 

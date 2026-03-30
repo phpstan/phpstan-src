@@ -248,4 +248,10 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6822(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-6822.php'], []);
+	}
+
 }

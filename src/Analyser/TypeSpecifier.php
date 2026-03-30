@@ -1896,7 +1896,7 @@ final class TypeSpecifier
 			}
 		}
 
-		if ($assertions === null || $assertions->getAll() === [] || $parametersAcceptor === null) {
+		if ($assertions === null || $assertions->getAll() === []) {
 			return null;
 		}
 
@@ -2228,6 +2228,30 @@ final class TypeSpecifier
 
 			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
 				return new SpecifiedTypes([], []);
+			}
+		}
+
+		if (
+			$expr instanceof FuncCall
+			&& !$expr->name instanceof Name
+		) {
+			$nameType = $scope->getType($expr->name);
+			if ($nameType->isCallable()->yes()) {
+				$isPure = null;
+				foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
+					$variantIsPure = $variant->isPure();
+					$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
+				}
+
+				if ($isPure !== null) {
+					if ($isPure->no()) {
+						return new SpecifiedTypes([], []);
+					}
+
+					if (!$this->rememberPossiblyImpureFunctionValues && !$isPure->yes()) {
+						return new SpecifiedTypes([], []);
+					}
+				}
 			}
 		}
 

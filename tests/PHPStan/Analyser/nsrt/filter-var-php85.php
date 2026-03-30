@@ -23,4 +23,10 @@ class FilterVarPHP85
 		assertType('int', filter_var($mixed, FILTER_VALIDATE_INT, FILTER_THROW_ON_FAILURE));
 		assertType('int', filter_var($mixed, FILTER_VALIDATE_INT, ['flags' => FILTER_THROW_ON_FAILURE]));
 	}
+
+	public function more($mixed): void
+	{
+		assertType('array<int>', filter_var($mixed, FILTER_VALIDATE_INT, FILTER_FORCE_ARRAY|FILTER_THROW_ON_FAILURE));
+		assertType('array<int>', filter_var($mixed, FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY|FILTER_THROW_ON_FAILURE));
+	}
 }

@@ -17,7 +17,7 @@ function testNarrowing(?DOMNode $node): void {
 }
 
 class Foo {
-	public function doSomething(): string {
+	public function doSomething($mixed): string {
 		return 'hello';
 	}
 }

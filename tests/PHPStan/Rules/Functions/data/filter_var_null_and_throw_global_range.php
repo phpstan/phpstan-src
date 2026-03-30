@@ -1,6 +1,6 @@
-<?php // lint < 8.5
+<?php // lint >= 8.2
 
-namespace FilterVarNullAndThrowPrePhp85;
+namespace FilterVarNullAndThrowGlobalRange;
 
 filter_var('foo@bar.test', FILTER_VALIDATE_EMAIL, FILTER_FLAG_GLOBAL_RANGE|FILTER_NULL_ON_FAILURE);
 

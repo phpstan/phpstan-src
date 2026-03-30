@@ -46,23 +46,28 @@ final class FilterVarRule implements Rule
 
 		$args = $node->getArgs();
 
-		if ($this->phpVersion->hasFilterThrowOnFailureConstant() && $this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)) {
-			if (count($args) < 3) {
-				return [];
-			}
+		if (
+			!$this->phpVersion->hasFilterThrowOnFailureConstant()
+			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
+		) {
+			return [];
+		}
 
-			$flagsType = $scope->getType($args[2]->value);
+		if (count($args) < 3) {
+			return [];
+		}
 
-			if ($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
-				->and($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType))
-				->yes()
-			) {
-				return [
-					RuleErrorBuilder::message('Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.')
-						->identifier('filterVar.nullOnFailureAndThrowOnFailure')
-						->build(),
-				];
-			}
+		$flagsType = $scope->getType($args[2]->value);
+
+		if ($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
+			->and($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType))
+			->yes()
+		) {
+			return [
+				RuleErrorBuilder::message('Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.')
+					->identifier('filterVar.nullOnFailureAndThrowOnFailure')
+					->build(),
+			];
 		}
 
 		return [];

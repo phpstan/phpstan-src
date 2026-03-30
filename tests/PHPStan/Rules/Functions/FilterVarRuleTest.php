@@ -31,10 +31,10 @@ class FilterVarRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.5')]
-	public function testRuleBeforePhp85(): void
+	#[RequiresPhp('>= 8.2')]
+	public function testRuleWithGlobalRange(): void
 	{
-		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw_pre_php85.php'], []);
+		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw_global_range.php'], []);
 	}
 
 }

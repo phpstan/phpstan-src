@@ -20,10 +20,6 @@ class OverwrittenExitPointByFinallyRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/overwritten-exit-point.php'], [
 			[
-				'This throw is overwritten by a different one in the finally block below.',
-				8,
-			],
-			[
 				'This return is overwritten by a different one in the finally block below.',
 				11,
 			],
@@ -58,13 +54,14 @@ class OverwrittenExitPointByFinallyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7665.php'], []);
 	}
 
+	public function testBug6119(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6119.php'], []);
+	}
+
 	public function testBug5627(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5627.php'], [
-			[
-				'This throw is overwritten by a different one in the finally block below.',
-				10,
-			],
 			[
 				'This throw is overwritten by a different one in the finally block below.',
 				12,
@@ -107,10 +104,6 @@ class OverwrittenExitPointByFinallyRuleTest extends RuleTestCase
 			],
 			[
 				'This throw is overwritten by a different one in the finally block below.',
-				62,
-			],
-			[
-				'This throw is overwritten by a different one in the finally block below.',
 				64,
 			],
 			[
@@ -148,10 +141,6 @@ class OverwrittenExitPointByFinallyRuleTest extends RuleTestCase
 			[
 				'The overwriting return is on this line.',
 				103,
-			],
-			[
-				'This throw is overwritten by a different one in the finally block below.',
-				122,
 			],
 			[
 				'This throw is overwritten by a different one in the finally block below.',

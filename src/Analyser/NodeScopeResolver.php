@@ -1830,11 +1830,13 @@ class NodeScopeResolver
 			} else {
 				$finallyScope = null;
 			}
+			$tryBodyThrowExitPoints = [];
 			foreach ($branchScopeResult->getExitPoints() as $exitPoint) {
-				$finallyExitPoints[] = $exitPoint->toPublic();
 				if ($exitPoint->getStatement() instanceof Node\Stmt\Expression && $exitPoint->getStatement()->expr instanceof Expr\Throw_) {
+					$tryBodyThrowExitPoints[] = $exitPoint->toPublic();
 					continue;
 				}
+				$finallyExitPoints[] = $exitPoint->toPublic();
 				if ($finallyScope !== null) {
 					$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
 				}
@@ -2007,6 +2009,27 @@ class NodeScopeResolver
 					}
 					$finallyScope = $finallyScope->mergeWith($catchThrowPoint->getScope());
 				}
+			}
+
+			// Add try body throw exit points to finallyExitPoints only if they weren't caught
+			foreach ($tryBodyThrowExitPoints as $throwExitPoint) {
+				$throwLine = $throwExitPoint->getStatement()->getStartLine();
+				$isCaught = true;
+				foreach ($throwPoints as $throwPoint) {
+					if (!$throwPoint->isExplicit()) {
+						continue;
+					}
+					if ($throwPoint->getNode()->getStartLine() !== $throwLine) {
+						continue;
+					}
+					$isCaught = false;
+					break;
+				}
+				if ($isCaught) {
+					continue;
+				}
+
+				$finallyExitPoints[] = $throwExitPoint;
 			}
 
 			if ($finalScope === null) {

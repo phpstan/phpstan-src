@@ -37,8 +37,8 @@ final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return null;
 		}
 
-		$arrayArg = $args[0]->value ?? null;
-		$callbackArg = $args[1]->value ?? null;
+		$arrayArg = $args[0]->value;
+		$callbackArg = $args[1]->value;
 
 		$resultTypes = $this->arrayFilterFunctionReturnTypeHelper->getType($scope, $arrayArg, $callbackArg, null);
 		$resultType = TypeCombinator::union(...array_map(static fn ($type) => $type->getIterableValueType(), $resultTypes->getArrays()));

@@ -182,15 +182,10 @@ final class IssetCheck
 				}
 
 				if (!$scope->hasExpressionType($expr)->yes()) {
-					if ($expr instanceof Node\Expr\PropertyFetch) {
-						return $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
+					$nativeReflection = $propertyReflection->getNativeReflection();
+					if ($nativeReflection !== null && !$nativeReflection->getNativeReflection()->hasDefaultValue()) {
+						return null;
 					}
-
-					if ($expr->class instanceof Expr) {
-						return $this->checkUndefined($expr->class, $scope, $operatorDescription, $identifier);
-					}
-
-					return null;
 				}
 			}
 

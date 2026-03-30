@@ -15,6 +15,10 @@ assertType('bool', $closure());
 
 if ($closure()) {
 	assertType('bool', $closure());
+
+	if ($closure()) { // should not be reported as "always true"
+		echo 'yes';
+	}
 }
 
 // Same with an explicit impure closure assigned to a variable
@@ -25,4 +29,8 @@ $impureFn = function (): int {
 
 if ($impureFn() > 50) {
 	assertType('int<0, 100>', $impureFn());
+
+	if ($impureFn() > 50) { // should not be reported as "always true"
+		echo 'yes';
+	}
 }

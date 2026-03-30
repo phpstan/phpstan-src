@@ -46,10 +46,6 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 			],
 			[
 				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
-				48,
-			],
-			[
-				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				53,
 			],
 			[
@@ -57,6 +53,11 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 				58,
 			],
 		]);
+	}
+
+	public function testBug12062(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12062.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.5')]

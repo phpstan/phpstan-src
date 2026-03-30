@@ -63,6 +63,16 @@ final class PossiblyPureStaticCallCollector implements Collector
 			return null;
 		}
 
+		if (
+			$expr->class->toLowerString() === 'static'
+			&& $scope->isInClass()
+			&& !$scope->getClassReflection()->isFinal()
+			&& !$methodReflection->isFinal()->yes()
+			&& !$methodReflection->isPrivate()
+		) {
+			return null;
+		}
+
 		return [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
 	}
 

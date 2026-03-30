@@ -153,24 +153,22 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 
 		if ($methodReflection !== null) {
-			if ($parametersAcceptor !== null) {
-				$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-				if ($methodThrowPoint !== null) {
-					$throwPoints[] = $methodThrowPoint;
-				}
+			$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+			if ($methodThrowPoint !== null) {
+				$throwPoints[] = $methodThrowPoint;
 			}
 
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
-			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin() && $parametersAcceptor !== null) {
+			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin()) {
 				$scope = $scope->assignExpression(
 					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
 					$parametersAcceptor->getReturnType(),
 					new MixedType(),
 				);
 			}
-			if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
+			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
 				if ($selfOutType !== null) {
 					$scope = $scope->assignExpression(

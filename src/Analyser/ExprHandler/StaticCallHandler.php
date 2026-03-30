@@ -198,7 +198,7 @@ final class StaticCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 		$scopeFunction = $scope->getFunction();
 
-		if ($methodReflection !== null && $parametersAcceptor !== null) {
+		if ($methodReflection !== null) {
 			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
@@ -221,7 +221,6 @@ final class StaticCallHandler implements ExprHandler
 		} elseif (
 			$methodReflection !== null
 			&& $this->rememberPossiblyImpureFunctionValues
-			&& $parametersAcceptor !== null
 			&& $scope->isInClass()
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			&& $methodReflection->hasSideEffects()->maybe()

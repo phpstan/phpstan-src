@@ -2747,6 +2747,7 @@ class NodeScopeResolver
 					'property assignment',
 					true,
 				);
+				$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
 				return;
 			}
 			if ($node instanceof ExecutionEndNode) {
@@ -2849,7 +2850,8 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$scope = $scope->invalidateExpression($invalidateExpression->getExpr(), true);
+			$requireMoreCharacters = $invalidateExpression->getExpr() instanceof Variable;
+			$scope = $scope->invalidateExpression($invalidateExpression->getExpr(), $requireMoreCharacters);
 		}
 
 		return $scope;
@@ -3368,7 +3370,9 @@ class NodeScopeResolver
 					$scope = $scope->restoreThis($restoreThisScope);
 				}
 
-				$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
+				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+					$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
+				}
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				if (
 					$closureBindScope === null
@@ -3416,8 +3420,8 @@ class NodeScopeResolver
 				if ($exprType->isCallable()->yes()) {
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
-						$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+							$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
 								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));

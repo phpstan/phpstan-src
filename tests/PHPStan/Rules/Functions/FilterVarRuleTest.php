@@ -37,4 +37,10 @@ class FilterVarRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw_global_range.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.5')]
+	public function testRuleGlobalRangePhp85(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter_var_null_and_global_range_php85.php'], []);
+	}
+
 }

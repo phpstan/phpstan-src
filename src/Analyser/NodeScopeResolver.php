@@ -2747,6 +2747,7 @@ class NodeScopeResolver
 					'property assignment',
 					true,
 				);
+				$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
 				return;
 			}
 			if ($node instanceof ExecutionEndNode) {
@@ -2849,7 +2850,8 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$scope = $scope->invalidateExpression($invalidateExpression->getExpr(), true);
+			$requireMoreCharacters = $invalidateExpression->getExpr() instanceof Variable;
+			$scope = $scope->invalidateExpression($invalidateExpression->getExpr(), $requireMoreCharacters);
 		}
 
 		return $scope;

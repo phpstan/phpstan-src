@@ -377,4 +377,48 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4846(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4846.php'], [
+			[
+				'Property Bug4846\Foo::$alwaysString (string) on left side of ?? is not nullable.',
+				13,
+			],
+		]);
+	}
+
+	public function testBug14393(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
+			[
+				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
+				11,
+			],
+			[
+				'Property Bug14393\MyClassPhpDoc::$i (int) on left side of ?? is not nullable.',
+				36,
+			],
+			[
+				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
+				80,
+			],
+			[
+				'Property Bug14393\MyClassPhpDoc::$i (int) on left side of ?? is not nullable.',
+				92,
+			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) on left side of ?? is not nullable.',
+				120,
+			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) on left side of ?? is not nullable.',
+				150,
+			],
+			[
+				'Variable $undefinedVar on left side of ?? is never defined.',
+				164,
+			],
+		]);
+	}
+
 }

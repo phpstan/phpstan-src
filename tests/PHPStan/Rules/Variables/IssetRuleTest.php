@@ -202,13 +202,10 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/isset-native-property-types.php'], [
-			/*[
-				// no way to achieve this with current PHP Reflection API
-				// There's ReflectionClass::getDefaultProperties()
-				// but it cannot differentiate between `public int $foo` and `public int $foo = null`;
+			[
 				'Property IssetNativePropertyTypes\Foo::$hasDefaultValue (int) in isset() is not nullable.',
 				17,
-			],*/
+			],
 			[
 				'Property IssetNativePropertyTypes\Foo::$isAssignedBefore (int) in isset() is not nullable.',
 				20,
@@ -527,6 +524,42 @@ class IssetRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/data/bug-9503.php'], []);
+	}
+
+	public function testBug14393(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
+			[
+				'Property Bug14393\MyClass::$i (int) in isset() is not nullable.',
+				12,
+			],
+			[
+				'Property Bug14393\MyClassPhpDoc::$i (int) in isset() is not nullable.',
+				37,
+			],
+			[
+				'Property Bug14393\MyClass::$i (int) in isset() is not nullable.',
+				81,
+			],
+			[
+				'Property Bug14393\MyClassPhpDoc::$i (int) in isset() is not nullable.',
+				93,
+			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) in isset() is not nullable.',
+				121,
+			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) in isset() is not nullable.',
+				151,
+			],
+			[
+				'Variable $undefinedVar in isset() is never defined.',
+				165,
+			],
+		]);
 	}
 
 }

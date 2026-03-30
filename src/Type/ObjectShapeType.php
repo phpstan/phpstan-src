@@ -10,6 +10,7 @@ use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
@@ -113,15 +114,14 @@ class ObjectShapeType implements Type
 
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
 	{
-		if (!array_key_exists($propertyName, $this->properties)) {
-			return TrinaryLogic::createNo();
+		if (
+			array_key_exists($propertyName, $this->properties)
+			&& !in_array($propertyName, $this->optionalProperties, true)
+		) {
+			return TrinaryLogic::createYes();
 		}
 
-		if (in_array($propertyName, $this->optionalProperties, true)) {
-			return TrinaryLogic::createMaybe();
-		}
-
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
@@ -131,11 +131,12 @@ class ObjectShapeType implements Type
 
 	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		if (!array_key_exists($propertyName, $this->properties)) {
-			throw new ShouldNotHappenException();
+		if (array_key_exists($propertyName, $this->properties)) {
+			$property = new ObjectShapePropertyReflection($propertyName, $this->properties[$propertyName]);
+		} else {
+			$property = new DummyPropertyReflection($propertyName);
 		}
 
-		$property = new ObjectShapePropertyReflection($propertyName, $this->properties[$propertyName]);
 		return new CallbackUnresolvedPropertyPrototypeReflection(
 			$property,
 			$property->getDeclaringClass(),
@@ -297,10 +298,6 @@ class ObjectShapeType implements Type
 		foreach ($this->properties as $propertyName => $propertyType) {
 			$hasProperty = new IsSuperTypeOfResult($type->hasInstanceProperty((string) $propertyName), []);
 			if ($hasProperty->no()) {
-				if ($type instanceof self) {
-					$result = $result->and(IsSuperTypeOfResult::createMaybe());
-					continue;
-				}
 				if (in_array($propertyName, $this->optionalProperties, true)) {
 					continue;
 				}

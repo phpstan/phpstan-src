@@ -145,9 +145,6 @@ class ObjectShapeTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @param TrinaryLogic $expectedResult
-	 */
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(ObjectShapeType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{

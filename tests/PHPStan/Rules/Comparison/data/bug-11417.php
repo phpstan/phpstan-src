@@ -63,7 +63,7 @@ class HelloWorldLater
 			$this->conn = "conn";
 		});
 
-		if (is_null($this->conn)) { // should be always true - later-invoked callable doesn't invalidate
+		if (is_null($this->conn)) {
 			throw new \Exception("conn failed");
 		}
 

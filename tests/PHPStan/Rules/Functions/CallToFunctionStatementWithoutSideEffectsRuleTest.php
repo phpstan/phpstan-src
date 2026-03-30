@@ -119,6 +119,24 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11101(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11101.php'], [
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				11,
+			],
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				12,
+			],
+			[
+				'Call to function array_reduce() on a separate line has no effect.',
+				13,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5')]
 	public function testPipeOperator(): void
 	{

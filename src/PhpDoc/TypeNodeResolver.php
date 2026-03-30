@@ -58,6 +58,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
@@ -1188,9 +1189,13 @@ final class TypeNodeResolver
 				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
 			}
 
+			$isStaticConst = false;
 			if ($nameScope->getClassName() !== null) {
 				switch (strtolower($constExpr->className)) {
 					case 'static':
+						$className = $nameScope->getClassName();
+						$isStaticConst = true;
+						break;
 					case 'self':
 						$className = $nameScope->getClassName();
 						break;
@@ -1220,6 +1225,15 @@ final class TypeNodeResolver
 			$classReflection = $this->getReflectionProvider()->getClass($className);
 
 			$constantName = $constExpr->name;
+
+			if ($isStaticConst && !$classReflection->isFinal() && !Strings::contains($constantName, '*')) {
+				if (!$classReflection->hasConstant($constantName)) {
+					return new ErrorType();
+				}
+
+				return new ClassConstantAccessType(new StaticType($classReflection), $constantName);
+			}
+
 			if (Strings::contains($constantName, '*')) {
 				// convert * into .*? and escape everything else so the constants can be matched against the pattern
 				$pattern = '{^' . str_replace('\\*', '.*?', preg_quote($constantName)) . '$}D';

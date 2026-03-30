@@ -4710,6 +4710,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [
 			[
 				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new ObjectShapeType(['foo' => new StringType()], ['foo']),
+			],
+			ObjectShapeType::class,
+			'object{}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
 				new ObjectShapeType(['foo' => new IntegerType()], []),
 			],
 			ObjectShapeType::class,

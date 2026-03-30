@@ -1313,6 +1313,11 @@ final class TypeCombinator
 									in_array($propertyName, $mergedOptionalProperties, true)
 									&& in_array($propertyName, $types[$j]->getOptionalProperties(), true)
 								) {
+									unset($mergedProperties[$propertyName]);
+									$mergedOptionalProperties = array_values(array_filter(
+										$mergedOptionalProperties,
+										static fn ($p) => $p !== $propertyName,
+									));
 									continue;
 								}
 

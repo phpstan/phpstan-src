@@ -114,6 +114,17 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13609(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13609.php'], []);
+	}
+
+	public function testBug13609Strict(): void
+	{
+		$this->checkStrictPrintfPlaceholderTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-13609.php'], []);
+	}
+
 	public function testStrict(): void
 	{
 		$this->checkStrictPrintfPlaceholderTypes = true;
@@ -205,10 +216,6 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 			[
 				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
 				36,
-			],
-			[
-				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
-				37,
 			],
 			[
 				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), null given.',

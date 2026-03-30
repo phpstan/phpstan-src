@@ -5,7 +5,6 @@ namespace PHPStan\ChangelogGenerator;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Github\Api\GraphQL;
 use Github\Api\PullRequest;
 use Github\Api\Repo;
 use Github\Api\Search;
@@ -29,6 +28,7 @@ use function escapeshellarg;
 use function exec;
 use function explode;
 use function implode;
+use function preg_match_all;
 use function preg_replace;
 use function sprintf;
 
@@ -66,9 +66,6 @@ use function sprintf;
 
 			/** @var PullRequest $pullRequestApi */
 			$pullRequestApi = $gitHubClient->api('pull_request');
-
-			/** @var GraphQL $graphqlApi */
-			$graphqlApi = $gitHubClient->api('graphql');
 
 			$command = ['git', 'log', sprintf('%s..%s', $input->getArgument('fromCommit'), $input->getArgument('toCommit'))];
 			$excludeBranch = $input->getOption('exclude-branch');
@@ -135,31 +132,13 @@ use function sprintf;
 							'user' => $pullRequests[0]['user'],
 						],
 					];
-					$autoclosedIssues = $graphqlApi->execute(
-						<<<'QUERY'
-						  query ($owner:String!, $repo:String!, $pr:Int!){
-							repository(owner:$owner, name:$repo){
-							  pullRequest(number:$pr){
-								closingIssuesReferences(first:100){
-								  nodes { number title url repository { nameWithOwner } }
-								}
-							  }
-							}
-						  },
-						QUERY,
-						[
-							'owner' => 'phpstan',
-							'repo' => 'phpstan-src',
-							'pr' => $pullRequests[0]['number'],
-						],
-					);
-					foreach ($autoclosedIssues['data']['repository']['pullRequest']['closingIssuesReferences']['nodes'] as $closedIssue) {
-						if ($closedIssue['repository']['nameWithOwner'] !== 'phpstan/phpstan') {
-							continue;
+					$prBody = $pullRequests[0]['body'] ?? '';
+					if (preg_match_all('/(?:closes?|fix(?:es)?)\s+(?:https:\/\/github\.com\/phpstan\/phpstan\/issues\/|phpstan\/phpstan#)(\d+)/i', $prBody, $matches)) {
+						foreach (array_unique($matches[1]) as $issueNumber) {
+							$items[] = [
+								'number' => (int) $issueNumber,
+							];
 						}
-						$items[] = [
-							'number' => $closedIssue['number'],
-						];
 					}
 				} else {
 					$items = $searchApi->issues(sprintf('repo:phpstan/phpstan %s is:issue', $commit['hash']), 'created')['items'];

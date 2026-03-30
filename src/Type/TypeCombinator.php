@@ -1309,7 +1309,10 @@ final class TypeCombinator
 						if (array_key_exists($propertyName, $mergedProperties)) {
 							$intersectedPropertyType = self::intersect($mergedProperties[$propertyName], $propertyType);
 							if ($intersectedPropertyType instanceof NeverType) {
-								if (in_array($propertyName, $types[$j]->getOptionalProperties(), true)) {
+								if (
+									in_array($propertyName, $mergedOptionalProperties, true)
+									&& in_array($propertyName, $types[$j]->getOptionalProperties(), true)
+								) {
 									continue;
 								}
 
@@ -1337,6 +1340,36 @@ final class TypeCombinator
 					array_splice($types, $j--, 1);
 					$typesCount--;
 					continue;
+				}
+
+				if ($types[$i] instanceof ObjectShapeType && $types[$j] instanceof HasPropertyType) {
+					$propertyName = $types[$j]->getPropertyName();
+					if (!array_key_exists($propertyName, $types[$i]->getProperties())) {
+						$properties = $types[$i]->getProperties();
+						$properties[$propertyName] = new MixedType();
+						ksort($properties);
+						$types[$i] = new ObjectShapeType($properties, $types[$i]->getOptionalProperties());
+					} else {
+						$types[$i] = $types[$i]->makePropertyRequired($propertyName);
+					}
+					array_splice($types, $j--, 1);
+					$typesCount--;
+					continue;
+				}
+
+				if ($types[$j] instanceof ObjectShapeType && $types[$i] instanceof HasPropertyType) {
+					$propertyName = $types[$i]->getPropertyName();
+					if (!array_key_exists($propertyName, $types[$j]->getProperties())) {
+						$properties = $types[$j]->getProperties();
+						$properties[$propertyName] = new MixedType();
+						ksort($properties);
+						$types[$j] = new ObjectShapeType($properties, $types[$j]->getOptionalProperties());
+					} else {
+						$types[$j] = $types[$j]->makePropertyRequired($propertyName);
+					}
+					array_splice($types, $i--, 1);
+					$typesCount--;
+					continue 2;
 				}
 
 				if ($types[$j] instanceof IterableType) {
@@ -1444,20 +1477,6 @@ final class TypeCombinator
 					}
 
 					if ($types[$j] instanceof OversizedArrayType && $types[$i] instanceof HasOffsetValueType) {
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if ($types[$i] instanceof ObjectShapeType && $types[$j] instanceof HasPropertyType) {
-						$types[$i] = $types[$i]->makePropertyRequired($types[$j]->getPropertyName());
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if ($types[$j] instanceof ObjectShapeType && $types[$i] instanceof HasPropertyType) {
-						$types[$j] = $types[$j]->makePropertyRequired($types[$i]->getPropertyName());
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

@@ -38,3 +38,35 @@ class HelloWorld
 		$this->conn = null;
 	}
 }
+
+class WrapLater {
+	/**
+	 * @param-later-invoked-callable $cb
+	 */
+	public static function run(callable $cb): void
+	{
+		$cb();
+	}
+}
+
+class HelloWorldLater
+{
+	private ?string $conn = null;
+
+	public function getConn(): string
+	{
+		if (!is_null($this->conn)) {
+			return $this->conn;
+		}
+
+		WrapLater::run(function() {
+			$this->conn = "conn";
+		});
+
+		if (is_null($this->conn)) { // should be always true - later-invoked callable doesn't invalidate
+			throw new \Exception("conn failed");
+		}
+
+		return $this->conn;
+	}
+}

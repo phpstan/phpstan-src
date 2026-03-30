@@ -9,6 +9,7 @@ use function PHPStan\Testing\assertType;
 
 function removeFromParent(?DOMNode $node): void {
 	$node?->parentNode?->removeChild($node);
+	assertType('DOMNode|null', $node);
 }
 
 function testNarrowing(?DOMNode $node): void {
@@ -23,4 +24,5 @@ class Foo {
 
 function testNullsafeChainArgs(?Foo $foo): void {
 	$foo?->doSomething(assertType('Bug6934\Foo', $foo));
+	assertType('Bug6934\Foo|null', $foo);
 }

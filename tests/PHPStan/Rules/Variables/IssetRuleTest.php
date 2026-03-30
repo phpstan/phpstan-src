@@ -547,6 +547,14 @@ class IssetRuleTest extends RuleTestCase
 				'Property Bug14393\MyClassPhpDoc::$i (int) in isset() is not nullable.',
 				93,
 			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) in isset() is not nullable.',
+				121,
+			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) in isset() is not nullable.',
+				151,
+			],
 		]);
 	}
 

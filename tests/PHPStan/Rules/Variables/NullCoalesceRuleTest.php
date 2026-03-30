@@ -406,6 +406,14 @@ class NullCoalesceRuleTest extends RuleTestCase
 				'Property Bug14393\MyClassPhpDoc::$i (int) on left side of ?? is not nullable.',
 				92,
 			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) on left side of ?? is not nullable.',
+				120,
+			],
+			[
+				'Static property Bug14393\MyClassStatic::$i (int) on left side of ?? is not nullable.',
+				150,
+			],
 		]);
 	}
 

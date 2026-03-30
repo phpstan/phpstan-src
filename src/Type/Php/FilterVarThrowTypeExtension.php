@@ -31,7 +31,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 	): bool
 	{
 		return $functionReflection->getName() === 'filter_var'
-			&& $this->phpVersion->getVersionId() >= 80500
+			&& $this->phpVersion->hasFilterThrowOnFailureConstant()
 			&& $this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null);
 	}
 

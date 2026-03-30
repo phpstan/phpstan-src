@@ -30,9 +30,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 		FunctionReflection $functionReflection,
 	): bool
 	{
-		return $functionReflection->getName() === 'filter_var'
-			&& $this->phpVersion->hasFilterThrowOnFailureConstant()
-			&& $this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null);
+		return $functionReflection->getName() === 'filter_var';
 	}
 
 	public function getThrowTypeFromFunctionCall(
@@ -42,6 +40,13 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 	): ?Type
 	{
 		if (!isset($funcCall->getArgs()[3])) {
+			return null;
+		}
+
+		if (
+			!$this->phpVersion->hasFilterThrowOnFailureConstant()
+			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
+		) {
 			return null;
 		}
 

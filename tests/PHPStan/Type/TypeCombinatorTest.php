@@ -2578,6 +2578,54 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'object{bar: string}|object{foo: int}',
 		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+			],
+			ObjectShapeType::class,
+			'object{foo?: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => TypeCombinator::union(new IntegerType(), new NullType())], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int|null}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => TypeCombinator::union(new IntegerType(), new NullType())], ['foo']),
+			],
+			ObjectShapeType::class,
+			'object{foo?: int|null}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['bar' => new IntegerType()], ['bar']),
+			],
+			UnionType::class,
+			'object{bar?: int}|object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new StringType()], ['foo']),
+			],
+			UnionType::class,
+			'object{foo: int}|object{foo?: string}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType(), 'bar' => new StringType()], []),
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
 
 		yield [
 			[
@@ -4658,6 +4706,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType(), 'bar' => new StringType()], ['foo']),
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+			],
+			ObjectShapeType::class,
+			'object{bar: string, foo: int}',
 		];
 		yield [
 			[

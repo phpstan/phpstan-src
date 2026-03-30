@@ -297,6 +297,10 @@ class ObjectShapeType implements Type
 		foreach ($this->properties as $propertyName => $propertyType) {
 			$hasProperty = new IsSuperTypeOfResult($type->hasInstanceProperty((string) $propertyName), []);
 			if ($hasProperty->no()) {
+				if ($type instanceof self) {
+					$result = $result->and(IsSuperTypeOfResult::createMaybe());
+					continue;
+				}
 				if (in_array($propertyName, $this->optionalProperties, true)) {
 					continue;
 				}

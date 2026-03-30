@@ -151,8 +151,9 @@ final class FilterFunctionReturnTypeHelper
 
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
+		$hasThrowOnFailureFlag = $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
 		if ($inputIsArray->no() && $hasRequireArrayFlag->yes()) {
-			if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
+			if ($hasThrowOnFailureFlag->yes()) {
 				return new ErrorType();
 			}
 
@@ -197,14 +198,13 @@ final class FilterFunctionReturnTypeHelper
 			}
 		}
 
-		$throwOnFailure = $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes();
-		if ($throwOnFailure) {
+		if ($hasThrowOnFailureFlag->yes()) {
 			$type = TypeCombinator::remove($type, $defaultType);
 		}
 
 		if ($hasRequireArrayFlag->yes()) {
 			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
-			if (!$throwOnFailure && !$inputIsArray->yes()) {
+			if (!$hasThrowOnFailureFlag->yes() && !$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}

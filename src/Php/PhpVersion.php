@@ -501,4 +501,9 @@ final class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function hasFilterThrowOnFailureConstant(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Php\FilterFunctionReturnTypeHelper;
@@ -16,6 +17,7 @@ class FilterVarRuleTest extends RuleTestCase
 		return new FilterVarRule(
 			self::createReflectionProvider(),
 			self::getContainer()->getByType(FilterFunctionReturnTypeHelper::class),
+			self::getContainer()->getByType(PhpVersion::class),
 		);
 	}
 
@@ -27,6 +29,18 @@ class FilterVarRuleTest extends RuleTestCase
 			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 8],
 			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 10],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.2')]
+	public function testRuleWithGlobalRange(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw_global_range.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.5')]
+	public function testRuleGlobalRangePhp85(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter_var_null_and_global_range_php85.php'], []);
 	}
 
 }

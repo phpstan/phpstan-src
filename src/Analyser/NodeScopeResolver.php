@@ -4442,6 +4442,14 @@ class NodeScopeResolver
 			if ($node instanceof Node\Stmt\Nop || $node instanceof Node\Stmt\InlineHTML) {
 				continue;
 			}
+			if (
+				$node instanceof Node\Stmt\Expression
+				&& $node->expr instanceof Expr\Yield_
+				&& $node->expr->key === null
+				&& $node->expr->value === null
+			) {
+				continue;
+			}
 			if (!$node instanceof Node\Stmt) {
 				continue;
 			}

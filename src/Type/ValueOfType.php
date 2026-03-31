@@ -81,7 +81,15 @@ final class ValueOfType implements CompoundType, LateResolvableType
 			return new UnionType($valueTypes);
 		}
 
-		return $this->type->getIterableValueType();
+		$iterableValueType = $this->type->getIterableValueType();
+		if ($iterableValueType instanceof ErrorType && $this->type instanceof LateResolvableType) {
+			$resolvedType = $this->type->resolve();
+			if (!$resolvedType instanceof ErrorType) {
+				return $resolvedType;
+			}
+		}
+
+		return $iterableValueType;
 	}
 
 	/**

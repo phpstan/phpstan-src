@@ -123,7 +123,7 @@ final class TypehintHelper
 				($type->isCallable()->yes() && $phpDocType->isCallable()->yes())
 				|| (
 					(!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
-					&& $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes()
+					&& $type->isSuperTypeOf(TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveToBounds($phpDocType)))->yes()
 				)
 			) {
 				$resultType = $phpDocType;

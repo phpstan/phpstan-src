@@ -85,6 +85,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
+use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NewObjectType;
 use PHPStan\Type\NonAcceptingNeverType;
@@ -678,20 +679,24 @@ final class TypeNodeResolver
 			if (count($genericTypes) === 1) { // array<ValueType>
 				$arrayType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				$keyType = TypeCombinator::intersect($genericTypes[0]->toArrayKey(), new UnionType([
-					new IntegerType(),
-					new StringType(),
-				]))->toArrayKey();
-				$finiteTypes = $keyType->getFiniteTypes();
-				if (
-					count($finiteTypes) === 1
-					&& ($finiteTypes[0] instanceof ConstantStringType || $finiteTypes[0] instanceof ConstantIntegerType)
-				) {
-					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-					$arrayBuilder->setOffsetValueType($finiteTypes[0], $genericTypes[1], true);
-					$arrayType = $arrayBuilder->getArray();
+				if ($genericTypes[0] instanceof LateResolvableType) {
+					$arrayType = new ArrayType($genericTypes[0], $genericTypes[1]);
 				} else {
-					$arrayType = new ArrayType($keyType, $genericTypes[1]);
+					$keyType = TypeCombinator::intersect($genericTypes[0]->toArrayKey(), new UnionType([
+						new IntegerType(),
+						new StringType(),
+					]))->toArrayKey();
+					$finiteTypes = $keyType->getFiniteTypes();
+					if (
+						count($finiteTypes) === 1
+						&& ($finiteTypes[0] instanceof ConstantStringType || $finiteTypes[0] instanceof ConstantIntegerType)
+					) {
+						$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+						$arrayBuilder->setOffsetValueType($finiteTypes[0], $genericTypes[1], true);
+						$arrayType = $arrayBuilder->getArray();
+					} else {
+						$arrayType = new ArrayType($keyType, $genericTypes[1]);
+					}
 				}
 			} else {
 				return new ErrorType();

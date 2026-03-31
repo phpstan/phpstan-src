@@ -59,7 +59,7 @@ class HelloWorld
 			assertType('1|2|3|10', $data);
 			assertType('bool', $update);
 		} else {
-			assertType('1|2', $data);
+			assertType('1|2|3|10', $data);
 			assertType('bool', $update);
 		}
 
@@ -81,7 +81,7 @@ class HelloWorld
 
 		if ($data === 3) {
 			assertType('bool', $update);
-			assertType('true', $foo);
+			assertType('bool', $foo);
 		} else {
 			assertType('bool', $update);
 			assertType('bool', $foo);
@@ -89,7 +89,7 @@ class HelloWorld
 
 		if ($data === 1 || $data === 2) {
 			assertType('bool', $update);
-			assertType('false', $foo);
+			assertType('bool', $foo);
 		} else {
 			assertType('bool', $update);
 			assertType('bool', $foo);

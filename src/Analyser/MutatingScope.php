@@ -3205,7 +3205,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
-			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
+			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}
 
 		$conditions = [];
@@ -3337,7 +3337,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->inFirstLevelStatement;
 	}
 
-	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
+	public function mergeWith(?self $otherScope): self
 	{
 		if ($otherScope === null || $this === $otherScope) {
 			return $this;
@@ -3347,18 +3347,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
-		if ($preserveVacuousConditionals) {
-			$conditionalExpressions = $this->preserveVacuousConditionalExpressions(
-				$conditionalExpressions,
-				$this->conditionalExpressions,
-				$theirExpressionTypes,
-			);
-			$conditionalExpressions = $this->preserveVacuousConditionalExpressions(
-				$conditionalExpressions,
-				$otherScope->conditionalExpressions,
-				$ourExpressionTypes,
-			);
-		}
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
 			$ourExpressionTypes,
@@ -3465,48 +3453,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
-	 * @param array<string, ConditionalExpressionHolder[]> $currentConditionalExpressions
-	 * @param array<string, ConditionalExpressionHolder[]> $sourceConditionalExpressions
-	 * @param array<string, ExpressionTypeHolder> $otherExpressionTypes
-	 * @return array<string, ConditionalExpressionHolder[]>
-	 */
-	private function preserveVacuousConditionalExpressions(
-		array $currentConditionalExpressions,
-		array $sourceConditionalExpressions,
-		array $otherExpressionTypes,
-	): array
-	{
-		foreach ($sourceConditionalExpressions as $exprString => $holders) {
-			foreach ($holders as $key => $holder) {
-				if (isset($currentConditionalExpressions[$exprString][$key])) {
-					continue;
-				}
-
-				$typeHolder = $holder->getTypeHolder();
-				if ($typeHolder->getCertainty()->no() && !$typeHolder->getExpr() instanceof Variable) {
-					continue;
-				}
-
-				foreach ($holder->getConditionExpressionTypeHolders() as $guardExprString => $guardTypeHolder) {
-					if (!array_key_exists($guardExprString, $otherExpressionTypes)) {
-						continue;
-					}
-
-					$otherType = $otherExpressionTypes[$guardExprString]->getType();
-					$guardType = $guardTypeHolder->getType();
-
-					if ($otherType->isSuperTypeOf($guardType)->no()) {
-						$currentConditionalExpressions[$exprString][$key] = $holder;
-						break;
-					}
-				}
-			}
-		}
-
-		return $currentConditionalExpressions;
-	}
-
-	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressions
 	 * @param array<string, ConditionalExpressionHolder[]> $existingConditionalExpressions
 	 * @return array<string, ConditionalExpressionHolder[]>
@@ -3603,6 +3549,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			foreach ($variableTypeGuards as $guardExprString => $guardHolder) {
+				if (
+					array_key_exists($guardExprString, $theirExpressionTypes)
+					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
+					&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()
+				) {
+					continue;
+				}
 				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
 				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 			}
@@ -3614,6 +3567,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			foreach ($typeGuards as $guardExprString => $guardHolder) {
+				if (
+					array_key_exists($guardExprString, $theirExpressionTypes)
+					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
+					&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()
+				) {
+					continue;
+				}
 				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));
 				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 			}

@@ -6,20 +6,22 @@ namespace Bug14211;
 
 use function PHPStan\Testing\assertType;
 
-/**
- * @param array<string, int> $array
- */
-function foo(string $key, array $array): void {
-	if (array_key_exists($key, $array)) {
-		$value = $array[$key];
-		assertType('int', $value);
-	} else {
-		$value = null;
+/** @param array<mixed> $data */
+function DoSomithing(array $data): bool {
+
+	if (!isset($data['x']))
+		return false;
+
+	$m = isset($data['y']);
+
+	if ($m) {
+		assertType('true', $m); // ok: true
+	}
+	assertType('bool', $m); // ok: bool
+
+	if ($m) {
+		assertType('true', $m); // <-- should not be: NEVER
 	}
 
-	assertType('int|null', $value);
-
-	if ($value !== null) {
-		assertType('bool', array_key_exists($key, $array)); // should be true, see phpstan/phpstan#14211
-	}
+	return true;
 }

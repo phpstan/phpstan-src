@@ -6,11 +6,23 @@ namespace Bug10085;
 
 use function PHPStan\Testing\assertType;
 
-/**
- * @param list<string> $a
- * @param list<string> $b
- */
-function foo(array $a, array $b): void {
-	$foo = [...$a, ...$b];
-	assertType('list<string>', $foo);
+class HelloWorld
+{
+	/**
+	 * @param array<int, string> $foo
+	 * @param list<string> $bar
+	 */
+	public function sayHello(array $foo, array $bar): void
+	{
+		$a = $foo;
+		if ($a === []) {
+			$a = $bar;
+		}
+
+		if ($a === []) {
+			return;
+		}
+
+		assertType('array<int, string>', $foo);
+	}
 }

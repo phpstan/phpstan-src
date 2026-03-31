@@ -116,42 +116,21 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		$specifiedTypes = new SpecifiedTypes();
-		if ($context->true()) {
+		$narrowingValueType = $this->computeNeedleNarrowingType($context, $needleType, $arrayType, $arrayValueType);
+		if ($narrowingValueType !== null) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$needleExpr,
-				$arrayValueType,
+				$narrowingValueType,
 				$context,
 				$scope,
 			);
 			if ($needleExpr instanceof AlwaysRememberedExpr) {
 				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 					$needleExpr->getExpr(),
-					$arrayValueType,
-					$context,
-					$scope,
-				));
-			}
-		} elseif (
-			$context->false()
-			&& count($needleType->getFiniteTypes()) > 0
-			&& $arrayType->isIterableAtLeastOnce()->yes()
-		) {
-			$narrowingValueType = $this->computeGuaranteedValueType($arrayType, $arrayValueType);
-			if (count($narrowingValueType->getFiniteTypes()) > 0) {
-				$specifiedTypes = $this->typeSpecifier->create(
-					$needleExpr,
 					$narrowingValueType,
 					$context,
 					$scope,
-				);
-				if ($needleExpr instanceof AlwaysRememberedExpr) {
-					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-						$needleExpr->getExpr(),
-						$narrowingValueType,
-						$context,
-						$scope,
-					));
-				}
+				));
 			}
 		}
 
@@ -186,6 +165,35 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		return $specifiedTypes;
+	}
+
+	/**
+	 * Computes the type to narrow the needle against, or null if no narrowing
+	 * should occur. In true context, returns the array value type directly.
+	 * In false context, returns only the values guaranteed to be in every
+	 * possible variant of the array.
+	 */
+	private function computeNeedleNarrowingType(TypeSpecifierContext $context, Type $needleType, Type $arrayType, Type $arrayValueType): ?Type
+	{
+		if ($context->true()) {
+			return $arrayValueType;
+		}
+
+		if (
+			!$context->false()
+			|| count($needleType->getFiniteTypes()) === 0
+			|| !$arrayType->isIterableAtLeastOnce()->yes()
+		) {
+			return null;
+		}
+
+		$guaranteedValueType = $this->computeGuaranteedValueType($arrayType, $arrayValueType);
+
+		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
+			return null;
+		}
+
+		return $guaranteedValueType;
 	}
 
 	/**

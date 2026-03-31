@@ -356,6 +356,22 @@ final class ResultCacheManager
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
 		$invertedUsedTraitDependenciesToReturn = [];
+
+		// Check external file dependencies for incremental re-analysis
+		$cachedExternalDependencies = $data['externalDependencies'] ?? [];
+		$externalDependenciesToReturn = $cachedExternalDependencies;
+		foreach ($cachedExternalDependencies as $externalFile => $externalData) {
+			if (!is_file($externalFile) || $this->getFileHash($externalFile) !== $externalData['fileHash']) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted(sprintf('External file %s changed, re-analysing dependent files.', $externalFile));
+				}
+				foreach ($externalData['dependentFiles'] as $dependentFile) {
+					if (is_file($dependentFile)) {
+						$filesToAnalyse[] = $dependentFile;
+					}
+				}
+			}
+		}
 		$errors = $data['errorsCallback']();
 		$locallyIgnoredErrors = $data['locallyIgnoredErrorsCallback']();
 		$linesToIgnore = $data['linesToIgnore'];
@@ -515,6 +531,7 @@ final class ResultCacheManager
 			exportedNodes: $filteredExportedNodes,
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
+			externalFileDependencies: $externalDependenciesToReturn,
 		);
 	}
 
@@ -624,7 +641,7 @@ final class ResultCacheManager
 		if ($projectConfigArray !== null) {
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, array $exportedNodes, array $projectExtensionFiles, array $externalFileDependencies = []) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -672,7 +689,7 @@ final class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $externalFileDependencies);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -688,7 +705,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles, $analyserResult->getExternalFileDependencies() ?? []);
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -706,6 +723,7 @@ final class ResultCacheManager
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
+		$externalFileDependencies = $this->mergeExternalFileDependencies($resultCache->getExternalFileDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getExternalFileDependencies());
 
 		$saved = false;
 		if ($save !== false) {
@@ -729,7 +747,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles);
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $externalFileDependencies);
 		}
 
 		$flatErrors = [];
@@ -760,6 +778,7 @@ final class ResultCacheManager
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+			externalFileDependencies: $externalFileDependencies !== [] ? $externalFileDependencies : null,
 		), $saved);
 	}
 
@@ -945,6 +964,45 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * Merges cached inverted external dependencies with fresh analysis results.
+	 *
+	 * @param array<string, array<string>> $cachedExternalDependencies Inverted: external file => dependent analyzed files
+	 * @param string[] $filesToAnalyse Files that were re-analyzed
+	 * @param array<string, list<string>>|null $freshExternalDependencies Non-inverted: analyzed file => external files
+	 * @return array<string, list<string>> Non-inverted: analyzed file => external files
+	 */
+	private function mergeExternalFileDependencies(
+		array $cachedExternalDependencies,
+		array $filesToAnalyse,
+		?array $freshExternalDependencies,
+	): array
+	{
+		if ($freshExternalDependencies === null) {
+			return [];
+		}
+
+		// Un-invert cached external dependencies: external file => [dependents] → dependent => [external files]
+		$cachedPerFile = [];
+		foreach ($cachedExternalDependencies as $externalFile => $externalData) {
+			$dependentFiles = $externalData['dependentFiles'] ?? $externalData;
+			foreach ($dependentFiles as $dependentFile) {
+				$cachedPerFile[$dependentFile][] = $externalFile;
+			}
+		}
+
+		// Replace re-analyzed files with fresh data
+		$merged = $cachedPerFile;
+		foreach ($filesToAnalyse as $file) {
+			unset($merged[$file]);
+			if (array_key_exists($file, $freshExternalDependencies)) {
+				$merged[$file] = $freshExternalDependencies[$file];
+			}
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * @param array<string, list<Error>> $errors
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
@@ -956,6 +1014,7 @@ final class ResultCacheManager
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
 	 * @param mixed[] $meta
+	 * @param array<string, list<string>> $externalFileDependencies
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
@@ -970,6 +1029,7 @@ final class ResultCacheManager
 		array $projectExtensionFiles,
 		array $currentFileHashes,
 		array $meta,
+		array $externalFileDependencies = [],
 	): void
 	{
 		$invertedDependencies = [];
@@ -1043,6 +1103,31 @@ final class ResultCacheManager
 
 		ksort($exportedNodes);
 
+		// Build inverted external dependencies: external file => {hash, dependentFiles}
+		$invertedExternalDependencies = [];
+		foreach ($externalFileDependencies as $analysedFile => $externalFiles) {
+			foreach ($externalFiles as $externalFile) {
+				if (!array_key_exists($externalFile, $invertedExternalDependencies)) {
+					if (!is_file($externalFile)) {
+						continue;
+					}
+					$invertedExternalDependencies[$externalFile] = [
+						'fileHash' => $this->getFileHash($externalFile),
+						'dependentFiles' => [],
+					];
+				}
+				$invertedExternalDependencies[$externalFile]['dependentFiles'][] = $analysedFile;
+			}
+		}
+
+		foreach ($invertedExternalDependencies as $externalFile => $externalData) {
+			$dependentFiles = array_values(array_unique($externalData['dependentFiles']));
+			sort($dependentFiles);
+			$invertedExternalDependencies[$externalFile]['dependentFiles'] = $dependentFiles;
+		}
+
+		ksort($invertedExternalDependencies);
+
 		$file = $this->cacheFilePath;
 
 		FileWriter::write(
@@ -1059,7 +1144,8 @@ return [
 	'unmatchedLineIgnores' => " . var_export($unmatchedLineIgnores, true) . ",
 	'collectedDataCallback' => static function (): array { return " . var_export($collectedData, true) . "; },
 	'dependencies' => " . var_export($invertedDependencies, true) . ",
-	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . '; },
+	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . "; },
+	'externalDependencies' => " . var_export($invertedExternalDependencies, true) . ',
 ];
 ',
 		);

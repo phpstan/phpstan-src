@@ -6,6 +6,7 @@ use Nette\DI\Container;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
+use PHPStan\Analyser\ExternalFileDependencyRegistrar;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -847,6 +848,7 @@ class AnalyserTest extends PHPStanTestCase
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
+			new ExternalFileDependencyRegistrar(),
 			false,
 		);
 

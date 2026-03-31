@@ -15,7 +15,7 @@ class HelloWorld
 		$hasBar = isset($array['bar']) && $array['bar'] > 1;
 
 		if ($hasFoo) {
-			assertType('array{foo?: int, bar?: int}', $array);
+			assertType('array{foo: int, bar?: int}', $array);
 			assertType('int<2, max>', $array['foo']);
 			return $array['foo'];
 		}
@@ -44,7 +44,7 @@ class HelloWorld
 		}
 
 		if ($hasBar) {
-			assertType('array{foo?: int, bar?: int}', $array);
+			assertType('array{foo?: int, bar: int}', $array);
 			assertType('int<2, max>', $array['bar']);
 			return $array['bar'];
 		}

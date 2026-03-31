@@ -756,7 +756,9 @@ final class TypeSpecifier
 				) {
 					$types = $leftTypes->normalize($scope);
 				} else {
-					$types = $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+					$leftNormalized = $this->resolveConditionalExpressions($scope, $leftTypes->normalize($scope));
+					$rightNormalized = $this->resolveConditionalExpressions($rightScope, $rightTypes->normalize($rightScope));
+					$types = $leftNormalized->intersectWith($rightNormalized);
 				}
 			} else {
 				$types = $leftTypes->unionWith($rightTypes);
@@ -2096,6 +2098,59 @@ final class TypeSpecifier
 		}
 
 		return [];
+	}
+
+	private function resolveConditionalExpressions(MutatingScope $scope, SpecifiedTypes $specifiedTypes): SpecifiedTypes
+	{
+		$sureTypes = $specifiedTypes->getSureTypes();
+		$specifiedExpressions = [];
+		foreach ($sureTypes as $exprString => [$expr, $type]) {
+			$specifiedExpressions[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
+		}
+
+		if (count($specifiedExpressions) === 0) {
+			return $specifiedTypes;
+		}
+
+		$additionalSureTypes = [];
+		foreach ($scope->getConditionalExpressions() as $conditionalExprString => $conditionalExpressions) {
+			foreach ($conditionalExpressions as $conditionalExpression) {
+				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						continue 2;
+					}
+				}
+
+				$holder = $conditionalExpression->getTypeHolder();
+				if (isset($additionalSureTypes[$conditionalExprString])) {
+					$additionalSureTypes[$conditionalExprString] = [
+						$holder->getExpr(),
+						TypeCombinator::intersect($additionalSureTypes[$conditionalExprString][1], $holder->getType()),
+					];
+				} else {
+					$additionalSureTypes[$conditionalExprString] = [$holder->getExpr(), $holder->getType()];
+				}
+			}
+		}
+
+		if (count($additionalSureTypes) === 0) {
+			return $specifiedTypes;
+		}
+
+		foreach ($additionalSureTypes as $additionalExprString => [$additionalExpr, $additionalType]) {
+			if (isset($sureTypes[$additionalExprString])) {
+				$sureTypes[$additionalExprString] = [$additionalExpr, TypeCombinator::union($sureTypes[$additionalExprString][1], $additionalType)];
+			} else {
+				$sureTypes[$additionalExprString] = [$additionalExpr, $additionalType];
+			}
+		}
+
+		$result = new SpecifiedTypes($sureTypes, $specifiedTypes->getSureNotTypes());
+		if ($specifiedTypes->shouldOverwrite()) {
+			$result = $result->setAlwaysOverwriteTypes();
+		}
+
+		return $result->setRootExpr($specifiedTypes->getRootExpr());
 	}
 
 	/**

@@ -3274,7 +3274,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public function addConditionalExpressions(string $exprString, array $conditionalExpressionHolders): self
 	{
 		$conditionalExpressions = $this->conditionalExpressions;
-		$conditionalExpressions[$exprString] = $conditionalExpressionHolders;
+		if (isset($conditionalExpressions[$exprString])) {
+			$conditionalExpressions[$exprString] = array_merge($conditionalExpressions[$exprString], $conditionalExpressionHolders);
+		} else {
+			$conditionalExpressions[$exprString] = $conditionalExpressionHolders;
+		}
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -3293,6 +3297,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	public function getConditionalExpressions(): array
+	{
+		return $this->conditionalExpressions;
 	}
 
 	public function exitFirstLevelStatements(): self

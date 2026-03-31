@@ -677,7 +677,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'Return type mixed of method Bug9615\ExpectComplaintsHere::getChildren() is not covariant with tentative return type RecursiveIterator|null of method RecursiveIterator<mixed,mixed>::getChildren().',
+				'Return type mixed of method Bug9615\ExpectComplaintsHere::getChildren() is not covariant with tentative return type RecursiveFilterIterator|null of method RecursiveFilterIterator::getChildren().',
 				20,
 				$tipText,
 			],
@@ -837,6 +837,24 @@ class OverridingMethodRuleTest extends RuleTestCase
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/simple-xml-element-child.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug7317(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-7317.php'], [
+			[
+				'Return type bool of method Bug7317\MySimpleXMLElement::current() is not covariant with tentative return type static(SimpleXMLElement)|null of method SimpleXMLElement::current().',
+				8,
+				'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
+			],
+			[
+				'Return type int of method Bug7317\MySimpleXMLElement::valid() is not covariant with tentative return type bool of method Iterator<string,static(SimpleXMLElement)>::valid().',
+				12,
+				'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
+			],
+		]);
 	}
 
 	public function testFixOverride(): void

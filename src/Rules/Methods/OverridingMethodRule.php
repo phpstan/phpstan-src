@@ -11,12 +11,15 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -203,22 +206,45 @@ final class OverridingMethodRule implements Rule
 
 		$realPrototype = $method->getPrototype();
 
+		$effectiveTentativeReturnType = null;
+		$tentativeDeclaringClass = null;
+		$hasTentativeReturnType = false;
+
+		if ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->getTentativeReturnType() !== null) {
+			$effectiveTentativeReturnType = $realPrototype->getTentativeReturnType();
+			$tentativeDeclaringClass = $realPrototype->getDeclaringClass();
+			$hasTentativeReturnType = true;
+		}
+
+		// The parent class method may have a more specific tentative return type
+		// than the deepest prototype (e.g., SimpleXMLElement::current() has tentative
+		// type SimpleXMLElement, while Iterator::current() has tentative type mixed)
+		$parentTentativeReturnType = $this->getParentMethodTentativeReturnType($prototypeDeclaringClass, $prototype->getName());
+		if ($parentTentativeReturnType !== null) {
+			$hasTentativeReturnType = true;
+			if ($effectiveTentativeReturnType === null || !$parentTentativeReturnType->isSuperTypeOf($effectiveTentativeReturnType)->yes()) {
+				$effectiveTentativeReturnType = $parentTentativeReturnType;
+				$tentativeDeclaringClass = $prototypeDeclaringClass;
+			}
+		}
+
 		if (
-			$realPrototype instanceof MethodPrototypeReflection
+			$hasTentativeReturnType
+			&& $effectiveTentativeReturnType !== null
+			&& $tentativeDeclaringClass !== null
 			&& $this->phpVersion->hasTentativeReturnTypes()
-			&& $realPrototype->getTentativeReturnType() !== null
 			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
 			&& count($prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
 		) {
-			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($realPrototype->getTentativeReturnType(), $method->getNativeReturnType(), true)) {
+			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($effectiveTentativeReturnType, $method->getNativeReturnType(), true)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',
 					$methodReturnType->describe(VerbosityLevel::typeOnly()),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$realPrototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
-					$realPrototype->getDeclaringClass()->getDisplayName(true),
-					$realPrototype->getName(),
+					$effectiveTentativeReturnType->describe(VerbosityLevel::typeOnly()),
+					$tentativeDeclaringClass->getDisplayName(true),
+					$prototype->getName(),
 				))
 					->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')
 					->nonIgnorable()
@@ -236,8 +262,7 @@ final class OverridingMethodRule implements Rule
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
 		$reportReturnType = true;
 		if ($this->phpVersion->hasTentativeReturnTypes()) {
-			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection
-				|| $realPrototype->getTentativeReturnType() === null
+			$reportReturnType = !$hasTentativeReturnType
 				|| (is_bool($prototype->isBuiltin()) ? !$prototype->isBuiltin() : $prototype->isBuiltin()->no());
 		} else {
 			if ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->isInternal()) {
@@ -369,6 +394,21 @@ final class OverridingMethodRule implements Rule
 		}
 
 		return false;
+	}
+
+	private function getParentMethodTentativeReturnType(ClassReflection $prototypeDeclaringClass, string $methodName): ?Type
+	{
+		$prototypeNativeReflection = $prototypeDeclaringClass->getNativeReflection();
+		if (!$prototypeNativeReflection->hasMethod($methodName)) {
+			return null;
+		}
+
+		$prototypeReflMethod = $prototypeNativeReflection->getMethod($methodName);
+		if (!$prototypeReflMethod->hasTentativeReturnType()) {
+			return null;
+		}
+
+		return TypehintHelper::decideTypeFromReflection($prototypeReflMethod->getTentativeReturnType(), selfClass: $prototypeDeclaringClass);
 	}
 
 }

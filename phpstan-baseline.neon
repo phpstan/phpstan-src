@@ -1940,3 +1940,9 @@ parameters:
 			identifier: phpstanApi.varTagAssumption
 			count: 1
 			path: tests/PHPStan/Type/IterableTypeTest.php
+
+		-
+			rawMessage: 'Unused PHPStan\Reflection\MethodPrototypeReflection::getName'
+			identifier: shipmonk.deadMethod
+			count: 1
+			path: src/Reflection/MethodPrototypeReflection.php

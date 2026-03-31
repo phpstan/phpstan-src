@@ -210,9 +210,11 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			}
 		}
 
-		$guaranteedValueType = count($innerValueTypes) > 0
-			? TypeCombinator::intersect(...$innerValueTypes)
-			: $arrayValueType;
+		if (count($innerValueTypes) === 0) {
+			return null;
+		}
+
+		$guaranteedValueType = TypeCombinator::intersect(...$innerValueTypes);
 
 		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
 			return null;

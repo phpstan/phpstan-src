@@ -21,7 +21,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use function count;
 use function strtolower;
 
@@ -187,12 +186,11 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			return null;
 		}
 
-		$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
+		$arrays = $arrayType->getArrays();
 		$innerValueTypes = [];
-		foreach ($innerTypes as $innerType) {
-			$constantArrays = $innerType->getConstantArrays();
+		foreach ($arrays as $array) {
+			$constantArrays = $array->getConstantArrays();
 			if (count($constantArrays) > 0) {
-				$perArrayTypes = [];
 				foreach ($constantArrays as $constantArray) {
 					$guaranteedTypes = [];
 					foreach ($constantArray->getValueTypes() as $i => $valueType) {
@@ -200,13 +198,12 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 							$guaranteedTypes[] = $valueType;
 						}
 					}
-					$perArrayTypes[] = count($guaranteedTypes) > 0
+					$innerValueTypes[] = count($guaranteedTypes) > 0
 						? TypeCombinator::union(...$guaranteedTypes)
 						: new NeverType();
 				}
-				$innerValueTypes[] = TypeCombinator::intersect(...$perArrayTypes);
 			} else {
-				$innerValueTypes[] = $innerType->getIterableValueType();
+				$innerValueTypes[] = $array->getIterableValueType();
 			}
 		}
 

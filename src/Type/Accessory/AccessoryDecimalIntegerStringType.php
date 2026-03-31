@@ -124,7 +124,14 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		if ($otherType instanceof AccessoryNumericStringType && !$this->inverse) {
+		if (
+			(
+				$otherType instanceof AccessoryNumericStringType
+				|| $otherType instanceof AccessoryLowercaseStringType
+				|| $otherType instanceof AccessoryUppercaseStringType
+			)
+			&& !$this->inverse
+		) {
 			return IsSuperTypeOfResult::createYes();
 		}
 
@@ -357,12 +364,12 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 	public function isLowercaseString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return $this->inverse ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
 	}
 
 	public function isUppercaseString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return $this->inverse ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
 	}
 
 	public function isClassString(): TrinaryLogic

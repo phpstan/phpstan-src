@@ -2874,6 +2874,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 			StringType::class,
 			'string',
 		];
+
+		yield [
+			[
+				$decimalIntString,
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			IntersectionType::class,
+			'lowercase-string',
+		];
+
+		yield [
+			[
+				$nonDecimalIntString,
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			StringType::class,
+			'string',
+		];
 	}
 
 	/**
@@ -5023,6 +5041,29 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+
+		yield [
+			[
+				$decimalIntString,
+				new IntersectionType([
+					new StringType(),
+					new AccessoryLowercaseStringType(),
+				]),
+			],
+			IntersectionType::class,
+			'decimal-int-string',
+		];
+		yield [
+			[
+				$nonDecimalIntString,
+				new IntersectionType([
+					new StringType(),
+					new AccessoryLowercaseStringType(),
+				]),
+			],
+			IntersectionType::class,
+			'lowercase-string&non-decimal-int-string',
 		];
 	}
 

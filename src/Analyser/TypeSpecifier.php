@@ -2844,7 +2844,7 @@ final class TypeSpecifier
 			if ($rightType instanceof ConstantStringType && $this->reflectionProvider->hasClass($rightType->getValue())) {
 				return $this->create(
 					$unwrappedLeftExpr->getArgs()[0]->value,
-					new ObjectType($rightType->getValue(), classReflection: $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
+					$this->determineExactClassType($scope, $unwrappedLeftExpr->getArgs()[0]->value, $rightType->getValue()),
 					$context,
 					$scope,
 				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
@@ -2969,7 +2969,7 @@ final class TypeSpecifier
 			if ($this->reflectionProvider->hasClass($rightType->getValue())) {
 				return $this->create(
 					$unwrappedLeftExpr->class,
-					new ObjectType($rightType->getValue(), classReflection: $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
+					$this->determineExactClassType($scope, $unwrappedLeftExpr->class, $rightType->getValue()),
 					$context,
 					$scope,
 				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
@@ -3000,7 +3000,7 @@ final class TypeSpecifier
 			if ($this->reflectionProvider->hasClass($leftType->getValue())) {
 				return $this->create(
 					$unwrappedRightExpr->class,
-					new ObjectType($leftType->getValue(), classReflection: $this->reflectionProvider->getClass($leftType->getValue())->asFinal()),
+					$this->determineExactClassType($scope, $unwrappedRightExpr->class, $leftType->getValue()),
 					$context,
 					$scope,
 				)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
@@ -3121,6 +3121,22 @@ final class TypeSpecifier
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	private function determineExactClassType(Scope $scope, Expr $exprNode, string $className): Type
+	{
+		$exprType = $scope->getType($exprNode);
+		$classReflection = $this->reflectionProvider->getClass($className)->asFinal();
+		$asFinalType = new ObjectType($className, classReflection: $classReflection);
+
+		$plainType = new ObjectType($className);
+		$narrowed = TypeCombinator::intersect($exprType, $plainType);
+
+		if ($plainType->isSuperTypeOf($narrowed)->yes() && !$narrowed->isSuperTypeOf($plainType)->yes()) {
+			return $narrowed;
+		}
+
+		return $asFinalType;
 	}
 
 }

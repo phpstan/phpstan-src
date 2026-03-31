@@ -78,6 +78,7 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerRangeType;
@@ -2731,7 +2732,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
 				$exprVarType = $scope->getType($expr->var);
 				$isArray = $exprVarType->isArray();
-				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
+				if (!$exprVarType instanceof MixedType && !$isArray->no() && !$exprVarType instanceof TemplateType) {
 					$tooManyHasOffsetValueTypes = false;
 
 					$varType = $exprVarType;

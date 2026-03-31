@@ -405,6 +405,14 @@ class GenericObjectType extends ObjectType
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
+		$result = parent::changeSubtractedType($subtractedType);
+
+		// Parent handles sealed type exhaustiveness (returning NeverType when all
+		// allowed subtypes are subtracted, or a single remaining subtype).
+		if (!$result instanceof ObjectType || $result->getClassName() !== $this->getClassName()) {
+			return $result;
+		}
+
 		return new self($this->getClassName(), $this->types, $subtractedType, null, $this->variances);
 	}
 

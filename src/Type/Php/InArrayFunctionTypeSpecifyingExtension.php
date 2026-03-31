@@ -19,6 +19,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
@@ -135,37 +136,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			&& count($needleType->getFiniteTypes()) > 0
 			&& $arrayType->isIterableAtLeastOnce()->yes()
 		) {
-			// In false context (!in_array), we can only remove values guaranteed
-			// to be in every possible array variant. For union types like
-			// array{A}|array{B}, getIterableValueType() returns A|B but neither
-			// value is guaranteed to be in every variant.
-			$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
-			$innerValueTypes = [];
-			foreach ($innerTypes as $innerType) {
-				$constantArrays = $innerType->getConstantArrays();
-				if (count($constantArrays) > 0) {
-					// Only include values from non-optional keys, since optional
-					// keys may not be present in the array at runtime.
-					$perArrayTypes = [];
-					foreach ($constantArrays as $constantArray) {
-						$guaranteedTypes = [];
-						foreach ($constantArray->getValueTypes() as $i => $valueType) {
-							if (!$constantArray->isOptionalKey($i)) {
-								$guaranteedTypes[] = $valueType;
-							}
-						}
-						$perArrayTypes[] = count($guaranteedTypes) > 0
-							? TypeCombinator::union(...$guaranteedTypes)
-							: new NeverType();
-					}
-					$innerValueTypes[] = TypeCombinator::intersect(...$perArrayTypes);
-				} else {
-					$innerValueTypes[] = $innerType->getIterableValueType();
-				}
-			}
-			$narrowingValueType = count($innerValueTypes) > 0
-				? TypeCombinator::intersect(...$innerValueTypes)
-				: $arrayValueType;
+			$narrowingValueType = $this->computeGuaranteedValueType($arrayType, $arrayValueType);
 			if (count($narrowingValueType->getFiniteTypes()) > 0) {
 				$specifiedTypes = $this->typeSpecifier->create(
 					$needleExpr,
@@ -215,6 +186,41 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		return $specifiedTypes;
+	}
+
+	/**
+	 * Computes the type of values guaranteed to be in every possible variant
+	 * of the array. For union types like array{A}|array{B}, we intersect the
+	 * value types so only values present in all variants are used for narrowing.
+	 */
+	private function computeGuaranteedValueType(Type $arrayType, Type $arrayValueType): Type
+	{
+		$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
+		$innerValueTypes = [];
+		foreach ($innerTypes as $innerType) {
+			$constantArrays = $innerType->getConstantArrays();
+			if (count($constantArrays) > 0) {
+				$perArrayTypes = [];
+				foreach ($constantArrays as $constantArray) {
+					$guaranteedTypes = [];
+					foreach ($constantArray->getValueTypes() as $i => $valueType) {
+						if (!$constantArray->isOptionalKey($i)) {
+							$guaranteedTypes[] = $valueType;
+						}
+					}
+					$perArrayTypes[] = count($guaranteedTypes) > 0
+						? TypeCombinator::union(...$guaranteedTypes)
+						: new NeverType();
+				}
+				$innerValueTypes[] = TypeCombinator::intersect(...$perArrayTypes);
+			} else {
+				$innerValueTypes[] = $innerType->getIterableValueType();
+			}
+		}
+
+		return count($innerValueTypes) > 0
+			? TypeCombinator::intersect(...$innerValueTypes)
+			: $arrayValueType;
 	}
 
 }

@@ -18,6 +18,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
@@ -123,7 +124,26 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
 			$innerValueTypes = [];
 			foreach ($innerTypes as $innerType) {
-				$innerValueTypes[] = $innerType->getIterableValueType();
+				$constantArrays = $innerType->getConstantArrays();
+				if (count($constantArrays) > 0) {
+					// Only include values from non-optional keys, since optional
+					// keys may not be present in the array at runtime.
+					$perArrayTypes = [];
+					foreach ($constantArrays as $constantArray) {
+						$guaranteedTypes = [];
+						foreach ($constantArray->getValueTypes() as $i => $valueType) {
+							if (!$constantArray->isOptionalKey($i)) {
+								$guaranteedTypes[] = $valueType;
+							}
+						}
+						$perArrayTypes[] = count($guaranteedTypes) > 0
+							? TypeCombinator::union(...$guaranteedTypes)
+							: new NeverType();
+					}
+					$innerValueTypes[] = TypeCombinator::intersect(...$perArrayTypes);
+				} else {
+					$innerValueTypes[] = $innerType->getIterableValueType();
+				}
 			}
 			if (count($innerValueTypes) > 0) {
 				$narrowingValueType = TypeCombinator::intersect(...$innerValueTypes);

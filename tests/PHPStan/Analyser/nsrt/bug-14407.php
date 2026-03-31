@@ -74,3 +74,15 @@ function () {
 		assertType('Bug14407\SomeEnum::A', $x);
 	}
 };
+
+/**
+ * @param 'a'|'b'|'c' $x
+ * @param array{a: 'a', c: 'c'}|array{a?:'a', b: 'b'} $a
+ */
+function testUnionWithOptionalKeys($x, $a): void
+{
+	assertType("array{a: 'a', c: 'c'}|array{a?: 'a', b: 'b'}", $a);
+	if (!\in_array($x, $a, true)) {
+		assertType("'a'|'b'|'c'", $x);
+	}
+};

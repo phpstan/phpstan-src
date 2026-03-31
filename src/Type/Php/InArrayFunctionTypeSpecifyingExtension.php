@@ -187,22 +187,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			return null;
 		}
 
-		$guaranteedValueType = $this->computeGuaranteedValueType($arrayType, $arrayValueType);
-
-		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
-			return null;
-		}
-
-		return $guaranteedValueType;
-	}
-
-	/**
-	 * Computes the type of values guaranteed to be in every possible variant
-	 * of the array. For union types like array{A}|array{B}, we intersect the
-	 * value types so only values present in all variants are used for narrowing.
-	 */
-	private function computeGuaranteedValueType(Type $arrayType, Type $arrayValueType): Type
-	{
 		$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
 		$innerValueTypes = [];
 		foreach ($innerTypes as $innerType) {
@@ -226,9 +210,15 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			}
 		}
 
-		return count($innerValueTypes) > 0
+		$guaranteedValueType = count($innerValueTypes) > 0
 			? TypeCombinator::intersect(...$innerValueTypes)
 			: $arrayValueType;
+
+		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
+			return null;
+		}
+
+		return $guaranteedValueType;
 	}
 
 }

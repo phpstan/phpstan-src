@@ -1506,6 +1506,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testSyliusOrderIpListener(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/sylius-order-ip-listener.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

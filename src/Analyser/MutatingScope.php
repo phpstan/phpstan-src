@@ -3580,11 +3580,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
-			if (
-				array_key_exists($exprString, $theirExpressionTypes)
-				&& !$holder->getType()->isSuperTypeOf($theirExpressionTypes[$exprString]->getType())->no()
-			) {
-				continue;
+			if (array_key_exists($exprString, $theirExpressionTypes)) {
+				$ourType = $holder->getType();
+				$theirType = $theirExpressionTypes[$exprString]->getType();
+				$isSuperType = $ourType->isSuperTypeOf($theirType);
+				if (
+					$isSuperType->yes()
+					|| ($isSuperType->maybe() && !($ourType->isObject()->yes() && $theirType->isObject()->yes()))
+				) {
+					continue;
+				}
 			}
 
 			$typeGuards[$exprString] = $holder;

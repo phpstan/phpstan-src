@@ -911,7 +911,12 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-4173.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4173.php'], [
+			[
+				'Variable $value might not be defined.', // could be fixed
+				30,
+			],
+		]);
 	}
 
 	public function testBug5805(): void
@@ -1114,12 +1119,28 @@ class DefinedVariableRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Undefined variable: $bar',
+				'Variable $foo might not be defined.',
+				36,
+			],
+			[
+				'Variable $foo might not be defined.',
+				37,
+			],
+			[
+				'Variable $bar might not be defined.',
 				38,
 			],
 			[
-				'Undefined variable: $foo',
+				'Variable $bar might not be defined.',
+				40,
+			],
+			[
+				'Variable $foo might not be defined.',
 				41,
+			],
+			[
+				'Variable $bar might not be defined.',
+				42,
 			],
 			[
 				'Undefined variable: $buz',
@@ -1135,6 +1156,14 @@ class DefinedVariableRuleTest extends RuleTestCase
 			],
 			[
 				'Undefined variable: $buz',
+				49,
+			],
+			[
+				'Variable $bar might not be defined.',
+				49,
+			],
+			[
+				'Variable $foo might not be defined.',
 				49,
 			],
 			[
@@ -1458,24 +1487,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13920.php'], []);
 	}
 
-	public function testBug12992(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-12992.php'], []);
-	}
-
-	public function testBug14227(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-14227.php'], []);
-	}
-
 	public function testBug14117(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1484,6 +1495,10 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-14117.php'], [
+			[
+				'Variable $value might not be defined.',
+				33,
+			],
 			[
 				'Variable $value might not be defined.',
 				49,

@@ -1896,7 +1896,7 @@ final class TypeSpecifier
 			}
 		}
 
-		if ($assertions === null || $assertions->getAll() === []) {
+		if ($assertions === null || $assertions->getAll() === [] || $parametersAcceptor === null) {
 			return null;
 		}
 

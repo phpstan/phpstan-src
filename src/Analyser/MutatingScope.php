@@ -2857,7 +2857,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
 	}
 
-	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self
+	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $fromStaticCall = false): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
@@ -2866,7 +2866,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
+			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass, $fromStaticCall)) {
 				continue;
 			}
 
@@ -2881,7 +2881,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 			$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr), false, $invalidatingClass)) {
+			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr), false, $invalidatingClass, $fromStaticCall)) {
 				$invalidated = true;
 				continue;
 			}
@@ -2890,7 +2890,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, false, $invalidatingClass)) {
+					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, false, $invalidatingClass, $fromStaticCall)) {
 						$invalidated = true;
 						$shouldKeep = false;
 						break;
@@ -2944,7 +2944,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return null;
 	}
 
-	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
+	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $fromStaticCall = false): bool
 	{
 		if (
 			$expr instanceof IntertwinedVariableByReferenceWithExpr
@@ -3011,6 +3011,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return false;
 		}
 
+		if (
+			$fromStaticCall
+			&& $this->isThisInstancePropertyAccessChain($expr)
+		) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -3025,6 +3032,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				return false;
 			}
 			return $propertyReflection->getDeclaringClass()->getName() !== $invalidatingClass->getName();
+		}
+
+		return false;
+	}
+
+	private function isThisInstancePropertyAccessChain(Expr $expr): bool
+	{
+		if ($expr instanceof Variable && is_string($expr->name) && $expr->name === 'this') {
+			return true;
+		}
+		if ($expr instanceof PropertyFetch) {
+			return $this->isThisInstancePropertyAccessChain($expr->var);
+		}
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return $this->isThisInstancePropertyAccessChain($expr->var);
 		}
 
 		return false;

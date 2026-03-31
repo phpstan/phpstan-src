@@ -115,8 +115,26 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		$specifiedTypes = new SpecifiedTypes();
-		$narrowingValueType = $arrayValueType;
-		if ($context->false()) {
+		if ($context->true()) {
+			$specifiedTypes = $this->typeSpecifier->create(
+				$needleExpr,
+				$arrayValueType,
+				$context,
+				$scope,
+			);
+			if ($needleExpr instanceof AlwaysRememberedExpr) {
+				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+					$needleExpr->getExpr(),
+					$arrayValueType,
+					$context,
+					$scope,
+				));
+			}
+		} elseif (
+			$context->false()
+			&& count($needleType->getFiniteTypes()) > 0
+			&& $arrayType->isIterableAtLeastOnce()->yes()
+		) {
 			// In false context (!in_array), we can only remove values guaranteed
 			// to be in every possible array variant. For union types like
 			// array{A}|array{B}, getIterableValueType() returns A|B but neither
@@ -145,32 +163,24 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					$innerValueTypes[] = $innerType->getIterableValueType();
 				}
 			}
-			if (count($innerValueTypes) > 0) {
-				$narrowingValueType = TypeCombinator::intersect(...$innerValueTypes);
-			}
-		}
-		if (
-			$context->true()
-			|| (
-				$context->false()
-				&& count($narrowingValueType->getFiniteTypes()) > 0
-				&& count($needleType->getFiniteTypes()) > 0
-				&& $arrayType->isIterableAtLeastOnce()->yes()
-			)
-		) {
-			$specifiedTypes = $this->typeSpecifier->create(
-				$needleExpr,
-				$narrowingValueType,
-				$context,
-				$scope,
-			);
-			if ($needleExpr instanceof AlwaysRememberedExpr) {
-				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-					$needleExpr->getExpr(),
+			$narrowingValueType = count($innerValueTypes) > 0
+				? TypeCombinator::intersect(...$innerValueTypes)
+				: $arrayValueType;
+			if (count($narrowingValueType->getFiniteTypes()) > 0) {
+				$specifiedTypes = $this->typeSpecifier->create(
+					$needleExpr,
 					$narrowingValueType,
 					$context,
 					$scope,
-				));
+				);
+				if ($needleExpr instanceof AlwaysRememberedExpr) {
+					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+						$needleExpr->getExpr(),
+						$narrowingValueType,
+						$context,
+						$scope,
+					));
+				}
 			}
 		}
 

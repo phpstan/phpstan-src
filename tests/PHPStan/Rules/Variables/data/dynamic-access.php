@@ -35,18 +35,18 @@ final class Foo
 		if ($name === 'foo') {
 			echo $$name; // ok
 			echo $foo; // ok
-			echo $bar;
+			echo $bar; // not ok
 		} elseif ($name === 'bar') {
 			echo $$name; // ok
-			echo $foo;
+			echo $foo; // not ok
 			echo $bar; // ok
 		} else {
-			echo $$name; // ok
-			echo $foo;
-			echo $bar;
+			echo $$name; // not ok
+			echo $foo; // not ok
+			echo $bar; // not ok
 		}
 
-		echo $$name; // ok
+		echo $$name; // ok for foo and bar but not buz
 		echo $foo;
 		echo $bar;
 	}

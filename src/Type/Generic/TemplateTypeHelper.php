@@ -54,6 +54,22 @@ final class TemplateTypeHelper
 
 				$callSiteVariance = $callSiteVariances->getVariance($type->getName());
 				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
+					if (
+						$newType instanceof TemplateType
+						&& $newType->getName() === $type->getName()
+						&& $newType->getScope()->equals($type->getScope())
+						&& !$type->getBound()->equals($newType->getBound())
+						&& $newType->getBound()->isSuperTypeOf($type->getBound())->yes()
+					) {
+						return TemplateTypeFactory::create(
+							$newType->getScope(),
+							$newType->getName(),
+							$type->getBound(),
+							$newType->getVariance(),
+							$newType->getStrategy(),
+							$newType->getDefault(),
+						);
+					}
 					return $newType;
 				}
 

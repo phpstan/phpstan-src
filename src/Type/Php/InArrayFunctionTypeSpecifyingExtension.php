@@ -121,17 +121,12 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			// array{A}|array{B}, getIterableValueType() returns A|B but neither
 			// value is guaranteed to be in every variant.
 			$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
-			$guaranteedValueType = null;
+			$innerValueTypes = [];
 			foreach ($innerTypes as $innerType) {
-				$innerValueType = $innerType->getIterableValueType();
-				if ($guaranteedValueType === null) {
-					$guaranteedValueType = $innerValueType;
-				} else {
-					$guaranteedValueType = TypeCombinator::intersect($guaranteedValueType, $innerValueType);
-				}
+				$innerValueTypes[] = $innerType->getIterableValueType();
 			}
-			if ($guaranteedValueType !== null) {
-				$narrowingValueType = $guaranteedValueType;
+			if (count($innerValueTypes) > 0) {
+				$narrowingValueType = TypeCombinator::intersect(...$innerValueTypes);
 			}
 		}
 		if (

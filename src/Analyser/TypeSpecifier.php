@@ -2934,6 +2934,27 @@ final class TypeSpecifier
 			}
 		}
 
+		// (string)$expr === '' - propagate narrowing to inner expression
+		if (
+			!$context->null()
+			&& $unwrappedLeftExpr instanceof Expr\Cast\String_
+		) {
+			$rightConstantStrings = $rightType->getConstantStrings();
+			if (count($rightConstantStrings) === 1 && $rightConstantStrings[0]->getValue() === '') {
+				// Types that produce '' when cast to string: null, false, ''
+				$castToEmptyStringType = TypeCombinator::union(
+					new NullType(),
+					new ConstantBooleanType(false),
+					new ConstantStringType(''),
+				);
+				$innerExpr = $unwrappedLeftExpr->expr;
+				$result = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				return $result->unionWith(
+					$this->create($innerExpr, $castToEmptyStringType, $context, $scope)->setRootExpr($expr),
+				);
+			}
+		}
+
 		$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
 		if ($expressions !== null) {
 			$exprNode = $expressions[0];

@@ -19,6 +19,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 use function strtolower;
 
@@ -113,25 +114,45 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		$specifiedTypes = new SpecifiedTypes();
+		$narrowingValueType = $arrayValueType;
+		if ($context->false()) {
+			// In false context (!in_array), we can only remove values guaranteed
+			// to be in every possible array variant. For union types like
+			// array{A}|array{B}, getIterableValueType() returns A|B but neither
+			// value is guaranteed to be in every variant.
+			$innerTypes = $arrayType instanceof UnionType ? $arrayType->getTypes() : [$arrayType];
+			$guaranteedValueType = null;
+			foreach ($innerTypes as $innerType) {
+				$innerValueType = $innerType->getIterableValueType();
+				if ($guaranteedValueType === null) {
+					$guaranteedValueType = $innerValueType;
+				} else {
+					$guaranteedValueType = TypeCombinator::intersect($guaranteedValueType, $innerValueType);
+				}
+			}
+			if ($guaranteedValueType !== null) {
+				$narrowingValueType = $guaranteedValueType;
+			}
+		}
 		if (
 			$context->true()
 			|| (
 				$context->false()
-				&& count($arrayValueType->getFiniteTypes()) > 0
+				&& count($narrowingValueType->getFiniteTypes()) > 0
 				&& count($needleType->getFiniteTypes()) > 0
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			)
 		) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$needleExpr,
-				$arrayValueType,
+				$narrowingValueType,
 				$context,
 				$scope,
 			);
 			if ($needleExpr instanceof AlwaysRememberedExpr) {
 				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 					$needleExpr->getExpr(),
-					$arrayValueType,
+					$narrowingValueType,
 					$context,
 					$scope,
 				));

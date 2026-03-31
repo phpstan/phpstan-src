@@ -358,18 +358,24 @@ final class ResultCacheManager
 		$invertedUsedTraitDependenciesToReturn = [];
 
 		// Check external file dependencies for incremental re-analysis
+		/** @var array<string, array{fileHash: string, dependentFiles: list<string>}> $cachedExternalDependencies */
 		$cachedExternalDependencies = $data['externalDependencies'] ?? [];
-		$externalDependenciesToReturn = $cachedExternalDependencies;
+		$externalDependenciesToReturn = [];
 		foreach ($cachedExternalDependencies as $externalFile => $externalData) {
-			if (!is_file($externalFile) || $this->getFileHash($externalFile) !== $externalData['fileHash']) {
-				if ($output->isVeryVerbose()) {
-					$output->writeLineFormatted(sprintf('External file %s changed, re-analysing dependent files.', $externalFile));
+			$externalDependenciesToReturn[$externalFile] = $externalData['dependentFiles'];
+			if (is_file($externalFile) && $this->getFileHash($externalFile) === $externalData['fileHash']) {
+				continue;
+			}
+
+			if ($output->isVeryVerbose()) {
+				$output->writeLineFormatted(sprintf('External file %s changed, re-analysing dependent files.', $externalFile));
+			}
+			foreach ($externalData['dependentFiles'] as $dependentFile) {
+				if (!is_file($dependentFile)) {
+					continue;
 				}
-				foreach ($externalData['dependentFiles'] as $dependentFile) {
-					if (is_file($dependentFile)) {
-						$filesToAnalyse[] = $dependentFile;
-					}
-				}
+
+				$filesToAnalyse[] = $dependentFile;
 			}
 		}
 		$errors = $data['errorsCallback']();
@@ -983,8 +989,7 @@ final class ResultCacheManager
 
 		// Un-invert cached external dependencies: external file => [dependents] → dependent => [external files]
 		$cachedPerFile = [];
-		foreach ($cachedExternalDependencies as $externalFile => $externalData) {
-			$dependentFiles = $externalData['dependentFiles'] ?? $externalData;
+		foreach ($cachedExternalDependencies as $externalFile => $dependentFiles) {
 			foreach ($dependentFiles as $dependentFile) {
 				$cachedPerFile[$dependentFile][] = $externalFile;
 			}
@@ -994,9 +999,11 @@ final class ResultCacheManager
 		$merged = $cachedPerFile;
 		foreach ($filesToAnalyse as $file) {
 			unset($merged[$file]);
-			if (array_key_exists($file, $freshExternalDependencies)) {
-				$merged[$file] = $freshExternalDependencies[$file];
+			if (!array_key_exists($file, $freshExternalDependencies)) {
+				continue;
 			}
+
+			$merged[$file] = $freshExternalDependencies[$file];
 		}
 
 		return $merged;

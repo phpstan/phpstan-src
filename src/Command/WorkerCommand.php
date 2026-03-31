@@ -29,6 +29,7 @@ use function array_filter;
 use function array_merge;
 use function array_unshift;
 use function array_values;
+use function count;
 use function defined;
 use function is_array;
 use function is_bool;

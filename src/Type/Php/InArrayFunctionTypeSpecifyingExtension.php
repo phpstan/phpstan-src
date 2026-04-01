@@ -16,8 +16,10 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function strtolower;
@@ -113,25 +115,18 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		$specifiedTypes = new SpecifiedTypes();
-		if (
-			$context->true()
-			|| (
-				$context->false()
-				&& count($arrayValueType->getFiniteTypes()) > 0
-				&& count($needleType->getFiniteTypes()) > 0
-				&& $arrayType->isIterableAtLeastOnce()->yes()
-			)
-		) {
+		$narrowingValueType = $this->computeNeedleNarrowingType($context, $needleType, $arrayType, $arrayValueType);
+		if ($narrowingValueType !== null) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$needleExpr,
-				$arrayValueType,
+				$narrowingValueType,
 				$context,
 				$scope,
 			);
 			if ($needleExpr instanceof AlwaysRememberedExpr) {
 				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 					$needleExpr->getExpr(),
-					$arrayValueType,
+					$narrowingValueType,
 					$context,
 					$scope,
 				));
@@ -169,6 +164,70 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		return $specifiedTypes;
+	}
+
+	/**
+	 * Computes the type to narrow the needle against, or null if no narrowing should occur.
+	 * In true context, returns the array value type directly.
+	 * In false context, returns only the values guaranteed to be in every possible variant of the array.
+	 */
+	private function computeNeedleNarrowingType(TypeSpecifierContext $context, Type $needleType, Type $arrayType, Type $arrayValueType): ?Type
+	{
+		if ($context->true()) {
+			return $arrayValueType;
+		}
+
+		if (
+			!$context->false()
+			|| count($needleType->getFiniteTypes()) === 0
+			|| !$arrayType->isIterableAtLeastOnce()->yes()
+		) {
+			return null;
+		}
+
+		$arrays = $arrayType->getArrays();
+		$guaranteedValueTypePerArray = [];
+		foreach ($arrays as $array) {
+			if ($array instanceof ConstantArrayType) {
+				$innerGuaranteeValueType = [];
+				foreach ($array->getValueTypes() as $i => $valueType) {
+					if ($array->isOptionalKey($i)) {
+						continue;
+					}
+
+					$finiteTypes = $valueType->getFiniteTypes();
+					if (count($finiteTypes) !== 1) {
+						continue;
+					}
+
+					$innerGuaranteeValueType[] = $finiteTypes[0];
+				}
+
+				if (count($innerGuaranteeValueType) === 0) {
+					return null;
+				}
+
+				$guaranteedValueTypePerArray[] = TypeCombinator::union(...$innerGuaranteeValueType);
+			} else {
+				$finiteValueType = $array->getIterableValueType()->getFiniteTypes();
+				if (count($finiteValueType) !== 1) {
+					return null;
+				}
+
+				$guaranteedValueTypePerArray[] = $finiteValueType[0];
+			}
+		}
+
+		if (count($guaranteedValueTypePerArray) === 0) {
+			return null;
+		}
+
+		$guaranteedValueType = TypeCombinator::intersect(...$guaranteedValueTypePerArray);
+		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
+			return null;
+		}
+
+		return $guaranteedValueType;
 	}
 
 }

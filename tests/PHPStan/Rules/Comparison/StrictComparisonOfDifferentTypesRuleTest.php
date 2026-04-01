@@ -1204,4 +1204,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug14407(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14407.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13421(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13421.php'], []);
+	}
+
 }

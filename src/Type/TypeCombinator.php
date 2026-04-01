@@ -153,6 +153,14 @@ final class TypeCombinator
 			return new NeverType();
 		}
 
+		// Fast path for single non-union type
+		if ($typesCount === 1) {
+			$singleType = $types[0];
+			if (!$singleType instanceof UnionType && !$singleType->isArray()->yes()) {
+				return $singleType;
+			}
+		}
+
 		// Fast path for common 2-type cases
 		if ($typesCount === 2) {
 			$a = $types[0];
@@ -177,6 +185,53 @@ final class TypeCombinator
 			// union(X, X) = X (same object identity)
 			if ($a === $b) {
 				return $a;
+			}
+		}
+
+		// Fast path for N>2: strip implicit NeverTypes and short-circuit on mixed
+		if ($typesCount > 2) {
+			$neverCount = 0;
+			$hasUnionOrBenevolent = false;
+			for ($i = 0; $i < $typesCount; $i++) {
+				$t = $types[$i];
+				if (
+					$t instanceof MixedType
+					&& !$t->isExplicitMixed()
+					&& !$t instanceof TemplateMixedType
+					&& $t->getSubtractedType() === null
+				) {
+					return $t;
+				}
+				if ($t instanceof NeverType && !$t->isExplicit()) {
+					$neverCount++;
+				} elseif ($t instanceof UnionType && !$t instanceof TemplateType) {
+					$hasUnionOrBenevolent = true;
+				}
+			}
+
+			if ($neverCount > 0 && !$hasUnionOrBenevolent) {
+				if ($neverCount === $typesCount) {
+					return new NeverType();
+				}
+
+				$filtered = [];
+				for ($i = 0; $i < $typesCount; $i++) {
+					if ($types[$i] instanceof NeverType && !$types[$i]->isExplicit()) {
+						continue;
+					}
+
+					$filtered[] = $types[$i];
+				}
+				$filteredCount = count($filtered);
+
+				if ($filteredCount === 1 && !$filtered[0]->isArray()->yes()) {
+					return $filtered[0];
+				}
+				if ($filteredCount === 2) {
+					return self::union($filtered[0], $filtered[1]);
+				}
+				$types = $filtered;
+				$typesCount = $filteredCount;
 			}
 		}
 

@@ -522,7 +522,7 @@ final class PhpDocNodeResolver
 			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
 				$alias = $typeAliasTagValue->alias;
 				$typeNode = $typeAliasTagValue->type;
-				$resolved[$alias] = new TypeAliasTag($alias, $typeNode, $nameScope, $typeAliasTagValue->templateTypes ?? []);
+				$resolved[$alias] = new TypeAliasTag($alias, $typeNode, $nameScope, $typeAliasTagValue->templateTypes ?? []); // @phpstan-ignore property.notFound
 			}
 		}
 

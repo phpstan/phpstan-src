@@ -60,7 +60,7 @@ final class TemplateTypeScope
 	/** @api */
 	public function getTypeAliasName(): ?string
 	{
-		if (!$this->isTypeAlias()) {
+		if (!$this->isTypeAlias() || $this->functionName === null) {
 			return null;
 		}
 

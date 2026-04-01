@@ -15,7 +15,6 @@ function test(array $a): void
 		assertType('array{0: 1, 1?: 2}', $a);
 	}
 
-	// TODO: value type of optional key should not be narrowed to *NEVER*
 	if (!in_array(2, $a, true)) {
 		assertType('array{0: 1, 1?: *NEVER*}', $a);
 	}

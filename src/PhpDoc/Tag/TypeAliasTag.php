@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\TypeAlias;
 
@@ -12,10 +13,14 @@ use PHPStan\Type\TypeAlias;
 final class TypeAliasTag
 {
 
+	/**
+	 * @param TemplateTagValueNode[] $templateTagValueNodes
+	 */
 	public function __construct(
 		private string $aliasName,
 		private TypeNode $typeNode,
 		private NameScope $nameScope,
+		private array $templateTagValueNodes = [],
 	)
 	{
 	}
@@ -30,6 +35,8 @@ final class TypeAliasTag
 		return new TypeAlias(
 			$this->typeNode,
 			$this->nameScope,
+			$this->templateTagValueNodes,
+			$this->aliasName,
 		);
 	}
 

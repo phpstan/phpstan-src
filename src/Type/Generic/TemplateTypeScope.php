@@ -12,6 +12,11 @@ final class TemplateTypeScope
 		return new self(null, null);
 	}
 
+	public static function createWithTypeAlias(string $className, string $aliasName): self
+	{
+		return new self($className, '__typeAlias_' . $aliasName);
+	}
+
 	public static function createWithFunction(string $functionName): self
 	{
 		return new self(null, $functionName);

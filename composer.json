@@ -139,7 +139,10 @@
 				"patches/DependencyChecker.patch",
 				"patches/Resolver.patch"
 			],
-			"symfony/console": [
+			"phpstan/phpdoc-parser": [
+				"patches/phpdoc-parser-generic-type-aliases.patch"
+			],
+		"symfony/console": [
 				"patches/OutputFormatter.patch"
 			]
 		}

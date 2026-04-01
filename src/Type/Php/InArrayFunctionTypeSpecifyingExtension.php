@@ -16,9 +16,9 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -167,10 +167,9 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 	}
 
 	/**
-	 * Computes the type to narrow the needle against, or null if no narrowing
-	 * should occur. In true context, returns the array value type directly.
-	 * In false context, returns only the values guaranteed to be in every
-	 * possible variant of the array.
+	 * Computes the type to narrow the needle against, or null if no narrowing should occur.
+	 * In true context, returns the array value type directly.
+	 * In false context, returns only the values guaranteed to be in every possible variant of the array.
 	 */
 	private function computeNeedleNarrowingType(TypeSpecifierContext $context, Type $needleType, Type $arrayType, Type $arrayValueType): ?Type
 	{
@@ -187,35 +186,43 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		$arrays = $arrayType->getArrays();
-		$innerValueTypes = [];
+		$guaranteedValueTypePerArray = [];
 		foreach ($arrays as $array) {
-			$constantArrays = $array->getConstantArrays();
-			if (count($constantArrays) > 0) {
-				foreach ($constantArrays as $constantArray) {
-					$guaranteedTypes = [];
-					foreach ($constantArray->getValueTypes() as $i => $valueType) {
-						if (!$constantArray->isOptionalKey($i)) {
-							$guaranteedTypes[] = $valueType;
-						}
+			if ($array instanceof ConstantArrayType) {
+				$innerGuaranteeValueType = [];
+				foreach ($array->getValueTypes() as $i => $valueType) {
+					if ($array->isOptionalKey($i)) {
+						continue;
 					}
-					$innerValueTypes[] = count($guaranteedTypes) > 0
-						? TypeCombinator::union(...$guaranteedTypes)
-						: new NeverType();
+
+					$finiteTypes = $valueType->getFiniteTypes();
+					if (count($finiteTypes) !== 1) {
+						continue;
+					}
+
+					$innerGuaranteeValueType[] = $finiteTypes[0];
 				}
+
+				if (count($innerGuaranteeValueType) === 0) {
+					return null;
+				}
+
+				$guaranteedValueTypePerArray[] = TypeCombinator::union(...$innerGuaranteeValueType);
 			} else {
-				$valueType = $array->getIterableValueType();
-				if (count($valueType->getFiniteTypes()) === 1) {
-					$innerValueTypes[] = $valueType;
+				$finiteValueType = $array->getIterableValueType()->getFiniteTypes();
+				if (count($finiteValueType) !== 1) {
+					return null;
 				}
+
+				$guaranteedValueTypePerArray[] = $finiteValueType[0];
 			}
 		}
 
-		if (count($innerValueTypes) === 0) {
+		if (count($guaranteedValueTypePerArray) === 0) {
 			return null;
 		}
 
-		$guaranteedValueType = TypeCombinator::intersect(...$innerValueTypes);
-
+		$guaranteedValueType = TypeCombinator::intersect(...$guaranteedValueTypePerArray);
 		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
 			return null;
 		}

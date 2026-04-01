@@ -15,7 +15,6 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
-use PHPStan\Type\TypeTraverser;
 use function array_map;
 use function array_values;
 use function count;
@@ -130,9 +129,10 @@ final class TypeAlias
 		// Collect default values for params that declare one.
 		$defaultsMap = [];
 		foreach ($this->templateTagValueNodes as $tvn) {
-			if ($tvn->default !== null) {
-				$defaultsMap[$tvn->name] = $typeNodeResolver->resolve($tvn->default, $this->nameScope);
+			if ($tvn->default === null) {
+				continue;
 			}
+			$defaultsMap[$tvn->name] = $typeNodeResolver->resolve($tvn->default, $this->nameScope);
 		}
 
 		if (count($defaultsMap) === 0) {
@@ -170,7 +170,7 @@ final class TypeAlias
 		}
 
 		$className = $nameScope->getClassNameForTypeAlias();
-		$templateTypeScope = ($className !== null && $this->aliasName !== '')
+		$templateTypeScope = $className !== null && $this->aliasName !== ''
 			? TemplateTypeScope::createWithTypeAlias($className, $this->aliasName)
 			: TemplateTypeScope::createWithAnonymousFunction();
 

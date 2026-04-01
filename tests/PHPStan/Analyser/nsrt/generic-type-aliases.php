@@ -57,6 +57,70 @@ class DirectUsage
 }
 
 // -------------------------------------------------------
+// Two template params
+// -------------------------------------------------------
+
+/**
+ * @phpstan-type Pair<TFirst, TSecond> array{first: TFirst, second: TSecond}
+ */
+class PairHolder
+{
+	/**
+	 * @param Pair<string, int> $pair
+	 */
+	public function check(array $pair): void
+	{
+		assertType('string', $pair['first']);
+		assertType('int', $pair['second']);
+	}
+}
+
+// -------------------------------------------------------
+// @return of generic alias with bound constraint
+// -------------------------------------------------------
+
+/**
+ * @phpstan-type Range<T of int|float> array{min: T, max: T}
+ */
+class RangeHolder
+{
+	/**
+	 * @param  Range<int>   $r
+	 * @return Range<float>
+	 */
+	public function convert(array $r): array
+	{
+		assertType('int', $r['min']);
+		assertType('int', $r['max']);
+		$result = ['min' => (float) $r['min'], 'max' => (float) $r['max']];
+		assertType('array{min: float, max: float}', $result);
+		return $result;
+	}
+}
+
+// -------------------------------------------------------
+// @var property annotation
+// -------------------------------------------------------
+
+/**
+ * @phpstan-type Config<TValue> array{key: string, value: TValue}
+ */
+class Settings
+{
+	/** @var Config<int> */
+	public array $timeout = ['key' => 'timeout', 'value' => 30];
+
+	/** @var Config<string> */
+	public array $name = ['key' => 'name', 'value' => 'default'];
+
+	public function check(): void
+	{
+		assertType('int', $this->timeout['value']);
+		assertType('string', $this->name['value']);
+	}
+}
+
+// -------------------------------------------------------
 // Test with list<T>
 // -------------------------------------------------------
 
@@ -72,6 +136,25 @@ class Repo
 	{
 		assertType('list<stdClass>', $result['items']);
 		assertType('int', $result['total']);
+	}
+}
+
+// -------------------------------------------------------
+// Nested generic alias (alias referencing another generic alias)
+// -------------------------------------------------------
+
+/**
+ * @phpstan-type Item<T> array{id: int, data: T}
+ * @phpstan-type ItemList<T> list<Item<T>>
+ */
+class ItemRepo
+{
+	/**
+	 * @param ItemList<string> $items
+	 */
+	public function process(array $items): void
+	{
+		assertType('list<array{id: int, data: string}>', $items);
 	}
 }
 
@@ -94,7 +177,7 @@ class MapHolder
 }
 
 // -------------------------------------------------------
-// Test with default template param value
+// Default param: explicit arg vs bare usage (default applied)
 // -------------------------------------------------------
 
 /**
@@ -103,21 +186,24 @@ class MapHolder
 class DefaultHolder
 {
 	/**
-	 * @param WithDefault<int> $withInt
+	 * @param WithDefault<int> $explicit   explicit arg overrides default
+	 * @param WithDefault      $implicit   bare usage – T defaults to string
 	 */
-	public function check(array $withInt): void
+	public function check(array $explicit, array $implicit): void
 	{
-		assertType('int', $withInt['value']);
+		assertType('int', $explicit['value']);
+		assertType('string', $implicit['value']);
 	}
 }
 
 // -------------------------------------------------------
-// Test @phpstan-import-type of a generic alias
+// @phpstan-import-type of a generic alias
 // -------------------------------------------------------
 
 /**
  * @phpstan-import-type Map from MapHolder
  * @phpstan-import-type Paged from Repo
+ * @phpstan-import-type Pair from PairHolder
  */
 class ImportConsumer
 {
@@ -137,6 +223,13 @@ class ImportConsumer
 		assertType('list<DateTime>', $p['items']);
 		assertType('int', $p['total']);
 	}
+
+	/**
+	 * @param Pair<int, bool> $p
+	 */
+	public function pairCheck(array $p): void
+	{
+		assertType('int', $p['first']);
+		assertType('bool', $p['second']);
+	}
 }
-
-

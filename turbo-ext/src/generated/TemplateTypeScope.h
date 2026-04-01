@@ -42,9 +42,11 @@ inline constexpr char strings[] =
 	"__construct\0" /* 173 */
 	"getClassName\0" /* 185 */
 	"getFunctionName\0" /* 198 */
-	"other\0" /* 214 */
-	"equals\0" /* 220 */
-	"describe"; /* 227 */
+	"isTypeAlias\0" /* 214 */
+	"getTypeAliasName\0" /* 226 */
+	"other\0" /* 243 */
+	"equals\0" /* 249 */
+	"describe"; /* 256 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* createWithAnonymousFunction return */
 	reg::packed(68, MAY_BE_STRING), /* createWithTypeAlias $className */
@@ -61,7 +63,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(108, MAY_BE_NULL | MAY_BE_STRING), /* __construct $functionName */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getClassName return */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getFunctionName return */
-	reg::packed(214, 0, 1), /* equals $other */
+	reg::packed(0, MAY_BE_BOOL), /* isTypeAlias return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getTypeAliasName return */
+	reg::packed(243, 0, 1), /* equals $other */
 	reg::packed(0, MAY_BE_BOOL), /* equals return */
 	reg::packed(0, MAY_BE_STRING), /* describe return */
 };
@@ -78,8 +82,10 @@ inline constexpr sigtab::Sig createWithClass = { { 157 /* createWithClass */, 1,
 inline constexpr sigtab::Sig __construct = { { 173 /* __construct */, 2, 11, 2, reg::NoArg, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getClassName = { { 185 /* getClassName */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getFunctionName = { { 198 /* getFunctionName */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig equals = { { 220 /* equals */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 227 /* describe */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTypeAlias = { { 214 /* isTypeAlias */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeAliasName = { { 226 /* getTypeAliasName */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 249 /* equals */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 256 /* describe */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeScope

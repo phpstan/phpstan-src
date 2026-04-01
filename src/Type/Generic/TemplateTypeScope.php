@@ -4,6 +4,9 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
+use function str_starts_with;
+use function strlen;
+use function substr;
 
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeScope.cpp')]
 final class TemplateTypeScope
@@ -48,6 +51,22 @@ final class TemplateTypeScope
 	public function getFunctionName(): ?string
 	{
 		return $this->functionName;
+	}
+
+	/** @api */
+	public function isTypeAlias(): bool
+	{
+		return $this->functionName !== null && str_starts_with($this->functionName, '__typeAlias_');
+	}
+
+	/** @api */
+	public function getTypeAliasName(): ?string
+	{
+		if (!$this->isTypeAlias()) {
+			return null;
+		}
+
+		return substr($this->functionName, strlen('__typeAlias_'));
 	}
 
 	/** @api */

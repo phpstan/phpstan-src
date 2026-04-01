@@ -30,6 +30,7 @@ use Traversable;
 use function array_filter;
 use function array_keys;
 use function array_merge;
+use function array_unique;
 use function array_values;
 use function count;
 use function implode;
@@ -210,6 +211,31 @@ final class MissingTypehintCheck
 		});
 
 		return array_values($objectTypes);
+	}
+
+	/**
+	 * @return list<array{string, string}> List of [aliasName, missingTypeParamNames]
+	 */
+	public function getRawGenericTypeAliasesUsage(Type $type): array
+	{
+		/** @var array<string, list<string>> $found */
+		$found = [];
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$found): Type {
+			if ($type instanceof TemplateType) {
+				$aliasName = $type->getScope()->getTypeAliasName();
+				if ($aliasName !== null && $type->getDefault() === null) {
+					$found[$aliasName][] = $type->getName();
+				}
+				return $type;
+			}
+			return $traverse($type);
+		});
+
+		$result = [];
+		foreach ($found as $aliasName => $paramNames) {
+			$result[] = [$aliasName, implode(', ', array_unique($paramNames))];
+		}
+		return $result;
 	}
 
 	/**

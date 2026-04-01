@@ -18,6 +18,9 @@ namespace sigs = ptdecl::TemplateTypeScope::sig;
 
 zend_class_entry *pt_ce_template_type_scope = NULL;
 
+/* the function name prefix of a type alias scope (createWithTypeAlias()) */
+#define PT_TTS_TYPE_ALIAS_PREFIX "__typeAlias_"
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\Generic\TemplateTypeScope. State lives in the PHP
@@ -54,7 +57,7 @@ public:
 	/* new self($className, '__typeAlias_' . $aliasName) */
 	static zv::Val createWithTypeAlias(zend_string *className, zend_string *aliasName)
 	{
-		zend_string *functionName = zend_string_concat2(PT_LC("__typeAlias_"), ZSTR_VAL(aliasName), ZSTR_LEN(aliasName));
+		zend_string *functionName = zend_string_concat2(PT_LC(PT_TTS_TYPE_ALIAS_PREFIX), ZSTR_VAL(aliasName), ZSTR_LEN(aliasName));
 		zv::Val scope = create(className, functionName);
 		zend_string_release(functionName);
 		return scope;
@@ -74,6 +77,29 @@ public:
 	{
 		zval *value = functionName();
 		return value == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(value));
+	}
+
+	/* isTypeAlias(): $functionName !== null && str_starts_with($functionName,
+	 * '__typeAlias_'); false = pending exception */
+	[[nodiscard]] bool isTypeAlias(bool &out) const
+	{
+		zval *functionName = this->functionName();
+		if (UNEXPECTED(functionName == NULL)) return false;
+		out = Z_TYPE_P(functionName) == IS_STRING
+			&& Z_STRLEN_P(functionName) >= sizeof(PT_TTS_TYPE_ALIAS_PREFIX) - 1
+			&& memcmp(Z_STRVAL_P(functionName), PT_TTS_TYPE_ALIAS_PREFIX, sizeof(PT_TTS_TYPE_ALIAS_PREFIX) - 1) == 0;
+		return true;
+	}
+
+	/* getTypeAliasName(): the function name after the '__typeAlias_' prefix,
+	 * null when not a type alias scope; UNDEF = pending exception */
+	zv::Val getTypeAliasName() const
+	{
+		bool typeAlias;
+		if (UNEXPECTED(!isTypeAlias(typeAlias))) return zv::Val();
+		if (!typeAlias) return zv::Val::null();
+		zval *functionName = this->functionName();
+		return zv::Val::string(Z_STRVAL_P(functionName) + sizeof(PT_TTS_TYPE_ALIAS_PREFIX) - 1, Z_STRLEN_P(functionName) - (sizeof(PT_TTS_TYPE_ALIAS_PREFIX) - 1));
 	}
 
 	/* equals(): both names identical (=== on ?string); false = pending
@@ -239,6 +265,18 @@ PT_MINIT_REGISTRATION(pt_register_template_type_scope)
 	cls.method(sigs::getFunctionName, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(PT_TTS_THIS.getFunctionName());
+	});
+
+	cls.method(sigs::isTypeAlias, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		bool result;
+		if (UNEXPECTED(!PT_TTS_THIS.isTypeAlias(result))) RETURN_THROWS();
+		RETURN_BOOL(result);
+	});
+
+	cls.method(sigs::getTypeAliasName, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TTS_THIS.getTypeAliasName());
 	});
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -496,15 +496,6 @@ final class TypeNodeResolver
 		}
 
 		if (!$nameScope->shouldBypassTypeAliases()) {
-			// Handle a generic alias referenced without type arguments.
-			// resolveWithDefaults() applies declared defaults so params with defaults are
-			// substituted, while required params remain as TemplateType placeholders
-			// (which getRawGenericTypeAliasesUsage() later detects and reports).
-			$genericAlias = $this->findGenericTypeAlias($typeNode->name, $nameScope);
-			if ($genericAlias !== null) {
-				return $genericAlias->resolveWithDefaults($this);
-			}
-
 			$typeAlias = $this->getTypeAliasResolver()->resolveTypeAlias($typeNode->name, $nameScope);
 			if ($typeAlias !== null) {
 				return $typeAlias;

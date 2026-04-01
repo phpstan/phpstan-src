@@ -1,5 +1,6 @@
 <?php declare(strict_types = 1);
 
+// ci-baseline-check: no-op
 namespace PHPStan\Rules;
 
 use Closure;

@@ -190,58 +190,12 @@ final class TypeCombinator
 			}
 		}
 
-		// Fast path for N>2: strip implicit NeverTypes and short-circuit on mixed
-		if ($typesCount > 2) {
-			$neverCount = 0;
-			$hasUnionOrBenevolent = false;
-			for ($i = 0; $i < $typesCount; $i++) {
-				$t = $types[$i];
-				if (
-					$t instanceof MixedType
-					&& !$t->isExplicitMixed()
-					&& !$t instanceof TemplateMixedType
-					&& $t->getSubtractedType() === null
-				) {
-					return $t;
-				}
-				if ($t instanceof NeverType && !$t->isExplicit()) {
-					$neverCount++;
-				} elseif ($t instanceof UnionType && !$t instanceof TemplateType) {
-					$hasUnionOrBenevolent = true;
-				}
-			}
-
-			if ($neverCount > 0 && !$hasUnionOrBenevolent) {
-				if ($neverCount === $typesCount) {
-					return new NeverType();
-				}
-
-				$filtered = [];
-				for ($i = 0; $i < $typesCount; $i++) {
-					if ($types[$i] instanceof NeverType && !$types[$i]->isExplicit()) {
-						continue;
-					}
-
-					$filtered[] = $types[$i];
-				}
-				$filteredCount = count($filtered);
-
-				if ($filteredCount === 1 && !$filtered[0]->isArray()->yes()) {
-					return $filtered[0];
-				}
-				if ($filteredCount === 2) {
-					return self::union($filtered[0], $filtered[1]);
-				}
-				$types = $filtered;
-				$typesCount = $filteredCount;
-			}
-		}
-
 		$alreadyNormalized = [];
 		$alreadyNormalizedCounter = 0;
 
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
+		$neverCount = 0;
 		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < $typesCount; $i++) {
 			if (
@@ -253,8 +207,7 @@ final class TypeCombinator
 				return $types[$i];
 			}
 			if ($types[$i] instanceof NeverType && !$types[$i]->isExplicit()) {
-				array_splice($types, $i--, 1);
-				$typesCount--;
+				$neverCount++;
 				continue;
 			}
 			if ($types[$i] instanceof BenevolentUnionType) {
@@ -283,6 +236,33 @@ final class TypeCombinator
 			$alreadyNormalizedCounter++;
 			array_splice($types, $i, 1, $typesInner);
 			$typesCount += count($typesInner) - 1;
+		}
+
+		// Bulk-remove implicit NeverTypes (skipped during the loop above)
+		if ($neverCount > 0) {
+			if ($neverCount === $typesCount) {
+				return new NeverType();
+			}
+
+			$filtered = [];
+			for ($i = 0; $i < $typesCount; $i++) {
+				if ($types[$i] instanceof NeverType && !$types[$i]->isExplicit()) {
+					continue;
+				}
+				$filtered[] = $types[$i];
+			}
+			$types = $filtered;
+			$typesCount = count($types);
+
+			if ($typesCount === 0) {
+				return new NeverType();
+			}
+			if ($typesCount === 1 && !$types[0]->isArray()->yes()) {
+				return $types[0];
+			}
+			if ($typesCount === 2) {
+				return self::union($types[0], $types[1]);
+			}
 		}
 
 		if ($typesCount === 0) {

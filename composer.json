@@ -109,9 +109,6 @@
 			"nette/di": [
 				"patches/Resolver.patch"
 			],
-			"phpstan/phpdoc-parser": [
-				"patches/phpdoc-parser-generic-type-aliases.patch"
-			],
 			"symfony/console": [
 				"patches/OutputFormatter.patch",
 				"patches/Application.patch"

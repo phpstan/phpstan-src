@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+// ci-baseline-check: no-op comment to trigger full CI suite
+
 namespace PHPStan\Analyser;
 
 use Closure;

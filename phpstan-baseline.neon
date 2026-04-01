@@ -1,6 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
+			rawMessage: 'Access to an undefined property PHPStan\PhpDocParser\Ast\PhpDoc\TypeAliasTagValueNode::$templateTypes.'
+			identifier: property.notFound
+			count: 1
+			path: src/PhpDoc/PhpDocNodeResolver.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1

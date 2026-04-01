@@ -135,6 +135,12 @@ parameters:
 			path: ../src/Type/TypeCombinator.php
 
 		-
+			rawMessage: 'Access to an undefined property PHPStan\PhpDocParser\Ast\PhpDoc\TypeAliasTagValueNode::$templateTypes.'
+			identifier: property.notFound
+			count: 1
+			path: ../src/PhpDoc/PhpDocNodeResolver.php
+
+		-
 			rawMessage: Access to property $id of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
 			identifier: property.internalClass
 			count: 1

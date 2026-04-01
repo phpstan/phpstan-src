@@ -203,7 +203,10 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 						: new NeverType();
 				}
 			} else {
-				$innerValueTypes[] = $array->getIterableValueType();
+				$valueType = $array->getIterableValueType();
+				if (count($valueType->getFiniteTypes()) === 1) {
+					$innerValueTypes[] = $valueType;
+				}
 			}
 		}
 

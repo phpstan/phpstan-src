@@ -86,3 +86,15 @@ function testUnionWithOptionalKeys($x, $a): void
 		assertType("'a'|'b'|'c'", $x);
 	}
 };
+
+/**
+ * @param 'a'|'b'|'c' $x
+ * @param non-empty-array<'a'|'b'> $a
+ */
+function testNonConstantArray($x, $a): void
+{
+	assertType("non-empty-array<'a'|'b'>", $a);
+	if (!\in_array($x, $a, true)) {
+		assertType("'a'|'b'|'c'", $x);
+	}
+};

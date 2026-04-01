@@ -1398,6 +1398,17 @@ final class TypeNodeResolver
 			return null;
 		}
 
+		// Fast path: if the name isn't registered as a type alias in this scope, skip the
+		// more expensive ClassReflection::getTypeAliases() call. This also prevents a circular
+		// NameScope-building issue: getTypeAliases() can trigger FileTypeMapper::getResolvedPhpDoc()
+		// which calls getNameScope() — if we are already inside getNameScope() for this class,
+		// that throws NameScopeAlreadyBeingCreatedException, causing the class's ResolvedPhpDocBlock
+		// to be poisoned with an empty block and all its type aliases to be lost.
+		// UsefulTypeAliasResolver uses the same guard.
+		if (!$nameScope->hasTypeAlias($name)) {
+			return null;
+		}
+
 		$className = $nameScope->getClassNameForTypeAlias();
 		if ($className === null || !$this->getReflectionProvider()->hasClass($className)) {
 			return null;

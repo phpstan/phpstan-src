@@ -10,11 +10,14 @@ final class AgentDetector
 {
 
 	public const ENV_VARS = [
+		'AUGMENT_AGENT',
+		'AMP_CURRENT_THREAD_ID',
 		'AI_AGENT',
 		'CURSOR_TRACE_ID',
 		'CURSOR_AGENT',
 		'GEMINI_CLI',
 		'CODEX_SANDBOX',
+		'CODEX_THREAD_ID',
 		'AUGMENT_AGENT',
 		'OPENCODE_CLIENT',
 		'OPENCODE',

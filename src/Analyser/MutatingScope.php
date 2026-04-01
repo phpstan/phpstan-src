@@ -3539,6 +3539,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		array $mergedExpressionTypes,
 	): array
 	{
+		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isGlobalVariable($node->name);
+		$nodeFinder = new NodeFinder();
+
 		$newVariableTypes = $ourExpressionTypes;
 		foreach ($theirExpressionTypes as $exprString => $holder) {
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
@@ -3595,6 +3598,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
+			$expr = $holder->getExpr();
+			$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
+			if ($containsSuperGlobal === null) {
+				$containsSuperGlobal = $nodeFinder->findFirst($expr, $globalVariableCallback) !== null;
+				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
+			}
+			if ($containsSuperGlobal === true) {
+				continue;
+			}
+
 			$variableTypeGuards = $typeGuards;
 			unset($variableTypeGuards[$exprString]);
 
@@ -3619,6 +3632,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
 			if (array_key_exists($exprString, $ourExpressionTypes)) {
+				continue;
+			}
+
+			$expr = $mergedExprTypeHolder->getExpr();
+			$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
+			if ($containsSuperGlobal === null) {
+				$containsSuperGlobal = $nodeFinder->findFirst($expr, $globalVariableCallback) !== null;
+				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
+			}
+			if ($containsSuperGlobal === true) {
 				continue;
 			}
 

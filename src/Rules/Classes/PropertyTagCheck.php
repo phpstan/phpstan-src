@@ -171,6 +171,19 @@ final class PropertyTagCheck
 				->build();
 		}
 
+		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($type) as [$aliasName, $missingParams]) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag %s for property %s::$%s contains generic type alias %s but does not specify its types: %s',
+				$tagName,
+				$classReflection->getDisplayName(),
+				$propertyName,
+				$aliasName,
+				$missingParams,
+			))
+				->identifier('missingType.generics')
+				->build();
+		}
+
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
 			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$errors[] = RuleErrorBuilder::message(sprintf(

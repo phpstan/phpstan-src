@@ -77,6 +77,18 @@ final class MissingPropertyTypehintRule implements Rule
 				->build();
 		}
 
+		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($propertyType) as [$aliasName, $missingParams]) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Property %s::$%s with generic type alias %s does not specify its types: %s',
+				$propertyReflection->getDeclaringClass()->getDisplayName(),
+				$node->getName(),
+				$aliasName,
+				$missingParams,
+			))
+				->identifier('missingType.generics')
+				->build();
+		}
+
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($propertyType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s type has no signature specified for %s.',

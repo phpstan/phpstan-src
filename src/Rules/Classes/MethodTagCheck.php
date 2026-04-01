@@ -190,6 +190,19 @@ final class MethodTagCheck
 				->build();
 		}
 
+		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($type) as [$aliasName, $missingParams]) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag @method for method %s::%s() %s contains generic type alias %s but does not specify its types: %s',
+				$classReflection->getDisplayName(),
+				$methodName,
+				$description,
+				$aliasName,
+				$missingParams,
+			))
+				->identifier('missingType.generics')
+				->build();
+		}
+
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
 			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$errors[] = RuleErrorBuilder::message(sprintf(

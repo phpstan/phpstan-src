@@ -544,7 +544,7 @@ class Foo
 		assertType('bool', is_int($mixed));
 		assertType('true', is_int($integer));
 		assertType('false', is_int($string));
-		assertType('bool', in_array('foo', ['foo', 'bar']));
+		assertType('true', in_array('foo', ['foo', 'bar']));
 		assertType('true', in_array('foo', ['foo', 'bar'], true));
 		assertType('false', in_array('baz', ['foo', 'bar'], true));
 		assertType('array{2, 3}', $arrToShift);

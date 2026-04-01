@@ -562,12 +562,6 @@ parameters:
 			path: src/Rules/Comparison/IfConstantConditionRule.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -1580,12 +1574,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Php/FunctionExistsFunctionTypeSpecifyingExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/InArrayFunctionTypeSpecifyingExtension.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'

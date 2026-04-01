@@ -18,13 +18,11 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -95,107 +93,6 @@ final class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'array_search') {
 					return null;
-				} elseif ($functionName === 'in_array' && $argsCount >= 2) {
-					$haystackArg = $args[1]->value;
-					$haystackType = $this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg) : $scope->getNativeType($haystackArg);
-					if ($haystackType instanceof MixedType) {
-						return null;
-					}
-
-					if (!$haystackType->isArray()->yes()) {
-						return null;
-					}
-
-					$needleArg = $args[0]->value;
-					$needleType = $this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg);
-
-					$isStrictComparison = false;
-					if ($argsCount >= 3) {
-						$strictNodeType = $scope->getType($args[2]->value);
-						$isStrictComparison = $strictNodeType->isTrue()->yes();
-					}
-
-					$isStrictComparison = $isStrictComparison
-						|| $needleType->isEnum()->yes()
-						|| $haystackType->getIterableValueType()->isEnum()->yes();
-
-					if (!$isStrictComparison) {
-						return null;
-					}
-
-					$valueType = $haystackType->getIterableValueType();
-					$constantNeedleTypesCount = count($needleType->getFiniteTypes());
-					$constantHaystackTypesCount = count($valueType->getFiniteTypes());
-					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
-					if ($haystackType->isConstantArray()->no()) {
-						if ($haystackType->isIterableAtLeastOnce()->yes()) {
-							// In this case the generic implementation via typeSpecifier fails, because the argument types cannot be narrowed down.
-							if ($constantNeedleTypesCount === 1 && $constantHaystackTypesCount === 1) {
-								if ($isNeedleSupertype->yes()) {
-									return true;
-								}
-								if ($isNeedleSupertype->no()) {
-									return false;
-								}
-							}
-
-							return null;
-						}
-
-						if (!$isNeedleSupertype->no()) {
-							// Array might be empty, so in_array can return false
-							return null;
-						}
-					}
-
-					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
-						$haystackArrayTypes = $haystackType->getArrays();
-						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
-							return null;
-						}
-
-						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
-							foreach ($haystackArrayTypes as $haystackArrayType) {
-								if ($haystackArrayType instanceof ConstantArrayType) {
-									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
-										if ($haystackArrayType->isOptionalKey($i)) {
-											continue;
-										}
-
-										$haystackArrayValueConstantScalarTypes = $haystackArrayValueType->getConstantScalarTypes();
-										if (count($haystackArrayValueConstantScalarTypes) > 1) {
-											continue;
-										}
-
-										foreach ($haystackArrayValueConstantScalarTypes as $constantScalarType) {
-											if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-												continue 3;
-											}
-										}
-									}
-								} else {
-									foreach ($haystackArrayType->getIterableValueType()->getConstantScalarTypes() as $constantScalarType) {
-										if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-											continue 2;
-										}
-									}
-								}
-
-								return null;
-							}
-						}
-
-						if ($isNeedleSupertype->yes()) {
-							$hasConstantNeedleTypes = $constantNeedleTypesCount > 0;
-							$hasConstantHaystackTypes = $constantHaystackTypesCount > 0;
-							if (
-								(!$hasConstantNeedleTypes && !$hasConstantHaystackTypes)
-								|| $hasConstantNeedleTypes !== $hasConstantHaystackTypes
-							) {
-								return null;
-							}
-						}
-					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectArg = $args[0]->value;
 					$objectType = $this->treatPhpDocTypesAsCertain ? $scope->getType($objectArg) : $scope->getNativeType($objectArg);

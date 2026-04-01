@@ -5,7 +5,9 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\BinaryOp\Equal;
 use PhpParser\Node\Expr\BinaryOp\Identical;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -16,7 +18,6 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -103,18 +104,21 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				&& $arrayType->isArray()->yes()
 				&& $arrayType->getIterableValueType()->isSuperTypeOf($needleType)->yes()
 			) {
-				return $this->typeSpecifier->create(
+				$specifiedTypes = $this->typeSpecifier->create(
 					$args[1]->value,
 					TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
 					$context,
 					$scope,
 				);
+
+				return $specifiedTypes->setRootExpr(new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT')));
 			}
 
 			return new SpecifiedTypes();
 		}
 
 		$specifiedTypes = new SpecifiedTypes();
+		$originalArrayValueType = $arrayValueType;
 		$narrowingValueType = $this->computeNeedleNarrowingType($context, $needleType, $arrayType, $arrayValueType);
 		if ($narrowingValueType !== null) {
 			$specifiedTypes = $this->typeSpecifier->create(
@@ -163,7 +167,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			));
 		}
 
-		return $specifiedTypes;
+		return $specifiedTypes->setRootExpr($this->determineRootExpr($needleType, $arrayType, $originalArrayValueType));
 	}
 
 	/**
@@ -185,13 +189,13 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			return null;
 		}
 
-		$arrays = $arrayType->getArrays();
+		$constantArrays = $arrayType->getConstantArrays();
 		$guaranteedValueTypePerArray = [];
-		foreach ($arrays as $array) {
-			if ($array instanceof ConstantArrayType) {
+		if (count($constantArrays) > 0) {
+			foreach ($constantArrays as $constantArray) {
 				$innerGuaranteeValueType = [];
-				foreach ($array->getValueTypes() as $i => $valueType) {
-					if ($array->isOptionalKey($i)) {
+				foreach ($constantArray->getValueTypes() as $i => $valueType) {
+					if ($constantArray->isOptionalKey($i)) {
 						continue;
 					}
 
@@ -208,7 +212,10 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				}
 
 				$guaranteedValueTypePerArray[] = TypeCombinator::union(...$innerGuaranteeValueType);
-			} else {
+			}
+		} else {
+			$arrays = $arrayType->getArrays();
+			foreach ($arrays as $array) {
 				$finiteValueType = $array->getIterableValueType()->getFiniteTypes();
 				if (count($finiteValueType) !== 1) {
 					return null;
@@ -228,6 +235,88 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		return $guaranteedValueType;
+	}
+
+	/**
+	 * Returns a rootExpr that ImpossibleCheckTypeHelper evaluates instead of
+	 * using sureTypes-based detection. This bypasses scope leakage issues where
+	 * expressions (e.g. enum ClassConstFetch) are marked as "specified" by
+	 * prior in_array calls in the same scope.
+	 *
+	 * Returns ConstFetch('false') for incompatible types (always false),
+	 * ConstFetch('true') when the needle is guaranteed to be found (always true),
+	 * or ConstFetch('__PHPSTAN_FAUX_CONSTANT') for indeterminate cases.
+	 */
+	private function determineRootExpr(Type $needleType, Type $arrayType, Type $arrayValueType): ConstFetch
+	{
+		// Types are incompatible -> always false
+		if ($arrayValueType->isSuperTypeOf($needleType)->no()) {
+			return new ConstFetch(new Name('false'));
+		}
+
+		// Check if in_array is guaranteed to always return true
+		if ($this->isGuaranteedToContainNeedle($needleType, $arrayType)) {
+			return new ConstFetch(new Name('true'));
+		}
+
+		// Indeterminate: types are compatible but can't guarantee result.
+		// Set rootExpr to prevent false impossibility detection.
+		return new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'));
+	}
+
+	private function isGuaranteedToContainNeedle(Type $needleType, Type $arrayType): bool
+	{
+		if (!$arrayType->isIterableAtLeastOnce()->yes()) {
+			return false;
+		}
+
+		if (count($needleType->getFiniteTypes()) !== 1) {
+			return false;
+		}
+
+		$constantArrays = $arrayType->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			foreach ($constantArrays as $constantArray) {
+				$hasGuaranteedMatch = false;
+				foreach ($constantArray->getValueTypes() as $i => $valueType) {
+					if ($constantArray->isOptionalKey($i)) {
+						continue;
+					}
+
+					$constantScalarTypes = $valueType->getConstantScalarTypes();
+					if (count($constantScalarTypes) > 1) {
+						continue;
+					}
+
+					foreach ($constantScalarTypes as $constantScalarType) {
+						if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
+							$hasGuaranteedMatch = true;
+							break 2;
+						}
+					}
+				}
+				if (!$hasGuaranteedMatch) {
+					return false;
+				}
+			}
+		} else {
+			$arrays = $arrayType->getArrays();
+			if (count($arrays) === 0) {
+				return false;
+			}
+
+			foreach ($arrays as $array) {
+				$finiteTypes = $array->getIterableValueType()->getFiniteTypes();
+				if (count($finiteTypes) !== 1) {
+					return false;
+				}
+				if (!$needleType->isSuperTypeOf($finiteTypes[0])->yes()) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 }

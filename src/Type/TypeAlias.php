@@ -8,12 +8,14 @@ use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\TypeTraverser;
 use function array_map;
 use function array_values;
 use function count;
@@ -110,6 +112,41 @@ final class TypeAlias
 			TemplateTypeVarianceMap::createEmpty(),
 			TemplateTypeVariance::createInvariant(),
 		);
+	}
+
+	/**
+	 * Resolves the alias body applying default values for template params that declare one.
+	 * Template params without defaults remain as TemplateType placeholders so that callers
+	 * (e.g. MissingTypehintCheck) can detect bare generic alias usage.
+	 */
+	public function resolveWithDefaults(TypeNodeResolver $typeNodeResolver): Type
+	{
+		$baseType = $this->resolve($typeNodeResolver);
+
+		if (count($this->templateTagValueNodes) === 0) {
+			return $baseType;
+		}
+
+		// Collect default values for params that declare one.
+		$defaultsMap = [];
+		foreach ($this->templateTagValueNodes as $tvn) {
+			if ($tvn->default !== null) {
+				$defaultsMap[$tvn->name] = $typeNodeResolver->resolve($tvn->default, $this->nameScope);
+			}
+		}
+
+		if (count($defaultsMap) === 0) {
+			return $baseType;
+		}
+
+		// Replace only TemplateType instances scoped to THIS alias that have a declared default.
+		$aliasName = $this->aliasName;
+		return TypeTraverser::map($baseType, static function (Type $type, callable $traverse) use ($defaultsMap, $aliasName): Type {
+			if ($type instanceof TemplateType && $type->getScope()->getTypeAliasName() === $aliasName && isset($defaultsMap[$type->getName()])) {
+				return $defaultsMap[$type->getName()];
+			}
+			return $traverse($type);
+		});
 	}
 
 	/**

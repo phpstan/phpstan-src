@@ -166,4 +166,20 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericTypeAliasWrongArgCount(): void
+	{
+		$this->analyse([__DIR__ . '/../PhpDoc/data/generic-type-alias-wrong-arg-count.php'], [
+			[
+				'Method GenericTypeAliasWrongArgCount\TooManyArgs::badParam() has parameter $x with no value type specified in iterable type array.',
+				17,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method GenericTypeAliasWrongArgCount\TooFewArgs::badParam() has parameter $x with no value type specified in iterable type array.',
+				47,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+		]);
+	}
+
 }

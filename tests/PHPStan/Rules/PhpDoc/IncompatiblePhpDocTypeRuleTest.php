@@ -497,4 +497,26 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11463b.php'], []);
 	}
 
+	public function testGenericTypeAliasWrongArgCount(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-type-alias-wrong-arg-count.php'], [
+			[
+				'PHPDoc tag @param for parameter $x contains unresolvable type.',
+				17,
+			],
+			[
+				'PHPDoc tag @return contains unresolvable type.',
+				22,
+			],
+			[
+				'PHPDoc tag @param for parameter $x contains unresolvable type.',
+				47,
+			],
+			[
+				'PHPDoc tag @return contains unresolvable type.',
+				52,
+			],
+		]);
+	}
+
 }

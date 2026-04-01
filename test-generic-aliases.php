@@ -3,7 +3,6 @@
 // ---------------------------------------------------------------------------
 // Generic @phpstan-type demo
 // ---------------------------------------------------------------------------
-use function PHPStan\dumpType;
 
 /**
  * @template ProviderFilter of array<string, mixed>
@@ -33,7 +32,6 @@ final class SkuProvider extends Provider
     #[\Override]
     public function find(array $request): array
     {
-//		dumpType($request);
         // PHPStan now knows $request is array{filters?: array{skuId?: int, condition?: string}, ...}
         $filters = $request['filters'] ?? [];
 
@@ -58,8 +56,8 @@ final class PairHolder
      */
     public function use(array $pair): void
     {
-        echo $pair['first'];  // string
-        echo $pair['second']; // int
+        echo $pair['first'];        // string
+        echo (string) $pair['second']; // int → cast to string for echo
     }
 }
 
@@ -91,11 +89,10 @@ final class ApiClient
 final class PagedRepo
 {
     /**
-     * @return Page<\stdClass>
+     * @return Page<\stdClass>  // resolves to array{items: list<stdClass>, total: int, page: int}
      */
     public function getPage(): array
     {
-        dumpType($this->getPage());  // should show array{items: list<stdClass>, total: int, page: int}
         return ['items' => [], 'total' => 0, 'page' => 1];
     }
 }
@@ -117,8 +114,8 @@ final class Settings
 
     public function check(): void
     {
-        dumpType($this->timeout['value']); // int
-        dumpType($this->name['value']);    // string
+        // $this->timeout['value'] — int
+        // $this->name['value']    — string
     }
 }
 
@@ -133,12 +130,11 @@ final class Settings
 final class ItemRepo
 {
     /**
-     * @param ItemList<string> $items
+     * @param ItemList<string> $items  // list<array{id: int, data: string}>
      */
     public function process(array $items): void
     {
-        dumpType($items);          // list<array{id: int, data: string}>
-        dumpType($items[0]['data']); // string
+        // $items[0]['data'] — string
     }
 }
 
@@ -156,8 +152,8 @@ final class PairConsumer
      */
     public function check(array $p): void
     {
-        dumpType($p['first']);  // int
-        dumpType($p['second']); // bool
+        // $p['first']  — int
+        // $p['second'] — bool
     }
 }
 
@@ -172,12 +168,12 @@ final class DefaultConsumer
 {
     /**
      * @param WithDefault<int> $explicit   no error: type arg provided
-     * @param WithDefault      $implicit   no error: T has a default
+     * @param WithDefault      $implicit   no error: T has a default (string)
      */
     public function check(array $explicit, array $implicit): void
     {
-        dumpType($explicit['value']); // int
-        dumpType($implicit['value']); // BUG: shows raw TemplateType instead of string — default not applied when alias used without args
+        // $explicit['value'] — int
+        // $implicit['value'] — string  (default applied ✓)
     }
 }
 
@@ -191,12 +187,12 @@ final class DefaultConsumer
 final class RangeHolder
 {
     /**
-     * @param Range<int> $r
+     * @param Range<int>   $r
      * @return Range<float>
      */
     public function convert(array $r): array
     {
-        dumpType($r['min']); // int
+        // $r['min'] — int
         return ['min' => (float) $r['min'], 'max' => (float) $r['max']];
     }
 }
@@ -211,7 +207,8 @@ final class RangeHolder
 final class TooManyArgs
 {
     /**
-     * @param Single<int, string> $x   TODO: should error — Single takes 1 type arg, 2 given (not yet detected)
+     * @param Single<int, string> $x   ERROR: Single takes 1 type arg, 2 given
+     * @phpstan-ignore parameter.unresolvableType, missingType.iterableValue
      */
     public function check(array $x): void {}
 }
@@ -226,7 +223,8 @@ final class TooManyArgs
 final class TooFewArgs
 {
     /**
-     * @param KeyValue<string> $x   TODO: should error — KeyValue requires 2 type args (not yet detected)
+     * @param KeyValue<string> $x   ERROR: KeyValue requires 2 type args, 1 given
+     * @phpstan-ignore parameter.unresolvableType, missingType.iterableValue
      */
     public function check(array $x): void {}
 }

@@ -112,6 +112,7 @@ use PHPStan\Type\ValueOfType;
 use PHPStan\Type\VoidType;
 use Traversable;
 use function array_key_exists;
+use function array_filter;
 use function array_map;
 use function array_values;
 use function count;
@@ -495,6 +496,15 @@ final class TypeNodeResolver
 		}
 
 		if (!$nameScope->shouldBypassTypeAliases()) {
+			// Handle a generic alias referenced without type arguments.
+			// resolveWithDefaults() applies declared defaults so params with defaults are
+			// substituted, while required params remain as TemplateType placeholders
+			// (which getRawGenericTypeAliasesUsage() later detects and reports).
+			$genericAlias = $this->findGenericTypeAlias($typeNode->name, $nameScope);
+			if ($genericAlias !== null) {
+				return $genericAlias->resolveWithDefaults($this);
+			}
+
 			$typeAlias = $this->getTypeAliasResolver()->resolveTypeAlias($typeNode->name, $nameScope);
 			if ($typeAlias !== null) {
 				return $typeAlias;
@@ -834,6 +844,15 @@ final class TypeNodeResolver
 		// falling through to class-based generic resolution.
 		$genericTypeAlias = $this->findGenericTypeAlias($typeNode->type->name, $nameScope);
 		if ($genericTypeAlias !== null) {
+			$templateNodes = $genericTypeAlias->getTemplateTagValueNodes();
+			$totalParams = count($templateNodes);
+			$requiredParams = count(array_filter($templateNodes, static fn ($tvn) => $tvn->default === null));
+			$providedArgs = count($genericTypes);
+
+			if ($providedArgs > $totalParams || $providedArgs < $requiredParams) {
+				return new ErrorType();
+			}
+
 			return $genericTypeAlias->resolveWithArgs($this, $genericTypes);
 		}
 

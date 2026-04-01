@@ -51,6 +51,14 @@ public:
 	}
 
 	static zv::Val createWithAnonymousFunction() { return create(NULL, NULL); }
+	/* new self($className, '__typeAlias_' . $aliasName) */
+	static zv::Val createWithTypeAlias(zend_string *className, zend_string *aliasName)
+	{
+		zend_string *functionName = zend_string_concat2(PT_LC("__typeAlias_"), ZSTR_VAL(aliasName), ZSTR_LEN(aliasName));
+		zv::Val scope = create(className, functionName);
+		zend_string_release(functionName);
+		return scope;
+	}
 	static zv::Val createWithFunction(zend_string *functionName) { return create(NULL, functionName); }
 	static zv::Val createWithMethod(zend_string *className, zend_string *functionName) { return create(className, functionName); }
 	static zv::Val createWithClass(zend_string *className) { return create(className, NULL); }
@@ -191,6 +199,12 @@ PT_MINIT_REGISTRATION(pt_register_template_type_scope)
 	cls.method(sigs::createWithAnonymousFunction, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(TemplateTypeScope::createWithAnonymousFunction());
+	});
+
+	cls.method(sigs::createWithTypeAlias, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *className, *aliasName;
+		if (!zp::parse<zp::Str, zp::Str>(execute_data, className, aliasName)) RETURN_THROWS();
+		PT_RETURN_VAL(TemplateTypeScope::createWithTypeAlias(className, aliasName));
 	});
 
 	cls.method(sigs::createWithFunction, [](INTERNAL_FUNCTION_PARAMETERS) {

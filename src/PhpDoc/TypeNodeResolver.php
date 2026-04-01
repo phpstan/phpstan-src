@@ -112,6 +112,7 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeAliasResolverProvider;
+use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
@@ -873,6 +874,13 @@ final class TypeNodeResolver
 			return new ErrorType();
 		}
 
+		// Check for a generic type alias (e.g. ProviderRequest<AppraisalFilter>) before
+		// falling through to class-based generic resolution.
+		$genericTypeAlias = $typeNode->type instanceof IdentifierTypeNode ? $this->findGenericTypeAlias($typeNode->type->name, $nameScope) : null;
+		if ($genericTypeAlias !== null) {
+			return $genericTypeAlias->resolveWithArgs($this, $genericTypes);
+		}
+
 		$mainType = $typeNode->type instanceof NameNode
 			? $this->resolveNameNode($typeNode->type, $nameScope)
 			: $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
@@ -1522,6 +1530,30 @@ final class TypeNodeResolver
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
 		return $this->typeAliasResolverProvider->getTypeAliasResolver();
+	}
+
+	/**
+	 * Returns the TypeAlias for $name if it is a generic (parameterised) type alias
+	 * visible in the current $nameScope, or null otherwise.
+	 */
+	private function findGenericTypeAlias(string $name, NameScope $nameScope): ?TypeAlias
+	{
+		if ($nameScope->shouldBypassTypeAliases()) {
+			return null;
+		}
+
+		$className = $nameScope->getClassNameForTypeAlias();
+		if ($className === null || !$this->getReflectionProvider()->hasClass($className)) {
+			return null;
+		}
+
+		$typeAliases = $this->getReflectionProvider()->getClass($className)->getTypeAliases();
+		if (!array_key_exists($name, $typeAliases)) {
+			return null;
+		}
+
+		$typeAlias = $typeAliases[$name];
+		return $typeAlias->isGeneric() ? $typeAlias : null;
 	}
 
 }

@@ -853,4 +853,16 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/fix-with-tabs.php', __DIR__ . '/data/fix-with-tabs.php.fixed');
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug14398(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-14398.php'], [
+			[
+				'Private method Bug14398\ChildPrivateOverridesProtected::calculate() overriding protected method Bug14398\BaseProtectedMethod::calculate() should be protected or public.',
+				17,
+			],
+		]);
+	}
+
 }

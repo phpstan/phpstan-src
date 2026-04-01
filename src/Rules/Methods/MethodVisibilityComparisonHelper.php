@@ -15,14 +15,14 @@ final class MethodVisibilityComparisonHelper
 {
 
 	/** @return list<IdentifierRuleError> */
-	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method): array
+	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, ?int $line = null): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
 
 		if ($prototype->isPublic()) {
 			if (!$method->isPublic()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
 					'%s method %s::%s() overriding public method %s::%s() should also be public.',
 					$method->isPrivate() ? 'Private' : 'Protected',
 					$method->getDeclaringClass()->getDisplayName(),
@@ -31,11 +31,14 @@ final class MethodVisibilityComparisonHelper
 					$prototype->getName(),
 				))
 					->nonIgnorable()
-					->identifier('method.visibility')
-					->build();
+					->identifier('method.visibility');
+				if ($line !== null) {
+					$errorBuilder->line($line);
+				}
+				$messages[] = $errorBuilder->build();
 			}
 		} elseif ($method->isPrivate()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
@@ -43,8 +46,11 @@ final class MethodVisibilityComparisonHelper
 				$prototype->getName(),
 			))
 				->nonIgnorable()
-				->identifier('method.visibility')
-				->build();
+				->identifier('method.visibility');
+			if ($line !== null) {
+				$errorBuilder->line($line);
+			}
+			$messages[] = $errorBuilder->build();
 		}
 
 		return $messages;

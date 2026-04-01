@@ -148,4 +148,22 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericTypeAliasMissingTypehint(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-type-alias-missing-typehint.php'], [
+			[
+				'Method GenericTypeAliasMissingTypehint\RawUsage::check() has parameter $b with generic type alias Filter but does not specify its types: TItem',
+				18,
+			],
+			[
+				'Method GenericTypeAliasMissingTypehint\PartialDefault::check() has parameter $noArgs with generic type alias Pair but does not specify its types: TFirst',
+				61,
+			],
+			[
+				'Method GenericTypeAliasMissingTypehint\ImportedRawUsage::check() has parameter $bad with generic type alias Filter but does not specify its types: TItem',
+				77,
+			],
+		]);
+	}
+
 }

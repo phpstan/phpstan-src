@@ -128,4 +128,14 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/inherit-phpdoc-return-type-with-narrower-native-return-type.php'], []);
 	}
 
+	public function testGenericTypeAliasMissingTypehint(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-type-alias-missing-typehint.php'], [
+			[
+				'Method GenericTypeAliasMissingTypehint\RawUsage::getRaw() return type with generic type alias Filter does not specify its types: TItem',
+				28,
+			],
+		]);
+	}
+
 }

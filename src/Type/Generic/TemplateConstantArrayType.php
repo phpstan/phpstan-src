@@ -2,7 +2,10 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
@@ -33,6 +36,30 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		$this->name = $name;
 		$this->bound = $bound;
 		$this->default = $default;
+	}
+
+	/**
+	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param array<int, Type> $valueTypes
+	 * @param non-empty-list<int> $nextAutoIndexes
+	 * @param int[] $optionalKeys
+	 */
+	protected function recreate(
+		array $keyTypes,
+		array $valueTypes,
+		array $nextAutoIndexes = [0],
+		array $optionalKeys = [],
+		?TrinaryLogic $isList = null,
+	): ConstantArrayType
+	{
+		return new self(
+			$this->scope,
+			$this->strategy,
+			$this->variance,
+			$this->name,
+			new ConstantArrayType($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList),
+			$this->default,
+		);
 	}
 
 }

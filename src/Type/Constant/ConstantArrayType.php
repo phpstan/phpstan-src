@@ -122,6 +122,23 @@ class ConstantArrayType implements Type
 		$this->isList = $isList;
 	}
 
+	/**
+	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param array<int, Type> $valueTypes
+	 * @param non-empty-list<int> $nextAutoIndexes
+	 * @param int[] $optionalKeys
+	 */
+	protected function recreate(
+		array $keyTypes,
+		array $valueTypes,
+		array $nextAutoIndexes = [0],
+		array $optionalKeys = [],
+		?TrinaryLogic $isList = null,
+	): self
+	{
+		return new self($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList);
+	}
+
 	public function getConstantArrays(): array
 	{
 		return [$this];
@@ -765,7 +782,7 @@ class ConstantArrayType implements Type
 					return new NeverType();
 				}
 
-				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);
+				return $this->recreate($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);
 			}
 
 			return $this;
@@ -812,7 +829,7 @@ class ConstantArrayType implements Type
 				return new NeverType();
 			}
 
-			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
+			return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 		}
 
 		$optionalKeys = $this->optionalKeys;
@@ -842,7 +859,7 @@ class ConstantArrayType implements Type
 			return new NeverType();
 		}
 
-		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
+		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 	}
 
 	/**
@@ -1066,7 +1083,7 @@ class ConstantArrayType implements Type
 
 		if ($length === 0 || ($offset < 0 && $length < 0 && $offset - $length >= 0)) {
 			// 0 / 0, 3 / 0 or e.g. -3 / -3 or -3 / -4 and so on never extract anything
-			return new self([], []);
+			return $this->recreate([], []);
 		}
 
 		if ($length < 0) {
@@ -1370,7 +1387,7 @@ class ConstantArrayType implements Type
 			$optionalKeysRemoved--;
 		}
 
-		return new self(
+		return $this->recreate(
 			$keyTypes,
 			$valueTypes,
 			$nextAutoindexes,
@@ -1474,7 +1491,7 @@ class ConstantArrayType implements Type
 			$valueTypes[] = $valueType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
 	private function degradeToGeneralArray(): Type
@@ -1522,7 +1539,7 @@ class ConstantArrayType implements Type
 				static fn (int $i): ConstantIntegerType => new ConstantIntegerType($i),
 				array_keys($types),
 			);
-			return new self($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
+			return $this->recreate($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
 		}
 
 		$keyTypes = [];
@@ -1551,7 +1568,7 @@ class ConstantArrayType implements Type
 			$maxIndex++;
 		}
 
-		return new self($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes());
+		return $this->recreate($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes());
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -1716,7 +1733,7 @@ class ConstantArrayType implements Type
 			return $this;
 		}
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
@@ -1742,7 +1759,7 @@ class ConstantArrayType implements Type
 			return $this;
 		}
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
 	public function isKeysSupersetOf(self $otherArray): bool
@@ -1820,7 +1837,7 @@ class ConstantArrayType implements Type
 		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
-		return new self($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList));
+		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList));
 	}
 
 	/**
@@ -1874,7 +1891,7 @@ class ConstantArrayType implements Type
 			}
 
 			if (count($this->optionalKeys) !== count($optionalKeys)) {
-				return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList);
+				return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList);
 			}
 
 			break;
@@ -1893,7 +1910,7 @@ class ConstantArrayType implements Type
 			return new NeverType();
 		}
 
-		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
+		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
 	}
 
 	public function toPhpDocNode(): TypeNode

@@ -562,4 +562,11 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14421(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14421.php'], []);
+	}
+
 }

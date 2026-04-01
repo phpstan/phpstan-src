@@ -840,6 +840,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
 	}
 
+	private function exprContainsSuperGlobal(Expr $expr): bool
+	{
+		$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
+		if ($containsSuperGlobal !== null) {
+			return $containsSuperGlobal;
+		}
+
+		$nodeFinder = new NodeFinder();
+		$containsSuperGlobal = $nodeFinder->findFirst($expr, fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isGlobalVariable($node->name)) !== null;
+		$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
+
+		return $containsSuperGlobal;
+	}
+
 	/** @api */
 	public function hasConstant(Name $name): bool
 	{
@@ -3603,9 +3617,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			foreach ($variableTypeGuards as $guardExprString => $guardHolder) {
+				$exprExistsInTheirs = array_key_exists($exprString, $theirExpressionTypes)
+					&& $theirExpressionTypes[$exprString]->getCertainty()->yes();
+				if (!$exprExistsInTheirs) {
+					$exprExistsInTheirs = $this->exprContainsSuperGlobal($holder->getExpr());
+				}
 				if (
-					array_key_exists($exprString, $theirExpressionTypes)
-					&& $theirExpressionTypes[$exprString]->getCertainty()->yes()
+					$exprExistsInTheirs
 					&& array_key_exists($guardExprString, $theirExpressionTypes)
 					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
 					&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()

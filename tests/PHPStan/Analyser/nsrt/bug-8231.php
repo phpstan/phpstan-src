@@ -40,3 +40,36 @@ function testBool(bool|string|null $x): void {
 		assertType('non-empty-string|true', $x);
 	}
 }
+
+// (int) cast narrowing
+function testIntCast(int|null $x): void {
+	if ((int)$x !== 0) {
+		assertType('int<min, -1>|int<1, max>', $x);
+	}
+}
+
+function testIntCastIdentical(int|null $x): void {
+	if ((int)$x === 0) {
+		assertType('0|null', $x);
+	} else {
+		assertType('int<min, -1>|int<1, max>', $x);
+	}
+}
+
+function testIntCastWithString(int|string|null $x): void {
+	if ((int)$x !== 0) {
+		assertType("int<min, -1>|int<1, max>|non-falsy-string", $x);
+	}
+}
+
+function testIntCastWithFloat(float|null $x): void {
+	if ((int)$x !== 0) {
+		assertType('float', $x);
+	}
+}
+
+function testIntCastWithBool(bool|int|null $x): void {
+	if ((int)$x !== 0) {
+		assertType('int<min, -1>|int<1, max>|true', $x);
+	}
+}

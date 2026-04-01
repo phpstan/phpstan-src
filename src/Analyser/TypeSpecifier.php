@@ -2934,23 +2934,17 @@ final class TypeSpecifier
 			}
 		}
 
-		// (string)$expr === '' - propagate narrowing to inner expression
+		// (cast)$expr === value - propagate narrowing to inner expression
 		if (
 			!$context->null()
-			&& $unwrappedLeftExpr instanceof Expr\Cast\String_
+			&& $unwrappedLeftExpr instanceof Expr\Cast
 		) {
-			$rightConstantStrings = $rightType->getConstantStrings();
-			if (count($rightConstantStrings) === 1 && $rightConstantStrings[0]->getValue() === '') {
-				// Types that produce '' when cast to string: null, false, ''
-				$castToEmptyStringType = TypeCombinator::union(
-					new NullType(),
-					new ConstantBooleanType(false),
-					new ConstantStringType(''),
-				);
+			$castProducingType = $this->determineCastProducingType($unwrappedLeftExpr, $rightType);
+			if ($castProducingType !== null) {
 				$innerExpr = $unwrappedLeftExpr->expr;
 				$result = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
 				return $result->unionWith(
-					$this->create($innerExpr, $castToEmptyStringType, $context, $scope)->setRootExpr($expr),
+					$this->create($innerExpr, $castProducingType, $context, $scope)->setRootExpr($expr),
 				);
 			}
 		}
@@ -3142,6 +3136,42 @@ final class TypeSpecifier
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	/**
+	 * Given a cast expression and the value it's compared to,
+	 * returns the union of types that produce that value when cast.
+	 */
+	private function determineCastProducingType(Expr\Cast $cast, Type $comparedType): ?Type
+	{
+		if ($cast instanceof Expr\Cast\String_) {
+			$constantStrings = $comparedType->getConstantStrings();
+			if (count($constantStrings) === 1 && $constantStrings[0]->getValue() === '') {
+				// Types that produce '' when cast to string: null, false, ''
+				return TypeCombinator::union(
+					new NullType(),
+					new ConstantBooleanType(false),
+					new ConstantStringType(''),
+				);
+			}
+		}
+
+		if ($cast instanceof Expr\Cast\Int_) {
+			$constantScalars = $comparedType->getConstantScalarValues();
+			if (count($constantScalars) === 1 && $constantScalars[0] === 0) {
+				// Types that produce 0 when cast to int: null, false, 0, 0.0, '', '0'
+				return TypeCombinator::union(
+					new NullType(),
+					new ConstantBooleanType(false),
+					new ConstantIntegerType(0),
+					new ConstantFloatType(0.0),
+					new ConstantStringType(''),
+					new ConstantStringType('0'),
+				);
+			}
+		}
+
+		return null;
 	}
 
 }

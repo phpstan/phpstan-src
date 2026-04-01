@@ -3217,13 +3217,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 				foreach ($conditionalExpressions as $conditionalExpression) {
+					$subtypeMatch = false;
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
 							continue 2;
 						}
+						$specifiedHolder = $specifiedExpressions[$holderExprString];
+						if ($specifiedHolder->equals($conditionalTypeHolder)) {
+							continue;
+						}
+						if (
+							$conditionalExpression->getTypeHolder()->getCertainty()->yes()
+							&& $specifiedHolder->getCertainty()->yes()
+							&& $conditionalTypeHolder->getCertainty()->yes()
+							&& count($conditionalTypeHolder->getType()->getFiniteTypes()) > 1
+							&& $conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()
+						) {
+							$subtypeMatch = true;
+							continue;
+						}
+						continue 2;
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;
+					if ($subtypeMatch) {
+						continue;
+					}
+
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
 			}

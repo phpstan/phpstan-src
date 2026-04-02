@@ -2150,8 +2150,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return true;
 		}
 
+		if (!$specified->getCertainty()->equals($condition->getCertainty())) {
+			return false;
+		}
+
 		$conditionType = $condition->getType();
-		if (!$conditionType instanceof IntegerRangeType) {
+		if (!$conditionType->isInteger()->yes() || $conditionType->isConstantScalarValue()->yes()) {
 			return false;
 		}
 

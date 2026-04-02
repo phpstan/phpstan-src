@@ -2,21 +2,46 @@
 
 namespace Bug4090;
 
+use function current;
 use function PHPStan\Testing\assertType;
 
-class HelloWorld
+/** @param string[] $a */
+function foo(array $a): void
 {
-
-	/**
-	 * @param string[] $items
-	 */
-	public function test(string $value, array $items): void
-	{
-		if (in_array($value, $items, true)) {
-			assertType('non-empty-array<string>', $items);
-			$first = current($items);
-			assertType('string', $first);
-		}
+	if (count($a) > 1) {
+		echo implode(',', $a);
+	} elseif (count($a) === 1) {
+		assertType('string', current($a));
+		echo trim(current($a));
 	}
+}
 
+
+/** @param string[] $a */
+function bar(array $a): void
+{
+	$count = count($a);
+	if ($count > 1) {
+		echo implode(',', $a);
+	} elseif ($count === 1) {
+		assertType('string', current($a));
+		echo trim(current($a));
+	}
+}
+
+
+/** @param string[] $a */
+function qux(array $a): void
+{
+	switch (count($a)) {
+		case 0:
+			break;
+		case 1:
+			assertType('string', current($a));
+			echo trim(current($a));
+			break;
+		default:
+			echo implode(',', $a);
+			break;
+	}
 }

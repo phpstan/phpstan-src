@@ -10,7 +10,7 @@ class HelloWorld
 
 	public function test(string $action, ?int $hotelId): void
 	{
-		if ($action === 'get_rooms' && $hotelId === null) {
+		if (($action === 'get_rooms' || $action === 'get_rooms_2') && $hotelId === null) {
 			throw new InvalidArgumentException('Hotel ID is required');
 		}
 

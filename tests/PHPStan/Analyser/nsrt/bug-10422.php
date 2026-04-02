@@ -8,7 +8,7 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 
-	public function other(): bool
+	public function something(): bool
 	{
 		return true;
 	}
@@ -29,11 +29,14 @@ function testSimple(): void
 	$test = createOrNotObject();
 
 	$error = '';
+
 	if (!$test) {
-		$error = 'yes';
+		$error = 'missing test';
+	} else if ($test->something()) {
+		$error = 'another';
 	}
 	if ($error) {
-		return;
+		die('Done');
 	}
 	assertType(Foo::class, $test);
 }

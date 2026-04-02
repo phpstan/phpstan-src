@@ -3227,18 +3227,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							continue;
 						}
 						$guardType = $conditionalTypeHolder->getType();
-						// Allow subtype matching: when the specified type is a strict subtype
-						// of the guard, fire the conditional. Restricted to UnionType and
-						// IntegerRangeType guards — these represent explicit sets or ranges
-						// of values where narrowing to a member validly satisfies the guard.
-						// IntersectionType, MixedType, and other types can have coincidental
-						// subtype relationships that cause incorrect type narrowing.
+						$specifiedType = $specifiedHolder->getType();
 						if (
 							$conditionalExpression->getTypeHolder()->getCertainty()->yes()
 							&& $specifiedHolder->getCertainty()->yes()
 							&& $conditionalTypeHolder->getCertainty()->yes()
-							&& ($guardType instanceof UnionType || $guardType instanceof IntegerRangeType)
-							&& $guardType->isSuperTypeOf($specifiedHolder->getType())->yes()
+							&& count($guardType->getFiniteTypes()) > 1
+							&& $guardType->isSuperTypeOf($specifiedType)->yes()
 						) {
 							$subtypeMatch = true;
 							continue;

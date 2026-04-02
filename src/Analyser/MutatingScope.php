@@ -3226,7 +3226,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						if ($specifiedHolder->equals($conditionalTypeHolder)) {
 							continue;
 						}
-						
+
 						$guardType = $conditionalTypeHolder->getType();
 						if (
 							$conditionalExpression->getTypeHolder()->getCertainty()->yes()

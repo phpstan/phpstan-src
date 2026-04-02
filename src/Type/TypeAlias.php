@@ -9,11 +9,9 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\Generic\TemplateTypeFactory;
-use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_map;
 use function array_values;
 use function count;
@@ -61,11 +59,6 @@ final class TypeAlias
 		return $this->resolvedType = $typeNodeResolver->resolve($this->typeNode, $nameScope);
 	}
 
-	public function getAliasName(): string
-	{
-		return $this->aliasName;
-	}
-
 	/** Whether this alias was declared with type parameters (e.g. @phpstan-type Foo<T>). */
 	public function isGeneric(): bool
 	{
@@ -110,43 +103,6 @@ final class TypeAlias
 			$args,
 			$defaults,
 			$boundFallbacks,
-		);
-	}
-
-	/**
-	 * Resolves the alias body substituting concrete $args for each declared template parameter.
-	 *
-	 * @param Type[] $args Concrete types in the same order as the declared template params.
-	 */
-	public function resolveWithArgs(TypeNodeResolver $typeNodeResolver, array $args): Type
-	{
-		$resolvedType = $this->resolve($typeNodeResolver);
-
-		if (count($this->templateTagValueNodes) === 0) {
-			return $resolvedType;
-		}
-
-		// Map each template param name to the supplied arg (or its declared default / upper bound).
-		$templateTypeMapTypes = [];
-		foreach (array_values($this->templateTagValueNodes) as $i => $templateTagValueNode) {
-			if (isset($args[$i])) {
-				$templateTypeMapTypes[$templateTagValueNode->name] = $args[$i];
-			} else {
-				$bound = $templateTagValueNode->bound !== null
-					? $typeNodeResolver->resolve($templateTagValueNode->bound, $this->nameScope)
-					: new MixedType(true);
-				$default = $templateTagValueNode->default !== null
-					? $typeNodeResolver->resolve($templateTagValueNode->default, $this->nameScope)
-					: null;
-				$templateTypeMapTypes[$templateTagValueNode->name] = $default ?? $bound;
-			}
-		}
-
-		return TemplateTypeHelper::resolveTemplateTypes(
-			$resolvedType,
-			new TemplateTypeMap($templateTypeMapTypes),
-			TemplateTypeVarianceMap::createEmpty(),
-			TemplateTypeVariance::createInvariant(),
 		);
 	}
 

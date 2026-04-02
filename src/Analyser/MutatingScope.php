@@ -2154,24 +2154,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return false;
 		}
 
-		$conditionType = $condition->getType();
-
-		// Only use isSuperTypeOf for non-constant integer types (i.e. IntegerRangeType).
-		// This is needed for count()-in-variable patterns: when $count = count($a) creates
-		// a condition on int<1, max>, and $count is later narrowed to int<2, max> or 1,
-		// the subtype relationship correctly preserves the array narrowing.
-		//
-		// We cannot safely extend this to all types because filterBySpecifiedTypes()
-		// intersects results from ALL matching conditional expressions (line ~3251).
-		// For types like bool, isSuperTypeOf would match both a 'false' condition AND
-		// a 'bool' condition simultaneously, and intersecting their (potentially conflicting)
-		// results produces *NEVER*. Integer ranges don't have this problem because
-		// count() creates non-overlapping conditions (e.g. int<1, max> vs 0).
-		if (!$conditionType->isInteger()->yes() || $conditionType->isConstantScalarValue()->yes()) {
-			return false;
-		}
-
-		return $conditionType->isSuperTypeOf($specified->getType())->yes();
+		return $condition->getType()->isSuperTypeOf($specified->getType())->yes();
 	}
 
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool
@@ -3246,6 +3229,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (array_key_exists($conditionalExprString, $conditions)) {
 					continue;
 				}
+
+				// Pass 1: exact matches
+				foreach ($conditionalExpressions as $conditionalExpression) {
+					$allExact = true;
+					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+							$allExact = false;
+							break;
+						}
+					}
+					if ($allExact) {
+						$conditions[$conditionalExprString][] = $conditionalExpression;
+						$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					}
+				}
+
+				if (array_key_exists($conditionalExprString, $conditions)) {
+					continue;
+				}
+
+				// Pass 2: isSuperTypeOf fallback when no exact match exists
+				$superTypeMatches = [];
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$this->conditionalExpressionHolderMatches($specifiedExpressions[$holderExprString], $conditionalTypeHolder)) {
@@ -3253,8 +3258,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						}
 					}
 
-					$conditions[$conditionalExprString][] = $conditionalExpression;
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					$superTypeMatches[] = $conditionalExpression;
+				}
+
+				if (count($superTypeMatches) === 1) {
+					$conditions[$conditionalExprString][] = $superTypeMatches[0];
+					$specifiedExpressions[$conditionalExprString] = $superTypeMatches[0]->getTypeHolder();
 				}
 			}
 		}

@@ -99,15 +99,15 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 			],
 			[
 				'Deprecated',
-				15,
+				16,
 			],
 			[
 				'Deprecated: msg',
-				21,
+				22,
 			],
 			[
 				'Deprecated: msg2',
-				27,
+				28,
 			],
 		]);
 	}

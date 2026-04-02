@@ -19,7 +19,12 @@ final class InClassMethodNode extends Node\Stmt implements VirtualNode
 		private Node\Stmt\ClassMethod $originalNode,
 	)
 	{
-		parent::__construct($originalNode->getAttributes());
+		$attributes = $originalNode->getAttributes();
+		$nameStartLine = $originalNode->name->getStartLine();
+		if ($nameStartLine >= $originalNode->getStartLine() && $nameStartLine <= $originalNode->getEndLine()) {
+			$attributes['startLine'] = $nameStartLine;
+		}
+		parent::__construct($attributes);
 	}
 
 	public function getClassReflection(): ClassReflection

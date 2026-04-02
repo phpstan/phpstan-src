@@ -659,7 +659,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10101.php'], [
 			[
 				'Return type mixed of method Bug10101\B::next() is not covariant with return type void of method Bug10101\A::next().',
-				10,
+				11,
 			],
 		]);
 	}
@@ -690,7 +690,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$errors = [
 			[
 				'Method Bug10149\StdSat::__get() has #[\Override] attribute but does not override any method.',
-				10,
+				11,
 			],
 		];
 		$this->analyse([__DIR__ . '/data/bug-10149.php'], $errors);
@@ -729,11 +729,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/override-attribute.php'], [
 			[
 				'Method OverrideAttribute\Bar::test2() has #[\Override] attribute but does not override any method.',
-				24,
+				25,
 			],
 			[
 				'Method OverrideAttribute\ChildOfParentWithConstructor::__construct() has #[\Override] attribute but does not override any method.',
-				42,
+				43,
 			],
 		]);
 	}

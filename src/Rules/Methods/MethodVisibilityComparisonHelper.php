@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -16,7 +15,7 @@ final class MethodVisibilityComparisonHelper
 {
 
 	/** @return list<IdentifierRuleError> */
-	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, Node $node): array
+	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
@@ -33,7 +32,6 @@ final class MethodVisibilityComparisonHelper
 				))
 					->nonIgnorable()
 					->identifier('method.visibility')
-					->line($node->getStartLine())
 					->build();
 			}
 		} elseif ($method->isPrivate()) {
@@ -46,7 +44,6 @@ final class MethodVisibilityComparisonHelper
 			))
 				->nonIgnorable()
 				->identifier('method.visibility')
-				->line($node->getStartLine())
 				->build();
 		}
 

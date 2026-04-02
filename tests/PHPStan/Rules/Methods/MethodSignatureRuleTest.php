@@ -221,15 +221,15 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
 			[
 				'Return type (int) of method Bug3997\Baz::count() should be covariant with return type (int<0, max>) of method Countable::count()',
-				35,
+				36,
 			],
 			[
 				'Return type (int) of method Bug3997\Lorem::count() should be covariant with return type (int<0, max>) of method Countable::count()',
-				49,
+				50,
 			],
 			[
 				'Return type (string) of method Bug3997\Ipsum::count() should be compatible with return type (int<0, max>) of method Countable::count()',
-				63,
+				64,
 			],
 		]);
 	}

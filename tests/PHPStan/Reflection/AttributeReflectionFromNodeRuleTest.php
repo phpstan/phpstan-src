@@ -86,7 +86,7 @@ class AttributeReflectionFromNodeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/attribute-reflection.php'], [
 			[
 				'#[AttributeReflectionTest\MyAttr(one: 7, two: 8)], $test: #[AttributeReflectionTest\MyAttr(one: 9, two: 10)]',
-				28,
+				29,
 			],
 			[
 				'#[AttributeReflectionTest\MyAttr()]',

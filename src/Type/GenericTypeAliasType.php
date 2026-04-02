@@ -14,7 +14,6 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_keys;
 use function array_map;
 use function array_merge;
-use function array_unique;
 use function count;
 use function implode;
 use function sprintf;
@@ -86,7 +85,7 @@ final class GenericTypeAliasType implements CompoundType, LateResolvableType
 			$classes = array_merge($classes, $arg->getReferencedClasses());
 		}
 
-		return array_unique($classes);
+		return $classes;
 	}
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array

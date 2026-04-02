@@ -3251,6 +3251,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				// Pass 2: isSuperTypeOf fallback when no exact match exists
 				$superTypeMatches = [];
+				$totalConditionalCount = count($conditionalExpressions);
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$this->conditionalExpressionHolderMatches($specifiedExpressions[$holderExprString], $conditionalTypeHolder)) {
@@ -3261,9 +3262,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$superTypeMatches[] = $conditionalExpression;
 				}
 
-				if (count($superTypeMatches) === 1) {
+				if (count($superTypeMatches) === 1 && $totalConditionalCount >= 2) {
 					$conditions[$conditionalExprString][] = $superTypeMatches[0];
-					$specifiedExpressions[$conditionalExprString] = $superTypeMatches[0]->getTypeHolder();
 				}
 			}
 		}

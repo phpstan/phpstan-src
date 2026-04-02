@@ -189,7 +189,7 @@ final class OverridingMethodRule implements Rule
 		}
 
 		if ($checkVisibility) {
-			$messages = array_merge($messages, $this->methodVisibilityComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, $node->getOriginalNode()->name->getStartLine()));
+			$messages = array_merge($messages, $this->methodVisibilityComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, $node->getOriginalNode()->name));
 		}
 
 		$prototypeVariants = $prototype->getVariants();

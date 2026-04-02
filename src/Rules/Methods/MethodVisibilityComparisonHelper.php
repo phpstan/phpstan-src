@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -15,14 +16,14 @@ final class MethodVisibilityComparisonHelper
 {
 
 	/** @return list<IdentifierRuleError> */
-	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, ?int $line = null): array
+	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, Node $node): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
 
 		if ($prototype->isPublic()) {
 			if (!$method->isPublic()) {
-				$errorBuilder = RuleErrorBuilder::message(sprintf(
+				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s method %s::%s() overriding public method %s::%s() should also be public.',
 					$method->isPrivate() ? 'Private' : 'Protected',
 					$method->getDeclaringClass()->getDisplayName(),
@@ -31,14 +32,12 @@ final class MethodVisibilityComparisonHelper
 					$prototype->getName(),
 				))
 					->nonIgnorable()
-					->identifier('method.visibility');
-				if ($line !== null) {
-					$errorBuilder->line($line);
-				}
-				$messages[] = $errorBuilder->build();
+					->identifier('method.visibility')
+					->line($node->getStartLine())
+					->build();
 			}
 		} elseif ($method->isPrivate()) {
-			$errorBuilder = RuleErrorBuilder::message(sprintf(
+			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
@@ -46,11 +45,9 @@ final class MethodVisibilityComparisonHelper
 				$prototype->getName(),
 			))
 				->nonIgnorable()
-				->identifier('method.visibility');
-			if ($line !== null) {
-				$errorBuilder->line($line);
-			}
-			$messages[] = $errorBuilder->build();
+				->identifier('method.visibility')
+				->line($node->getStartLine())
+				->build();
 		}
 
 		return $messages;

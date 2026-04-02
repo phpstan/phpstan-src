@@ -11,6 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -68,9 +69,11 @@ final class GenericTypeAliasType implements CompoundType, LateResolvableType
 	{
 		$missing = [];
 		foreach ($this->paramNames as $i => $name) {
-			if (!isset($this->args[$i]) && $this->defaults[$i] === null) {
-				$missing[] = $name;
+			if (isset($this->args[$i]) || $this->defaults[$i] !== null) {
+				continue;
 			}
+
+			$missing[] = $name;
 		}
 
 		return $missing;
@@ -136,7 +139,7 @@ final class GenericTypeAliasType implements CompoundType, LateResolvableType
 			}
 		}
 
-		foreach ($this->paramNames as $i => $name) {
+		foreach (array_keys($this->paramNames) as $i) {
 			if (!isset($this->args[$i]) && $this->defaults[$i] === null) {
 				return false;
 			}
@@ -227,4 +230,3 @@ final class GenericTypeAliasType implements CompoundType, LateResolvableType
 	}
 
 }
-

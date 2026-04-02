@@ -17,7 +17,6 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_map;
 use function array_values;
 use function count;
-use function array_fill;
 
 final class TypeAlias
 {

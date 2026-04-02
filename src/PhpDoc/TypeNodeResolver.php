@@ -103,7 +103,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
-use PHPStan\Type\GenericTypeAliasType;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;

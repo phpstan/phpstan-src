@@ -2144,19 +2144,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
-	private function conditionalExpressionHolderMatches(ExpressionTypeHolder $specified, ExpressionTypeHolder $condition): bool
-	{
-		if ($specified->equals($condition)) {
-			return true;
-		}
-
-		if (!$specified->getCertainty()->equals($condition->getCertainty())) {
-			return false;
-		}
-
-		return $condition->getType()->isSuperTypeOf($specified->getType())->yes();
-	}
-
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool
 	{
 		$expr = $typeHolder->getExpr();
@@ -3243,7 +3230,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						}
 						if (!$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
 							$allExact = false;
-							if (!$this->conditionalExpressionHolderMatches($specifiedExpressions[$holderExprString], $conditionalTypeHolder)) {
+							if (
+								!$specifiedExpressions[$holderExprString]->getCertainty()->equals($conditionalTypeHolder->getCertainty())
+								|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
+							) {
 								$allSuperType = false;
 								break;
 							}

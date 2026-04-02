@@ -223,7 +223,7 @@ final class LocalTypeAliasesCheck
 
 			foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($resolvedType) as [$innerAliasName, $missingParams]) {
 				if ($innerAliasName === $aliasName) {
-					continue; // alias body contains its own template type placeholders — not a raw usage
+					continue; // skip self-referential alias bodies (circular aliases are already reported separately)
 				}
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s %s has type alias %s with generic type alias %s but does not specify its types: %s',

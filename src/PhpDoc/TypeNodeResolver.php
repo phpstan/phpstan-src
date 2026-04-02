@@ -103,6 +103,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
+use PHPStan\Type\GenericTypeAliasType;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;
@@ -850,7 +851,8 @@ final class TypeNodeResolver
 				return new ErrorType();
 			}
 
-			return $genericTypeAlias->resolveWithArgs($this, $genericTypes);
+			$appType = $genericTypeAlias->createApplicationType($this, $genericTypes);
+			return $appType->isResolvable() ? $appType->resolve() : $appType;
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);

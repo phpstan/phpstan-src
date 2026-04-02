@@ -17,6 +17,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_map;
 use function array_values;
 use function count;
+use function array_fill;
 
 final class TypeAlias
 {
@@ -61,6 +62,11 @@ final class TypeAlias
 		return $this->resolvedType = $typeNodeResolver->resolve($this->typeNode, $nameScope);
 	}
 
+	public function getAliasName(): string
+	{
+		return $this->aliasName;
+	}
+
 	/** Whether this alias was declared with type parameters (e.g. @phpstan-type Foo<T>). */
 	public function isGeneric(): bool
 	{
@@ -73,6 +79,39 @@ final class TypeAlias
 	public function getTemplateTagValueNodes(): array
 	{
 		return $this->templateTagValueNodes;
+	}
+
+	/**
+	 * Creates a GenericTypeAliasType for this alias with the given type arguments.
+	 *
+	 * @param list<Type> $args Concrete or partially-resolved type arguments in parameter order.
+	 */
+	public function createApplicationType(TypeNodeResolver $typeNodeResolver, array $args): GenericTypeAliasType
+	{
+		$resolvedBody = $this->resolve($typeNodeResolver);
+
+		$paramNames = [];
+		$defaults = [];
+		$boundFallbacks = [];
+
+		foreach (array_values($this->templateTagValueNodes) as $tvn) {
+			$paramNames[] = $tvn->name;
+			$defaults[] = $tvn->default !== null
+				? $typeNodeResolver->resolve($tvn->default, $this->nameScope)
+				: null;
+			$boundFallbacks[] = $tvn->bound !== null
+				? $typeNodeResolver->resolve($tvn->bound, $this->nameScope)
+				: new MixedType(true);
+		}
+
+		return new GenericTypeAliasType(
+			$this->aliasName,
+			$resolvedBody,
+			$paramNames,
+			$args,
+			$defaults,
+			$boundFallbacks,
+		);
 	}
 
 	/**

@@ -1485,6 +1485,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12597.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12597NonFinite(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PR5379;
 
+use ArrayAccess;
+
 use function PHPStan\Testing\assertType;
 
 class AggregationParser
@@ -36,3 +38,33 @@ class AggregationParser
 	}
 }
 
+class AggregationParser2
+{
+	private function parseAggregation(string $aggregation, string $type)
+	{
+		if (empty($aggregation[1]) && $type !== 'filter') {
+			return null;
+		}
+		assertType('string', $type);
+
+		if ($type !== 'filter') {
+			assertType('string', $type);
+		}
+
+		assertType('string', $type);
+	}
+
+	private function parseAggregation2(ArrayAccess $aggregation, string $type)
+	{
+		if (empty($aggregation['foo']) && $type !== 'filter') {
+			return null;
+		}
+		assertType('string', $type);
+
+		if ($type !== 'filter') {
+			assertType('string', $type);
+		}
+
+		assertType('string', $type);
+	}
+}

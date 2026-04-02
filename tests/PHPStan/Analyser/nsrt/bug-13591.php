@@ -1,0 +1,22 @@
+<?php declare(strict_types = 1);
+
+namespace Bug13591;
+
+use InvalidArgumentException;
+use function PHPStan\Testing\assertType;
+
+class HelloWorld
+{
+
+	public function test(string $action, ?int $hotelId): void
+	{
+		if ($action === 'get_rooms' && $hotelId === null) {
+			throw new InvalidArgumentException('Hotel ID is required');
+		}
+
+		if ($action === 'get_rooms') {
+			assertType('int', $hotelId);
+		}
+	}
+
+}

@@ -2144,6 +2144,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	private function conditionalExpressionHolderMatches(ExpressionTypeHolder $specified, ExpressionTypeHolder $condition): bool
+	{
+		if ($specified->equals($condition)) {
+			return true;
+		}
+
+		$conditionType = $condition->getType();
+		if (!$conditionType instanceof IntegerRangeType) {
+			return false;
+		}
+
+		return $conditionType->isSuperTypeOf($specified->getType())->yes();
+	}
+
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool
 	{
 		$expr = $typeHolder->getExpr();
@@ -3218,7 +3232,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$this->conditionalExpressionHolderMatches($specifiedExpressions[$holderExprString], $conditionalTypeHolder)) {
 							continue 2;
 						}
 					}

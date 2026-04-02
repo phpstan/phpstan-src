@@ -905,6 +905,15 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8212.php'], []);
 	}
 
+	public function testBug12597(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-12597.php'], []);
+	}
+
 	public function testBug4173(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

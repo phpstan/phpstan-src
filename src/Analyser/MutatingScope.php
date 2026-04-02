@@ -3229,6 +3229,32 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
+		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
+			if (array_key_exists($conditionalExprString, $conditions)) {
+				continue;
+			}
+			if (
+				!array_key_exists($conditionalExprString, $scope->expressionTypes)
+				|| $scope->expressionTypes[$conditionalExprString]->getCertainty()->yes()
+				|| !$scope->expressionTypes[$conditionalExprString]->getExpr() instanceof Variable
+			) {
+				continue;
+			}
+			foreach ($conditionalExpressions as $conditionalExpression) {
+				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					if (
+						!array_key_exists($holderExprString, $specifiedExpressions)
+						|| !$specifiedExpressions[$holderExprString]->getCertainty()->equals($conditionalTypeHolder->getCertainty())
+						|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
+					) {
+						continue 2;
+					}
+				}
+
+				$conditions[$conditionalExprString][] = $conditionalExpression;
+			}
+		}
+
 		foreach ($conditions as $conditionalExprString => $expressions) {
 			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
 			if ($certainty->no()) {

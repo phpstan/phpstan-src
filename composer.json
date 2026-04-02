@@ -112,6 +112,10 @@
 			"symfony/console": [
 				"patches/OutputFormatter.patch",
 				"patches/Application.patch"
+			],
+			"phpstan/phpdoc-parser": [
+				"patches/TypeAliasTagValueNode.patch",
+				"patches/PhpDocParser.patch"
 			]
 		}
 	},

@@ -24,8 +24,8 @@ function bar(array $a): void
 	if ($count > 1) {
 		echo implode(',', $a);
 	} elseif ($count === 1) {
-		assertType('string', current($a));
-		echo trim(current($a));
+		assertType('string|false', current($a));
+		echo trim((string) current($a));
 	}
 }
 

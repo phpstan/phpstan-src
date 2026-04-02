@@ -3210,6 +3210,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$conditions = [];
 		$prevSpecifiedCount = -1;
+		$debugFile = getenv('PHPSTAN_DEBUG_FILTER') ?: '';
 		while (count($specifiedExpressions) !== $prevSpecifiedCount) {
 			$prevSpecifiedCount = count($specifiedExpressions);
 			foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
@@ -3218,11 +3219,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
 							continue 2;
+						}
+						$specifiedHolder = $specifiedExpressions[$holderExprString];
+						if (!$specifiedHolder->equals($conditionalTypeHolder)) {
+							if (
+								!$conditionalExpression->getTypeHolder()->getCertainty()->yes()
+								|| !$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())
+								|| !$conditionalTypeHolder->getType() instanceof UnionType
+								|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()
+							) {
+								if ($debugFile !== '' && str_contains($scope->getFile(), $debugFile)) {
+									file_put_contents('/tmp/phpstan-debug.log', sprintf("SKIP: target=%s guard=%s guardType=%s specType=%s targetCert=%s\n", $conditionalExprString, $holderExprString, $conditionalTypeHolder->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $specifiedHolder->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $conditionalExpression->getTypeHolder()->getCertainty()->describe()), FILE_APPEND);
+								}
+								continue 2;
+							}
+							if ($debugFile !== '' && str_contains($scope->getFile(), $debugFile)) {
+								file_put_contents('/tmp/phpstan-debug.log', sprintf("RELAXED MATCH: target=%s guard=%s guardType=%s specType=%s targetCert=%s targetType=%s\n", $conditionalExprString, $holderExprString, $conditionalTypeHolder->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $specifiedHolder->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $conditionalExpression->getTypeHolder()->getCertainty()->describe(), $conditionalExpression->getTypeHolder()->getType()->describe(\PHPStan\Type\VerbosityLevel::precise())), FILE_APPEND);
+							}
 						}
 					}
 
+					if ($debugFile !== '' && str_contains($scope->getFile(), $debugFile)) {
+						file_put_contents('/tmp/phpstan-debug.log', sprintf("MATCHED: target=%s targetType=%s targetCert=%s\n", $conditionalExprString, $conditionalExpression->getTypeHolder()->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $conditionalExpression->getTypeHolder()->getCertainty()->describe()), FILE_APPEND);
+					}
 					$conditions[$conditionalExprString][] = $conditionalExpression;
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}

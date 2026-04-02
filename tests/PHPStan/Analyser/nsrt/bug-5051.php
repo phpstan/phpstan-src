@@ -64,23 +64,23 @@ class HelloWorld
 		}
 
 		if ($data === 1) {
-			assertType('bool', $update);
-			assertType('bool', $foo);
+			assertType('false', $update);
+			assertType('false', $foo);
 		} else {
 			assertType('bool', $update);
 			assertType('bool', $foo);
 		}
 
 		if ($data === 2) {
-			assertType('bool', $update);
-			assertType('bool', $foo);
+			assertType('false', $update);
+			assertType('false', $foo);
 		} else {
 			assertType('bool', $update);
 			assertType('bool', $foo);
 		}
 
 		if ($data === 3) {
-			assertType('bool', $update);
+			assertType('false', $update);
 			assertType('true', $foo);
 		} else {
 			assertType('bool', $update);

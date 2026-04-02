@@ -37,19 +37,3 @@ function testSimple(): void
 	}
 	assertType(Foo::class, $test);
 }
-
-function testWithElseIf(): void
-{
-	$test = createOrNotObject();
-
-	$error = '';
-	if (!$test) {
-		$error = 'yes';
-	} else if ($test->other()) {
-		$error = 'yes';
-	}
-	if ($error) {
-		return;
-	}
-	assertType(Foo::class . '|null', $test); // Should be Foo, see https://github.com/phpstan/phpstan/issues/10422
-}

@@ -3227,6 +3227,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							continue;
 						}
 						$guardType = $conditionalTypeHolder->getType();
+						// Allow subtype matching: when the specified type is a strict subtype
+						// of the guard, fire the conditional. Restricted to UnionType guards
+						// because unions represent explicit disjunctions of alternatives —
+						// narrowing to one alternative validly satisfies the guard condition.
+						// Non-union types (IntersectionType, BooleanType, etc.) can have
+						// coincidental subtype relationships that cause incorrect type
+						// narrowing when the conditional result is applied to the scope.
 						if (
 							$conditionalExpression->getTypeHolder()->getCertainty()->yes()
 							&& $specifiedHolder->getCertainty()->yes()

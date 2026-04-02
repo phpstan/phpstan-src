@@ -114,7 +114,28 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 
 		try {
 			$unresolvedAlias = $localTypeAliases[$aliasName];
-			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
+
+			// For a generic alias used bare (no type args provided), check whether every
+			// declared template param has a default value.  When they all do, we can
+			// resolve immediately to a fully-concrete type by passing an empty args list to
+			// resolveWithArgs() — which then falls back to each param's declared default.
+			// When at least one param has no default, we keep the raw TemplateType
+			// placeholders so that MissingTypehintCheck::getRawGenericTypeAliasesUsage()
+			// can detect the bare-usage error ("does not specify its types: T").
+			if ($unresolvedAlias->isGeneric()) {
+				$allHaveDefaults = true;
+				foreach ($unresolvedAlias->getTemplateTagValueNodes() as $tvn) {
+					if ($tvn->default === null) {
+						$allHaveDefaults = false;
+						break;
+					}
+				}
+				$resolvedAliasType = $allHaveDefaults
+					? $unresolvedAlias->resolveWithArgs($this->typeNodeResolver, [])
+					: $unresolvedAlias->resolve($this->typeNodeResolver);
+			} else {
+				$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
+			}
 		} catch (CircularTypeAliasDefinitionException) {
 			$resolvedAliasType = new CircularTypeAliasErrorType();
 		}

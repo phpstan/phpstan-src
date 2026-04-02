@@ -1964,11 +1964,15 @@ final class TypeSpecifier
 					continue;
 				}
 
-				$holder = new ConditionalExpressionHolder(
-					$conditions,
-					ExpressionTypeHolder::createYes($expr, TypeCombinator::intersect($scope->getType($expr), $type)),
-				);
-				$holders[$exprString][$holder->getKey()] = $holder;
+				$resultTypeHolder = ExpressionTypeHolder::createYes($expr, TypeCombinator::intersect($scope->getType($expr), $type));
+
+				foreach ($this->expandUnionConditions($conditions) as $expandedConditions) {
+					$holder = new ConditionalExpressionHolder(
+						$expandedConditions,
+						$resultTypeHolder,
+					);
+					$holders[$exprString][$holder->getKey()] = $holder;
+				}
 			}
 
 			return $holders;
@@ -2085,17 +2089,44 @@ final class TypeSpecifier
 					continue;
 				}
 
-				$holder = new ConditionalExpressionHolder(
-					$conditions,
-					ExpressionTypeHolder::createYes($expr, TypeCombinator::remove($scope->getType($expr), $type)),
-				);
-				$holders[$exprString][$holder->getKey()] = $holder;
+				$resultTypeHolder = ExpressionTypeHolder::createYes($expr, TypeCombinator::remove($scope->getType($expr), $type));
+
+				foreach ($this->expandUnionConditions($conditions) as $expandedConditions) {
+					$holder = new ConditionalExpressionHolder(
+						$expandedConditions,
+						$resultTypeHolder,
+					);
+					$holders[$exprString][$holder->getKey()] = $holder;
+				}
 			}
 
 			return $holders;
 		}
 
 		return [];
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $conditions
+	 * @return list<array<string, ExpressionTypeHolder>>
+	 */
+	private function expandUnionConditions(array $conditions): array
+	{
+		$result = [$conditions];
+		foreach ($conditions as $exprString => $typeHolder) {
+			$type = $typeHolder->getType();
+			if (!$type instanceof UnionType) {
+				continue;
+			}
+
+			foreach ($type->getTypes() as $innerType) {
+				$expanded = $conditions;
+				$expanded[$exprString] = ExpressionTypeHolder::createYes($typeHolder->getExpr(), $innerType);
+				$result[] = $expanded;
+			}
+		}
+
+		return $result;
 	}
 
 	/**

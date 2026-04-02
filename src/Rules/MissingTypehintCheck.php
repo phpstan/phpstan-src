@@ -1,6 +1,5 @@
 <?php declare(strict_types = 1);
 
-// ci-baseline-check: no-op
 namespace PHPStan\Rules;
 
 use Closure;
@@ -38,6 +37,7 @@ use function strtolower;
 final class MissingTypehintCheck
 {
 
+	// ci-baseline-check
 	public const MISSING_ITERABLE_VALUE_TYPE_TIP = 'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type';
 
 	private const ITERABLE_GENERIC_CLASS_NAMES = [

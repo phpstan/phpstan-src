@@ -1,6 +1,5 @@
 <?php declare(strict_types = 1);
 
-// ci-baseline-check: no-op comment to trigger full CI suite
 
 namespace PHPStan\Analyser;
 
@@ -23,6 +22,7 @@ use function memory_get_peak_usage;
 final class Analyser
 {
 
+	// ci-baseline-check
 	public function __construct(
 		private FileAnalyser $fileAnalyser,
 		private RuleRegistry $ruleRegistry,

@@ -1492,15 +1492,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
-		// Non-finite union guards (int|string) cannot be matched via subtype
-		// narrowing without also incorrectly firing broad union conditionals
-		// (e.g. bool|float|int|string). This is a known limitation.
-		$this->analyse([__DIR__ . '/data/bug-12597-non-finite.php'], [
-			[
-				'Variable $message might not be defined.',
-				14,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-12597-non-finite.php'], []);
 	}
 
 	public function testBug14117(): void

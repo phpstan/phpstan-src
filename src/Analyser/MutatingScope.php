@@ -3230,39 +3230,38 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 
-				// Pass 1: exact matches
+				$exactMatches = [];
+				$superTypeMatches = [];
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					$allExact = true;
+					$allSuperType = true;
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
 							$allExact = false;
+							$allSuperType = false;
 							break;
+						}
+						if (!$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+							$allExact = false;
+							if (!$this->conditionalExpressionHolderMatches($specifiedExpressions[$holderExprString], $conditionalTypeHolder)) {
+								$allSuperType = false;
+								break;
+							}
 						}
 					}
 					if ($allExact) {
-						$conditions[$conditionalExprString][] = $conditionalExpression;
-						$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+						$exactMatches[] = $conditionalExpression;
+					} elseif ($allSuperType) {
+						$superTypeMatches[] = $conditionalExpression;
 					}
 				}
 
-				if (array_key_exists($conditionalExprString, $conditions)) {
-					continue;
-				}
-
-				// Pass 2: isSuperTypeOf fallback when no exact match exists
-				$superTypeMatches = [];
-				$totalConditionalCount = count($conditionalExpressions);
-				foreach ($conditionalExpressions as $conditionalExpression) {
-					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$this->conditionalExpressionHolderMatches($specifiedExpressions[$holderExprString], $conditionalTypeHolder)) {
-							continue 2;
-						}
+				if (count($exactMatches) > 0) {
+					foreach ($exactMatches as $exactMatch) {
+						$conditions[$conditionalExprString][] = $exactMatch;
+						$specifiedExpressions[$conditionalExprString] = $exactMatch->getTypeHolder();
 					}
-
-					$superTypeMatches[] = $conditionalExpression;
-				}
-
-				if (count($superTypeMatches) === 1 && $totalConditionalCount >= 2) {
+				} elseif (count($superTypeMatches) === 1 && count($conditionalExpressions) >= 2) {
 					$conditions[$conditionalExprString][] = $superTypeMatches[0];
 				}
 			}

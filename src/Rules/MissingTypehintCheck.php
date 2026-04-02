@@ -23,6 +23,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\GenericTypeAliasType;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -221,13 +222,13 @@ final class MissingTypehintCheck
 		/** @var array<string, list<string>> $found */
 		$found = [];
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$found): Type {
-			if ($type instanceof TemplateType) {
-				$aliasName = $type->getScope()->getTypeAliasName();
-				if ($aliasName !== null && $type->getDefault() === null) {
-					$found[$aliasName][] = $type->getName();
+			if ($type instanceof GenericTypeAliasType) {
+				$missing = $type->getMissingRequiredParamNames();
+				if ($missing !== []) {
+					$found[$type->getAliasName()] = $missing;
 				}
-				return $type;
 			}
+
 			return $traverse($type);
 		});
 
@@ -235,6 +236,7 @@ final class MissingTypehintCheck
 		foreach ($found as $aliasName => $paramNames) {
 			$result[] = [$aliasName, implode(', ', array_unique($paramNames))];
 		}
+
 		return $result;
 	}
 

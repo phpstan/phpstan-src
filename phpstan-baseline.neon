@@ -1710,7 +1710,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 3
+			count: 2
 			path: src/Type/TypeCombinator.php
 
 		-
@@ -1741,18 +1741,6 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectShapeType is error-prone and deprecated. Use Type::isObject() and Type::hasProperty() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: Instanceof between PHPStan\Type\Constant\ConstantIntegerType and PHPStan\Type\Constant\ConstantIntegerType will always evaluate to true.
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: Result of || is always true.
-			identifier: booleanOr.alwaysTrue
-			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-

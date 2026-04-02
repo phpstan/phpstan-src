@@ -18,19 +18,6 @@ function foo(array $a): void
 
 
 /** @param string[] $a */
-function bar(array $a): void
-{
-	$count = count($a);
-	if ($count > 1) {
-		echo implode(',', $a);
-	} elseif ($count === 1) {
-		assertType('string|false', current($a));
-		echo trim((string) current($a));
-	}
-}
-
-
-/** @param string[] $a */
 function qux(array $a): void
 {
 	switch (count($a)) {

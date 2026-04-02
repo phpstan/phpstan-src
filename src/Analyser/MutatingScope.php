@@ -3233,7 +3233,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							$conditionalExpression->getTypeHolder()->getCertainty()->yes()
 							&& $specifiedHolder->getCertainty()->yes()
 							&& $conditionalTypeHolder->getCertainty()->yes()
-							&& ($guardType->isArray()->no())
+							&& $guardType->isArray()->no()
 							&& $guardType->isSuperTypeOf($specifiedType)->yes()
 						) {
 							$subtypeMatch = true;

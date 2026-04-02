@@ -1758,15 +1758,24 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$ifType = $parameterType->isNegated() ? $parameterType->getElse() : $parameterType->getIf();
 					$elseType = $parameterType->isNegated() ? $parameterType->getIf() : $parameterType->getElse();
 
-					$holder = new ConditionalExpressionHolder([
-						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget())),
-					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType));
-					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
+					$ifConditionType = TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget());
+					$elseConditionType = TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget());
 
-					$holder = new ConditionalExpressionHolder([
-						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget())),
-					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType));
-					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
+					$ifConditionTypes = $ifConditionType instanceof UnionType ? $ifConditionType->getTypes() : [$ifConditionType];
+					foreach ($ifConditionTypes as $conditionType) {
+						$holder = new ConditionalExpressionHolder([
+							$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), $conditionType),
+						], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType));
+						$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
+					}
+
+					$elseConditionTypes = $elseConditionType instanceof UnionType ? $elseConditionType->getTypes() : [$elseConditionType];
+					foreach ($elseConditionTypes as $conditionType) {
+						$holder = new ConditionalExpressionHolder([
+							$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), $conditionType),
+						], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType));
+						$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
+					}
 				}
 			}
 

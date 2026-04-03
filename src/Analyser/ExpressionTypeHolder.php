@@ -50,6 +50,19 @@ final class ExpressionTypeHolder
 		return $this->type === $other->type || $this->type->equals($other->type);
 	}
 
+	public function isSuperTypeOf(self $other): bool
+	{
+		if ($this === $other) {
+			return true;
+		}
+
+		if (!$this->certainty->equals($other->certainty)) {
+			return false;
+		}
+
+		return $this->type === $other->type || $this->type->isSuperTypeOf($other->type)->yes();
+	}
+
 	public function and(self $other): self
 	{
 		if ($this->type === $other->type || $this->type->equals($other->type)) {

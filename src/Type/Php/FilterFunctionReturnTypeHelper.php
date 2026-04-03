@@ -24,6 +24,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -183,9 +184,9 @@ final class FilterFunctionReturnTypeHelper
 		$type = $this->applyRangeOptions($type, $options, $defaultType);
 
 		if (
-			$inputType->isNonEmptyString()->yes()
+			!$this->canStringBeSanitized($filterValue, $flagsType)
+			&& $inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
-			&& $this->canStringBeSanitized($filterValue, $flagsType)->no()
 		) {
 			$accessory = new AccessoryNonEmptyStringType();
 			if ($inputType->isNonFalsyString()->yes()) {
@@ -194,7 +195,11 @@ final class FilterFunctionReturnTypeHelper
 			$type = TypeCombinator::intersect($type, $accessory);
 		}
 
-		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
+		if (
+			$exactType === null
+			|| $hasOptions->maybe()
+			|| ($this->isValidationFilter($filterValue) && (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes()))
+		) {
 			if (!$defaultType->isSuperTypeOf($type)->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
@@ -392,16 +397,54 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			if ($this->canStringBeSanitized($filterValue, $flagsType)->no() && $in->isString()->yes()) {
-				return $in;
+			$inputType = $in;
+			$useDefaultType = false;
+
+			if ($inputType->isArray()->maybe()) {
+				$inputType = TypeCombinator::remove($inputType, new ArrayType(new MixedType(), new MixedType()));
+				$useDefaultType = true;
+			}
+			if ($inputType->isObject()->maybe()) {
+				$inputType = TypeCombinator::remove($inputType, new ObjectShapeType([], []));
+				$useDefaultType = true;
 			}
 
-			if ($in->isBoolean()->yes() || $in->isFloat()->yes() || $in->isInteger()->yes() || $in->isNull()->yes()) {
-				return $in->toString();
+			if (!$this->canStringBeSanitized($filterValue, $flagsType)) {
+				$stringType = $inputType->toString();
+			} else {
+				$stringType = TypeCombinator::union(
+					TypeCombinator::remove($inputType, new StringType()),
+					new StringType(),
+				);
 			}
+
+			$returnType = $this->handleEmptyStringNullFlag($stringType, $flagsType);
+			return $useDefaultType ? TypeCombinator::union($defaultType, $returnType) : $returnType;
 		}
 
 		return null;
+	}
+
+	private function handleEmptyStringNullFlag(Type $in, ?Type $flagsType): Type
+	{
+		$hasFlag = $this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType);
+		if ($hasFlag->no()) {
+			return $in;
+		}
+
+		if ($hasFlag->maybe()) {
+			return $in->isNonEmptyString()->maybe() ? TypeCombinator::addNull($in) : $in;
+		}
+
+		if ($in->isNonEmptyString()->yes()) {
+			return $in;
+		}
+
+		if ($in->isNonEmptyString()->maybe()) {
+			return TypeCombinator::remove(TypeCombinator::addNull($in), new ConstantStringType(''));
+		}
+
+		return new NullType();
 	}
 
 	/** @param array<string, ?Type> $typeOptions */
@@ -532,22 +575,32 @@ final class FilterFunctionReturnTypeHelper
 		);
 	}
 
-	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): TrinaryLogic
+	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): bool
 	{
 		// If it is a validation filter, the string will not be changed
-		if (($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0) {
-			return TrinaryLogic::createNo();
+		if ($this->isValidationFilter($filterValue)) {
+			return false;
 		}
 
 		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
 		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			return $this->hasFlag('FILTER_FLAG_STRIP_LOW', $flagsType)
+			$hasStripFlags = $this->hasFlag('FILTER_FLAG_STRIP_LOW', $flagsType)
 				->or($this->hasFlag('FILTER_FLAG_STRIP_HIGH', $flagsType))
 				->or($this->hasFlag('FILTER_FLAG_STRIP_BACKTICK', $flagsType));
+			if ($hasStripFlags->maybe()) {
+				// Too complicated, considering strip flags are not defined (default behavior).
+				return false;
+			}
+			return $hasStripFlags->yes();
 		}
 
-		return TrinaryLogic::createYes();
+		return true;
+	}
+
+	private function isValidationFilter(int $filterValue): bool
+	{
+		return ($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0;
 	}
 
 }

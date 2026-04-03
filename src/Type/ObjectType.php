@@ -624,15 +624,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
-			return false;
-		}
-
-		if ($type instanceof EnumCaseObjectType) {
-			return false;
-		}
-
-		if ($type instanceof Generic\GenericObjectType && !$this instanceof Generic\GenericObjectType) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

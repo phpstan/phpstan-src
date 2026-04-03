@@ -19,6 +19,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 trait LateResolvableTypeTrait
 {
@@ -64,6 +65,18 @@ trait LateResolvableTypeTrait
 	{
 		if ($type instanceof NeverType) {
 			return IsSuperTypeOfResult::createYes();
+		}
+
+		if ($this->equals($type)) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
+		if ($type instanceof UnionType) {
+			foreach ($type->getTypes() as $innerType) {
+				if ($this->equals($innerType)) {
+					return IsSuperTypeOfResult::createYes();
+				}
+			}
 		}
 
 		if ($type instanceof LateResolvableType) {
@@ -581,6 +594,18 @@ trait LateResolvableTypeTrait
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
+		if ($this->equals($otherType)) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
+		if ($otherType instanceof UnionType) {
+			foreach ($otherType->getTypes() as $innerType) {
+				if ($this->equals($innerType)) {
+					return IsSuperTypeOfResult::createYes();
+				}
+			}
+		}
+
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {

@@ -15,6 +15,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -31,6 +32,7 @@ final class CastStringHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private PhpVersion $phpVersion,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -61,20 +63,22 @@ final class CastStringHandler implements ExprHandler
 				);
 			}
 
-			$throwType = $toStringMethod->getThrowType();
-			if ($throwType === null) {
-				$returnType = $toStringMethod->getVariants()[0]->getReturnType();
-				if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-					$throwType = new ObjectType(Throwable::class);
+			if ($this->phpVersion->throwsOnStringCast()) {
+				$throwType = $toStringMethod->getThrowType();
+				if ($throwType === null) {
+					$returnType = $toStringMethod->getVariants()[0]->getReturnType();
+					if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+						$throwType = new ObjectType(Throwable::class);
+					}
 				}
-			}
 
-			if ($throwType !== null) {
-				if (!$throwType->isVoid()->yes()) {
-					$throwPoints[] = InternalThrowPoint::createExplicit($scope, $throwType, $expr, true);
+				if ($throwType !== null) {
+					if (!$throwType->isVoid()->yes()) {
+						$throwPoints[] = InternalThrowPoint::createExplicit($scope, $throwType, $expr, true);
+					}
+				} elseif ($this->implicitThrows) {
+					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 				}
-			} elseif ($this->implicitThrows) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}
 		}
 

@@ -56,6 +56,7 @@ use function array_key_exists;
 use function array_map;
 use function array_values;
 use function count;
+use function get_class;
 use function implode;
 use function in_array;
 use function sprintf;
@@ -624,15 +625,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
-			return false;
-		}
-
-		if ($type instanceof EnumCaseObjectType) {
-			return false;
-		}
-
-		if ($type instanceof Generic\GenericObjectType && !$this instanceof Generic\GenericObjectType) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

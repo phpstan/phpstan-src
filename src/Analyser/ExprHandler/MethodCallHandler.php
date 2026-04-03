@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -21,13 +22,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
-use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -35,17 +33,12 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use ReflectionFunction;
-use ReflectionMethod;
-use Throwable;
 use function array_map;
 use function array_merge;
 use function count;
-use function in_array;
 use function sprintf;
 use function strtolower;
 
@@ -57,10 +50,8 @@ final class MethodCallHandler implements ExprHandler
 {
 
 	public function __construct(
-		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
-		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
-		private bool $implicitThrows,
+		private MethodThrowPointHelper $methodThrowPointHelper,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 	)
@@ -153,7 +144,7 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope);
+			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}
@@ -233,50 +224,6 @@ final class MethodCallHandler implements ExprHandler
 		}
 
 		return $result;
-	}
-
-	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $normalizedMethodCall, MutatingScope $scope): ?InternalThrowPoint
-	{
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
-			if (!$extension->isMethodSupported($methodReflection)) {
-				continue;
-			}
-
-			$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
-			if ($throwType === null) {
-				return null;
-			}
-
-			return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, false);
-		}
-
-		if (
-			in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
-			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
-		) {
-			return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
-		}
-
-		$throwType = $methodReflection->getThrowType();
-		if ($throwType === null) {
-			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-				$throwType = new ObjectType(Throwable::class);
-			}
-		}
-
-		if ($throwType !== null) {
-			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
-			}
-		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($normalizedMethodCall);
-			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
-			}
-		}
-
-		return null;
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

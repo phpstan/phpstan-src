@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -25,7 +26,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\MethodReflection;
@@ -39,7 +39,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use ReflectionProperty;
-use Throwable;
 use function array_map;
 use function array_merge;
 use function count;
@@ -55,10 +54,8 @@ final class StaticCallHandler implements ExprHandler
 {
 
 	public function __construct(
-		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
-		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
-		private bool $implicitThrows,
+		private MethodThrowPointHelper $methodThrowPointHelper,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 	)
@@ -198,7 +195,7 @@ final class StaticCallHandler implements ExprHandler
 		$scopeFunction = $scope->getFunction();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $normalizedExpr, $scope);
+			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}
@@ -266,36 +263,6 @@ final class StaticCallHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
-	}
-
-	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, StaticCall $normalizedMethodCall, MutatingScope $scope): ?InternalThrowPoint
-	{
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
-			if (!$extension->isStaticMethodSupported($methodReflection)) {
-				continue;
-			}
-
-			$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
-			if ($throwType === null) {
-				return null;
-			}
-
-			return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, false);
-		}
-
-		if ($methodReflection->getThrowType() !== null) {
-			$throwType = $methodReflection->getThrowType();
-			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
-			}
-		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($normalizedMethodCall);
-			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
-			}
-		}
-
-		return null;
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

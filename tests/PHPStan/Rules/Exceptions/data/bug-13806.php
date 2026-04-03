@@ -14,7 +14,8 @@ function castToString(\Stringable|string $variable): string {
 }
 
 class MyString {
-	public function __toString(): never {
+	/** @return never */
+	public function __toString() {
 		throw new \Exception();
 	}
 }

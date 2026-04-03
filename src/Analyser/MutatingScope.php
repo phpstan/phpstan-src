@@ -3228,12 +3228,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							$allSuperType = false;
 							break;
 						}
-						if (!$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
-							$allExact = false;
-							if (!$conditionalTypeHolder->isSuperTypeOf($specifiedExpressions[$holderExprString])->yes()) {
-								$allSuperType = false;
-								break;
-							}
+						if ($specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+							continue;
+						}
+
+						$allExact = false;
+						if (!$conditionalTypeHolder->isSuperTypeOf($specifiedExpressions[$holderExprString])->yes()) {
+							$allSuperType = false;
+							break;
 						}
 					}
 					if ($allExact) {

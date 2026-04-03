@@ -10,11 +10,16 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use Throwable;
 use function sprintf;
 
 /**
@@ -26,6 +31,8 @@ final class CastStringHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
+		private bool $implicitThrows,
 	)
 	{
 	}
@@ -39,6 +46,7 @@ final class CastStringHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$impurePoints = $exprResult->getImpurePoints();
+		$throwPoints = $exprResult->getThrowPoints();
 
 		$exprType = $scope->getType($expr->expr);
 		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
@@ -52,6 +60,22 @@ final class CastStringHandler implements ExprHandler
 					$toStringMethod->isPure()->no(),
 				);
 			}
+
+			$throwType = $toStringMethod->getThrowType();
+			if ($throwType === null) {
+				$returnType = $toStringMethod->getVariants()[0]->getReturnType();
+				if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+					$throwType = new ObjectType(Throwable::class);
+				}
+			}
+
+			if ($throwType !== null) {
+				if (!$throwType->isVoid()->yes()) {
+					$throwPoints[] = InternalThrowPoint::createExplicit($scope, $throwType, $expr, true);
+				}
+			} elseif ($this->implicitThrows) {
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+			}
 		}
 
 		$scope = $exprResult->getScope();
@@ -60,7 +84,7 @@ final class CastStringHandler implements ExprHandler
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: $exprResult->getThrowPoints(),
+			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),

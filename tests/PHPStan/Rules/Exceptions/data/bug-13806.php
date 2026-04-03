@@ -20,3 +20,14 @@ class MyString {
 }
 
 castToString(new MyString());
+
+function castIntToString(int $variable): string {
+	try {
+		$value = (string) $variable;
+	} catch(\Throwable) {
+		var_dump("Error thrown during string-conversion!");
+		$value = '';
+	}
+
+	return $value;
+}

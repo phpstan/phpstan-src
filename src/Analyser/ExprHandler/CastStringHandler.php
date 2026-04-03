@@ -66,7 +66,7 @@ final class CastStringHandler implements ExprHandler
 			if ($this->phpVersion->throwsOnStringCast()) {
 				$throwType = $toStringMethod->getThrowType();
 				if ($throwType === null) {
-					$returnType = $toStringMethod->getVariants()[0]->getReturnType();
+					$returnType = $toStringMethod->getOnlyVariant()->getReturnType();
 					if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 						$throwType = new ObjectType(Throwable::class);
 					}

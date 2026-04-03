@@ -29,7 +29,6 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -199,7 +198,7 @@ final class StaticCallHandler implements ExprHandler
 		$scopeFunction = $scope->getFunction();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $normalizedExpr, $scope);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}
@@ -269,7 +268,7 @@ final class StaticCallHandler implements ExprHandler
 		);
 	}
 
-	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, StaticCall $normalizedMethodCall, MutatingScope $scope): ?InternalThrowPoint
+	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, StaticCall $normalizedMethodCall, MutatingScope $scope): ?InternalThrowPoint
 	{
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
 			if (!$extension->isStaticMethodSupported($methodReflection)) {

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -50,17 +51,21 @@ final class ExpressionTypeHolder
 		return $this->type === $other->type || $this->type->equals($other->type);
 	}
 
-	public function isSuperTypeOf(self $other): bool
+	public function isSuperTypeOf(self $other): IsSuperTypeOfResult
 	{
 		if ($this === $other) {
-			return true;
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if (!$this->certainty->equals($other->certainty)) {
-			return false;
+			return IsSuperTypeOfResult::createNo();
 		}
 
-		return $this->type === $other->type || $this->type->isSuperTypeOf($other->type)->yes();
+		if ($this->type === $other->type) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
+		return $this->type->isSuperTypeOf($other->type);
 	}
 
 	public function and(self $other): self

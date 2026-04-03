@@ -484,28 +484,21 @@ final class FuncCallHandler implements ExprHandler
 	private function getFunctionThrowPoint(
 		FunctionReflection $functionReflection,
 		?ParametersAcceptor $parametersAcceptor,
-		FuncCall $funcCall,
+		FuncCall $normalizedFuncCall,
 		MutatingScope $scope,
 	): ?InternalThrowPoint
 	{
-		$normalizedFuncCall = $funcCall;
-		if ($parametersAcceptor !== null) {
-			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $funcCall);
-		}
-
-		if ($normalizedFuncCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
-				if (!$extension->isFunctionSupported($functionReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
+			if (!$extension->isFunctionSupported($functionReflection)) {
+				continue;
 			}
+
+			$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedFuncCall, false);
 		}
 
 		$throwType = $functionReflection->getThrowType();
@@ -518,7 +511,7 @@ final class FuncCallHandler implements ExprHandler
 
 		if ($throwType !== null) {
 			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $funcCall, true);
+				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedFuncCall, true);
 			}
 		} elseif ($this->implicitThrows) {
 			$requiredParameters = null;
@@ -536,11 +529,11 @@ final class FuncCallHandler implements ExprHandler
 				!$functionReflection->isBuiltin()
 				|| $requiredParameters === null
 				|| $requiredParameters > 0
-				|| count($funcCall->getArgs()) > 0
+				|| count($normalizedFuncCall->getArgs()) > 0
 			) {
-				$functionReturnedType = $scope->getType($funcCall);
+				$functionReturnedType = $scope->getType($normalizedFuncCall);
 				if (!(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
-					return InternalThrowPoint::createImplicit($scope, $funcCall);
+					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);
 				}
 			}
 		}

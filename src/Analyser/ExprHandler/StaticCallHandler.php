@@ -29,7 +29,6 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -199,7 +198,7 @@ final class StaticCallHandler implements ExprHandler
 		$scopeFunction = $scope->getFunction();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $normalizedExpr, $scope);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}
@@ -269,33 +268,30 @@ final class StaticCallHandler implements ExprHandler
 		);
 	}
 
-	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, StaticCall $methodCall, MutatingScope $scope): ?InternalThrowPoint
+	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, StaticCall $normalizedMethodCall, MutatingScope $scope): ?InternalThrowPoint
 	{
-		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
-		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
-				if (!$extension->isStaticMethodSupported($methodReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+			if (!$extension->isStaticMethodSupported($methodReflection)) {
+				continue;
 			}
+
+			$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, false);
 		}
 
 		if ($methodReflection->getThrowType() !== null) {
 			$throwType = $methodReflection->getThrowType();
 			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
+				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($methodCall);
+			$methodReturnedType = $scope->getType($normalizedMethodCall);
 			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $methodCall);
+				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}
 		}
 

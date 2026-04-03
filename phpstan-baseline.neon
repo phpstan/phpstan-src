@@ -1482,7 +1482,7 @@ parameters:
 		-
 			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 1
+			count: 3
 			path: src/Type/ObjectType.php
 
 		-

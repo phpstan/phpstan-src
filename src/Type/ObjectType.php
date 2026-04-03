@@ -632,6 +632,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return false;
 		}
 
+		if ($type instanceof Generic\GenericObjectType && !$this instanceof Generic\GenericObjectType) {
+			return false;
+		}
+
 		if ($this->className !== $type->className) {
 			return false;
 		}

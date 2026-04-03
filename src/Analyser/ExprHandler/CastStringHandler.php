@@ -64,7 +64,7 @@ final class CastStringHandler implements ExprHandler
 					$toStringMethod,
 					$toStringMethod->getOnlyVariant(),
 					new Expr\MethodCall($expr->expr, new Identifier('__toString')),
-					$scope
+					$scope,
 				);
 				if ($throwPoint !== null) {
 					$throwPoints[] = $throwPoint;

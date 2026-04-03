@@ -16,6 +16,7 @@ use PHPStan\Type\ObjectType;
 use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
+use function in_array;
 
 #[AutowiredService]
 final class MethodThrowPointHelper

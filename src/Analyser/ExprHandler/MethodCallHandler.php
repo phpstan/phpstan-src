@@ -153,7 +153,7 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+			$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}
@@ -235,29 +235,26 @@ final class MethodCallHandler implements ExprHandler
 		return $result;
 	}
 
-	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?InternalThrowPoint
+	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $normalizedMethodCall, MutatingScope $scope): ?InternalThrowPoint
 	{
-		$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
-		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
-				if (!$extension->isMethodSupported($methodReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
+		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
+			if (!$extension->isMethodSupported($methodReflection)) {
+				continue;
 			}
+
+			$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
+			if ($throwType === null) {
+				return null;
+			}
+
+			return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, false);
 		}
 
 		if (
 			in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
 			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
 		) {
-			return InternalThrowPoint::createImplicit($scope, $methodCall);
+			return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 		}
 
 		$throwType = $methodReflection->getThrowType();
@@ -270,12 +267,12 @@ final class MethodCallHandler implements ExprHandler
 
 		if ($throwType !== null) {
 			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
+				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($methodCall);
+			$methodReturnedType = $scope->getType($normalizedMethodCall);
 			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $methodCall);
+				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}
 		}
 

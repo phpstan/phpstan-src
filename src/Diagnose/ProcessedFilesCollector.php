@@ -23,7 +23,7 @@ final class ProcessedFilesCollector
 	}
 
 	/**
-	 * @return array<string, int>
+	 * @return array<string, int<2, max>>
 	 */
 	public function getTopMostAnalysedFiles(int $limit): array
 	{

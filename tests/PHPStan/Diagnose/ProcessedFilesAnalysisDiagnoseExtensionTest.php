@@ -6,13 +6,13 @@ use PHPStan\Command\Output;
 use PHPStan\File\NullRelativePathHelper;
 use PHPUnit\Framework\TestCase;
 
-class TraitAnalysisDiagnoseExtensionTest extends TestCase
+class ProcessedFilesAnalysisDiagnoseExtensionTest extends TestCase
 {
 
 	public function testNoOutput(): void
 	{
 		$collector = new ProcessedFilesCollector();
-		$extension = new TraitAnalysisDiagnoseExtension($collector, new NullRelativePathHelper());
+		$extension = new ProcessedFilesAnalysisDiagnoseExtension($collector, new NullRelativePathHelper());
 
 		$lines = [];
 		$output = $this->createOutput($lines);
@@ -28,7 +28,7 @@ class TraitAnalysisDiagnoseExtensionTest extends TestCase
 		$collector->addProcessedFiles(['/src/B.php', '/src/Trait1.php', '/src/Trait2.php']);
 		$collector->addProcessedFiles(['/src/C.php', '/src/Trait1.php']);
 
-		$extension = new TraitAnalysisDiagnoseExtension($collector, new NullRelativePathHelper());
+		$extension = new ProcessedFilesAnalysisDiagnoseExtension($collector, new NullRelativePathHelper());
 
 		$lines = [];
 		$output = $this->createOutput($lines);

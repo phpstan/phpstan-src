@@ -111,7 +111,7 @@ services:
 		class: PHPStan\Diagnose\ProcessedFilesCollector
 
 	-
-		class: PHPStan\Diagnose\TraitAnalysisDiagnoseExtension
+		class: PHPStan\Diagnose\ProcessedFilesAnalysisDiagnoseExtension
 		arguments:
 			simpleRelativePathHelper: @simpleRelativePathHelper
 		tags:

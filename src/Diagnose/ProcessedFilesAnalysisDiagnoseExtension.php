@@ -7,7 +7,7 @@ use PHPStan\File\RelativePathHelper;
 use function count;
 use function sprintf;
 
-final class TraitAnalysisDiagnoseExtension implements DiagnoseExtension
+final class ProcessedFilesAnalysisDiagnoseExtension implements DiagnoseExtension
 {
 
 	public function __construct(

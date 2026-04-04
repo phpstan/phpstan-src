@@ -592,6 +592,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->strictWideningCheck = true;
 		$this->analyse([__DIR__ . '/data/generic-subtype.php'], [
 			[
+				'PHPDoc tag @var with type GenericSubtype\IRepository<E of GenericSubtype\IEntity> is not subtype of type GenericSubtype\IRepository<GenericSubtype\IEntity>.',
+				78,
+			],
+			[
 				'PHPDoc tag @var with type GenericSubtype\IRepository<GenericSubtype\Foo> is not subtype of type GenericSubtype\IRepository<GenericSubtype\IEntity>.',
 				131,
 			],

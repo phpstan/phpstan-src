@@ -3455,7 +3455,7 @@ class NodeScopeResolver
 		}
 
 		foreach ($deferredByRefClosureResults as $deferredClosureResult) {
-			$scope = $deferredClosureResult->applyByRefUseScope($scope);
+			$scope = $deferredClosureResult->applyByRefUseScope($scope, $scope);
 		}
 
 		if ($parameters !== null) {

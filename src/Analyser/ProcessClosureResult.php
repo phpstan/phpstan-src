@@ -31,13 +31,13 @@ final class ProcessClosureResult
 		return $this->scope;
 	}
 
-	public function applyByRefUseScope(MutatingScope $scope): MutatingScope
+	public function applyByRefUseScope(MutatingScope $scope, ?MutatingScope $prevScope = null): MutatingScope
 	{
 		if ($this->byRefClosureResultScope === null) {
 			return $scope;
 		}
 
-		return $scope->processClosureScope($this->byRefClosureResultScope, null, $this->byRefUses);
+		return $scope->processClosureScope($this->byRefClosureResultScope, $prevScope, $this->byRefUses);
 	}
 
 	/**

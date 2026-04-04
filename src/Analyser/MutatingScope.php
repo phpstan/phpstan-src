@@ -3808,7 +3808,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			$variableType = $closureScope->getVariableType($variableName);
 
-			if ($prevScope !== null) {
+			if ($prevScope !== null && $prevScope->hasVariableType($variableName)->yes()) {
 				$prevVariableType = $prevScope->getVariableType($variableName);
 				if (!$variableType->equals($prevVariableType)) {
 					$variableType = TypeCombinator::union($variableType, $prevVariableType);

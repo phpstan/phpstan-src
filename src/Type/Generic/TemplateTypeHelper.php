@@ -7,7 +7,6 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -153,7 +152,7 @@ final class TemplateTypeHelper
 
 			$type = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 				if ($type instanceof HasOffsetValueType || $type instanceof HasOffsetType) {
-					return new MixedType();
+					return $type->generalize(GeneralizePrecision::templateArgument());
 				}
 
 				return $traverse($type);

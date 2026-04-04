@@ -15,6 +15,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -48,10 +49,21 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
-	use NonGeneralizableTypeTrait;
+	use NonGeneralizableTypeTrait {
+		generalize as traitGeneralize;
+	}
 
 	public function __construct(private ConstantStringType|ConstantIntegerType $offsetType, private Type $valueType)
 	{
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		if ($precision->isTemplateArgument()) {
+			return new MixedType();
+		}
+
+		return $this->traitGeneralize($precision);
 	}
 
 	public function getOffsetType(): ConstantStringType|ConstantIntegerType

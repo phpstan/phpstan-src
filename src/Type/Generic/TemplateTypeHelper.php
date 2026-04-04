@@ -3,12 +3,17 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 
 final class TemplateTypeHelper
 {
@@ -147,9 +152,37 @@ final class TemplateTypeHelper
 			} elseif ($type->isConstantValue()->yes() && (!$templateType->getBound()->isScalar()->yes() || $isArrayKey)) {
 				$type = $type->generalize(GeneralizePrecision::templateArgument());
 			}
+
+			$type = self::generalizeArrayType($type);
 		}
 
 		return $type;
+	}
+
+	private static function generalizeArrayType(Type $type): Type
+	{
+		if (!$type->isArray()->yes() || $type->isConstantArray()->yes()) {
+			return $type;
+		}
+
+		$rebuilt = new ArrayType(
+			$type->getIterableKeyType(),
+			$type->getIterableValueType(),
+		);
+
+		$accessories = [];
+		if ($type->isIterableAtLeastOnce()->yes()) {
+			$accessories[] = new NonEmptyArrayType();
+		}
+		if ($type->isList()->yes()) {
+			$accessories[] = new AccessoryArrayListType();
+		}
+
+		if (count($accessories) > 0) {
+			$rebuilt = TypeCombinator::intersect($rebuilt, ...$accessories);
+		}
+
+		return $rebuilt;
 	}
 
 }

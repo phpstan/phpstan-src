@@ -2,10 +2,12 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_count_values;
 use function array_slice;
 use function arsort;
 
+#[AutowiredService]
 final class ProcessedFilesCollector
 {
 

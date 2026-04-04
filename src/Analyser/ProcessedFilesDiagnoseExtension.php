@@ -3,16 +3,20 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\File\RelativePathHelper;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class ProcessedFilesDiagnoseExtension implements DiagnoseExtension
 {
 
 	public function __construct(
 		private ProcessedFilesCollector $processedFilesCollector,
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
 		private RelativePathHelper $simpleRelativePathHelper,
 	)
 	{

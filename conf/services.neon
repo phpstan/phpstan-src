@@ -107,16 +107,6 @@ services:
 			configPhpVersion: %phpVersion%
 		autowired: false
 
-	-
-		class: PHPStan\Analyser\ProcessedFilesCollector
-
-	-
-		class: PHPStan\Analyser\ProcessedFilesDiagnoseExtension
-		arguments:
-			simpleRelativePathHelper: @simpleRelativePathHelper
-		tags:
-			- phpstan.diagnoseExtension
-
 	# not registered using attributes because there is 2+ instances
 	-
 		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension

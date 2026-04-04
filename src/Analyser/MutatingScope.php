@@ -1068,15 +1068,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			if ($propertyReflection->hasNativeType() && !$propertyReflection->isVirtual()->yes()) {
 				if (!$this->hasExpressionType($expr)->yes()) {
-					if ($expr instanceof Node\Expr\PropertyFetch) {
-						return $this->issetCheckUndefined($expr->var);
+					if ($propertyReflection->getWritableType()->isNull()->no()) {
+						if ($expr instanceof Node\Expr\PropertyFetch) {
+							return $this->issetCheckUndefined($expr->var);
+						}
+
+						if ($expr->class instanceof Expr) {
+							return $this->issetCheckUndefined($expr->class);
+						}
+
+						return null;
 					}
 
-					if ($expr->class instanceof Expr) {
-						return $this->issetCheckUndefined($expr->class);
-					}
-
-					return null;
+					// Nullable native property: fall through to type callback
+					// so that isset() falsey properly narrows to null
 				}
 			}
 

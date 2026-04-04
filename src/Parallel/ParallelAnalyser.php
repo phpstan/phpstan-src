@@ -282,7 +282,7 @@ final class ParallelAnalyser
 				}
 
 				if ($postFileCallback !== null) {
-					$postFileCallback(count($json['files']), $json['processedFiles'] ?? []);
+					$postFileCallback(count($json['files']), $json['processedFiles']);
 				}
 
 				if (!isset($peakMemoryUsages[$processIdentifier]) || $peakMemoryUsages[$processIdentifier] < $json['memoryUsage']) {

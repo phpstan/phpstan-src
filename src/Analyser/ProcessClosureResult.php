@@ -31,7 +31,7 @@ final class ProcessClosureResult
 		return $this->scope;
 	}
 
-	public function applyByRefUseScope(MutatingScope $scope, ?MutatingScope $prevScope = null): MutatingScope
+	public function applyByRefUseScope(MutatingScope $scope, ?MutatingScope $prevScope): MutatingScope
 	{
 		if ($this->byRefClosureResultScope === null) {
 			return $scope;

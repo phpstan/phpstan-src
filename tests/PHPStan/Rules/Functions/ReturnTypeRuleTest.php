@@ -423,4 +423,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13453Invariant(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13453-invariant.php'], [
+			[
+				'Function Bug13453Invariant\run() should return Bug13453Invariant\Container<T of Bug13453Invariant\ResultA (function Bug13453Invariant\run(), argument)> but returns Bug13453Invariant\Container<T of Bug13453Invariant\ResultA (class Bug13453Invariant\I, parameter)>.',
+				37,
+			],
+		]);
+	}
+
 }

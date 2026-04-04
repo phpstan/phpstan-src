@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Diagnose;
+namespace PHPStan\Analyser;
 
 use function array_count_values;
 use function array_slice;

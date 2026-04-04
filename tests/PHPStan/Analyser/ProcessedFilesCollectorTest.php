@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Diagnose;
+namespace PHPStan\Analyser;
 
 use PHPUnit\Framework\TestCase;
 use function array_keys;

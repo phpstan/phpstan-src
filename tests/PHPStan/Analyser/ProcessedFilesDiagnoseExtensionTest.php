@@ -1,18 +1,18 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Diagnose;
+namespace PHPStan\Analyser;
 
 use PHPStan\Command\Output;
 use PHPStan\File\NullRelativePathHelper;
 use PHPUnit\Framework\TestCase;
 
-class ProcessedFilesAnalysisDiagnoseExtensionTest extends TestCase
+class ProcessedFilesDiagnoseExtensionTest extends TestCase
 {
 
 	public function testNoOutput(): void
 	{
 		$collector = new ProcessedFilesCollector();
-		$extension = new ProcessedFilesAnalysisDiagnoseExtension($collector, new NullRelativePathHelper());
+		$extension = new ProcessedFilesDiagnoseExtension($collector, new NullRelativePathHelper());
 
 		$lines = [];
 		$output = $this->createOutput($lines);
@@ -28,7 +28,7 @@ class ProcessedFilesAnalysisDiagnoseExtensionTest extends TestCase
 		$collector->addProcessedFiles(['/src/B.php', '/src/Trait1.php', '/src/Trait2.php']);
 		$collector->addProcessedFiles(['/src/C.php', '/src/Trait1.php']);
 
-		$extension = new ProcessedFilesAnalysisDiagnoseExtension($collector, new NullRelativePathHelper());
+		$extension = new ProcessedFilesDiagnoseExtension($collector, new NullRelativePathHelper());
 
 		$lines = [];
 		$output = $this->createOutput($lines);

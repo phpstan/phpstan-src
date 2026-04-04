@@ -1,13 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Diagnose;
+namespace PHPStan\Analyser;
 
 use PHPStan\Command\Output;
+use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\File\RelativePathHelper;
 use function count;
 use function sprintf;
 
-final class ProcessedFilesAnalysisDiagnoseExtension implements DiagnoseExtension
+final class ProcessedFilesDiagnoseExtension implements DiagnoseExtension
 {
 
 	public function __construct(

@@ -108,10 +108,10 @@ services:
 		autowired: false
 
 	-
-		class: PHPStan\Diagnose\ProcessedFilesCollector
+		class: PHPStan\Analyser\ProcessedFilesCollector
 
 	-
-		class: PHPStan\Diagnose\ProcessedFilesAnalysisDiagnoseExtension
+		class: PHPStan\Analyser\ProcessedFilesDiagnoseExtension
 		arguments:
 			simpleRelativePathHelper: @simpleRelativePathHelper
 		tags:

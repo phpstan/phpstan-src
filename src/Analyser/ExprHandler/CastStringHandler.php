@@ -4,15 +4,18 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Cast;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
 use function sprintf;
@@ -26,6 +29,8 @@ final class CastStringHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private PhpVersion $phpVersion,
+		private MethodThrowPointHelper $methodThrowPointHelper,
 	)
 	{
 	}
@@ -39,6 +44,7 @@ final class CastStringHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$impurePoints = $exprResult->getImpurePoints();
+		$throwPoints = $exprResult->getThrowPoints();
 
 		$exprType = $scope->getType($expr->expr);
 		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
@@ -52,6 +58,18 @@ final class CastStringHandler implements ExprHandler
 					$toStringMethod->isPure()->no(),
 				);
 			}
+
+			if ($this->phpVersion->throwsOnStringCast()) {
+				$throwPoint = $this->methodThrowPointHelper->getThrowPoint(
+					$toStringMethod,
+					$toStringMethod->getOnlyVariant(),
+					new Expr\MethodCall($expr->expr, new Identifier('__toString')),
+					$scope,
+				);
+				if ($throwPoint !== null) {
+					$throwPoints[] = $throwPoint;
+				}
+			}
 		}
 
 		$scope = $exprResult->getScope();
@@ -60,7 +78,7 @@ final class CastStringHandler implements ExprHandler
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: $exprResult->getThrowPoints(),
+			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),

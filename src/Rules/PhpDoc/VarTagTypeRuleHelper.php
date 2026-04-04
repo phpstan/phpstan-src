@@ -99,12 +99,9 @@ final class VarTagTypeRuleHelper
 				$varTagType->describe($verbosity),
 				$exprNativeType->describe($verbosity),
 			))->identifier('varTag.nativeType')->build();
-		} else {
+		} elseif ($this->checkTypeAgainstPhpDocType || $containsPhpStanType) {
 			$exprType = $scope->getScopeType($expr);
-			if (
-				$this->shouldVarTagTypeBeReported($scope, $expr, $exprType, $varTagType)
-				&& ($this->checkTypeAgainstPhpDocType || $containsPhpStanType)
-			) {
+			if ($this->shouldVarTagTypeBeReported($scope, $expr, $exprType, $varTagType)) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @var with type %s is not subtype of type %s.',
@@ -114,7 +111,7 @@ final class VarTagTypeRuleHelper
 			}
 		}
 
-		if (count($errors) === 0 && $containsPhpStanType) {
+		if ($containsPhpStanType && count($errors) === 0) {
 			$exprType = $scope->getScopeType($expr);
 			if (!$exprType->equals($varTagType)) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);

@@ -629,7 +629,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return false;
 		}
 
-		if (get_class($type) !== static::class) {
+		if (($type instanceof EnumCaseObjectType || $type instanceof GenericObjectType) && get_class($this) !== get_class($type)) {
 			return false;
 		}
 

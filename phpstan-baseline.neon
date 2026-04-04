@@ -1474,9 +1474,15 @@ parameters:
 			path: src/Type/ObjectShapeType.php
 
 		-
-			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
+			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCases() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
+			path: src/Type/ObjectType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 2
 			path: src/Type/ObjectType.php
 
 		-

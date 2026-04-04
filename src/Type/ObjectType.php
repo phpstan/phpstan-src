@@ -42,7 +42,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -626,19 +625,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
-			return false;
-		}
-
-		if ($type instanceof EnumCaseObjectType) {
-			return false;
-		}
-
-		if ($type instanceof TemplateType) {
-			return false;
-		}
-
-		if ($type instanceof GenericObjectType && !$this instanceof GenericObjectType) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

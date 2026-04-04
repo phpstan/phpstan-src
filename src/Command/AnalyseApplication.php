@@ -10,6 +10,7 @@ use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Diagnose\ProcessedFilesCollector;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
@@ -17,6 +18,7 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function array_unique;
+use function array_values;
 use function count;
 use function fclose;
 use function feof;
@@ -43,6 +45,7 @@ final class AnalyseApplication
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
+		private ProcessedFilesCollector $processedFilesCollector,
 	)
 	{
 	}
@@ -244,8 +247,9 @@ final class AnalyseApplication
 
 		if (!$debug) {
 			$preFileCallback = null;
-			$postFileCallback = static function (int $step) use ($errorOutput): void {
+			$postFileCallback = function (int $step, array $processedFiles = []) use ($errorOutput): void {
 				$errorOutput->getStyle()->progressAdvance($step);
+				$this->processedFilesCollector->addProcessedFiles(array_values($processedFiles));
 			};
 
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
@@ -259,7 +263,7 @@ final class AnalyseApplication
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function (int $step, array $processedFiles = []) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
+				$postFileCallback = function (int $step, array $processedFiles = []) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}
@@ -279,6 +283,8 @@ final class AnalyseApplication
 						}
 						fclose($handle);
 					}
+
+					$this->processedFilesCollector->addProcessedFiles(array_values($processedFiles));
 
 					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s, %.3f LoC/s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime, $linesOfCode / $elapsedTime));
 					$previousMemory = $currentTotalMemory;

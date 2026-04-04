@@ -58,7 +58,7 @@ final class ParallelAnalyser
 	}
 
 	/**
-	 * @param Closure(int ): void|null $postFileCallback
+	 * @param Closure(int, list<string>): void|null $postFileCallback
 	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
 	 * @return PromiseInterface<AnalyserResult>
 	 */
@@ -282,7 +282,7 @@ final class ParallelAnalyser
 				}
 
 				if ($postFileCallback !== null) {
-					$postFileCallback(count($json['files']));
+					$postFileCallback(count($json['files']), $json['processedFiles'] ?? []);
 				}
 
 				if (!isset($peakMemoryUsages[$processIdentifier]) || $peakMemoryUsages[$processIdentifier] < $json['memoryUsage']) {

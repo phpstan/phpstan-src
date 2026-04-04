@@ -24,7 +24,7 @@ final class TraitAnalysisDiagnoseExtension implements DiagnoseExtension
 			return;
 		}
 
-		$output->writeLineFormatted('<info>Most often analysed files (likely trait files):</info>');
+		$output->writeLineFormatted('<info>Most often analysed files:</info>');
 		foreach ($topFiles as $file => $count) {
 			$output->writeLineFormatted(sprintf(
 				'  %s: %d times',

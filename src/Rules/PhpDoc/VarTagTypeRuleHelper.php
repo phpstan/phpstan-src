@@ -177,23 +177,6 @@ final class VarTagTypeRuleHelper
 
 	private function checkType(Scope $scope, Type $type, Type $varTagType, int $depth = 0): bool
 	{
-		if (
-			$type instanceof GenericObjectType
-			&& $varTagType instanceof GenericObjectType
-			&& $type->getClassName() === $varTagType->getClassName()
-		) {
-			$typeArgs = $type->getTypes();
-			$varTagArgs = $varTagType->getTypes();
-			if (count($typeArgs) === count($varTagArgs)) {
-				foreach ($typeArgs as $i => $typeArg) {
-					if ($this->checkType($scope, $typeArg, $varTagArgs[$i], $depth + 1)) {
-						return true;
-					}
-				}
-				return false;
-			}
-		}
-
 		if ($this->strictWideningCheck) {
 			return !$this->isSuperTypeOfVarType($scope, $type, $varTagType);
 		}

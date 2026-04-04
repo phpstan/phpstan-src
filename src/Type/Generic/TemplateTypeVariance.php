@@ -176,10 +176,7 @@ final class TemplateTypeVariance
 		}
 
 		if ($this->invariant()) {
-			$result = $a->equals($b);
-			if (!$result && $b instanceof TemplateType && $a->equals($b->getBound())) {
-				$result = true;
-			}
+			$result = $a->equals($b) || ($b instanceof TemplateType && $a->equals($b->getBound()));
 			$reasons = [];
 			if (!$result) {
 				if (

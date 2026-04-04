@@ -625,10 +625,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
-			return false;
-		}
-
 		if (get_class($this) !== get_class($type)) {
 			return false;
 		}

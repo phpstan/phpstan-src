@@ -79,11 +79,6 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug14429(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-14429.php'], []);
-	}
-
 	public function testBug12708(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12708.php'], [

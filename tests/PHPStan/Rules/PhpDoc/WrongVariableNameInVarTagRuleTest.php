@@ -586,6 +586,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14429(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+		$this->analyse([__DIR__ . '/data/bug-14429.php'], []);
+	}
+
+
 	public function testNewIsAlwaysFinalClass(): void
 	{
 		$this->checkTypeAgainstPhpDocType = true;

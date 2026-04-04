@@ -69,6 +69,24 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13806(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13806.php'], [
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				8,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				53,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				64,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return array_merge(

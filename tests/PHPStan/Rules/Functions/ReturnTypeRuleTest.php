@@ -404,6 +404,19 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12973.php'], []);
 	}
 
+	public function testBug3028(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3028.php'], [
+			[
+				'Function Bug3028\run() should return Bug3028\Format<Bug3028\Output> but returns Bug3028\Format<O of Bug3028\Output>.',
+				50,
+				'Template type O on class Bug3028\Format is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+		]);
+	}
+
 	public function testBug12397(): void
 	{
 		$this->checkNullables = true;

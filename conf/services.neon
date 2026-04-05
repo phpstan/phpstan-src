@@ -105,6 +105,7 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			allConfigFiles: %allConfigFiles%
 			configPhpVersion: %phpVersion%
+			simpleRelativePathHelper: @simpleRelativePathHelper
 		autowired: false
 
 	# not registered using attributes because there is 2+ instances

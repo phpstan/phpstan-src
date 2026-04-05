@@ -3,9 +3,11 @@
 namespace PHPStan\Diagnose;
 
 use Phar;
+use PHPStan\Analyser\ProcessedFilesCollector;
 use PHPStan\Command\Output;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileHelper;
+use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
@@ -42,6 +44,8 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		private array $composerAutoloaderProjectPaths,
 		private array $allConfigFiles,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+		private ProcessedFilesCollector $processedFilesCollector,
+		private RelativePathHelper $simpleRelativePathHelper,
 	)
 	{
 	}
@@ -203,6 +207,19 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$output->writeLineFormatted($composerAutoloaderProjectPath);
 		}
 		$output->writeLineFormatted('');
+
+		$topFiles = $this->processedFilesCollector->getTopMostAnalysedFiles(5);
+		if (count($topFiles) > 0) {
+			$output->writeLineFormatted('<info>Most often analysed files:</info>');
+			foreach ($topFiles as $file => $count) {
+				$output->writeLineFormatted(sprintf(
+					'  %s: %d times',
+					$this->simpleRelativePathHelper->getRelativePath($file),
+					$count,
+				));
+			}
+			$output->writeLineFormatted('');
+		}
 	}
 
 }

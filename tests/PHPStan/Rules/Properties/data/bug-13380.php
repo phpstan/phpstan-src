@@ -16,6 +16,19 @@ class Bar extends Foo {
 	public string $prop;
 }
 
+class Bar2 extends Foo
+{
+	public function __construct(
+		string $prop,
+	){
+		parent::__construct($prop);
+	}
+}
+
+class Baz2 extends Bar2 {
+	public string $prop;
+}
+
 class Baz extends Foo {
 	public string $prop;
 

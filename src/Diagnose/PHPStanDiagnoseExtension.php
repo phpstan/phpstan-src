@@ -209,17 +209,19 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		$output->writeLineFormatted('');
 
 		$topFiles = $this->processedFilesCollector->getTopMostAnalysedFiles(5);
-		if (count($topFiles) > 0) {
-			$output->writeLineFormatted('<info>Most often analysed files:</info>');
-			foreach ($topFiles as $file => $count) {
-				$output->writeLineFormatted(sprintf(
-					'  %s: %d times',
-					$this->simpleRelativePathHelper->getRelativePath($file),
-					$count,
-				));
-			}
-			$output->writeLineFormatted('');
+		if (count($topFiles) <= 0) {
+			return;
 		}
+
+		$output->writeLineFormatted('<info>Most often analysed files:</info>');
+		foreach ($topFiles as $file => $count) {
+			$output->writeLineFormatted(sprintf(
+				'  %s: %d times',
+				$this->simpleRelativePathHelper->getRelativePath($file),
+				$count,
+			));
+		}
+		$output->writeLineFormatted('');
 	}
 
 }

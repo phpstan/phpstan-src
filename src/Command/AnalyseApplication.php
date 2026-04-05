@@ -247,7 +247,7 @@ final class AnalyseApplication
 
 		if (!$debug) {
 			$preFileCallback = null;
-			$postFileCallback = function (int $step, array $processedFiles = []) use ($errorOutput): void {
+			$postFileCallback = function (int $step, array $processedFiles) use ($errorOutput): void {
 				$errorOutput->getStyle()->progressAdvance($step);
 				$this->processedFilesCollector->addProcessedFiles(array_values($processedFiles));
 			};
@@ -263,7 +263,7 @@ final class AnalyseApplication
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = function (int $step, array $processedFiles = []) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
+				$postFileCallback = function (int $step, array $processedFiles) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}

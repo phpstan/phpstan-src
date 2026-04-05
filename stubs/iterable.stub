@@ -440,7 +440,7 @@ class RegexIterator extends FilterIterator {
     const USE_KEY = 1 ;
 
     /**
-     * @param Iterator<TKey, TValue> $iterator
+     * @param TIterator $iterator
      * @param self::MATCH|self::GET_MATCH|self::ALL_MATCHES|self::SPLIT|self::REPLACE $mode
      */
     public function __construct(Iterator $iterator, string $regex, int $mode = self::MATCH, int $flags = 0, int $preg_flags = 0) {}

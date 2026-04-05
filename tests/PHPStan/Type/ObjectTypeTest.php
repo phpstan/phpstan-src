@@ -31,7 +31,9 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeParameterStrategy;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
@@ -743,6 +745,50 @@ class ObjectTypeTest extends PHPStanTestCase
 		$tModlel = $ancestor->getActiveTemplateTypeMap()->getType('TModlel');
 		$this->assertNotNull($tModlel);
 		$this->assertSame(Model::class, $tModlel->describe(VerbosityLevel::precise()));
+	}
+
+	public static function dataEquals(): array
+	{
+		return [
+			[
+				new ObjectType('Foo'),
+				new ObjectType('Foo'),
+				true,
+			],
+			[
+				new ObjectType('Foo'),
+				new ObjectType('Bar'),
+				false,
+			],
+			[
+				new ObjectType('Foo'),
+				new GenericObjectType('Foo', []),
+				false,
+			],
+			[
+				new ObjectType('Foo'),
+				new TemplateObjectType(
+					TemplateTypeScope::createWithAnonymousFunction(),
+					new TemplateTypeParameterStrategy(),
+					TemplateTypeVariance::createInvariant(),
+					'T',
+					new ObjectType('Foo'),
+					null,
+				),
+				false,
+			],
+		];
+	}
+
+	#[DataProvider('dataEquals')]
+	public function testEquals(ObjectType $type, Type $otherType, bool $expectedResult): void
+	{
+		$actualResult = $type->equals($otherType);
+		$this->assertSame(
+			$expectedResult,
+			$actualResult,
+			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
 	}
 
 }

@@ -77,7 +77,11 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 
 			return null;
 		} elseif ($hasDateTime) {
-			return $scope->getType($methodCall->var);
+			$callerType = $scope->getType($methodCall->var);
+			if (TypeCombinator::containsNull($callerType)) {
+				$callerType = TypeCombinator::removeNull($callerType);
+			}
+			return $callerType;
 		}
 
 		if ($this->phpVersion->hasDateTimeExceptions()) {

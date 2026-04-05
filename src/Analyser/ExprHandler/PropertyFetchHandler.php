@@ -130,6 +130,14 @@ final class PropertyFetchHandler implements ExprHandler
 			);
 		}
 
+		if ($nameType->isString()->yes()) {
+			$fetchedOnType = $scope->getType($expr->var);
+			$returnType = $this->propertyFetchType($scope, $fetchedOnType, '__phpstan_dynamic_property', $expr);
+			if ($returnType !== null) {
+				return NullsafeShortCircuitingHelper::getType($scope, $expr->var, $returnType);
+			}
+		}
+
 		return new MixedType();
 	}
 

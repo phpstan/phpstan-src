@@ -77,9 +77,10 @@ final class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					$types[] = $valueType->toArray();
 					break;
 				case 'object':
-					if ($valueType->isObject()->yes()) {
+					$isObject = $valueType->isObject();
+					if ($isObject->yes()) {
 						$types[] = $valueType;
-					} elseif ($valueType->isObject()->no()) {
+					} elseif ($isObject->no()) {
 						$types[] = new ObjectType(stdClass::class);
 					} else {
 						$types[] = TypeCombinator::union(

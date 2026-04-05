@@ -1050,6 +1050,17 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4525.php'], []);
 	}
 
+	public function testBug5298(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5298.php'], [
+			[
+				'Property Bug5298\WorldProviderManager::$providers (array<string, Bug5298\WorldProviderManagerEntry<Bug5298\WorldProvider>>) does not accept non-empty-array<string, Bug5298\WorldProviderManagerEntry<Bug5298\WorldProvider>|Bug5298\WorldProviderManagerEntry<T of Bug5298\WorldProvider>>.',
+				37,
+				'Template type TWorldProvider on class Bug5298\WorldProviderManagerEntry is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+		]);
+	}
+
 	public function testBug10924(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-10924.php'], []);

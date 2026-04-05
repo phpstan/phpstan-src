@@ -26,7 +26,7 @@ final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 		if ($type instanceof TemplateType && !$type->isArgument()) {
 			$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 			if ($newType === null || $newType instanceof ErrorType) {
-				return $type->getDefault() ?? $type->getBound();
+				return $traverse($type->getDefault() ?? $type->getBound());
 			}
 
 			return TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);

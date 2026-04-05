@@ -46,4 +46,5 @@ function (\DateTimeImmutable $dt, string $s): void {
 
 function (?\DateTimeImmutable $d): void {
 	assertType('DateTimeImmutable', $d->modify('+1 day'));
+	assertType('DateTimeImmutable|null', $d?->modify('+1 day'));
 };

@@ -110,7 +110,6 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
-use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -863,24 +862,21 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$isAlwaysTerminating = false;
-			$phpVersion = $this->container->getByType(PhpVersion::class);
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				if ($phpVersion->throwsOnStringCast()) {
-					$exprType = $scope->getType($echoExpr);
-					$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
-					if ($toStringMethod !== null) {
-						$toStringResult = $this->processExprNode(
-							$stmt,
-							new Expr\MethodCall($echoExpr, new Identifier('__toString')),
-							$scope,
-							new ExpressionResultStorage(),
-							new NoopNodeCallback(),
-							ExpressionContext::createDeep(),
-						);
-						$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
-					}
+				$exprType = $scope->getType($echoExpr);
+				$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
+				if ($toStringMethod !== null) {
+					$toStringResult = $this->processExprNode(
+						$stmt,
+						new Expr\MethodCall($echoExpr, new Identifier('__toString')),
+						$scope,
+						new ExpressionResultStorage(),
+						new NoopNodeCallback(),
+						ExpressionContext::createDeep(),
+					);
+					$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 				}
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();

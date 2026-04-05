@@ -57,3 +57,30 @@ try {
 } catch (\Exception $e) {
 	echo "Should not be printed";
 }
+
+/** @var int|Foo $intOrFoo */
+$intOrFoo = doFoo();
+
+try {
+	echo $intOrFoo;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+/** @var int|Bar $intOrBar */
+$intOrBar = doFoo();
+
+try {
+	echo $intOrBar;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+/** @var int|Baz $intOrBaz */
+$intOrBaz = doFoo();
+
+try {
+	echo $intOrBaz;
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}

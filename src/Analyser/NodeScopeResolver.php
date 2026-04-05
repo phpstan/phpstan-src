@@ -110,6 +110,7 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -862,9 +863,26 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$isAlwaysTerminating = false;
+			$phpVersion = $this->container->getByType(PhpVersion::class);
+			$methodThrowPointHelper = $this->container->getByType(ExprHandler\Helper\MethodThrowPointHelper::class);
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				if ($phpVersion->throwsOnStringCast()) {
+					$exprType = $scope->getType($echoExpr);
+					$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
+					if ($toStringMethod !== null) {
+						$throwPoint = $methodThrowPointHelper->getThrowPoint(
+							$toStringMethod,
+							$toStringMethod->getOnlyVariant(),
+							new Expr\MethodCall($echoExpr, new Identifier('__toString')),
+							$scope,
+						);
+						if ($throwPoint !== null) {
+							$throwPoints[] = $throwPoint;
+						}
+					}
+				}
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();

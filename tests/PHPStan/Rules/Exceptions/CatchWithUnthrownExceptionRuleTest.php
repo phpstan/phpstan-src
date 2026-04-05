@@ -748,4 +748,18 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5952(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5952.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				57,
+			],
+		]);
+	}
+
 }

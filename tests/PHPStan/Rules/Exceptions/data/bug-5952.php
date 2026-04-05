@@ -1,0 +1,59 @@
+<?php // lint >= 7.4
+
+namespace Bug5952;
+
+class Foo
+{
+	public function __toString(): string
+	{
+		throw new \Exception();
+	}
+}
+
+$foo = new Foo();
+
+try {
+	echo $foo;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+class Bar
+{
+	/** @throws \Exception */
+	public function __toString(): string
+	{
+		throw new \Exception();
+	}
+}
+
+$bar = new Bar();
+
+try {
+	echo $bar;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+class Baz
+{
+	/** @throws void */
+	public function __toString(): string
+	{
+		return 'hello';
+	}
+}
+
+$baz = new Baz();
+
+try {
+	echo $baz;
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}
+
+try {
+	echo 123;
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}

@@ -594,10 +594,12 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type GenericSubtype\IRepository<E of GenericSubtype\IEntity> is not subtype of type GenericSubtype\IRepository<GenericSubtype\IEntity>.',
 				78,
+				'Template type E on class GenericSubtype\IRepository is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'PHPDoc tag @var with type GenericSubtype\IRepository<GenericSubtype\Foo> is not subtype of type GenericSubtype\IRepository<GenericSubtype\IEntity>.',
 				131,
+				'Template type E on class GenericSubtype\IRepository is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}

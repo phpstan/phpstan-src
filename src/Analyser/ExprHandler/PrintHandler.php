@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -24,6 +25,12 @@ use function array_merge;
 final class PrintHandler implements ExprHandler
 {
 
+	public function __construct(
+		private ToStringThrowPointHelper $toStringThrowPointHelper,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Print_;
@@ -37,14 +44,21 @@ final class PrintHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$throwPoints = $exprResult->getThrowPoints();
+		$impurePoints = $exprResult->getImpurePoints();
+
+		[$toStringThrowPoints, $toStringImpurePoints] = $this->toStringThrowPointHelper->getToStringThrowAndImpurePoints($expr->expr, $scope);
+		$throwPoints = array_merge($throwPoints, $toStringThrowPoints);
+		$impurePoints = array_merge($impurePoints, $toStringImpurePoints);
+
 		$scope = $exprResult->getScope();
 
 		return new ExpressionResult(
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: $exprResult->getThrowPoints(),
-			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, 'print', 'print', true)]),
+			throwPoints: $throwPoints,
+			impurePoints: array_merge($impurePoints, [new ImpurePoint($scope, $expr, 'print', 'print', true)]),
 		);
 	}
 

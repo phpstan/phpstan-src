@@ -84,3 +84,70 @@ try {
 } catch (\Exception $e) {
 	echo "Should not be printed";
 }
+
+// print statement
+try {
+	print $foo;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+try {
+	print $baz;
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}
+
+// String concatenation
+try {
+	$x = 'hello' . $foo;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+try {
+	$x = 'hello' . $baz;
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}
+
+// Concat assignment
+try {
+	$x = 'hello';
+	$x .= $foo;
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+try {
+	$x = 'hello';
+	$x .= $baz;
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}
+
+// String interpolation
+try {
+	$x = "hello $foo";
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+try {
+	$x = "hello $baz";
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}
+
+// String interpolation with curly braces
+try {
+	$x = "hello {$foo}";
+} catch (\Exception $e) {
+	echo "Should be printed";
+}
+
+try {
+	$x = "hello {$baz}";
+} catch (\Exception $e) {
+	echo "Should not be printed";
+}

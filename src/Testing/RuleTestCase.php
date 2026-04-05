@@ -116,6 +116,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			[],
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			self::getContainer()->getByType(\PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper::class),
 		);
 	}
 

@@ -832,6 +832,7 @@ class AnalyserTest extends PHPStanTestCase
 			[],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			$container->getByType(\PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper::class),
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

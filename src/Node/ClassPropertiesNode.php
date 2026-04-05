@@ -135,17 +135,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if (!$is->yes() && $classReflection->hasConstructor()) {
 				$constructorDeclaringClass = $classReflection->getConstructor()->getDeclaringClass();
 				if ($constructorDeclaringClass->getName() !== $classReflection->getName()) {
-					$ancestor = $constructorDeclaringClass;
-					while ($ancestor !== null) {
-						if (
-							$ancestor->hasNativeProperty($property->getName())
-							&& $ancestor->getNativeProperty($property->getName())->isPromoted()
-						) {
-							$is = TrinaryLogic::createYes();
-							break;
-						}
-						$ancestor = $ancestor->getParentClass();
-					}
+					$is = $this->isPropertyInitializedByConstructorChain($constructorDeclaringClass, $property->getName());
 				}
 			}
 			if (!$is->yes() && $classReflection->hasNativeProperty($property->getName())) {
@@ -433,6 +423,48 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	public function getPropertyAssigns(): array
 	{
 		return $this->propertyAssigns;
+	}
+
+	private function isPropertyInitializedByConstructorChain(ClassReflection $constructorDeclaringClass, string $propertyName): TrinaryLogic
+	{
+		$ancestor = $constructorDeclaringClass;
+		do {
+			$ancestorConstructor = $ancestor->getNativeReflection()->getConstructor();
+			if ($ancestorConstructor !== null) {
+				foreach ($ancestorConstructor->getParameters() as $param) {
+					if ($param->getName() === $propertyName && $param->isPromoted()) {
+						return TrinaryLogic::createYes();
+					}
+				}
+			}
+
+			$parent = $ancestor->getParentClass();
+			if ($parent === null) {
+				break;
+			}
+
+			$hasOwnConstructor = $ancestor->hasConstructor()
+				&& $ancestor->getConstructor()->getDeclaringClass()->getName() === $ancestor->getName();
+
+			if ($hasOwnConstructor) {
+				$hasMatchingParam = false;
+				if ($ancestorConstructor !== null) {
+					foreach ($ancestorConstructor->getParameters() as $param) {
+						if ($param->getName() === $propertyName) {
+							$hasMatchingParam = true;
+							break;
+						}
+					}
+				}
+				if (!$hasMatchingParam) {
+					break;
+				}
+			}
+
+			$ancestor = $parent;
+		} while (true);
+
+		return TrinaryLogic::createNo();
 	}
 
 }

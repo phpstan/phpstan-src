@@ -37,3 +37,22 @@ class Baz extends Foo {
 		// Does not call parent::__construct, so $prop is uninitialized
 	}
 }
+
+class Foo3
+{
+	public function __construct(
+		protected string $prop,
+	){
+	}
+}
+
+class Bar3 extends Foo3
+{
+	public function __construct()
+	{
+	}
+}
+
+class Baz3 extends Bar3 {
+	public string $prop;
+}

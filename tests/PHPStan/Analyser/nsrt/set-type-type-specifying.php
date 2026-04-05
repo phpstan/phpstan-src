@@ -146,7 +146,7 @@ function doObject(string $s, int $i, float $f, array $a, object $o)
 	assertType('stdClass', $a);
 
 	settype($o, 'object');
-	assertType('stdClass', $o);
+	assertType('object', $o);
 }
 
 function doNull(string $s, int $i, float $f, array $a, object $o)
@@ -669,5 +669,5 @@ function setTypeSpecifying($value, string $castTo): void
 
 	// Mixed to non-constant.
 	settype($value, $castTo);
-	assertType("array|bool|float|int|stdClass|string|null", $value);
+	assertType("array|bool|float|int|object|string|null", $value);
 }

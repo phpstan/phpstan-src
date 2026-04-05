@@ -10,16 +10,12 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\StringType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\TypeCombinator;
 use stdClass;
 use function count;
@@ -47,20 +43,15 @@ final class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 		$constantStrings = $castType->getConstantStrings();
 		if (count($constantStrings) < 1) {
-			return $this->typeSpecifier->create(
-				$value,
-				TypeCombinator::union(
-					new BooleanType(),
-					new IntegerType(),
-					new FloatType(),
-					new StringType(),
-					new ArrayType(new MixedType(), new MixedType()),
-					new ObjectType(stdClass::class),
-					new NullType(),
-				),
-				TypeSpecifierContext::createTruthy(),
-				$scope,
-			)->setAlwaysOverwriteTypes();
+			$constantStrings = [
+				new ConstantStringType('bool'),
+				new ConstantStringType('int'),
+				new ConstantStringType('float'),
+				new ConstantStringType('string'),
+				new ConstantStringType('array'),
+				new ConstantStringType('object'),
+				new ConstantStringType('null'),
+			];
 		}
 
 		$types = [];
@@ -86,7 +77,16 @@ final class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					$types[] = $valueType->toArray();
 					break;
 				case 'object':
-					$types[] = new ObjectType(stdClass::class);
+					if ($valueType->isObject()->yes()) {
+						$types[] = $valueType;
+					} elseif ($valueType->isObject()->no()) {
+						$types[] = new ObjectType(stdClass::class);
+					} else {
+						$types[] = TypeCombinator::union(
+							TypeCombinator::intersect($valueType, new ObjectWithoutClassType()),
+							new ObjectType(stdClass::class),
+						);
+					}
 					break;
 				case 'null':
 					$types[] = new NullType();

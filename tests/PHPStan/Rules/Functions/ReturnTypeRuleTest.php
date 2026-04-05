@@ -411,6 +411,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12397.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug13453(): void
 	{
 		$this->checkNullables = true;
@@ -423,6 +424,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug13453Invariant(): void
 	{
 		$this->checkNullables = true;

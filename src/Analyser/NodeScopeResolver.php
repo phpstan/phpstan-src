@@ -864,7 +864,6 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$isAlwaysTerminating = false;
 			$phpVersion = $this->container->getByType(PhpVersion::class);
-			$methodThrowPointHelper = $this->container->getByType(ExprHandler\Helper\MethodThrowPointHelper::class);
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -872,15 +871,15 @@ class NodeScopeResolver
 					$exprType = $scope->getType($echoExpr);
 					$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
 					if ($toStringMethod !== null) {
-						$throwPoint = $methodThrowPointHelper->getThrowPoint(
-							$toStringMethod,
-							$toStringMethod->getOnlyVariant(),
+						$toStringResult = $this->processExprNode(
+							$stmt,
 							new Expr\MethodCall($echoExpr, new Identifier('__toString')),
 							$scope,
+							new ExpressionResultStorage(),
+							new NoopNodeCallback(),
+							ExpressionContext::createDeep(),
 						);
-						if ($throwPoint !== null) {
-							$throwPoints[] = $throwPoint;
-						}
+						$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 					}
 				}
 				$scope = $result->getScope();

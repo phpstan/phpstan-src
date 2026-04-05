@@ -18,6 +18,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -92,22 +93,25 @@ final class VarTagTypeRuleHelper
 		$errors = [];
 		$exprNativeType = $scope->getScopeNativeType($expr);
 		$containsPhpStanType = $this->containsPhpStanType($varTagType);
-		if ($this->shouldVarTagTypeBeReported($scope, $expr, $exprNativeType, $varTagType)) {
+
+		$isValidSuperTypeOfExpr = $this->isValidSuperTypeOfExpr($scope, $expr, $exprNativeType, $varTagType);
+		if (!$isValidSuperTypeOfExpr->yes()) {
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @var with type %s is not subtype of native type %s.',
 				$varTagType->describe($verbosity),
 				$exprNativeType->describe($verbosity),
-			))->identifier('varTag.nativeType')->build();
+			))->acceptsReasonsTip($isValidSuperTypeOfExpr->reasons)->identifier('varTag.nativeType')->build();
 		} elseif ($this->checkTypeAgainstPhpDocType || $containsPhpStanType) {
 			$exprType = $scope->getScopeType($expr);
-			if ($this->shouldVarTagTypeBeReported($scope, $expr, $exprType, $varTagType)) {
+			$isValidSuperTypeOfExpr = $this->isValidSuperTypeOfExpr($scope, $expr, $exprType, $varTagType);
+			if (!$isValidSuperTypeOfExpr->yes()) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @var with type %s is not subtype of type %s.',
 					$varTagType->describe($verbosity),
 					$exprType->describe($verbosity),
-				))->identifier('varTag.type')->build();
+				))->acceptsReasonsTip($isValidSuperTypeOfExpr->reasons)->identifier('varTag.type')->build();
 			}
 		}
 
@@ -145,22 +149,22 @@ final class VarTagTypeRuleHelper
 		return false;
 	}
 
-	private function shouldVarTagTypeBeReported(Scope $scope, Node\Expr $expr, Type $type, Type $varTagType): bool
+	private function isValidSuperTypeOfExpr(Scope $scope, Node\Expr $expr, Type $type, Type $varTagType): IsSuperTypeOfResult
 	{
 		if ($expr instanceof Expr\Array_) {
 			if ($expr->items === []) {
 				$type = new ArrayType(new MixedType(), new MixedType());
 			}
 
-			return !$this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
+			return $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
 		}
 
 		if ($expr instanceof Expr\ConstFetch) {
-			return !$this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
+			return $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
 		}
 
 		if ($expr instanceof Node\Scalar) {
-			return !$this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
+			return $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
 		}
 
 		if ($expr instanceof Expr\New_) {
@@ -169,72 +173,78 @@ final class VarTagTypeRuleHelper
 			}
 		}
 
-		return $this->checkType($scope, $type, $varTagType);
+		return $this->isValidSuperType($scope, $type, $varTagType);
 	}
 
-	private function checkType(Scope $scope, Type $type, Type $varTagType, int $depth = 0): bool
+	private function isValidSuperType(Scope $scope, Type $type, Type $varTagType, int $depth = 0): IsSuperTypeOfResult
 	{
 		if ($this->strictWideningCheck) {
-			return !$this->isSuperTypeOfVarType($scope, $type, $varTagType);
+			return $this->isSuperTypeOfVarType($scope, $type, $varTagType);
 		}
 
 		if ($type->isConstantArray()->yes()) {
 			if ($type->isIterableAtLeastOnce()->no()) {
 				$type = new ArrayType(new MixedType(), new MixedType());
-				return !$this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
+				return $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
 			}
 		}
 
 		if ($type->isIterable()->yes() && $varTagType->isIterable()->yes()) {
-			if (!$this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType)) {
-				return true;
+			$isAtLeastMaybeSuperTypeOf = $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
+			if ($isAtLeastMaybeSuperTypeOf->no()) {
+				return $isAtLeastMaybeSuperTypeOf;
 			}
 
 			$innerType = $type->getIterableValueType();
 			$innerVarTagType = $varTagType->getIterableValueType();
 
 			if ($type->equals($innerType) || $varTagType->equals($innerVarTagType)) {
-				return !$this->isSuperTypeOfVarType($scope, $innerType, $innerVarTagType);
+				return $this->isSuperTypeOfVarType($scope, $innerType, $innerVarTagType);
 			}
 
-			return $this->checkType($scope, $innerType, $innerVarTagType, $depth + 1);
+			return $this->isValidSuperType($scope, $innerType, $innerVarTagType, $depth + 1);
 		}
 
 		if ($depth === 0 && $type->isConstantValue()->yes()) {
-			return !$this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
+			return $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
 		}
 
-		return !$this->isSuperTypeOfVarType($scope, $type, $varTagType);
+		return $this->isSuperTypeOfVarType($scope, $type, $varTagType);
 	}
 
-	private function isSuperTypeOfVarType(Scope $scope, Type $type, Type $varTagType): bool
+	private function isSuperTypeOfVarType(Scope $scope, Type $type, Type $varTagType): IsSuperTypeOfResult
 	{
 		if ($type->isSuperTypeOf($varTagType)->yes()) {
-			return true;
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		try {
 			$type = $this->typeNodeResolver->resolve($type->toPhpDocNode(), $this->createNameScope($scope));
 		} catch (NameScopeAlreadyBeingCreatedException) {
-			return true;
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return $type->isSuperTypeOf($varTagType)->yes();
+		return $type->isSuperTypeOf($varTagType);
 	}
 
-	private function isAtLeastMaybeSuperTypeOfVarType(Scope $scope, Type $type, Type $varTagType): bool
+	private function isAtLeastMaybeSuperTypeOfVarType(Scope $scope, Type $type, Type $varTagType): IsSuperTypeOfResult
 	{
 		if (!$type->isSuperTypeOf($varTagType)->no()) {
-			return true;
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		try {
 			$type = $this->typeNodeResolver->resolve($type->toPhpDocNode(), $this->createNameScope($scope));
 		} catch (NameScopeAlreadyBeingCreatedException) {
-			return true;
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return !$type->isSuperTypeOf($varTagType)->no();
+		$isSuperTypeOf = $type->isSuperTypeOf($varTagType);
+		if (!$isSuperTypeOf->no()) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
+		return $isSuperTypeOf;
 	}
 
 	/**

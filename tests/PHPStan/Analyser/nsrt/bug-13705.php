@@ -127,3 +127,32 @@ function whileLoopOriginal(int $length, int $quantity): void
 		}
 	}
 }
+
+class HelloWorld
+{
+	private const MIN_LENGTH = 8;
+
+	/**
+	 * @return list<non-empty-string>
+	 */
+	public function generatePlainRecoveryCodes(int $length = 8, int $quantity = 8): array
+	{
+		if ($length < self::MIN_LENGTH) {
+			throw new \InvalidArgumentException(
+				$length . ' is not allowed as length for recovery codes. Must be at least ' . self::MIN_LENGTH,
+				1613666803
+			);
+		}
+		$codes = [];
+		while ($quantity >= 1 && count($codes) < $quantity) {
+			$code = '';
+			for ($i = 0; $i < $length; $i++) {
+				$code .= 'x';
+			}
+			if (!in_array($code, $codes, true)) {
+				$codes[] = $code;
+			}
+		}
+		return $codes;
+	}
+}

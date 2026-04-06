@@ -545,12 +545,11 @@ class ConstantArrayType implements Type
 	/** @return ConstantArrayTypeAndMethod[] */
 	public function findTypeAndMethodNames(): array
 	{
-		$hasNonExistentMethod = false;
-		return $this->doFindTypeAndMethodNames($hasNonExistentMethod);
+		return $this->doFindTypeAndMethodNames();
 	}
 
 	/** @return ConstantArrayTypeAndMethod[] */
-	private function doFindTypeAndMethodNames(bool &$hasNonExistentMethod): array
+	private function doFindTypeAndMethodNames(bool &$hasNonExistentMethod = false): array
 	{
 		if (count($this->keyTypes) !== 2) {
 			return [];

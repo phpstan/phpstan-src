@@ -14,7 +14,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_unique;
 use function count;
-use function in_array;
 
 #[AutowiredService]
 final class MethodCallReturnTypeHelper
@@ -94,22 +93,19 @@ final class MethodCallReturnTypeHelper
 		}
 
 		if (count($resolvedTypes) > 0) {
-			foreach ($allClassNames as $className) {
-				if (in_array($className, $handledClassNames, true)) {
-					continue;
-				}
-				$classType = new ObjectType($className);
-				if (!$classType->hasMethod($methodName)->yes()) {
-					continue;
-				}
-				$classMethod = $classType->getMethod($methodName, $scope);
-				$classParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$remainingType = $typeWithMethod;
+			foreach ($handledClassNames as $handledClassName) {
+				$remainingType = TypeCombinator::remove($remainingType, new ObjectType($handledClassName));
+			}
+			if ($remainingType->hasMethod($methodName)->yes()) {
+				$remainingMethod = $remainingType->getMethod($methodName, $scope);
+				$remainingParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$scope,
 					$methodCall->getArgs(),
-					$classMethod->getVariants(),
-					$classMethod->getNamedArgumentsVariants(),
+					$remainingMethod->getVariants(),
+					$remainingMethod->getNamedArgumentsVariants(),
 				);
-				$resolvedTypes[] = $classParametersAcceptor->getReturnType();
+				$resolvedTypes[] = $remainingParametersAcceptor->getReturnType();
 			}
 			return VoidToNullTypeTransformer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}

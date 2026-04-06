@@ -352,7 +352,7 @@ class CountWithOptionalKeys
 	protected function testOptionalKeysInUnionListWithIntRange($row, $listRow, $twoOrThree, $twoOrMore, int $maxThree, $tenOrEleven, $threeOrMoreInRangeLimit, $threeOrMoreOverRangeLimit): void
 	{
 		if (count($row) >= $twoOrThree) {
-			assertType('array{0: int, 1: string|null, 2?: int|null}', $row);
+			assertType('list{0: int, 1: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
@@ -376,25 +376,25 @@ class CountWithOptionalKeys
 		}
 
 		if (count($row) >= $threeOrMoreInRangeLimit) {
-			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+			assertType('array{0: int, 1: string|null, 2: int|null, 3?: float|null}', $row);
 		} else {
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 
 		if (count($listRow) >= $threeOrMoreInRangeLimit) {
-			assertType('list{0: string, 1: string, 2: string, 3?: string, 4?: string, 5?: string, 6?: string, 7?: string, 8?: string, 9?: string, 10?: string, 11?: string, 12?: string, 13?: string, 14?: string, 15?: string, 16?: string, 17?: string, 18?: string, 19?: string, 20?: string, 21?: string, 22?: string, 23?: string, 24?: string, 25?: string, 26?: string, 27?: string, 28?: string, 29?: string, 30?: string, 31?: string}', $listRow);
+			assertType('non-empty-list<string>&hasOffsetValue(1, string)&hasOffsetValue(2, string)', $listRow);
 		} else {
 			assertType('list<string>', $listRow);
 		}
 
 		if (count($row) >= $threeOrMoreOverRangeLimit) {
-			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+			assertType('array{0: int, 1: string|null, 2: int|null, 3?: float|null}', $row);
 		} else {
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 
 		if (count($listRow) >= $threeOrMoreOverRangeLimit) {
-			assertType('non-empty-list<string>', $listRow);
+			assertType('non-empty-list<string>&hasOffsetValue(1, string)&hasOffsetValue(2, string)', $listRow);
 		} else {
 			assertType('list<string>', $listRow);
 		}

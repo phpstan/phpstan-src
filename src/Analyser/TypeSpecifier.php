@@ -287,7 +287,21 @@ final class TypeSpecifier
 						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
 					}
 				} elseif ($leftType instanceof IntegerRangeType) {
-					$sizeType = $leftType->shift($offset);
+					if ($context->falsey() && $leftType->getMax() !== null) {
+						if ($orEqual) {
+							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax());
+						} else {
+							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
+						}
+					} elseif ($leftType->getMin() !== null) {
+						if ($orEqual) {
+							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
+						} else {
+							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
+						}
+					} else {
+						$sizeType = $leftType->shift($offset);
+					}
 				} else {
 					$sizeType = $leftType;
 				}

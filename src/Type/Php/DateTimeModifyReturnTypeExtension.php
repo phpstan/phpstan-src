@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Throwable;
@@ -41,7 +42,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
 		$args = $methodCall->getArgs();
-		if (count($methodCall->getArgs()) < 1) {
+		if (count($args) < 1) {
 			return null;
 		}
 
@@ -79,9 +80,19 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 
 			return null;
 		} elseif ($hasDateTime) {
-			$variant = ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants());
+			$callerType = $scope->getType($methodCall->var);
 
-			return TypeCombinator::remove($variant->getReturnType(), new ConstantBooleanType(false));
+			$dateTimeInterfaceType = new ObjectType(DateTimeInterface::class);
+			if ($dateTimeInterfaceType->isSuperTypeOf($callerType)->yes()) {
+				return $callerType;
+			}
+			foreach ($callerType->getObjectClassNames() as $className) {
+				if (!$dateTimeInterfaceType->isSuperTypeOf(new ObjectType($className))->yes()) {
+					$callerType = TypeCombinator::remove($callerType, new ObjectType($className));
+				}
+			}
+
+			return $callerType;
 		}
 
 		if ($this->phpVersion->hasDateTimeExceptions()) {

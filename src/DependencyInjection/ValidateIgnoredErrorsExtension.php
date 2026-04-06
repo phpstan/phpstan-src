@@ -177,6 +177,10 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 						continue;
 					}
 
+					if (isset($ignoreError['count'])) {
+						continue; // ignoreError coming from baseline will be validated at runtime
+					}
+
 					if (isset($ignoreError['path'])) {
 						if (!is_string($ignoreError['path'])) {
 							$errors[] = sprintf("Key 'path' of ignoreErrors expects a string, %s given. Did you mean 'paths'?", gettype($ignoreError['path']));

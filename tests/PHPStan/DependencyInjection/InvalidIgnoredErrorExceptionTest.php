@@ -73,6 +73,13 @@ class InvalidIgnoredErrorExceptionTest extends PHPStanTestCase
 		self::getContainer();
 	}
 
+	public function testBug12430(): void
+	{
+		self::$configFile = __DIR__ . '/invalidIgnoreErrors/baseline-nonexistent-path.neon';
+		$this->expectNotToPerformAssertions();
+		self::getContainer();
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		$files = [

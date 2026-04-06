@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#Some error#'
+			count: 1
+			path: /nonexistent/path/to/deleted/file.php

@@ -57,7 +57,15 @@ class Bar {
 	/** @return string */
 	public function modify($string) {}
 }
+class Bar2 {
+	/** @return string|false */
+	public function modify($string) {}
+}
 
-function (Foo|Bar $d): void {
-	assertType('(DateFormatReturnType\Bar&DateTimeInterface)|DateFormatReturnType\Foo|string', $d->modify('+1 day'));
+function foo(Foo|Bar $d): void {
+	assertType('DateFormatReturnType\Foo|string', $d->modify('+1 day'));
+};
+
+function foo2(Foo|Bar2 $d): void {
+	assertType('DateFormatReturnType\Foo|string|false', $d->modify('+1 day'));
 };

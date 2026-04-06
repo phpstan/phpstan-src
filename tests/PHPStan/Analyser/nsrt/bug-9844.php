@@ -12,6 +12,6 @@ class HelloWorld
 	 */
 	public function sayHello(string $class): void
 	{
-		assertType('mixed', $class::foo());
+		assertType('*ERROR*', $class::foo());
 	}
 }

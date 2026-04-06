@@ -29,6 +29,7 @@ use function array_filter;
 use function array_merge;
 use function array_unshift;
 use function array_values;
+use function count;
 use function defined;
 use function is_array;
 use function is_bool;
@@ -228,6 +229,7 @@ final class WorkerCommand extends Command
 			$dependencies = [];
 			$usedTraitDependencies = [];
 			$exportedNodes = [];
+			$externalFileDependencies = [];
 			foreach ($files as $file) {
 				try {
 					if ($file === $insteadOfFile) {
@@ -242,6 +244,10 @@ final class WorkerCommand extends Command
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
+					$fileExternalDeps = $fileAnalyserResult->getExternalFileDependencies();
+					if (count($fileExternalDeps) > 0) {
+						$externalFileDependencies[$file] = $fileExternalDeps;
+					}
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
@@ -282,6 +288,7 @@ final class WorkerCommand extends Command
 					'dependencies' => $dependencies,
 					'usedTraitDependencies' => $usedTraitDependencies,
 					'exportedNodes' => $exportedNodes,
+					'externalFileDependencies' => $externalFileDependencies,
 					'files' => $files,
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);

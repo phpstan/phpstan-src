@@ -121,6 +121,7 @@ final class AnalyseApplication
 					exportedNodes: $intermediateAnalyserResult->getExportedNodes(),
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
+					externalFileDependencies: $intermediateAnalyserResult->getExternalFileDependencies(),
 				);
 			}
 
@@ -346,6 +347,7 @@ final class AnalyseApplication
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+			externalFileDependencies: $analyserResult->getExternalFileDependencies(),
 		);
 	}
 

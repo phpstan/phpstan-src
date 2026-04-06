@@ -27,6 +27,7 @@ final class ResultCache
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
+	 * @param array<string, array<string>> $externalFileDependencies
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -43,6 +44,7 @@ final class ResultCache
 		private array $exportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private array $externalFileDependencies = [],
 	)
 	{
 	}
@@ -151,6 +153,16 @@ final class ResultCache
 	public function getCurrentFileHashes(): array
 	{
 		return $this->currentFileHashes;
+	}
+
+	/**
+	 * Inverted external file dependencies: external file => dependent analyzed files.
+	 *
+	 * @return array<string, array<string>>
+	 */
+	public function getExternalFileDependencies(): array
+	{
+		return $this->externalFileDependencies;
 	}
 
 }

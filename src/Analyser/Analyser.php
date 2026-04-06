@@ -75,6 +75,7 @@ final class Analyser
 		$dependencies = [];
 		$usedTraitDependencies = [];
 		$exportedNodes = [];
+		$externalFileDependencies = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
@@ -99,6 +100,10 @@ final class Analyser
 				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 				$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
+				$fileExternalDeps = $fileAnalyserResult->getExternalFileDependencies();
+				if (count($fileExternalDeps) > 0) {
+					$externalFileDependencies[$file] = $fileExternalDeps;
+				}
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
 				if (count($fileExportedNodes) > 0) {
@@ -143,6 +148,7 @@ final class Analyser
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
 			peakMemoryUsageBytes: memory_get_peak_usage(true),
+			externalFileDependencies: $internalErrorsCount === 0 ? $externalFileDependencies : null,
 		);
 	}
 

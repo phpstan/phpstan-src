@@ -92,12 +92,13 @@ final class ParallelAnalyser
 		$usedTraitDependencies = [];
 		$reachedInternalErrorsCountLimit = false;
 		$exportedNodes = [];
+		$externalFileDependencies = [];
 
 		/** @var Deferred<AnalyserResult> $deferred */
 		$deferred = new Deferred();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$externalFileDependencies, &$peakMemoryUsages): void {
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
 				$internalErrors[] = new InternalError(
 					'Some parallel worker jobs have not finished.',
@@ -123,6 +124,7 @@ final class ParallelAnalyser
 				exportedNodes: $exportedNodes,
 				reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
 				peakMemoryUsageBytes: array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
+				externalFileDependencies: $internalErrorsCount === 0 ? $externalFileDependencies : null,
 			));
 		});
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
@@ -194,7 +196,7 @@ final class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$externalFileDependencies, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					$fileErrors[] = Error::decode($jsonError);
@@ -250,6 +252,14 @@ final class ParallelAnalyser
 				 */
 				foreach ($json['usedTraitDependencies'] as $file => $fileUsedTraitDependencies) {
 					$usedTraitDependencies[$file] = $fileUsedTraitDependencies;
+				}
+
+				/**
+				 * @var string $file
+				 * @var list<string> $fileExternalDeps
+				 */
+				foreach ($json['externalFileDependencies'] ?? [] as $file => $fileExternalDeps) {
+					$externalFileDependencies[$file] = $fileExternalDeps;
 				}
 
 				foreach ($json['linesToIgnore'] as $file => $fileLinesToIgnore) {

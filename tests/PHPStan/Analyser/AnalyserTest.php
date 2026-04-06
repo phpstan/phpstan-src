@@ -847,6 +847,7 @@ class AnalyserTest extends PHPStanTestCase
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
+			new ExternalFileDependencyRegistrar(),
 			false,
 		);
 

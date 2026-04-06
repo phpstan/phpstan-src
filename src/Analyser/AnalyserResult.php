@@ -28,6 +28,7 @@ final class AnalyserResult
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<string>>|null $usedTraitDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 * @param array<string, list<string>>|null $externalFileDependencies
 	 */
 	public function __construct(
 		private array $unorderedErrors,
@@ -43,6 +44,7 @@ final class AnalyserResult
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
+		private ?array $externalFileDependencies = null,
 	)
 	{
 	}
@@ -157,6 +159,14 @@ final class AnalyserResult
 	public function getExportedNodes(): array
 	{
 		return $this->exportedNodes;
+	}
+
+	/**
+	 * @return array<string, list<string>>|null
+	 */
+	public function getExternalFileDependencies(): ?array
+	{
+		return $this->externalFileDependencies;
 	}
 
 	public function hasReachedInternalErrorsCountLimit(): bool

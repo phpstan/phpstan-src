@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\ExternalFileDependencyRegistrar;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\IgnoreErrorExtensionProvider;
@@ -137,6 +138,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				new IgnoreErrorExtensionProvider(self::getContainer()),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
+				new ExternalFileDependencyRegistrar(),
 				false,
 			);
 			$this->analyser = new Analyser(

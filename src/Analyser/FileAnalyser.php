@@ -60,6 +60,7 @@ final class FileAnalyser
 		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
+		private ExternalFileDependencyRegistrar $externalFileDependencyRegistrar,
 		#[AutowiredParameter]
 		private bool $reportIgnoresWithoutComments,
 	)
@@ -247,6 +248,7 @@ final class FileAnalyser
 			$linesToIgnore,
 			$unmatchedLineIgnores,
 			$processedFiles,
+			$this->externalFileDependencyRegistrar->getAndReset(),
 		);
 	}
 

@@ -212,7 +212,7 @@ final class ConstantArrayTypeBuilder
 
 					if (
 						$offsetValue >= $max
-						|| ($offsetValue < 0 && $max === 0 && PhpVersionStaticAccessor::getInstance()->getVersionId() >= 80300)
+						|| ($offsetValue < 0 && $max === 0 && PhpVersionStaticAccessor::getInstance()->updatesAutoIncrementKeyForNegativeValues())
 					) {
 						/** @var int|float $newAutoIndex */
 						$newAutoIndex = $offsetValue + 1;

@@ -8,13 +8,14 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 use Throwable;
 use function count;
 
@@ -86,13 +87,19 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 			if ($dateTimeInterfaceType->isSuperTypeOf($callerType)->yes()) {
 				return $callerType;
 			}
-			foreach ($callerType->getObjectClassNames() as $className) {
-				if (!$dateTimeInterfaceType->isSuperTypeOf(new ObjectType($className))->yes()) {
-					$callerType = TypeCombinator::remove($callerType, new ObjectType($className));
-				}
-			}
 
-			return $callerType;
+			return TypeTraverser::map(
+				$callerType,
+				static function (Type $type, callable $traverse) use ($dateTimeInterfaceType): Type {
+					if ($type instanceof UnionType) {
+						return $traverse($type);
+					}
+					if ($dateTimeInterfaceType->isSuperTypeOf($type)->yes()) {
+						return $type;
+					}
+					return new NeverType();
+				}
+			);
 		}
 
 		if ($this->phpVersion->hasDateTimeExceptions()) {

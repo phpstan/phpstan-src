@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -209,7 +210,10 @@ final class ConstantArrayTypeBuilder
 						$this->isList = TrinaryLogic::createNo();
 					}
 
-					if ($offsetValue >= $max) {
+					if (
+						$offsetValue >= $max
+						|| ($offsetValue < 0 && $max === 0 && PhpVersionStaticAccessor::getInstance()->getVersionId() >= 80300)
+					) {
 						/** @var int|float $newAutoIndex */
 						$newAutoIndex = $offsetValue + 1;
 						if (is_float($newAutoIndex)) {

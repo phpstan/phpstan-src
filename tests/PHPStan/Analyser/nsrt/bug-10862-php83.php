@@ -1,8 +1,8 @@
-<?php
+<?php // lint >= 8.3
 
 declare(strict_types = 1);
 
-namespace Bug10862;
+namespace Bug10862Php83;
 
 use function PHPStan\Testing\assertType;
 

@@ -95,6 +95,19 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		$returnType = TypeCombinator::intersect(...$returnTypes);
 		$phpDocReturnType = TypeCombinator::intersect(...$phpDocReturnTypes);
 		$nativeReturnType = TypeCombinator::intersect(...$nativeReturnTypes);
+		$methodWithMostParameters = $this->methods[0];
+		$maxParameters = 0;
+		foreach ($this->methods as $method) {
+			foreach ($method->getVariants() as $variant) {
+				if (count($variant->getParameters()) <= $maxParameters) {
+					continue;
+				}
+
+				$maxParameters = count($variant->getParameters());
+				$methodWithMostParameters = $method;
+			}
+		}
+
 		return array_map(static fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
@@ -104,7 +117,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$phpDocReturnType,
 			$nativeReturnType,
 			$acceptor->getCallSiteVarianceMap(),
-		), $this->methods[0]->getVariants());
+		), $methodWithMostParameters->getVariants());
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor

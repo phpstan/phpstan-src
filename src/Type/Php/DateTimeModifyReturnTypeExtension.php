@@ -98,7 +98,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 						return $type;
 					}
 					return new NeverType();
-				}
+				},
 			);
 		}
 

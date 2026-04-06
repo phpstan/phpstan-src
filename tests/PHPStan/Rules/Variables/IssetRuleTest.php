@@ -533,7 +533,7 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-13473.php'], [
 			[
-				'Property Bug13473\Bar::$bar (int) in isset() is not nullable.',
+				'Property Bug13473\Bar::$bar in isset() is not nullable nor uninitialized.',
 				30,
 			],
 		]);

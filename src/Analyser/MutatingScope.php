@@ -1607,7 +1607,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			true,
 		);
 
-		if ($hookName === 'set') {
+		if ($hookName === 'set' && !$this->getClassReflection()->getNativeProperty($propertyName)->getNativeReflection()->hasDefaultValue()) {
 			$scope = $scope->invalidateExpression(new PropertyInitializationExpr($propertyName));
 		}
 

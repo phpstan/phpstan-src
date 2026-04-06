@@ -135,7 +135,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if (!$is->yes() && $classReflection->hasConstructor()) {
 				$constructorDeclaringClass = $classReflection->getConstructor()->getDeclaringClass();
 				if ($constructorDeclaringClass->getName() !== $classReflection->getName()) {
-					$is = $this->isPropertyInitializedByConstructorChain($constructorDeclaringClass, $property->getName());
+					$is = $this->isPromotedByConstructorChain($constructorDeclaringClass, $property->getName());
 				}
 			}
 			if (!$is->yes() && $classReflection->hasNativeProperty($property->getName())) {
@@ -425,7 +425,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		return $this->propertyAssigns;
 	}
 
-	private function isPropertyInitializedByConstructorChain(ClassReflection $constructorDeclaringClass, string $propertyName): TrinaryLogic
+	private function isPromotedByConstructorChain(ClassReflection $constructorDeclaringClass, string $propertyName): TrinaryLogic
 	{
 		$ancestor = $constructorDeclaringClass;
 		do {

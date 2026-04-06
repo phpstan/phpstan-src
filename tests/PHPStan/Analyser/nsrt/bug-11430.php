@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug11430Nsrt;
+namespace Bug11430Methods;
 
 use function PHPStan\Testing\assertType;
 
@@ -95,4 +95,4 @@ $test = new Test();
 /** @var ?string $foo */
 $foo = null;
 $test->name = Option::fromValue($foo);
-assertType('Bug11430Nsrt\Option<string>', $test->name);
+assertType('Bug11430Methods\Option<string>', $test->name);

@@ -47,9 +47,6 @@ final class ReadOnlyPropertyAssignRule implements Rule
 		}
 
 		$inCloneWith = (bool) $propertyFetch->getAttribute('inCloneWith', false);
-		if ($inCloneWith) {
-			return [];
-		}
 
 		$errors = [];
 		$reflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);
@@ -67,16 +64,26 @@ final class ReadOnlyPropertyAssignRule implements Rule
 
 			$declaringClass = $nativeReflection->getDeclaringClass();
 
-			if (!$scope->isInClass()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
-					->line($propertyFetch->name->getStartLine())
-					->identifier('property.readOnlyAssignOutOfClass')
-					->build();
+			$scopeClassReflection = $scope->isInClass() ? $scope->getClassReflection() : null;
+			$isOutsideDeclaringClass = $scopeClassReflection === null
+				|| $scopeClassReflection->getName() !== $declaringClass->getName();
+
+			if ($inCloneWith) {
+				if (
+					$isOutsideDeclaringClass
+					&& $declaringClass->isReadOnly()
+					&& $nativeReflection->isPublic()
+					&& !$nativeReflection->isPrivateSet()
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
+						->identifier('property.readOnlyAssignOutOfClass')
+						->build();
+				}
 				continue;
 			}
 
-			$scopeClassReflection = $scope->getClassReflection();
-			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
+			if ($isOutsideDeclaringClass) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
 					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyAssignOutOfClass')

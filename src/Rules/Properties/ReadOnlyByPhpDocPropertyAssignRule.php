@@ -48,9 +48,6 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 		}
 
 		$inCloneWith = (bool) $propertyFetch->getAttribute('inCloneWith', false);
-		if ($inCloneWith) {
-			return [];
-		}
 
 		$inFunction = $scope->getFunction();
 		if (
@@ -80,16 +77,26 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 
 			$declaringClass = $nativeReflection->getDeclaringClass();
 
-			if (!$scope->isInClass()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
-					->line($propertyFetch->name->getStartLine())
-					->identifier('property.readOnlyByPhpDocAssignOutOfClass')
-					->build();
+			$scopeClassReflection = $scope->isInClass() ? $scope->getClassReflection() : null;
+			$isOutsideDeclaringClass = $scopeClassReflection === null
+				|| $scopeClassReflection->getName() !== $declaringClass->getName();
+
+			if ($inCloneWith) {
+				if (
+					$isOutsideDeclaringClass
+					&& $declaringClass->isReadOnly()
+					&& $nativeReflection->isPublic()
+					&& !$nativeReflection->isPrivateSet()
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
+						->identifier('property.readOnlyByPhpDocAssignOutOfClass')
+						->build();
+				}
 				continue;
 			}
 
-			$scopeClassReflection = $scope->getClassReflection();
-			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
+			if ($isOutsideDeclaringClass) {
 				$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
 					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyByPhpDocAssignOutOfClass')

@@ -9,9 +9,12 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_unique;
 use function count;
+use function in_array;
 
 #[AutowiredService]
 final class MethodCallReturnTypeHelper
@@ -52,7 +55,9 @@ final class MethodCallReturnTypeHelper
 		}
 
 		$resolvedTypes = [];
-		foreach ($typeWithMethod->getObjectClassNames() as $className) {
+		$allClassNames = array_unique($typeWithMethod->getObjectClassNames());
+		$handledClassNames = [];
+		foreach ($allClassNames as $className) {
 			if ($normalizedMethodCall instanceof MethodCall) {
 				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
@@ -65,6 +70,7 @@ final class MethodCallReturnTypeHelper
 					}
 
 					$resolvedTypes[] = $resolvedType;
+					$handledClassNames[] = $className;
 				}
 			} else {
 				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
@@ -82,11 +88,29 @@ final class MethodCallReturnTypeHelper
 					}
 
 					$resolvedTypes[] = $resolvedType;
+					$handledClassNames[] = $className;
 				}
 			}
 		}
 
 		if (count($resolvedTypes) > 0) {
+			foreach ($allClassNames as $className) {
+				if (in_array($className, $handledClassNames, true)) {
+					continue;
+				}
+				$classType = new ObjectType($className);
+				if (!$classType->hasMethod($methodName)->yes()) {
+					continue;
+				}
+				$classMethod = $classType->getMethod($methodName, $scope);
+				$classParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+					$scope,
+					$methodCall->getArgs(),
+					$classMethod->getVariants(),
+					$classMethod->getNamedArgumentsVariants(),
+				);
+				$resolvedTypes[] = $classParametersAcceptor->getReturnType();
+			}
 			return VoidToNullTypeTransformer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 

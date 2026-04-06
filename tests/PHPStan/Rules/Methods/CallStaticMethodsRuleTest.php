@@ -244,6 +244,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				213,
 			],
 			[
+				'Call to an undefined static method class-string::nonexistentMethod().',
+				295,
+			],
+			[
 				'Static method CallStaticMethods\Foo::test() invoked with 3 parameters, 0 required.',
 				298,
 			],
@@ -1005,6 +1009,23 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Result of static method StaticCallPipe\Foo::doBar() (void) is used.',
 				28,
+			],
+		]);
+	}
+
+	public function testBug9844(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-9844.php'], [
+			[
+				'Call to an undefined static method class-string::foo().',
+				13,
+			],
+			[
+				'Call to an undefined static method object::foo().',
+				21,
 			],
 		]);
 	}

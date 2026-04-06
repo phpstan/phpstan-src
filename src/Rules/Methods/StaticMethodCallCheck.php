@@ -24,8 +24,10 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -200,11 +202,14 @@ final class StaticMethodCallCheck
 			if (!$classType->isObject()->yes()) {
 				return [[], null];
 			}
+		} elseif ($classType instanceof ClassStringType) { // @phpstan-ignore phpstanApi.instanceofType
+			$typeForDescribe = $classType;
+			$classType = new ObjectWithoutClassType();
 		} elseif ($classType->isString()->yes()) {
 			return [[], null];
 		}
 
-		$typeForDescribe = $classType;
+		$typeForDescribe ??= $classType;
 		if ($classType instanceof StaticType) {
 			$typeForDescribe = $classType->getStaticObjectType();
 		}

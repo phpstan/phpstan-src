@@ -74,4 +74,9 @@ class RandomIntParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6361.php'], []);
 	}
 
+	public function testBug13092(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13092.php'], []);
+	}
+
 }

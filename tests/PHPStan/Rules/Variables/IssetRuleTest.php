@@ -531,7 +531,12 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 
-		$this->analyse([__DIR__ . '/data/bug-13473.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13473.php'], [
+			[
+				'Property Bug13473\Bar::$bar (int) in isset() is not nullable.',
+				30,
+			],
+		]);
 	}
 
 	public function testBug14393(): void

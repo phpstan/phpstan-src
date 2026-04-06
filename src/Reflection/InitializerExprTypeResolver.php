@@ -1288,7 +1288,7 @@ final class InitializerExprTypeResolver
 							return new ErrorType();
 						}
 
-						$resultType = $this->getTypeFromValue($leftNumberType->getValue() / $rightNumberType->getValue());
+						$resultType = $this->getTypeFromValue($leftNumberType->getValue() / $rightNumberType->getValue()); // @phpstan-ignore binaryOp.invalid
 						$resultTypes[] = $resultType;
 					}
 				}
@@ -2119,13 +2119,6 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		if ($leftNumberType instanceof ErrorType) {
-			$leftNumberType = $this->filterNumberTypeFromUnion($leftType) ?? $leftNumberType;
-		}
-		if ($rightNumberType instanceof ErrorType) {
-			$rightNumberType = $this->filterNumberTypeFromUnion($rightType) ?? $rightNumberType;
-		}
-
 		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
 			return new ErrorType();
 		}
@@ -2160,39 +2153,6 @@ final class InitializerExprTypeResolver
 		}
 
 		return $resultType;
-	}
-
-	/**
-	 * When toNumber() on a union returns ErrorType because some members (strings)
-	 * can't be proven numeric, try to extract the numeric parts.
-	 * Only skips ErrorType from string members, since string-to-number conversion
-	 * always produces a result in PHP (with possible deprecation warning).
-	 */
-	private function filterNumberTypeFromUnion(Type $type): ?Type
-	{
-		if (!$type instanceof UnionType) {
-			return null;
-		}
-
-		$numberTypes = [];
-		$hasSkipped = false;
-		foreach ($type->getTypes() as $memberType) {
-			$numberType = $memberType->toNumber();
-			if ($numberType instanceof ErrorType) {
-				if ($memberType->isString()->yes()) {
-					$hasSkipped = true;
-					continue;
-				}
-				return null;
-			}
-			$numberTypes[] = $numberType;
-		}
-
-		if ($numberTypes === [] || !$hasSkipped) {
-			return null;
-		}
-
-		return TypeCombinator::union(...$numberTypes);
 	}
 
 	/**

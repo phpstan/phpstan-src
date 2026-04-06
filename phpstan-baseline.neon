@@ -436,6 +436,24 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			rawMessage: Binary operation "*" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
+			rawMessage: Binary operation "+" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
+			rawMessage: Binary operation "-" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
 			rawMessage: Binary operation "^" between bool|float|int|string|null and bool|float|int|string|null results in an error.
 			identifier: binaryOp.invalid
 			count: 1

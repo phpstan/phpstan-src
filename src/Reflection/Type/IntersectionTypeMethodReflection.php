@@ -22,6 +22,8 @@ use function is_bool;
 final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 {
 
+	private ?ExtendedMethodReflection $methodWithMostParameters = null;
+
 	/**
 	 * @param ExtendedMethodReflection[] $methods
 	 */
@@ -31,7 +33,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getDeclaringClass(): ClassReflection
 	{
-		return $this->methods[0]->getDeclaringClass();
+		return $this->getMethodWithMostParameters()->getDeclaringClass();
 	}
 
 	public function isStatic(): bool
@@ -95,19 +97,6 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		$returnType = TypeCombinator::intersect(...$returnTypes);
 		$phpDocReturnType = TypeCombinator::intersect(...$phpDocReturnTypes);
 		$nativeReturnType = TypeCombinator::intersect(...$nativeReturnTypes);
-		$methodWithMostParameters = $this->methods[0];
-		$maxParameters = 0;
-		foreach ($this->methods as $method) {
-			foreach ($method->getVariants() as $variant) {
-				if (count($variant->getParameters()) <= $maxParameters) {
-					continue;
-				}
-
-				$maxParameters = count($variant->getParameters());
-				$methodWithMostParameters = $method;
-			}
-		}
-
 		return array_map(static fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
@@ -117,7 +106,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$phpDocReturnType,
 			$nativeReturnType,
 			$acceptor->getCallSiteVarianceMap(),
-		), $methodWithMostParameters->getVariants());
+		), $this->getMethodWithMostParameters()->getVariants());
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor
@@ -250,7 +239,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getAttributes(): array
 	{
-		return $this->methods[0]->getAttributes();
+		return $this->getMethodWithMostParameters()->getAttributes();
 	}
 
 	public function mustUseReturnValue(): TrinaryLogic
@@ -260,7 +249,31 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
 	{
-		return $this->methods[0]->getResolvedPhpDoc();
+		return $this->getMethodWithMostParameters()->getResolvedPhpDoc();
+	}
+
+	private function getMethodWithMostParameters(): ExtendedMethodReflection
+	{
+		if ($this->methodWithMostParameters !== null) {
+			return $this->methodWithMostParameters;
+		}
+
+		$methodWithMostParameters = $this->methods[0];
+		$maxParameters = 0;
+		foreach ($this->methods as $method) {
+			foreach ($method->getVariants() as $variant) {
+				if (count($variant->getParameters()) <= $maxParameters) {
+					continue;
+				}
+
+				$maxParameters = count($variant->getParameters());
+				$methodWithMostParameters = $method;
+			}
+		}
+
+		$this->methodWithMostParameters = $methodWithMostParameters;
+
+		return $methodWithMostParameters;
 	}
 
 }

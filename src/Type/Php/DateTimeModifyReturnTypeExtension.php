@@ -78,19 +78,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 
 			return null;
 		} elseif ($hasDateTime) {
-			$callerType = $scope->getType($methodCall->var);
-			$dateTimeInterfaceType = new ObjectType(DateTimeInterface::class);
-
-			if ($dateTimeInterfaceType->isSuperTypeOf($callerType)->yes()) {
-				return $callerType;
-			}
-
-			foreach ($callerType->getObjectClassNames() as $className) {
-				if (!$dateTimeInterfaceType->isSuperTypeOf(new ObjectType($className))->yes()) {
-					$callerType = TypeCombinator::remove($callerType, new ObjectType($className));
-				}
-			}
-			$callerType = TypeCombinator::removeNull($callerType);
+			$callerType = TypeCombinator::intersect($scope->getType($methodCall->var), new ObjectType(DateTimeInterface::class));
 
 			if ($callerType instanceof NeverType) {
 				return null;

@@ -59,5 +59,5 @@ class Bar {
 }
 
 function (Foo|Bar $d): void {
-	assertType('DateFormatReturnType\Foo|string', $d->modify('+1 day'));
+	assertType('(DateFormatReturnType\Bar&DateTimeInterface)|DateFormatReturnType\Foo|string', $d->modify('+1 day'));
 };

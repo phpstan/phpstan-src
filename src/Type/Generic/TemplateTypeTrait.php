@@ -368,6 +368,10 @@ trait TemplateTypeTrait
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
+		if ($typeToRemove instanceof TemplateType) {
+			return null;
+		}
+
 		$bound = TypeCombinator::remove($this->getBound(), $typeToRemove);
 		if ($this->getBound() === $bound) {
 			return null;

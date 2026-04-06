@@ -93,20 +93,23 @@ final class MethodCallReturnTypeHelper
 		}
 
 		if (count($resolvedTypes) > 0) {
-			$remainingType = $typeWithMethod;
-			foreach ($handledClassNames as $handledClassName) {
-				$remainingType = TypeCombinator::remove($remainingType, new ObjectType($handledClassName));
+			if (count($allClassNames) !== count($handledClassNames)) {
+				$remainingType = $typeWithMethod;
+				foreach ($handledClassNames as $handledClassName) {
+					$remainingType = TypeCombinator::remove($remainingType, new ObjectType($handledClassName));
+				}
+				if ($remainingType->hasMethod($methodName)->yes()) {
+					$remainingMethod = $remainingType->getMethod($methodName, $scope);
+					$remainingParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$methodCall->getArgs(),
+						$remainingMethod->getVariants(),
+						$remainingMethod->getNamedArgumentsVariants(),
+					);
+					$resolvedTypes[] = $remainingParametersAcceptor->getReturnType();
+				}
 			}
-			if ($remainingType->hasMethod($methodName)->yes()) {
-				$remainingMethod = $remainingType->getMethod($methodName, $scope);
-				$remainingParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$methodCall->getArgs(),
-					$remainingMethod->getVariants(),
-					$remainingMethod->getNamedArgumentsVariants(),
-				);
-				$resolvedTypes[] = $remainingParametersAcceptor->getReturnType();
-			}
+
 			return VoidToNullTypeTransformer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 

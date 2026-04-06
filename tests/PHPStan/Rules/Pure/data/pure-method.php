@@ -296,6 +296,81 @@ final class TestMagicMethods
 		(string) $impure;
 	}
 
+	/**
+	 * @phpstan-pure
+	 */
+	public function doEcho(
+		NoMagicMethods $no,
+		PureMagicMethods $pure,
+		MaybePureMagicMethods $maybe,
+		ImpureMagicMethods $impure
+	)
+	{
+		echo $no;
+		echo $pure;
+		echo $maybe;
+		echo $impure;
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doPrint(
+		PureMagicMethods $pure,
+		MaybePureMagicMethods $maybe,
+		ImpureMagicMethods $impure
+	)
+	{
+		print $pure;
+		print $maybe;
+		print $impure;
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doConcat(
+		PureMagicMethods $pure,
+		MaybePureMagicMethods $maybe,
+		ImpureMagicMethods $impure
+	)
+	{
+		'hello' . $pure;
+		'hello' . $maybe;
+		'hello' . $impure;
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doConcatAssign(
+		PureMagicMethods $pure,
+		MaybePureMagicMethods $maybe,
+		ImpureMagicMethods $impure
+	)
+	{
+		$x = 'hello';
+		$x .= $pure;
+		$x = 'hello';
+		$x .= $maybe;
+		$x = 'hello';
+		$x .= $impure;
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doInterpolation(
+		PureMagicMethods $pure,
+		MaybePureMagicMethods $maybe,
+		ImpureMagicMethods $impure
+	)
+	{
+		"hello $pure";
+		"hello $maybe";
+		"hello $impure";
+	}
+
 }
 
 final class NoConstructor

@@ -863,21 +863,22 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Echo_) {
 			$hasYield = false;
 			$throwPoints = [];
+			$impurePoints = [];
 			$isAlwaysTerminating = false;
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope);
 				$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			}
 
 			$throwPoints = $overridingThrowPoints ?? $throwPoints;
-			$impurePoints = [
-				new ImpurePoint($scope, $stmt, 'echo', 'echo', true),
-			];
+			$impurePoints[] = new ImpurePoint($scope, $stmt, 'echo', 'echo', true);
 			return new InternalStatementResult($scope, $hasYield, $isAlwaysTerminating, [], $throwPoints, $impurePoints);
 		} elseif ($stmt instanceof Return_) {
 			if ($stmt->expr !== null) {

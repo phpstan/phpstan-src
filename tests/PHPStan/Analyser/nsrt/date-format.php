@@ -48,3 +48,10 @@ function (?\DateTimeImmutable $d): void {
 	assertType('DateTimeImmutable', $d->modify('+1 day'));
 	assertType('DateTimeImmutable|null', $d?->modify('+1 day'));
 };
+
+class Foo extends \DateTimeImmutable {}
+class Bar extends \DateTimeImmutable {}
+
+function (Foo|Bar $d): void {
+	assertType('DateFormatReturnType\Bar|DateFormatReturnType\Foo', $d->modify('+1 day'));
+};

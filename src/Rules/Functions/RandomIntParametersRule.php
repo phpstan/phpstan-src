@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\VerbosityLevel;
+use function array_unique;
 use function count;
 use function is_string;
 use function sprintf;
@@ -66,7 +67,7 @@ final class RandomIntParametersRule implements Rule
 
 		$isSmaller = $maxType->isSmallerThan($minType, $this->phpVersion);
 
-		if ($isSmaller->yes() || $isSmaller->maybe() && $this->reportMaybes && !$this->sharesVariable($args[0]->value, $args[1]->value)) {
+		if ($isSmaller->yes() || $isSmaller->maybe() && $this->reportMaybes && !$this->isAlwaysValidDueToSharedVariables($args[0]->value, $args[1]->value, $scope)) {
 			$message = 'Parameter #1 $min (%s) of function random_int expects lower number than parameter #2 $max (%s).';
 			return [
 				RuleErrorBuilder::message(sprintf(
@@ -80,22 +81,118 @@ final class RandomIntParametersRule implements Rule
 		return [];
 	}
 
-	private function sharesVariable(Node\Expr $expr1, Node\Expr $expr2): bool
+	private function isAlwaysValidDueToSharedVariables(Node\Expr $minExpr, Node\Expr $maxExpr, Scope $scope): bool
 	{
-		$vars1 = $this->extractVariableNames($expr1);
+		$vars1 = $this->extractVariableNames($minExpr);
 		if ($vars1 === []) {
 			return false;
 		}
 
-		$vars2 = $this->extractVariableNames($expr2);
+		$vars2 = $this->extractVariableNames($maxExpr);
 
+		$hasShared = false;
 		foreach ($vars1 as $var => $_) {
 			if (isset($vars2[$var])) {
-				return true;
+				$hasShared = true;
+				break;
 			}
 		}
 
-		return false;
+		if (!$hasShared) {
+			return false;
+		}
+
+		// Get all variables from both expressions
+		$allVars = $vars1 + $vars2;
+
+		// Get boundary values for each variable
+		$varBoundaries = [];
+		foreach ($allVars as $var => $_) {
+			$varType = $scope->getType(new Node\Expr\Variable($var))->toInteger();
+			if ($varType instanceof ConstantIntegerType) {
+				$varBoundaries[$var] = [$varType->getValue()];
+			} elseif ($varType instanceof IntegerRangeType) {
+				$min = $varType->getMin();
+				$max = $varType->getMax();
+				if ($min === null || $max === null) {
+					return false;
+				}
+				$varBoundaries[$var] = array_unique([$min, $max]);
+			} else {
+				return false;
+			}
+		}
+
+		// Generate all combinations of boundary values
+		/** @var array<array<string, int>> $combinations */
+		$combinations = [[]];
+		foreach ($varBoundaries as $var => $values) {
+			$newCombinations = [];
+			foreach ($combinations as $combo) {
+				foreach ($values as $value) {
+					$newCombo = $combo;
+					$newCombo[$var] = $value;
+					$newCombinations[] = $newCombo;
+				}
+			}
+			$combinations = $newCombinations;
+		}
+
+		// For each combination, evaluate both expressions and check max >= min
+		foreach ($combinations as $combo) {
+			$minValue = $this->evaluateExpr($minExpr, $combo);
+			$maxValue = $this->evaluateExpr($maxExpr, $combo);
+
+			if ($minValue === null || $maxValue === null) {
+				return false;
+			}
+
+			if ($maxValue < $minValue) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param array<string, int> $varValues
+	 */
+	private function evaluateExpr(Node\Expr $expr, array $varValues): ?int
+	{
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+			return $varValues[$expr->name] ?? null;
+		}
+
+		if ($expr instanceof Node\Scalar\Int_) {
+			return $expr->value;
+		}
+
+		if ($expr instanceof Node\Expr\BinaryOp) {
+			$left = $this->evaluateExpr($expr->left, $varValues);
+			$right = $this->evaluateExpr($expr->right, $varValues);
+			if ($left === null || $right === null) {
+				return null;
+			}
+
+			return match (true) {
+				$expr instanceof Node\Expr\BinaryOp\Plus => $left + $right,
+				$expr instanceof Node\Expr\BinaryOp\Minus => $left - $right,
+				$expr instanceof Node\Expr\BinaryOp\Mul => $left * $right,
+				default => null,
+			};
+		}
+
+		if ($expr instanceof Node\Expr\UnaryMinus) {
+			$val = $this->evaluateExpr($expr->expr, $varValues);
+			return $val !== null ? -$val : null;
+		}
+
+		if ($expr instanceof Node\Expr\UnaryPlus) {
+			return $this->evaluateExpr($expr->expr, $varValues);
+		}
+
+		return null;
 	}
 
 	/**

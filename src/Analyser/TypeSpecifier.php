@@ -2198,6 +2198,7 @@ final class TypeSpecifier
 			$expr = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr);
 		}
 
+		$coalescePropertyFetchTypes = null;
 		if (
 			!$context->null()
 			&& $expr instanceof Expr\BinaryOp\Coalesce
@@ -2207,6 +2208,17 @@ final class TypeSpecifier
 				|| ($context->false() && $type->isSuperTypeOf($scope->getType($expr->right))->yes())
 			) {
 				$expr = $expr->left;
+
+				if (
+					$context->true()
+					&& $expr instanceof PropertyFetch
+					&& $expr->name instanceof Node\Identifier
+				) {
+					$coalescePropertyFetchTypes = $this->create($expr->var, new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasPropertyType($expr->name->toString()),
+					]), TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($originalExpr);
+				}
 			}
 		}
 
@@ -2321,6 +2333,9 @@ final class TypeSpecifier
 		}
 
 		$types = new SpecifiedTypes($sureTypes, $sureNotTypes);
+		if ($coalescePropertyFetchTypes !== null) {
+			$types = $types->unionWith($coalescePropertyFetchTypes);
+		}
 		if (isset($containsNull) && !$containsNull) {
 			return $this->createNullsafeTypes($originalExpr, $scope, $context, $type)->unionWith($types);
 		}

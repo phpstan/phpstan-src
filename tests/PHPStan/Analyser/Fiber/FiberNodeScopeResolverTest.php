@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Fiber;
 
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
@@ -69,7 +70,7 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
-			$container->getByType(\PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper::class),
+			$container->getByType(ImplicitToStringCallHelper::class),
 		);
 	}
 

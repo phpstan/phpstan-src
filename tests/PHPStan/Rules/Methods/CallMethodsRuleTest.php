@@ -3962,4 +3962,17 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4608(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-4608.php'], [
+			[
+				'Call to an undefined method class@anonymous/tests/PHPStan/Rules/Methods/data/bug-4608.php:5::not_abc().',
+				11,
+			],
+		]);
+	}
+
 }

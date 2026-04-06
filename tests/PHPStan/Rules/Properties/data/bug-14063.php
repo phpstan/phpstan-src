@@ -47,8 +47,22 @@ readonly class Baz
 	}
 }
 
+// non-readonly class with promoted public readonly property
+final class Qux
+{
+	public function __construct(public readonly string $value) {}
+
+	public function doFoo(): void
+	{
+		clone($this, ['value' => 'newVal']);
+	}
+}
+
 $obj = new Obj('val');
 $newObj = clone($obj, ['value' => 'newVal']);
+
+$qux = new Qux('val');
+$newQux = clone($qux, ['value' => 'newVal']);
 
 $bar = new Bar('val');
 $newBar = clone($bar, ['value' => 'newVal']);

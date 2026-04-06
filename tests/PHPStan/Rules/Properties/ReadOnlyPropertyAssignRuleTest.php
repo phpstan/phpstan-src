@@ -186,11 +186,11 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14063.php'], [
 			[
 				'Readonly property Bug14063\Obj::$value is assigned outside of its declaring class.',
-				51,
+				62,
 			],
 			[
 				'Readonly property Bug14063\Baz::$pub is assigned outside of its declaring class.',
-				57,
+				71,
 			],
 		]);
 	}

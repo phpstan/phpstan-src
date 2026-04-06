@@ -239,16 +239,20 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14063.php'], [
 			[
+				'Assign to protected(set) property Bug14063\Qux::$value.',
+				65,
+			],
+			[
 				'Assign to protected(set) property Bug14063\Bar::$value.',
-				54,
+				68,
 			],
 			[
 				'Access to protected property Bug14063\Baz::$prot.',
-				57,
+				71,
 			],
 			[
 				'Access to private property Bug14063\Baz::$priv.',
-				57,
+				71,
 			],
 		]);
 	}

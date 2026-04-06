@@ -53,8 +53,11 @@ function (?\DateTimeImmutable $d): void {
 };
 
 class Foo extends \DateTimeImmutable {}
-class Bar extends \DateTimeImmutable {}
+class Bar {
+	/** @return string */
+	public function modify($string) {}
+}
 
 function (Foo|Bar $d): void {
-	assertType('DateFormatReturnType\Bar|DateFormatReturnType\Foo', $d->modify('+1 day'));
+	assertType('DateFormatReturnType\Foo|string', $d->modify('+1 day'));
 };

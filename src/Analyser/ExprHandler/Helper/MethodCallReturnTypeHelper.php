@@ -12,7 +12,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_unique;
 use function count;
 
 #[AutowiredService]
@@ -54,7 +53,7 @@ final class MethodCallReturnTypeHelper
 		}
 
 		$resolvedTypes = [];
-		$allClassNames = array_unique($typeWithMethod->getObjectClassNames());
+		$allClassNames = $typeWithMethod->getObjectClassNames();
 		$handledClassNames = [];
 		foreach ($allClassNames as $className) {
 			if ($normalizedMethodCall instanceof MethodCall) {

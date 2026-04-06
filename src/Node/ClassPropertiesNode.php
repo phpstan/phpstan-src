@@ -433,7 +433,10 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($ancestorConstructor !== null) {
 				foreach ($ancestorConstructor->getParameters() as $param) {
 					if ($param->getName() === $propertyName && $param->isPromoted()) {
-						return TrinaryLogic::createYes();
+						$ancestorNativeReflection = $ancestor->getNativeReflection();
+						if ($ancestorNativeReflection->hasProperty($propertyName) && !$ancestorNativeReflection->getProperty($propertyName)->isPrivate()) {
+							return TrinaryLogic::createYes();
+						}
 					}
 				}
 			}

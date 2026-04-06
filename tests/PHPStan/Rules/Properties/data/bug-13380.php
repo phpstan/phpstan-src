@@ -56,3 +56,15 @@ class Bar3 extends Foo3
 class Baz3 extends Bar3 {
 	public string $prop;
 }
+
+class FooPrivate
+{
+	public function __construct(
+		private string $prop,
+	){
+	}
+}
+
+class BarPrivate extends FooPrivate {
+	public string $prop;
+}

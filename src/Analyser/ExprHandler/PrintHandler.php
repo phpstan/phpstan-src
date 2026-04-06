@@ -9,7 +9,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -26,7 +26,7 @@ final class PrintHandler implements ExprHandler
 {
 
 	public function __construct(
-		private ToStringThrowPointHelper $toStringThrowPointHelper,
+		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 	}
@@ -47,9 +47,9 @@ final class PrintHandler implements ExprHandler
 		$throwPoints = $exprResult->getThrowPoints();
 		$impurePoints = $exprResult->getImpurePoints();
 
-		[$toStringThrowPoints, $toStringImpurePoints] = $this->toStringThrowPointHelper->getToStringThrowAndImpurePoints($expr->expr, $scope);
-		$throwPoints = array_merge($throwPoints, $toStringThrowPoints);
-		$impurePoints = array_merge($impurePoints, $toStringImpurePoints);
+		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
+		$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 
 		$scope = $exprResult->getScope();
 

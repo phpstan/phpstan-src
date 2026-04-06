@@ -49,7 +49,7 @@ use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
-use PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -237,7 +237,7 @@ class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
-		private readonly ToStringThrowPointHelper $toStringThrowPointHelper,
+		private readonly ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -867,8 +867,8 @@ class NodeScopeResolver
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				[$toStringThrowPoints] = $this->toStringThrowPointHelper->getToStringThrowAndImpurePoints($echoExpr, $scope);
-				$throwPoints = array_merge($throwPoints, $toStringThrowPoints);
+				$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope);
+				$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();

@@ -13,7 +13,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -43,7 +43,7 @@ final class BinaryOpHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private PhpVersion $phpVersion,
-		private ToStringThrowPointHelper $toStringThrowPointHelper,
+		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 	}
@@ -72,10 +72,10 @@ final class BinaryOpHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createExplicit($leftResult->getScope(), new ObjectType(DivisionByZeroError::class), $expr, false);
 		}
 		if ($expr instanceof BinaryOp\Concat) {
-			[$leftToStringThrowPoints, $leftToStringImpurePoints] = $this->toStringThrowPointHelper->getToStringThrowAndImpurePoints($expr->left, $scope);
-			[$rightToStringThrowPoints, $rightToStringImpurePoints] = $this->toStringThrowPointHelper->getToStringThrowAndImpurePoints($expr->right, $leftResult->getScope());
-			$throwPoints = array_merge($throwPoints, $leftToStringThrowPoints, $rightToStringThrowPoints);
-			$impurePoints = array_merge($impurePoints, $leftToStringImpurePoints, $rightToStringImpurePoints);
+			$leftToStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->left, $scope);
+			$rightToStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->right, $leftResult->getScope());
+			$throwPoints = array_merge($throwPoints, $leftToStringResult->getThrowPoints(), $rightToStringResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $leftToStringResult->getImpurePoints(), $rightToStringResult->getImpurePoints());
 		}
 		$scope = $rightResult->getScope();
 

@@ -13,7 +13,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\ToStringThrowPointHelper;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -37,7 +37,7 @@ final class AssignOpHandler implements ExprHandler
 	public function __construct(
 		private AssignHandler $assignHandler,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private ToStringThrowPointHelper $toStringThrowPointHelper,
+		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 	}
@@ -96,9 +96,9 @@ final class AssignOpHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
 		}
 		if ($expr instanceof Expr\AssignOp\Concat) {
-			[$toStringThrowPoints, $toStringImpurePoints] = $this->toStringThrowPointHelper->getToStringThrowAndImpurePoints($expr->expr, $scope);
-			$throwPoints = array_merge($throwPoints, $toStringThrowPoints);
-			$impurePoints = array_merge($impurePoints, $toStringImpurePoints);
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
+			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 		}
 
 		return new ExpressionResult(

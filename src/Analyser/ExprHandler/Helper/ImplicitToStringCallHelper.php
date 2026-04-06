@@ -4,15 +4,15 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
+use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ImpurePoint;
-use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use function sprintf;
 
 #[AutowiredService]
-final class ToStringThrowPointHelper
+final class ImplicitToStringCallHelper
 {
 
 	public function __construct(
@@ -22,10 +22,7 @@ final class ToStringThrowPointHelper
 	{
 	}
 
-	/**
-	 * @return array{list<InternalThrowPoint>, list<ImpurePoint>}
-	 */
-	public function getToStringThrowAndImpurePoints(Expr $expr, MutatingScope $scope): array
+	public function processImplicitToStringCall(Expr $expr, MutatingScope $scope): ExpressionResult
 	{
 		$throwPoints = [];
 		$impurePoints = [];
@@ -33,7 +30,13 @@ final class ToStringThrowPointHelper
 		$exprType = $scope->getType($expr);
 		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
 		if ($toStringMethod === null) {
-			return [[], []];
+			return new ExpressionResult(
+				$scope,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+			);
 		}
 
 		if (!$toStringMethod->hasSideEffects()->no()) {
@@ -58,7 +61,13 @@ final class ToStringThrowPointHelper
 			}
 		}
 
-		return [$throwPoints, $impurePoints];
+		return new ExpressionResult(
+			$scope,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: $throwPoints,
+			impurePoints: $impurePoints,
+		);
 	}
 
 }

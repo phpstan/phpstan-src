@@ -291,20 +291,28 @@ final class StaticCallHandler implements ExprHandler
 				return $callType;
 			}
 
+			$calledOnClassString = false;
 			if ($expr->class instanceof Name) {
 				$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($scope, $expr->class, $expr->name);
 			} else {
-				$staticMethodCalledOnType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
+				$classType = TypeCombinator::removeNull($scope->getType($expr->class));
+				$calledOnClassString = $classType->isClassString()->yes();
+				$staticMethodCalledOnType = $classType->getObjectTypeOrClassStringObjectType();
 			}
 
+			$methodName = $expr->name->toString();
 			$callType = $this->methodCallReturnTypeHelper->methodCallReturnType(
 				$scope,
 				$staticMethodCalledOnType,
-				$expr->name->toString(),
+				$methodName,
 				$expr,
 			);
 			if ($callType === null) {
-				$callType = new ErrorType();
+				if ($calledOnClassString && $staticMethodCalledOnType->hasMethod($methodName)->maybe()) {
+					$callType = new MixedType();
+				} else {
+					$callType = new ErrorType();
+				}
 			}
 
 			if ($expr->class instanceof Expr) {

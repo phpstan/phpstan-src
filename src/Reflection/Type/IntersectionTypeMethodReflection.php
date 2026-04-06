@@ -252,7 +252,11 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->getMethodWithMostParameters()->getResolvedPhpDoc();
 	}
 
-	/** Selects the method whose variant has the widest parameter list, so intersection ordering does not affect call validation. */
+	/**
+	 * Since every intersected method should be compatible,
+	 * selects the method whose variant has the widest parameter list,
+	 * so intersection ordering does not affect call validation.
+	 */
 	private function getMethodWithMostParameters(): ExtendedMethodReflection
 	{
 		if ($this->methodWithMostParameters !== null) {

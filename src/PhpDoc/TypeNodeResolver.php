@@ -483,8 +483,9 @@ final class TypeNodeResolver
 				case 'parent':
 					if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
 						$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
-						if ($classReflection->getParentClass() !== null) {
-							return new ObjectType($classReflection->getParentClass()->getName());
+						$parentClass = $classReflection->getNativeReflection()->getParentClass();
+						if ($parentClass !== false) {
+							return new ObjectType($parentClass->getName());
 						}
 					}
 

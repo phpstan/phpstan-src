@@ -223,7 +223,7 @@ final class VerbosityLevel
 		if (!$containsInvariantTemplateType) {
 			$level = $verbosity ?? self::typeOnly();
 
-			if ($acceptingType->describe($level) === $acceptedType->describe($level)) {
+			if (self::containsTemplateType($acceptingType) && self::containsTemplateType($acceptedType) && $acceptingType->describe($level) === $acceptedType->describe($level)) {
 				return self::precise();
 			}
 
@@ -242,11 +242,30 @@ final class VerbosityLevel
 
 		$level = $moreVerbose ? self::value() : $verbosity ?? self::typeOnly();
 
-		if ($acceptingType->describe($level) === $acceptedType->describe($level)) {
+		if (self::containsTemplateType($acceptingType) && self::containsTemplateType($acceptedType) && $acceptingType->describe($level) === $acceptedType->describe($level)) {
 			return self::precise();
 		}
 
 		return $level;
+	}
+
+	private static function containsTemplateType(Type $type): bool
+	{
+		$found = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$found): Type {
+			if ($found) {
+				return $type;
+			}
+
+			if ($type instanceof TemplateType) {
+				$found = true;
+				return $type;
+			}
+
+			return $traverse($type);
+		});
+
+		return $found;
 	}
 
 	/**

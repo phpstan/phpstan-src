@@ -210,10 +210,7 @@ final class ConstantArrayTypeBuilder
 						$this->isList = TrinaryLogic::createNo();
 					}
 
-					if (
-						$offsetValue >= $max
-						|| ($offsetValue < 0 && $max === 0 && PhpVersionStaticAccessor::getInstance()->updatesAutoIncrementKeyForNegativeValues())
-					) {
+					if ($this->shouldUpdateAutoIndex($offsetValue, $max)) {
 						/** @var int|float $newAutoIndex */
 						$newAutoIndex = $offsetValue + 1;
 						if (is_float($newAutoIndex)) {
@@ -421,6 +418,15 @@ final class ConstantArrayTypeBuilder
 	public function isList(): bool
 	{
 		return $this->isList->yes();
+	}
+
+	private function shouldUpdateAutoIndex(int $offsetValue, int $max): bool
+	{
+		if ($offsetValue >= $max) {
+			return true;
+		}
+
+		return $offsetValue < 0 && $max === 0 && PhpVersionStaticAccessor::getInstance()->updatesAutoIncrementKeyForNegativeValues();
 	}
 
 }

@@ -520,7 +520,6 @@ class ConstantArrayType implements Type
 			return TrinaryLogic::createNo();
 		}
 
-
 		return $result;
 	}
 

@@ -7393,7 +7393,7 @@ return [
 'odbc_tableprivileges' => ['resource|false', 'connection_id'=>'resource', 'qualifier'=>'string', 'owner'=>'string', 'name'=>'string'],
 'odbc_tables' => ['resource|false', 'connection_id'=>'resource', 'qualifier='=>'string', 'owner='=>'string', 'name='=>'string', 'table_types='=>'string'],
 'opcache_compile_file' => ['bool', 'file'=>'string'],
-'opcache_get_configuration' => ['array|false'],
+'opcache_get_configuration' => ['array{directives: array<non-empty-string, scalar>, version: array{version: non-empty-string, opcache_product_name: non-empty-string}, blacklist: list<string>}|false'],
 'opcache_get_status' => ['array|false', 'get_scripts='=>'bool'],
 'opcache_invalidate' => ['bool', 'script'=>'string', 'force='=>'bool'],
 'opcache_is_script_cached' => ['bool', 'script'=>'string'],

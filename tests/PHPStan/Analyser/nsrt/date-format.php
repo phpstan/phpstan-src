@@ -45,5 +45,27 @@ function (\DateTimeImmutable $dt, string $s): void {
 };
 
 function (?\DateTimeImmutable $d): void {
-	assertType('DateTimeImmutable|null', $d->modify('+1 day'));
+	assertType('DateTimeImmutable', $d->modify('+1 day'));
+};
+
+function (?\DateTimeImmutable $d): void {
+	assertType('DateTimeImmutable|null', $d?->modify('+1 day'));
+};
+
+class Foo extends \DateTimeImmutable {}
+class Bar {
+	/** @return string */
+	public function modify($string) {}
+}
+class Bar2 {
+	/** @return string|false */
+	public function modify($string) {}
+}
+
+function foo(Foo|Bar $d): void {
+	assertType('DateFormatReturnType\Foo|string', $d->modify('+1 day'));
+};
+
+function foo2(Foo|Bar2 $d): void {
+	assertType('DateFormatReturnType\Foo|string|false', $d->modify('+1 day'));
 };

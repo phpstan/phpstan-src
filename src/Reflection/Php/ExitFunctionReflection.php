@@ -100,7 +100,7 @@ final class ExitFunctionReflection implements FunctionReflection
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createNo();
 	}
 
 	public function getThrowType(): ?Type

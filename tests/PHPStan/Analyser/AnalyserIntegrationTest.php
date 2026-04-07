@@ -93,6 +93,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testConstantArrayCallableDoesNotCauseInfiniteRecursion(): void
+	{
+		// Previously caused infinite recursion / OOM via ConstantArrayType::isCallable()
+		// resolving getMethod() which triggered return type resolution that called isCallable() again
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-constant-array-callable-recursion.php');
+		$this->assertCount(3, $errors);
+	}
+
 	public function testClassThatExtendsUnknownClassIn3rdPartyPropertyTypeShouldNotCauseAutoloading(): void
 	{
 		// no error about PHPStan\Tests\Baz not being able to be autoloaded

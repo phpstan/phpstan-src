@@ -376,6 +376,16 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4608(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4608-callables.php'], [
+			[
+				"Trying to invoke array{class@anonymous/tests/PHPStan/Rules/Functions/data/bug-4608-callables.php:5, 'abc'|'not_abc'} but it might not be a callable.",
+				11,
+			],
+		]);
+	}
+
 	public function testMaybeNotCallable(): void
 	{
 		$errors = [];

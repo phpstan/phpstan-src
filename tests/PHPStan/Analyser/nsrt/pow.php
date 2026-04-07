@@ -20,11 +20,12 @@ function (\GMP $a, \GMP $b): void {
 };
 
 function (\stdClass $a, \GMP $b): void {
-	assertType('GMP|stdClass', pow($a, $b));
-	assertType('GMP|stdClass', $a ** $b);
+	// stdClass is not a valid GMP operand, these should error
+	assertType('*ERROR*', pow($a, $b));
+	assertType('*ERROR*', $a ** $b);
 
-	assertType('GMP|stdClass', pow($b, $a));
-	assertType('GMP|stdClass', $b ** $a);
+	assertType('*ERROR*', pow($b, $a));
+	assertType('*ERROR*', $b ** $a);
 };
 
 function (): void {

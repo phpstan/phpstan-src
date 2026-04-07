@@ -3951,6 +3951,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
+
 		$this->analyse([__DIR__ . '/data/constant-parameter-check-methods.php'], [
 			[
 				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of method finfo::file().',
@@ -3967,6 +3968,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11073(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11073.php'], []);
+	}
+
 	public function testBug11463(): void
 	{
 		$this->checkThisOnly = false;
@@ -3980,6 +3990,36 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				"Parameter #1 \$foo of method Bug11463\BarType::bar() expects 'foo', 'bla' given.",
 				35,
+			],
+		]);
+	}
+
+	public function testBug4608(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-4608.php'], [
+			[
+				'Call to an undefined method class@anonymous/tests/PHPStan/Rules/Methods/data/bug-4608.php:5::not_abc().',
+				11,
+			],
+		]);
+	}
+
+	public function testBug11978(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-11978.php'], [
+			[
+				'Method Bug11978\ViewB::render() invoked with 2 parameters, 0-1 required.',
+				25,
+			],
+			[
+				'Method Bug11978\ViewB::render() invoked with 2 parameters, 0-1 required.',
+				26,
 			],
 		]);
 	}

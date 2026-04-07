@@ -6,6 +6,7 @@ use Nette\DI\Container;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -832,6 +833,7 @@ class AnalyserTest extends PHPStanTestCase
 			[],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			$container->getByType(ImplicitToStringCallHelper::class),
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

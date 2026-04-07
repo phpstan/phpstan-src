@@ -2901,4 +2901,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4608(): void
+	{
+		$paramName = PHP_VERSION_ID >= 80000 ? 'callback' : 'function';
+		$this->analyse([__DIR__ . '/data/bug-4608-call-user-func.php'], [
+			[
+				sprintf("Parameter #1 \$%s of function call_user_func expects callable(): mixed, array{class@anonymous/tests/PHPStan/Rules/Functions/data/bug-4608-call-user-func.php:5, 'abc'|'not_abc'} given.", $paramName),
+				11,
+
+			],
+		]);
+	}
+
 }

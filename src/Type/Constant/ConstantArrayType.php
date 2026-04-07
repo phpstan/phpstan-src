@@ -494,7 +494,8 @@ class ConstantArrayType implements Type
 
 	public function isCallable(): TrinaryLogic
 	{
-		$typeAndMethods = $this->findTypeAndMethodNames();
+		$hasNonExistentMethod = false;
+		$typeAndMethods = $this->doFindTypeAndMethodNames($hasNonExistentMethod);
 		if ($typeAndMethods === []) {
 			return TrinaryLogic::createNo();
 		}
@@ -504,7 +505,13 @@ class ConstantArrayType implements Type
 			$typeAndMethods,
 		);
 
-		return TrinaryLogic::createYes()->and(...$results);
+		$result = TrinaryLogic::createYes()->and(...$results);
+
+		if ($hasNonExistentMethod) {
+			$result = $result->and(TrinaryLogic::createMaybe());
+		}
+
+		return $result;
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -537,6 +544,12 @@ class ConstantArrayType implements Type
 
 	/** @return ConstantArrayTypeAndMethod[] */
 	public function findTypeAndMethodNames(): array
+	{
+		return $this->doFindTypeAndMethodNames();
+	}
+
+	/** @return ConstantArrayTypeAndMethod[] */
+	private function doFindTypeAndMethodNames(bool &$hasNonExistentMethod = false): array
 	{
 		if (count($this->keyTypes) !== 2) {
 			return [];
@@ -578,6 +591,7 @@ class ConstantArrayType implements Type
 		foreach ($methods->getConstantStrings() as $methodName) {
 			$has = $type->hasMethod($methodName->getValue());
 			if ($has->no()) {
+				$hasNonExistentMethod = true;
 				continue;
 			}
 

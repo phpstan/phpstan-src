@@ -33,6 +33,14 @@ use function count;
 final class PropertyFetchHandler implements ExprHandler
 {
 
+	/**
+	 * Representative property name used when resolving dynamic property access ($obj->{$expr}).
+	 * The actual name doesn't matter — it just needs to be non-empty so that
+	 * PropertiesClassReflectionExtensions (e.g. SimpleXMLElement) that accept
+	 * any property name can return the correct type.
+	 */
+	private const DYNAMIC_PROPERTY_NAME = '__phpstan_dynamic_property';
+
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private PropertyReflectionFinder $propertyReflectionFinder,
@@ -128,6 +136,14 @@ final class PropertyFetchHandler implements ExprHandler
 						new PropertyFetch($expr->var, new Identifier($constantString->getValue())),
 					), $nameType->getConstantStrings()),
 			);
+		}
+
+		if ($nameType->isString()->yes()) {
+			$fetchedOnType = $scope->getType($expr->var);
+			$returnType = $this->propertyFetchType($scope, $fetchedOnType, self::DYNAMIC_PROPERTY_NAME, $expr);
+			if ($returnType !== null) {
+				return NullsafeShortCircuitingHelper::getType($scope, $expr->var, $returnType);
+			}
 		}
 
 		return new MixedType();

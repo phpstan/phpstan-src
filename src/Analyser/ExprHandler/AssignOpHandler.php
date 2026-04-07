@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -22,6 +23,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function array_merge;
 use function get_class;
 use function sprintf;
 
@@ -35,6 +37,7 @@ final class AssignOpHandler implements ExprHandler
 	public function __construct(
 		private AssignHandler $assignHandler,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 	}
@@ -85,11 +88,17 @@ final class AssignOpHandler implements ExprHandler
 		}
 		$scope = $assignResult->getScope();
 		$throwPoints = $assignResult->getThrowPoints();
+		$impurePoints = $assignResult->getImpurePoints();
 		if (
 			($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod) &&
 			!$scope->getType($expr->expr)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
 		) {
 			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
+		}
+		if ($expr instanceof Expr\AssignOp\Concat) {
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
+			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 		}
 
 		return new ExpressionResult(
@@ -97,7 +106,7 @@ final class AssignOpHandler implements ExprHandler
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
-			impurePoints: $assignResult->getImpurePoints(),
+			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);

@@ -21,8 +21,8 @@ function(array $array, int $count): void {
 		assertType('int<1, 5>', count($a));
 		assertType('list{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
 	} else {
-		assertType('0', count($a));
-		assertType('array{}', $a);
+		assertType('int<0, 5>', count($a));
+		assertType('array{}|list{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
 	}
 };
 

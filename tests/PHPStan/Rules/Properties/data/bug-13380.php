@@ -68,3 +68,42 @@ class FooPrivate
 class BarPrivate extends FooPrivate {
 	public string $prop;
 }
+
+// Non-promoted property initialized in parent constructor body
+class FooBody
+{
+	protected string $prop;
+
+	public function __construct()
+	{
+		$this->prop = "1232";
+	}
+}
+
+class BarBody extends FooBody {
+	public string $prop;
+}
+
+class BazBody extends FooBody {
+	public string $prop;
+
+	public function __construct()
+	{
+		// Does not call parent::__construct, so $prop is uninitialized
+	}
+}
+
+// Non-promoted property NOT initialized in parent constructor body
+class FooBodyNoInit
+{
+	protected string $prop;
+
+	public function __construct()
+	{
+		// doesn't initialize $prop
+	}
+}
+
+class BarBodyNoInit extends FooBodyNoInit {
+	public string $prop;
+}

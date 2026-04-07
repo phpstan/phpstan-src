@@ -248,6 +248,14 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				'Class Bug13380\BarPrivate has an uninitialized property $prop. Give it default value or assign it in the constructor.',
 				69,
 			],
+			[
+				'Class Bug13380\BazBody has an uninitialized property $prop. Give it default value or assign it in the constructor.',
+				88,
+			],
+			[
+				'Class Bug13380\FooBodyNoInit has an uninitialized property $prop. Give it default value or assign it in the constructor.',
+				99,
+			],
 		]);
 	}
 

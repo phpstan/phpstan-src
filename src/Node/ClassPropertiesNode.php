@@ -136,6 +136,28 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				$constructorDeclaringClass = $classReflection->getConstructor()->getDeclaringClass();
 				if ($constructorDeclaringClass->getName() !== $classReflection->getName()) {
 					$is = $this->isPromotedByConstructorChain($constructorDeclaringClass, $property->getName());
+					if (!$is->yes()) {
+						$is = $this->isPropertyDeclaredInAncestor($constructorDeclaringClass, $property->getName());
+					}
+				}
+			}
+			if (!$is->yes()) {
+				foreach ($constructors as $constructorName) {
+					if (strtolower($constructorName) === '__construct') {
+						continue;
+					}
+					if (!$classReflection->hasNativeMethod($constructorName)) {
+						continue;
+					}
+					$methodReflection = $classReflection->getNativeMethod($constructorName);
+					$declaringClass = $methodReflection->getDeclaringClass();
+					if ($declaringClass->getName() === $classReflection->getName()) {
+						continue;
+					}
+					$is = $this->isPropertyDeclaredInAncestor($declaringClass, $property->getName());
+					if ($is->yes()) {
+						break;
+					}
 				}
 			}
 			if (!$is->yes() && $classReflection->hasNativeProperty($property->getName())) {
@@ -423,6 +445,20 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	public function getPropertyAssigns(): array
 	{
 		return $this->propertyAssigns;
+	}
+
+	private function isPropertyDeclaredInAncestor(ClassReflection $ancestorClass, string $propertyName): TrinaryLogic
+	{
+		$nativeReflection = $ancestorClass->getNativeReflection();
+		if (
+			$nativeReflection->hasProperty($propertyName)
+			&& !$nativeReflection->getProperty($propertyName)->isPrivate()
+			&& $nativeReflection->getProperty($propertyName)->getDeclaringClass()->getName() === $ancestorClass->getName()
+		) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createNo();
 	}
 
 	private function isPromotedByConstructorChain(ClassReflection $constructorDeclaringClass, string $propertyName): TrinaryLogic

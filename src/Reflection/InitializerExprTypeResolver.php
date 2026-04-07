@@ -639,7 +639,9 @@ final class InitializerExprTypeResolver
 		}
 
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-		$arrayBuilder->setArrayExpression();
+		if (count($expr->items) > 0) {
+			$arrayBuilder->setInitializedNonEmpty();
+		}
 		$isList = null;
 		$hasOffsetValueTypes = [];
 		foreach ($expr->items as $arrayItem) {

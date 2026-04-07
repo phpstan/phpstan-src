@@ -42,6 +42,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -494,21 +495,29 @@ class ConstantArrayType implements Type
 
 	public function isCallable(): TrinaryLogic
 	{
-		$hasNonExistentMethod = false;
-		$typeAndMethods = $this->doFindTypeAndMethodNames($hasNonExistentMethod);
-		if ($typeAndMethods === []) {
+		$result = RecursionGuard::run($this, function (): TrinaryLogic {
+			$hasNonExistentMethod = false;
+			$typeAndMethods = $this->doFindTypeAndMethodNames($hasNonExistentMethod);
+			if ($typeAndMethods === []) {
+				return TrinaryLogic::createNo();
+			}
+
+			$results = array_map(
+				static fn (ConstantArrayTypeAndMethod $typeAndMethod): TrinaryLogic => $typeAndMethod->getCertainty(),
+				$typeAndMethods,
+			);
+
+			$result = TrinaryLogic::createYes()->and(...$results);
+
+			if ($hasNonExistentMethod) {
+				$result = $result->and(TrinaryLogic::createMaybe());
+			}
+
+			return $result;
+		});
+
+		if ($result instanceof ErrorType) {
 			return TrinaryLogic::createNo();
-		}
-
-		$results = array_map(
-			static fn (ConstantArrayTypeAndMethod $typeAndMethod): TrinaryLogic => $typeAndMethod->getCertainty(),
-			$typeAndMethods,
-		);
-
-		$result = TrinaryLogic::createYes()->and(...$results);
-
-		if ($hasNonExistentMethod) {
-			$result = $result->and(TrinaryLogic::createMaybe());
 		}
 
 		return $result;

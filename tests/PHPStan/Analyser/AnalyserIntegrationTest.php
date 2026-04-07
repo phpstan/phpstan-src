@@ -93,6 +93,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConstantArrayCallableDoesNotCauseInfiniteRecursion(): void
 	{
 		// Previously caused infinite recursion / OOM via ConstantArrayType::isCallable()

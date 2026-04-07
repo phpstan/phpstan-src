@@ -3975,4 +3975,21 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11978(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-11978.php'], [
+			[
+				'Method Bug11978\ViewB::render() invoked with 2 parameters, 0-1 required.',
+				25,
+			],
+			[
+				'Method Bug11978\ViewB::render() invoked with 2 parameters, 0-1 required.',
+				26,
+			],
+		]);
+	}
+
 }

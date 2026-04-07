@@ -32,6 +32,22 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield $testFile;
 		}
 
+		if (PHP_VERSION_ID < 70400) {
+			yield __DIR__ . '/data/opcache-get-configuration-php73.php';
+		}
+
+		if (PHP_VERSION_ID >= 70400 && PHP_VERSION_ID < 80000) {
+			yield __DIR__ . '/data/opcache-get-configuration-php74.php';
+		}
+
+		if (PHP_VERSION_ID >= 80000 && PHP_VERSION_ID < 80300) {
+			yield __DIR__ . '/data/opcache-get-configuration-php80.php';
+		}
+
+		if (PHP_VERSION_ID >= 80300) {
+			yield __DIR__ . '/data/opcache-get-configuration-php83.php';
+		}
+
 		if (PHP_VERSION_ID < 80200 && PHP_VERSION_ID >= 80100) {
 			yield __DIR__ . '/data/enum-reflection-php81.php';
 		}

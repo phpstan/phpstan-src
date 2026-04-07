@@ -4,21 +4,18 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Cast;
-use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
-use PHPStan\Analyser\ImpurePoint;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
-use function sprintf;
+use function array_merge;
 
 /**
  * @implements ExprHandler<Cast\String_>
@@ -29,8 +26,7 @@ final class CastStringHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private PhpVersion $phpVersion,
-		private MethodThrowPointHelper $methodThrowPointHelper,
+		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 	}
@@ -46,31 +42,9 @@ final class CastStringHandler implements ExprHandler
 		$impurePoints = $exprResult->getImpurePoints();
 		$throwPoints = $exprResult->getThrowPoints();
 
-		$exprType = $scope->getType($expr->expr);
-		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
-		if ($toStringMethod !== null) {
-			if (!$toStringMethod->hasSideEffects()->no()) {
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'methodCall',
-					sprintf('call to method %s::%s()', $toStringMethod->getDeclaringClass()->getDisplayName(), $toStringMethod->getName()),
-					$toStringMethod->isPure()->no(),
-				);
-			}
-
-			if ($this->phpVersion->throwsOnStringCast()) {
-				$throwPoint = $this->methodThrowPointHelper->getThrowPoint(
-					$toStringMethod,
-					$toStringMethod->getOnlyVariant(),
-					new Expr\MethodCall($expr->expr, new Identifier('__toString')),
-					$scope,
-				);
-				if ($throwPoint !== null) {
-					$throwPoints[] = $throwPoint;
-				}
-			}
-		}
+		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
+		$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 
 		$scope = $exprResult->getScope();
 

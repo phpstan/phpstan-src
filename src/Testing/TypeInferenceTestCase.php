@@ -6,6 +6,7 @@ use LogicException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -91,6 +92,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
+			$container->getByType(ImplicitToStringCallHelper::class),
 		);
 	}
 

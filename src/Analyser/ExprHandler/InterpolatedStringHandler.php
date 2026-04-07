@@ -10,6 +10,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -27,6 +28,7 @@ final class InterpolatedStringHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 	)
 	{
 	}
@@ -50,6 +52,11 @@ final class InterpolatedStringHandler implements ExprHandler
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
+
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($part, $scope);
+			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
+
 			$isAlwaysTerminating = $isAlwaysTerminating || $partResult->isAlwaysTerminating();
 			$scope = $partResult->getScope();
 		}

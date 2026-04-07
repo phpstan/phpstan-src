@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\IgnoreErrorExtensionProvider;
@@ -116,6 +117,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			[],
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			self::getContainer()->getByType(ImplicitToStringCallHelper::class),
 		);
 	}
 

@@ -134,20 +134,88 @@ class PureMethodRuleTest extends RuleTestCase
 				296,
 			],
 			[
-				'Possibly impure call to a callable in pure method PureMethod\MaybeCallableFromUnion::doFoo().',
-				330,
+				'Impure echo in pure method PureMethod\TestMagicMethods::doEcho().',
+				309,
+			],
+			[
+				'Impure echo in pure method PureMethod\TestMagicMethods::doEcho().',
+				310,
+			],
+			[
+				'Possibly impure call to method PureMethod\MaybePureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doEcho().',
+				311,
+			],
+			[
+				'Impure echo in pure method PureMethod\TestMagicMethods::doEcho().',
+				311,
+			],
+			[
+				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doEcho().',
+				312,
+			],
+			[
+				'Impure echo in pure method PureMethod\TestMagicMethods::doEcho().',
+				312,
+			],
+			[
+				'Impure print in pure method PureMethod\TestMagicMethods::doPrint().',
+				324,
+			],
+			[
+				'Possibly impure call to method PureMethod\MaybePureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doPrint().',
+				325,
+			],
+			[
+				'Impure print in pure method PureMethod\TestMagicMethods::doPrint().',
+				325,
+			],
+			[
+				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doPrint().',
+				326,
+			],
+			[
+				'Impure print in pure method PureMethod\TestMagicMethods::doPrint().',
+				326,
+			],
+			[
+				'Possibly impure call to method PureMethod\MaybePureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doConcat().',
+				339,
+			],
+			[
+				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doConcat().',
+				340,
+			],
+			[
+				'Possibly impure call to method PureMethod\MaybePureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doConcatAssign().',
+				355,
+			],
+			[
+				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doConcatAssign().',
+				357,
+			],
+			[
+				'Possibly impure call to method PureMethod\MaybePureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doInterpolation().',
+				370,
+			],
+			[
+				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doInterpolation().',
+				371,
 			],
 			[
 				'Possibly impure call to a callable in pure method PureMethod\MaybeCallableFromUnion::doFoo().',
-				330,
+				405,
+			],
+			[
+				'Possibly impure call to a callable in pure method PureMethod\MaybeCallableFromUnion::doFoo().',
+				405,
 			],
 			[
 				'Impure static property access in pure method PureMethod\StaticMethodAccessingStaticProperty::getA().',
-				388,
+				463,
 			],
 			[
 				'Impure property assignment in pure method PureMethod\StaticMethodAssigningStaticProperty::getA().',
-				409,
+				484,
 			],
 		]);
 	}

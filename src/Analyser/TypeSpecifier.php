@@ -280,6 +280,7 @@ final class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
+				$sizeType = null;
 				if ($leftType instanceof ConstantIntegerType) {
 					if ($orEqual) {
 						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
@@ -293,22 +294,22 @@ final class TypeSpecifier
 						} else {
 							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
 						}
-					} elseif ($leftType->getMin() !== null) {
+					} elseif ($context->truthy() && $leftType->getMin() !== null) {
 						if ($orEqual) {
 							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
 						} else {
 							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
 						}
-					} else {
-						$sizeType = $leftType->shift($offset);
 					}
 				} else {
 					$sizeType = $leftType;
 				}
 
-				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
-				if ($specifiedTypes !== null) {
-					$result = $result->unionWith($specifiedTypes);
+				if ($sizeType !== null) {
+					$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
+					if ($specifiedTypes !== null) {
+						$result = $result->unionWith($specifiedTypes);
+					}
 				}
 
 				if (

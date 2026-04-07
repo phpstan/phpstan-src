@@ -516,7 +516,7 @@ final class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
-	public function updatesAutoIncrementKeyForNegativeValuesInArrayLiteral(): bool
+	public function updatesAutoIncrementKeyForNegativeValuesInArrayExpression(): bool
 	{
 		return $this->versionId >= 80000;
 	}

@@ -639,7 +639,7 @@ final class InitializerExprTypeResolver
 		}
 
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-		$arrayBuilder->setLiteralArray();
+		$arrayBuilder->setArrayExpression();
 		$isList = null;
 		$hasOffsetValueTypes = [];
 		foreach ($expr->items as $arrayItem) {

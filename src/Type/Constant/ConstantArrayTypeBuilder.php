@@ -42,7 +42,7 @@ final class ConstantArrayTypeBuilder
 
 	private bool $oversized = false;
 
-	private bool $isLiteralArray = false;
+	private bool $isArrayExpression = false;
 
 	/**
 	 * @param list<Type> $keyTypes
@@ -65,9 +65,9 @@ final class ConstantArrayTypeBuilder
 		return new self([], [], [0], [], TrinaryLogic::createYes());
 	}
 
-	public function setLiteralArray(): void
+	public function setArrayExpression(): void
 	{
-		$this->isLiteralArray = true;
+		$this->isArrayExpression = true;
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -443,7 +443,7 @@ final class ConstantArrayTypeBuilder
 			return true;
 		}
 
-		return $this->isLiteralArray && $phpVersion->updatesAutoIncrementKeyForNegativeValuesInArrayLiteral();
+		return $this->isArrayExpression && $phpVersion->updatesAutoIncrementKeyForNegativeValuesInArrayExpression();
 	}
 
 }

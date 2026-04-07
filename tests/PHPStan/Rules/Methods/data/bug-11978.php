@@ -22,6 +22,10 @@ class Foo
 	{
 		$a = $this->view1->render($foo);
 		$b = $this->view2->render($foo);
+		$c = $this->view1->render($foo, $foo);
+		$d = $this->view2->render($foo, $foo);
+		$e = $this->view1->render();
+		$f = $this->view2->render();
 
 		return $a . $b;
 	}

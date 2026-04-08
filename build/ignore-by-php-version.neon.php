@@ -8,6 +8,7 @@ if (PHP_VERSION_ID >= 80000) {
 }
 if (PHP_VERSION_ID >= 80100) {
 	$includes[] = __DIR__ . '/baseline-8.1.neon';
+	$includes[] = __DIR__ . '/../vendor/shipmonk/dead-code-detector/rules.neon';
 } else {
 	$includes[] = __DIR__ . '/enums.neon';
 	$includes[] = __DIR__ . '/readonly-property.neon';

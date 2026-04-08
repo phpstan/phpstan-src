@@ -7,7 +7,6 @@ use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
-use PHPStan\Analyser\ProcessedFilesCollector;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -18,7 +17,6 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function array_unique;
-use function array_values;
 use function count;
 use function fclose;
 use function feof;
@@ -45,7 +43,6 @@ final class AnalyseApplication
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
-		private ProcessedFilesCollector $processedFilesCollector,
 	)
 	{
 	}
@@ -53,6 +50,7 @@ final class AnalyseApplication
 	/**
 	 * @param string[] $files
 	 * @param mixed[]|null $projectConfigArray
+	 * @return array{AnalysisResult, list<string>}
 	 */
 	public function analyse(
 		array $files,
@@ -66,7 +64,7 @@ final class AnalyseApplication
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
-	): AnalysisResult
+	): array
 	{
 		$isResultCacheUsed = false;
 		$fileReplacements = [];
@@ -83,6 +81,7 @@ final class AnalyseApplication
 			$collectedData = [];
 			$savedResultCache = false;
 			$memoryUsageBytes = memory_get_peak_usage(true);
+			$processedFiles = [];
 			if ($errorOutput->isVeryVerbose()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
@@ -124,8 +123,11 @@ final class AnalyseApplication
 					exportedNodes: $intermediateAnalyserResult->getExportedNodes(),
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
+					processedFiles: $intermediateAnalyserResult->getProcessedFiles(),
 				);
 			}
+
+			$processedFiles = $intermediateAnalyserResult->getProcessedFiles();
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $this->analyserResultFinalizer->finalize(
@@ -175,19 +177,22 @@ final class AnalyseApplication
 			$savedResultCache = $resultCacheResult->isSaved();
 		}
 
-		return new AnalysisResult(
-			$fileSpecificErrors,
-			$notFileSpecificErrors,
-			$internalErrors,
-			[],
-			$this->mapCollectedData($collectedData),
-			$defaultLevelUsed,
-			$projectConfigFile,
-			$savedResultCache,
-			$memoryUsageBytes,
-			$isResultCacheUsed,
-			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
-		);
+		return [
+			new AnalysisResult(
+				$fileSpecificErrors,
+				$notFileSpecificErrors,
+				$internalErrors,
+				[],
+				$this->mapCollectedData($collectedData),
+				$defaultLevelUsed,
+				$projectConfigFile,
+				$savedResultCache,
+				$memoryUsageBytes,
+				$isResultCacheUsed,
+				$changedProjectExtensionFilesOutsideOfAnalysedPaths,
+			),
+			$processedFiles,
+		];
 	}
 
 	/**
@@ -247,9 +252,8 @@ final class AnalyseApplication
 
 		if (!$debug) {
 			$preFileCallback = null;
-			$postFileCallback = function (int $step, array $processedFiles) use ($errorOutput): void {
+			$postFileCallback = static function (int $step, array $processedFiles) use ($errorOutput): void {
 				$errorOutput->getStyle()->progressAdvance($step);
-				$this->processedFilesCollector->addProcessedFiles(array_values($processedFiles));
 			};
 
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
@@ -263,7 +267,7 @@ final class AnalyseApplication
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = function (int $step, array $processedFiles) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
+				$postFileCallback = static function (int $step, array $processedFiles) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}
@@ -283,8 +287,6 @@ final class AnalyseApplication
 						}
 						fclose($handle);
 					}
-
-					$this->processedFilesCollector->addProcessedFiles(array_values($processedFiles));
 
 					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s, %.3f LoC/s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime, $linesOfCode / $elapsedTime));
 					$previousMemory = $currentTotalMemory;
@@ -352,6 +354,7 @@ final class AnalyseApplication
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+			processedFiles: $analyserResult->getProcessedFiles(),
 		);
 	}
 

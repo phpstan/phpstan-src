@@ -28,6 +28,7 @@ final class AnalyserResult
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<string>>|null $usedTraitDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
 		private array $unorderedErrors,
@@ -43,6 +44,7 @@ final class AnalyserResult
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
+		private array $processedFiles = [],
 	)
 	{
 	}
@@ -167,6 +169,14 @@ final class AnalyserResult
 	public function getPeakMemoryUsageBytes(): int
 	{
 		return $this->peakMemoryUsageBytes;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getProcessedFiles(): array
+	{
+		return $this->processedFiles;
 	}
 
 }

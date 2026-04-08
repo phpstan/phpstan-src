@@ -75,6 +75,7 @@ final class Analyser
 		$dependencies = [];
 		$usedTraitDependencies = [];
 		$exportedNodes = [];
+		$allProcessedFiles = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
@@ -92,6 +93,7 @@ final class Analyser
 				$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
 				$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());
 				$processedFiles = $fileAnalyserResult->getProcessedFiles();
+				$allProcessedFiles = array_merge($allProcessedFiles, $processedFiles);
 
 				$locallyIgnoredErrors = array_merge($locallyIgnoredErrors, $fileAnalyserResult->getLocallyIgnoredErrors());
 				$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
@@ -143,6 +145,7 @@ final class Analyser
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
 			peakMemoryUsageBytes: memory_get_peak_usage(true),
+			processedFiles: $allProcessedFiles,
 		);
 	}
 

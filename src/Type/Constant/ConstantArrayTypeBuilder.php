@@ -60,14 +60,12 @@ final class ConstantArrayTypeBuilder
 	{
 	}
 
-	public static function createEmpty(): self
+	public static function createEmpty(bool $initializedNonEmpty = false): self
 	{
-		return new self([], [], [0], [], TrinaryLogic::createYes());
-	}
+		$self = new self([], [], [0], [], TrinaryLogic::createYes());
+		$self->initializedNonEmpty = $initializedNonEmpty;
 
-	public function setInitializedNonEmpty(): void
-	{
-		$this->initializedNonEmpty = true;
+		return $self;
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self

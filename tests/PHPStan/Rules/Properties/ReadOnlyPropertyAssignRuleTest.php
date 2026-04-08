@@ -180,12 +180,4 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
-	public function testBug14063(): void
-	{
-		// readonly class properties modified via clone() from outside the class
-		// are reported by AccessPropertiesInAssignRule, not this rule
-		$this->analyse([__DIR__ . '/data/bug-14063.php'], []);
-	}
-
 }

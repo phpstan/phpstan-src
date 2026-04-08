@@ -75,13 +75,19 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->isList(),
 		);
 
-		if (count($startArrayType->getKeyTypes()) === 0) {
-			$builder->initializedEmpty = true;
-		} elseif (max($startArrayType->getNextAutoIndexes()) === 0) {
-			foreach ($startArrayType->getKeyTypes() as $keyType) {
-				if ($keyType instanceof ConstantIntegerType && $keyType->getValue() < 0) {
-					$builder->initializedEmpty = true;
-					break;
+		$phpVersion = PhpVersionStaticAccessor::getInstance();
+		if (
+			!$phpVersion->updatesAutoIncrementKeyForNegativeValues()
+			&& $phpVersion->updatesAutoIncrementKeyForNegativeValuesInNonEmptyInitializer()
+		) {
+			if (count($startArrayType->getKeyTypes()) === 0) {
+				$builder->initializedEmpty = true;
+			} elseif (max($startArrayType->getNextAutoIndexes()) === 0) {
+				foreach ($startArrayType->getKeyTypes() as $keyType) {
+					if ($keyType instanceof ConstantIntegerType && $keyType->getValue() < 0) {
+						$builder->initializedEmpty = true;
+						break;
+					}
 				}
 			}
 		}

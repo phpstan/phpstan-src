@@ -21,3 +21,12 @@ function () {
 
 	assertType("array{-10: 'a', -5: 'b', -4: 'c'}", $a);
 };
+
+// Non-empty string-key array: negative key should update auto-index
+function () {
+	$a = ['foo' => 'bar'];
+	$a[-5] = 'x';
+	$a[] = 'y';
+
+	assertType("array{foo: 'bar', -5: 'x', -4: 'y'}", $a);
+};

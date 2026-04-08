@@ -143,9 +143,7 @@ final class BisectCommand extends Command
 			return 1;
 		}
 
-		$commits = array_values(array_filter($commits, static function (array $commit) use ($checksumShas): bool {
-			return isset($checksumShas[$commit['sha']]);
-		}));
+		$commits = array_values(array_filter($commits, static fn (array $commit): bool => isset($checksumShas[$commit['sha']])));
 
 		if (count($commits) === 0) {
 			$io->error('No commits found that change phpstan.phar between the specified releases.');
@@ -318,12 +316,12 @@ final class BisectCommand extends Command
 
 			$foundOutOfRange = false;
 			foreach ($commits as $commit) {
-				if (isset($rangeShas[$commit['sha']])) {
-					$checksumShas[$commit['sha']] = true;
-				} else {
+				if (!isset($rangeShas[$commit['sha']])) {
 					$foundOutOfRange = true;
 					break;
 				}
+
+				$checksumShas[$commit['sha']] = true;
 			}
 
 			if ($foundOutOfRange || count($commits) < $perPage) {

@@ -9,6 +9,7 @@ use function array_map;
 use function array_search;
 use function count;
 use function range;
+use function sprintf;
 
 class BinarySearchTest extends TestCase
 {
@@ -141,7 +142,7 @@ class BinarySearchTest extends TestCase
 
 		foreach ($lists as $name => $items) {
 			foreach ($items as $badItem) {
-				yield "$name, first bad is $badItem" => [$items, $badItem];
+				yield sprintf('%s, first bad is %s', $name, $badItem) => [$items, $badItem];
 			}
 		}
 	}

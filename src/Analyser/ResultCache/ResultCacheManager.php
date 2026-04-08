@@ -760,6 +760,7 @@ final class ResultCacheManager
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+			processedFiles: $analyserResult->getProcessedFiles(),
 		), $saved);
 	}
 

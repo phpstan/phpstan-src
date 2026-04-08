@@ -99,7 +99,7 @@ final class DiagnoseCommand extends Command
 		$phpstanDiagnoseExtension = $container->getService('phpstanDiagnoseExtension');
 
 		// not using tag for this extension to make sure it's always first
-		$phpstanDiagnoseExtension->print($output);
+		$phpstanDiagnoseExtension->print($output, []);
 
 		/** @var DiagnoseExtension $extension */
 		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {

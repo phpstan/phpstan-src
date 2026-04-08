@@ -228,6 +228,7 @@ final class WorkerCommand extends Command
 			$dependencies = [];
 			$usedTraitDependencies = [];
 			$exportedNodes = [];
+			$processedFiles = [];
 			foreach ($files as $file) {
 				try {
 					if ($file === $insteadOfFile) {
@@ -242,6 +243,7 @@ final class WorkerCommand extends Command
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
+					$processedFiles = array_merge($processedFiles, $fileAnalyserResult->getProcessedFiles());
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
@@ -283,6 +285,7 @@ final class WorkerCommand extends Command
 					'usedTraitDependencies' => $usedTraitDependencies,
 					'exportedNodes' => $exportedNodes,
 					'files' => $files,
+					'processedFiles' => $processedFiles,
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);
 		});

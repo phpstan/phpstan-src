@@ -459,7 +459,7 @@ final class AnalyseCommand extends Command
 		}
 
 		if ($generateBaselineFile !== null) {
-			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 			if (count($internalErrorsTuples) > 0) {
 				foreach ($internalErrorsTuples as [$internalError]) {
 					$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
@@ -493,11 +493,12 @@ final class AnalyseCommand extends Command
 				$analysisResult->getPeakMemoryUsageBytes(),
 				$analysisResult->isResultCacheUsed(),
 				$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
+				$analysisResult->getProcessedFiles(),
 			);
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 
-			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
 			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
 			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
@@ -649,7 +650,7 @@ final class AnalyseCommand extends Command
 			}
 		}
 
-		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
+		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
 		return $inceptionResult->handleReturn(
 			$exitCode,
@@ -847,7 +848,10 @@ final class AnalyseCommand extends Command
 		);
 	}
 
-	private function runDiagnoseExtensions(Container $container, Output $errorOutput): void
+	/**
+	 * @param list<string> $processedFiles
+	 */
+	private function runDiagnoseExtensions(Container $container, Output $errorOutput, array $processedFiles = []): void
 	{
 		if (!$errorOutput->isDebug()) {
 			return;
@@ -857,7 +861,7 @@ final class AnalyseCommand extends Command
 		$phpstanDiagnoseExtension = $container->getService('phpstanDiagnoseExtension');
 
 		// not using tag for this extension to make sure it's always first
-		$phpstanDiagnoseExtension->print($errorOutput);
+		$phpstanDiagnoseExtension->print($errorOutput, $processedFiles);
 
 		/** @var DiagnoseExtension $extension */
 		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {

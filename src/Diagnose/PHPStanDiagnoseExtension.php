@@ -6,12 +6,15 @@ use Phar;
 use PHPStan\Command\Output;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileHelper;
+use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use ReflectionClass;
+use function array_count_values;
 use function array_key_exists;
 use function array_slice;
+use function arsort;
 use function class_exists;
 use function count;
 use function dirname;
@@ -27,7 +30,7 @@ use function strlen;
 use function substr;
 use const PHP_VERSION_ID;
 
-final class PHPStanDiagnoseExtension implements DiagnoseExtension
+final class PHPStanDiagnoseExtension
 {
 
 	/**
@@ -42,11 +45,15 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		private array $composerAutoloaderProjectPaths,
 		private array $allConfigFiles,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+		private RelativePathHelper $simpleRelativePathHelper,
 	)
 	{
 	}
 
-	public function print(Output $output): void
+	/**
+	 * @param list<string> $processedFiles
+	 */
+	public function print(Output $output, array $processedFiles): void
 	{
 		$phpRuntimeVersion = new PhpVersion(PHP_VERSION_ID);
 		$output->writeLineFormatted(sprintf(
@@ -203,6 +210,45 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$output->writeLineFormatted($composerAutoloaderProjectPath);
 		}
 		$output->writeLineFormatted('');
+
+		$topFiles = $this->getTopMostAnalysedFiles($processedFiles, 5);
+		if (count($topFiles) <= 0) {
+			return;
+		}
+
+		$output->writeLineFormatted('<info>Most often analysed files:</info>');
+		foreach ($topFiles as $file => $count) {
+			$output->writeLineFormatted(sprintf(
+				'  %s: %d times',
+				$this->simpleRelativePathHelper->getRelativePath($file),
+				$count,
+			));
+		}
+		$output->writeLineFormatted('');
+	}
+
+	/**
+	 * @param list<string> $processedFiles
+	 * @return array<string, int<2, max>>
+	 */
+	private function getTopMostAnalysedFiles(array $processedFiles, int $limit): array
+	{
+		if ($processedFiles === []) {
+			return [];
+		}
+
+		$counts = array_count_values($processedFiles);
+		arsort($counts);
+
+		$result = [];
+		foreach (array_slice($counts, 0, $limit, true) as $file => $count) {
+			if ($count <= 1) {
+				continue;
+			}
+			$result[$file] = $count;
+		}
+
+		return $result;
 	}
 
 }

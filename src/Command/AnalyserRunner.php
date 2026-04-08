@@ -68,6 +68,7 @@ final class AnalyserRunner
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				processedFiles: [],
 			);
 		}
 

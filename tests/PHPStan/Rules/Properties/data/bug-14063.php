@@ -19,7 +19,7 @@ readonly class Base
 	public function __construct(public string $value) {}
 }
 
-class Child extends Base
+readonly class Child extends Base
 {
 	public function withValue(string $newValue): self
 	{

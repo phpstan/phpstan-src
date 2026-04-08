@@ -1161,7 +1161,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		require_once __DIR__ . '/data/bug-4413.php';
 		$this->analyse([__DIR__ . '/data/bug-4413.php'], [
 			[
-				'Parameter #1 $date of function Bug4413\takesDate expects class-string<DateTime>, string given.',
+				'Parameter #1 $date of function Bug4413\takesDate expects class-string<DateTime>, class-string<stdClass> given.',
 				18,
 			],
 		]);
@@ -1200,11 +1200,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Parameter #1 $object_or_class of function is_a expects object, string given.',
+				'Parameter #1 $object_or_class of function is_a expects object, class-string<Bug4371\Bar> given.',
 				14,
 			],
 			[
-				'Parameter #1 $object_or_class of function is_a expects object, string given.',
+				'Parameter #1 $object_or_class of function is_a expects object, class-string<Bug4371\Bar> given.',
 				22,
 			],
 		];
@@ -1213,11 +1213,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			// php 7.x had different parameter names
 			$errors = [
 				[
-					'Parameter #1 $object_or_string of function is_a expects object, string given.',
+					'Parameter #1 $object_or_string of function is_a expects object, class-string<Bug4371\Bar> given.',
 					14,
 				],
 				[
-					'Parameter #1 $object_or_string of function is_a expects object, string given.',
+					'Parameter #1 $object_or_string of function is_a expects object, class-string<Bug4371\Bar> given.',
 					22,
 				],
 			];
@@ -1230,15 +1230,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, class-string<IsSubclassAllowString\A> given.',
 				11,
 			],
 			[
-				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
 				14,
 			],
 			[
-				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
 				17,
 			],
 		];
@@ -1247,15 +1247,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			// php 7.x had different parameter names
 			$errors = [
 				[
-					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, class-string<IsSubclassAllowString\A> given.',
 					11,
 				],
 				[
-					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
 					14,
 				],
 				[
-					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
 					17,
 				],
 			];

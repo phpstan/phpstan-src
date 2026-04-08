@@ -507,7 +507,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				1461,
 			],
 			[
-				'Parameter #1 $s of method Test\ClassStringWithUpperBounds::doFoo() expects class-string<Exception>, string given.',
+				'Parameter #1 $s of method Test\ClassStringWithUpperBounds::doFoo() expects class-string<Exception>, class-string<Throwable> given.',
 				1490,
 			],
 			[
@@ -834,7 +834,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				1379,
 			],
 			[
-				'Parameter #1 $s of method Test\ClassStringWithUpperBounds::doFoo() expects class-string<Exception>, string given.',
+				'Parameter #1 $s of method Test\ClassStringWithUpperBounds::doFoo() expects class-string<Exception>, class-string<Throwable> given.',
 				1490,
 			],
 			[

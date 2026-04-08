@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
 use Override;
+use PHPStan\Command\Bisect\BinarySearch;
 use PHPStan\File\FileReader;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -16,8 +17,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
+use function array_filter;
 use function array_merge;
-use function ceil;
+use function array_values;
 use function chmod;
 use function count;
 use function escapeshellarg;
@@ -26,7 +28,6 @@ use function implode;
 use function is_array;
 use function is_file;
 use function is_string;
-use function log;
 use function mkdir;
 use function passthru;
 use function preg_match_all;
@@ -130,28 +131,48 @@ final class BisectCommand extends Command
 
 		$io->writeln(sprintf('Found <info>%d</info> commits between %s and %s.', count($commits), $good, $bad));
 
-		$lo = 0;
-		$hi = count($commits) - 1;
+		$rangeShas = [];
+		foreach ($commits as $commit) {
+			$rangeShas[$commit['sha']] = true;
+		}
+
+		try {
+			$checksumShas = $this->getPharChecksumCommitShas($client, $bad, $rangeShas);
+		} catch (GuzzleException $e) {
+			$io->error(sprintf('Failed to fetch .phar-checksum commits from GitHub: %s', $e->getMessage()));
+			return 1;
+		}
+
+		$commits = array_values(array_filter($commits, static function (array $commit) use ($checksumShas): bool {
+			return isset($checksumShas[$commit['sha']]);
+		}));
+
+		if (count($commits) === 0) {
+			$io->error('No commits found that change phpstan.phar between the specified releases.');
+			return 1;
+		}
+
+		$io->writeln(sprintf('<info>%d</info> of them change phpstan.phar.', count($commits)));
+
 		$tmpDir = sys_get_temp_dir() . '/phpstan-bisect';
 		@mkdir($tmpDir, 0777, true);
 
 		$analyseArgs = $this->buildAnalyseArgs($input);
 
-		while ($lo < $hi) {
-			$mid = (int) (($lo + $hi) / 2);
-			$commit = $commits[$mid];
+		while (count($commits) > 1) {
+			$step = BinarySearch::getStep($commits);
+			$commit = $step->item;
 			$sha = $commit['sha'];
 			$shortSha = substr($sha, 0, 7);
 			$message = $commit['commit']['message'];
 			$firstLine = strtok($message, "\n") ?: $shortSha;
 
-			$stepsLeft = (int) ceil(log($hi - $lo + 1, 2));
 			$io->section(sprintf(
 				'Testing commit %s (%s) [~%d step%s left]',
 				$shortSha,
 				$firstLine,
-				$stepsLeft,
-				$stepsLeft === 1 ? '' : 's',
+				$step->stepsRemaining,
+				$step->stepsRemaining === 1 ? '' : 's',
 			));
 
 			$pharPath = $tmpDir . '/phpstan-' . $shortSha . '.phar';
@@ -181,14 +202,10 @@ final class BisectCommand extends Command
 				['good', 'bad'],
 			);
 
-			if ($answer === 'good') {
-				$lo = $mid + 1;
-			} else {
-				$hi = $mid;
-			}
+			$commits = $answer === 'good' ? $step->ifGood : $step->ifBad;
 		}
 
-		$badCommit = $commits[$lo];
+		$badCommit = $commits[0];
 		$this->printResult($badCommit, $io);
 
 		return 0;
@@ -268,6 +285,55 @@ final class BisectCommand extends Command
 		}
 
 		return $allCommits;
+	}
+
+	/**
+	 * @param array<string, true> $rangeShas
+	 * @return array<string, true>
+	 * @throws GuzzleException
+	 */
+	private function getPharChecksumCommitShas(Client $client, string $bad, array $rangeShas): array
+	{
+		$checksumShas = [];
+		$page = 1;
+		$perPage = 100;
+
+		while (true) {
+			$response = $client->get(sprintf(
+				'https://api.github.com/repos/%s/%s/commits?sha=%s&path=%s&per_page=%d&page=%d',
+				self::REPO_OWNER,
+				self::REPO_NAME,
+				urlencode($bad),
+				urlencode('.phar-checksum'),
+				$perPage,
+				$page,
+			));
+
+			/** @var list<array{sha: string}> $commits */
+			$commits = Json::decode($response->getBody()->getContents(), Json::FORCE_ARRAY);
+
+			if (count($commits) === 0) {
+				break;
+			}
+
+			$foundOutOfRange = false;
+			foreach ($commits as $commit) {
+				if (isset($rangeShas[$commit['sha']])) {
+					$checksumShas[$commit['sha']] = true;
+				} else {
+					$foundOutOfRange = true;
+					break;
+				}
+			}
+
+			if ($foundOutOfRange || count($commits) < $perPage) {
+				break;
+			}
+
+			$page++;
+		}
+
+		return $checksumShas;
 	}
 
 	/**

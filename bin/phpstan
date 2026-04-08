@@ -2,6 +2,7 @@
 <?php declare(strict_types=1);
 
 use PHPStan\Command\AnalyseCommand;
+use PHPStan\Command\BisectCommand;
 use PHPStan\Command\ClearResultCacheCommand;
 use PHPStan\Command\DiagnoseCommand;
 use PHPStan\Command\DumpParametersCommand;
@@ -129,6 +130,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	$reversedComposerAutoloaderProjectPaths = array_values(array_unique(array_reverse($composerAutoloaderProjectPaths)));
 
 	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths, $analysisStartTime));
+	$application->add(new BisectCommand());
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new FixerWorkerCommand($reversedComposerAutoloaderProjectPaths));

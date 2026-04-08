@@ -80,6 +80,7 @@ final class AnalyseApplication
 			$collectedData = [];
 			$savedResultCache = false;
 			$memoryUsageBytes = memory_get_peak_usage(true);
+			$processedFiles = [];
 			if ($errorOutput->isVeryVerbose()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
@@ -121,8 +122,11 @@ final class AnalyseApplication
 					exportedNodes: $intermediateAnalyserResult->getExportedNodes(),
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
+					processedFiles: $intermediateAnalyserResult->getProcessedFiles(),
 				);
 			}
+
+			$processedFiles = $intermediateAnalyserResult->getProcessedFiles();
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $this->analyserResultFinalizer->finalize(
@@ -184,6 +188,7 @@ final class AnalyseApplication
 			$memoryUsageBytes,
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
+			$processedFiles,
 		);
 	}
 
@@ -239,6 +244,7 @@ final class AnalyseApplication
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				processedFiles: [],
 			);
 		}
 
@@ -346,6 +352,7 @@ final class AnalyseApplication
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+			processedFiles: $analyserResult->getProcessedFiles(),
 		);
 	}
 

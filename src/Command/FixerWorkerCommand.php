@@ -404,6 +404,7 @@ final class FixerWorkerCommand extends Command
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				processedFiles: [],
 			));
 		}
 

@@ -24,6 +24,7 @@ final class AnalysisResult
 	 * @param list<string> $warnings
 	 * @param list<CollectedData> $collectedData
 	 * @param array<string, string> $changedProjectExtensionFilesOutsideOfAnalysedPaths
+	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
@@ -37,6 +38,7 @@ final class AnalysisResult
 		private int $peakMemoryUsageBytes,
 		private bool $isResultCacheUsed,
 		private array $changedProjectExtensionFilesOutsideOfAnalysedPaths,
+		private array $processedFiles = [],
 	)
 	{
 		usort(
@@ -149,6 +151,14 @@ final class AnalysisResult
 	}
 
 	/**
+	 * @return list<string>
+	 */
+	public function getProcessedFiles(): array
+	{
+		return $this->processedFiles;
+	}
+
+	/**
 	 * @api
 	 * @param list<Error> $fileSpecificErrors
 	 */
@@ -166,6 +176,7 @@ final class AnalysisResult
 			$this->peakMemoryUsageBytes,
 			$this->isResultCacheUsed,
 			$this->changedProjectExtensionFilesOutsideOfAnalysedPaths,
+			$this->processedFiles,
 		);
 	}
 

@@ -545,6 +545,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/number-format-named-arguments.php'], []);
 	}
 
+	public function testBug14408(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-14408.php'], [
+			[
+				'Unknown parameter $foo in call to function sprintf.',
+				6,
+			],
+		]);
+	}
+
 	public function testArrayReduceCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_reduce.php'], [

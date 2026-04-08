@@ -77,6 +77,13 @@ final class ConstantArrayTypeBuilder
 
 		if (count($startArrayType->getKeyTypes()) === 0) {
 			$builder->initializedEmpty = true;
+		} elseif (max($startArrayType->getNextAutoIndexes()) === 0) {
+			foreach ($startArrayType->getKeyTypes() as $keyType) {
+				if ($keyType instanceof ConstantIntegerType && $keyType->getValue() < 0) {
+					$builder->initializedEmpty = true;
+					break;
+				}
+			}
 		}
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {

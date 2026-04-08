@@ -457,6 +457,17 @@ jobs:
               OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv test.php 2>&1)
               echo "$OUTPUT"
               ../bashunit -a contains 'Parallel processing scheduler' "$OUTPUT"
+          - script: |
+              cd e2e/bug-14093
+              # Use a relative sys_temp_dir so the value starts with a letter (not /), just like Windows
+              # paths starting with a drive letter. If the sys_temp_dir value isn't correctly quoted,
+              # PHP evaluates ~ as a bitwise NOT rather than a literal character, truncating the path.
+              mkdir tmp~1
+              php -d "sys_temp_dir='tmp~1'" ../../bin/phpstan analyze
+              if [ -d tmp ]; then
+                echo "FAIL: tmp was created by a worker, meaning sys_temp_dir='tmp~1' was incorrectly evaluated to 'tmp'"
+                exit 1
+              fi
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

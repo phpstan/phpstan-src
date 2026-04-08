@@ -341,7 +341,7 @@ final class AnalyseCommand extends Command
 		}
 
 		try {
-			[$analysisResult, $processedFiles] = $application->analyse(
+			$analysisResult = $application->analyse(
 				$files,
 				$onlyFiles,
 				$inceptionResult->getStdOutput(),
@@ -459,7 +459,7 @@ final class AnalyseCommand extends Command
 		}
 
 		if ($generateBaselineFile !== null) {
-			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $processedFiles);
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 			if (count($internalErrorsTuples) > 0) {
 				foreach ($internalErrorsTuples as [$internalError]) {
 					$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
@@ -493,11 +493,12 @@ final class AnalyseCommand extends Command
 				$analysisResult->getPeakMemoryUsageBytes(),
 				$analysisResult->isResultCacheUsed(),
 				$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
+				$analysisResult->getProcessedFiles(),
 			);
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 
-			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $processedFiles);
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
 			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
 			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
@@ -649,7 +650,7 @@ final class AnalyseCommand extends Command
 			}
 		}
 
-		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $processedFiles);
+		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
 		return $inceptionResult->handleReturn(
 			$exitCode,

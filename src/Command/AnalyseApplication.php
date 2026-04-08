@@ -50,7 +50,6 @@ final class AnalyseApplication
 	/**
 	 * @param string[] $files
 	 * @param mixed[]|null $projectConfigArray
-	 * @return array{AnalysisResult, list<string>}
 	 */
 	public function analyse(
 		array $files,
@@ -64,7 +63,7 @@ final class AnalyseApplication
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
-	): array
+	): AnalysisResult
 	{
 		$isResultCacheUsed = false;
 		$fileReplacements = [];
@@ -177,22 +176,20 @@ final class AnalyseApplication
 			$savedResultCache = $resultCacheResult->isSaved();
 		}
 
-		return [
-			new AnalysisResult(
-				$fileSpecificErrors,
-				$notFileSpecificErrors,
-				$internalErrors,
-				[],
-				$this->mapCollectedData($collectedData),
-				$defaultLevelUsed,
-				$projectConfigFile,
-				$savedResultCache,
-				$memoryUsageBytes,
-				$isResultCacheUsed,
-				$changedProjectExtensionFilesOutsideOfAnalysedPaths,
-			),
+		return new AnalysisResult(
+			$fileSpecificErrors,
+			$notFileSpecificErrors,
+			$internalErrors,
+			[],
+			$this->mapCollectedData($collectedData),
+			$defaultLevelUsed,
+			$projectConfigFile,
+			$savedResultCache,
+			$memoryUsageBytes,
+			$isResultCacheUsed,
+			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$processedFiles,
-		];
+		);
 	}
 
 	/**

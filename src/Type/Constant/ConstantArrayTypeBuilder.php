@@ -42,7 +42,7 @@ final class ConstantArrayTypeBuilder
 
 	private bool $oversized = false;
 
-	private bool $forceUpdatesAutoIncrementKeyForNegativeValues = false;
+	private bool $initializedEmpty = false;
 
 	/**
 	 * @param list<Type> $keyTypes
@@ -75,10 +75,7 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->isList(),
 		);
 
-		$phpVersion = PhpVersionStaticAccessor::getInstance();
-		if ($phpVersion->updatesAutoIncrementKeyForNegativeValuesOnlyInNonEmptyInitializer()) {
-			$builder->forceUpdatesAutoIncrementKeyForNegativeValues = !self::wasInitializedEmpty($startArrayType);
-		}
+		$builder->initializedEmpty = self::wasInitializedEmpty($startArrayType);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
 			$builder->degradeToGeneralArray(true);
@@ -442,7 +439,11 @@ final class ConstantArrayTypeBuilder
 			return true;
 		}
 
-		return !$this->forceUpdatesAutoIncrementKeyForNegativeValues;
+		if ($phpVersion->updatesAutoIncrementKeyForNegativeValuesOnlyInNonEmptyInitializer()) {
+			return !$this->initializedEmpty;
+		}
+
+		return false;
 	}
 
 	private static function wasInitializedEmpty(ConstantArrayType $startArrayType): bool

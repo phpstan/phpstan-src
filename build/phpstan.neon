@@ -4,7 +4,6 @@ includes:
 	- ../vendor/phpstan/phpstan-phpunit/extension.neon
 	- ../vendor/phpstan/phpstan-phpunit/rules.neon
 	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
-	- ../vendor/shipmonk/dead-code-detector/rules.neon
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 	- ../phpstan-baseline.php
@@ -81,16 +80,27 @@ parameters:
 		-
 			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?Factory::create#' # likely used in DIC
+			reportUnmatched: false
+		-
+			identifier: shipmonk.deadMethod
+			message: '#^Unused PHPStan\\DependencyInjection\\BleedingEdgeToggle::isBleedingEdge#' # kept for future use
+			reportUnmatched: false
 		-
 			identifier: shipmonk.deadMethod
 			paths:
 				- ../tests/PHPStan/Tests
 				- ../tests/e2e
+			reportUnmatched: false
 		-
 			identifier: shipmonk.deadConstant
 			paths:
 				- ../tests/PHPStan/Fixture
 			reportUnmatched: false # constants on enums, not reported on PHP8-
+		-
+			identifier: shipmonk.deadEnumCase
+			paths:
+				- ../tests/PHPStan/Fixture
+			reportUnmatched: false # enum cases, not reported on PHP8-
 		-
 			message: '''
 				#^Access to constant on deprecated class DeprecatedAnnotations\\DeprecatedFoo\:
@@ -119,6 +129,9 @@ parameters:
 		-
 			identifier: shipmonk.deadMethod
 			path: ../src/Internal/CombinationsHelper.php
+			reportUnmatched: false
+		-
+			rawMessage: 'Property PHPStan\Command\CommandHelper::$reservedMemory is never read' # intentional
 			reportUnmatched: false
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp

@@ -1669,7 +1669,7 @@
                 "stubs",
                 "type"
             ],
-            "time": "2026-02-25T17:25:09+00:00"
+            "time": "2026-04-02T11:15:54+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -2380,22 +2380,22 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.65.0.9",
+            "version": "6.70.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "55857283ef0596534895b08e6f49c23f1bdd2475"
+                "reference": "0684953070cc3be6ded3f5cb5cbce37dfa511e46"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/55857283ef0596534895b08e6f49c23f1bdd2475",
-                "reference": "55857283ef0596534895b08e6f49c23f1bdd2475",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/0684953070cc3be6ded3f5cb5cbce37dfa511e46",
+                "reference": "0684953070cc3be6ded3f5cb5cbce37dfa511e46",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#dfcad4524db603bd20bdec3aab1a31c5f5128ea3",
-                "nikic/php-parser": "^5.6.1",
+                "nikic/php-parser": "^5.7.0",
                 "php": "^7.4 || ^8.0"
             },
             "conflict": {
@@ -2403,11 +2403,11 @@
             },
             "require-dev": {
                 "doctrine/coding-standard": "^12.0.0",
-                "phpbench/phpbench": "^1.4.1",
-                "phpstan/phpstan": "^1.10.60",
-                "phpstan/phpstan-phpunit": "^1.3.16",
-                "phpunit/phpunit": "^11.5.42",
-                "rector/rector": "1.2.10"
+                "phpbench/phpbench": "^1.6.1",
+                "phpstan/phpstan": "^2.1.46",
+                "phpstan/phpstan-phpunit": "^2.0.16",
+                "phpunit/phpunit": "^13.1.0",
+                "rector/rector": "2.4.1"
             },
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
@@ -2446,9 +2446,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.65.0.9"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.70.0.0"
             },
-            "time": "2026-01-19T09:59:51+00:00"
+            "time": "2026-04-08T13:25:13+00:00"
         },
         {
             "name": "ondrejmirtes/composer-attribute-collector",

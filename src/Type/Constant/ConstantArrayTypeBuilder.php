@@ -42,7 +42,7 @@ final class ConstantArrayTypeBuilder
 
 	private bool $oversized = false;
 
-	private bool $initializedNonEmpty = false;
+	private bool $initializedEmpty = false;
 
 	/**
 	 * @param list<Type> $keyTypes
@@ -62,10 +62,7 @@ final class ConstantArrayTypeBuilder
 
 	public static function createEmpty(): self
 	{
-		$self = new self([], [], [0], [], TrinaryLogic::createYes());
-		$self->initializedNonEmpty = true;
-
-		return $self;
+		return new self([], [], [0], [], TrinaryLogic::createYes());
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -77,6 +74,10 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->getOptionalKeys(),
 			$startArrayType->isList(),
 		);
+
+		if (count($startArrayType->getKeyTypes()) === 0) {
+			$builder->initializedEmpty = true;
+		}
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
 			$builder->degradeToGeneralArray(true);
@@ -441,7 +442,7 @@ final class ConstantArrayTypeBuilder
 			return true;
 		}
 
-		return $this->initializedNonEmpty && $phpVersion->updatesAutoIncrementKeyForNegativeValuesInNonEmptyInitializer();
+		return !$this->initializedEmpty && $phpVersion->updatesAutoIncrementKeyForNegativeValuesInNonEmptyInitializer();
 	}
 
 }

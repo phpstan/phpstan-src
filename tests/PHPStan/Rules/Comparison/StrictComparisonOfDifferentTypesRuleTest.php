@@ -571,12 +571,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\HelloWorld> and class-string<Bug3633\HelloWorld> will always evaluate to true.',
+				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\HelloWorld\' will always evaluate to true.',
 				41,
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\HelloWorld> and class-string<Bug3633\OtherClass> will always evaluate to false.',
+				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				44,
 			],
 			[
@@ -585,12 +585,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\OtherClass> and class-string<Bug3633\HelloWorld> will always evaluate to false.',
+				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				71,
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\OtherClass> and class-string<Bug3633\OtherClass> will always evaluate to true.',
+				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\OtherClass\' will always evaluate to true.',
 				74,
 				$tipText,
 			],
@@ -605,27 +605,27 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\FinalClass> and class-string<Bug3633\FinalClass> will always evaluate to true.',
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
 				102,
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\FinalClass> and class-string<Bug3633\HelloWorld> will always evaluate to false.',
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				106,
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\FinalClass> and class-string<Bug3633\OtherClass> will always evaluate to false.',
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				109,
 				$tipText,
 			],
 			[
-				'Strict comparison using !== between class-string<Bug3633\FinalClass> and class-string<Bug3633\FinalClass> will always evaluate to false.',
+				'Strict comparison using !== between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to false.',
 				112,
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\FinalClass> and class-string<Bug3633\FinalClass> will always evaluate to true.',
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
 				115,
 			],
 		]);

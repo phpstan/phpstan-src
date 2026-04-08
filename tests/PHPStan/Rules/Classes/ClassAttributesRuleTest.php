@@ -150,7 +150,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-7171.php'], [
 			[
-				'Parameter $repositoryClass of attribute class Bug7171\Entity constructor expects class-string<Bug7171\EntityRepository<T of object>>|null, class-string<stdClass> given.',
+				'Parameter $repositoryClass of attribute class Bug7171\Entity constructor expects class-string<Bug7171\EntityRepository<T of object>>|null, \'stdClass\' given.',
 				66,
 			],
 		]);

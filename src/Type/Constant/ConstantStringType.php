@@ -115,16 +115,14 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $level->handle(
 			static fn (): string => 'string',
 			function (): string {
-				if ($this->isClassString) {
-					return 'class-string<' . $this->value . '>';
-				}
-
 				$value = $this->value;
 
-				try {
-					$value = Strings::truncate($value, self::DESCRIBE_LIMIT);
-				} catch (RegexpException) {
-					$value = substr($value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
+				if (!$this->isClassString) {
+					try {
+						$value = Strings::truncate($value, self::DESCRIBE_LIMIT);
+					} catch (RegexpException) {
+						$value = substr($value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
+					}
 				}
 
 				return self::export($value);

@@ -1161,7 +1161,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		require_once __DIR__ . '/data/bug-4413.php';
 		$this->analyse([__DIR__ . '/data/bug-4413.php'], [
 			[
-				'Parameter #1 $date of function Bug4413\takesDate expects class-string<DateTime>, class-string<stdClass> given.',
+				'Parameter #1 $date of function Bug4413\takesDate expects class-string<DateTime>, \'stdClass\' given.',
 				18,
 			],
 		]);

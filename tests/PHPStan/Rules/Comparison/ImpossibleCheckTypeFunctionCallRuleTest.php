@@ -160,7 +160,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					582,
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\\MethodExists> and \'testWithStringFirst…\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExists\' and \'testWithStringFirst…\' will always evaluate to true.',
 					596,
 				],
 				[
@@ -196,30 +196,30 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					656,
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\MethodExistsWithTrait> and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
 					659,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\MethodExistsWithTrait> and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
 					662,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\MethodExistsWithTrait> and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					665,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\MethodExistsWithTrait> and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
 					668,
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\MethodExistsWithTrait> and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
 					671,
 				],
 				[
-					'Call to function method_exists() with class-string<CheckTypeFunctionCall\MethodExistsWithTrait> and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					674,
 				],
 				[
@@ -391,11 +391,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
 			[
-				'Call to function is_subclass_of() with Bug6305\B and class-string<Bug6305\A> will always evaluate to true.',
+				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\A\' will always evaluate to true.',
 				11,
 			],
 			[
-				'Call to function is_subclass_of() with Bug6305\B and class-string<Bug6305\B> will always evaluate to false.',
+				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\B\' will always evaluate to false.',
 				14,
 			],
 		]);
@@ -412,11 +412,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-13713.php'], [
 			[
-				"Call to function is_subclass_of() with arguments Bug13713\\test, class-string<stdClass> and false will always evaluate to true.",
+				"Call to function is_subclass_of() with arguments Bug13713\\test, 'stdClass' and false will always evaluate to true.",
 				12,
 			],
 			[
-				"Call to function is_subclass_of() with arguments class-string<Bug13713\\test>, class-string<stdClass> and true will always evaluate to true.",
+				"Call to function is_subclass_of() with arguments class-string<Bug13713\\test>, 'stdClass' and true will always evaluate to true.",
 				25,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
@@ -1004,7 +1004,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-pr-3404.php'], [
 			[
-				'Call to function is_a() with arguments BugPR3404\Location, class-string<BugPR3404\\Location> and true will always evaluate to true.',
+				'Call to function is_a() with arguments BugPR3404\Location, \'BugPR3404\\\\Location\' and true will always evaluate to true.',
 				21,
 			],
 		]);

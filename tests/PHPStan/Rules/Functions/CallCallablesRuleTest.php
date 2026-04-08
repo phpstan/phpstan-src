@@ -148,22 +148,22 @@ class CallCallablesRuleTest extends RuleTestCase
 				176,
 			],
 			[
-				'Trying to invoke array{class-string<CallCallables\\CallableInForeach>, \'bar\'|\'foo\'} but it might not be a callable.',
+				'Trying to invoke array{\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\'} but it might not be a callable.',
 				188,
 			],
 			[
-				'Trying to invoke array{class-string<CallCallables\\ConstantArrayUnionCallables>|class-string<DateTimeImmutable>, \'doFoo\'} but it might not be a callable.',
+				'Trying to invoke array{\'CallCallables\\\\ConstantArrayUnionCallables\'|\'DateTimeImmutable\', \'doFoo\'} but it might not be a callable.',
 				214,
 			],
 			[
-				'Trying to invoke array{class-string<CallCallables\\ConstantArrayUnionCallables>, \'doBaz\'|\'doFoo\'} but it might not be a callable.',
+				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\', \'doBaz\'|\'doFoo\'} but it might not be a callable.',
 				221,
 			],
 		];
 
 		if (PHP_VERSION_ID >= 80000) {
 			$errors[] = [
-				'Trying to invoke array{class-string<CallCallables\\ConstantArrayUnionCallables>|class-string<CallCallables\\ConstantArrayUnionCallablesTest>, \'doBar\'|\'doFoo\'} but it\'s not a callable.',
+				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\'|\'CallCallables\\\ConstantArrayUnionCallablesTest\', \'doBar\'|\'doFoo\'} but it\'s not a callable.',
 				229,
 			];
 		}

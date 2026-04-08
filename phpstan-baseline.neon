@@ -742,7 +742,7 @@ parameters:
 			path: src/Rules/RuleLevelHelper.php
 
 		-
-			rawMessage: 'Call to function method_exists() with class-string<PHPUnit\Framework\TestCase> and ''assertFileDoesNotEx…'' will always evaluate to true.'
+			rawMessage: 'Call to function method_exists() with ''PHPUnit\\Framework\\TestCase'' and ''assertFileDoesNotEx…'' will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: src/Testing/LevelsTestCase.php

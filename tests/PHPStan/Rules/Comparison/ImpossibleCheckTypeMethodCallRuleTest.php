@@ -264,7 +264,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				$tip,
 			],*/
 			[
-				'Call to method ReflectionClass<Bug12473\\PictureUser>::isSubclassOf() with class-string<Bug12473\\PictureProduct> will always evaluate to false.',
+				'Call to method ReflectionClass<Bug12473\\PictureUser>::isSubclassOf() with \'Bug12473\\\\PictureProduct\' will always evaluate to false.',
 				49,
 				$tip,
 			],

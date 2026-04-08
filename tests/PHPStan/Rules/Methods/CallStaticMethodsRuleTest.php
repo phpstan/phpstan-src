@@ -482,7 +482,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
 			[
-				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<Bug1971\HelloWorld>, \'sayHello\'} given.',
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug1971\\\HelloWorld\', \'sayHello\'} given.',
 				14,
 			],
 			[
@@ -577,9 +577,9 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/template-type-in-one-branch-of-conditional.php'], [
 			[
-				'Parameter #1 $params of static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection() expects array{wrapperClass?: class-string<TemplateTypeInOneBranchOfConditional\Connection>}, array{wrapperClass: class-string<stdClass>} given.',
+				'Parameter #1 $params of static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection() expects array{wrapperClass?: class-string<TemplateTypeInOneBranchOfConditional\Connection>}, array{wrapperClass: \'stdClass\'} given.',
 				27,
-				"Offset 'wrapperClass' (class-string<TemplateTypeInOneBranchOfConditional\Connection>) does not accept type class-string<stdClass>.",
+				"Offset 'wrapperClass' (class-string<TemplateTypeInOneBranchOfConditional\Connection>) does not accept type 'stdClass'.",
 			],
 			[
 				'Unable to resolve the template type T in call to static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection()',

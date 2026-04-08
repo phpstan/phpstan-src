@@ -1335,11 +1335,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14440.php'], [
 			[
-				'Method Bug14440\ChildOne::getCounterpartClass() should return class-string<Bug14440\ChildOne> but returns class-string<Bug14440\ChildTwo>.',
+				'Method Bug14440\ChildOne::getCounterpartClass() should return class-string<Bug14440\ChildOne> but returns \'Bug14440\\\\ChildTwo\'.',
 				18,
 			],
 			[
-				'Method Bug14440\ChildTwo::getCounterpartClass() should return class-string<Bug14440\ChildTwo> but returns class-string<Bug14440\ChildOne>.',
+				'Method Bug14440\ChildTwo::getCounterpartClass() should return class-string<Bug14440\ChildTwo> but returns \'Bug14440\\\\ChildOne\'.',
 				27,
 			],
 		]);

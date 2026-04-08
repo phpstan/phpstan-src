@@ -174,6 +174,10 @@ final class VerbosityLevel
 				$moreVerbose = true;
 				return $type;
 			}
+			if ($type->isClassString()->yes()) {
+				$moreVerbose = true;
+				return $type;
+			}
 			return $traverse($type);
 		};
 

@@ -1200,11 +1200,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Parameter #1 $object_or_class of function is_a expects object, class-string<Bug4371\Bar> given.',
+				'Parameter #1 $object_or_class of function is_a expects object, string given.',
 				14,
 			],
 			[
-				'Parameter #1 $object_or_class of function is_a expects object, class-string<Bug4371\Bar> given.',
+				'Parameter #1 $object_or_class of function is_a expects object, string given.',
 				22,
 			],
 		];
@@ -1213,11 +1213,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			// php 7.x had different parameter names
 			$errors = [
 				[
-					'Parameter #1 $object_or_string of function is_a expects object, class-string<Bug4371\Bar> given.',
+					'Parameter #1 $object_or_string of function is_a expects object, string given.',
 					14,
 				],
 				[
-					'Parameter #1 $object_or_string of function is_a expects object, class-string<Bug4371\Bar> given.',
+					'Parameter #1 $object_or_string of function is_a expects object, string given.',
 					22,
 				],
 			];
@@ -1230,15 +1230,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Parameter #1 $object_or_class of function is_subclass_of expects object, class-string<IsSubclassAllowString\A> given.',
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
 				11,
 			],
 			[
-				'Parameter #1 $object_or_class of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
 				14,
 			],
 			[
-				'Parameter #1 $object_or_class of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
 				17,
 			],
 		];
@@ -1247,15 +1247,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			// php 7.x had different parameter names
 			$errors = [
 				[
-					'Parameter #1 $object_or_string of function is_subclass_of expects object, class-string<IsSubclassAllowString\A> given.',
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
 					11,
 				],
 				[
-					'Parameter #1 $object_or_string of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
 					14,
 				],
 				[
-					'Parameter #1 $object_or_string of function is_subclass_of expects object, class-string<IsSubclassAllowString\B> given.',
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
 					17,
 				],
 			];

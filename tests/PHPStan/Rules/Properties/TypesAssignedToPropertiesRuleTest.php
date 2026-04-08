@@ -320,7 +320,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 					20,
 				],
 				[
-					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept non-empty-array<array{\'AppendedArrayItem\\\\Foo\', \'classMethod\'}|(callable(): mixed)>.',
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept non-empty-array<array{class-string<AppendedArrayItem\\Foo>, \'classMethod\'}|(callable(): mixed)>.',
 					23,
 				],
 				[

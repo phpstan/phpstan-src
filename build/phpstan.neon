@@ -108,11 +108,11 @@ parameters:
 			message: '#^Variable property access on T of PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
 		-
-			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
+			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, 'PHPStan…' given\\.$#"
 			count: 1
 			path: ../src/Command/CommandHelper.php
 		-
-			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
+			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, 'PHPStan…' given\\.$#"
 			count: 1
 			path: ../src/Diagnose/PHPStanDiagnoseExtension.php
 		- identifier: ternary.shortNotAllowed

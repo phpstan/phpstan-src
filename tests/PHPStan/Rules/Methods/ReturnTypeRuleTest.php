@@ -817,7 +817,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				// there should be no errors
 				'Method Bug8071\Inheritance::inherit() should return array<TKey of (int|string), TValues of bool|float|int|string|null> but returns array<string>.',
 				17,
-				"• Type class-string<Bug8071\Inheritance> is not always the same as TValues. It breaks the contract for some argument types, typically subtypes.\n• Type string is not always the same as TValues. It breaks the contract for some argument types, typically subtypes.",
+				'Type string is not always the same as TValues. It breaks the contract for some argument types, typically subtypes.',
 			],
 		]);
 	}

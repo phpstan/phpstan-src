@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a496633f7bb3da8bde05678bc1262b3",
+    "content-hash": "ea8405e631700cf88d7327911ea0f9d2",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1669,7 +1669,7 @@
                 "stubs",
                 "type"
             ],
-            "time": "2026-04-02T11:15:54+00:00"
+            "time": "2026-02-25T17:25:09+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -2380,22 +2380,22 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.70.0.0",
+            "version": "6.65.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "0684953070cc3be6ded3f5cb5cbce37dfa511e46"
+                "reference": "55857283ef0596534895b08e6f49c23f1bdd2475"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/0684953070cc3be6ded3f5cb5cbce37dfa511e46",
-                "reference": "0684953070cc3be6ded3f5cb5cbce37dfa511e46",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/55857283ef0596534895b08e6f49c23f1bdd2475",
+                "reference": "55857283ef0596534895b08e6f49c23f1bdd2475",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#dfcad4524db603bd20bdec3aab1a31c5f5128ea3",
-                "nikic/php-parser": "^5.7.0",
+                "nikic/php-parser": "^5.6.1",
                 "php": "^7.4 || ^8.0"
             },
             "conflict": {
@@ -2403,11 +2403,11 @@
             },
             "require-dev": {
                 "doctrine/coding-standard": "^12.0.0",
-                "phpbench/phpbench": "^1.6.1",
-                "phpstan/phpstan": "^2.1.46",
-                "phpstan/phpstan-phpunit": "^2.0.16",
-                "phpunit/phpunit": "^13.1.0",
-                "rector/rector": "2.4.1"
+                "phpbench/phpbench": "^1.4.1",
+                "phpstan/phpstan": "^1.10.60",
+                "phpstan/phpstan-phpunit": "^1.3.16",
+                "phpunit/phpunit": "^11.5.42",
+                "rector/rector": "1.2.10"
             },
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
@@ -2446,9 +2446,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.70.0.0"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.65.0.9"
             },
-            "time": "2026-04-08T13:25:13+00:00"
+            "time": "2026-01-19T09:59:51+00:00"
         },
         {
             "name": "ondrejmirtes/composer-attribute-collector",
@@ -6702,50 +6702,57 @@
         },
         {
             "name": "shipmonk/dead-code-detector",
-            "version": "0.14.1",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/dead-code-detector.git",
-                "reference": "4fdc912b25b1e169041f534a517126a1090bb2f4"
+                "reference": "dd909a6e267ae03837f166bc5e9d2f0851b14ff0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/4fdc912b25b1e169041f534a517126a1090bb2f4",
-                "reference": "4fdc912b25b1e169041f534a517126a1090bb2f4",
+                "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/dd909a6e267ae03837f166bc5e9d2f0851b14ff0",
+                "reference": "dd909a6e267ae03837f166bc5e9d2f0851b14ff0",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.4 || ^8.0",
-                "phpstan/phpstan": "^2.1.23"
+                "php": "^8.1",
+                "phpstan/phpstan": "^2.1.41"
             },
             "require-dev": {
+                "behat/behat": "^3.14",
                 "composer-runtime-api": "^2.0",
                 "composer/semver": "^3.4",
                 "doctrine/orm": "^2.19 || ^3.0",
-                "editorconfig-checker/editorconfig-checker": "^10.6.0",
+                "editorconfig-checker/editorconfig-checker": "^10.7.0",
                 "ergebnis/composer-normalize": "^2.48.1",
+                "laravel/framework": "^10.0 || ^11.0 || ^12.0",
                 "nette/application": "^3.1",
                 "nette/component-model": "^3.0",
+                "nette/tester": "^2.4",
                 "nette/utils": "^3.0 || ^4.0",
                 "nikic/php-parser": "^5.4.0",
                 "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan-phpunit": "^2.0.4",
-                "phpstan/phpstan-strict-rules": "^2.0.3",
-                "phpstan/phpstan-symfony": "^2.0.2",
-                "phpunit/phpcov": "^8.2",
-                "phpunit/phpunit": "^9.6.22",
-                "shipmonk/coding-standard": "^0.2.0",
-                "shipmonk/composer-dependency-analyser": "^1.8.2",
-                "shipmonk/coverage-guard": "^1.0.0",
+                "phpstan/phpstan-phpunit": "^2.0.16",
+                "phpstan/phpstan-strict-rules": "^2.0.10",
+                "phpstan/phpstan-symfony": "^2.0.15",
+                "phpunit/phpcov": "^9.0.2",
+                "phpunit/phpunit": "^10.5.46",
+                "shipmonk/coding-standard": "^0.2.2",
+                "shipmonk/composer-dependency-analyser": "^1.8.4",
+                "shipmonk/coverage-guard": "^1.0.2",
                 "shipmonk/name-collision-detector": "^2.1.1",
-                "shipmonk/phpstan-dev": "^0.1.1",
-                "shipmonk/phpstan-rules": "^4.1.0",
+                "shipmonk/phpstan-dev": "^0.1.6",
+                "shipmonk/phpstan-rules": "^4.3.6",
                 "symfony/contracts": "^2.5 || ^3.0 || ^4.0",
                 "symfony/dependency-injection": "^5.4 || ^6.0 || ^7.0 || ^8.0",
                 "symfony/doctrine-bridge": "^5.4 || ^6.0 || ^7.0 || ^8.0",
                 "symfony/event-dispatcher": "^5.4 || ^6.0 || ^7.0 || ^8.0",
+                "symfony/framework-bundle": "^5.4 || ^6.0 || ^7.0 || ^8.0",
                 "symfony/http-kernel": "^5.4 || ^6.0 || ^7.0 || ^8.0",
                 "symfony/routing": "^5.4 || ^6.0 || ^7.0 || ^8.0",
+                "symfony/scheduler": "^6.3 || ^7.0 || ^8.0",
+                "symfony/ux-live-component": "^2.34",
+                "symfony/ux-twig-component": "^2.34",
                 "symfony/validator": "^5.4 || ^6.0 || ^7.0 || ^8.0",
                 "twig/twig": "^3.0"
             },
@@ -6775,9 +6782,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/dead-code-detector/issues",
-                "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/0.14.1"
+                "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/1.0.0"
             },
-            "time": "2025-12-18T11:03:53+00:00"
+            "time": "2026-04-08T10:39:05+00:00"
         },
         {
             "name": "shipmonk/name-collision-detector",

@@ -516,9 +516,9 @@ final class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
-	public function updatesAutoIncrementKeyForNegativeValuesInNonEmptyInitializer(): bool
+	public function updatesAutoIncrementKeyForNegativeValuesOnlyInNonEmptyInitializer(): bool
 	{
-		return $this->versionId >= 80000;
+		return $this->versionId >= 80000 && $this->versionId < 80300;
 	}
 
 }

@@ -42,7 +42,7 @@ final class ConstantArrayTypeBuilder
 
 	private bool $oversized = false;
 
-	private bool $initializedEmpty = false;
+	private bool $forceUpdatesAutoIncrementKeyForNegativeValues = false;
 
 	/**
 	 * @param list<Type> $keyTypes
@@ -76,20 +76,8 @@ final class ConstantArrayTypeBuilder
 		);
 
 		$phpVersion = PhpVersionStaticAccessor::getInstance();
-		if (
-			!$phpVersion->updatesAutoIncrementKeyForNegativeValues()
-			&& $phpVersion->updatesAutoIncrementKeyForNegativeValuesInNonEmptyInitializer()
-		) {
-			if (count($startArrayType->getKeyTypes()) === 0) {
-				$builder->initializedEmpty = true;
-			} elseif (max($startArrayType->getNextAutoIndexes()) === 0) {
-				foreach ($startArrayType->getKeyTypes() as $keyType) {
-					if ($keyType instanceof ConstantIntegerType && $keyType->getValue() < 0) {
-						$builder->initializedEmpty = true;
-						break;
-					}
-				}
-			}
+		if ($phpVersion->updatesAutoIncrementKeyForNegativeValuesOnlyInNonEmptyInitializer()) {
+			$builder->forceUpdatesAutoIncrementKeyForNegativeValues = !self::wasInitializedEmpty($startArrayType);
 		}
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
@@ -450,12 +438,28 @@ final class ConstantArrayTypeBuilder
 		}
 
 		$phpVersion = PhpVersionStaticAccessor::getInstance();
-
 		if ($phpVersion->updatesAutoIncrementKeyForNegativeValues()) {
 			return true;
 		}
 
-		return !$this->initializedEmpty && $phpVersion->updatesAutoIncrementKeyForNegativeValuesInNonEmptyInitializer();
+		return !$this->forceUpdatesAutoIncrementKeyForNegativeValues;
+	}
+
+	private static function wasInitializedEmpty(ConstantArrayType $startArrayType): bool
+	{
+		if (count($startArrayType->getKeyTypes()) === 0) {
+			return true;
+		}
+
+		if (max($startArrayType->getNextAutoIndexes()) === 0) {
+			foreach ($startArrayType->getKeyTypes() as $keyType) {
+				if ($keyType instanceof ConstantIntegerType && $keyType->getValue() < 0) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

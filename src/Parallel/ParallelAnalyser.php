@@ -58,7 +58,7 @@ final class ParallelAnalyser
 	}
 
 	/**
-	 * @param Closure(int, list<string>): void|null $postFileCallback
+	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
 	 * @return PromiseInterface<AnalyserResult>
 	 */

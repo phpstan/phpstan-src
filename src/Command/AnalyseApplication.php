@@ -244,12 +244,13 @@ final class AnalyseApplication
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				processedFiles: [],
 			);
 		}
 
 		if (!$debug) {
 			$preFileCallback = null;
-			$postFileCallback = static function (int $step, array $processedFiles) use ($errorOutput): void {
+			$postFileCallback = static function (int $step) use ($errorOutput): void {
 				$errorOutput->getStyle()->progressAdvance($step);
 			};
 
@@ -264,7 +265,7 @@ final class AnalyseApplication
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function (int $step, array $processedFiles) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
+				$postFileCallback = static function (int $step, array $processedFiles = []) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}

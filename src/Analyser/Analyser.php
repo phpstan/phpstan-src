@@ -36,7 +36,7 @@ final class Analyser
 	/**
 	 * @param string[] $files
 	 * @param Closure(string $file): void|null $preFileCallback
-	 * @param Closure(int, list<string>): void|null $postFileCallback
+	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 * @param string[]|null $allAnalysedFiles
 	 */
 	public function analyse(

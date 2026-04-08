@@ -37,7 +37,7 @@ final class AnalyserRunner
 	 * @param string[] $files
 	 * @param string[] $allAnalysedFiles
 	 * @param Closure(string $file): void|null $preFileCallback
-	 * @param Closure(int, list<string>): void|null $postFileCallback
+	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 */
 	public function runAnalyser(
 		array $files,
@@ -68,6 +68,7 @@ final class AnalyserRunner
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				processedFiles: [],
 			);
 		}
 

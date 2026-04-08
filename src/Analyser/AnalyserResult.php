@@ -44,7 +44,7 @@ final class AnalyserResult
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
-		private array $processedFiles = [],
+		private array $processedFiles,
 	)
 	{
 	}

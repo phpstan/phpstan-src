@@ -106,19 +106,25 @@ final class BisectCommand extends Command
 			return 1;
 		}
 
+		$headers =  [
+			'Authorization' => 'token ' . $token,
+			'Accept' => 'application/vnd.github.v3+json',
+		];
+		if (extension_loaded('zlib')) {
+			$headers['Accept-Encoding'] = 'gzip,deflate';
+		}
+
 		$client = new Client([
 			RequestOptions::TIMEOUT => 30,
 			RequestOptions::CONNECT_TIMEOUT => 10,
-			'headers' => [
-				'Authorization' => 'token ' . $token,
-				'Accept' => 'application/vnd.github.v3+json',
-			],
+			'headers' => $headers
 		]);
 
 		$io->section(sprintf('Fetching commits between %s and %s...', $good, $bad));
 
 		try {
 			$commits = $this->getCommitsBetween($client, $good, $bad);
+			exit();
 		} catch (GuzzleException $e) {
 			$io->error(sprintf('Failed to fetch commits from GitHub: %s', $e->getMessage()));
 			return 1;

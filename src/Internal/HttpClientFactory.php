@@ -9,6 +9,8 @@ final class HttpClientFactory
 {
 
 	/**
+	 * @param array<mixed> $config
+	 *
 	 * @see \GuzzleHttp\RequestOptions
 	 */
 	public static function createClient(array $config): Client

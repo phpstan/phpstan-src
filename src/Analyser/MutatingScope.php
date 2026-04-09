@@ -109,7 +109,6 @@ use function array_last;
 use function array_map;
 use function array_merge;
 use function array_pop;
-use function array_reverse;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -2671,53 +2670,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		string $variableName,
 	): self
 	{
-		// Collect the chain of ArrayDimFetch from leaf to root
-		$dimStack = [];
-		$current = $targetExpr;
-		while ($current instanceof Expr\ArrayDimFetch) {
-			$dimStack[] = $current->dim;
-			$current = $current->var;
-		}
+		$expr = $targetExpr;
+		$type = $newType;
+		$nativeType = $newNativeType;
 
-		// Build intermediate types from root to leaf
-		$dimStack = array_reverse($dimStack);
-		$rootType = $scope->getType($current);
-		$rootNativeType = $scope->getNativeType($current);
-
-		$intermediateTypes = [$rootType];
-		$intermediateNativeTypes = [$rootNativeType];
-		$currentType = $rootType;
-		$currentNativeType = $rootNativeType;
-		for ($i = 0; $i < count($dimStack) - 1; $i++) {
-			$dim = $dimStack[$i];
-			if ($dim === null) {
+		while ($expr instanceof Expr\ArrayDimFetch) {
+			if ($expr->dim === null) {
 				return $scope->assignExpression($targetExpr, $newType, $newNativeType);
 			}
-			$dimType = $scope->getType($dim)->toArrayKey();
-			$currentType = $currentType->getOffsetValueType($dimType);
-			$currentNativeType = $currentNativeType->getOffsetValueType($dimType);
-			$intermediateTypes[] = $currentType;
-			$intermediateNativeTypes[] = $currentNativeType;
+			$dimType = $scope->getType($expr->dim)->toArrayKey();
+			$type = $scope->getType($expr->var)->setOffsetValueType($dimType, $type);
+			$nativeType = $scope->getNativeType($expr->var)->setOffsetValueType($dimType, $nativeType);
+			$expr = $expr->var;
 		}
 
-		// Build up from the leaf using setOffsetValueType
-		$builtType = $newType;
-		$builtNativeType = $newNativeType;
-		for ($i = count($dimStack) - 1; $i >= 0; $i--) {
-			$dim = $dimStack[$i];
-			if ($dim === null) {
-				return $scope->assignExpression($targetExpr, $newType, $newNativeType);
-			}
-			$dimType = $scope->getType($dim)->toArrayKey();
-			$builtType = $intermediateTypes[$i]->setOffsetValueType($dimType, $builtType);
-			$builtNativeType = $intermediateNativeTypes[$i]->setOffsetValueType($dimType, $builtNativeType);
-		}
-
-		if ($current instanceof Variable && is_string($current->name)) {
+		if ($expr instanceof Variable && is_string($expr->name)) {
 			return $scope->assignVariable(
-				$current->name,
-				$builtType,
-				$builtNativeType,
+				$expr->name,
+				$type,
+				$nativeType,
 				TrinaryLogic::createYes(),
 				array_merge($intertwinedPropagatedFrom, [$variableName]),
 			);

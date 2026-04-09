@@ -124,7 +124,6 @@ final class BisectCommand extends Command
 
 		try {
 			$commits = $this->getCommitsBetween($client, $good, $bad);
-			exit();
 		} catch (GuzzleException $e) {
 			$io->error(sprintf('Failed to fetch commits from GitHub: %s', $e->getMessage()));
 			return 1;

@@ -9,6 +9,7 @@ use Nette\Utils\Json;
 use Override;
 use PHPStan\Command\Bisect\BinarySearch;
 use PHPStan\File\FileReader;
+use PHPStan\Internal\HttpClientFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -23,7 +24,6 @@ use function array_values;
 use function chmod;
 use function count;
 use function escapeshellarg;
-use function extension_loaded;
 use function getenv;
 use function implode;
 use function is_array;
@@ -107,24 +107,20 @@ final class BisectCommand extends Command
 			return 1;
 		}
 
-		$headers = [
-			'Authorization' => 'token ' . $token,
-			'Accept' => 'application/vnd.github.v3+json',
-		];
-		if (extension_loaded('zlib')) {
-			$headers['Accept-Encoding'] = 'gzip,deflate';
-		}
-
-		$client = new Client([
+		$client = HttpClientFactory::createClient([
 			RequestOptions::TIMEOUT => 30,
 			RequestOptions::CONNECT_TIMEOUT => 10,
-			'headers' => $headers,
+			'headers' => [
+				'Authorization' => 'token ' . $token,
+				'Accept' => 'application/vnd.github.v3+json',
+			],
 		]);
 
 		$io->section(sprintf('Fetching commits between %s and %s...', $good, $bad));
 
 		try {
 			$commits = $this->getCommitsBetween($client, $good, $bad);
+			exit;
 		} catch (GuzzleException $e) {
 			$io->error(sprintf('Failed to fetch commits from GitHub: %s', $e->getMessage()));
 			return 1;

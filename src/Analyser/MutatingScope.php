@@ -3877,7 +3877,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->getNamespace(),
 			$expressionTypes,
 			$nativeTypes,
-			$this->conditionalExpressions,
+			$finalScope->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

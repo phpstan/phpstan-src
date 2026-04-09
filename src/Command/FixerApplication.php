@@ -23,6 +23,7 @@ use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Internal\HttpClientFactory;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Process\ProcessCanceledException;
 use PHPStan\Process\ProcessCrashedException;
@@ -325,7 +326,7 @@ final class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
-		$client = new Client([
+		$client = HttpClientFactory::createClient([
 			RequestOptions::TIMEOUT => 30,
 			RequestOptions::CONNECT_TIMEOUT => 5,
 		]);

@@ -22,3 +22,28 @@ function test(bool $initial): void {
 
 	assertType('bool', $initial);
 }
+
+/**
+ * @param mixed $value
+ */
+function testForeachKeyOverwrite($value): void {
+	if (is_array($value) && $value !== []) {
+		$hasOnlyStringKey = true;
+		foreach (array_keys($value) as $key) {
+			if (is_int($key)) {
+				$hasOnlyStringKey = false;
+				break;
+			}
+		}
+
+		assertType('bool', $hasOnlyStringKey);
+
+		if ($hasOnlyStringKey) {
+			// $key should not be in scope here with polluteScopeWithAlwaysIterableForeach: false
+			// Second foreach should not report "Foreach overwrites $key with its key variable"
+			foreach ($value as $key => $element) {
+				assertType('(int|string)', $key);
+			}
+		}
+	}
+}

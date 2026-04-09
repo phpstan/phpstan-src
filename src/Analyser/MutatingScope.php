@@ -109,6 +109,7 @@ use function array_last;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_reverse;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -2623,15 +2624,106 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if ($targetRootVar !== null && in_array($targetRootVar, $intertwinedPropagatedFrom, true)) {
 					continue;
 				}
-				$scope = $scope->assignExpression(
-					$expressionType->getExpr()->getExpr(),
-					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
-					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
-				);
+				$targetExpr = $expressionType->getExpr()->getExpr();
+				$newType = $scope->getType($expressionType->getExpr()->getAssignedExpr());
+				$newNativeType = $scope->getNativeType($expressionType->getExpr()->getAssignedExpr());
+
+				if ($targetExpr instanceof Expr\ArrayDimFetch && $targetRootVar !== null && $this->hasConstantDimInChain($targetExpr)) {
+					$scope = $this->propagateRefTypeToArrayDimFetch($scope, $targetExpr, $newType, $newNativeType, $intertwinedPropagatedFrom, $variableName);
+				} else {
+					$scope = $scope->assignExpression(
+						$targetExpr,
+						$newType,
+						$newNativeType,
+					);
+				}
 			}
 		}
 
 		return $scope;
+	}
+
+	private function hasConstantDimInChain(Expr\ArrayDimFetch $dimFetch): bool
+	{
+		$current = $dimFetch;
+		while ($current instanceof Expr\ArrayDimFetch) {
+			if ($current->dim !== null) {
+				$dimType = $this->getType($current->dim)->toArrayKey();
+				if ($dimType->isConstantScalarValue()->yes()) {
+					return true;
+				}
+			}
+			$current = $current->var;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param list<string> $intertwinedPropagatedFrom
+	 */
+	private function propagateRefTypeToArrayDimFetch(
+		self $scope,
+		Expr\ArrayDimFetch $targetExpr,
+		Type $newType,
+		Type $newNativeType,
+		array $intertwinedPropagatedFrom,
+		string $variableName,
+	): self
+	{
+		// Collect the chain of ArrayDimFetch from leaf to root
+		$dimStack = [];
+		$current = $targetExpr;
+		while ($current instanceof Expr\ArrayDimFetch) {
+			$dimStack[] = $current->dim;
+			$current = $current->var;
+		}
+
+		// Build intermediate types from root to leaf
+		$dimStack = array_reverse($dimStack);
+		$rootType = $scope->getType($current);
+		$rootNativeType = $scope->getNativeType($current);
+
+		$intermediateTypes = [$rootType];
+		$intermediateNativeTypes = [$rootNativeType];
+		$currentType = $rootType;
+		$currentNativeType = $rootNativeType;
+		for ($i = 0; $i < count($dimStack) - 1; $i++) {
+			$dim = $dimStack[$i];
+			if ($dim === null) {
+				return $scope->assignExpression($targetExpr, $newType, $newNativeType);
+			}
+			$dimType = $scope->getType($dim)->toArrayKey();
+			$currentType = $currentType->getOffsetValueType($dimType);
+			$currentNativeType = $currentNativeType->getOffsetValueType($dimType);
+			$intermediateTypes[] = $currentType;
+			$intermediateNativeTypes[] = $currentNativeType;
+		}
+
+		// Build up from the leaf using setOffsetValueType
+		$builtType = $newType;
+		$builtNativeType = $newNativeType;
+		for ($i = count($dimStack) - 1; $i >= 0; $i--) {
+			$dim = $dimStack[$i];
+			if ($dim === null) {
+				return $scope->assignExpression($targetExpr, $newType, $newNativeType);
+			}
+			$dimType = $scope->getType($dim)->toArrayKey();
+			$builtType = $intermediateTypes[$i]->setOffsetValueType($dimType, $builtType);
+			$builtNativeType = $intermediateNativeTypes[$i]->setOffsetValueType($dimType, $builtNativeType);
+		}
+
+		if ($current instanceof Variable && is_string($current->name)) {
+			return $scope->assignVariable(
+				$current->name,
+				$builtType,
+				$builtNativeType,
+				TrinaryLogic::createYes(),
+				array_merge($intertwinedPropagatedFrom, [$variableName]),
+			);
+		}
+
+		return $scope->assignExpression($targetExpr, $newType, $newNativeType);
 	}
 
 	private function isDimFetchPathReachable(self $scope, Expr\ArrayDimFetch $dimFetch): bool

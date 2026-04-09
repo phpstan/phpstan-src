@@ -159,6 +159,31 @@ final class AssignHandler implements ExprHandler
 			$expr instanceof AssignRef
 			&& $expr->var instanceof Variable
 			&& is_string($expr->var->name)
+			&& $expr->expr instanceof ArrayDimFetch
+		) {
+			$rootExpr = $expr->expr;
+			while ($rootExpr instanceof ArrayDimFetch) {
+				$rootExpr = $rootExpr->var;
+			}
+
+			if ($rootExpr instanceof Variable && is_string($rootExpr->name)) {
+				$varName = $expr->var->name;
+				$type = $scope->getType($expr->var);
+				$nativeType = $scope->getNativeType($expr->var);
+
+				// When $varName is assigned, update the ArrayDimFetch expression
+				$scope = $scope->assignExpression(
+					new IntertwinedVariableByReferenceWithExpr($varName, $expr->expr, new Variable($varName)),
+					$type,
+					$nativeType,
+				);
+			}
+		}
+
+		if (
+			$expr instanceof AssignRef
+			&& $expr->var instanceof Variable
+			&& is_string($expr->var->name)
 			&& $expr->expr instanceof Variable
 			&& is_string($expr->expr->name)
 		) {

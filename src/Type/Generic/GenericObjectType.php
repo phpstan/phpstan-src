@@ -403,6 +403,14 @@ class GenericObjectType extends ObjectType
 		);
 	}
 
+	/**
+	 * @param TemplateTypeVariance[] $variances
+	 */
+	public function changeVariances(array $variances): self
+	{
+		return $this->recreate($this->getClassName(), $this->getTypes(), $this->getSubtractedType(), $variances);
+	}
+
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		$result = parent::changeSubtractedType($subtractedType);

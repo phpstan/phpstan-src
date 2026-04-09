@@ -586,7 +586,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testGenericSubtype(): void
+	public function testGenericSubtypeWithStrictCheck(): void
 	{
 		$this->checkTypeAgainstPhpDocType = true;
 		$this->strictWideningCheck = true;
@@ -602,6 +602,13 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'Template type E on class GenericSubtype\IRepository is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
+	}
+
+	public function testGenericSubtypeWithoutStrictCheck(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = false;
+		$this->analyse([__DIR__ . '/data/generic-subtype.php'], []);
 	}
 
 	public function testNewIsAlwaysFinalClass(): void

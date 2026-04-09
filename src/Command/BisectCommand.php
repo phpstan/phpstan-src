@@ -23,6 +23,7 @@ use function array_values;
 use function chmod;
 use function count;
 use function escapeshellarg;
+use function extension_loaded;
 use function getenv;
 use function implode;
 use function is_array;
@@ -106,7 +107,7 @@ final class BisectCommand extends Command
 			return 1;
 		}
 
-		$headers =  [
+		$headers = [
 			'Authorization' => 'token ' . $token,
 			'Accept' => 'application/vnd.github.v3+json',
 		];
@@ -117,7 +118,7 @@ final class BisectCommand extends Command
 		$client = new Client([
 			RequestOptions::TIMEOUT => 30,
 			RequestOptions::CONNECT_TIMEOUT => 10,
-			'headers' => $headers
+			'headers' => $headers,
 		]);
 
 		$io->section(sprintf('Fetching commits between %s and %s...', $good, $bad));

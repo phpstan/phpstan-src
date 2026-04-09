@@ -3870,24 +3870,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			);
 		}
 
-		$conditionalExpressions = [];
-		foreach ($finalScope->conditionalExpressions as $conditionalExprString => $holders) {
-			if (!isset($this->expressionTypes[$conditionalExprString])) {
-				continue;
-			}
-			$filteredHolders = [];
+		$conditionalExpressions = $this->conditionalExpressions;
+		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
 			foreach ($holders as $holder) {
-				foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $holderExprString) {
+				foreach ($holder->getConditionExpressionTypeHolders() as $holderExprString => $condTypeHolder) {
+					if (!isset($finalScope->expressionTypes[$holderExprString])) {
+						continue 2;
+					}
 					if (!isset($this->expressionTypes[$holderExprString])) {
 						continue 2;
 					}
+					if (!$this->expressionTypes[$holderExprString]->getType()->equals($finalScope->expressionTypes[$holderExprString]->getType())) {
+						unset($conditionalExpressions[$conditionalExprString]);
+						continue 3;
+					}
 				}
-				$filteredHolders[] = $holder;
 			}
-			if ($filteredHolders === []) {
-				continue;
-			}
-			$conditionalExpressions[$conditionalExprString] = $filteredHolders;
 		}
 
 		return $this->scopeFactory->create(

@@ -7,7 +7,6 @@ use Clue\React\NDJson\Encoder;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;

@@ -203,6 +203,21 @@ php;
 			$output .= 'require_once __DIR__ . ' . var_export($path, true) . ';' . "\n";
 		}
 
+		$polyfillBootstraps = [
+			'/vendor/symfony/polyfill-php80/bootstrap.php',
+			'/vendor/symfony/polyfill-php81/bootstrap.php',
+			'/vendor/symfony/polyfill-php83/bootstrap.php',
+			'/vendor/symfony/polyfill-php84/bootstrap.php',
+			'/vendor/symfony/polyfill-php85/bootstrap.php',
+			'/vendor/symfony/polyfill-mbstring/bootstrap.php',
+			'/vendor/symfony/polyfill-intl-normalizer/bootstrap.php',
+			'/vendor/symfony/polyfill-intl-grapheme/bootstrap.php',
+			'/vendor/symfony/polyfill-ctype/bootstrap.php',
+		];
+		foreach ($polyfillBootstraps as $bootstrapPath) {
+			$output .= 'require_once __DIR__ . ' . var_export($bootstrapPath, true) . ';' . "\n";
+		}
+
 		file_put_contents($preloadScript, sprintf($template, $output));
 	}
 

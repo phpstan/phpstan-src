@@ -45,7 +45,7 @@ final class PropertyVarianceRule implements Rule
 			return [];
 		}
 
-		$variance = $node->isReadOnly() || $node->isReadOnlyByPhpDoc() || $this->hasRestrictedWriteAccess($node)
+		$variance = $this->hasRestrictedWriteAccess($node)
 			? TemplateTypeVariance::createCovariant()
 			: TemplateTypeVariance::createInvariant();
 
@@ -58,6 +58,10 @@ final class PropertyVarianceRule implements Rule
 
 	private function hasRestrictedWriteAccess(ClassPropertyNode $node): bool
 	{
+		if ($node->isReadOnly() || $node->isReadOnlyByPhpDoc()) {
+			return true;
+		}
+
 		if ($node->isPrivateSet()) {
 			return true;
 		}

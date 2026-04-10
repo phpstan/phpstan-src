@@ -58,7 +58,7 @@ final class PropertyVarianceRule implements Rule
 
 	private function hasRestrictedWriteAccess(ClassPropertyNode $node): bool
 	{
-		if ($node->isPrivateSet() || $node->isProtectedSet()) {
+		if ($node->isPrivateSet()) {
 			return true;
 		}
 

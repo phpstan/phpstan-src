@@ -162,8 +162,16 @@ class PropertyVarianceRuleTest extends RuleTestCase
 				74,
 			],
 			[
-				'Template type X is declared as covariant, but occurs in contravariant position in property Bug12964\E::$b.',
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$a.',
+				82,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$b.',
 				85,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$c.',
+				88,
 			],
 			[
 				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$d.',

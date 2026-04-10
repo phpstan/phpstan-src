@@ -107,7 +107,7 @@ final class BisectCommand extends Command
 			return 1;
 		}
 
-		$client = HttpClientFactory::createClient([
+		$client = (new HttpClientFactory())->createClient([
 			RequestOptions::TIMEOUT => 30,
 			RequestOptions::CONNECT_TIMEOUT => 10,
 			'headers' => [

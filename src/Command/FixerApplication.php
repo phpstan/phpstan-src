@@ -93,6 +93,7 @@ final class FixerApplication
 		private ?string $editorUrl,
 		#[AutowiredParameter]
 		private string $usedLevel,
+		private HttpClientFactory $httpClientFactory,
 	)
 	{
 	}
@@ -325,7 +326,7 @@ final class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
-		$client = HttpClientFactory::createClient([
+		$client = $this->httpClientFactory->createClient([
 			RequestOptions::TIMEOUT => 30,
 			RequestOptions::CONNECT_TIMEOUT => 5,
 		]);

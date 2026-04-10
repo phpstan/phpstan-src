@@ -3,17 +3,28 @@
 namespace PHPStan\Internal;
 
 use GuzzleHttp\Client;
+use PHPStan\DependencyInjection\AutowiredService;
 use function extension_loaded;
 
+#[AutowiredService]
 final class HttpClientFactory
 {
+
+	/**
+	 * @param array<mixed> $defaults
+	 *
+	 * @see \GuzzleHttp\RequestOptions
+	 */
+	public function __construct(private readonly array $defaults = [])
+	{
+	}
 
 	/**
 	 * @param array<mixed> $config
 	 *
 	 * @see \GuzzleHttp\RequestOptions
 	 */
-	public static function createClient(array $config): Client
+	public function createClient(array $config): Client
 	{
 		if (
 			!isset($config['headers']['Accept-Encoding'])
@@ -22,7 +33,7 @@ final class HttpClientFactory
 			$config['headers']['Accept-Encoding'] = 'gzip,deflate';
 		}
 
-		return new Client($config);
+		return new Client($config + $this->defaults);
 	}
 
 }

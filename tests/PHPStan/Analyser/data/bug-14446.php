@@ -21,6 +21,7 @@ function test(bool $initial): void {
     }
 
 	assertType('bool', $initial);
+	var_dump($initial === true);
 }
 
 function testMaybeIterable(bool $initial): void {
@@ -40,6 +41,7 @@ function testMaybeIterable(bool $initial): void {
 	}
 
 	assertType('bool', $initial);
+	var_dump($initial === true);
 }
 
 /**

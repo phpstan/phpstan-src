@@ -1194,7 +1194,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug14446(): void
 	{
 		$this->polluteScopeWithAlwaysIterableForeach = false;
-		$this->analyse([__DIR__ . '/data/bug-14446.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-14446.php'], []);
 	}
 
 }

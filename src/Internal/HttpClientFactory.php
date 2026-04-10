@@ -3,6 +3,7 @@
 namespace PHPStan\Internal;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 use PHPStan\DependencyInjection\AutowiredService;
 use function extension_loaded;
 
@@ -10,12 +11,10 @@ use function extension_loaded;
 final class HttpClientFactory
 {
 
-	/**
-	 * @param array<mixed> $defaults
-	 *
-	 * @see \GuzzleHttp\RequestOptions
-	 */
-	public function __construct(private readonly array $defaults = [])
+	public function __construct(
+		private int $timeout = 30,
+		private int $connectTimeout = 10,
+	)
 	{
 	}
 
@@ -33,7 +32,12 @@ final class HttpClientFactory
 			$config['headers']['Accept-Encoding'] = 'gzip,deflate';
 		}
 
-		return new Client($config + $this->defaults);
+		$defaults = [
+			RequestOptions::TIMEOUT => $this->timeout,
+			RequestOptions::CONNECT_TIMEOUT => $this->connectTimeout,
+		];
+
+		return new Client($config + $defaults);
 	}
 
 }

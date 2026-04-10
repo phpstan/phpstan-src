@@ -108,8 +108,6 @@ final class BisectCommand extends Command
 		}
 
 		$client = (new HttpClientFactory())->createClient([
-			RequestOptions::TIMEOUT => 30,
-			RequestOptions::CONNECT_TIMEOUT => 10,
 			'headers' => [
 				'Authorization' => 'token ' . $token,
 				'Accept' => 'application/vnd.github.v3+json',

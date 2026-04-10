@@ -208,6 +208,25 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.5')]
+	public function testBug14063(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14063.php'], [
+			[
+				'Assign to protected(set) property Bug14063\Obj::$value.',
+				31,
+			],
+			[
+				'Assign to protected(set) property Bug14063\Obj::$value.',
+				34,
+			],
+			[
+				'Assign to protected(set) property Bug14063\Base::$value.',
+				38,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.5')]
 	public function testCloneWith(): void
 	{
 		$this->analyse([__DIR__ . '/data/clone-with.php'], [

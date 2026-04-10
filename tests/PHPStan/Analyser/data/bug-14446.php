@@ -23,6 +23,25 @@ function test(bool $initial): void {
 	assertType('bool', $initial);
 }
 
+function testMaybeIterable(bool $initial): void {
+	$current = $initial;
+
+	while (true) {
+		assertType('bool', $initial);
+		if (!$current) {
+			assertType('bool', $initial);
+			break;
+		}
+
+		$items = rand() > 0 ? [1] : [];
+		foreach ($items as $item) {
+			$current = false;
+		}
+	}
+
+	assertType('bool', $initial);
+}
+
 /**
  * @param mixed $value
  */

@@ -1,2 +1,8 @@
 parameters:
 	polluteScopeWithAlwaysIterableForeach: false
+
+services:
+	-
+		class: PHPStan\Rules\ForeachLoop\OverwriteVariablesWithForeachRule
+		tags:
+			- phpstan.rules.rule

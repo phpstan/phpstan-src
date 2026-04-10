@@ -3873,7 +3873,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$conditionalExpressions = $this->conditionalExpressions;
 		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
 			foreach ($holders as $holder) {
-				foreach ($holder->getConditionExpressionTypeHolders() as $holderExprString => $condTypeHolder) {
+				foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $holderExprString) {
 					if (!isset($finalScope->expressionTypes[$holderExprString])) {
 						continue 2;
 					}

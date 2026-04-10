@@ -3732,7 +3732,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$finallyScope->nativeExpressionTypes,
 				$originalFinallyScope->nativeExpressionTypes,
 			),
-			$this->conditionalExpressions,
+			$this->intersectConditionalExpressions($finallyScope->conditionalExpressions),
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

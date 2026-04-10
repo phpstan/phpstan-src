@@ -44,6 +44,38 @@ function testMaybeIterable(bool $initial): void {
 	var_dump($initial === true);
 }
 
+function testFinally(bool $initial): void {
+	$current = $initial;
+	try {
+		// nothing
+	} finally {
+		$current = false;
+	}
+	assertType('false', $current);
+	assertType('bool', $initial);
+	if (!$current) {
+		assertType('bool', $initial);
+	}
+}
+
+function testFinallyWithCatch(bool $initial): void {
+	$current = $initial;
+	try {
+		doSomething();
+	} catch (\Exception $e) {
+		// nothing
+	} finally {
+		$current = false;
+	}
+	assertType('false', $current);
+	if (!$current) {
+		assertType('bool', $initial);
+	}
+	assertType('bool', $initial);
+}
+
+function doSomething(): void {}
+
 /**
  * @param mixed $value
  */

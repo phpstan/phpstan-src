@@ -536,6 +536,10 @@ class IssetRuleTest extends RuleTestCase
 				'Property Bug13473\Bar::$bar in isset() is not nullable nor uninitialized.',
 				30,
 			],
+			[
+				'Property Bug13473\Baz::$foo (int) in isset() is not nullable.',
+				48,
+			],
 		]);
 	}
 

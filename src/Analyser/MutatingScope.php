@@ -1574,6 +1574,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$realParameterTypes = $this->getRealParameterTypes($hook);
 
+		// preserveConstructorScope must be true: it provides $this and
+		// PropertyInitializationExpr entries for other properties (needed to
+		// correctly report isset() on always-initialized sibling properties).
+		// We then surgically invalidate only this property's initialization
+		// for set hooks without a default value.
 		$scope = $this->enterFunctionLike(
 			new PhpMethodFromParserNodeReflection(
 				$this->getClassReflection(),

@@ -39,3 +39,24 @@ class Bar {
         $this->bar = $bar;
     }
 }
+
+class Baz {
+    private(set) int $foo = 5;
+    private(set) int $bar {
+        get => $this->bar;
+        set(int $bar) {
+            if (isset($this->foo)) { // $foo has default value, always initialized - should error
+                echo 'foo is set';
+            }
+            if (isset($this->bar)) { // $bar has no default, could be uninitialized - no error
+                throw new \Exception('bar is set');
+            }
+            $this->bar = $bar;
+        }
+    }
+
+    public function __construct(int $bar)
+    {
+        $this->bar = $bar;
+    }
+}

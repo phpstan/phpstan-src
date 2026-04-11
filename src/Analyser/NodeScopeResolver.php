@@ -721,7 +721,14 @@ class NodeScopeResolver
 						if (!$expr instanceof PropertyInitializationExpr) {
 							continue;
 						}
-						$methodScope = $methodScope->exitPropertyInitialization($expr->getPropertyName());
+						$propertyName = $expr->getPropertyName();
+						if (
+							$classReflection->hasNativeProperty($propertyName)
+							&& $classReflection->getNativeProperty($propertyName)->getNativeReflection()->hasDefaultValue()
+						) {
+							continue;
+						}
+						$methodScope = $methodScope->exitPropertyInitialization($propertyName);
 					}
 				}
 			}

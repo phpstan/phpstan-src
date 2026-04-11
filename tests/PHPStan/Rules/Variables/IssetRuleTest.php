@@ -569,7 +569,7 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-13473.php'], [
 			[
-				'Property Bug13473\FooWithDefault::$bar (int) in isset() is not nullable.',
+				'Property Bug13473\FooWithDefault::$bar in isset() is not nullable nor uninitialized.',
 				28,
 			],
 		]);
@@ -581,7 +581,7 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-13473-method.php'], [
 			[
-				'Property Bug13473Method\FooWithDefault::$bar (int) in isset() is not nullable.',
+				'Property Bug13473Method\FooWithDefault::$bar in isset() is not nullable nor uninitialized.',
 				34,
 			],
 		]);

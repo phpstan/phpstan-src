@@ -17,6 +17,7 @@ final class ConditionalExpressionHolder
 	public function __construct(
 		private array $conditionExpressionTypeHolders,
 		private ExpressionTypeHolder $typeHolder,
+		private bool $useSubtypeForConditionMatching = false,
 	)
 	{
 		if (count($conditionExpressionTypeHolders) === 0) {
@@ -35,6 +36,11 @@ final class ConditionalExpressionHolder
 	public function getTypeHolder(): ExpressionTypeHolder
 	{
 		return $this->typeHolder;
+	}
+
+	public function useSubtypeForConditionMatching(): bool
+	{
+		return $this->useSubtypeForConditionMatching;
 	}
 
 	public function getKey(): string

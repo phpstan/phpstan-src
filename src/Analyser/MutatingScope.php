@@ -1758,24 +1758,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$ifType = $parameterType->isNegated() ? $parameterType->getElse() : $parameterType->getIf();
 					$elseType = $parameterType->isNegated() ? $parameterType->getIf() : $parameterType->getElse();
 
-					$ifConditionType = TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget());
-					$elseConditionType = TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget());
+					$holder = new ConditionalExpressionHolder([
+						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget())),
+					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType), true);
+					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
 
-					$ifConditionTypes = $ifConditionType instanceof UnionType ? $ifConditionType->getTypes() : [$ifConditionType];
-					foreach ($ifConditionTypes as $conditionType) {
-						$holder = new ConditionalExpressionHolder([
-							$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), $conditionType),
-						], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType));
-						$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
-					}
-
-					$elseConditionTypes = $elseConditionType instanceof UnionType ? $elseConditionType->getTypes() : [$elseConditionType];
-					foreach ($elseConditionTypes as $conditionType) {
-						$holder = new ConditionalExpressionHolder([
-							$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), $conditionType),
-						], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType));
-						$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
-					}
+					$holder = new ConditionalExpressionHolder([
+						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget())),
+					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType), true);
+					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
 				}
 			}
 
@@ -3227,8 +3218,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
 							continue 2;
+						}
+						$specifiedHolder = $specifiedExpressions[$holderExprString];
+						if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
+							continue 2;
+						}
+						if ($conditionalExpression->useSubtypeForConditionMatching()) {
+							if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {
+								continue 2;
+							}
+						} else {
+							if (!$specifiedHolder->equals($conditionalTypeHolder)) {
+								continue 2;
+							}
 						}
 					}
 

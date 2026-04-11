@@ -3096,6 +3096,24 @@ class NodeScopeResolver
 				$phpDocComment,
 				$resolvedPhpDoc,
 			);
+
+			$hookName = $hook->name->toLowerString();
+			if ($hookName === 'set') {
+				$hookStackName = sprintf('%s::$%s::set', $classReflection->getName(), $propertyName);
+				if (array_key_exists($hookStackName, $this->calledMethodUninitializedProperties)) {
+					foreach ($this->calledMethodUninitializedProperties[$hookStackName] as $propName => $_) {
+						$hookScope = $hookScope->invalidateExpression(new PropertyInitializationExpr($propName));
+					}
+				} else {
+					foreach ($classReflection->getNativeReflection()->getProperties() as $nativeProperty) {
+						if ($nativeProperty->hasDefaultValue() || $nativeProperty->isStatic()) {
+							continue;
+						}
+						$hookScope = $hookScope->invalidateExpression(new PropertyInitializationExpr($nativeProperty->getName()));
+					}
+				}
+			}
+
 			$hookReflection = $hookScope->getFunction();
 			if (!$hookReflection instanceof PhpMethodFromParserNodeReflection) {
 				throw new ShouldNotHappenException();

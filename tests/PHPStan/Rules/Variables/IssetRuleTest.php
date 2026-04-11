@@ -540,6 +540,10 @@ class IssetRuleTest extends RuleTestCase
 				'Property Bug13473\Baz::$foo (int) in isset() is not nullable.',
 				67,
 			],
+			[
+				'Property Bug13473\PropertyInitializedBeforeHookedAssignment::$foo in isset() is not nullable nor uninitialized.',
+				88,
+			],
 		]);
 	}
 
@@ -559,6 +563,10 @@ class IssetRuleTest extends RuleTestCase
 			[
 				'Property IssetMethodCalledFromConstructor\MultipleProperties::$bar in isset() is not nullable nor uninitialized.',
 				72,
+			],
+			[
+				'Property IssetMethodCalledFromConstructor\PropertyInitializedBeforeMethodCall::$foo in isset() is not nullable nor uninitialized.',
+				91,
 			],
 		]);
 	}

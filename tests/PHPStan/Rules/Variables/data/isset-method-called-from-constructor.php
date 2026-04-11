@@ -75,3 +75,25 @@ final class MultipleProperties {
 		$this->bar = $bar;
 	}
 }
+
+final class PropertyInitializedBeforeMethodCall {
+	private int $foo;
+	private int $bar;
+
+	public function __construct()
+	{
+		$this->foo = 1;
+		$this->setBar();
+	}
+
+	private function setBar(): void
+	{
+		if (isset($this->foo)) { // $foo was initialized before the call - should error
+			echo 'foo is set';
+		}
+		if (isset($this->bar)) { // $bar has no default, not yet initialized - no error
+			echo 'bar is set';
+		}
+		$this->bar = 2;
+	}
+}

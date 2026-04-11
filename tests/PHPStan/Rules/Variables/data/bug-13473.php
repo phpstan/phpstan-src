@@ -79,3 +79,22 @@ class Baz {
         $this->bar = $bar;
     }
 }
+
+class PropertyInitializedBeforeHookedAssignment {
+    private(set) int $foo;
+    private(set) int $bar {
+        get => $this->bar;
+        set(int $bar) {
+            if (isset($this->foo)) { // $foo was initialized before $this->bar = ... in constructor - should error
+                echo 'foo is set';
+            }
+            $this->bar = $bar;
+        }
+    }
+
+    public function __construct(int $bar)
+    {
+        $this->foo = 42;
+        $this->bar = $bar;
+    }
+}

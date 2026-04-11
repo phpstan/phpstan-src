@@ -211,18 +211,18 @@ final class MethodCallHandler implements ExprHandler
 			&& TypeUtils::findThisType($calledOnType) !== null
 		) {
 			$stackName = sprintf('%s::%s', $methodReflection->getDeclaringClass()->getName(), $methodReflection->getName());
-				$uninitializedProperties = [];
-				foreach ($scope->getClassReflection()->getNativeReflection()->getProperties() as $nativeProperty) {
-					if ($nativeProperty->hasDefaultValue() || $nativeProperty->isStatic()) {
-						continue;
-					}
-					if (!$scope->hasExpressionType(new PropertyInitializationExpr($nativeProperty->getName()))->yes()) {
-						$uninitializedProperties[$nativeProperty->getName()] = true;
-					}
+			$uninitializedProperties = [];
+			foreach ($scope->getClassReflection()->getNativeReflection()->getProperties() as $nativeProperty) {
+				if ($nativeProperty->hasDefaultValue() || $nativeProperty->isStatic()) {
+					continue;
 				}
-				$nodeScopeResolver->registerCalledMethodUninitializedProperties($stackName, $uninitializedProperties);
+				if (!$scope->hasExpressionType(new PropertyInitializationExpr($nativeProperty->getName()))->yes()) {
+					$uninitializedProperties[$nativeProperty->getName()] = true;
+				}
+			}
+			$nodeScopeResolver->registerCalledMethodUninitializedProperties($stackName, $uninitializedProperties);
 
-				$calledMethodScope = $nodeScopeResolver->processCalledMethod($methodReflection);
+			$calledMethodScope = $nodeScopeResolver->processCalledMethod($methodReflection);
 			if ($calledMethodScope !== null) {
 				$scope = $scope->mergeInitializedProperties($calledMethodScope);
 				return new ExpressionResult(

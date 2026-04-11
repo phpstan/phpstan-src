@@ -39,6 +39,7 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
@@ -73,6 +74,8 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
+use function sprintf;
+use function strtolower;
 
 /**
  * @implements ExprHandler<Assign|AssignRef>
@@ -611,6 +614,26 @@ final class AssignHandler implements ExprHandler
 					}
 					if ($this->phpVersion->supportsPropertyHooks()) {
 						$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scope, $var, $nativeProperty, 'set'));
+						if (
+							$nativeProperty->hasHook('set')
+							&& $scope->isInClass()
+							&& !$scope->isInAnonymousFunction()
+							&& $scope->getFunctionName() !== null
+							&& strtolower($scope->getFunctionName()) === '__construct'
+							&& TypeUtils::findThisType($propertyHolderType) !== null
+						) {
+							$hookStackName = sprintf('%s::$%s::set', $declaringClass->getName(), $propertyName);
+							$uninitializedProperties = [];
+							foreach ($scope->getClassReflection()->getNativeReflection()->getProperties() as $refProperty) {
+								if ($refProperty->hasDefaultValue() || $refProperty->isStatic()) {
+									continue;
+								}
+								if (!$scope->hasExpressionType(new PropertyInitializationExpr($refProperty->getName()))->yes()) {
+									$uninitializedProperties[$refProperty->getName()] = true;
+								}
+							}
+							$nodeScopeResolver->registerCalledMethodUninitializedProperties($hookStackName, $uninitializedProperties);
+						}
 					}
 					if ($enterExpressionAssign) {
 						$scope = $scope->assignInitializedProperty($propertyHolderType, $propertyName);

@@ -562,4 +562,12 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
+	public function testBug13473(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-13473.php'], []);
+	}
+
 }

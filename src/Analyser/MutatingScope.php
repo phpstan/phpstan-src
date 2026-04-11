@@ -1574,7 +1574,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$realParameterTypes = $this->getRealParameterTypes($hook);
 
-		return $this->enterFunctionLike(
+		$scope = $this->enterFunctionLike(
 			new PhpMethodFromParserNodeReflection(
 				$this->getClassReflection(),
 				$hook,
@@ -1606,6 +1606,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			),
 			true,
 		);
+
+		if ($hookName === 'set') {
+			$initExprKey = $this->getNodeKey(new PropertyInitializationExpr($propertyName));
+			unset($scope->expressionTypes[$initExprKey]);
+			unset($scope->nativeExpressionTypes[$initExprKey]);
+		}
+
+		return $scope;
 	}
 
 	private function transformStaticType(Type $type): Type

@@ -1608,9 +1608,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 
 		if ($hookName === 'set') {
-			$initExprKey = $this->getNodeKey(new PropertyInitializationExpr($propertyName));
-			unset($scope->expressionTypes[$initExprKey]);
-			unset($scope->nativeExpressionTypes[$initExprKey]);
+			$scope->exitPropertyInitialization($propertyName);
 		}
 
 		return $scope;
@@ -2838,6 +2836,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+	}
+
+	public function exitPropertyInitialization(string $propertyName): self
+	{
+		$initExprKey = $this->getNodeKey(new PropertyInitializationExpr($propertyName));
+		unset($this->expressionTypes[$initExprKey]);
+		unset($this->nativeExpressionTypes[$initExprKey]);
+
+		return $this;
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self

@@ -712,6 +712,20 @@ class NodeScopeResolver
 
 			$classReflection = $scope->getClassReflection();
 
+			if (!$isConstructor && !$stmt->isStatic()) {
+				$stackName = sprintf('%s::%s', $classReflection->getName(), $stmt->name->toString());
+				$calledMethodScope = $this->calledMethodResults[$stackName] ?? null;
+				if ($calledMethodScope !== null) {
+					foreach ($calledMethodScope->expressionTypes as $typeHolder) {
+						$expr = $typeHolder->getExpr();
+						if (!$expr instanceof PropertyInitializationExpr) {
+							continue;
+						}
+						$methodScope = $methodScope->exitPropertyInitialization($expr->getPropertyName());
+					}
+				}
+			}
+
 			if ($isConstructor) {
 				foreach ($stmt->params as $param) {
 					if ($param->flags === 0 && $param->hooks === []) {

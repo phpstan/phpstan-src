@@ -27,7 +27,7 @@ class AggregationParser
 			$field = self::buildFieldName();
 		}
 
-		assertType('non-empty-string', $type);
+		assertType('non-falsy-string', $type);
 	}
 
 	private static function buildFieldName(): string
@@ -35,4 +35,3 @@ class AggregationParser
 		return 'field';
 	}
 }
-

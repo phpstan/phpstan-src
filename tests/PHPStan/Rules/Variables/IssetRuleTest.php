@@ -543,6 +543,26 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testIssetMethodCalledFromConstructor(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-method-called-from-constructor.php'], [
+			[
+				'Property IssetMethodCalledFromConstructor\MethodCalledFromConstructorWithDefault::$bar in isset() is not nullable nor uninitialized.',
+				34,
+			],
+			[
+				'Property IssetMethodCalledFromConstructor\MethodNotCalledFromConstructor::$bar in isset() is not nullable nor uninitialized.',
+				51,
+			],
+			[
+				'Property IssetMethodCalledFromConstructor\MultipleProperties::$bar in isset() is not nullable nor uninitialized.',
+				72,
+			],
+		]);
+	}
+
 	public function testBug14393(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

@@ -3229,22 +3229,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
 
-				// Pass 2: for union condition types, use isSuperTypeOf
-				// This handles cases where the condition type is a union
-				// (e.g. 'value1'|'value2' or int|string) that won't match a narrowed
-				// type (e.g. 'value1' or int) via equals(), but should match via
-				// isSuperTypeOf. Only attempted when pass 1 found no matches, to avoid
-				// conflicts with broader conditions that have lower certainty from
-				// scope merging.
-				//
-				// The UnionType guard is necessary because using isSuperTypeOf for all
-				// condition types causes regressions: non-union types like
-				// non-falsy-string (from TypeSpecifier boolean processing) or
-				// mixed~false (from assignment handlers) are too broad — e.g.
-				// non-falsy-string would incorrectly match 'filter', and mixed~false
-				// matching false causes conflicting conditional expressions to both
-				// activate, producing *NEVER* types. Union types are safe because they
-				// explicitly enumerate alternatives where subtype matching is correct.
+				// Pass 2: use isSuperTypeOf for condition matching
+				// This handles cases where the condition type is broader than the
+				// narrowed type — e.g. 'value1'|'value2' (condition) won't match
+				// 'value1' (narrowed) via equals(), but should match via
+				// isSuperTypeOf. Only attempted when pass 1 found no matches, to
+				// avoid conflicts with broader conditions that have lower certainty
+				// from scope merging.
 				if (!array_key_exists($conditionalExprString, $conditions)) {
 					foreach ($conditionalExpressions as $conditionalExpression) {
 						foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
@@ -3253,9 +3244,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							}
 							$specifiedHolder = $specifiedExpressions[$holderExprString];
 							if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
-								continue 2;
-							}
-							if (!$conditionalTypeHolder->getType() instanceof UnionType) {
 								continue 2;
 							}
 							if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {

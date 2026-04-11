@@ -40,6 +40,25 @@ class Bar {
     }
 }
 
+class Qux {
+    private(set) int $foo;
+    private(set) int $bar {
+        get => $this->bar;
+        set(int $bar) {
+            if (isset($this->foo)) { // $foo has no default, could be uninitialized - no error
+                throw new \Exception('foo is set');
+            }
+            $this->bar = $bar;
+        }
+    }
+
+    public function __construct(int $bar)
+    {
+        $this->bar = $bar;
+        $this->foo = 42;
+    }
+}
+
 class Baz {
     private(set) int $foo = 5;
     private(set) int $bar {

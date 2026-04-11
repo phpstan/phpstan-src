@@ -538,7 +538,7 @@ class IssetRuleTest extends RuleTestCase
 			],
 			[
 				'Property Bug13473\Baz::$foo (int) in isset() is not nullable.',
-				48,
+				67,
 			],
 		]);
 	}

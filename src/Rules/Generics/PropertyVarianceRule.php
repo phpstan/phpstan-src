@@ -45,7 +45,7 @@ final class PropertyVarianceRule implements Rule
 			return [];
 		}
 
-		$variance = $node->isReadOnly() || $node->isReadOnlyByPhpDoc()
+		$variance = $this->hasRestrictedWriteAccess($node)
 			? TemplateTypeVariance::createCovariant()
 			: TemplateTypeVariance::createInvariant();
 
@@ -54,6 +54,30 @@ final class PropertyVarianceRule implements Rule
 			$propertyReflection->getReadableType(),
 			sprintf('in property %s::$%s', SprintfHelper::escapeFormatString($classReflection->getDisplayName()), SprintfHelper::escapeFormatString($node->getName())),
 		);
+	}
+
+	private function hasRestrictedWriteAccess(ClassPropertyNode $node): bool
+	{
+		if ($node->isReadOnly() || $node->isReadOnlyByPhpDoc()) {
+			return true;
+		}
+
+		if ($node->isPrivateSet()) {
+			return true;
+		}
+
+		$hooks = $node->getHooks();
+		if ($hooks === []) {
+			return false;
+		}
+
+		foreach ($hooks as $hook) {
+			if ($hook->name->name === 'set') {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

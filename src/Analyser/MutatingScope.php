@@ -3229,29 +3229,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
 
-				// Pass 2: for condition types with finite types, use isSuperTypeOf
-				// This handles cases like conditional parameter types where the condition
-				// is a union (e.g. 'value1'|'value2') that won't match a narrowed type
-				// (e.g. 'value1') via equals(), but should match via isSuperTypeOf.
-				// Only attempted when pass 1 found no matches, to avoid conflicts with
-				// broader conditions that have lower certainty from scope merging.
+				// Pass 2: for union condition types, use isSuperTypeOf
+				// This handles cases where the condition type is a union
+				// (e.g. 'value1'|'value2' or int|string) that won't match a narrowed
+				// type (e.g. 'value1' or int) via equals(), but should match via
+				// isSuperTypeOf. Only attempted when pass 1 found no matches, to avoid
+				// conflicts with broader conditions that have lower certainty from
+				// scope merging.
 				//
-				// The getFiniteTypes() guard is necessary because conditional expression
-				// holders are created from multiple sources:
-				// 1. Conditional parameter types (@param conditional types) — these have
-				//    finite condition types like 'value1'|'value2' from TypeCombinator::intersect/remove
-				// 2. Scope merging (generateConditionalExpressions) — condition types can be
-				//    any type like mixed~null, object, non-falsy-string
-				// 3. Assignment handlers — condition types like mixed~false from falsey checks
-				// 4. TypeSpecifier boolean processing — condition types from BooleanAnd/Or
-				//
-				// Using isSuperTypeOf without the finite types guard causes regressions because
-				// non-finite condition types from sources 2-4 are too broad: e.g. a condition
-				// type of non-falsy-string would incorrectly match a narrowed type 'filter',
-				// or a condition type of mixed~false would match false, causing unrelated
-				// conditional expressions to activate and produce conflicting types (*NEVER*).
-				// The finite types check restricts Pass 2 to closed sets of concrete values
-				// (constant strings, booleans, enum cases, etc.) where subtype matching is safe.
+				// The UnionType guard is necessary because using isSuperTypeOf for all
+				// condition types causes regressions: non-union types like
+				// non-falsy-string (from TypeSpecifier boolean processing) or
+				// mixed~false (from assignment handlers) are too broad — e.g.
+				// non-falsy-string would incorrectly match 'filter', and mixed~false
+				// matching false causes conflicting conditional expressions to both
+				// activate, producing *NEVER* types. Union types are safe because they
+				// explicitly enumerate alternatives where subtype matching is correct.
 				if (!array_key_exists($conditionalExprString, $conditions)) {
 					foreach ($conditionalExpressions as $conditionalExpression) {
 						foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
@@ -3262,7 +3255,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
 								continue 2;
 							}
-							if (count($conditionalTypeHolder->getType()->getFiniteTypes()) === 0) {
+							if (!$conditionalTypeHolder->getType() instanceof UnionType) {
 								continue 2;
 							}
 							if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {

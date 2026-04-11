@@ -18,3 +18,15 @@ function test(string $param1, int|bool $param2): void
 		'value3' => assertType('bool', $param2),
 	};
 }
+
+function testScopeMerging(mixed $foo): void
+{
+	$a = 0;
+	if (\is_string($foo) || \is_int($foo)) {
+		$a = 1;
+	}
+
+	if (\is_int($foo)) {
+		assertType('1', $a);
+	}
+}

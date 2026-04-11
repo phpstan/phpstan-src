@@ -3562,7 +3562,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$typeGuards = [];
 		foreach ($newVariableTypes as $exprString => $holder) {
-			if ($holder->getExpr() instanceof PossiblyImpureCallExpr) {
+			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
 			}
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
@@ -3591,7 +3591,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		foreach ($newVariableTypes as $exprString => $holder) {
-			if ($holder->getExpr() instanceof PossiblyImpureCallExpr) {
+			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
 			}
 			if (
@@ -3625,9 +3625,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
 			if (array_key_exists($exprString, $ourExpressionTypes)) {
-				continue;
-			}
-			if ($mergedExprTypeHolder->getExpr() instanceof PossiblyImpureCallExpr) {
 				continue;
 			}
 

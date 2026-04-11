@@ -1760,12 +1760,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 					$holder = new ConditionalExpressionHolder([
 						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget())),
-					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType), true);
+					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType));
 					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
 
 					$holder = new ConditionalExpressionHolder([
 						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget())),
-					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType), true);
+					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType));
 					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
 				}
 			}
@@ -3216,28 +3216,46 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (array_key_exists($conditionalExprString, $conditions)) {
 					continue;
 				}
+
+				// Pass 1: exact matching via equals()
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
 							continue 2;
-						}
-						$specifiedHolder = $specifiedExpressions[$holderExprString];
-						if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
-							continue 2;
-						}
-						if ($conditionalExpression->useSubtypeForConditionMatching()) {
-							if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {
-								continue 2;
-							}
-						} else {
-							if (!$specifiedHolder->equals($conditionalTypeHolder)) {
-								continue 2;
-							}
 						}
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+				}
+
+				// Pass 2: for condition types with finite types, use isSuperTypeOf
+				// This handles cases like conditional parameter types where the condition
+				// is a union (e.g. 'value1'|'value2') that won't match a narrowed type
+				// (e.g. 'value1') via equals(), but should match via isSuperTypeOf.
+				// Only attempted when pass 1 found no matches, to avoid conflicts with
+				// broader conditions that have lower certainty from scope merging.
+				if (!array_key_exists($conditionalExprString, $conditions)) {
+					foreach ($conditionalExpressions as $conditionalExpression) {
+						foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+							if (!array_key_exists($holderExprString, $specifiedExpressions)) {
+								continue 2;
+							}
+							$specifiedHolder = $specifiedExpressions[$holderExprString];
+							if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
+								continue 2;
+							}
+							if (count($conditionalTypeHolder->getType()->getFiniteTypes()) === 0) {
+								continue 2;
+							}
+							if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {
+								continue 2;
+							}
+						}
+
+						$conditions[$conditionalExprString][] = $conditionalExpression;
+						$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					}
 				}
 			}
 		}

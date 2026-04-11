@@ -22,6 +22,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -204,11 +205,24 @@ final class MethodCallHandler implements ExprHandler
 		}
 		if (
 			$scope->isInClass()
+			&& !$scope->isInAnonymousFunction()
 			&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
 			&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
 			&& TypeUtils::findThisType($calledOnType) !== null
 		) {
-			$calledMethodScope = $nodeScopeResolver->processCalledMethod($methodReflection);
+			$stackName = sprintf('%s::%s', $methodReflection->getDeclaringClass()->getName(), $methodReflection->getName());
+				$uninitializedProperties = [];
+				foreach ($scope->getClassReflection()->getNativeReflection()->getProperties() as $nativeProperty) {
+					if ($nativeProperty->hasDefaultValue() || $nativeProperty->isStatic()) {
+						continue;
+					}
+					if (!$scope->hasExpressionType(new PropertyInitializationExpr($nativeProperty->getName()))->yes()) {
+						$uninitializedProperties[$nativeProperty->getName()] = true;
+					}
+				}
+				$nodeScopeResolver->registerCalledMethodUninitializedProperties($stackName, $uninitializedProperties);
+
+				$calledMethodScope = $nodeScopeResolver->processCalledMethod($methodReflection);
 			if ($calledMethodScope !== null) {
 				$scope = $scope->mergeInitializedProperties($calledMethodScope);
 				return new ExpressionResult(

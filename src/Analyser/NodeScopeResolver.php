@@ -199,6 +199,9 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
+	/** @var array<string, array<string, true>> */
+	private array $calledMethodUninitializedProperties = [];
+
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -751,6 +754,13 @@ class NodeScopeResolver
 					);
 					$methodScope = $methodScope->assignExpression(new PropertyInitializationExpr($param->var->name), new MixedType(), new MixedType());
 				}
+			} elseif (!$stmt->isStatic()) {
+				$stackName = sprintf('%s::%s', $classReflection->getName(), $stmt->name->toString());
+				if (array_key_exists($stackName, $this->calledMethodUninitializedProperties)) {
+					foreach ($this->calledMethodUninitializedProperties[$stackName] as $propertyName => $_) {
+						$methodScope = $methodScope->invalidateExpression(new PropertyInitializationExpr($propertyName));
+					}
+				}
 			}
 
 			if ($stmt->getAttribute('virtual', false) === false) {
@@ -1017,6 +1027,7 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 			$classReflection->evictPrivateSymbols();
 			$this->calledMethodResults = [];
+			$this->calledMethodUninitializedProperties = [];
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -4043,6 +4054,19 @@ class NodeScopeResolver
 				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $storage, $adaptations, $nodeCallback);
 			}
 		}
+	}
+
+	/**
+	 * @param array<string, true> $uninitializedProperties
+	 */
+	public function registerCalledMethodUninitializedProperties(string $stackName, array $uninitializedProperties): void
+	{
+		if (!array_key_exists($stackName, $this->calledMethodUninitializedProperties)) {
+			$this->calledMethodUninitializedProperties[$stackName] = $uninitializedProperties;
+			return;
+		}
+
+		$this->calledMethodUninitializedProperties[$stackName] = $this->calledMethodUninitializedProperties[$stackName] + $uninitializedProperties;
 	}
 
 	public function processCalledMethod(MethodReflection $methodReflection): ?MutatingScope

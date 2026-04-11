@@ -601,6 +601,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				131,
 				'Template type E on class GenericSubtype\IRepository is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
+			[
+				'PHPDoc tag @var with type GenericSubtype\Collection<int> is not subtype of type GenericSubtype\Collection<string>.',
+				162,
+			],
 		]);
 	}
 
@@ -608,7 +612,12 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		$this->checkTypeAgainstPhpDocType = true;
 		$this->strictWideningCheck = false;
-		$this->analyse([__DIR__ . '/data/generic-subtype.php'], []);
+		$this->analyse([__DIR__ . '/data/generic-subtype.php'], [
+			[
+				'PHPDoc tag @var with type GenericSubtype\Collection<int> is not subtype of type GenericSubtype\Collection<string>.',
+				162,
+			],
+		]);
 	}
 
 	public function testNewIsAlwaysFinalClass(): void

@@ -137,4 +137,71 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13049.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
+	public function testBug12964(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12964.php'], [
+			[
+				'Template type X is declared as covariant, but occurs in contravariant position in property Bug12964\C::$b.',
+				51,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\C::$d.',
+				57,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in property Bug12964\D::$a.',
+				65,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in property Bug12964\D::$c.',
+				71,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in invariant position in property Bug12964\D::$d.',
+				74,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$a.',
+				82,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$b.',
+				85,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$c.',
+				88,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\E::$d.',
+				91,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in contravariant position in property Bug12964\F::$b.',
+				103,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\F::$d.',
+				109,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in property Bug12964\G::$a.',
+				118,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in property Bug12964\G::$c.',
+				124,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in invariant position in property Bug12964\G::$d.',
+				127,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in property Bug12964\H::$a.',
+				136,
+			],
+		]);
+	}
+
 }

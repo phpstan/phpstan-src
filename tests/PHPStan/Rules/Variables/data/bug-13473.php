@@ -20,3 +20,20 @@ class Foo {
 		$this->bar = $bar;
 	}
 }
+
+class FooWithDefault {
+	private(set) int $bar = 1 {
+		get => $this->bar;
+		set(int $bar) {
+			if (isset($this->bar)) {
+				throw new \Exception('bar is set');
+			}
+			$this->bar = $bar;
+		}
+	}
+
+	public function __construct(int $bar)
+	{
+		$this->bar = $bar;
+	}
+}

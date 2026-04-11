@@ -3568,6 +3568,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		$typeGuards = [];
 		foreach ($newVariableTypes as $exprString => $holder) {
+			if ($holder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
@@ -3594,6 +3597,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		foreach ($newVariableTypes as $exprString => $holder) {
+			if ($holder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
 			if (
 				array_key_exists($exprString, $mergedExpressionTypes)
 				&& $mergedExpressionTypes[$exprString]->equals($holder)

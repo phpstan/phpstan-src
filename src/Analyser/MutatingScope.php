@@ -3235,6 +3235,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				// (e.g. 'value1') via equals(), but should match via isSuperTypeOf.
 				// Only attempted when pass 1 found no matches, to avoid conflicts with
 				// broader conditions that have lower certainty from scope merging.
+				//
+				// The getFiniteTypes() guard is necessary because conditional expression
+				// holders are created from multiple sources:
+				// 1. Conditional parameter types (@param conditional types) — these have
+				//    finite condition types like 'value1'|'value2' from TypeCombinator::intersect/remove
+				// 2. Scope merging (generateConditionalExpressions) — condition types can be
+				//    any type like mixed~null, object, non-falsy-string
+				// 3. Assignment handlers — condition types like mixed~false from falsey checks
+				// 4. TypeSpecifier boolean processing — condition types from BooleanAnd/Or
+				//
+				// Using isSuperTypeOf without the finite types guard causes regressions because
+				// non-finite condition types from sources 2-4 are too broad: e.g. a condition
+				// type of non-falsy-string would incorrectly match a narrowed type 'filter',
+				// or a condition type of mixed~false would match false, causing unrelated
+				// conditional expressions to activate and produce conflicting types (*NEVER*).
+				// The finite types check restricts Pass 2 to closed sets of concrete values
+				// (constant strings, booleans, enum cases, etc.) where subtype matching is safe.
 				if (!array_key_exists($conditionalExprString, $conditions)) {
 					foreach ($conditionalExpressions as $conditionalExpression) {
 						foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {

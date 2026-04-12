@@ -1939,9 +1939,15 @@ final class TypeSpecifier
 				continue;
 			}
 
+			$scopeType = $scope->getType($expr);
+			$conditionType = TypeCombinator::remove($scopeType, $type);
+			if ($scopeType->equals($conditionType)) {
+				continue;
+			}
+
 			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
 				$expr,
-				TypeCombinator::remove($scope->getType($expr), $type),
+				$conditionType,
 			);
 		}
 

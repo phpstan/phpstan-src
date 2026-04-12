@@ -3217,7 +3217,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 
-				// Pass 1: exact matching via equals()
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
@@ -3229,31 +3228,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
 
-				// Pass 2: use isSuperTypeOf for condition matching
-				// This handles cases where the condition type is broader than the
-				// narrowed type — e.g. 'value1'|'value2' (condition) won't match
-				// 'value1' (narrowed) via equals(), but should match via
-				// isSuperTypeOf. Only attempted when pass 1 found no matches, to
-				// avoid conflicts with broader conditions that have lower certainty
-				// from scope merging.
-				if (!array_key_exists($conditionalExprString, $conditions)) {
-					foreach ($conditionalExpressions as $conditionalExpression) {
-						foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-							if (!array_key_exists($holderExprString, $specifiedExpressions)) {
-								continue 2;
-							}
-							$specifiedHolder = $specifiedExpressions[$holderExprString];
-							if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
-								continue 2;
-							}
-							if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {
-								continue 2;
-							}
-						}
+				if (array_key_exists($conditionalExprString, $conditions)) {
+					continue;
+				}
 
-						$conditions[$conditionalExprString][] = $conditionalExpression;
-						$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+				foreach ($conditionalExpressions as $conditionalExpression) {
+					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
+							continue 2;
+						}
+						$specifiedHolder = $specifiedExpressions[$holderExprString];
+						if (!$specifiedHolder->getCertainty()->equals($conditionalTypeHolder->getCertainty())) {
+							continue 2;
+						}
+						if (!$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedHolder->getType())->yes()) {
+							continue 2;
+						}
 					}
+
+					$conditions[$conditionalExprString][] = $conditionalExpression;
+					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
 			}
 		}

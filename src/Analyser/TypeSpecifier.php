@@ -741,6 +741,8 @@ final class TypeSpecifier
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders),
 					$this->processBooleanSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders),
+					$this->processBooleanNotSureSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders),
+					$this->processBooleanNotSureSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders),
 				))->setRootExpr($expr);
 			}
 
@@ -790,6 +792,8 @@ final class TypeSpecifier
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
 					$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
+					$this->processBooleanNotSureSureConditionalTypes($scope, $leftTypes, $rightTypes),
+					$this->processBooleanNotSureSureConditionalTypes($scope, $rightTypes, $leftTypes),
 				))->setRootExpr($expr);
 			}
 
@@ -2109,6 +2113,73 @@ final class TypeSpecifier
 				$holder = new ConditionalExpressionHolder(
 					$conditions,
 					ExpressionTypeHolder::createYes($expr, TypeCombinator::remove($scope->getType($expr), $type)),
+				);
+				$holders[$exprString][$holder->getKey()] = $holder;
+			}
+
+			return $holders;
+		}
+
+		return [];
+	}
+
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processBooleanNotSureSureConditionalTypes(Scope $scope, SpecifiedTypes $conditionTypes, SpecifiedTypes $resultTypes): array
+	{
+		$conditionExpressionTypes = [];
+		foreach ($conditionTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+			if (!$expr instanceof Expr\Variable) {
+				continue;
+			}
+			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
+				$expr,
+				TypeCombinator::intersect($scope->getType($expr), $type),
+			);
+		}
+
+		if (count($conditionExpressionTypes) > 0) {
+			$holders = [];
+			foreach ($resultTypes->getSureTypes() as $exprString => [$expr, $type]) {
+				if (!$expr instanceof Expr\Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($holders[$exprString])) {
+					$holders[$exprString] = [];
+				}
+
+				$conditions = $conditionExpressionTypes;
+				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
+					$conditionExpr = $conditionExprTypeHolder->getExpr();
+					if (!$conditionExpr instanceof Expr\Variable) {
+						continue;
+					}
+					if (!is_string($conditionExpr->name)) {
+						continue;
+					}
+					if ($conditionExpr->name !== $expr->name) {
+						continue;
+					}
+
+					unset($conditions[$conditionExprString]);
+				}
+
+				if (count($conditions) === 0) {
+					continue;
+				}
+
+				$holder = new ConditionalExpressionHolder(
+					$conditions,
+					ExpressionTypeHolder::createYes($expr, TypeCombinator::intersect($scope->getType($expr), $type)),
 				);
 				$holders[$exprString][$holder->getKey()] = $holder;
 			}

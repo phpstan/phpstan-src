@@ -146,3 +146,19 @@ class HasOne2 implements IRelationshipContainer
 	 */
 	protected function test($repository): void {}
 }
+
+/** @template T */
+class Collection
+{
+}
+
+abstract class AlwaysFail
+{
+	/** @return Collection<string> */
+	abstract public function getCollection(): Collection;
+
+	public function test(): void {
+		/** @var Collection<int> $collection */
+		$collection = $this->getCollection();
+	}
+}

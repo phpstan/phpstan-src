@@ -1,6 +1,6 @@
 <?php
 
-namespace BugTypeSpecifier;
+namespace BugPr5445;
 
 use function PHPStan\Testing\assertType;
 
@@ -13,6 +13,9 @@ function testTriviallyTrueConditionSkipped(array $aggregation, string $type): vo
 	if (empty($aggregation['field']) && $type !== 'filter') {
 		return;
 	}
+
+	assertType("array<string, mixed>", $aggregation);
+	assertType('non-falsy-string', $type);
 
 	if ($type !== 'filter') {
 		assertType("array<string, mixed>", $aggregation);

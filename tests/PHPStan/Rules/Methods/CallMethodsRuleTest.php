@@ -4006,7 +4006,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-10422.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10422.php'], []);
 	}
 
 }

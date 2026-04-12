@@ -18,13 +18,16 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
+use function array_map;
 use function count;
 use function is_string;
 use function sprintf;
@@ -181,6 +184,17 @@ final class VarTagTypeRuleHelper
 		if ($this->strictWideningCheck) {
 			return $this->isSuperTypeOfVarType($scope, $type, $varTagType);
 		}
+
+		$type = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof GenericObjectType) {
+				$type = $type->changeVariances(array_map(
+					static fn (TemplateTypeVariance $variance) => $variance->invariant() ? TemplateTypeVariance::createCovariant() : $variance,
+					$type->getVariances(),
+				));
+			}
+
+			return $traverse($type);
+		});
 
 		if ($type->isConstantArray()->yes()) {
 			if ($type->isIterableAtLeastOnce()->no()) {

@@ -586,7 +586,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testGenericSubtype(): void
+	public function testGenericSubtypeWithStrictCheck(): void
 	{
 		$this->checkTypeAgainstPhpDocType = true;
 		$this->strictWideningCheck = true;
@@ -600,6 +600,22 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type GenericSubtype\IRepository<GenericSubtype\Foo> is not subtype of type GenericSubtype\IRepository<GenericSubtype\IEntity>.',
 				131,
 				'Template type E on class GenericSubtype\IRepository is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'PHPDoc tag @var with type GenericSubtype\Collection<int> is not subtype of type GenericSubtype\Collection<string>.',
+				162,
+			],
+		]);
+	}
+
+	public function testGenericSubtypeWithoutStrictCheck(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = false;
+		$this->analyse([__DIR__ . '/data/generic-subtype.php'], [
+			[
+				'PHPDoc tag @var with type GenericSubtype\Collection<int> is not subtype of type GenericSubtype\Collection<string>.',
+				162,
 			],
 		]);
 	}

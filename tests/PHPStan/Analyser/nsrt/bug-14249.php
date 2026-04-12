@@ -69,6 +69,7 @@ function doTemplated(): void {
 	assertType('false', $v);
 }
 
+/** @phpstan-impure */
 function getMixed(): mixed {}
 
 function maybeCallable() {

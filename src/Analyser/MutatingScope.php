@@ -3612,6 +3612,77 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if (count($typeGuards) === 0) {
+			// Look for variables whose certainty changed from YES (in our scope) to
+			// MAYBE (in merged scope) because they don't exist in their scope.
+			// For each such variable, look for potential type guards among variables
+			// that were removed from newVariableTypes (because merged type == their
+			// type) but whose type differs between our and their scope.
+			// This handles cases like: if (isset($a['key'])) { $b = ...; }
+			// where $b should be conditionally defined based on $a's narrowed type.
+			$certaintyChangedVars = [];
+			foreach ($newVariableTypes as $exprString => $holder) {
+				if (!$holder->getCertainty()->yes()) {
+					continue;
+				}
+				if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+					continue;
+				}
+				if ($mergedExpressionTypes[$exprString]->getCertainty()->yes()) {
+					continue;
+				}
+				if (!$holder->getExpr() instanceof Variable) {
+					continue;
+				}
+				$certaintyChangedVars[$exprString] = $holder;
+			}
+
+			if (count($certaintyChangedVars) > 0) {
+				$recoveredTypeGuards = [];
+				foreach ($ourExpressionTypes as $exprString => $holder) {
+					if ($holder->getExpr() instanceof VirtualNode) {
+						continue;
+					}
+					if (array_key_exists($exprString, $newVariableTypes)) {
+						continue;
+					}
+					if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+						continue;
+					}
+					if (!$holder->getCertainty()->yes()) {
+						continue;
+					}
+					if (
+						array_key_exists($exprString, $theirExpressionTypes)
+						&& !$theirExpressionTypes[$exprString]->getCertainty()->yes()
+					) {
+						continue;
+					}
+					if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
+						continue;
+					}
+					$recoveredTypeGuards[$exprString] = $holder;
+				}
+
+				foreach ($certaintyChangedVars as $exprString => $holder) {
+					foreach ($recoveredTypeGuards as $guardExprString => $guardHolder) {
+						if ($guardExprString === $exprString) {
+							continue;
+						}
+						if (
+							array_key_exists($exprString, $theirExpressionTypes)
+							&& $theirExpressionTypes[$exprString]->getCertainty()->yes()
+							&& array_key_exists($guardExprString, $theirExpressionTypes)
+							&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
+							&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()
+						) {
+							continue;
+						}
+						$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
+						$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+					}
+				}
+			}
+
 			return $conditionalExpressions;
 		}
 

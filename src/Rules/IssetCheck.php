@@ -186,7 +186,7 @@ final class IssetCheck
 					if (
 						$nativeReflection !== null
 						&& !$nativeReflection->getNativeReflection()->hasDefaultValue()
-						&& !($nativeReflection->isPromoted() && ($nativeReflection->isReadOnly() || $nativeReflection->isHooked()))
+						&& (!$nativeReflection->isPromoted() || (!$nativeReflection->isReadOnly() && !$nativeReflection->isHooked()))
 					) {
 						return null;
 					}

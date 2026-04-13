@@ -3238,6 +3238,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				// Pass 2: Supertype match. Only runs when Pass 1 found no exact match for this expression.
 				foreach ($conditionalExpressions as $conditionalExpression) {
+					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
+						continue;
+					}
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (
 							!array_key_exists($holderExprString, $specifiedExpressions)

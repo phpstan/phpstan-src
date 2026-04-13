@@ -2828,4 +2828,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13591(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13591.php'], []);
+	}
+
+	public function testBug4090(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4090.php'], []);
+	}
+
 }

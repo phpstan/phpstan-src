@@ -3216,9 +3216,34 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (array_key_exists($conditionalExprString, $conditions)) {
 					continue;
 				}
+
+				// Pass 1: Prefer exact matches
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+						if (
+							!array_key_exists($holderExprString, $specifiedExpressions)
+							|| !$conditionalTypeHolder->equals($specifiedExpressions[$holderExprString])
+						) {
+							continue 2;
+						}
+					}
+
+					$conditions[$conditionalExprString][] = $conditionalExpression;
+					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+				}
+
+				if (array_key_exists($conditionalExprString, $conditions)) {
+					continue;
+				}
+
+				// Pass 2: Supertype match. Only runs when Pass 1 found no exact match for this expression.
+				foreach ($conditionalExpressions as $conditionalExpression) {
+					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+						if (
+							!array_key_exists($holderExprString, $specifiedExpressions)
+							|| !$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
+							|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
+						) {
 							continue 2;
 						}
 					}

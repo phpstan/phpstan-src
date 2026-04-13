@@ -112,6 +112,9 @@ use function sprintf;
 				Bugfixes 🐛
 				=====================
 
+				Performance 🏎️
+				=====================
+
 				Function signature fixes 🤖
 				=======================
 

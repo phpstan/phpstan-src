@@ -3237,14 +3237,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 
 				// Pass 2: Supertype match. Only runs when Pass 1 found no exact match for this expression.
-				// Skip No-certainty holders here because supertype matching is asymmetric:
-				// a broader condition type (the "undefined" branch) is more likely to match
-				// as a supertype of a narrowed specified type than a narrower condition type
-				// (the "defined" branch), causing conditionally-defined variables to be
-				// incorrectly resolved as never defined.
-				// Pass 1 does not need this check because exact matching cannot produce
-				// this asymmetry - if the specified type exactly equals the No branch's
-				// condition, the scope genuinely corresponds to the "undefined" state.
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
 						continue;

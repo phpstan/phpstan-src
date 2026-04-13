@@ -973,7 +973,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
 		) {
-			return $this->expressionTypes[$exprString]->getType();
+			$storedType = $this->expressionTypes[$exprString]->getType();
+
+			if ($node instanceof FuncCall) {
+				// Stored expression types for function calls can become stale
+				// when arguments are narrowed after scope merging.
+				// Intersect with the dynamically computed type to stay correct.
+				$this->resolvedTypes[$exprString] = $storedType;
+				foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+					if (!$exprHandler->supports($node)) {
+						continue;
+					}
+					$dynamicType = $exprHandler->resolveType($this, $node);
+					unset($this->resolvedTypes[$exprString]);
+					return TypeCombinator::intersect($storedType, $dynamicType);
+				}
+				unset($this->resolvedTypes[$exprString]);
+			}
+
+			return $storedType;
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */

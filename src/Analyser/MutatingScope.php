@@ -3217,11 +3217,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 
-				// Pass 1: Exact match - condition type must equal the specified expression type.
-				// We prefer exact matches over supertype matches (Pass 2) because when both
-				// exist (e.g. from scope merging creating both "$key=2 => $value Yes" and
-				// "$key=0|2 => $value Maybe"), the broader match would degrade certainty
-				// via extremeIdentity (Yes AND Maybe = Maybe), causing false positives.
+				// Pass 1: Prefer exact matches
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (
@@ -3240,17 +3236,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 
-				// Pass 2: Supertype match - condition type must be a supertype of the specified
-				// expression type. Only runs when Pass 1 found no exact match for this expression.
-				//
-				// This is needed for conditional parameter types with union conditions:
-				// e.g. @param ($p is 'a' ? bool : int) with $p typed as 'a'|'b'|'c'
-				// creates a condition type 'b'|'c' (from TypeCombinator::remove) for the int result.
-				// When $p is narrowed to 'b', equals('b', 'b'|'c') fails but isSuperTypeOf succeeds.
-				//
-				// Also needed for scope merging: e.g. $a=0 then if (is_string||is_int) $a=1
-				// creates a condition type int|string. When narrowed to is_int, the condition
-				// int|string is a supertype of int, so the match succeeds.
+				// Pass 2: Supertype match. Only runs when Pass 1 found no exact match for this expression.
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (

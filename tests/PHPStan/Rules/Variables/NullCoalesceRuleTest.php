@@ -403,6 +403,17 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
+	public function testBug14459Hooked(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14459-hooked.php'], [
+			[
+				'Property Bug14459Hooked\DtoHooked::$policyholderId (stdClass) on left side of ?? is not nullable.',
+				21,
+			],
+		]);
+	}
+
 	public function testBug14393(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14393.php'], [

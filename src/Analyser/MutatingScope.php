@@ -1070,15 +1070,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 			if ($propertyReflection->hasNativeType() && !$propertyReflection->isVirtual()->yes()) {
 				if (!$this->hasExpressionType($expr)->yes()) {
-					if ($expr instanceof Node\Expr\PropertyFetch) {
-						return $this->issetCheckUndefined($expr->var);
-					}
+					$nativeReflection = $propertyReflection->getNativeReflection();
+					if ($nativeReflection === null || !$nativeReflection->isPromoted() || (!$nativeReflection->isReadOnly() && !$nativeReflection->isHooked())) {
+						if ($expr instanceof Node\Expr\PropertyFetch) {
+							return $this->issetCheckUndefined($expr->var);
+						}
 
-					if ($expr->class instanceof Expr) {
-						return $this->issetCheckUndefined($expr->class);
-					}
+						if ($expr->class instanceof Expr) {
+							return $this->issetCheckUndefined($expr->class);
+						}
 
-					return null;
+						return null;
+					}
 				}
 			}
 

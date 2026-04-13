@@ -3218,7 +3218,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 
 				// Pass 1: Exact match - condition type must equal the specified expression type.
-				// This handles most cases and takes priority over Pass 2.
+				// We prefer exact matches over supertype matches (Pass 2) because when both
+				// exist (e.g. from scope merging creating both "$key=2 => $value Yes" and
+				// "$key=0|2 => $value Maybe"), the broader match would degrade certainty
+				// via extremeIdentity (Yes AND Maybe = Maybe), causing false positives.
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (
@@ -3248,11 +3251,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				// Also needed for scope merging: e.g. $a=0 then if (is_string||is_int) $a=1
 				// creates a condition type int|string. When narrowed to is_int, the condition
 				// int|string is a supertype of int, so the match succeeds.
-				//
-				// Pass 1 must take priority because when both exact and broader conditions exist
-				// (e.g. from scope merging creating both "$key=2 => $value Yes" and
-				// "$key=0|2 => $value Maybe"), the broader match would degrade certainty
-				// via extremeIdentity (Yes AND Maybe = Maybe), causing false positives.
 				foreach ($conditionalExpressions as $conditionalExpression) {
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (

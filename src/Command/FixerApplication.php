@@ -7,7 +7,6 @@ use Clue\React\NDJson\Encoder;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
@@ -23,6 +22,7 @@ use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Internal\HttpClientFactory;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Process\ProcessCanceledException;
 use PHPStan\Process\ProcessCrashedException;
@@ -93,6 +93,7 @@ final class FixerApplication
 		private ?string $editorUrl,
 		#[AutowiredParameter]
 		private string $usedLevel,
+		private HttpClientFactory $httpClientFactory,
 	)
 	{
 	}
@@ -325,10 +326,7 @@ final class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
-		$client = new Client([
-			RequestOptions::TIMEOUT => 30,
-			RequestOptions::CONNECT_TIMEOUT => 5,
-		]);
+		$client = $this->httpClientFactory->createClient([]);
 
 		$latestUrl = sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch]));
 

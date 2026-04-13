@@ -9,6 +9,7 @@ use Nette\Utils\Json;
 use Override;
 use PHPStan\Command\Bisect\BinarySearch;
 use PHPStan\File\FileReader;
+use PHPStan\Internal\HttpClientFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -106,9 +107,7 @@ final class BisectCommand extends Command
 			return 1;
 		}
 
-		$client = new Client([
-			RequestOptions::TIMEOUT => 30,
-			RequestOptions::CONNECT_TIMEOUT => 10,
+		$client = (new HttpClientFactory())->createClient([
 			'headers' => [
 				'Authorization' => 'token ' . $token,
 				'Accept' => 'application/vnd.github.v3+json',

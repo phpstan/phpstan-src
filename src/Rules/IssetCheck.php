@@ -183,7 +183,11 @@ final class IssetCheck
 
 				if (!$scope->hasExpressionType($expr)->yes()) {
 					$nativeReflection = $propertyReflection->getNativeReflection();
-					if ($nativeReflection !== null && !$nativeReflection->getNativeReflection()->hasDefaultValue()) {
+					if (
+						$nativeReflection !== null
+						&& !$nativeReflection->getNativeReflection()->hasDefaultValue()
+						&& (!$nativeReflection->isPromoted() || (!$nativeReflection->isReadOnly() && !$nativeReflection->isHooked()))
+					) {
 						return null;
 					}
 				}

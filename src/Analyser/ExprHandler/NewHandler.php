@@ -35,6 +35,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -66,6 +67,7 @@ final class NewHandler implements ExprHandler
 		private ReflectionProvider $reflectionProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		private PropertyReflectionFinder $propertyReflectionFinder,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -416,10 +418,13 @@ final class NewHandler implements ExprHandler
 				$classTemplateTypes = $traverser->getClassTemplateTypes();
 
 				if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
-					$propertyType = TypeCombinator::removeNull($scope->getType($assignedToProperty));
-					$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
-					if ($nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
-						return $propertyType;
+					$foundProperty = $this->propertyReflectionFinder->findPropertyReflectionFromNode($assignedToProperty, $scope);
+					if ($foundProperty !== null) {
+						$propertyType = TypeCombinator::removeNull($foundProperty->getWritableType());
+						$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
+						if ($nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
+							return $propertyType;
+						}
 					}
 				}
 			}

@@ -973,25 +973,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
 		) {
-			$storedType = $this->expressionTypes[$exprString]->getType();
-
-			if ($node instanceof FuncCall) {
-				// Stored expression types for function calls can become stale
-				// when arguments are narrowed after scope merging.
-				// Intersect with the dynamically computed type to stay correct.
-				$this->resolvedTypes[$exprString] = $storedType;
-				foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-					if (!$exprHandler->supports($node)) {
-						continue;
-					}
-					$dynamicType = $exprHandler->resolveType($this, $node);
-					unset($this->resolvedTypes[$exprString]);
-					return TypeCombinator::intersect($storedType, $dynamicType);
-				}
-				unset($this->resolvedTypes[$exprString]);
-			}
-
-			return $storedType;
+			return $this->expressionTypes[$exprString]->getType();
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */
@@ -3295,6 +3277,51 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$scope->expressionTypes[$conditionalExprString] = $expressions[0]->getTypeHolder();
 				}
 			}
+		}
+
+		// Update stored FuncCall expression types whose arguments were narrowed.
+		// The stored type may be stale (from scope merging) while the argument
+		// types have been freshly narrowed. Intersect with the dynamically
+		// computed type so both sources of narrowing are preserved.
+		$funcCallsToUpdate = [];
+		foreach ($scope->expressionTypes as $exprString => $exprTypeHolder) {
+			if (array_key_exists($exprString, $specifiedExpressions) || array_key_exists($exprString, $conditions)) {
+				continue;
+			}
+			$expr = $exprTypeHolder->getExpr();
+			if (!$expr instanceof FuncCall) {
+				continue;
+			}
+			foreach ($expr->getArgs() as $arg) {
+				$argKey = $this->getNodeKey($arg->value);
+				if (!array_key_exists($argKey, $specifiedExpressions)) {
+					continue;
+				}
+				$oldArgType = array_key_exists($argKey, $this->expressionTypes)
+					? $this->expressionTypes[$argKey]->getType()
+					: null;
+				$newArgType = array_key_exists($argKey, $scope->expressionTypes)
+					? $scope->expressionTypes[$argKey]->getType()
+					: null;
+				if ($oldArgType !== null && $newArgType !== null && $oldArgType->equals($newArgType)) {
+					continue;
+				}
+				$funcCallsToUpdate[$exprString] = $exprTypeHolder;
+				break;
+			}
+		}
+
+		foreach ($funcCallsToUpdate as $exprString => $exprTypeHolder) {
+			$storedType = $exprTypeHolder->getType();
+			unset($scope->expressionTypes[$exprString]);
+			unset($scope->nativeExpressionTypes[$exprString]);
+			unset($scope->resolvedTypes[$exprString]);
+			$dynamicType = $scope->getType($exprTypeHolder->getExpr());
+			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder(
+				$exprTypeHolder->getExpr(),
+				TypeCombinator::intersect($storedType, $dynamicType),
+				$exprTypeHolder->getCertainty(),
+			);
 		}
 
 		return $scope->scopeFactory->create(

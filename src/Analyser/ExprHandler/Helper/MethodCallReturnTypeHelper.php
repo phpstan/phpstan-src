@@ -56,13 +56,18 @@ final class MethodCallReturnTypeHelper
 		$allClassNames = $typeWithMethod->getObjectClassNames();
 		$handledClassNames = [];
 		foreach ($allClassNames as $className) {
+			$classType = new ObjectType($className);
+			if (!$classType->hasMethod($methodName)->yes()) {
+				continue;
+			}
+			$classMethodReflection = $classType->getMethod($methodName, $scope);
 			if ($normalizedMethodCall instanceof MethodCall) {
 				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
-					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
+					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($classMethodReflection)) {
 						continue;
 					}
 
-					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
+					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($classMethodReflection, $normalizedMethodCall, $scope);
 					if ($resolvedType === null) {
 						continue;
 					}
@@ -72,12 +77,12 @@ final class MethodCallReturnTypeHelper
 				}
 			} else {
 				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
-					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
+					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($classMethodReflection)) {
 						continue;
 					}
 
 					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-						$methodReflection,
+						$classMethodReflection,
 						$normalizedMethodCall,
 						$scope,
 					);

@@ -11,6 +11,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -124,6 +125,10 @@ final class RuleLevelHelper
 					$acceptedType->acceptsNamedArguments(),
 					$acceptedType->mustUseReturnValue(),
 				);
+			}
+
+			if ($acceptedType instanceof GenericObjectType) {
+				return $acceptedType;
 			}
 
 			if (

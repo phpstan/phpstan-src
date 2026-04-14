@@ -1531,4 +1531,35 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug10729(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-10729.php'], [
+			[
+				'Variable $format might not be defined.',
+				12,
+			],
+			[
+				'Undefined variable: $format',
+				25,
+			],
+			[
+				'Variable $format might not be defined.',
+				31,
+			],
+			[
+				'Variable $value might not be defined.',
+				32,
+			],
+			[
+				'Variable $format might not be defined.',
+				38,
+			],
+		]);
+	}
+
 }

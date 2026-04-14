@@ -14,6 +14,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use ReflectionAttribute;
 use function count;
+use function str_contains;
 
 final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -32,7 +33,8 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === 'getAttributes';
+		return $methodReflection->getName() === 'getAttributes'
+			&& !str_contains($methodReflection->getDeclaringClass()->getName(), '\\');
 	}
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type

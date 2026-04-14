@@ -73,6 +73,7 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
+use function strtolower;
 
 /**
  * @implements ExprHandler<Assign|AssignRef>
@@ -80,6 +81,8 @@ use function is_string;
 #[AutowiredService]
 final class AssignHandler implements ExprHandler
 {
+
+	private const COUNT_CONDITIONAL_LIMIT = 8;
 
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
@@ -311,6 +314,44 @@ final class AssignHandler implements ExprHandler
 					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+				}
+
+				if (
+					$assignedExpr instanceof FuncCall
+					&& $assignedExpr->name instanceof Name
+					&& in_array(strtolower($assignedExpr->name->toString()), ['count', 'sizeof'], true)
+					&& count($assignedExpr->getArgs()) === 1
+					&& !$type instanceof ConstantIntegerType
+				) {
+					$countArgType = $scope->getType($assignedExpr->getArgs()[0]->value);
+					if ($countArgType->isArray()->yes() && ($countArgType->isList()->yes() || $countArgType->isConstantArray()->yes())) {
+						for ($n = 1; $n <= self::COUNT_CONDITIONAL_LIMIT; $n++) {
+							$nType = new ConstantIntegerType($n);
+							$identicalExpr = new Expr\BinaryOp\Identical(
+								$assignedExpr,
+								new Node\Scalar\Int_($n),
+							);
+							$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
+								$scope,
+								$identicalExpr,
+								TypeSpecifierContext::createTrue(),
+							);
+							$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign(
+								$scope,
+								$var->name,
+								$conditionalExpressions,
+								$identicalSpecifiedTypes,
+								$nType,
+							);
+							$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign(
+								$scope,
+								$var->name,
+								$conditionalExpressions,
+								$identicalSpecifiedTypes,
+								$nType,
+							);
+						}
+					}
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);

@@ -45,36 +45,32 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		$reflectionAttributeClassNames = $this->resolveReflectionAttributeClassNames($methodReflection);
+		$valueType = $this->resolveReflectionAttributeType($methodReflection, $classType);
 
-		$valueTypes = [];
-		foreach ($reflectionAttributeClassNames as $className) {
-			$valueTypes[] = new GenericObjectType($className, [$classType]);
-		}
-
-		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), TypeCombinator::union(...$valueTypes)), new AccessoryArrayListType()]);
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $valueType), new AccessoryArrayListType()]);
 	}
 
-	/**
-	 * @return non-empty-list<string>
-	 */
-	private function resolveReflectionAttributeClassNames(MethodReflection $methodReflection): array
+	private function resolveReflectionAttributeType(MethodReflection $methodReflection, Type $classType): Type
 	{
 		$returnType = $methodReflection->getVariants()[0]->getReturnType();
 		$nativeReflectionAttributeType = new ObjectType(ReflectionAttribute::class);
 
-		$matchedClassNames = [];
+		$valueTypes = [];
 		foreach ($returnType->getIterableValueType()->getObjectClassNames() as $className) {
 			if ($nativeReflectionAttributeType->isSuperTypeOf(new ObjectType($className))->yes()) {
-				$matchedClassNames[] = $className;
+				$valueTypes[] = new GenericObjectType($className, [$classType]);
 			}
 		}
 
-		if (count($matchedClassNames) === 0) {
-			return [ReflectionAttribute::class];
+		if (count($valueTypes) === 0) {
+			return new GenericObjectType(ReflectionAttribute::class, [$classType]);
 		}
 
-		return $matchedClassNames;
+		if (count($valueTypes) === 1) {
+			return $valueTypes[0];
+		}
+
+		return TypeCombinator::union(...$valueTypes);
 	}
 
 }

@@ -11,10 +11,10 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use ReflectionAttribute;
 use function count;
-use function str_contains;
 
 final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -33,8 +33,7 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === 'getAttributes'
-			&& !str_contains($methodReflection->getDeclaringClass()->getName(), '\\');
+		return $methodReflection->getName() === 'getAttributes';
 	}
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
@@ -45,7 +44,23 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new GenericObjectType(ReflectionAttribute::class, [$classType])), new AccessoryArrayListType()]);
+		$reflectionAttributeClassName = $this->resolveReflectionAttributeClassName($methodReflection);
+
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new GenericObjectType($reflectionAttributeClassName, [$classType])), new AccessoryArrayListType()]);
+	}
+
+	private function resolveReflectionAttributeClassName(MethodReflection $methodReflection): string
+	{
+		$returnType = $methodReflection->getVariants()[0]->getReturnType();
+		$nativeReflectionAttributeType = new ObjectType(ReflectionAttribute::class);
+
+		foreach ($returnType->getIterableValueType()->getObjectClassNames() as $className) {
+			if ($nativeReflectionAttributeType->isSuperTypeOf(new ObjectType($className))->yes()) {
+				return $className;
+			}
+		}
+
+		return ReflectionAttribute::class;
 	}
 
 }

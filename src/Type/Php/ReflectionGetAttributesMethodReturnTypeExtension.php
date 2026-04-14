@@ -57,9 +57,11 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 
 		$valueTypes = [];
 		foreach ($returnType->getIterableValueType()->getObjectClassNames() as $className) {
-			if ($nativeReflectionAttributeType->isSuperTypeOf(new ObjectType($className))->yes()) {
-				$valueTypes[] = new GenericObjectType($className, [$classType]);
+			if (!$nativeReflectionAttributeType->isSuperTypeOf(new ObjectType($className))->yes()) {
+				continue;
 			}
+
+			$valueTypes[] = new GenericObjectType($className, [$classType]);
 		}
 
 		if (count($valueTypes) === 0) {

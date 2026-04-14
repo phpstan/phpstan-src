@@ -993,12 +993,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function expressionHasNewInChain(Expr $expr): bool
 	{
-		if ($expr instanceof MethodCall || $expr instanceof PropertyFetch || $expr instanceof Expr\NullsafeMethodCall || $expr instanceof Expr\NullsafePropertyFetch || $expr instanceof Expr\ArrayDimFetch) {
+		if (
+			$expr instanceof MethodCall ||
+			$expr instanceof Expr\NullsafeMethodCall ||
+			$expr instanceof Expr\ArrayDimFetch ||
+			$expr instanceof PropertyFetch ||
+			$expr instanceof Expr\NullsafePropertyFetch
+		) {
 			return $expr->var instanceof Expr\New_ || $this->expressionHasNewInChain($expr->var);
 		}
-		if (($expr instanceof Expr\StaticCall || $expr instanceof Expr\StaticPropertyFetch || $expr instanceof Expr\ClassConstFetch) && $expr->class instanceof Expr) {
+		if (
+			$expr instanceof Expr\StaticCall
+			|| $expr instanceof Expr\StaticPropertyFetch
+			|| $expr instanceof Expr\ClassConstFetch
+		) {
 			return $expr->class instanceof Expr\New_ || $this->expressionHasNewInChain($expr->class);
 		}
+
 		return false;
 	}
 

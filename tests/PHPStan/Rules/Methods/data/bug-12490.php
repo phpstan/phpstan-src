@@ -61,3 +61,29 @@ class Foo
 		return Attribute::get(fn () => $this->id);
 	}
 }
+
+/**
+ * @template T
+ */
+class Container
+{
+	/** @var T */
+	public $value;
+
+	/**
+	 * @param T $value
+	 */
+	public function __construct($value)
+	{
+		$this->value = $value;
+	}
+}
+
+class Bar
+{
+	/** @return Container<string> */
+	public function test(?string $val): Container
+	{
+		return new Container($val);
+	}
+}

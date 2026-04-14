@@ -128,6 +128,16 @@ final class RuleLevelHelper
 			}
 
 			if ($acceptedType instanceof GenericObjectType) {
+				if (!$this->checkNullables && $acceptingType instanceof GenericObjectType) {
+					return $acceptedType->traverseSimultaneously($acceptingType, static function (Type $acceptedInner, Type $acceptingInner): Type {
+						if (TypeCombinator::containsNull($acceptingInner)) {
+							return $acceptedInner;
+						}
+
+						return TypeCombinator::removeNull($acceptedInner);
+					});
+				}
+
 				return $acceptedType;
 			}
 

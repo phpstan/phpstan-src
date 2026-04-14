@@ -1007,7 +1007,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			|| $expr instanceof Expr\StaticPropertyFetch
 			|| $expr instanceof Expr\ClassConstFetch
 		) {
-			return $expr->class instanceof Expr\New_ || $this->expressionHasNewInChain($expr->class);
+			return $expr->class instanceof Expr\New_ || ($expr->class instanceof Expr && $this->expressionHasNewInChain($expr->class));
 		}
 
 		return false;

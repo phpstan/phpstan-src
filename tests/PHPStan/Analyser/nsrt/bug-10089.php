@@ -24,7 +24,7 @@ class Test
 		$matrix[$size - 1][8] = 3;
 
 		// non-empty-array<int, non-empty-array<int, 0|3>&hasOffsetValue(8, 3)>
-		assertType('non-empty-list<non-empty-array<int<0, max>, 0|3>>', $matrix);
+		assertType('non-empty-array<int, non-empty-array<int<0, max>, 0|3>>', $matrix);
 
 		for ($i = 0; $i <= $size; $i++) {
 			if ($matrix[$i][8] === 0) {

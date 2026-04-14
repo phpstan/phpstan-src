@@ -49,6 +49,20 @@ function () {
 };
 
 function () {
+	$result = doesntThrow();
+	if ($result === null) {
+		return;
+	}
+	// $result is mixed~null, so ?-> never short-circuits
+	try {
+		$result?->{$foo = 1}($bar = 2);
+	} finally {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
+	}
+};
+
+function () {
 	try {
 		maybeThrows()?->{$foo = 1}($bar = 2);
 	} finally {

@@ -3649,6 +3649,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				) {
 					continue;
 				}
+				if (
+					!array_key_exists($exprString, $theirExpressionTypes)
+					&& array_key_exists($guardExprString, $theirExpressionTypes)
+					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
+					&& $theirExpressionTypes[$guardExprString]->getType()->isObject()->no()
+					&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()
+				) {
+					continue;
+				}
 				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
 				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 			}

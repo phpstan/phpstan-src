@@ -51,6 +51,7 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
@@ -73,6 +74,8 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
+use function min;
+use function strtolower;
 
 /**
  * @implements ExprHandler<Assign|AssignRef>
@@ -311,6 +314,36 @@ final class AssignHandler implements ExprHandler
 					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+				}
+
+				if (
+					$assignedExpr instanceof FuncCall
+					&& $assignedExpr->name instanceof Name
+					&& in_array(strtolower((string) $assignedExpr->name), ['count', 'sizeof'], true)
+					&& count($assignedExpr->getArgs()) >= 1
+				) {
+					$countArgType = $scope->getType($assignedExpr->getArgs()[0]->value);
+					if ($countArgType->isList()->yes() || $countArgType->isConstantArray()->yes()) {
+						$arraySize = $countArgType->getArraySize();
+						$maxSize = ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT;
+						if ($arraySize instanceof ConstantIntegerType) {
+							$maxSize = $arraySize->getValue();
+						} elseif ($arraySize instanceof IntegerRangeType && $arraySize->getMax() !== null) {
+							$maxSize = min($maxSize, $arraySize->getMax());
+						}
+
+						for ($i = 1; $i <= $maxSize; $i++) {
+							$sizeType = new ConstantIntegerType($i);
+							if (!$type->isSuperTypeOf($sizeType)->yes()) {
+								continue;
+							}
+
+							$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, new Node\Scalar\Int_($i));
+							$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
+							$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $sizeType);
+							$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $sizeType);
+						}
+					}
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);

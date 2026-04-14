@@ -54,10 +54,15 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$returnType = $methodReflection->getVariants()[0]->getReturnType();
 		$nativeReflectionAttributeType = new ObjectType(ReflectionAttribute::class);
 
+		$matchedClassNames = [];
 		foreach ($returnType->getIterableValueType()->getObjectClassNames() as $className) {
 			if ($nativeReflectionAttributeType->isSuperTypeOf(new ObjectType($className))->yes()) {
-				return $className;
+				$matchedClassNames[] = $className;
 			}
+		}
+
+		if (count($matchedClassNames) === 1) {
+			return $matchedClassNames[0];
 		}
 
 		return ReflectionAttribute::class;

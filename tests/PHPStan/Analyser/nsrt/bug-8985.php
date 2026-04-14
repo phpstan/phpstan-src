@@ -100,3 +100,12 @@ function testClassConstFetch(): void {
 
 	assertType("'const_value'", (new Repository())::MY_CONST);
 }
+
+function testClassConstFetchOnUnknownClass(string $class, string $anotherClass): void {
+	assert((new $class())::MY_CONST === 'const_value');
+
+	assertType("'const_value'", (new $class())::MY_CONST);
+
+	$class = $anotherClass;
+	assertType("*ERROR*", (new $class())::MY_CONST);
+}

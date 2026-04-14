@@ -4092,13 +4092,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
+						$aValueType = $constantArraysA->getOffsetValueType($keyType);
+						$bValueType = $constantArraysB->getOffsetValueType($keyType);
+
+						$canPreserve = $aValueType->isInteger()->no()
+							&& $bValueType->isInteger()->no()
+							&& $aValueType->isArray()->no()
+							&& $bValueType->isArray()->no();
+
+						if ($canPreserve && $aValueType->isSuperTypeOf($bValueType)->yes()) {
+							$generalizedValue = $aValueType;
+						} elseif ($canPreserve && $bValueType->isSuperTypeOf($aValueType)->yes()) {
+							$generalizedValue = $bValueType;
+						} else {
+							$generalizedValue = $this->generalizeType($aValueType, $bValueType, $depth + 1);
+						}
+
 						$resultArrayBuilder->setOffsetValueType(
 							$keyType,
-							$this->generalizeType(
-								$constantArraysA->getOffsetValueType($keyType),
-								$constantArraysB->getOffsetValueType($keyType),
-								$depth + 1,
-							),
+							$generalizedValue,
 							!$constantArraysA->hasOffsetValueType($keyType)->and($constantArraysB->hasOffsetValueType($keyType))->negate()->no(),
 						);
 					}

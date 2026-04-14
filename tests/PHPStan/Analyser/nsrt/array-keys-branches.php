@@ -58,7 +58,7 @@ function (array $generalArray) {
 	assertType('mixed~null', $generalArray['key']);
 	assertType('array{0: \'foo\', 1: \'bar\', 2?: \'baz\'}', $arrayAppendedInIf);
 	assertType('non-empty-list<\'bar\'|\'baz\'|\'foo\'>', $arrayAppendedInForeach);
-	assertType('non-empty-array<int<0, max>, literal-string&lowercase-string&non-falsy-string>', $anotherArrayAppendedInForeach);
+	assertType("non-empty-array<int<0, max>, 'bar'|'baz'|'foo'>", $anotherArrayAppendedInForeach);
 	assertType('\'str\'', $array['n']);
 	assertType('int<0, max>', $incremented);
 	assertType('0|1', $setFromZeroToOne);

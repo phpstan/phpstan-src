@@ -81,10 +81,11 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		);
 		$scope = $this->nonNullabilityHelper->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
-		if ($varType->isNull()->yes()) {
+		$varIsNull = $varType->isNull();
+		if ($varIsNull->yes()) {
 			// Arguments are never evaluated when the var is always null.
 			$scope = $scopeBeforeNullsafe;
-		} elseif (TypeCombinator::containsNull($varType)) {
+		} elseif ($varIsNull->maybe()) {
 			// Arguments might not be evaluated (short-circuit).
 			// Merge with the original scope so variables assigned in arguments become "maybe defined".
 			$scope = $scope->mergeWith($scopeBeforeNullsafe);

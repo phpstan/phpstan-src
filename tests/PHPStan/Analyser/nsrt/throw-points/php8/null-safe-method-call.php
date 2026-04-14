@@ -42,8 +42,9 @@ function () {
 	try {
 		doesntThrow()?->{$foo = 1}($bar = 2);
 	} finally {
-		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
-		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
+		// doesntThrow() returns mixed which can be null, so ?-> may short-circuit
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);
 	}
 };
 

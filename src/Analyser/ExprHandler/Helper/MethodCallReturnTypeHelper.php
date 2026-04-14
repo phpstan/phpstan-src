@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -55,43 +56,46 @@ final class MethodCallReturnTypeHelper
 		$resolvedTypes = [];
 		$allClassNames = $typeWithMethod->getObjectClassNames();
 		$handledClassNames = [];
-		foreach ($allClassNames as $className) {
-			$classType = new ObjectType($className);
-			if (!$classType->hasMethod($methodName)->yes()) {
+		$innerTypes = $typeWithMethod instanceof UnionType ? $typeWithMethod->getTypes() : [$typeWithMethod];
+		foreach ($innerTypes as $innerType) {
+			$classNames = $innerType->getObjectClassNames();
+			if ($classNames === [] || !$innerType->hasMethod($methodName)->yes()) {
 				continue;
 			}
-			$classMethodReflection = $classType->getMethod($methodName, $scope);
-			if ($normalizedMethodCall instanceof MethodCall) {
-				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
-					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($classMethodReflection)) {
-						continue;
-					}
+			$classMethodReflection = $innerType->getMethod($methodName, $scope);
+			foreach ($classNames as $className) {
+				if ($normalizedMethodCall instanceof MethodCall) {
+					foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
+						if (!$dynamicMethodReturnTypeExtension->isMethodSupported($classMethodReflection)) {
+							continue;
+						}
 
-					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($classMethodReflection, $normalizedMethodCall, $scope);
-					if ($resolvedType === null) {
-						continue;
-					}
+						$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($classMethodReflection, $normalizedMethodCall, $scope);
+						if ($resolvedType === null) {
+							continue;
+						}
 
-					$resolvedTypes[] = $resolvedType;
-					$handledClassNames[] = $className;
-				}
-			} else {
-				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
-					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($classMethodReflection)) {
-						continue;
+						$resolvedTypes[] = $resolvedType;
+						$handledClassNames[] = $className;
 					}
+				} else {
+					foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
+						if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($classMethodReflection)) {
+							continue;
+						}
 
-					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-						$classMethodReflection,
-						$normalizedMethodCall,
-						$scope,
-					);
-					if ($resolvedType === null) {
-						continue;
+						$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
+							$classMethodReflection,
+							$normalizedMethodCall,
+							$scope,
+						);
+						if ($resolvedType === null) {
+							continue;
+						}
+
+						$resolvedTypes[] = $resolvedType;
+						$handledClassNames[] = $className;
 					}
-
-					$resolvedTypes[] = $resolvedType;
-					$handledClassNames[] = $className;
 				}
 			}
 		}

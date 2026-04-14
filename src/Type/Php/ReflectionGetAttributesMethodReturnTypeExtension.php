@@ -32,8 +32,7 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getDeclaringClass()->getName() === $this->className
-			&& $methodReflection->getName() === 'getAttributes';
+		return $methodReflection->getName() === 'getAttributes';
 	}
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type

@@ -1570,7 +1570,7 @@ final class ClassReflection
 
 			$attributeClass = $this->reflectionProvider->getClass(Attribute::class);
 			$arguments = [];
-			foreach ($nativeAttributes[0]->getArgumentsExpressions() as $i => $expression) {
+			foreach ($nativeAttributes[0]->getArgumentsExpressions() as $i => $expression) { // @phpstan-ignore method.notFound (method exists on BetterReflection's ReflectionAttribute adapter)
 				if ($i === '') {
 					throw new ShouldNotHappenException();
 				}

@@ -29,6 +29,11 @@ class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testBug5865(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5865.php'], []);
+	}
+
 	public function testBug6189(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6189.php'], []);

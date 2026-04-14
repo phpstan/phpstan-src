@@ -60,6 +60,11 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10054.php'], []);
 	}
 
+	public function testBug5865(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5865-while.php'], []);
+	}
+
 	public function testBug6189(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6189.php'], [

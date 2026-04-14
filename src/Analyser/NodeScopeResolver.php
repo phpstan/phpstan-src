@@ -195,6 +195,9 @@ class NodeScopeResolver
 	private array $earlyTerminatingMethodNames;
 
 	/** @var array<string, true> */
+	private array $alwaysTerminatingCallables = [];
+
+	/** @var array<string, true> */
 	private array $calledMethodStack = [];
 
 	/** @var array<string, MutatingScope|null> */
@@ -660,6 +663,15 @@ class NodeScopeResolver
 				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
 				$functionReflection,
 			), $functionScope, $storage);
+
+			if (
+				count($gatheredReturnStatements) === 0
+				&& count($gatheredYieldStatements) === 0
+				&& $this->isBodyAlwaysTerminating($executionEnds)
+			) {
+				$this->alwaysTerminatingCallables[strtolower($functionReflection->getName())] = true;
+			}
+
 			if (!$scope->isInAnonymousFunction()) {
 				$this->processPendingFibers($storage);
 			}
@@ -824,6 +836,14 @@ class NodeScopeResolver
 					$classReflection,
 					$methodReflection,
 				), $methodScope, $storage);
+
+				if (
+					count($gatheredReturnStatements) === 0
+					&& count($gatheredYieldStatements) === 0
+					&& $this->isBodyAlwaysTerminating($executionEnds)
+				) {
+					$this->alwaysTerminatingCallables[strtolower($classReflection->getName() . '::' . $methodReflection->getName())] = true;
+				}
 
 				if ($isConstructor) {
 					$finalScope = null;
@@ -2454,11 +2474,22 @@ class NodeScopeResolver
 					}
 				}
 			}
+
+			if (!$expr->isFirstClassCallable() && $this->isMethodCallAlwaysTerminating($expr, $scope)) {
+				return $expr;
+			}
 		}
 
 		if ($expr instanceof FuncCall && $expr->name instanceof Name) {
 			if (in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
 				return $expr;
+			}
+
+			if (!$expr->isFirstClassCallable()) {
+				$resolvedFunctionName = $this->reflectionProvider->resolveFunctionName($expr->name, $scope);
+				if ($resolvedFunctionName !== null && isset($this->alwaysTerminatingCallables[strtolower($resolvedFunctionName)])) {
+					return $expr;
+				}
 			}
 		}
 
@@ -2472,6 +2503,50 @@ class NodeScopeResolver
 		}
 
 		return null;
+	}
+
+	private function isMethodCallAlwaysTerminating(MethodCall|Expr\StaticCall $expr, Scope $scope): bool
+	{
+		if (!$expr->name instanceof Node\Identifier) {
+			return false;
+		}
+
+		if ($expr instanceof MethodCall) {
+			$methodCalledOnType = $scope->getType($expr->var);
+		} else {
+			if ($expr->class instanceof Name) {
+				$methodCalledOnType = $scope->resolveTypeByName($expr->class);
+			} else {
+				$methodCalledOnType = $scope->getType($expr->class);
+			}
+		}
+
+		foreach ($methodCalledOnType->getObjectClassNames() as $referencedClass) {
+			$key = strtolower($referencedClass . '::' . $expr->name->toLowerString());
+			if (isset($this->alwaysTerminatingCallables[$key])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param ExecutionEndNode[] $executionEnds
+	 */
+	private function isBodyAlwaysTerminating(array $executionEnds): bool
+	{
+		if ($executionEnds === []) {
+			return false;
+		}
+
+		foreach ($executionEnds as $executionEnd) {
+			if (!$executionEnd->getStatementResult()->isAlwaysTerminating()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -4,6 +4,11 @@ includes:
 parameters:
 	dynamicConstantNames:
 		- DynamicConstants\DynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS
+		- DynamicConstants\DynamicConstantClass::DYNAMIC_NULL_CONSTANT
+		- DynamicConstants\DynamicConstantClass::DYNAMIC_TRUE_CONSTANT
+		- DynamicConstants\DynamicConstantClass::DYNAMIC_FALSE_CONSTANT
+		- DynamicConstants\DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_CONSTANT
 		- GLOBAL_DYNAMIC_CONSTANT
+		- GLOBAL_DYNAMIC_NULL_CONSTANT
 		DynamicConstants\DynamicConstantClass::DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES_IN_CLASS: 'string|null'
 		GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES: 'string|null'

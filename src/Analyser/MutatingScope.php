@@ -138,7 +138,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
-	private const ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT = 16;
+	private const ARRAY_DIM_FETCH_UNION_MEMBER_LIMIT = 16;
 
 	/** @var Type[] */
 	private array $resolvedTypes = [];
@@ -2744,7 +2744,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					}
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						if (!$this->hasOverflowingHasOffsetValueTypes($exprVarType)) {
+						if (!$this->isLargeUnionType($exprVarType)) {
 							$varType = TypeCombinator::intersect(
 								$varType,
 								new HasOffsetValueType($dimType, $type),
@@ -2798,13 +2798,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $scope;
 	}
 
-	private function hasOverflowingHasOffsetValueTypes(Type $type): bool
+	private function isLargeUnionType(Type $type): bool
 	{
 		if (!$type instanceof UnionType) {
 			return false;
 		}
 
-		return count($type->getTypes()) > self::ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT;
+		return count($type->getTypes()) > self::ARRAY_DIM_FETCH_UNION_MEMBER_LIMIT;
 	}
 
 	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self

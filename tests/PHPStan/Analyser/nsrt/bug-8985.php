@@ -41,6 +41,8 @@ class Repository
 	{
 		return new Entity('test');
 	}
+
+	public const MY_CONST = 'const_value';
 }
 
 function testMethodCall(): void {
@@ -91,4 +93,10 @@ function testChainedPropertyOnMethodCall(): void {
 	assert((new Repository())->getEntity()->value === 'specific');
 
 	assertType('string', (new Repository())->getEntity()->value);
+}
+
+function testClassConstFetch(): void {
+	assert((new Repository())::MY_CONST === 'const_value');
+
+	assertType("'const_value'", (new Repository())::MY_CONST);
 }

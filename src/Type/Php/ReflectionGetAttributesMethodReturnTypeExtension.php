@@ -13,6 +13,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use ReflectionAttribute;
 use function count;
 
@@ -44,12 +45,20 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		$reflectionAttributeClassName = $this->resolveReflectionAttributeClassName($methodReflection);
+		$reflectionAttributeClassNames = $this->resolveReflectionAttributeClassNames($methodReflection);
 
-		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new GenericObjectType($reflectionAttributeClassName, [$classType])), new AccessoryArrayListType()]);
+		$valueTypes = [];
+		foreach ($reflectionAttributeClassNames as $className) {
+			$valueTypes[] = new GenericObjectType($className, [$classType]);
+		}
+
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), TypeCombinator::union(...$valueTypes)), new AccessoryArrayListType()]);
 	}
 
-	private function resolveReflectionAttributeClassName(MethodReflection $methodReflection): string
+	/**
+	 * @return non-empty-list<string>
+	 */
+	private function resolveReflectionAttributeClassNames(MethodReflection $methodReflection): array
 	{
 		$returnType = $methodReflection->getVariants()[0]->getReturnType();
 		$nativeReflectionAttributeType = new ObjectType(ReflectionAttribute::class);
@@ -61,11 +70,11 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 			}
 		}
 
-		if (count($matchedClassNames) === 1) {
-			return $matchedClassNames[0];
+		if (count($matchedClassNames) === 0) {
+			return [ReflectionAttribute::class];
 		}
 
-		return ReflectionAttribute::class;
+		return $matchedClassNames;
 	}
 
 }

@@ -422,7 +422,7 @@ final class NewHandler implements ExprHandler
 					if ($foundProperty !== null) {
 						$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
 						$propertyType = TypeCombinator::intersect($foundProperty->getWritableType(), $nonFinalObjectType);
-						if (!($propertyType instanceof NeverType)) {
+						if (!$propertyType instanceof NeverType) {
 							return $propertyType;
 						}
 					}

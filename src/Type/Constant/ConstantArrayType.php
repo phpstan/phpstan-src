@@ -1194,6 +1194,8 @@ class ConstantArrayType implements Type
 				->spliceArray($offsetType, $lengthType, $replacementType);
 		}
 
+		$allKeysInteger = $this->getIterableKeyType()->isInteger()->yes();
+
 		if ($keyTypesCount + $offset <= 0) {
 			// A negative offset cannot reach left outside the array twice
 			$offset = 0;
@@ -1271,7 +1273,11 @@ class ConstantArrayType implements Type
 				);
 			}
 
-			$types[] = $builder->getArray();
+			$builtType = $builder->getArray();
+			if ($allKeysInteger && !$builtType->isList()->yes()) {
+				$builtType = TypeCombinator::intersect($builtType, new AccessoryArrayListType());
+			}
+			$types[] = $builtType;
 		}
 
 		return TypeCombinator::union(...$types);

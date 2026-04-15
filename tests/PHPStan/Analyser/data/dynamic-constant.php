@@ -13,6 +13,15 @@ class DynamicConstantClass
 	const DYNAMIC_CONSTANT_IN_CLASS = 'abcdef';
 	const DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES_IN_CLASS = 'xyz';
 	const PURE_CONSTANT_IN_CLASS = 'abc123def';
+
+	/** @var string|null */
+	const DYNAMIC_NULL_WITH_PHPDOC_CONSTANT = null;
+
+	/** @var list<string> */
+	const DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT = [];
+
+	/** @var int */
+	const DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT = null;
 }
 
 class NoDynamicConstantClass
@@ -29,5 +38,8 @@ class NoDynamicConstantClass
 		assertType('bool', GLOBAL_DYNAMIC_CONSTANT);
 		assertType('123', GLOBAL_PURE_CONSTANT);
 		assertType('string|null', GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES);
+		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
+		assertType('list<string>', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT);
+		assertType('int', DynamicConstantClass::DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT);
 	}
 }

@@ -94,6 +94,7 @@ return [
 	'link' => ['hasSideEffects' => true],
 	'mkdir' => ['hasSideEffects' => true],
 	'move_uploaded_file' => ['hasSideEffects' => true],
+	'mysqli_connect' => ['hasSideEffects' => true],
 	'ob_clean' => ['hasSideEffects' => true],
 	'ob_end_clean' => ['hasSideEffects' => true],
 	'ob_end_flush' => ['hasSideEffects' => true],

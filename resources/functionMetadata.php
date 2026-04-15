@@ -1392,6 +1392,7 @@ return [
 	'msgfmt_parse_message' => ['hasSideEffects' => false],
 	'mt_getrandmax' => ['hasSideEffects' => false],
 	'mt_rand' => ['hasSideEffects' => true],
+	'mysqli_connect' => ['hasSideEffects' => true],
 	'net_get_interfaces' => ['hasSideEffects' => false],
 	'ngettext' => ['hasSideEffects' => false],
 	'nl2br' => ['hasSideEffects' => false],

@@ -20,7 +20,7 @@ namespace PHPStan\Type;
  *
  * Used as a parameter to Type::generalize():
  *
- *     $type->generalize(GeneralizePrecision::lessSpecific())
+ *     $type->generalize(GeneralizePrecision::lessSpecific()) //
  */
 final class GeneralizePrecision
 {

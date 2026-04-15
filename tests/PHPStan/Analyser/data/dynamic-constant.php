@@ -18,6 +18,12 @@ class DynamicConstantClass
 	const DYNAMIC_TRUE_CONSTANT = true;
 	const DYNAMIC_FALSE_CONSTANT = false;
 	const DYNAMIC_EMPTY_ARRAY_CONSTANT = [];
+
+	/** @var string|null */
+	const DYNAMIC_NULL_WITH_PHPDOC_CONSTANT = null;
+
+	/** @var list<string> */
+	const DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT = [];
 }
 
 class NoDynamicConstantClass
@@ -45,5 +51,9 @@ class NoDynamicConstantClass
 
 		// Empty array constant should generalize to mixed
 		assertType('mixed', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_CONSTANT);
+
+		// Bug 9218: dynamicConstantNames with @var PHPDoc type
+		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
+		assertType('list<string>', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT);
 	}
 }

@@ -2544,11 +2544,13 @@ final class InitializerExprTypeResolver
 				if ($reflectionConstant->getType() !== null) {
 					$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $constantClassReflection);
 				}
+				$phpDocType = $constantClassReflection->getConstant($constantName)->getPhpDocType();
 				$types[] = $this->constantResolver->resolveClassConstantType(
 					$constantClassReflection->getName(),
 					$constantName,
 					$constantType,
 					$nativeType,
+					$phpDocType,
 				);
 				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				continue;
@@ -2577,6 +2579,7 @@ final class InitializerExprTypeResolver
 				$constantName,
 				$constantType,
 				$nativeType,
+				$constantReflection->getPhpDocType(),
 			);
 			unset($this->currentlyResolvingClassConstant[$resolvingName]);
 			$types[] = $constantType;

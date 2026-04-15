@@ -6,6 +6,8 @@ use Nette\DI\Helpers;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function array_key_first;
+use function array_unique;
 use function count;
 use function ksort;
 use function preg_quote;
@@ -52,37 +54,37 @@ final class BaselinePhpErrorFormatter
 		$php .= '$ignoreErrors = [];';
 		$php .= "\n";
 		foreach ($fileErrors as $file => $fileErrorEntries) {
-			$fileErrorsByKey = [];
+			$fileErrorsByMessage = [];
 			foreach ($fileErrorEntries as ['error' => $error, 'origin' => $origin]) {
 				$errorMessage = $error->getMessage();
 				$identifier = $error->getIdentifier();
-				$key = $errorMessage . "\0" . ($origin ?? '');
-				if (!isset($fileErrorsByKey[$key])) {
-					$fileErrorsByKey[$key] = [
-						'message' => $errorMessage,
-						'origin' => $origin,
+				if (!isset($fileErrorsByMessage[$errorMessage])) {
+					$fileErrorsByMessage[$errorMessage] = [
 						'count' => 1,
-						'identifiers' => $identifier !== null ? [$identifier => 1] : [],
+						'origins' => [$origin],
+						'identifiers' => $identifier !== null ? [$identifier => ['count' => 1, 'origins' => [$origin]]] : [],
 					];
 					continue;
 				}
 
-				$fileErrorsByKey[$key]['count']++;
+				$fileErrorsByMessage[$errorMessage]['count']++;
+				$fileErrorsByMessage[$errorMessage]['origins'][] = $origin;
 
 				if ($identifier === null) {
 					continue;
 				}
 
-				if (!isset($fileErrorsByKey[$key]['identifiers'][$identifier])) {
-					$fileErrorsByKey[$key]['identifiers'][$identifier] = 1;
+				if (!isset($fileErrorsByMessage[$errorMessage]['identifiers'][$identifier])) {
+					$fileErrorsByMessage[$errorMessage]['identifiers'][$identifier] = ['count' => 1, 'origins' => [$origin]];
 					continue;
 				}
 
-				$fileErrorsByKey[$key]['identifiers'][$identifier]++;
+				$fileErrorsByMessage[$errorMessage]['identifiers'][$identifier]['count']++;
+				$fileErrorsByMessage[$errorMessage]['identifiers'][$identifier]['origins'][] = $origin;
 			}
-			ksort($fileErrorsByKey, SORT_STRING);
+			ksort($fileErrorsByMessage, SORT_STRING);
 
-			foreach ($fileErrorsByKey as ['message' => $message, 'origin' => $origin, 'count' => $totalCount, 'identifiers' => $identifiers]) {
+			foreach ($fileErrorsByMessage as $message => ['count' => $totalCount, 'origins' => $messageOrigins, 'identifiers' => $identifiers]) {
 				if ($this->useRawMessage) {
 					$messageKey = 'rawMessage';
 				} else {
@@ -92,8 +94,10 @@ final class BaselinePhpErrorFormatter
 
 				ksort($identifiers, SORT_STRING);
 				if (count($identifiers) > 0) {
-					foreach ($identifiers as $identifier => $identifierCount) {
-						if ($origin !== null) {
+					foreach ($identifiers as $identifier => ['count' => $identifierCount, 'origins' => $identifierOrigins]) {
+						$uniqueOrigins = array_unique($identifierOrigins);
+						$uniformOrigin = count($uniqueOrigins) === 1 && $uniqueOrigins[array_key_first($uniqueOrigins)] !== null ? $uniqueOrigins[array_key_first($uniqueOrigins)] : null;
+						if ($uniformOrigin !== null) {
 							$php .= sprintf(
 								"\$ignoreErrors[] = [\n\t%s => %s,\n\t'identifier' => %s,\n\t'count' => %s,\n\t'path' => __DIR__ . %s,\n\t'origin' => __DIR__ . %s,\n];\n",
 								var_export($messageKey, true),
@@ -101,7 +105,7 @@ final class BaselinePhpErrorFormatter
 								var_export(Helpers::escape($identifier), true),
 								var_export($identifierCount, true),
 								var_export(Helpers::escape($file), true),
-								var_export(Helpers::escape($origin), true),
+								var_export(Helpers::escape($uniformOrigin), true),
 							);
 						} else {
 							$php .= sprintf(
@@ -115,14 +119,16 @@ final class BaselinePhpErrorFormatter
 						}
 					}
 				} else {
-					if ($origin !== null) {
+					$uniqueOrigins = array_unique($messageOrigins);
+					$uniformOrigin = count($uniqueOrigins) === 1 && $uniqueOrigins[array_key_first($uniqueOrigins)] !== null ? $uniqueOrigins[array_key_first($uniqueOrigins)] : null;
+					if ($uniformOrigin !== null) {
 						$php .= sprintf(
 							"\$ignoreErrors[] = [\n\t%s => %s,\n\t'count' => %s,\n\t'path' => __DIR__ . %s,\n\t'origin' => __DIR__ . %s,\n];\n",
 							var_export($messageKey, true),
 							var_export(Helpers::escape($message), true),
 							var_export($totalCount, true),
 							var_export(Helpers::escape($file), true),
-							var_export(Helpers::escape($origin), true),
+							var_export(Helpers::escape($uniformOrigin), true),
 						);
 					} else {
 						$php .= sprintf(

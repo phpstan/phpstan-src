@@ -46,6 +46,50 @@ class GenericContainer
 	}
 }
 
+class NullOrFalsePropertyCase
+{
+	/**
+	 * @var \WeakMap<object, string>|null|false
+	 */
+	private \WeakMap|null|false $map = false;
+
+	public function init(): void
+	{
+		if ($this->map !== false) {
+			if ($this->map === null) {
+				$this->map = new \WeakMap();
+			}
+		}
+	}
+
+	public function reset(): void
+	{
+		$this->map = null;
+	}
+}
+
+class StaticNullOrFalsePropertyCase
+{
+	/**
+	 * @var \WeakMap<object, string>|null|false
+	 */
+	private static \WeakMap|null|false $map = false;
+
+	public static function init(): void
+	{
+		if (self::$map !== false) {
+			if (self::$map === null) {
+				self::$map = new \WeakMap();
+			}
+		}
+	}
+
+	public static function reset(): void
+	{
+		self::$map = null;
+	}
+}
+
 class OtherGenericCase
 {
 	/**

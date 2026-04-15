@@ -420,9 +420,9 @@ final class NewHandler implements ExprHandler
 				if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
 					$foundProperty = $this->propertyReflectionFinder->findPropertyReflectionFromNode($assignedToProperty, $scope);
 					if ($foundProperty !== null) {
-						$propertyType = TypeCombinator::removeNull($foundProperty->getWritableType());
 						$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
-						if ($nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
+						$propertyType = TypeCombinator::intersect($foundProperty->getWritableType(), $nonFinalObjectType);
+						if (!($propertyType instanceof NeverType) && $nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
 							return $propertyType;
 						}
 					}

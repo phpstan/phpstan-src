@@ -18,10 +18,7 @@ function t(array $R, bool $var1, object $user): void {
 	}
 }
 
-/**
- * Variable equivalent: pre-defined variable stays mixed inside if ($aa)
- * @param mixed $input
- */
+/** @param mixed $input */
 function variableEquivalent($input, bool $var1, object $user): void {
 	$aa = null;
 	$bb = $input;

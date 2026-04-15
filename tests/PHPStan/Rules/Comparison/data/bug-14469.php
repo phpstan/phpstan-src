@@ -72,9 +72,7 @@ function multipleElseif(array $R, bool $var1, bool $var2, object $user): void {
     }
 }
 
-/**
- * @param mixed $input
- */
+/** @param mixed $input */
 function variableEquivalent(bool $var1, object $user, $input): void {
 	$aa = null;
 	$bb = $input;

@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace Bug11844;
 
+use function PHPStan\Testing\assertType;
+
 class StaticPropertyCase
 {
 	/**
@@ -15,6 +17,7 @@ class StaticPropertyCase
 	{
 		if (self::$map === null) {
 			self::$map = new \WeakMap();
+			assertType('WeakMap<object, string>', self::$map);
 		}
 	}
 }
@@ -30,6 +33,7 @@ class InstancePropertyCase
 	{
 		if ($this->map === null) {
 			$this->map = new \WeakMap();
+			assertType('WeakMap<object, string>', $this->map);
 		}
 	}
 }
@@ -58,6 +62,7 @@ class NullOrFalsePropertyCase
 		if ($this->map !== false) {
 			if ($this->map === null) {
 				$this->map = new \WeakMap();
+				assertType('WeakMap<object, string>', $this->map);
 			}
 		}
 	}
@@ -80,6 +85,7 @@ class StaticNullOrFalsePropertyCase
 		if (self::$map !== false) {
 			if (self::$map === null) {
 				self::$map = new \WeakMap();
+				assertType('WeakMap<object, string>', self::$map);
 			}
 		}
 	}
@@ -120,6 +126,7 @@ class TemplatePropertyCase
 	{
 		if ($this->map === null) {
 			$this->map = new \WeakMap();
+			assertType('WeakMap<T of object (class Bug11844\TemplatePropertyCase, argument), U (class Bug11844\TemplatePropertyCase, argument)>', $this->map);
 		}
 	}
 }
@@ -139,6 +146,7 @@ class StaticTemplatePropertyCase
 	{
 		if (self::$map === null) {
 			self::$map = new \WeakMap();
+			assertType('WeakMap<T of object (class Bug11844\StaticTemplatePropertyCase, argument), U (class Bug11844\StaticTemplatePropertyCase, argument)>', self::$map);
 		}
 	}
 }

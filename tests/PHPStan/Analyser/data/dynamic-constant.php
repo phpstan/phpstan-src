@@ -19,6 +19,9 @@ class DynamicConstantClass
 
 	/** @var list<string> */
 	const DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT = [];
+
+	/** @var int */
+	const DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT = null;
 }
 
 class NoDynamicConstantClass
@@ -37,5 +40,6 @@ class NoDynamicConstantClass
 		assertType('string|null', GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES);
 		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
 		assertType('list<string>', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT);
+		assertType('int', DynamicConstantClass::DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT);
 	}
 }

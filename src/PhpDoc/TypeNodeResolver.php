@@ -832,14 +832,8 @@ final class TypeNodeResolver
 		}
 
 		// Check for a generic type alias (e.g. MyList<string>) before falling through to
-		// class-based generic resolution, but only when the name is not itself a resolvable
-		// class — in that case the class-based path must win to preserve backward compatibility
-		// (a type alias like BelongsTo<T, U> = \Eloquent\BelongsTo<T, U> should still produce
-		// the same GenericObjectType that class-based resolution would have given).
-		$resolvedGenericName = $nameScope->resolveStringName($typeNode->type->name);
-		$genericTypeAlias = !$this->getReflectionProvider()->hasClass($resolvedGenericName)
-			? $this->findGenericTypeAlias($typeNode->type->name, $nameScope)
-			: null;
+		// class-based generic resolution.
+		$genericTypeAlias = $this->findGenericTypeAlias($typeNode->type->name, $nameScope);
 		if ($genericTypeAlias !== null) {
 			$templateNodes = $genericTypeAlias->getTemplateTagValueNodes();
 			$totalParams = count($templateNodes);

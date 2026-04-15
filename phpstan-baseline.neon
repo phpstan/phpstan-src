@@ -758,6 +758,7 @@ parameters:
 			identifier: closure.unusedUse
 			count: 1
 			path: src/Testing/PHPStanTestCase.php
+			origin: src/Testing/PHPStanTestCaseTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
@@ -896,6 +897,7 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/BooleanType.php
+			origin: src/Type/JustNullableTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
@@ -980,36 +982,42 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Constant/ConstantBooleanType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 4
 			path: src/Type/Constant/ConstantBooleanType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Constant/ConstantBooleanType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 4
 			path: src/Type/Constant/ConstantFloatType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\FloatType is error-prone and deprecated. Use Type::isFloat() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Constant/ConstantFloatType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 4
 			path: src/Type/Constant/ConstantIntegerType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\IntegerType is error-prone and deprecated. Use Type::isInteger() instead.'
@@ -1028,6 +1036,7 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 4
 			path: src/Type/Constant/ConstantStringType.php
+			origin: src/Type/Traits/ConstantScalarTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
@@ -1154,120 +1163,140 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateArrayType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateBenevolentUnionType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateBooleanType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateConstantArrayType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateConstantIntegerType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: 'Method PHPStan\Type\Generic\TemplateConstantIntegerType::toPhpDocNode() should return PHPStan\PhpDocParser\Ast\Type\ConstTypeNode but returns PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode.'
 			identifier: return.type
 			count: 1
 			path: src/Type/Generic/TemplateConstantIntegerType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateConstantStringType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateFloatType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateGenericObjectType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateIntegerType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateIntersectionType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateIterableType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateKeyOfType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/Generic/TemplateMixedType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateNullType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateObjectShapeType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateObjectType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateObjectWithoutClassType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/Generic/TemplateStrictMixedType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateStringType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
@@ -1358,6 +1387,7 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateUnionType.php
+			origin: src/Type/Generic/TemplateTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
@@ -1382,6 +1412,7 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/IntegerType.php
+			origin: src/Type/JustNullableTypeTrait.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'

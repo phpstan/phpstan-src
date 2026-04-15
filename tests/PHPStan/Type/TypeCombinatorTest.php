@@ -4934,7 +4934,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 			'T of Countable&Iterator (function a(), parameter)',
 		];
 
-		// https://github.com/phpstan/phpstan/issues/11234
 		yield [
 			[
 				new ConstantArrayType(

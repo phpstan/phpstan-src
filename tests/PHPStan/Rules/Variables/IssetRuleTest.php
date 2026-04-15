@@ -3,15 +3,17 @@
 namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<IssetRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class IssetRuleTest extends RuleTestCase
 {
@@ -20,13 +22,17 @@ class IssetRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IssetRule(new IssetCheck(
-			new PropertyDescriptor(),
-			new PropertyReflectionFinder(),
-			self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
-			true,
-			$this->treatPhpDocTypesAsCertain,
-		));
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new IssetRule(new IssetCheck(
+				new PropertyDescriptor(),
+				new PropertyReflectionFinder(),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				true,
+				$this->treatPhpDocTypesAsCertain,
+			)),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -577,6 +583,21 @@ class IssetRuleTest extends RuleTestCase
 			[
 				'Variable $undefinedVar in isset() is never defined.',
 				165,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/isset-in-trait.php'], [
+			[
+				'Property IssetInTrait\ClassA::$j (int) in isset() is not nullable.',
+				36,
+			],
+			[
+				'Property IssetInTrait\ClassB::$j (int) in isset() is not nullable.',
+				36,
 			],
 		]);
 	}

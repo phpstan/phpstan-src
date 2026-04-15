@@ -29,7 +29,7 @@ final class EmptyRule implements Rule
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
-		$error = $this->issetCheck->checkWithTraitHandling($node->expr, $scope, 'in empty()', 'empty', static function (Type $type): ?string {
+		$error = $this->issetCheck->check($node->expr, $scope, 'in empty()', 'empty', static function (Type $type): ?string {
 			$isNull = $type->isNull();
 			if ($isNull->maybe()) {
 				return null;

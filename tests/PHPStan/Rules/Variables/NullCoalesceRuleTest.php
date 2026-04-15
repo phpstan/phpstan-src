@@ -3,29 +3,35 @@
 namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<NullCoalesceRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class NullCoalesceRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new NullCoalesceRule(new IssetCheck(
-			new PropertyDescriptor(),
-			new PropertyReflectionFinder(),
-			self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
-			true,
-			$this->shouldTreatPhpDocTypesAsCertain(),
-		));
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new NullCoalesceRule(new IssetCheck(
+				new PropertyDescriptor(),
+				new PropertyReflectionFinder(),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				true,
+				$this->shouldTreatPhpDocTypesAsCertain(),
+			)),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testCoalesceRule(): void
@@ -462,6 +468,20 @@ class NullCoalesceRuleTest extends RuleTestCase
 			[
 				'Variable $undefinedVar on left side of ?? is never defined.',
 				164,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/isset-in-trait.php'], [
+			[
+				'Property IssetInTrait\ClassA::$j (int) on left side of ?? is not nullable.',
+				35,
+			],
+			[
+				'Property IssetInTrait\ClassB::$j (int) on left side of ?? is not nullable.',
+				35,
 			],
 		]);
 	}

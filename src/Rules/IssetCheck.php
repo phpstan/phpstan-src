@@ -40,11 +40,32 @@ final class IssetCheck
 	}
 
 	/**
-	 * @param class-string<Rule<covariant Node>> $ruleName
+	 * @param class-string<Rule<covariant Node>>|null $ruleName
 	 * @param ErrorIdentifier $identifier
 	 * @param callable(Type): ?string $typeMessageCallback
 	 */
-	public function check(Expr $expr, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, string $ruleName, Expr $originalExpr, ?IdentifierRuleError $error = null): ?IdentifierRuleError
+	public function check(Expr $expr, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?string $ruleName = null, ?IdentifierRuleError $error = null): ?IdentifierRuleError
+	{
+		$result = $this->checkInternal($expr, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $expr, $error);
+
+		if ($ruleName !== null && $scope->isInTrait()) {
+			if ($result !== null) {
+				$this->constantConditionInTraitHelper->emitError($ruleName, $scope, $expr, true, $result);
+				return null;
+			}
+			$this->constantConditionInTraitHelper->emitNoError($ruleName, $scope, $expr);
+			return null;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param class-string<Rule<covariant Node>>|null $ruleName
+	 * @param ErrorIdentifier $identifier
+	 * @param callable(Type): ?string $typeMessageCallback
+	 */
+	private function checkInternal(Expr $expr, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?string $ruleName, Expr $originalExpr, ?IdentifierRuleError $error = null): ?IdentifierRuleError
 	{
 		// mirrored in PHPStan\Analyser\MutatingScope::issetCheck()
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
@@ -119,7 +140,7 @@ final class IssetCheck
 				), $typeMessageCallback, $identifier, 'offset');
 
 				if ($error !== null) {
-					return $this->check($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $originalExpr, $error);
+					return $this->checkInternal($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $originalExpr, $error);
 				}
 			}
 
@@ -233,11 +254,11 @@ final class IssetCheck
 
 			if ($error !== null) {
 				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->check($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $originalExpr, $error);
+					return $this->checkInternal($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $originalExpr, $error);
 				}
 
 				if ($expr->class instanceof Expr) {
-					return $this->check($expr->class, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $originalExpr, $error);
+					return $this->checkInternal($expr->class, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $originalExpr, $error);
 				}
 			}
 
@@ -276,27 +297,6 @@ final class IssetCheck
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param class-string<Rule<covariant Node>> $ruleName
-	 * @param ErrorIdentifier $identifier
-	 * @param callable(Type): ?string $typeMessageCallback
-	 */
-	public function checkWithTraitHandling(Expr $expr, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, string $ruleName): ?IdentifierRuleError
-	{
-		$error = $this->check($expr, $scope, $operatorDescription, $identifier, $typeMessageCallback, $ruleName, $expr);
-
-		if ($scope->isInTrait()) {
-			if ($error !== null) {
-				$this->constantConditionInTraitHelper->emitError($ruleName, $scope, $expr, true, $error);
-				return null;
-			}
-			$this->constantConditionInTraitHelper->emitNoError($ruleName, $scope, $expr);
-			return null;
-		}
-
-		return $error;
 	}
 
 	/**

@@ -31,7 +31,7 @@ final class IssetRule implements Rule
 	{
 		$messages = [];
 		foreach ($node->vars as $var) {
-			$error = $this->issetCheck->checkWithTraitHandling($var, $scope, 'in isset()', 'isset', static function (Type $type): ?string {
+			$error = $this->issetCheck->check($var, $scope, 'in isset()', 'isset', static function (Type $type): ?string {
 				$isNull = $type->isNull();
 				if ($isNull->maybe()) {
 					return null;

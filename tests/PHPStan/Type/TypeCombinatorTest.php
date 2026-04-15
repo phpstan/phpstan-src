@@ -5065,6 +5065,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'lowercase-string&non-decimal-int-string',
 		];
+
+		yield [
+			[
+				new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+					[
+						new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1), new ConstantIntegerType(2), new ConstantIntegerType(3)]),
+						new UnionType([new IntegerType(), new ObjectType('stdClass'), new StringType(), new NullType()]),
+					],
+				),
+				new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+					[new IntegerType(), new ObjectType('stdClass')],
+				),
+			],
+			ConstantArrayType::class,
+			'array{0|1|2|3, stdClass}',
+		];
 	}
 
 	/**

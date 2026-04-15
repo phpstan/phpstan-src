@@ -104,3 +104,41 @@ class OtherGenericCase
 		}
 	}
 }
+
+/**
+ * @template T of object
+ * @template U
+ */
+class TemplatePropertyCase
+{
+	/**
+	 * @var \WeakMap<T, U>|null
+	 */
+	private ?\WeakMap $map = null;
+
+	public function init(): void
+	{
+		if ($this->map === null) {
+			$this->map = new \WeakMap();
+		}
+	}
+}
+
+/**
+ * @template T of object
+ * @template U
+ */
+class StaticTemplatePropertyCase
+{
+	/**
+	 * @var \WeakMap<T, U>|null
+	 */
+	private static ?\WeakMap $map = null;
+
+	public static function init(): void
+	{
+		if (self::$map === null) {
+			self::$map = new \WeakMap();
+		}
+	}
+}

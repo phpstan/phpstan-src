@@ -65,3 +65,15 @@ function testIntersectNonEmptyStringValue(mixed $x): void
 {
 	assertType('array{non-empty-string, Bug11234\Payload}', $x);
 }
+
+/** @param array{0|1|2|3, non-empty-string|int|null}&array{int, string} $x */
+function testIntersectNonEmptyStringInUnion(mixed $x): void
+{
+	assertType('array{0|1|2|3, non-empty-string}', $x);
+}
+
+/** @param array{0|1|2|3, string|null}&array{int, non-empty-string} $x */
+function testIntersectWithNonEmptyStringOtherSide(mixed $x): void
+{
+	assertType('array{0|1|2|3, non-empty-string}', $x);
+}

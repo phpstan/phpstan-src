@@ -77,7 +77,6 @@ final class MissingPropertyTypehintRule implements Rule
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($propertyType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s type has no signature specified for %s.',

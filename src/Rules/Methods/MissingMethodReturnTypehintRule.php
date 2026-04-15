@@ -79,7 +79,6 @@ final class MissingMethodReturnTypehintRule implements Rule
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($returnType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() return type has no signature specified for %s.',

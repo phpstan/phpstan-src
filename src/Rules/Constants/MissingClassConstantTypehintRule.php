@@ -83,7 +83,6 @@ final class MissingClassConstantTypehintRule implements Rule
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($constantType) as $callableType) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Constant %s::%s type has no signature specified for %s.',

@@ -72,7 +72,6 @@ final class MissingMethodSelfOutTypeRule implements Rule
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($selfOutType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() has %s with no signature specified for %s.',

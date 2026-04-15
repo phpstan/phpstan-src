@@ -99,7 +99,6 @@ final class MixinCheck
 					->build();
 			}
 
-
 			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($type) as $callableType) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s %s has PHPDoc tag @mixin with no signature specified for %s.',

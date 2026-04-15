@@ -221,7 +221,6 @@ final class LocalTypeAliasesCheck
 					->build();
 			}
 
-
 			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($resolvedType) as $callableType) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s %s has type alias %s with no signature specified for %s.',

@@ -200,7 +200,6 @@ final class AssertRuleHelper
 					->build();
 			}
 
-
 			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($assertedType) as $callableType) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag %s for %s has no signature specified for %s.',

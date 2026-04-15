@@ -146,7 +146,6 @@ final class SetPropertyHookParameterRule implements Rule
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Set hook for property %s::$%s has parameter $%s with no signature specified for %s.',

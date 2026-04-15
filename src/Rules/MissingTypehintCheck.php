@@ -182,7 +182,6 @@ final class MissingTypehintCheck
 		return $objectTypes;
 	}
 
-
 	/**
 	 * @return Type[]
 	 */

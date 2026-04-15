@@ -122,7 +122,7 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 						->build();
 				}
 
-				}
+			}
 
 			$escapedIdentifier = SprintfHelper::escapeFormatString($identifier);
 			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(

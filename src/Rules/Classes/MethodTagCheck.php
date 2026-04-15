@@ -190,7 +190,6 @@ final class MethodTagCheck
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
 			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$errors[] = RuleErrorBuilder::message(sprintf(

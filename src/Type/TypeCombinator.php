@@ -1516,12 +1516,12 @@ final class TypeCombinator
 						$valueTypes = $types[$i]->getValueTypes();
 						foreach ($types[$i]->getKeyTypes() as $k => $keyType) {
 							$hasOffset = $types[$j]->hasOffsetValueType($keyType);
-							$otherValueType = !$hasOffset->no()
-								? $types[$j]->getOffsetValueType($keyType)
-								: $types[$j]->getIterableValueType();
+							if ($hasOffset->no()) {
+								continue;
+							}
 							$newArray->setOffsetValueType(
 								self::intersect($keyType, $types[$j]->getIterableKeyType()),
-								self::intersect($valueTypes[$k], $otherValueType),
+								self::intersect($valueTypes[$k], $types[$j]->getOffsetValueType($keyType)),
 								$types[$i]->isOptionalKey($k) && !$hasOffset->yes(),
 							);
 						}
@@ -1536,12 +1536,12 @@ final class TypeCombinator
 						$valueTypes = $types[$j]->getValueTypes();
 						foreach ($types[$j]->getKeyTypes() as $k => $keyType) {
 							$hasOffset = $types[$i]->hasOffsetValueType($keyType);
-							$otherValueType = !$hasOffset->no()
-								? $types[$i]->getOffsetValueType($keyType)
-								: $types[$i]->getIterableValueType();
+							if ($hasOffset->no()) {
+								continue;
+							}
 							$newArray->setOffsetValueType(
 								self::intersect($keyType, $types[$i]->getIterableKeyType()),
-								self::intersect($valueTypes[$k], $otherValueType),
+								self::intersect($valueTypes[$k], $types[$i]->getOffsetValueType($keyType)),
 								$types[$j]->isOptionalKey($k) && !$hasOffset->yes(),
 							);
 						}

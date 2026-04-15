@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IssetCheck;
@@ -25,11 +27,11 @@ final class IssetRule implements Rule
 		return Node\Expr\Isset_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$messages = [];
 		foreach ($node->vars as $var) {
-			$error = $this->issetCheck->check($var, $scope, 'in isset()', 'isset', static function (Type $type): ?string {
+			$error = $this->issetCheck->checkWithTraitHandling($var, $scope, 'in isset()', 'isset', static function (Type $type): ?string {
 				$isNull = $type->isNull();
 				if ($isNull->maybe()) {
 					return null;
@@ -40,7 +42,7 @@ final class IssetRule implements Rule
 				}
 
 				return 'is not nullable';
-			});
+			}, self::class);
 			if ($error === null) {
 				continue;
 			}

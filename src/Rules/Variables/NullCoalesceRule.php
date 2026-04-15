@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IssetCheck;
@@ -25,7 +27,7 @@ final class NullCoalesceRule implements Rule
 		return Node\Expr::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$typeMessageCallback = static function (Type $type): ?string {
 			$isNull = $type->isNull();
@@ -41,9 +43,9 @@ final class NullCoalesceRule implements Rule
 		};
 
 		if ($node instanceof Node\Expr\BinaryOp\Coalesce) {
-			$error = $this->issetCheck->check($node->left, $scope, 'on left side of ??', 'nullCoalesce', $typeMessageCallback);
+			$error = $this->issetCheck->checkWithTraitHandling($node->left, $scope, 'on left side of ??', 'nullCoalesce', $typeMessageCallback, self::class);
 		} elseif ($node instanceof Node\Expr\AssignOp\Coalesce) {
-			$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=', 'nullCoalesce', $typeMessageCallback);
+			$error = $this->issetCheck->checkWithTraitHandling($node->var, $scope, 'on left side of ??=', 'nullCoalesce', $typeMessageCallback, self::class);
 		} else {
 			return [];
 		}

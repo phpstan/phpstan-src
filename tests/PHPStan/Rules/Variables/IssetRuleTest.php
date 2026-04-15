@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -22,6 +23,7 @@ class IssetRuleTest extends RuleTestCase
 		return new IssetRule(new IssetCheck(
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
+			self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 			true,
 			$this->treatPhpDocTypesAsCertain,
 		));

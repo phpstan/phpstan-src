@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IssetCheck;
@@ -25,9 +27,9 @@ final class EmptyRule implements Rule
 		return Node\Expr\Empty_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
-		$error = $this->issetCheck->check($node->expr, $scope, 'in empty()', 'empty', static function (Type $type): ?string {
+		$error = $this->issetCheck->checkWithTraitHandling($node->expr, $scope, 'in empty()', 'empty', static function (Type $type): ?string {
 			$isNull = $type->isNull();
 			if ($isNull->maybe()) {
 				return null;
@@ -57,7 +59,7 @@ final class EmptyRule implements Rule
 			}
 
 			return 'is not nullable';
-		});
+		}, self::class);
 
 		if ($error === null) {
 			return [];

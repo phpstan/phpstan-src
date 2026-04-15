@@ -3263,6 +3263,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		foreach ($conditions as $conditionalExprString => $expressions) {
 			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
 			if ($certainty->no()) {
+				if (
+					array_key_exists($conditionalExprString, $scope->expressionTypes)
+					&& $scope->expressionTypes[$conditionalExprString]->getCertainty()->yes()
+				) {
+					continue;
+				}
 				unset($scope->expressionTypes[$conditionalExprString]);
 			} else {
 				if (array_key_exists($conditionalExprString, $scope->expressionTypes)) {

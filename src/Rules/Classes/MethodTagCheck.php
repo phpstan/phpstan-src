@@ -190,7 +190,6 @@ final class MethodTagCheck
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableTypeDescription) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s has PHPDoc tag @method for method %s() %s with no value type specified in %s.',

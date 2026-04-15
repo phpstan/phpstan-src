@@ -224,7 +224,6 @@ final class MissingTypehintCheck
 		return array_values($objectTypes);
 	}
 
-
 	/**
 	 * @return Type[]
 	 */

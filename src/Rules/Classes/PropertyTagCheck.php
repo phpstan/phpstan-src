@@ -171,7 +171,6 @@ final class PropertyTagCheck
 				->build();
 		}
 
-
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableTypeDescription) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s has PHPDoc tag %s for property $%s with no value type specified in %s.',

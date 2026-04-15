@@ -99,15 +99,6 @@ final class MixinCheck
 					->build();
 			}
 
-			foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($type) as [$aliasName, $missingParams]) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag @mixin contains generic type alias %s but does not specify its types: %s',
-					$aliasName,
-					$missingParams,
-				))
-					->identifier('missingType.generics')
-					->build();
-			}
 
 			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($type) as $callableType) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

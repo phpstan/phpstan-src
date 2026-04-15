@@ -117,6 +117,16 @@ final class MissingTypehintCheck
 			if ($type instanceof TemplateType) {
 				return $type;
 			}
+			if ($type instanceof GenericTypeAliasType) {
+				$missing = $type->getMissingRequiredParamNames();
+				if ($missing !== []) {
+					$objectTypes[] = [
+						sprintf('type alias %s', $type->getAliasName()),
+						implode(', ', array_unique($missing)),
+					];
+				}
+				return $traverse($type);
+			}
 			if ($type instanceof ObjectType) {
 				$classReflection = $type->getClassReflection();
 				if ($classReflection === null) {
@@ -172,31 +182,6 @@ final class MissingTypehintCheck
 		return $objectTypes;
 	}
 
-	/**
-	 * @return list<array{string, string}> List of [aliasName, missingTypeParamNames]
-	 */
-	public function getRawGenericTypeAliasesUsage(Type $type): array
-	{
-		/** @var array<string, list<string>> $found */
-		$found = [];
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$found): Type {
-			if ($type instanceof GenericTypeAliasType) {
-				$missing = $type->getMissingRequiredParamNames();
-				if ($missing !== []) {
-					$found[$type->getAliasName()] = $missing;
-				}
-			}
-
-			return $traverse($type);
-		});
-
-		$result = [];
-		foreach ($found as $aliasName => $paramNames) {
-			$result[] = [$aliasName, implode(', ', array_unique($paramNames))];
-		}
-
-		return $result;
-	}
 
 	/**
 	 * @return Type[]

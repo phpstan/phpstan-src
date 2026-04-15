@@ -83,17 +83,6 @@ final class MissingClassConstantTypehintRule implements Rule
 				->build();
 		}
 
-		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($constantType) as [$aliasName, $missingParams]) {
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Constant %s::%s with generic type alias %s does not specify its types: %s',
-				$constantReflection->getDeclaringClass()->getDisplayName(),
-				$constantName,
-				$aliasName,
-				$missingParams,
-			))
-				->identifier('missingType.generics')
-				->build();
-		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($constantType) as $callableType) {
 			$errors[] = RuleErrorBuilder::message(sprintf(

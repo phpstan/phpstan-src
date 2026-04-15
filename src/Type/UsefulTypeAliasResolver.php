@@ -119,7 +119,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 			// with empty args. If all params have declared defaults, isResolvable() will be true and
 			// the type is immediately expanded to the concrete default form. When at least one param
 			// has no default, the GenericTypeAliasType stays unresolved so that
-			// MissingTypehintCheck::getRawGenericTypeAliasesUsage() can detect the bare-usage error.
+			// MissingTypehintCheck::getNonGenericObjectTypesWithGenericClass() can detect the bare-usage error.
 			if ($unresolvedAlias->isGeneric()) {
 				$appType = $unresolvedAlias->createApplicationType($this->typeNodeResolver, []);
 				$resolvedAliasType = $appType->isResolvable() ? $appType->resolve() : $appType;

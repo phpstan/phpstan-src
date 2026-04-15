@@ -122,17 +122,7 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 						->build();
 				}
 
-				foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($varTagType) as [$aliasName, $missingParams]) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s contains generic type alias %s but does not specify its types: %s',
-						$identifier,
-						$aliasName,
-						$missingParams,
-					))
-						->identifier('missingType.generics')
-						->build();
 				}
-			}
 
 			$escapedIdentifier = SprintfHelper::escapeFormatString($identifier);
 			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(

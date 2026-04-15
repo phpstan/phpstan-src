@@ -72,18 +72,6 @@ final class MissingMethodSelfOutTypeRule implements Rule
 				->build();
 		}
 
-		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($selfOutType) as [$aliasName, $missingParams]) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has %s with generic type alias %s but does not specify its types: %s',
-				$classReflection->getDisplayName(),
-				$methodReflection->getName(),
-				$phpDocTagMessage,
-				$aliasName,
-				$missingParams,
-			))
-				->identifier('missingType.generics')
-				->build();
-		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($selfOutType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(

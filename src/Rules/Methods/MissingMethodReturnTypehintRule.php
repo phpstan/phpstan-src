@@ -79,17 +79,6 @@ final class MissingMethodReturnTypehintRule implements Rule
 				->build();
 		}
 
-		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($returnType) as [$aliasName, $missingParams]) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() return type with generic type alias %s does not specify its types: %s',
-				$methodReflection->getDeclaringClass()->getDisplayName(),
-				$methodReflection->getName(),
-				$aliasName,
-				$missingParams,
-			))
-				->identifier('missingType.generics')
-				->build();
-		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($returnType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(

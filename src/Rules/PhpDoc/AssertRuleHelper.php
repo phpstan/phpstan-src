@@ -200,17 +200,6 @@ final class AssertRuleHelper
 					->build();
 			}
 
-			foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($assertedType) as [$aliasName, $missingParams]) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag %s for %s contains generic type alias %s but does not specify its types: %s',
-					$tagName,
-					$assertedExprString,
-					$aliasName,
-					$missingParams,
-				))
-					->identifier('missingType.generics')
-					->build();
-			}
 
 			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($assertedType) as $callableType) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

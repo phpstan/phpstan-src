@@ -146,18 +146,6 @@ final class SetPropertyHookParameterRule implements Rule
 				->build();
 		}
 
-		foreach ($this->missingTypehintCheck->getRawGenericTypeAliasesUsage($parameterType) as [$aliasName, $missingParams]) {
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Set hook for property %s::$%s has parameter $%s with generic type alias %s but does not specify its types: %s',
-				$classReflection->getDisplayName(),
-				$hookReflection->getHookedPropertyName(),
-				$parameter->getName(),
-				$aliasName,
-				$missingParams,
-			))
-				->identifier('missingType.generics')
-				->build();
-		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
 			$errors[] = RuleErrorBuilder::message(sprintf(

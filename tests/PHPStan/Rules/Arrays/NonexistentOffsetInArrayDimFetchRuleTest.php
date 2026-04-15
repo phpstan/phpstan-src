@@ -106,7 +106,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				145,
 			],
 			[
-				'Offset \'c\' might not exist on array{c: false}|array{c: true}|array{e: true}.',
+				'Offset \'c\' might not exist on array{c: bool}|array{e: true}.',
 				171,
 			],
 			[

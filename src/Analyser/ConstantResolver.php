@@ -431,7 +431,7 @@ final class ConstantResolver
 		return $constantType;
 	}
 
-	public function resolveClassConstantType(string $className, string $constantName, Type $constantType, ?Type $nativeType): Type
+	public function resolveClassConstantType(string $className, string $constantName, Type $constantType, ?Type $nativeType, ?Type $phpDocType): Type
 	{
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
 		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
@@ -452,6 +452,10 @@ final class ConstantResolver
 		if (in_array($lookupConstantName, $this->dynamicConstantNames, true)) {
 			if ($nativeType !== null) {
 				return $nativeType;
+			}
+
+			if ($phpDocType !== null) {
+				return $phpDocType;
 			}
 
 			if ($constantType->isConstantValue()->yes()) {

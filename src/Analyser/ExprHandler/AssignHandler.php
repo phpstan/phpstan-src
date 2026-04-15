@@ -45,6 +45,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -84,6 +85,7 @@ final class AssignHandler implements ExprHandler
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
 		private PhpVersion $phpVersion,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -861,10 +863,13 @@ final class AssignHandler implements ExprHandler
 				if ($expr->name === $variableName) {
 					continue;
 				}
+			} elseif ($expr instanceof FuncCall) {
+				if ($this->isBuiltinFunctionCallWithPossibleSideEffects($expr, $scope)) {
+					continue;
+				}
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof FuncCall
 			) {
 				continue;
 			}
@@ -900,10 +905,13 @@ final class AssignHandler implements ExprHandler
 				if ($expr->name === $variableName) {
 					continue;
 				}
+			} elseif ($expr instanceof FuncCall) {
+				if ($this->isBuiltinFunctionCallWithPossibleSideEffects($expr, $scope)) {
+					continue;
+				}
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof FuncCall
 			) {
 				continue;
 			}
@@ -922,6 +930,21 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $conditionalExpressions;
+	}
+
+	private function isBuiltinFunctionCallWithPossibleSideEffects(Expr $expr, Scope $scope): bool
+	{
+		if (!$expr instanceof FuncCall || !$expr->name instanceof Name) {
+			return false;
+		}
+
+		if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
+			return false;
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+
+		return $functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no();
 	}
 
 	/**

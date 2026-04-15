@@ -4086,12 +4086,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			} else {
 				$constantArraysA = TypeCombinator::union(...$constantArrays['a']);
 				$constantArraysB = TypeCombinator::union(...$constantArrays['b']);
+				$aKeyType = $constantArraysA->getIterableKeyType();
+				$bKeyType = $constantArraysB->getIterableKeyType();
 				if (
-					$constantArraysA->getIterableKeyType()->equals($constantArraysB->getIterableKeyType())
+					$aKeyType->equals($bKeyType)
 					&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
 				) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
+					foreach (TypeUtils::flattenTypes($aKeyType) as $keyType) {
 						$resultArrayBuilder->setOffsetValueType(
 							$keyType,
 							$this->generalizeType(
@@ -4104,9 +4106,39 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					}
 
 					$resultTypes[] = $resultArrayBuilder->getArray();
+				} elseif (
+					$bKeyType->isSuperTypeOf($aKeyType)->yes()
+					&& !$aKeyType->equals($bKeyType)
+					&& $this->hasStructurallyMixedValueTypes($constantArraysB)
+				) {
+					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+					foreach (TypeUtils::flattenTypes($bKeyType) as $keyType) {
+						$hasInA = $constantArraysA->hasOffsetValueType($keyType);
+						$hasInB = $constantArraysB->hasOffsetValueType($keyType);
+
+						if ($hasInA->no()) {
+							$valueType = $constantArraysB->getOffsetValueType($keyType);
+						} elseif ($hasInB->no()) {
+							$valueType = $constantArraysA->getOffsetValueType($keyType);
+						} else {
+							$valueType = $this->generalizeType(
+								$constantArraysA->getOffsetValueType($keyType),
+								$constantArraysB->getOffsetValueType($keyType),
+								$depth + 1,
+							);
+						}
+
+						$resultArrayBuilder->setOffsetValueType(
+							$keyType,
+							$valueType,
+							!$hasInA->and($hasInB)->negate()->no(),
+						);
+					}
+
+					$resultTypes[] = $resultArrayBuilder->getArray();
 				} else {
 					$resultType = new ArrayType(
-						TypeCombinator::union($this->generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1)),
+						TypeCombinator::union($this->generalizeType($aKeyType, $bKeyType, $depth + 1)),
 						TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1)),
 					);
 					$accessories = [];
@@ -4347,6 +4379,24 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $depth;
+	}
+
+	private function hasStructurallyMixedValueTypes(Type $arrayType): bool
+	{
+		$hasArrayValuePart = false;
+		$hasNonArrayValuePart = false;
+		foreach (TypeUtils::flattenTypes($arrayType->getIterableValueType()) as $innerType) {
+			if ($innerType->isArray()->yes()) {
+				$hasArrayValuePart = true;
+			}
+			if (!$innerType->isArray()->no()) {
+				continue;
+			}
+
+			$hasNonArrayValuePart = true;
+		}
+
+		return $hasArrayValuePart && $hasNonArrayValuePart;
 	}
 
 	public function equals(self $otherScope): bool

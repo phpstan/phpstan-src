@@ -35,8 +35,6 @@ class NoDynamicConstantClass
 		assertType('bool', GLOBAL_DYNAMIC_CONSTANT);
 		assertType('123', GLOBAL_PURE_CONSTANT);
 		assertType('string|null', GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES);
-
-		// Bug 9218: dynamicConstantNames with @var PHPDoc type
 		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
 		assertType('list<string>', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT);
 	}

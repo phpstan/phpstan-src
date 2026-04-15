@@ -41,16 +41,16 @@ class NoDynamicConstantClass
 		assertType('123', GLOBAL_PURE_CONSTANT);
 		assertType('string|null', GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES);
 
-		// Bug 9218: dynamicConstantNames with null value
-		assertType('mixed', DynamicConstantClass::DYNAMIC_NULL_CONSTANT);
-		assertType('mixed', GLOBAL_DYNAMIC_NULL_CONSTANT);
+		// dynamicConstantNames with null value (no PHPDoc)
+		assertType('null', DynamicConstantClass::DYNAMIC_NULL_CONSTANT);
+		assertType('null', GLOBAL_DYNAMIC_NULL_CONSTANT);
 
 		// Bool constants should generalize properly
 		assertType('bool', DynamicConstantClass::DYNAMIC_TRUE_CONSTANT);
 		assertType('bool', DynamicConstantClass::DYNAMIC_FALSE_CONSTANT);
 
-		// Empty array constant should generalize to mixed
-		assertType('mixed', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_CONSTANT);
+		// Empty array constant (no PHPDoc)
+		assertType('array{}', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_CONSTANT);
 
 		// Bug 9218: dynamicConstantNames with @var PHPDoc type
 		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);

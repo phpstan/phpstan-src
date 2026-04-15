@@ -424,11 +424,7 @@ final class ConstantResolver
 				return $constantType;
 			}
 			if (in_array($constantName, $this->dynamicConstantNames, true)) {
-				$generalized = $constantType->generalize(GeneralizePrecision::lessSpecific());
-				if ($generalized->isConstantValue()->yes()) {
-					return new MixedType();
-				}
-				return $generalized;
+				return $constantType->generalize(GeneralizePrecision::lessSpecific());
 			}
 		}
 
@@ -463,11 +459,7 @@ final class ConstantResolver
 			}
 
 			if ($constantType->isConstantValue()->yes()) {
-				$generalized = $constantType->generalize(GeneralizePrecision::lessSpecific());
-				if ($generalized->isConstantValue()->yes()) {
-					return new MixedType();
-				}
-				return $generalized;
+				return $constantType->generalize(GeneralizePrecision::lessSpecific());
 			}
 		}
 

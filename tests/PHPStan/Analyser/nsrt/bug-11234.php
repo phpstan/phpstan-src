@@ -53,3 +53,15 @@ function testIntersectBoolConstantUnion(mixed $u): void
 {
 	assertType('array{bool, string}', $u);
 }
+
+/** @param array{int<0, 3>, int|Payload|string|null}&array{int, Payload} $x */
+function testIntersectIntRangeValue(mixed $x): void
+{
+	assertType('array{int<0, 3>, Bug11234\Payload}', $x);
+}
+
+/** @param array{non-empty-string, int|Payload|string|null}&array{string, Payload} $x */
+function testIntersectNonEmptyStringValue(mixed $x): void
+{
+	assertType('array{non-empty-string, Bug11234\Payload}', $x);
+}

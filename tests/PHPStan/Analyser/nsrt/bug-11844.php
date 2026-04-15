@@ -107,6 +107,65 @@ class OtherGenericCase
 	{
 		if (self::$storage === null) {
 			self::$storage = new \SplObjectStorage();
+			assertType('SplObjectStorage<object, string>', self::$storage);
+		}
+	}
+}
+
+/**
+ * Custom generic class whose constructor does NOT reference template types.
+ * This proves the fix is general, not WeakMap-specific.
+ *
+ * @template TKey of string
+ * @template TValue
+ */
+class CustomGenericCache
+{
+	/** @var array<TKey, TValue> */
+	private array $data = [];
+
+	public function __construct()
+	{
+	}
+
+	/**
+	 * @param TKey $key
+	 * @param TValue $value
+	 */
+	public function set(string $key, mixed $value): void
+	{
+		$this->data[$key] = $value;
+	}
+}
+
+class CustomGenericPropertyCase
+{
+	/**
+	 * @var CustomGenericCache<string, int>|null
+	 */
+	private ?CustomGenericCache $cache = null;
+
+	public function init(): void
+	{
+		if ($this->cache === null) {
+			$this->cache = new CustomGenericCache();
+			assertType('Bug11844\CustomGenericCache<string, int>', $this->cache);
+		}
+	}
+}
+
+class StaticCustomGenericPropertyCase
+{
+	/**
+	 * @var CustomGenericCache<string, int>|null
+	 */
+	private static ?CustomGenericCache $cache = null;
+
+	public static function init(): void
+	{
+		if (self::$cache === null) {
+			self::$cache = new CustomGenericCache();
+			assertType('Bug11844\CustomGenericCache<string, int>', self::$cache);
 		}
 	}
 }

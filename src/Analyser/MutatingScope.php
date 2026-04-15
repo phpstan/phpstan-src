@@ -3780,6 +3780,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				) {
 					continue;
 				}
+				// Skip non-Variable expressions absent from the other branch when
+				// the guard overlaps with the other branch's guard type.
+				// Non-Variable expressions (array dim fetches, property fetches)
+				// are always queryable, so absence from a branch means "not
+				// narrowed", not "doesn't exist". Creating a conditional
+				// expression would incorrectly narrow the type when the guard
+				// fires from the branch that never referenced the expression.
+				// Variables are exempt: their absence means genuinely "not
+				// defined", and conditional expressions for newly-defined
+				// variables are needed for variable certainty tracking (e.g.
+				// bug-14411-regression). Pre-defined variables (present in both
+				// branches) are handled by the check above.
 				if (
 					!array_key_exists($exprString, $theirExpressionTypes)
 					&& !$holder->getExpr() instanceof Variable

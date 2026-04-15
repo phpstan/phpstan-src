@@ -71,3 +71,27 @@ function multipleElseif(array $R, bool $var1, bool $var2, object $user): void {
         }
     }
 }
+
+/**
+ * Variable equivalent: pre-defined variable used in elseif condition.
+ * Same pattern as the array dim fetch case but $bb is a Variable defined
+ * before the if/elseif, so it's present in both branches' expression types.
+ * The existing guard-overlap check (lines that test array_key_exists($exprString,
+ * $theirExpressionTypes)) handles this case correctly.
+ */
+function variableEquivalent(bool $var1, object $user, mixed $input): void {
+	$aa = null;
+	$bb = $input;
+
+	if ($var1) {
+		$aa = $user->id === 10 ? 2 : null;
+	} elseif ($bb) {
+		$aa = $bb;
+	}
+
+	if ($aa) {
+		if (!$bb) {
+			return;
+		}
+	}
+}

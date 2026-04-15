@@ -835,4 +835,86 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14080.php'], []);
 	}
 
+	public function testBug10349(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10349.php'], [
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				15,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				20,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				37,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				47,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				49,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				57,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				59,
+			],
+			[
+				'Binary operation "-=" between bool|float|int|string and int results in an error.',
+				67,
+			],
+			[
+				'Binary operation "-=" between bool|float|int|string and int results in an error.',
+				68,
+			],
+			[
+				'Binary operation "*=" between bool|float|int|string and int results in an error.',
+				69,
+			],
+			[
+				'Binary operation "*=" between bool|float|int|string and int results in an error.',
+				70,
+			],
+			[
+				'Binary operation ".=" between array<int>|int and \'foo\' results in an error.',
+				78,
+			],
+			[
+				'Binary operation ".=" between array<int>|int and \'foo\' results in an error.',
+				79,
+			],
+			[
+				'Binary operation "/=" between bool|float|int|string and int results in an error.',
+				87,
+			],
+			[
+				'Binary operation "/=" between bool|float|int|string and int results in an error.',
+				88,
+			],
+			[
+				'Binary operation "%=" between bool|float|int|string and int results in an error.',
+				89,
+			],
+			[
+				'Binary operation "%=" between bool|float|int|string and int results in an error.',
+				90,
+			],
+			[
+				'Binary operation "<<=" between bool|float|int|string and int results in an error.',
+				98,
+			],
+			[
+				'Binary operation "<<=" between bool|float|int|string and int results in an error.',
+				99,
+			],
+		]);
+	}
+
 }

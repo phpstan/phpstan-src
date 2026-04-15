@@ -241,6 +241,12 @@ final class AssignHandler implements ExprHandler
 				$assignedExpr = $this->unwrapAssign($assignedExpr);
 				$type = $scopeBeforeAssignEval->getType($assignedExpr);
 
+				$nativeType = $scope->getNativeType($assignedExpr);
+				if ($isAssignOp && $type instanceof ErrorType) {
+					$type = $scopeBeforeAssignEval->getType($var);
+					$nativeType = $scopeBeforeAssignEval->getNativeType($var);
+				}
+
 				$conditionalExpressions = [];
 				if ($assignedExpr instanceof Ternary) {
 					$if = $assignedExpr->if;
@@ -314,7 +320,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
-				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
+				$scope = $scope->assignVariable($var->name, $type, $nativeType, TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {
 					$scope = $scope->addConditionalExpressions($exprString, $holders);
 				}
@@ -414,6 +420,28 @@ final class AssignHandler implements ExprHandler
 
 			$valueToWrite = $scope->getType($assignedExpr);
 			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
+
+			if ($isAssignOp && $valueToWrite instanceof ErrorType) {
+				$originalType = $scope->getType($var);
+				foreach ($offsetTypes as [$offsetType]) {
+					if ($offsetType === null) {
+						break;
+					}
+					$originalType = $originalType->getOffsetValueType($offsetType);
+				}
+				$valueToWrite = $originalType;
+			}
+			if ($isAssignOp && $nativeValueToWrite instanceof ErrorType) {
+				$originalNativeType = $scope->getNativeType($var);
+				foreach ($offsetNativeTypes as [$offsetNativeType]) {
+					if ($offsetNativeType === null) {
+						break;
+					}
+					$originalNativeType = $originalNativeType->getOffsetValueType($offsetNativeType);
+				}
+				$nativeValueToWrite = $originalNativeType;
+			}
+
 			$scopeBeforeAssignEval = $scope;
 
 			// 3. eval assigned expr
@@ -780,6 +808,21 @@ final class AssignHandler implements ExprHandler
 			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
 			$varType = $scope->getType($var);
 			$varNativeType = $scope->getNativeType($var);
+
+			if ($isAssignOp && $valueToWrite instanceof ErrorType) {
+				$originalType = $varType;
+				foreach ($offsetTypes as [$offsetType]) {
+					$originalType = $originalType->getOffsetValueType($offsetType);
+				}
+				$valueToWrite = $originalType;
+			}
+			if ($isAssignOp && $nativeValueToWrite instanceof ErrorType) {
+				$originalNativeType = $varNativeType;
+				foreach ($offsetNativeTypes as [$offsetNativeType]) {
+					$originalNativeType = $originalNativeType->getOffsetValueType($offsetNativeType);
+				}
+				$nativeValueToWrite = $originalNativeType;
+			}
 
 			$offsetValueType = $varType;
 			$offsetNativeValueType = $varNativeType;

@@ -29,8 +29,10 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function array_filter;
 use function array_map;
 use function array_merge;
+use function array_values;
 use function assert;
 use function count;
 use function is_string;
@@ -607,6 +609,47 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
 		$this->assertNoErrors($result);
+	}
+
+	public function testDoNotReportUnmatchedIgnoredErrorsFromPathWithoutOriginInPartialAnalysis(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Unknown error#',
+				'path' => __DIR__ . '/data/traits-ignore/Foo.php',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, [
+			__DIR__ . '/data/traits-ignore/Foo.php',
+		], true);
+		$this->assertNoErrors($result);
+	}
+
+	public function testReturnUnmatchedIgnoredErrorFromPathWithOriginWhenOriginIsAnalysed(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Unknown error#',
+				'path' => __DIR__ . '/data/traits-ignore/Foo.php',
+				'origin' => __DIR__ . '/data/traits-ignore/FooTrait.php',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, [
+			__DIR__ . '/data/traits-ignore/Foo.php',
+			__DIR__ . '/data/traits-ignore/FooTrait.php',
+		], true);
+		// One result is the real fail() error (not suppressed by #Unknown error#),
+		// the other is the unmatched ignore rule reported because origin was analysed.
+		$this->assertCount(2, $result);
+		$unmatchedErrors = array_values(array_filter(
+			$result,
+			static fn ($r) => $r instanceof Error && $r->getIdentifier() === 'ignore.unmatched',
+		));
+		$this->assertCount(1, $unmatchedErrors);
+		$this->assertSame(
+			'Ignored error pattern #Unknown error# in path ' . __DIR__ . '/data/traits-ignore/Foo.php was not matched in reported errors.',
+			$unmatchedErrors[0]->getMessage(),
+		);
 	}
 
 	public function testIgnoreNextLine(): void

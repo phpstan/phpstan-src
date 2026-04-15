@@ -135,6 +135,7 @@ parametersSchema:
 				?paths: listOf(string())
 				?count: int()
 				?reportUnmatched: bool()
+				?origin: string()
 			]),
 		)
 	)

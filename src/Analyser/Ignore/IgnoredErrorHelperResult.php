@@ -219,7 +219,11 @@ final class IgnoredErrorHelperResult
 						continue;
 					}
 
-					if ($onlyFiles) {
+					if (isset($unmatchedIgnoredError['realOrigin'])) {
+						if (!array_key_exists($unmatchedIgnoredError['realOrigin'], $analysedFilesKeys)) {
+							continue;
+						}
+					} elseif ($onlyFiles) {
 						continue;
 					}
 

@@ -97,6 +97,9 @@ final class IgnoredErrorHelper
 			if (isset($ignoreError['identifier'])) {
 				$key = sprintf("%s\n%s", $key, $ignoreError['identifier']);
 			}
+			if (isset($ignoreError['origin'])) {
+				$key = sprintf("%s\n%s", $key, $ignoreError['origin']);
+			}
 			if ($key === '') {
 				throw new ShouldNotHappenException();
 			}
@@ -115,6 +118,7 @@ final class IgnoredErrorHelper
 				'message' => $ignoreError['message'] ?? null,
 				'rawMessage' => $ignoreError['rawMessage'] ?? null,
 				'path' => $ignoreError['path'],
+				'origin' => $ignoreError['origin'] ?? null,
 				'identifier' => $ignoreError['identifier'] ?? null,
 				'count' => ($uniquedExpandedIgnoreErrors[$key]['count'] ?? 1) + ($ignoreError['count'] ?? 1),
 				'reportUnmatched' => $reportUnmatched,
@@ -144,6 +148,11 @@ final class IgnoredErrorHelper
 						$ignoreError['path'] = $normalizedPath;
 						$ignoreErrorsByFile[$normalizedPath][] = $ignoreErrorEntry;
 						$ignoreError['realPath'] = $normalizedPath;
+						if (isset($ignoreError['origin']) && @is_file($ignoreError['origin'])) {
+							$normalizedOrigin = $this->fileHelper->normalizePath($ignoreError['origin']);
+							$ignoreError['origin'] = $normalizedOrigin;
+							$ignoreError['realOrigin'] = $normalizedOrigin;
+						}
 						$expandedIgnoreErrors[$i] = $ignoreError;
 					} else {
 						$otherIgnoreErrors[] = $ignoreErrorEntry;

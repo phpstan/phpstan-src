@@ -38,41 +38,48 @@ final class BaselineNeonErrorFormatter
 			if (!$fileSpecificError->canBeIgnored()) {
 				continue;
 			}
-			$fileErrors[$this->relativePathHelper->getRelativePath($fileSpecificError->getFilePath())][] = $fileSpecificError;
+			$traitFilePath = $fileSpecificError->getTraitFilePath();
+			$fileErrors[$this->relativePathHelper->getRelativePath($fileSpecificError->getFilePath())][] = [
+				'error' => $fileSpecificError,
+				'origin' => $traitFilePath !== null ? $this->relativePathHelper->getRelativePath($traitFilePath) : null,
+			];
 		}
 		ksort($fileErrors, SORT_STRING);
 
 		$messageKey = $this->useRawMessage ? 'rawMessage' : 'message';
 		$errorsToOutput = [];
-		foreach ($fileErrors as $file => $errors) {
-			$fileErrorsByMessage = [];
-			foreach ($errors as $error) {
+		foreach ($fileErrors as $file => $fileErrorEntries) {
+			$fileErrorsByKey = [];
+			foreach ($fileErrorEntries as ['error' => $error, 'origin' => $origin]) {
 				$errorMessage = $error->getMessage();
 				$identifier = $error->getIdentifier();
-				if (!isset($fileErrorsByMessage[$errorMessage])) {
-					$fileErrorsByMessage[$errorMessage] = [
-						1,
-						$identifier !== null ? [$identifier => 1] : [],
+				$key = $errorMessage . "\0" . ($origin ?? '');
+				if (!isset($fileErrorsByKey[$key])) {
+					$fileErrorsByKey[$key] = [
+						'message' => $errorMessage,
+						'origin' => $origin,
+						'count' => 1,
+						'identifiers' => $identifier !== null ? [$identifier => 1] : [],
 					];
 					continue;
 				}
 
-				$fileErrorsByMessage[$errorMessage][0]++;
+				$fileErrorsByKey[$key]['count']++;
 
 				if ($identifier === null) {
 					continue;
 				}
 
-				if (!isset($fileErrorsByMessage[$errorMessage][1][$identifier])) {
-					$fileErrorsByMessage[$errorMessage][1][$identifier] = 1;
+				if (!isset($fileErrorsByKey[$key]['identifiers'][$identifier])) {
+					$fileErrorsByKey[$key]['identifiers'][$identifier] = 1;
 					continue;
 				}
 
-				$fileErrorsByMessage[$errorMessage][1][$identifier]++;
+				$fileErrorsByKey[$key]['identifiers'][$identifier]++;
 			}
-			ksort($fileErrorsByMessage, SORT_STRING);
+			ksort($fileErrorsByKey, SORT_STRING);
 
-			foreach ($fileErrorsByMessage as $message => [$totalCount, $identifiers]) {
+			foreach ($fileErrorsByKey as ['message' => $message, 'origin' => $origin, 'count' => $totalCount, 'identifiers' => $identifiers]) {
 				if (!$this->useRawMessage) {
 					$message = '#^' . preg_quote($message, '#') . '$#';
 				}
@@ -80,19 +87,27 @@ final class BaselineNeonErrorFormatter
 				ksort($identifiers, SORT_STRING);
 				if (count($identifiers) > 0) {
 					foreach ($identifiers as $identifier => $identifierCount) {
-						$errorsToOutput[] = [
+						$entry = [
 							$messageKey => Helpers::escape($message),
 							'identifier' => $identifier,
 							'count' => $identifierCount,
 							'path' => Helpers::escape($file),
 						];
+						if ($origin !== null) {
+							$entry['origin'] = Helpers::escape($origin);
+						}
+						$errorsToOutput[] = $entry;
 					}
 				} else {
-					$errorsToOutput[] = [
+					$entry = [
 						$messageKey => Helpers::escape($message),
 						'count' => $totalCount,
 						'path' => Helpers::escape($file),
 					];
+					if ($origin !== null) {
+						$entry['origin'] = Helpers::escape($origin);
+					}
+					$errorsToOutput[] = $entry;
 				}
 			}
 		}

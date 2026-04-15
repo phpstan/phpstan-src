@@ -159,13 +159,13 @@ parameters:
 		-
 			rawMessage: 'Call to static method escape() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
 			identifier: staticMethod.internalClass
-			count: 4
+			count: 6
 			path: src/Command/ErrorFormatter/BaselineNeonErrorFormatter.php
 
 		-
 			rawMessage: 'Call to static method escape() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
 			identifier: staticMethod.internalClass
-			count: 5
+			count: 12
 			path: src/Command/ErrorFormatter/BaselinePhpErrorFormatter.php
 
 		-

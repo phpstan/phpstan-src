@@ -1154,6 +1154,27 @@ final class TypeCombinator
 					continue;
 				}
 
+				// Merge two single-key arrays sharing the same key when their value
+				// types union into a single type (not a UnionType). This is lossless
+				// and prevents exponential union growth when narrowing nested
+				// ArrayDimFetch expressions on a ConstantArrayType parent (see
+				// phpstan/phpstan#14462).
+				if (
+					$preserveTaggedUnions
+					&& $overlappingKeysCount === 1
+					&& count($arraysToProcess[$i]->getKeyTypes()) === 1
+					&& count($arraysToProcess[$j]->getKeyTypes()) === 1
+				) {
+					$iValueType = $arraysToProcess[$i]->getValueTypes()[0];
+					$jValueType = $arraysToProcess[$j]->getValueTypes()[0];
+					$unionValueType = self::union($iValueType, $jValueType);
+					if (!$unionValueType instanceof UnionType) {
+						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						unset($arraysToProcess[$i]);
+						continue 2;
+					}
+				}
+
 				if (
 					$preserveTaggedUnions
 					&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())

@@ -19,7 +19,7 @@ class SealedDefinitionTraitRuleTest extends RuleTestCase
 		return new SealedDefinitionTraitRule($reflectionProvider);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-sealed.php'], [

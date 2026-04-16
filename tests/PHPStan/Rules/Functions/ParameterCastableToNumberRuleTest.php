@@ -99,7 +99,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]));
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/param-castable-to-number-functions-named-args.php'], [
@@ -114,7 +114,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/param-castable-to-number-functions-enum.php'], [
@@ -129,7 +129,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11883(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11883.php'], [

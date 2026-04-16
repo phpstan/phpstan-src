@@ -220,7 +220,7 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPureConstructor(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -347,7 +347,7 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14138Pure(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

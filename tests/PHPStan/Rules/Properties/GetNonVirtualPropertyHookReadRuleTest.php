@@ -17,7 +17,7 @@ class GetNonVirtualPropertyHookReadRuleTest extends RuleTestCase
 		return new GetNonVirtualPropertyHookReadRule();
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/get-non-virtual-property-hook-read.php'], [
@@ -32,7 +32,7 @@ class GetNonVirtualPropertyHookReadRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testAbstractProperty(): void
 	{
 		$this->analyse([__DIR__ . '/data/get-abstract-property-hook-read.php'], []);

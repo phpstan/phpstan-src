@@ -72,7 +72,7 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312a.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug13384cPhp82(): void
 	{
 		$this->reportTooWideBool = true;
@@ -105,7 +105,7 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.2')]
+	#[RequiresPhp('< 8.2.0')]
 	public function testBug13384cPrePhp82(): void
 	{
 		$this->reportTooWideBool = true;

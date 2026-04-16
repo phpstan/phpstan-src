@@ -80,7 +80,7 @@ class AttributeReflectionFromNodeRuleTest extends RuleTestCase
 		};
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/attribute-reflection.php'], [

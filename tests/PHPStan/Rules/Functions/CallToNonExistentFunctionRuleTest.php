@@ -95,7 +95,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testCallToRemovedFunctionsOnPhp8(): void
 	{
 		$this->analyse([__DIR__ . '/data/removed-functions-from-php8.php'], [
@@ -147,7 +147,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testCreateFunctionPhp8(): void
 	{
 		$this->analyse([__DIR__ . '/data/create_function.php'], [
@@ -159,7 +159,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.0')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testCreateFunctionPhp7(): void
 	{
 		$this->analyse([__DIR__ . '/data/create_function.php'], []);
@@ -206,13 +206,13 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7952.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug8058(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-8058.php'], []);
 	}
 
-	#[RequiresPhp('< 8.2')]
+	#[RequiresPhp('< 8.2.0')]
 	public function testBug8058b(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-8058.php'], [

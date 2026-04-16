@@ -80,7 +80,7 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testAsymmetricVisibility(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-properties-asymmetric-visibility.php'], [

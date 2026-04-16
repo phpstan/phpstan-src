@@ -19,7 +19,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		return new PropertyInClassRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
-	#[RequiresPhp('< 8.4')]
+	#[RequiresPhp('< 8.4.0')]
 	public function testPhpLessThan84AndHookedPropertiesInClass(): void
 	{
 		// @phpstan-ignore phpstan.skipTestsRequiresPhp
@@ -35,7 +35,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndHookedPropertiesWithoutBodiesInClass(): void
 	{
 		// @phpstan-ignore phpstan.skipTestsRequiresPhp
@@ -59,7 +59,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndNonAbstractHookedPropertiesInClass(): void
 	{
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-class.php'], [
@@ -74,7 +74,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndAbstractHookedPropertiesInClass(): void
 	{
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-in-class.php'], [
@@ -89,7 +89,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndNonAbstractHookedPropertiesInAbstractClass(): void
 	{
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-abstract-class.php'], [
@@ -108,7 +108,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndAbstractNonHookedPropertiesInAbstractClass(): void
 	{
 		$this->analyse([__DIR__ . '/data/abstract-non-hooked-properties-in-abstract-class.php'], [
@@ -123,7 +123,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndAbstractHookedPropertiesWithBodies(): void
 	{
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-with-bodies.php'], [
@@ -138,7 +138,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndReadonlyHookedProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/readonly-property-hooks.php'], [
@@ -165,7 +165,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndVirtualHookedProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/virtual-hooked-properties.php'], [
@@ -176,7 +176,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndStaticHookedProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-hooked-properties.php'], [
@@ -191,7 +191,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndPrivateFinalHookedProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/private-final-property-hooks.php'], [
@@ -206,7 +206,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndAbstractFinalHookedProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/abstract-final-property-hook.php'], [
@@ -217,7 +217,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndAbstractPrivateHookedProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/abstract-private-property-hook.php'], [
@@ -228,7 +228,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndAbstractFinalHookedPropertiesParseError(): void
 	{
 		// errors when parsing with php-parser, see https://github.com/nikic/PHP-Parser/issues/1071
@@ -240,7 +240,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84FinalProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
@@ -251,7 +251,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.4')]
+	#[RequiresPhp('< 8.4.0')]
 	public function testBeforePhp84FinalProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
@@ -270,7 +270,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84FinalPropertyHooks(): void
 	{
 		$this->analyse([__DIR__ . '/data/final-property-hooks.php'], [

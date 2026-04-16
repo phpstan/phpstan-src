@@ -39,7 +39,7 @@ class PromoteParameterRuleWithOriginalRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/promote-missing-override.php'], [

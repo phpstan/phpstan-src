@@ -54,7 +54,7 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5651.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-private-constant-enum.php'], [
@@ -71,13 +71,13 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6758.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8204(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8204.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9005(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9005.php'], []);
@@ -88,7 +88,7 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testDynamicConstantFetch(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-private-constant-dynamic-fetch.php'], [

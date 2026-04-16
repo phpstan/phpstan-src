@@ -32,19 +32,19 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7109(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7109.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5172(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5172.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7980(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7980.php'], []);
@@ -69,13 +69,13 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9105(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9105.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6922(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6922.php'], []);

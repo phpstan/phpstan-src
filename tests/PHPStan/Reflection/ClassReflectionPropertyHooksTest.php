@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function count;
 
-#[RequiresPhp('>= 8.4')]
+#[RequiresPhp('>= 8.4.0')]
 class ClassReflectionPropertyHooksTest extends PHPStanTestCase
 {
 

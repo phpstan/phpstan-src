@@ -131,7 +131,7 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallable(): void
 	{
 		$this->analyse([__DIR__ . '/data/first-class-callable-pure-function.php'], [
@@ -198,7 +198,7 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13201(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13201.php'], []);

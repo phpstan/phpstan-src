@@ -56,7 +56,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('< 8.1')]
+	#[RequiresPhp('< 8.1.0')]
 	public function testNotSupportedOnOlderVersions(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-callable-not-supported.php'], [
@@ -67,7 +67,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-callable.php'], [

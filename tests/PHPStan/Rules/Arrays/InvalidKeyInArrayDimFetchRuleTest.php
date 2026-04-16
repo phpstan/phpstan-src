@@ -102,7 +102,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6315(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6315.php'], [

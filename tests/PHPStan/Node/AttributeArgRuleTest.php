@@ -44,7 +44,7 @@ class AttributeArgRuleTest extends RuleTestCase
 		$this->analyse([$file], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnumCaseAttribute(): void
 	{
 		$this->analyse([__DIR__ . '/data/enum-case-attribute.php'], [

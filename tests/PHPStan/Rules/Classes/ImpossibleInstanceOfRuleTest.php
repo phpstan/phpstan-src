@@ -277,7 +277,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5333.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8042(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -295,7 +295,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7721(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -485,7 +485,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10201(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -536,7 +536,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNewIsAlwaysFinalClass(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

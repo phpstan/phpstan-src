@@ -47,7 +47,7 @@ class ContinueBreakInLoopRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->analyse([__DIR__ . '/data/continue-break-property-hook.php'], [

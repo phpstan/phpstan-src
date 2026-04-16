@@ -75,7 +75,7 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11011(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11011.php'], [
@@ -86,13 +86,13 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12379(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12379.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-to-method-without-impure-points-pipe.php'], [

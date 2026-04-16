@@ -47,7 +47,7 @@ class OffsetAccessAssignOpRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/offset-access-assignop.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->checkUnions = true;

@@ -117,7 +117,7 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9657(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9657.php'], []);

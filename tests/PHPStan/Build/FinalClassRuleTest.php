@@ -33,7 +33,7 @@ class FinalClassRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/final-class-rule.php', __DIR__ . '/data/final-class-rule.php.fixed');
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testFixWithPipe(): void
 	{
 		$this->fix(__DIR__ . '/data/final-class-rule-pipe.php', __DIR__ . '/data/final-class-rule-pipe.php.fixed');

@@ -249,7 +249,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7109(): void
 	{
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -326,7 +326,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-doctrine.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12553(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12553.php'], []);
@@ -392,7 +392,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14458.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14459(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14459.php'], [
@@ -403,7 +403,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug14459Hooked(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14459-hooked.php'], [

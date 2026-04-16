@@ -28,7 +28,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 /**
  * @extends RuleTestCase<Rule<Node>>
  */
-#[RequiresPhp('>= 8.1')]
+#[RequiresPhp('>= 8.1.0')]
 class FiberNodeScopeResolverRuleTest extends RuleTestCase
 {
 

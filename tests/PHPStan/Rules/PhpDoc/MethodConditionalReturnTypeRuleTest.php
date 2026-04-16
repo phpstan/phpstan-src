@@ -96,7 +96,7 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7310.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11939(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11939.php'], []);

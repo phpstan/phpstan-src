@@ -112,7 +112,7 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHookRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/deprecated-attribute-property-hooks.php'], [

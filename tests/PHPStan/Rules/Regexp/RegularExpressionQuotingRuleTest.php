@@ -74,7 +74,7 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRulePhp8(): void
 	{
 		$this->analyse(

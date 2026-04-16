@@ -45,7 +45,7 @@ class CallUserFuncRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-user-func.php'], [
@@ -96,7 +96,7 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleCallUserFuncArray(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], [
@@ -160,7 +160,7 @@ class CallUserFuncRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7057.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testNoNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/no-named-arguments-call-user-func.php'], [

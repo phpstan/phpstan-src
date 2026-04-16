@@ -233,7 +233,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/generic-enum-param.php'], [
@@ -244,7 +244,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testValueOfEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/value-of-enum.php'], [
@@ -259,7 +259,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConditionalReturnType(): void
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-conditional-return-type.php'], [
@@ -467,7 +467,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13452.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13652(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13652.php'], [

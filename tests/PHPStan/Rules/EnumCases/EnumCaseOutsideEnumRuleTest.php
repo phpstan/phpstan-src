@@ -17,7 +17,7 @@ class EnumCaseOutsideEnumRuleTest extends RuleTestCase
 		return new EnumCaseOutsideEnumRule();
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14252.php'], [

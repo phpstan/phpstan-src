@@ -143,7 +143,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleIgnoresNativeReadonly(): void
 	{
 		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign-phpdoc-and-native.php'], []);

@@ -72,13 +72,13 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/nullsafe-unused-private-method.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallable(): void
 	{
 		$this->analyse([__DIR__ . '/data/callable-unused-private-method.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-private-method-enum.php'], [
@@ -108,7 +108,7 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8346.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFalsePositiveWithTraitUse(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-method-false-positive-with-trait.php'], []);

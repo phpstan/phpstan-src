@@ -18,7 +18,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
-#[RequiresPhp('>= 8.1')]
+#[RequiresPhp('>= 8.1.0')]
 class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 {
 

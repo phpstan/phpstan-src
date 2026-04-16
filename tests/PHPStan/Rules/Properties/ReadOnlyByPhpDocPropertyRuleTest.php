@@ -17,7 +17,7 @@ class ReadOnlyByPhpDocPropertyRuleTest extends RuleTestCase
 		return new ReadOnlyByPhpDocPropertyRule();
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc.php'], [
@@ -40,13 +40,13 @@ class ReadOnlyByPhpDocPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleIgnoresNativeReadonly(): void
 	{
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc-and-native.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleAllowedPrivateMutation(): void
 	{
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc-allowed-private-mutation.php'], [

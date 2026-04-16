@@ -315,7 +315,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-misleading-mixed-return.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testMisleadingTypehintsInClassWithoutNamespace(): void
 	{
 		$this->analyse([__DIR__ . '/data/misleadingTypehints.php'], [
@@ -558,7 +558,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2573-return.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug4603(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4603.php'], []);
@@ -783,7 +783,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7904(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -808,7 +808,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8071(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -1127,7 +1127,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12223.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-hooks-return.php'], [
@@ -1161,7 +1161,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testShortGetPropertyHook(): void
 	{
 		$this->analyse([__DIR__ . '/data/short-get-property-hook-return.php'], [
@@ -1191,7 +1191,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug1O580(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10580.php'], [
@@ -1234,7 +1234,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12927(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12927.php'], []);
@@ -1270,7 +1270,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7225(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7225.php'], []);
@@ -1281,7 +1281,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/deep-dim-fetch.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9494(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9494.php'], []);

@@ -17,7 +17,7 @@ class EnumTemplateTypeRuleTest extends RuleTestCase
 		return new EnumTemplateTypeRule();
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/enum-template.php'], [

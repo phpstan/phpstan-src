@@ -42,7 +42,7 @@ class RestrictedStaticMethodUsageRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12951(): void
 	{
 		require_once __DIR__ . '/../InternalTag/data/bug-12951-define.php';

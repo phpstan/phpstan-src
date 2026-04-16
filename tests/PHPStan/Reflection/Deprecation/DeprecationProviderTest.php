@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class DeprecationProviderTest extends PHPStanTestCase
 {
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testCustomDeprecations(): void
 	{
 		require __DIR__ . '/data/deprecations.php';
@@ -192,7 +192,7 @@ class DeprecationProviderTest extends PHPStanTestCase
 		self::assertSame('attribute', $doubleDeprecatedFunctionOnlyAttributeMessage->getDeprecatedDescription());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testCustomDeprecationsOfEnumCases(): void
 	{
 		require __DIR__ . '/data/deprecations-enums.php';

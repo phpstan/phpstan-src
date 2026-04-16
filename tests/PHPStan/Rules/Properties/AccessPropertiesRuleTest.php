@@ -556,7 +556,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5868(): void
 	{
 		$this->checkThisOnly = false;
@@ -582,7 +582,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6385(): void
 	{
 		$this->checkThisOnly = false;
@@ -604,7 +604,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6566(): void
 	{
 		$this->checkThisOnly = false;
@@ -978,7 +978,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8536(): void
 	{
 		$this->checkThisOnly = false;
@@ -1050,7 +1050,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testDynamicStringableNullsafeAccess(): void
 	{
 		$this->checkThisOnly = false;
@@ -1077,7 +1077,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9694(): void
 	{
 		$this->checkThisOnly = false;
@@ -1102,7 +1102,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9706.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testAsymmetricVisibility(): void
 	{
 		$this->checkThisOnly = false;
@@ -1111,7 +1111,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/read-asymmetric-visibility.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testNewIsAlwaysFinalClass(): void
 	{
 		$this->checkThisOnly = false;
@@ -1150,7 +1150,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13271.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11424(): void
 	{
 		$this->checkThisOnly = false;

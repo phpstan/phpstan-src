@@ -173,7 +173,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testUnititializedReadonlyPropertyAccessedInTrait(): void
 	{
 		$errors = $this->runAnalyse([

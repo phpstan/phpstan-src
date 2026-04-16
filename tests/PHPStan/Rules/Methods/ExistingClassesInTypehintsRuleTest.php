@@ -363,7 +363,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataRequiredParameterAfterOptional')]
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
@@ -420,7 +420,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/enums-typehints.php'], [
@@ -494,7 +494,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConditionalReturnType(): void
 	{
 		$this->analyse([__DIR__ . '/data/conditional-return-type.php'], [
@@ -510,7 +510,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7519.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testTemplateInParamOut(): void
 	{
 		$this->analyse([__DIR__ . '/data/param-out.php'], [
@@ -575,7 +575,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testDeprecatedImplicitlyNullableParameterType(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-implicitly-nullable.php'], [
@@ -594,13 +594,13 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12501(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12501.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testNoDiscardVoid(): void
 	{
 		$this->analyse([__DIR__ . '/data/typehints-nodiscard.php'], [

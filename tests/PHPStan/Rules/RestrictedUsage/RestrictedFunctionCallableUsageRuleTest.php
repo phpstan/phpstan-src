@@ -20,7 +20,7 @@ class RestrictedFunctionCallableUsageRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/restricted-function-callable.php'], [

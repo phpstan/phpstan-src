@@ -80,7 +80,7 @@ class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallable(): void
 	{
 		$this->analyse([__DIR__ . '/data/immediately-called-fcc.php'], []);

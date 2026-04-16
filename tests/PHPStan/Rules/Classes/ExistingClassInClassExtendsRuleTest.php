@@ -82,7 +82,7 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/class-extends-enum.php'], [
@@ -130,7 +130,7 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testReadonly(): void
 	{
 		$this->analyse([__DIR__ . '/data/extends-readonly-class.php'], [

@@ -159,7 +159,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6252(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6252.php'], []);

@@ -154,7 +154,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug3488(): void
 	{
 		$this->checkExplicitMixedMissingReturn = true;
@@ -260,7 +260,7 @@ class MissingReturnRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataCheckPhpDocMissingReturn')]
 	public function testCheckPhpDocMissingReturn(bool $checkPhpDocMissingReturn, array $errors): void
 	{
@@ -281,7 +281,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataModelMixin')]
 	public function testModelMixin(bool $checkExplicitMixedMissingReturn): void
 	{
@@ -295,7 +295,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6257(): void
 	{
 		$this->checkExplicitMixedMissingReturn = true;
@@ -339,7 +339,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9374.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->checkExplicitMixedMissingReturn = true;
@@ -366,7 +366,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12722(): void
 	{
 		$this->checkExplicitMixedMissingReturn = true;

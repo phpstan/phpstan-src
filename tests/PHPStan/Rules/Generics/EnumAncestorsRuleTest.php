@@ -28,7 +28,7 @@ class EnumAncestorsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/enum-ancestors.php'], [
@@ -59,7 +59,7 @@ class EnumAncestorsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testCrossCheckInterfaces(): void
 	{
 		$this->analyse([__DIR__ . '/data/cross-check-interfaces-enums.php'], [

@@ -236,7 +236,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8846(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -244,7 +244,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8846.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10077(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -264,7 +264,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8683.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7984(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -368,7 +368,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13638(): void
 	{
 		$this->checkNullables = true;

@@ -91,7 +91,7 @@ class OverridingConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-final-constant.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testNativeTypes(): void
 	{
 		$this->analyse([__DIR__ . '/data/overriding-constant-native-types.php'], [

@@ -168,7 +168,7 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/invalid-comparison-nullsafe.php'], [
@@ -199,7 +199,7 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11119.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug13001(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13001.php'], [

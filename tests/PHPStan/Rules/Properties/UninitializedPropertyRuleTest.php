@@ -221,13 +221,13 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12336(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12336.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12547(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12547.php'], []);

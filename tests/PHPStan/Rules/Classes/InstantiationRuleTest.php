@@ -254,7 +254,7 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testOldStyleConstructorOnPhp8(): void
 	{
 		$this->analyse([__DIR__ . '/data/php80-constructor.php'], [
@@ -269,7 +269,7 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.0')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testOldStyleConstructorOnPhp7(): void
 	{
 		$this->analyse([__DIR__ . '/data/php80-constructor.php'], [
@@ -308,7 +308,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4056.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/instantiation-named-arguments.php'], [
@@ -367,14 +367,14 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4681.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallable(): void
 	{
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-instantiation-callable.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnumInstantiation(): void
 	{
 		$this->analyse([__DIR__ . '/data/enum-instantiation.php'], [
@@ -403,13 +403,13 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5553(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5553.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7048(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7048.php'], [
@@ -440,7 +440,7 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7594(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7594.php'], []);
@@ -505,7 +505,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10248.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug11815(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11815.php'], []);
@@ -563,7 +563,7 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12951(): void
 	{
 		require_once __DIR__ . '/../InternalTag/data/bug-12951-define.php';
@@ -579,26 +579,26 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArgumentsPhpversion(): void
 	{
 		$this->analyse([__DIR__ . '/data/named-arguments-phpversion.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14097(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14097.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13440(): void
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-13440.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12363(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-12363.php'], []);
@@ -628,13 +628,13 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11006(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11006.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14138(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14138.php'], [

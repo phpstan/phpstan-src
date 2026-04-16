@@ -17,7 +17,7 @@ class RequireImplementsRuleTest extends RuleTestCase
 		return new RequireImplementsRule();
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$expectedErrors = [

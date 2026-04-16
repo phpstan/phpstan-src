@@ -262,7 +262,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 	 * @param list<AttributeReflection> $attributeReflections
 	 * @param list<array{string, array<string, string>}> $expectations
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataAttributeReflections')]
 	public function testAttributeReflections(
 		array $attributeReflections,

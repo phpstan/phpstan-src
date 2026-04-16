@@ -299,7 +299,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4863.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5866(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5866.php'], []);
@@ -387,7 +387,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6115(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
@@ -460,7 +460,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6786.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testUnionTypeError(): void
 	{
 		$this->analyse([__DIR__ . '/data/union-type-error.php'], [
@@ -598,7 +598,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9568(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9568.php'], []);
@@ -652,7 +652,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->analyse([__DIR__ . '/data/unthrown-exception-property-hooks.php'], [
@@ -705,7 +705,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testPr5105(): void
 	{
 		$this->analyse([__DIR__ . '/data/pr-5105.php'], [

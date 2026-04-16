@@ -57,7 +57,7 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPromoted(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-variance-promoted.php'], [
@@ -96,7 +96,7 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testReadOnly(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-variance-readonly.php'], [
@@ -137,7 +137,7 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13049.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12964(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12964.php'], [

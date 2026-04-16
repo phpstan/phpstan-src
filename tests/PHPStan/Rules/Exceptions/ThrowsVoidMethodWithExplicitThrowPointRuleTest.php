@@ -100,7 +100,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/throws-void-method.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13642(): void
 	{
 		$this->missingCheckedExceptionInThrows = false;
@@ -113,7 +113,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6910(): void
 	{
 		$this->missingCheckedExceptionInThrows = false;

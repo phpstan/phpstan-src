@@ -1901,21 +1901,6 @@ class ConstantArrayType implements Type
 		return $this->getKeyIndexMap()[$otherKeyType->getValue()] ?? null;
 	}
 
-	/**
-	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
-	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
-	 */
-	private static function findKeyIndex($otherKeyType, array $keyTypes): ?int
-	{
-		foreach ($keyTypes as $i => $keyType) {
-			if ($keyType->equals($otherKeyType)) {
-				return $i;
-			}
-		}
-
-		return null;
-	}
-
 	public function makeOffsetRequired(Type $offsetType): self
 	{
 		$offsetType = $offsetType->toArrayKey();

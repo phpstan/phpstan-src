@@ -1668,7 +1668,11 @@ final class TypeCombinator
 			return null;
 		}
 
-		return self::intersect(...$mergedTypes);
+		$result = $mergedTypes[0];
+		for ($i = 1, $count = count($mergedTypes); $i < $count; $i++) {
+			$result = self::intersect($result, $mergedTypes[$i]);
+		}
+		return $result;
 	}
 
 	public static function removeFalsey(Type $type): Type

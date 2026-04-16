@@ -1389,7 +1389,11 @@ class IntersectionType implements CompoundType
 		}
 
 		if ($changed) {
-			return TypeCombinator::intersect(...$types);
+			$result = $types[0];
+			for ($i = 1, $count = count($types); $i < $count; $i++) {
+				$result = TypeCombinator::intersect($result, $types[$i]);
+			}
+			return $result;
 		}
 
 		return $this;
@@ -1426,7 +1430,11 @@ class IntersectionType implements CompoundType
 				return $this;
 			}
 
-			return TypeCombinator::intersect(...$newTypes);
+			$result = $newTypes[0];
+			for ($i = 1, $count = count($newTypes); $i < $count; $i++) {
+				$result = TypeCombinator::intersect($result, $newTypes[$i]);
+			}
+			return $result;
 		}
 
 		return $this;
@@ -1492,7 +1500,11 @@ class IntersectionType implements CompoundType
 	private function intersectTypes(callable $getType): Type
 	{
 		$operands = array_map($getType, $this->types);
-		return TypeCombinator::intersect(...$operands);
+		$result = $operands[0];
+		for ($i = 1, $count = count($operands); $i < $count; $i++) {
+			$result = TypeCombinator::intersect($result, $operands[$i]);
+		}
+		return $result;
 	}
 
 	public function toPhpDocNode(): TypeNode

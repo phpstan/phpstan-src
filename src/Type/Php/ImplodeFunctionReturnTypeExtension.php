@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -113,33 +112,45 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType): ?Type
 	{
-		$strings = [];
-		foreach ($arrayType->getAllArrays() as $array) {
-			$valueTypes = $array->getValueTypes();
+		$sep = $separatorType->getValue();
+		$valueTypes = $arrayType->getValueTypes();
+		$limit = InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT;
 
-			$arrayValues = [];
-			$combinationsCount = 1;
-			foreach ($valueTypes as $valueType) {
-				$constScalars = $valueType->getConstantScalarValues();
-				if (count($constScalars) === 0) {
-					return null;
-				}
-				$arrayValues[] = $constScalars;
-				$combinationsCount *= count($constScalars);
-			}
+		// Build implode results incrementally, processing one key at a time.
+		// For optional keys, fork each partial result into with/without variants.
+		// This avoids generating 2^N ConstantArrayType objects via getAllArrays().
+		/** @var list<list<scalar>> $partials */
+		$partials = [[]];
 
-			if ($combinationsCount > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+		foreach ($valueTypes as $i => $valueType) {
+			$constScalars = $valueType->getConstantScalarValues();
+			if (count($constScalars) === 0) {
 				return null;
 			}
 
-			$combinations = CombinationsHelper::combinations($arrayValues);
-			foreach ($combinations as $combination) {
-				$strings[] = new ConstantStringType(implode($separatorType->getValue(), $combination));
+			$isOptional = $arrayType->isOptionalKey($i);
+			$newPartials = [];
+
+			foreach ($partials as $partial) {
+				if ($isOptional) {
+					$newPartials[] = $partial;
+				}
+				foreach ($constScalars as $scalar) {
+					$newPartial = $partial;
+					$newPartial[] = $scalar;
+					$newPartials[] = $newPartial;
+				}
+			}
+
+			$partials = $newPartials;
+			if (count($partials) > $limit) {
+				return null;
 			}
 		}
 
-		if (count($strings) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return null;
+		$strings = [];
+		foreach ($partials as $partial) {
+			$strings[] = new ConstantStringType(implode($sep, $partial));
 		}
 
 		return TypeCombinator::union(...$strings);

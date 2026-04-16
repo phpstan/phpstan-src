@@ -9,7 +9,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_map;
 use function count;
 use function implode;
 
@@ -92,7 +91,7 @@ final class IntersectionTypePropertyReflection implements ExtendedPropertyReflec
 
 	public function getPhpDocType(): Type
 	{
-		return TypeCombinator::intersect(...array_map(static fn (ExtendedPropertyReflection $property): Type => $property->getPhpDocType(), $this->properties));
+		return $this->pairwiseIntersect(static fn (ExtendedPropertyReflection $property): Type => $property->getPhpDocType());
 	}
 
 	public function hasNativeType(): bool
@@ -102,17 +101,29 @@ final class IntersectionTypePropertyReflection implements ExtendedPropertyReflec
 
 	public function getNativeType(): Type
 	{
-		return TypeCombinator::intersect(...array_map(static fn (ExtendedPropertyReflection $property): Type => $property->getNativeType(), $this->properties));
+		return $this->pairwiseIntersect(static fn (ExtendedPropertyReflection $property): Type => $property->getNativeType());
 	}
 
 	public function getReadableType(): Type
 	{
-		return TypeCombinator::intersect(...array_map(static fn (ExtendedPropertyReflection $property): Type => $property->getReadableType(), $this->properties));
+		return $this->pairwiseIntersect(static fn (ExtendedPropertyReflection $property): Type => $property->getReadableType());
 	}
 
 	public function getWritableType(): Type
 	{
-		return TypeCombinator::intersect(...array_map(static fn (ExtendedPropertyReflection $property): Type => $property->getWritableType(), $this->properties));
+		return $this->pairwiseIntersect(static fn (ExtendedPropertyReflection $property): Type => $property->getWritableType());
+	}
+
+	/**
+	 * @param callable(ExtendedPropertyReflection): Type $getType
+	 */
+	private function pairwiseIntersect(callable $getType): Type
+	{
+		$result = $getType($this->properties[0]);
+		for ($i = 1, $count = count($this->properties); $i < $count; $i++) {
+			$result = TypeCombinator::intersect($result, $getType($this->properties[$i]));
+		}
+		return $result;
 	}
 
 	public function canChangeTypeAfterAssignment(): bool

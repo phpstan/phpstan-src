@@ -94,9 +94,18 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			}
 		}
 
-		$returnType = TypeCombinator::intersect(...$returnTypes);
-		$phpDocReturnType = TypeCombinator::intersect(...$phpDocReturnTypes);
-		$nativeReturnType = TypeCombinator::intersect(...$nativeReturnTypes);
+		$returnType = $returnTypes[0];
+		for ($i = 1, $count = count($returnTypes); $i < $count; $i++) {
+			$returnType = TypeCombinator::intersect($returnType, $returnTypes[$i]);
+		}
+		$phpDocReturnType = $phpDocReturnTypes[0];
+		for ($i = 1, $count = count($phpDocReturnTypes); $i < $count; $i++) {
+			$phpDocReturnType = TypeCombinator::intersect($phpDocReturnType, $phpDocReturnTypes[$i]);
+		}
+		$nativeReturnType = $nativeReturnTypes[0];
+		for ($i = 1, $count = count($nativeReturnTypes); $i < $count; $i++) {
+			$nativeReturnType = TypeCombinator::intersect($nativeReturnType, $nativeReturnTypes[$i]);
+		}
 		return array_map(static fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
@@ -188,7 +197,11 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			return null;
 		}
 
-		return TypeCombinator::intersect(...$types);
+		$result = $types[0];
+		for ($i = 1, $count = count($types); $i < $count; $i++) {
+			$result = TypeCombinator::intersect($result, $types[$i]);
+		}
+		return $result;
 	}
 
 	public function hasSideEffects(): TrinaryLogic

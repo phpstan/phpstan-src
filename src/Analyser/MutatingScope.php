@@ -3271,7 +3271,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				unset($scope->expressionTypes[$conditionalExprString]);
 			} else {
 				if (array_key_exists($conditionalExprString, $scope->expressionTypes)) {
-					$type = TypeCombinator::intersect(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
+					$type = $expressions[0]->getTypeHolder()->getType();
+					for ($i = 1, $count = count($expressions); $i < $count; $i++) {
+						$type = TypeCombinator::intersect($type, $expressions[$i]->getTypeHolder()->getType());
+					}
 
 					$scope->expressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
 						$scope->expressionTypes[$conditionalExprString]->getExpr(),

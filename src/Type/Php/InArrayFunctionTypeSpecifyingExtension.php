@@ -222,7 +222,10 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			return null;
 		}
 
-		$guaranteedValueType = TypeCombinator::intersect(...$guaranteedValueTypePerArray);
+		$guaranteedValueType = $guaranteedValueTypePerArray[0];
+		for ($i = 1, $count = count($guaranteedValueTypePerArray); $i < $count; $i++) {
+			$guaranteedValueType = TypeCombinator::intersect($guaranteedValueType, $guaranteedValueTypePerArray[$i]);
+		}
 		if (count($guaranteedValueType->getFiniteTypes()) === 0) {
 			return null;
 		}

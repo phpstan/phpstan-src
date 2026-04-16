@@ -624,7 +624,11 @@ final class TypeNodeResolver
 	private function resolveIntersectionTypeNode(IntersectionTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		$types = $this->resolveMultiple($typeNode->types, $nameScope);
-		return TypeCombinator::intersect(...$types);
+		$result = $types[0];
+		for ($i = 1, $count = count($types); $i < $count; $i++) {
+			$result = TypeCombinator::intersect($result, $types[$i]);
+		}
+		return $result;
 	}
 
 	private function resolveConditionalTypeNode(ConditionalTypeNode $typeNode, NameScope $nameScope): Type

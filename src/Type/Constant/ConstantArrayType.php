@@ -94,6 +94,9 @@ class ConstantArrayType implements Type
 
 	private ?Type $iterableValueType = null;
 
+	/** @var array<int|string, int>|null */
+	private ?array $keyIndexMap = null;
+
 	/**
 	 * @api
 	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
@@ -1805,15 +1808,17 @@ class ConstantArrayType implements Type
 
 		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
 
-		$keyTypes = $this->keyTypes;
+		$keyIndexMap = $this->getKeyIndexMap();
+		$otherKeyValues = [];
 
 		foreach ($otherArray->keyTypes as $j => $keyType) {
-			$i = self::findKeyIndex($keyType, $keyTypes);
+			$keyValue = $keyType->getValue();
+			$i = $keyIndexMap[$keyValue] ?? null;
 			if ($i === null) {
 				return false;
 			}
 
-			unset($keyTypes[$i]);
+			$otherKeyValues[$keyValue] = true;
 
 			$valueType = $this->valueTypes[$i];
 			$otherValueType = $otherArray->valueTypes[$j];
@@ -1828,7 +1833,10 @@ class ConstantArrayType implements Type
 		}
 
 		$requiredKeyCount = 0;
-		foreach (array_keys($keyTypes) as $i) {
+		foreach ($this->keyTypes as $i => $keyType) {
+			if (isset($otherKeyValues[$keyType->getValue()])) {
+				continue;
+			}
 			if ($this->isOptionalKey($i)) {
 				continue;
 			}
@@ -1869,11 +1877,28 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * @return array<int|string, int>
+	 */
+	private function getKeyIndexMap(): array
+	{
+		if ($this->keyIndexMap !== null) {
+			return $this->keyIndexMap;
+		}
+
+		$map = [];
+		foreach ($this->keyTypes as $i => $keyType) {
+			$map[$keyType->getValue()] = $i;
+		}
+
+		return $this->keyIndexMap = $map;
+	}
+
+	/**
 	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
 	 */
 	private function getKeyIndex($otherKeyType): ?int
 	{
-		return self::findKeyIndex($otherKeyType, $this->keyTypes);
+		return $this->getKeyIndexMap()[$otherKeyType->getValue()] ?? null;
 	}
 
 	/**

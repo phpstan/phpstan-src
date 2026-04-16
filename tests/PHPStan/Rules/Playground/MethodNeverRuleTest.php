@@ -17,7 +17,7 @@ class MethodNeverRuleTest extends RuleTestCase
 		return new MethodNeverRule(new NeverRuleHelper());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-never.php'], [

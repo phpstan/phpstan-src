@@ -20,7 +20,7 @@ class TooWidePropertyHookThrowTypeRuleTest extends RuleTestCase
 		return new TooWidePropertyHookThrowTypeRule(new TooWideThrowTypeCheck(true), $this->checkProtectedAndPublicMethods);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/too-wide-throws-property-hook.php'], [
@@ -110,7 +110,7 @@ class TooWidePropertyHookThrowTypeRuleTest extends RuleTestCase
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
 	 */
 	#[DataProvider('dataAlwaysCheckFinal')]
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testAlwaysCheckFinal(bool $checkProtectedAndPublicMethods, array $expectedErrors): void
 	{
 		$this->checkProtectedAndPublicMethods = $checkProtectedAndPublicMethods;

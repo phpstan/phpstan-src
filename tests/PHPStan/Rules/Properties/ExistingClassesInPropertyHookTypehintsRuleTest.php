@@ -40,7 +40,7 @@ class ExistingClassesInPropertyHookTypehintsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/existing-classes-property-hooks.php'], [

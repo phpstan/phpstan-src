@@ -68,7 +68,7 @@ class ConstantAttributesRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-attributes.php'], [
@@ -132,7 +132,7 @@ class ConstantAttributesRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
 	 */
-	#[RequiresPhp('< 8.5')]
+	#[RequiresPhp('< 8.5.0')]
 	#[DataProvider('dataRuleBefore85Runtime')]
 	public function testRuleBefore85Runtime(int $phpVersionId, array $expectedErrors): void
 	{

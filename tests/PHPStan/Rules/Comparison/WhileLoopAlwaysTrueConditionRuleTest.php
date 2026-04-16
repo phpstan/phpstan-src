@@ -55,7 +55,7 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRulePHP81(): void
 	{
 		$this->analyse([__DIR__ . '/data/while-loop-true-php81.php'], []);

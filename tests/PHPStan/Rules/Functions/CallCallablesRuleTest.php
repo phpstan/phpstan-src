@@ -171,7 +171,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callables.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/callables-named-arguments.php'], [
@@ -227,7 +227,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3566.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -333,7 +333,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-callable-pipe.php'], [

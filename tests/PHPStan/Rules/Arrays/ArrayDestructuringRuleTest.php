@@ -68,7 +68,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14270.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/array-destructuring-nullsafe.php'], [

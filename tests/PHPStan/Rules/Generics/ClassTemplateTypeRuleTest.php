@@ -140,7 +140,7 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/interface-template.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10049(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10049.php'], [

@@ -44,7 +44,7 @@ final class MemoizationPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testFix(): void
 	{
 		$this->fix(__DIR__ . '/data/memoization-property.php', __DIR__ . '/data/memoization-property.php.fixed');

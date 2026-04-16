@@ -172,7 +172,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testNativeClassConstantTypeInEvaledClass(): void
 	{
 		eval('namespace NativeClassConstantInEvaledClass; class Foo { public const int FOO = 1; }');

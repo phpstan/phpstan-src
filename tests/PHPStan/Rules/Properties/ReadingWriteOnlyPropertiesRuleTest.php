@@ -103,7 +103,7 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->checkThisOnly = false;

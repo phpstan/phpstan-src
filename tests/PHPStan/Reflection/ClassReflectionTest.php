@@ -171,7 +171,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataIsAttributeClass')]
 	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = Attribute::TARGET_ALL): void
 	{
@@ -192,7 +192,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($constant->isDeprecated()->yes());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFinalConstant(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -299,7 +299,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnumIsFinal(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -312,7 +312,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($enum->isFinalByKeyword());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBackedEnumType(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();

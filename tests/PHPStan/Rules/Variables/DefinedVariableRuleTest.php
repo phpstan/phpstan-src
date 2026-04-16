@@ -877,7 +877,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1016b.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8142(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -950,7 +950,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-393.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9474(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -960,7 +960,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9474.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnum(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1033,7 +1033,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/discussion-10252.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10418(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1043,7 +1043,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10418.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPassByReferenceIntoNotNullable(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1067,7 +1067,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10228.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1158,7 +1158,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8719.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13353(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1179,7 +1179,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13694.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5191(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1195,7 +1195,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10909(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1206,7 +1206,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10909.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13981(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1226,7 +1226,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7705(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1237,7 +1237,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7705.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12944(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1426,7 +1426,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14274(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1437,7 +1437,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14274.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12373(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

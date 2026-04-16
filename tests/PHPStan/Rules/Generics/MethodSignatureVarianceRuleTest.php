@@ -235,7 +235,7 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10609(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10609.php'], [

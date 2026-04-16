@@ -63,7 +63,7 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-nullsafe.php'], [
@@ -79,7 +79,7 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8236.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5655b(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5655b.php'], []);

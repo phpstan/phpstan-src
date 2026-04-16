@@ -60,7 +60,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/interface-extends-enum.php'], [

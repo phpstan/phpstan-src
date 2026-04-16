@@ -37,7 +37,7 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testUselessReturnValuePhp8(): void
 	{
 		$this->analyse([__DIR__ . '/data/useless-fn-return-php8.php'], [

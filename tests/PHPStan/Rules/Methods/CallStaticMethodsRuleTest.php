@@ -426,7 +426,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->checkThisOnly = false;
@@ -464,7 +464,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.0')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testBug1971(): void
 	{
 		$this->checkThisOnly = false;
@@ -476,7 +476,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug1971Php8(): void
 	{
 		$this->checkThisOnly = false;
@@ -765,7 +765,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataMixed')]
 	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
 	{
@@ -775,7 +775,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-static-method-mixed.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBugWrongMethodNameWithTemplateMixed(): void
 	{
 		$this->checkThisOnly = false;
@@ -975,7 +975,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->checkThisOnly = false;

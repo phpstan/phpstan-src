@@ -119,7 +119,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/dynamic-stringable-access.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testDynamicStringableNullsafeAccess(): void
 	{
 		// All warnings are reported by the AccessPropertiesRule.
@@ -163,7 +163,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10477.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testAsymmetricVisibility(): void
 	{
 		$this->analyse([__DIR__ . '/data/write-asymmetric-visibility.php'], [
@@ -207,7 +207,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13123.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testBug14063(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14063.php'], [
@@ -226,7 +226,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testCloneWith(): void
 	{
 		$this->analyse([__DIR__ . '/data/clone-with.php'], [

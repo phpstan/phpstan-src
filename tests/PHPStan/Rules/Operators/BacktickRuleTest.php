@@ -41,7 +41,7 @@ class BacktickRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/backtick.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testFix(): void
 	{
 		$this->fix(__DIR__ . '/data/backtick.php', __DIR__ . '/data/backtick.php.fixed');

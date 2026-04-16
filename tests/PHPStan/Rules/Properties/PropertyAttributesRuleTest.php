@@ -85,13 +85,13 @@ class PropertyAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testOverrideAttributeAllowed(): void
 	{
 		$this->analyse([__DIR__ . '/data/override-attr-on-property.php'], []);
 	}
 
-	#[RequiresPhp('< 8.5')]
+	#[RequiresPhp('< 8.5.0')]
 	public function testOverrideAttributeNotAllowed(): void
 	{
 		$this->analyse([__DIR__ . '/data/override-attr-on-property.php'], [

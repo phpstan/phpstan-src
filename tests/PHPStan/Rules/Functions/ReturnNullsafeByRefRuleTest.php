@@ -36,7 +36,7 @@ class ReturnNullsafeByRefRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->analyse([__DIR__ . '/data/return-null-safe-by-ref-property-hooks.php'], [

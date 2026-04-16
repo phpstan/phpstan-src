@@ -74,7 +74,7 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10956(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10956.php'], []);

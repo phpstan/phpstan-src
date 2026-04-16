@@ -71,7 +71,7 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-in-enum-without-body.php'], [
@@ -86,7 +86,7 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11592(): void
 	{
 		$this->analyse([__DIR__ . '/../Classes/data/bug-11592.php'], [

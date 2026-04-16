@@ -26,7 +26,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/too-wide-property-type.php'], [
@@ -62,7 +62,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11667.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug13384(): void
 	{
 		$this->reportTooWideBool = true;
@@ -79,7 +79,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.2')]
+	#[RequiresPhp('< 8.2.0')]
 	public function testBug13384PrePhp82(): void
 	{
 		$this->reportTooWideBool = true;

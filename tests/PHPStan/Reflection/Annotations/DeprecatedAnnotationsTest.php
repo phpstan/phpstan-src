@@ -335,7 +335,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	#[DataProvider('dataDeprecatedAttributeAboveEnumCase')]
 	public function testDeprecatedAttributeAboveEnumCase(string $className, string $caseName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
 	{
@@ -388,7 +388,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	/**
 	 * @param 'get'|'set' $hookName
 	 */
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	#[DataProvider('dataDeprecatedAttributeAbovePropertyHook')]
 	public function testDeprecatedAttributeAbovePropertyHook(string $className, string $propertyName, string $hookName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
 	{

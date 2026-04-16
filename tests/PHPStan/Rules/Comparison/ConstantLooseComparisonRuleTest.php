@@ -67,7 +67,7 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8485(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8485.php'], [

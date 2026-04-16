@@ -107,7 +107,7 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->checkThisOnly = false;
@@ -123,7 +123,7 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12553(): void
 	{
 		$this->checkThisOnly = false;
@@ -156,14 +156,14 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13530(): void
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-13530.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testCloneWith(): void
 	{
 		$this->checkThisOnly = false;

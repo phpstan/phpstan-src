@@ -27,7 +27,7 @@ class CallToFunctionStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-to-function-without-impure-points-pipe.php'], [

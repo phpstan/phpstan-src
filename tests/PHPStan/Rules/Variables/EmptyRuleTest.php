@@ -109,7 +109,7 @@ class EmptyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7109(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -235,7 +235,7 @@ class EmptyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testIssetAfterRememberedConstructor(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

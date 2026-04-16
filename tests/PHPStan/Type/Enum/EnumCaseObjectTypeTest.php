@@ -103,7 +103,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -201,7 +201,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	#[DataProvider('dataAccepts')]
 	public function testAccepts(
 		Type $type,

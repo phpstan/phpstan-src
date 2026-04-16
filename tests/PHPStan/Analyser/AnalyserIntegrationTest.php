@@ -93,7 +93,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantArrayCallableDoesNotCauseInfiniteRecursion(): void
 	{
 		// Previously caused infinite recursion / OOM via ConstantArrayType::isCallable()
@@ -336,7 +336,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6872(): void
 	{
 		// crash
@@ -427,7 +427,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14100(): void
 	{
 		// false negative
@@ -454,7 +454,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug4734(): void
 	{
 		// false positive
@@ -468,7 +468,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[4]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12512(): void
 	{
 		// crash
@@ -504,7 +504,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5951(): void
 	{
 		// crash
@@ -512,7 +512,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/enums-integration.php');
@@ -548,7 +548,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6494(): void
 	{
 		// false positive
@@ -593,7 +593,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(24, $errors[0]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6114(): void
 	{
 		// false negative
@@ -655,7 +655,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(54, $errors[1]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6896(): void
 	{
 		// crash
@@ -714,7 +714,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	null, $shippingLongitude = null, $shippingNeutralShipping = null)): Unexpected token "\n * ", expected type at offset 193 on line 6', $errors[0]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7012(): void
 	{
 		// false positive
@@ -722,7 +722,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6192(): void
 	{
 		// false positive
@@ -737,7 +737,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testDiscussion6993(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-6993.php');
@@ -752,7 +752,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7078(): void
 	{
 		// false positive
@@ -760,7 +760,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7116(): void
 	{
 		// false positive
@@ -775,7 +775,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7135(): void
 	{
 		// crash
@@ -784,7 +784,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Cannot create callable from the new operator.', $errors[0]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testDiscussion7124(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
@@ -837,7 +837,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(29, $errors[5]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testOffsetAccess(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/offset-access.php');
@@ -986,7 +986,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8078(): void
 	{
 		// crash
@@ -994,7 +994,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8072(): void
 	{
 		// crash
@@ -1052,7 +1052,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testAssertDocblock(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');
@@ -1067,7 +1067,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(238, $errors[3]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12934(): void
 	{
 		// crash
@@ -1081,7 +1081,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8537(): void
 	{
 		// crash
@@ -1089,7 +1089,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7927(): void
 	{
 		// crash
@@ -1125,7 +1125,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Method SkipCheckNoGenericClasses\Foo::doFoo() has parameter $i with generic class LimitIterator but does not specify its types: TKey, TValue, TIterator', $errors[0]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8983(): void
 	{
 		// crash
@@ -1190,7 +1190,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Constant Bug9039\Test::RULES is unused.', $errors[0]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testDiscussion9053(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-9053.php');
@@ -1204,7 +1204,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9428(): void
 	{
 		// false positive
@@ -1233,7 +1233,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(16, $errors[4]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9994(): void
 	{
 		// crash
@@ -1243,7 +1243,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Parameter #2 $callback of function array_filter expects (callable(1|2|3|null): bool)|null, false given.', $errors[1]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13987(): void
 	{
 		// false positive
@@ -1258,7 +1258,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10049(): void
 	{
 		// crash
@@ -1274,7 +1274,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(59, $errors[3]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10086(): void
 	{
 		// crash
@@ -1282,7 +1282,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug10302(): void
 	{
 		// false positive
@@ -1308,7 +1308,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[1]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10847(): void
 	{
 		// false positive
@@ -1316,7 +1316,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10985(): void
 	{
 		// crash
@@ -1338,7 +1338,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11147(): void
 	{
 		// crash
@@ -1354,7 +1354,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5597(): void
 	{
 		// false positive
@@ -1362,7 +1362,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11511(): void
 	{
 		// false positive
@@ -1392,7 +1392,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11709(): void
 	{
 		// false positive
@@ -1400,7 +1400,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug12549(): void
 	{
 		// crash
@@ -1415,7 +1415,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug12949(): void
 	{
 		// crash
@@ -1462,7 +1462,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Function Bug13714\array_find invoked with 2 parameters, 0 required.', $errors[6]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug13980(): void
 	{
 		// false positive
@@ -1484,7 +1484,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12246(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12246.php');

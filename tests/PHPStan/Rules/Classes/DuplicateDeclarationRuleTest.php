@@ -66,7 +66,7 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testDuplicateEnumCase(): void
 	{
 		$this->analyse([__DIR__ . '/data/duplicate-enum-cases.php'], [

@@ -63,7 +63,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('< 8.0')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testIsCallablePhp7(): void
 	{
 		$this->checkThisOnly = false;
@@ -72,7 +72,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([ __DIR__ . '/data/call-methods-is-callable.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testIsCallablePhp8(): void
 	{
 		$this->checkThisOnly = false;
@@ -1621,7 +1621,7 @@ class CallMethodsRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataExplicitMixed')]
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
 	{
@@ -1752,7 +1752,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testStringable(): void
 	{
 		$this->checkThisOnly = false;
@@ -1821,7 +1821,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.0')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testDisallowNamedArguments(): void
 	{
 		$this->checkThisOnly = false;
@@ -1850,7 +1850,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->checkThisOnly = false;
@@ -2135,7 +2135,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3546.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug4800(): void
 	{
 		$this->checkThisOnly = false;
@@ -2382,7 +2382,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3465.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5868(): void
 	{
 		$this->checkThisOnly = false;
@@ -2422,7 +2422,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/first-class-method-callable.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->checkThisOnly = false;
@@ -2469,7 +2469,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6239(): void
 	{
 		$this->checkThisOnly = false;
@@ -2499,7 +2499,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testReadOnlyPropertyPassedByReference(): void
 	{
 		$this->checkThisOnly = false;
@@ -2544,7 +2544,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6236.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6118(): void
 	{
 		$this->checkThisOnly = false;
@@ -2662,7 +2662,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6904(): void
 	{
 		$this->checkThisOnly = false;
@@ -2721,7 +2721,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conditional-complex-templates.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6291(): void
 	{
 		$this->checkThisOnly = false;
@@ -2740,7 +2740,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1517.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7593(): void
 	{
 		$this->checkThisOnly = false;
@@ -2777,7 +2777,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7600.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug8058(): void
 	{
 		$this->checkThisOnly = false;
@@ -2787,7 +2787,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8058.php'], []);
 	}
 
-	#[RequiresPhp('< 8.2')]
+	#[RequiresPhp('< 8.2.0')]
 	public function testBug8058b(): void
 	{
 		$this->checkThisOnly = false;
@@ -2932,7 +2932,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8713(): void
 	{
 		$this->checkThisOnly = false;
@@ -3128,7 +3128,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9951(): void
 	{
 		$this->checkThisOnly = false;
@@ -3147,7 +3147,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testTypedClassConstants(): void
 	{
 		$this->checkThisOnly = false;
@@ -3157,7 +3157,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/return-type-class-constant.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedParametersForMultiVariantFunctions(): void
 	{
 		$this->checkThisOnly = false;
@@ -3252,7 +3252,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBugTemplateMixedUnionIntersect(): void
 	{
 		$this->checkThisOnly = false;
@@ -3372,7 +3372,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/closure-parameter-generics.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNoNamedArguments(): void
 	{
 		$this->checkThisOnly = false;
@@ -3518,7 +3518,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12691.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12422(): void
 	{
 		$this->checkThisOnly = false;
@@ -3612,7 +3612,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12940.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13171(): void
 	{
 		$this->checkThisOnly = false;
@@ -3716,7 +3716,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3396.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13881(): void
 	{
 		$this->checkThisOnly = false;
@@ -3726,7 +3726,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13881.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12219(): void
 	{
 		$this->checkThisOnly = false;
@@ -3750,7 +3750,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13511.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testRandomizer(): void
 	{
 		$this->checkThisOnly = false;
@@ -3771,7 +3771,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->checkThisOnly = false;
@@ -3806,7 +3806,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12663(): void
 	{
 		$this->checkThisOnly = false;
@@ -3817,7 +3817,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12663.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12735(): void
 	{
 		$this->checkThisOnly = false;
@@ -3838,7 +3838,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13993.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13993b(): void
 	{
 		$this->checkThisOnly = false;
@@ -3881,7 +3881,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13805(): void
 	{
 		$this->checkThisOnly = false;
@@ -3915,7 +3915,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6120(): void
 	{
 		$this->checkThisOnly = false;
@@ -3945,7 +3945,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheckMethods(): void
 	{
 		$this->checkThisOnly = false;
@@ -3968,6 +3968,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11073(): void
 	{
 		$this->checkThisOnly = false;

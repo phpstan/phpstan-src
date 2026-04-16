@@ -515,7 +515,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8158.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8485(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
@@ -568,7 +568,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8586.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug4242(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4242.php'], []);
@@ -666,7 +666,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7578.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6260(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -745,7 +745,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	#[DataProvider('dataLastMatchArm')]
 	public function testLastMatchArm(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
@@ -799,7 +799,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnumTips(): void
 	{
 		$this->analyse([__DIR__ . '/data/strict-comparison-enum-tips.php'], [
@@ -811,7 +811,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9142(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9142.php'], [
@@ -831,19 +831,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4918.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug4061(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4061.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9723(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9723.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9723b(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9723b.php'], []);
@@ -1074,7 +1074,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13208.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13282(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13282.php'], []);
@@ -1211,13 +1211,13 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14407(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14407.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13421(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13421.php'], []);

@@ -19,7 +19,7 @@ class MissingMagicSerializationMethodsRuleTest extends RuleTestCase
 		return new MissingMagicSerializationMethodsRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/missing-serialization.php'], [

@@ -18,7 +18,7 @@ class SetPropertyHookParameterRuleTest extends RuleTestCase
 		return new SetPropertyHookParameterRule(new MissingTypehintCheck(true, [], true), true, true);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/set-property-hook-parameter.php'], [

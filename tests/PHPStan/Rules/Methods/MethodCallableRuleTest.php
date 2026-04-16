@@ -42,7 +42,7 @@ class MethodCallableRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('< 8.1')]
+	#[RequiresPhp('< 8.1.0')]
 	public function testNotSupportedOnOlderVersions(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-callable-not-supported.php'], [
@@ -53,13 +53,13 @@ class MethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13596(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13596.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-callable.php'], [

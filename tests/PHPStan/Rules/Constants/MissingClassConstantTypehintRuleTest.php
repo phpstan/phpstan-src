@@ -37,13 +37,13 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug8957(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8957.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testRuleShouldNotApplyToNativeTypes(): void
 	{
 		$this->analyse([__DIR__ . '/data/class-constant-native-type.php'], [

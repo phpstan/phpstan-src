@@ -60,7 +60,7 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3')]
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3.0')]
 	public function testNativeTypes(): void
 	{
 		$this->analyse([__DIR__ . '/data/conflicting-trait-constants-types.php'], [
@@ -79,19 +79,19 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug11088(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11088.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug13119(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13119.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug11351(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11351.php'], []);

@@ -63,7 +63,7 @@ class EchoRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/echo-nullsafe.php'], [

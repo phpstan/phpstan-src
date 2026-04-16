@@ -84,7 +84,7 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13093b.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12754(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12754.php'], []);

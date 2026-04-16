@@ -21,7 +21,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 	/**
 	 * function call, all arguments named and given in order
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testArgumentReorderAllNamed(): void
 	{
 		$funcName = new Name('json_encode');
@@ -60,7 +60,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 	/**
 	 * function call, all args named, not in order
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testArgumentReorderAllNamedWithSkipped(): void
 	{
 		$funcName = new Name('json_encode');
@@ -101,7 +101,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$this->assertSame(128, $reorderedArgs[2]->value->value);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testMissingRequiredParameter(): void
 	{
 		$funcName = new Name('json_encode');

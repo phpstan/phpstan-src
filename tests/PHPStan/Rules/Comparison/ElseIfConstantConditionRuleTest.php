@@ -129,7 +129,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11674(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -145,7 +145,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6947(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

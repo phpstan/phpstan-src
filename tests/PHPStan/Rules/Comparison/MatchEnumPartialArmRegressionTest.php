@@ -23,7 +23,7 @@ class MatchEnumPartialArmRegressionTest extends RuleTestCase
 		return new MatchCallbackScopeRegressionRule();
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnumPartialArmConsumption(): void
 	{
 		$this->analyse([__DIR__ . '/data/match-enum-partial-arm-regression.php'], [

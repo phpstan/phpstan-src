@@ -18,13 +18,13 @@ class MatchExpressionDoNotRememberPossiblyImpureValuesRuleTest extends RuleTestC
 		return self::getContainer()->getByType(MatchExpressionRule::class);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9357(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9357.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9007(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9007.php'], []);

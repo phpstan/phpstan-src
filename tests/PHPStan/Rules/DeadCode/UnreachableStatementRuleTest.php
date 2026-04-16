@@ -252,7 +252,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11909(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -264,7 +264,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13232a(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -308,7 +308,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13232b(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -320,7 +320,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13232c(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -336,7 +336,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13232d(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -348,7 +348,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13288(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -373,7 +373,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13331.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug14328(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

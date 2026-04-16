@@ -98,7 +98,7 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/invalid-inc-dec.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testMixed(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -243,7 +243,7 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/inc-non-numeric-string.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBcMathNumber(): void
 	{
 		$this->analyse([__DIR__ . '/data/inc-dec-bcmath-number.php'], []);

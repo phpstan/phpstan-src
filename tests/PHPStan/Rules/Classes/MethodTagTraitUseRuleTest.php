@@ -62,7 +62,7 @@ class MethodTagTraitUseRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-tag-trait-enum.php'], [

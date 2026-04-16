@@ -21,7 +21,7 @@ class MatchCallbackScopeRegressionTest extends RuleTestCase
 		return new MatchCallbackScopeRegressionRule();
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testExhaustiveMatchCallbackScope(): void
 	{
 		$this->analyse([__DIR__ . '/data/match-callback-scope-regression.php'], [

@@ -230,7 +230,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataParameterContravariance')]
 	public function testParameterContravariance(
 		string $file,
@@ -567,7 +567,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9391.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBugWithIndirectPrototype(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
@@ -664,7 +664,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9615(): void
 	{
 		$tipText = 'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.';
@@ -832,7 +832,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9524.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testSimpleXmlElementChildClass(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;

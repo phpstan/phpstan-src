@@ -16,7 +16,7 @@ class ScopeFunctionCallStackWithParametersRuleTest extends RuleTestCase
 		return new ScopeFunctionCallStackWithParametersRule();
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/scope-function-call-stack.php'], [

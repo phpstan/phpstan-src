@@ -32,7 +32,7 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testNativeType(): void
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-class-constant-phpdoc-native-type.php'], [
@@ -47,7 +47,7 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug10911(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10911.php'], []);

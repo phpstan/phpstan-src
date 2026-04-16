@@ -80,7 +80,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]));
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
@@ -95,7 +95,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-enum.php'], [
@@ -166,7 +166,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11111(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11111.php'], [
@@ -181,7 +181,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11141(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11141.php'], [

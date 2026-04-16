@@ -66,7 +66,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 		);
 	}
 
-	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.0')]
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/trait-attributes.php'], [
@@ -81,7 +81,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3')]
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3.0')]
 	public function testBug12011(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -95,7 +95,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.1')]
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.1.0')]
 	public function testBug12281(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12281.php'], [
@@ -106,13 +106,13 @@ class TraitAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testBugDeprecatedAttributeAllowed(): void
 	{
 		$this->analyse([__DIR__ . '/data/deprecated-attr-on-trait.php'], []);
 	}
 
-	#[RequiresPhp('< 8.5')]
+	#[RequiresPhp('< 8.5.0')]
 	public function testBugDeprecatedAttributeNotAllowed(): void
 	{
 		$this->analyse([__DIR__ . '/data/deprecated-attr-on-trait.php'], [

@@ -96,7 +96,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5095.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6158(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6158.php'], []);
@@ -211,21 +211,21 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312b.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10312c(): void
 	{
 		$this->checkProtectedAndPublicMethods = true;
 		$this->analyse([__DIR__ . '/data/bug-10312c.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10312d(): void
 	{
 		$this->checkProtectedAndPublicMethods = true;
 		$this->analyse([__DIR__ . '/data/bug-10312d.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug13384c(): void
 	{
 		$this->reportTooWideBool = true;
@@ -258,7 +258,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.2')]
+	#[RequiresPhp('< 8.2.0')]
 	public function testBug13384cPrePhp82(): void
 	{
 		$this->reportTooWideBool = true;
@@ -309,7 +309,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13676.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug11430(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11430.php'], []);

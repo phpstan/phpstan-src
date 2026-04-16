@@ -4,7 +4,6 @@ namespace PHPStan\Type\Constant;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -1997,38 +1996,43 @@ class ConstantArrayType implements Type
 
 	public function getFiniteTypes(): array
 	{
-		$arraysArraysForCombinations = [];
-		$count = 0;
-		foreach ($this->getAllArrays() as $array) {
-			$values = $array->getValueTypes();
-			$arraysForCombinations = [];
-			$combinationCount = 1;
-			foreach ($values as $valueType) {
-				$finiteTypes = $valueType->getFiniteTypes();
-				if ($finiteTypes === []) {
-					return [];
-				}
-				$arraysForCombinations[] = $finiteTypes;
-				$combinationCount *= count($finiteTypes);
-			}
-			$arraysArraysForCombinations[] = $arraysForCombinations;
-			$count += $combinationCount;
-		}
+		$limit = InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT;
 
-		if ($count > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return [];
+		// Build finite array types incrementally, processing one key at a time.
+		// For optional keys, fork each partial result into with/without variants.
+		// This avoids generating 2^N ConstantArrayType objects via getAllArrays().
+		/** @var list<ConstantArrayTypeBuilder> $partials */
+		$partials = [ConstantArrayTypeBuilder::createEmpty()];
+
+		foreach ($this->keyTypes as $i => $keyType) {
+			$finiteValueTypes = $this->valueTypes[$i]->getFiniteTypes();
+			if ($finiteValueTypes === []) {
+				return [];
+			}
+
+			$isOptional = $this->isOptionalKey($i);
+			$newPartials = [];
+
+			foreach ($partials as $partial) {
+				if ($isOptional) {
+					$newPartials[] = clone $partial;
+				}
+				foreach ($finiteValueTypes as $finiteValueType) {
+					$newPartial = clone $partial;
+					$newPartial->setOffsetValueType($keyType, $finiteValueType);
+					$newPartials[] = $newPartial;
+				}
+			}
+
+			$partials = $newPartials;
+			if (count($partials) > $limit) {
+				return [];
+			}
 		}
 
 		$finiteTypes = [];
-		foreach ($arraysArraysForCombinations as $arraysForCombinations) {
-			$combinations = CombinationsHelper::combinations($arraysForCombinations);
-			foreach ($combinations as $combination) {
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($combination as $i => $v) {
-					$builder->setOffsetValueType($this->keyTypes[$i], $v);
-				}
-				$finiteTypes[] = $builder->getArray();
-			}
+		foreach ($partials as $partial) {
+			$finiteTypes[] = $partial->getArray();
 		}
 
 		return $finiteTypes;

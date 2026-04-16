@@ -73,7 +73,6 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
-use function strtolower;
 
 /**
  * @implements ExprHandler<Assign|AssignRef>
@@ -82,7 +81,7 @@ use function strtolower;
 final class AssignHandler implements ExprHandler
 {
 
-	private const COUNT_CONDITIONAL_LIMIT = 8;
+	private const INTEGER_CONDITIONAL_LIMIT = 8;
 
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
@@ -318,39 +317,34 @@ final class AssignHandler implements ExprHandler
 
 				if (
 					$assignedExpr instanceof FuncCall
-					&& $assignedExpr->name instanceof Name
-					&& in_array(strtolower($assignedExpr->name->toString()), ['count', 'sizeof'], true)
-					&& count($assignedExpr->getArgs()) === 1
+					&& $type->isInteger()->yes()
 					&& !$type instanceof ConstantIntegerType
 				) {
-					$countArgType = $scope->getType($assignedExpr->getArgs()[0]->value);
-					if ($countArgType->isArray()->yes() && ($countArgType->isList()->yes() || $countArgType->isConstantArray()->yes())) {
-						for ($n = 1; $n <= self::COUNT_CONDITIONAL_LIMIT; $n++) {
-							$nType = new ConstantIntegerType($n);
-							$identicalExpr = new Expr\BinaryOp\Identical(
-								$assignedExpr,
-								new Node\Scalar\Int_($n),
-							);
-							$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
-								$scope,
-								$identicalExpr,
-								TypeSpecifierContext::createTrue(),
-							);
-							$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign(
-								$scope,
-								$var->name,
-								$conditionalExpressions,
-								$identicalSpecifiedTypes,
-								$nType,
-							);
-							$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign(
-								$scope,
-								$var->name,
-								$conditionalExpressions,
-								$identicalSpecifiedTypes,
-								$nType,
-							);
-						}
+					for ($n = 1; $n <= self::INTEGER_CONDITIONAL_LIMIT; $n++) {
+						$nType = new ConstantIntegerType($n);
+						$identicalExpr = new Expr\BinaryOp\Identical(
+							$assignedExpr,
+							new Node\Scalar\Int_($n),
+						);
+						$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
+							$scope,
+							$identicalExpr,
+							TypeSpecifierContext::createTrue(),
+						);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign(
+							$scope,
+							$var->name,
+							$conditionalExpressions,
+							$identicalSpecifiedTypes,
+							$nType,
+						);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign(
+							$scope,
+							$var->name,
+							$conditionalExpressions,
+							$identicalSpecifiedTypes,
+							$nType,
+						);
 					}
 				}
 

@@ -61,13 +61,25 @@ function testBeyondLimit(array $items): void {
 }
 
 /**
- * Count with mode argument excluded from pre-computation
+ * Count with mode argument - safe for list<int> since int values are not countable
  * @param list<int> $items
  */
 function testCountWithMode(array $items, int $mode): void {
 	$count = count($items, $mode);
 	if ($count === 3) {
-		assertType('non-empty-list<int>', $items);
+		assertType('array{int, int, int}', $items);
+	}
+}
+
+/**
+ * Variable strlen - generalized integer pre-computation also works for strlen
+ */
+function testStrlen(string $s): void {
+	$len = strlen($s);
+	if ($len === 3) {
+		assertType('non-falsy-string', $s);
+	} elseif ($len === 1) {
+		assertType('non-empty-string', $s);
 	}
 }
 

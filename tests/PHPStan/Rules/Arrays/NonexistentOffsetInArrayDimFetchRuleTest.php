@@ -373,7 +373,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/nonexistent-offset-nullsafe.php'], [
@@ -399,7 +399,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4747.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug4885(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4885.php'], []);
@@ -515,7 +515,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7469.php'], $expected);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7763(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7763.php'], []);
@@ -640,7 +640,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testMixed(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -789,7 +789,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testInternalClassesWithOverloadedOffsetAccess84(): void
 	{
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-php84.php'], []);
@@ -800,7 +800,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testInternalClassesWithOverloadedOffsetAccessInvalid84(): void
 	{
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid-php84.php'], []);
@@ -1154,7 +1154,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12805.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6209(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -1237,7 +1237,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14234(): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;

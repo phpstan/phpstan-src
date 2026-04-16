@@ -105,7 +105,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 	 * @param string[] $checkedExceptionClasses
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	#[DataProvider('dataRule')]
 	public function testRule(bool $missingCheckedExceptionInThrows, array $checkedExceptionClasses, array $errors): void
 	{

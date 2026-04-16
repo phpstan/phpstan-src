@@ -19,7 +19,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		return new PropertiesInInterfaceRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
-	#[RequiresPhp('< 8.4')]
+	#[RequiresPhp('< 8.4.0')]
 	public function testPhp83AndPropertiesInInterface(): void
 	{
 		// @phpstan-ignore phpstan.skipTestsRequiresPhp
@@ -46,7 +46,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.4')]
+	#[RequiresPhp('< 8.4.0')]
 	public function testPhp83AndPropertyHooksInInterface(): void
 	{
 		// @phpstan-ignore phpstan.skipTestsRequiresPhp
@@ -65,7 +65,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndPropertiesInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
@@ -84,7 +84,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndNonPublicPropertyHooksInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-hooks-visibility-in-interface.php'], [
@@ -99,7 +99,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndPropertyHooksWithBodiesInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-hooks-bodies-in-interface.php'], [
@@ -114,7 +114,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndReadonlyPropertyHooksInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/readonly-property-hooks-in-interface.php'], [
@@ -133,7 +133,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndFinalPropertyHooksInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/final-property-hooks-in-interface.php'], [
@@ -160,7 +160,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndExplicitAbstractProperty(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-in-interface-explicit-abstract.php'], [
@@ -171,7 +171,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndStaticHookedPropertyInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-hooked-property-in-interface.php'], [

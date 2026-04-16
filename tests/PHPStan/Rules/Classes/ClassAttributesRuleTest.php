@@ -63,7 +63,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/class-attributes.php'], [
@@ -130,7 +130,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleForEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/enum-attributes.php'], [
@@ -145,7 +145,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7171(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7171.php'], [
@@ -156,13 +156,13 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testAllowDynamicPropertiesAttribute(): void
 	{
 		$this->analyse([__DIR__ . '/data/allow-dynamic-properties-attribute.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug12011(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -175,7 +175,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testBug12281(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -196,7 +196,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testDeprecatedAttribute(): void
 	{
 		$this->analyse([__DIR__ . '/data/deprecated-attr-on-class.php'], [

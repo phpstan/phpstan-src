@@ -31,7 +31,7 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 		));
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/implode-param-castable-to-string-functions-named-args.php'], [
@@ -54,7 +54,7 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/implode-param-castable-to-string-functions-enum.php'], [

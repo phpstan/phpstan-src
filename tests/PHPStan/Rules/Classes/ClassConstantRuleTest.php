@@ -299,7 +299,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;
@@ -436,7 +436,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testClassConstantAccessedOnTrait(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;
@@ -448,7 +448,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testDynamicAccess(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;
@@ -497,7 +497,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testStringableDynamicAccess(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;

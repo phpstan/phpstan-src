@@ -19,7 +19,7 @@ class VoidCastRuleTest extends RuleTestCase
 		return new VoidCastRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPrintRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/void-cast.php'], [

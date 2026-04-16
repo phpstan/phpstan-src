@@ -32,7 +32,7 @@ class CallToMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-call-statement-result-discarded.php'], [

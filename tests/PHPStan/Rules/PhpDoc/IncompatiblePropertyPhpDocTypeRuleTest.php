@@ -195,7 +195,7 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11033(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11033.php'], []);

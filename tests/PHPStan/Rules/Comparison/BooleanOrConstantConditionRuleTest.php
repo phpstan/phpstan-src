@@ -263,7 +263,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/boolean-or-treat-phpdoc-types-regression.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6258(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -371,7 +371,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4004.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10305(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

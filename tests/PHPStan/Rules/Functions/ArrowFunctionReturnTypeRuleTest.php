@@ -45,7 +45,7 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleNever(): void
 	{
 		$this->analyse([__DIR__ . '/data/arrow-function-never-return.php'], [
@@ -61,7 +61,7 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3261.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8179(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8179.php'], []);

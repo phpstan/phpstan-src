@@ -19,7 +19,7 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 		return new PropertyAssignRefRule(new PhpVersion(PHP_VERSION_ID), new PropertyReflectionFinder());
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-assign-ref.php'], [
@@ -42,7 +42,7 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testAsymmetricVisibility(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-assign-ref-asymmetric.php'], [

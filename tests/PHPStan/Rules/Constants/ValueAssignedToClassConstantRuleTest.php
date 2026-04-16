@@ -60,7 +60,7 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5655.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testNativeType(): void
 	{
 		$this->analyse([__DIR__ . '/data/value-assigned-to-class-constant-native-type.php'], [
@@ -83,7 +83,7 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug10212(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10212.php'], [

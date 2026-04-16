@@ -21,7 +21,7 @@ class FilterVarRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw.php'], [
@@ -31,13 +31,13 @@ class FilterVarRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testRuleWithGlobalRange(): void
 	{
 		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw_global_range.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testRuleGlobalRangePhp85(): void
 	{
 		$this->analyse([__DIR__ . '/data/filter_var_null_and_global_range_php85.php'], []);

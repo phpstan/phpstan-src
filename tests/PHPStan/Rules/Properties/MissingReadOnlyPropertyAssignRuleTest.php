@@ -81,7 +81,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		];
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign.php'], [
@@ -152,37 +152,37 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7119(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7119.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7314(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7314.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8412(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8412.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8958(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8958.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8563(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8563.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6402(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6402.php'], [
@@ -193,13 +193,13 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7198(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7198.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7649(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7649.php'], [
@@ -210,7 +210,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9577(): void
 	{
 		$this->analyse([__DIR__ . '/../Classes/data/bug-9577.php'], [
@@ -221,7 +221,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testAnonymousReadonlyClass(): void
 	{
 		$this->analyse([__DIR__ . '/data/missing-readonly-anonymous-class-property-assign.php'], [
@@ -232,7 +232,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10523(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10523.php'], [
@@ -243,13 +243,13 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10822(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10822.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRedeclaredReadonlyProperties(): void
 	{
 		$this->analyse([__DIR__ . '/data/redeclare-readonly-property.php'], [
@@ -284,7 +284,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testRedeclaredPropertiesOfReadonlyClass(): void
 	{
 		$this->analyse([__DIR__ . '/data/redeclare-property-of-readonly-class.php'], [
@@ -295,7 +295,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8101(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8101.php'], [
@@ -306,7 +306,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9863(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9863.php'], [
@@ -325,25 +325,25 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9864(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9864.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10048(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10048.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11828(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11828.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12253(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12253.php'], []);

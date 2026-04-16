@@ -20,7 +20,7 @@ class EnumSanityRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$expected = [
@@ -110,7 +110,7 @@ class EnumSanityRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/enum-sanity.php'], $expected);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9402(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9402.php'], [
@@ -121,7 +121,7 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11592(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11592.php'], [
@@ -144,7 +144,7 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13768(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13768.php'], [
@@ -179,7 +179,7 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11891(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11891.php'], [

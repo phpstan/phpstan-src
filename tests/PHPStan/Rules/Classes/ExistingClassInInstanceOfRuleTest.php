@@ -70,7 +70,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instanceof-class-exists.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7720(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7720.php'], [

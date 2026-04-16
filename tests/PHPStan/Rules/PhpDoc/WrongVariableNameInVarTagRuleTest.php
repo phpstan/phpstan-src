@@ -237,7 +237,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/wrong-var-enum.php'], [

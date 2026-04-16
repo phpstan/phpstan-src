@@ -103,7 +103,7 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testMixed(): void
 	{
 		$this->checkImplicitMixed = true;

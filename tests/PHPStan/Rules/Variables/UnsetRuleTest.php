@@ -149,7 +149,7 @@ class UnsetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12421.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testUnsetHookedProperty(): void
 	{
 		$this->analyse([__DIR__ . '/data/unset-hooked-property.php'], [

@@ -18,7 +18,7 @@ class ReadOnlyPropertyAssignRefRuleTest extends RuleTestCase
 		return new ReadOnlyPropertyAssignRefRule(new PropertyReflectionFinder());
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$errors = [

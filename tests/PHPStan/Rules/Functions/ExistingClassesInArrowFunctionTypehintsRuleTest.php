@@ -244,7 +244,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataRequiredParameterAfterOptional')]
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
@@ -325,7 +325,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5206.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testNoDiscardVoid(): void
 	{
 		$this->analyse([__DIR__ . '/data/arrow-function-typehints-nodiscard.php'], [

@@ -378,7 +378,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7652(): void
 	{
 		$this->reportMaybes = true;
@@ -450,7 +450,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9905.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testTraits(): void
 	{
 		$this->reportMaybes = true;
@@ -464,7 +464,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10166(): void
 	{
 		$this->reportMaybes = true;
@@ -478,7 +478,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10184(): void
 	{
 		$this->reportMaybes = true;
@@ -519,7 +519,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3580.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testOverridenAbstractTraitMethodPhpDoc(): void
 	{
 		$this->reportMaybes = true;
@@ -534,7 +534,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-signature-generic-static-type.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10240(): void
 	{
 		$this->reportMaybes = true;
@@ -542,7 +542,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10240.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10488(): void
 	{
 		$this->reportMaybes = true;
@@ -550,7 +550,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10488.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12073(): void
 	{
 		$this->reportMaybes = true;

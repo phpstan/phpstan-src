@@ -324,7 +324,7 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7109(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -379,7 +379,7 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6997.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7776(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -439,7 +439,7 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10064.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testVirtualProperty(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

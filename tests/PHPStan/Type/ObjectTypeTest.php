@@ -710,7 +710,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	/**
 	 * @param list<EnumCaseObjectType> $expectedEnumCases
 	 */
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	#[DataProvider('dataGetEnumCases')]
 	public function testGetEnumCases(
 		ObjectType $type,

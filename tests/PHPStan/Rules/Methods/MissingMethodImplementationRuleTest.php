@@ -45,7 +45,7 @@ class MissingMethodImplementationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3958.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{
 		$this->analyse([__DIR__ . '/data/missing-method-impl-enum.php'], [

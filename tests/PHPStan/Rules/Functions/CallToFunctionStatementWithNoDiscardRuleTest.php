@@ -19,7 +19,7 @@ class CallToFunctionStatementWithNoDiscardRuleTest extends RuleTestCase
 		return new CallToFunctionStatementWithNoDiscardRule(self::createReflectionProvider(), new PhpVersion(PHP_VERSION_ID));
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/function-call-statement-result-discarded.php'], [

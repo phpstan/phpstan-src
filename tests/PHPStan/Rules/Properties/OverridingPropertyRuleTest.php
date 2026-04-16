@@ -188,7 +188,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7692.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testFinal(): void
 	{
 		$this->reportMaybes = true;
@@ -220,7 +220,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyPrototypeFromInterface(): void
 	{
 		$this->reportMaybes = true;
@@ -244,7 +244,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12466(): void
 	{
 		$tip = sprintf(
@@ -281,7 +281,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11761.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12586(): void
 	{
 		$this->reportMaybes = true;

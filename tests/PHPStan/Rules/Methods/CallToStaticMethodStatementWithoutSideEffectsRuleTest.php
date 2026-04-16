@@ -32,7 +32,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects.php'], [
@@ -135,7 +135,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/dynamic-static-call.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-call-without-side-effect-pipe.php'], [

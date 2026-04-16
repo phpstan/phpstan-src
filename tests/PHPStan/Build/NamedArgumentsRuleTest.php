@@ -19,7 +19,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 		return new NamedArgumentsRule(self::createReflectionProvider(), new PhpVersion(PHP_VERSION_ID));
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], [
@@ -46,7 +46,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNoFix(): void
 	{
 		$this->fix(
@@ -55,7 +55,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testFix(): void
 	{
 		$this->fix(
@@ -64,7 +64,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testFixFileWithMatch(): void
 	{
 		$this->fix(
@@ -73,7 +73,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testNewInInitializer(): void
 	{
 		$this->analyse([__DIR__ . '/data/named-arguments-new.php'], [
@@ -84,7 +84,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFixNewInInitializer(): void
 	{
 		$this->fix(__DIR__ . '/data/named-arguments-new.php', __DIR__ . '/data/named-arguments-new.php.fixed');

@@ -47,7 +47,7 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-property-hook-phpdoc-types.php'], [

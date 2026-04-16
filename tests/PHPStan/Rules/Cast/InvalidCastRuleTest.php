@@ -73,7 +73,7 @@ class InvalidCastRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5162.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/invalid-cast-nullsafe.php'], [
@@ -175,7 +175,7 @@ class InvalidCastRuleTest extends RuleTestCase
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	#[DataProvider('dataMixed')]
 	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
 	{

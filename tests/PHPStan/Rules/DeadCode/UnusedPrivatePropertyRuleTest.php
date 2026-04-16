@@ -247,7 +247,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6107.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8204(): void
 	{
 		$this->alwaysWrittenTags = [];
@@ -276,7 +276,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10059(): void
 	{
 		$this->alwaysWrittenTags = [];
@@ -284,7 +284,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10059.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10628(): void
 	{
 		$this->alwaysWrittenTags = [];
@@ -328,7 +328,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
@@ -365,7 +365,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12621(): void
 	{
 		$this->alwaysWrittenTags = [];
@@ -374,7 +374,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12621.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12702(): void
 	{
 		$this->alwaysWrittenTags = [];
@@ -400,7 +400,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9213.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6777(): void
 	{
 		$this->alwaysWrittenTags = [];

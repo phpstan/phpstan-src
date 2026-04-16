@@ -132,13 +132,13 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleIgnoresNativeReadonly(): void
 	{
 		$this->analyse([__DIR__ . '/data/readonly-assign-phpdoc-and-native.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7361(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7361.php'], [
@@ -149,13 +149,13 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFeature7648(): void
 	{
 		$this->analyse([__DIR__ . '/data/feature-7648.php'], []);
 	}
 
-	#[RequiresPhp('>= 7.4')]
+	#[RequiresPhp('>= 7.4.0')]
 	public function testFeature11775(): void
 	{
 		$this->analyse([__DIR__ . '/data/feature-11775.php'], [
@@ -170,7 +170,7 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-hooks-readonly-by-phpdoc-assign.php'], [
@@ -185,7 +185,7 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testCloneWith(): void
 	{
 		$this->analyse([__DIR__ . '/data/readonly-phpdoc-property-assign-clone-with.php'], []);

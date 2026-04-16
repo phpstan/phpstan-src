@@ -95,14 +95,14 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9577(): void
 	{
 		$this->phpVersion = 80100;
 		$this->analyse([__DIR__ . '/data/bug-9577.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testHooks(): void
 	{
 		$this->phpVersion = 80100;
@@ -114,7 +114,7 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testFinalProperty(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;

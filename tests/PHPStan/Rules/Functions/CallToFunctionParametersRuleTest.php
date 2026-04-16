@@ -403,7 +403,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testImplodeNamedParameters(): void
 	{
 		$this->analyse([__DIR__ . '/data/implode-named-parameters.php'], [
@@ -485,7 +485,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPutCsvWithStringable(): void
 	{
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter-php8.php'], [
@@ -535,7 +535,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArguments(): void
 	{
 		$errors = [
@@ -561,7 +561,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testNamedArgumentsAfterUnpacking(): void
 	{
 		$this->analyse([__DIR__ . '/data/named-arguments-after-unpacking.php'], [
@@ -577,7 +577,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4514.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13719(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13719.php'], [
@@ -629,7 +629,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3920.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBugNumberFormatNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/number-format-named-arguments.php'], []);
@@ -876,7 +876,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testExplode(): void
 	{
 		$this->analyse([__DIR__ . '/data/explode-80.php'], [
@@ -960,7 +960,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testArrayAllCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_all.php'], [
@@ -987,7 +987,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testArrayAnyCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_any.php'], [
@@ -1294,7 +1294,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7211(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -1327,7 +1327,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7676.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7138(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7138.php'], []);
@@ -1459,7 +1459,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/curl_setopt_share.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testCurlSetOptArray(): void
 	{
 		$this->analyse([__DIR__ . '/data/curl-setopt-array.php'], [
@@ -1578,7 +1578,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/filter-input-type.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9283(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9283.php'], []);
@@ -1625,7 +1625,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.3')]
+	#[RequiresPhp('>= 8.3.0')]
 	public function testJsonValidate(): void
 	{
 		$this->analyse([__DIR__ . '/data/json_validate.php'], [
@@ -1650,13 +1650,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2508.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6175(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9699(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9699.php'], [
@@ -1682,7 +1682,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9803.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9018(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9018.php'], [
@@ -1705,31 +1705,31 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9399(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9399.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9559(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9559.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9923(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9923.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9823(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9823.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedParametersForMultiVariantFunctions(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
@@ -1772,13 +1772,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9793.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testCallToArrayFilterWithNullCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_filter_null_callback.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10171(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10171.php'], [
@@ -1821,7 +1821,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9580.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7283(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7283.php'], []);
@@ -1889,13 +1889,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10297(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10297.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10974(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10974.php'], []);
@@ -2088,7 +2088,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7707.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNoNamedArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/no-named-arguments.php'], [
@@ -2146,7 +2146,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9224(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9224.php'], []);
@@ -2175,25 +2175,25 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12051.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8046(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8046.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11942(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11942.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11418(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11418.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9167(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9167.php'], []);
@@ -2252,7 +2252,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7522.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12847(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2409,7 +2409,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9970.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12317(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2460,7 +2460,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13556.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testArrayRand(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_rand.php'], [
@@ -2547,13 +2547,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		yield ['bug-6560-strict.php'];
 	}
 
-	#[RequiresPhp('< 8.0')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testArrayRandPhp7(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_rand.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
 		$this->analyse([__DIR__ . '/data/func-call-pipe.php'], [
@@ -2592,7 +2592,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testClone(): void
 	{
 		$this->analyse([__DIR__ . '/data/clone-function.php'], [
@@ -2607,7 +2607,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.5.0')]
 	public function testBug13930(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13930.php'], [
@@ -2618,19 +2618,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13862(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13862.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13862b(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13862b.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13862c(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13862c.php'], [
@@ -2642,7 +2642,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12234(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2650,7 +2650,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12234.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11982(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2658,7 +2658,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11982.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11386(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2666,7 +2666,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11386.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11079(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2674,7 +2674,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11079.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10612(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2689,7 +2689,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10704.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9652(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2702,7 +2702,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14136.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug8936(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -2769,19 +2769,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10559.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12363(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12363.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11619(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11619.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11619Strict(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11619-strict.php'], [
@@ -2805,13 +2805,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13247.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14312(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14312.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14312b(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14312b.php'], []);

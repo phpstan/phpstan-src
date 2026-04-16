@@ -2020,13 +2020,36 @@ final class TypeSpecifier
 		$arms = array_reverse($arms);
 
 		if ($context->false() || $context->falsey()) {
-			// Falsey: all arms are false → union all SpecifiedTypes
-			$result = new SpecifiedTypes([], []);
+			// Falsey: all arms are false → union all SpecifiedTypes.
+			// Collect per-expression types first, then build unions once
+			// to avoid O(N²) from incremental TypeCombinator::union() growth.
+			/** @var array<string, array{Expr, list<Type>}> $sureTypesPerExpr */
+			$sureTypesPerExpr = [];
+			/** @var array<string, array{Expr, list<Type>}> $sureNotTypesPerExpr */
+			$sureNotTypesPerExpr = [];
+
 			foreach ($arms as $arm) {
 				$armTypes = $this->specifyTypesInCondition($scope, $arm, $context);
-				$result = $result->unionWith($armTypes);
+				foreach ($armTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
+					$sureTypesPerExpr[$exprString][0] = $exprNode;
+					$sureTypesPerExpr[$exprString][1][] = $type;
+				}
+				foreach ($armTypes->getSureNotTypes() as $exprString => [$exprNode, $type]) {
+					$sureNotTypesPerExpr[$exprString][0] = $exprNode;
+					$sureNotTypesPerExpr[$exprString][1][] = $type;
+				}
 			}
-			return $result->setRootExpr($expr);
+
+			$sureTypes = [];
+			foreach ($sureTypesPerExpr as $exprString => [$exprNode, $types]) {
+				$sureTypes[$exprString] = [$exprNode, TypeCombinator::intersect(...$types)];
+			}
+			$sureNotTypes = [];
+			foreach ($sureNotTypesPerExpr as $exprString => [$exprNode, $types]) {
+				$sureNotTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
+			}
+
+			return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($expr);
 		}
 
 		// Truthy: at least one arm is true → intersect all normalized SpecifiedTypes

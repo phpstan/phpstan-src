@@ -139,6 +139,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
 
+	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -2743,10 +2745,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					}
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						$varType = TypeCombinator::intersect(
-							$varType,
-							new HasOffsetValueType($dimType, $type),
-						);
+						if (!$this->isComplexUnionType($varType)) {
+							$varType = TypeCombinator::intersect(
+								$varType,
+								new HasOffsetValueType($dimType, $type),
+							);
+						}
 					}
 
 					$scope = $scope->specifyExpressionType(
@@ -3071,9 +3075,36 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	/**
+	 * Returns true when the type is a large union with non-trivial
+	 * (IntersectionType) members — a sign of HasOffsetValueType
+	 * combinatorial growth from array|object offset access patterns.
+	 * Operating on such types is expensive and should be skipped.
+	 */
+	private function isComplexUnionType(Type $type): bool
+	{
+		if (!$type instanceof UnionType) {
+			return false;
+		}
+		$types = $type->getTypes();
+		if (count($types) <= self::COMPLEX_UNION_TYPE_MEMBER_LIMIT) {
+			return false;
+		}
+		foreach ($types as $member) {
+			if ($member instanceof IntersectionType) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function addTypeToExpression(Expr $expr, Type $type): self
 	{
 		$originalExprType = $this->getType($expr);
+		if ($this->isComplexUnionType($originalExprType)) {
+			return $this;
+		}
+
 		$nativeType = $this->getNativeType($expr);
 
 		if ($originalExprType->equals($nativeType)) {
@@ -3097,6 +3128,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$exprType = $this->getType($expr);
 		if ($exprType instanceof NeverType) {
+			return $this;
+		}
+
+		if ($this->isComplexUnionType($exprType)) {
 			return $this;
 		}
 

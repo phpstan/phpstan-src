@@ -1057,11 +1057,13 @@ final class AssignHandler implements ExprHandler
 			}
 
 			$arrayDimFetch = $dimFetchStack[$i] ?? null;
+			$isContainerLevel = $i + 1 < count($dimFetchStack);
 			if (
 				$offsetType !== null
 				&& $arrayDimFetch !== null
 				&& $scope->hasExpressionType($arrayDimFetch)->yes()
 				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
+				&& (!$isContainerLevel || !$scope->getType($arrayDimFetch)->hasOffsetValueType($offsetType)->no())
 			) {
 				$hasOffsetType = null;
 				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {

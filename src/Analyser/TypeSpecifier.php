@@ -2683,6 +2683,27 @@ final class TypeSpecifier
 			);
 		}
 
+		// When a variable was assigned from a FuncCall, also resolve with the original expression
+		if ($scope instanceof MutatingScope && !$leftExpr instanceof FuncCall && !$rightExpr instanceof FuncCall) {
+			$rememberedExpr = null;
+			if ($leftExpr instanceof Expr\Variable && is_string($leftExpr->name)) {
+				$rememberedExpr = $scope->getVariableAssignedFromExpr($leftExpr->name);
+			} elseif ($rightExpr instanceof Expr\Variable && is_string($rightExpr->name)) {
+				$rememberedExpr = $scope->getVariableAssignedFromExpr($rightExpr->name);
+			}
+
+			if ($rememberedExpr instanceof FuncCall) {
+				$substitutedExpr = $rememberedExpr;
+				$otherExpr = $leftExpr instanceof Expr\Variable && is_string($leftExpr->name) ? $rightExpr : $leftExpr;
+				$funcCallSpecifiedTypes = $this->resolveNormalizedIdentical(
+					new Expr\BinaryOp\Identical($substitutedExpr, $otherExpr),
+					$scope,
+					$context,
+				);
+				$specifiedTypes = $specifiedTypes->unionWith($funcCallSpecifiedTypes);
+			}
+		}
+
 		return $specifiedTypes;
 	}
 

@@ -14,6 +14,7 @@ final class ExpressionTypeHolder
 		private readonly Expr $expr,
 		private readonly Type $type,
 		private readonly TrinaryLogic $certainty,
+		private readonly ?Expr $assignedFromExpr = null,
 	)
 	{
 	}
@@ -52,22 +53,34 @@ final class ExpressionTypeHolder
 
 	public function and(self $other): self
 	{
+		$assignedFromExpr = $this->assignedFromExpr === $other->assignedFromExpr ? $this->assignedFromExpr : null;
+
 		if ($this->type === $other->type || $this->type->equals($other->type)) {
 			if ($this->certainty->and($other->certainty)->yes()) {
-				return $this;
+				if ($assignedFromExpr === $this->assignedFromExpr) {
+					return $this;
+				}
+				return $this->withAssignedFromExpr($assignedFromExpr);
 			}
 
 			if ($this->certainty->maybe()) {
-				return $this;
+				if ($assignedFromExpr === $this->assignedFromExpr) {
+					return $this;
+				}
+				return $this->withAssignedFromExpr($assignedFromExpr);
 			}
 
-			return $other;
+			if ($assignedFromExpr === $other->assignedFromExpr) {
+				return $other;
+			}
+			return $other->withAssignedFromExpr($assignedFromExpr);
 		}
 
 		return new self(
 			$this->expr,
 			TypeCombinator::union($this->type, $other->type),
 			$this->certainty->and($other->certainty),
+			$assignedFromExpr,
 		);
 	}
 
@@ -84,6 +97,16 @@ final class ExpressionTypeHolder
 	public function getCertainty(): TrinaryLogic
 	{
 		return $this->certainty;
+	}
+
+	public function getAssignedFromExpr(): ?Expr
+	{
+		return $this->assignedFromExpr;
+	}
+
+	public function withAssignedFromExpr(?Expr $assignedFromExpr): self
+	{
+		return new self($this->expr, $this->type, $this->certainty, $assignedFromExpr);
 	}
 
 }

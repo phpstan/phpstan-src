@@ -50,13 +50,13 @@ function testGreaterOrEqual(array $items): void {
 }
 
 /**
- * Count value > 8 (beyond pre-computed limit)
+ * Count value > 8 (no longer limited by pre-computation)
  * @param list<int> $items
  */
 function testBeyondLimit(array $items): void {
 	$count = count($items);
 	if ($count === 10) {
-		assertType('non-empty-list<int>', $items);
+		assertType('array{int, int, int, int, int, int, int, int, int, int}', $items);
 	}
 }
 
@@ -72,7 +72,7 @@ function testCountWithMode(array $items, int $mode): void {
 }
 
 /**
- * Variable strlen - generalized integer pre-computation also works for strlen
+ * Variable strlen - remembered expression also works for strlen
  */
 function testStrlen(string $s): void {
 	$len = strlen($s);

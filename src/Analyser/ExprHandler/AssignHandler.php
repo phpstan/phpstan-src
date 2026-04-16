@@ -81,8 +81,6 @@ use function is_string;
 final class AssignHandler implements ExprHandler
 {
 
-	private const INTEGER_CONDITIONAL_LIMIT = 8;
-
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
 		private PhpVersion $phpVersion,
@@ -315,43 +313,18 @@ final class AssignHandler implements ExprHandler
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
 				}
 
-				if (
-					$assignedExpr instanceof FuncCall
-					&& $type->isInteger()->yes()
-					&& !$type instanceof ConstantIntegerType
-				) {
-					for ($n = 1; $n <= self::INTEGER_CONDITIONAL_LIMIT; $n++) {
-						$nType = new ConstantIntegerType($n);
-						$identicalExpr = new Expr\BinaryOp\Identical(
-							$assignedExpr,
-							new Node\Scalar\Int_($n),
-						);
-						$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
-							$scope,
-							$identicalExpr,
-							TypeSpecifierContext::createTrue(),
-						);
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign(
-							$scope,
-							$var->name,
-							$conditionalExpressions,
-							$identicalSpecifiedTypes,
-							$nType,
-						);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign(
-							$scope,
-							$var->name,
-							$conditionalExpressions,
-							$identicalSpecifiedTypes,
-							$nType,
-						);
-					}
-				}
-
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {
 					$scope = $scope->addConditionalExpressions($exprString, $holders);
+				}
+
+				if ($assignedExpr instanceof FuncCall) {
+					$varExprString = '$' . $var->name;
+					$existingHolder = $scope->expressionTypes[$varExprString] ?? null;
+					if ($existingHolder !== null) {
+						$scope->expressionTypes[$varExprString] = $existingHolder->withAssignedFromExpr($assignedExpr);
+					}
 				}
 
 				if ($assignedExpr instanceof Expr\Array_) {

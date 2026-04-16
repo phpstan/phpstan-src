@@ -685,6 +685,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->expressionTypes[$varExprString]->getType();
 	}
 
+	public function getVariableAssignedFromExpr(string $variableName): ?Expr
+	{
+		$varExprString = '$' . $variableName;
+		if (!array_key_exists($varExprString, $this->expressionTypes)) {
+			return null;
+		}
+
+		return $this->expressionTypes[$varExprString]->getAssignedFromExpr();
+	}
+
 	/**
 	 * @api
 	 * @return list<string>
@@ -2765,7 +2775,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$exprString = $this->getNodeKey($expr);
 		$expressionTypes = $scope->expressionTypes;
-		$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
+		$existingAssignedFromExpr = ($expressionTypes[$exprString] ?? null)?->getAssignedFromExpr();
+		$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty, $existingAssignedFromExpr);
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
@@ -3272,6 +3283,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						$scope->expressionTypes[$conditionalExprString]->getExpr(),
 						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
 						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
+						$scope->expressionTypes[$conditionalExprString]->getAssignedFromExpr(),
 					);
 				} else {
 					$scope->expressionTypes[$conditionalExprString] = $expressions[0]->getTypeHolder();
@@ -3887,10 +3899,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
+			$assignedFromExpr = $variableTypeHolder->getAssignedFromExpr() === $expressionTypes[$variableExprString]->getAssignedFromExpr()
+				? $variableTypeHolder->getAssignedFromExpr()
+				: null;
 			$expressionTypes[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),
 				$variableTypeHolder->getType(),
 				$variableTypeHolder->getCertainty()->and($expressionTypes[$variableExprString]->getCertainty()),
+				$assignedFromExpr,
 			);
 		}
 		$nativeTypes = $this->nativeExpressionTypes;
@@ -3991,10 +4007,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			) {
 				$generalizedExpressions[$variableExprString] = $variableTypeHolder->getExpr();
 			}
+			$assignedFromExpr = $variableTypeHolder->getAssignedFromExpr() === $otherVariableTypeHolders[$variableExprString]->getAssignedFromExpr()
+				? $variableTypeHolder->getAssignedFromExpr()
+				: null;
 			$newVariableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),
 				$generalizedType,
 				$variableTypeHolder->getCertainty(),
+				$assignedFromExpr,
 			);
 		}
 

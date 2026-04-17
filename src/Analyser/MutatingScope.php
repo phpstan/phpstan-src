@@ -3076,9 +3076,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
-	 * Returns true when the type is a large union with non-trivial
-	 * (IntersectionType) members — a sign of HasOffsetValueType
-	 * combinatorial growth from array|object offset access patterns.
+	 * Returns true when the type is a large union with intersection
+	 * members that carry HasOffsetValueType — a sign of combinatorial
+	 * growth from successive array|object offset access patterns.
 	 * Operating on such types is expensive and should be skipped.
 	 */
 	private function isComplexUnionType(Type $type): bool
@@ -3091,8 +3091,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return false;
 		}
 		foreach ($types as $member) {
-			if ($member instanceof IntersectionType) {
-				return true;
+			if (!$member instanceof IntersectionType) {
+				continue;
+			}
+			foreach ($member->getTypes() as $innerType) {
+				if ($innerType instanceof HasOffsetValueType) {
+					return true;
+				}
 			}
 		}
 		return false;

@@ -21,6 +21,7 @@
  */
 return [
 	'new' => [
+		'DateInterval::createFromDateString' => ['static', 'modify'=>'string'],
 		'DateTime::modify' => ['static', 'modify'=>'string'],
 		'DateTimeImmutable::modify' => ['static', 'modify'=>'string'],
 		'str_decrement' => ['non-empty-string', 'string'=>'non-empty-string'],

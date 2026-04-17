@@ -47,9 +47,10 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 	protected function recreate(
 		array $keyTypes,
 		array $valueTypes,
-		array $nextAutoIndexes = [0],
-		array $optionalKeys = [],
-		?TrinaryLogic $isList = null,
+		array $nextAutoIndexes,
+		array $optionalKeys,
+		?TrinaryLogic $isList,
+		?array $unsealed,
 	): ConstantArrayType
 	{
 		return new self(
@@ -57,7 +58,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			new ConstantArrayType($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList),
+			new ConstantArrayType($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $unsealed),
 			$this->default,
 		);
 	}

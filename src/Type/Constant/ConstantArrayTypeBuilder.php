@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -11,6 +12,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -46,6 +48,7 @@ final class ConstantArrayTypeBuilder
 	 * @param array<int, Type> $valueTypes
 	 * @param non-empty-list<int> $nextAutoIndexes
 	 * @param array<int> $optionalKeys
+	 * @param array{Type, Type}|null $unsealed
 	 */
 	private function __construct(
 		private array $keyTypes,
@@ -53,13 +56,19 @@ final class ConstantArrayTypeBuilder
 		private array $nextAutoIndexes,
 		private array $optionalKeys,
 		private TrinaryLogic $isList,
+		private ?array $unsealed,
 	)
 	{
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [0], [], TrinaryLogic::createYes());
+		$unsealed = null;
+		if (BleedingEdgeToggle::isBleedingEdge()) {
+			$never = new NeverType(true);
+			$unsealed = [$never, $never];
+		}
+		return new self([], [], [0], [], TrinaryLogic::createYes(), $unsealed);
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -70,6 +79,7 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->getNextAutoIndexes(),
 			$startArrayType->getOptionalKeys(),
 			$startArrayType->isList(),
+			$startArrayType->getUnsealedTypes(),
 		);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
@@ -77,6 +87,11 @@ final class ConstantArrayTypeBuilder
 		}
 
 		return $builder;
+	}
+
+	public function makeUnsealed(Type $keyType, Type $valueType): void
+	{
+		$this->unsealed = [$keyType, $valueType];
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
@@ -367,13 +382,13 @@ final class ConstantArrayTypeBuilder
 	{
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
-			return new ConstantArrayType([], []);
+			return new ConstantArrayType([], [], unsealed: $this->unsealed);
 		}
 
 		if (!$this->degradeToGeneralArray) {
 			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $this->unsealed);
 		}
 
 		if ($this->degradeClosures === true) {

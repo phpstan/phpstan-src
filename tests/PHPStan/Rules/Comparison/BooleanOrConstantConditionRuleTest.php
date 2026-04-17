@@ -402,4 +402,11 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14473(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14473.php'], []);
+	}
+
 }

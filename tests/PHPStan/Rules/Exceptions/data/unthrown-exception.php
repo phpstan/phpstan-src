@@ -790,3 +790,24 @@ class TestIntdivWithRange
 	}
 
 }
+
+class TestDateIntervalCreateFromDateString
+{
+	public function doFoo(): void
+	{
+		try {
+			\DateInterval::createFromDateString('P10D');
+		} catch (\DateMalformedIntervalStringException $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			\DateInterval::createFromDateString('invalid');
+		} catch (\DateMalformedIntervalStringException $e) {
+
+		}
+	}
+}

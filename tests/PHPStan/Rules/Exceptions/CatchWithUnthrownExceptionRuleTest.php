@@ -141,6 +141,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - ArithmeticError is never thrown in the try block.',
 				762,
 			],
+			[
+				'Dead catch - DateMalformedIntervalStringException is never thrown in the try block.',
+				800,
+			],
 		]);
 	}
 
@@ -232,6 +236,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			[
 				'Dead catch - Exception is never thrown in the try block.',
 				555,
+			],
+			[
+				'Dead catch - DateMalformedIntervalStringException is never thrown in the try block.',
+				800,
 			],
 		]);
 	}

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -45,14 +46,14 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		$valueType = $this->resolveReflectionAttributeType($methodReflection, $classType);
+		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants());
+		$valueType = $this->resolveReflectionAttributeType($variant->getReturnType(), $classType);
 
 		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $valueType), new AccessoryArrayListType()]);
 	}
 
-	private function resolveReflectionAttributeType(MethodReflection $methodReflection, Type $classType): Type
+	private function resolveReflectionAttributeType(Type $returnType, Type $classType): Type
 	{
-		$returnType = $methodReflection->getVariants()[0]->getReturnType();
 		$nativeReflectionAttributeType = new ObjectType(ReflectionAttribute::class);
 
 		$valueTypes = [];

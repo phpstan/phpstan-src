@@ -438,4 +438,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14428.php'], []);
 	}
 
+	public function testBug13565(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13565.php'], [
+			[
+				'Function Bug13565\x() should return array{name: string} but returns array{name: \'string\', email: Bug13565\NotAString}.',
+				11,
+				'Sealed array shape does not accept array with extra key \'email\'.',
+			],
+		]);
+	}
+
 }

@@ -705,24 +705,7 @@ final class TypeNodeResolver
 			if (count($genericTypes) === 1) { // array<ValueType>
 				$arrayType = new ArrayType((new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey(), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
-				$originalKey = $genericTypes[0];
-				if ($this->reportUnsafeArrayStringKeyCasting === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
-					$originalKey = TypeTraverser::map($originalKey, static function (Type $type, callable $traverse) {
-						if ($type instanceof UnionType || $type instanceof IntersectionType) {
-							return $traverse($type);
-						}
-
-						if ($type instanceof StringType) {
-							return TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true));
-						}
-
-						return $type;
-					});
-				}
-				$keyType = TypeCombinator::intersect($originalKey->toArrayKey(), new UnionType([
-					new IntegerType(),
-					new StringType(),
-				]))->toArrayKey();
+				$keyType = $this->transformUnsafeArrayKey($genericTypes[0]);
 				$finiteTypes = $keyType->getFiniteTypes();
 				if (
 					count($finiteTypes) === 1
@@ -1002,6 +985,28 @@ final class TypeNodeResolver
 		return new ErrorType();
 	}
 
+	private function transformUnsafeArrayKey(Type $keyType): Type
+	{
+		if ($this->reportUnsafeArrayStringKeyCasting === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
+			$keyType = TypeTraverser::map($keyType, static function (Type $type, callable $traverse) {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+
+				if ($type instanceof StringType) {
+					return TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true));
+				}
+
+				return $type;
+			});
+		}
+
+		return TypeCombinator::intersect($keyType->toArrayKey(), new UnionType([
+			new IntegerType(),
+			new StringType(),
+		]))->toArrayKey();
+	}
+
 	private function resolveCallableTypeNode(CallableTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		$templateTags = [];
@@ -1101,13 +1106,48 @@ final class TypeNodeResolver
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
+		$isList = in_array($typeNode->kind, [
+			ArrayShapeNode::KIND_LIST,
+			ArrayShapeNode::KIND_NON_EMPTY_LIST,
+		], true);
+
+		if (!$typeNode->sealed) {
+			if ($typeNode->unsealedType === null) {
+				if ($isList) {
+					$unsealedKeyType = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
+				} else {
+					$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+				}
+				$builder->makeUnsealed(
+					$unsealedKeyType,
+					new MixedType(),
+				);
+			} else {
+				if ($typeNode->unsealedType->keyType === null) {
+					if ($isList) {
+						$unsealedKeyType = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
+					} else {
+						$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+					}
+				} else {
+					$unsealedKeyType = $this->transformUnsafeArrayKey($this->resolve($typeNode->unsealedType->keyType, $nameScope));
+				}
+				$unsealedKeyFiniteTypes = $unsealedKeyType->getFiniteTypes();
+				$unsealedValueType = $this->resolve($typeNode->unsealedType->valueType, $nameScope);
+				if (count($unsealedKeyFiniteTypes) > 0) {
+					foreach ($unsealedKeyFiniteTypes as $unsealedKeyFiniteType) {
+						$builder->setOffsetValueType($unsealedKeyFiniteType, $unsealedValueType, true);
+					}
+				} else {
+					$builder->makeUnsealed($unsealedKeyType, $unsealedValueType);
+				}
+			}
+		}
+
 		$arrayType = $builder->getArray();
 
 		$accessories = [];
-		if (in_array($typeNode->kind, [
-			ArrayShapeNode::KIND_LIST,
-			ArrayShapeNode::KIND_NON_EMPTY_LIST,
-		], true)) {
+		if ($isList) {
 			$accessories[] = new AccessoryArrayListType();
 		}
 

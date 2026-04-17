@@ -408,6 +408,32 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			]),
 			TrinaryLogic::createMaybe(),
 		];
+
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([], []),
+			TrinaryLogic::createYes(),
+		];
+
+		// empty array (with unknown sealedness) does not accept extra keys
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			TrinaryLogic::createNo(),
+		];
+
+		// non-empty array (with unknown sealedness) accepts extra keys
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			]),
+			TrinaryLogic::createYes(),
+		];
 	}
 
 	#[DataProvider('dataAccepts')]
@@ -689,6 +715,26 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			]),
 			new ArrayType(new StringType(), new MixedType()),
 			TrinaryLogic::createNo(),
+		];
+
+		// empty array (with unknown sealedness) does not accept extra keys
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			TrinaryLogic::createNo(),
+		];
+
+		// non-empty array (with unknown sealedness) accepts extra keys
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			]),
+			TrinaryLogic::createYes(),
 		];
 	}
 

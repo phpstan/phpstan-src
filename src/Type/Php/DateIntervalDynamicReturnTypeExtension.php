@@ -50,17 +50,10 @@ implements DynamicStaticMethodReturnTypeExtension
 		foreach ($strings as $string) {
 			try {
 				$result = @DateInterval::createFromDateString($string->getValue());
-				if ($this->phpVersion->hasDateTimeExceptions()) {
-					return new ObjectType(DateInterval::class);
-				}
 			} catch (Throwable) {
-				if ($this->phpVersion->hasDateTimeExceptions()) {
-					return new NeverType();
-				}
 				$possibleReturnTypes[] = false;
 				continue;
 			}
-			// @phpstan-ignore instanceof.alwaysTrue (should only run for < 8.3 and then statement isn't true)
 			$possibleReturnTypes[] = $result instanceof DateInterval ? DateInterval::class : false;
 		}
 
@@ -74,6 +67,9 @@ implements DynamicStaticMethodReturnTypeExtension
 		}
 
 		if (in_array(false, $possibleReturnTypes, true)) {
+			if ($this->phpVersion->hasDateTimeExceptions()) {
+				return new NeverType();
+			}
 			return new ConstantBooleanType(false);
 		}
 

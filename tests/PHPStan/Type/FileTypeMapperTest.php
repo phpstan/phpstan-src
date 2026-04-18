@@ -12,6 +12,7 @@ use function realpath;
 
 class FileTypeMapperTest extends PHPStanTestCase
 {
+
 	public function testGetResolvedPhpDoc(): void
 	{
 		/** @var FileTypeMapper $fileTypeMapper */

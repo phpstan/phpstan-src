@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use DependentPhpDocs\Foo;
-use PhpParser\Node;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;

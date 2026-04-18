@@ -12,8 +12,26 @@ abstract class HelloWorld {
 	public function sayHello(): void {
 		$foo = null !== $this->getChild()->getChild();
 		if ($foo) {
-			assertType('Bug5207\HelloWorld', $this->getChild());
-			assertType('Bug5207\HelloWorld', $this->getChild()->getChild());
+			assertType('Bug5207b\HelloWorld|null', $this->getChild()); // could be Bug5207b\HelloWorld
+			assertType('Bug5207b\HelloWorld', $this->getChild()->getChild());
+			assertType('Bug5207b\HelloWorld|null', $this->getChild()->getChild()->getChild());
+		}
+	}
+
+	public function sayFoo(): void {
+		$foo = null !== $this?->getChild()?->getChild();
+		if ($foo) {
+			assertType('Bug5207b\HelloWorld', $this->getChild());
+			assertType('Bug5207b\HelloWorld', $this->getChild()->getChild());
+			assertType('Bug5207b\HelloWorld|null', $this->getChild()->getChild()->getChild());
+		}
+	}
+
+	public function sayBar(): void {
+		$foo = null !== $this?->getChild()->getChild();
+		if ($foo) {
+			assertType('Bug5207b\HelloWorld', $this->getChild());
+			assertType('Bug5207b\HelloWorld', $this->getChild()->getChild());
 			assertType('Bug5207b\HelloWorld|null', $this->getChild()->getChild()->getChild());
 		}
 	}

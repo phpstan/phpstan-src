@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -12,6 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -245,7 +247,16 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 			return $traverse($type);
 		};
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
+		$containsConditionalType = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsConditionalType): Type {
+			if ($type instanceof ConditionalType) {
+				$containsConditionalType = true;
+			}
+
+			return $containsConditionalType ? $type : $traverse($type);
+		});
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb, $containsConditionalType): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				return TypeTraverser::map($type, $objectCb);
 			}
@@ -254,6 +265,10 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
 					return $traverse($type);
+				}
+
+				if ($newType instanceof NeverType && $type->getScope()->getFunctionName() === null && !$containsConditionalType) {
+					return $traverse($type->getBound());
 				}
 
 				$variance = TemplateTypeVariance::createInvariant();

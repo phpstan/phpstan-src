@@ -931,7 +931,7 @@ class StdClassCollection
 function () {
 	$stdEmpty = new StdClassCollection([]);
 	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<*NEVER*, *NEVER*>', $stdEmpty);
-	assertType('array{}', $stdEmpty->getAll());
+	assertType('array<stdClass>', $stdEmpty->getAll());
 
 	$std = new StdClassCollection([new \stdClass()]);
 	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std);

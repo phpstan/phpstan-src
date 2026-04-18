@@ -23,6 +23,43 @@ abstract class HelloWorld {
 	}
 }
 
+abstract class StaticWorld {
+	abstract public static function getChild(): ?StaticWorld;
+
+	public static function sayHello(): void {
+		$foo = null !== static::getChild();
+		if ($foo) {
+			assertType('Bug5207\StaticWorld', static::getChild());
+		}
+	}
+
+	public static function sayHelloInline(): void {
+		if (null !== static::getChild()) {
+			assertType('Bug5207\StaticWorld', static::getChild());
+		}
+	}
+}
+
+abstract class ImpureStaticWorld {
+	/**
+	 * @phpstan-impure
+	 */
+	abstract public static function getChild(): ?ImpureStaticWorld;
+
+	public static function sayHello(): void {
+		$foo = null !== static::getChild();
+		if ($foo) {
+			assertType('Bug5207\ImpureStaticWorld|null', static::getChild());
+		}
+	}
+
+	public static function sayHelloInline(): void {
+		if (null !== static::getChild()) {
+			assertType('Bug5207\ImpureStaticWorld|null', static::getChild());
+		}
+	}
+}
+
 abstract class ImpureWorld {
 	/**
 	 * @phpstan-impure

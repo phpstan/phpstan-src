@@ -254,8 +254,8 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$cacheFilePath = sprintf(
 			'%s/cache/PHPStan/%s/%s/%s.php',
 			$tmpDir,
-			substr($cacheKeyHash, 0, 2),
-			substr($cacheKeyHash, 2, 2),
+			(string) substr($cacheKeyHash, 0, 2),
+			(string) substr($cacheKeyHash, 2, 2),
 			$cacheKeyHash,
 		);
 

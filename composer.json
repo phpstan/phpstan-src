@@ -86,12 +86,6 @@
 			"cweagans/composer-patches": true,
 			"ondrejmirtes/composer-attribute-collector": true,
 			"vaimo/composer-patches": true
-		},
-		"audit": {
-			"ignore": {
-				"PKSA-5jz8-6tcw-pbk4": "PHPUnit argument injection - no fix in 11.x line",
-				"PKSA-z3gr-8qht-p93v": "PHPUnit security advisory - no fix in 11.x line"
-			}
 		}
 	},
 	"extra": {

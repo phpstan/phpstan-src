@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use DependentPhpDocs\Foo;
+use PhpParser\Node;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
@@ -11,7 +12,6 @@ use function realpath;
 
 class FileTypeMapperTest extends PHPStanTestCase
 {
-
 	public function testGetResolvedPhpDoc(): void
 	{
 		/** @var FileTypeMapper $fileTypeMapper */
@@ -208,6 +208,95 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertSame('AliasCollisionNamespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 		$this->assertArrayHasKey('x', $doc2->getVarTags());
 		$this->assertSame('AliasCollisionNamespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
+	}
+
+	public function testNodeCallbackLikeRectorInfiniteRecursionSimulation(): void
+	{
+		self::createReflectionProvider();
+
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		// Use nikic/php-parser directly to parse the file
+		$parserFactory = new \PhpParser\ParserFactory();
+		$parser = $parserFactory->createForNewestSupportedVersion();
+		$baseModelPath = __DIR__ . '/data/bug-9684/BaseModel.php';
+		$code = file_get_contents($baseModelPath);
+		if ($code === false) {
+			$this->fail('Failed to read BaseModel.php');
+		}
+		$ast = $parser->parse($code);
+		if (!is_array($ast)) {
+			$this->fail('Failed to parse BaseModel.php');
+		}
+
+		$traitUsages = [];
+		$nodeCallback = function (Node $node) use (&$traitUsages, &$nodeCallback) {
+			if ($node instanceof \PhpParser\Node\Stmt\TraitUse) {
+				foreach ($node->traits as $trait) {
+					$traitUsages[] = $trait->toString();
+				}
+			}
+
+			foreach ($node->getSubNodeNames() as $name) {
+				$subNode = $node->{$name};
+				if (is_array($subNode)) {
+					foreach ($subNode as $child) {
+						if ($child instanceof \PhpParser\Node) {
+							$nodeCallback($child);
+						}
+					}
+				} elseif ($subNode instanceof \PhpParser\Node) {
+					$nodeCallback($subNode);
+				}
+			}
+		};
+
+		foreach ($ast as $astNode) {
+			$nodeCallback($astNode);
+		}
+
+		// Simulate Rector's repeated trait processing
+		$traitFile = __DIR__ . '/data/bug-9684/RecursiveTrait.php';
+		foreach ($traitUsages as $traitName) {
+			// Simulate Rector's use: both className and traitName set, repeatedly, as Rector does when walking traits
+			for ($i = 0; $i < 20; $i++) {
+				$fileTypeMapper->getResolvedPhpDoc(
+					$traitFile,
+					'Bug9684\\BaseModel',
+					'Bug9684\\RecursiveTrait',
+					null,
+					null
+				);
+			}
+		}
+		$this->assertNotEmpty($traitUsages, 'Trait usages should be found');
+	}
+
+	public function testRecursiveTraitUsedInAnonymousClassDoesNotLoopIndefinitely(): void
+	{
+		self::createReflectionProvider();
+
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		$realpath = realpath(__DIR__ . '/data/bug-9684/BaseModel.php');
+		if ($realpath === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc(
+			$realpath,
+			\Bug9684\BaseModel::class,
+			null,
+			null,
+			'/** @method static Builder<static>|BaseModel query() */',
+		);
+
+		$this->assertArrayHasKey('query', $resolved->getMethodTags());
+		$returnTypeDescription = $resolved->getMethodTags()['query']->getReturnType()->describe(VerbosityLevel::precise());
+		$this->assertStringContainsString('Bug9684\BaseModel', $returnTypeDescription);
+		$this->assertStringContainsString('Bug9684\Builder<static(Bug9684\BaseModel)>', $returnTypeDescription);
 	}
 
 }

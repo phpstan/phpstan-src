@@ -213,15 +213,17 @@ class FileTypeMapperTest extends PHPStanTestCase
 
 	public function testRecursiveTraitUsedInAnonymousClassDoesNotLoopIndefinitely(): void
 	{
-		self::createReflectionProvider();
-
-		/** @var FileTypeMapper $fileTypeMapper */
-		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
-
 		$realpath = realpath(__DIR__ . '/data/bug-self-referenced-trait/BaseModelUseTrait.php');
 		if ($realpath === false) {
 			throw new ShouldNotHappenException();
 		}
+
+		$container = self::getContainer();
+		$this->clearFileTypeMapperCache($container->getParameter('tmpDir'), $realpath);
+		self::createReflectionProvider();
+
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc(
 			$realpath,
@@ -235,6 +237,28 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$returnTypeDescription = $resolved->getMethodTags()['query']->getReturnType()->describe(VerbosityLevel::precise());
 		$this->assertStringContainsString('BugSelfReferencedTrait\BaseModelUseTrait', $returnTypeDescription);
 		$this->assertStringContainsString('BugSelfReferencedTrait\Builder<static(BugSelfReferencedTrait\BaseModelUseTrait)>', $returnTypeDescription);
+	}
+
+	/**
+	 * This ensure test result consistent regardless FileTypeMapper when just rolled back to verify back
+	 */
+	private function clearFileTypeMapperCache(string $tmpDir, string $fileName): void
+	{
+		$cacheKeyHash = hash('sha256', sprintf('ftm-%s', $fileName));
+		$cacheFilePath = sprintf(
+			'%s/cache/PHPStan/%s/%s/%s.php',
+			$tmpDir,
+			substr($cacheKeyHash, 0, 2),
+			substr($cacheKeyHash, 2, 2),
+			$cacheKeyHash,
+		);
+
+		if (!is_file($cacheFilePath)) {
+			return;
+		}
+
+		unlink($cacheFilePath);
+		clearstatcache();
 	}
 
 }

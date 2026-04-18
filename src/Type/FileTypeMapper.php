@@ -394,9 +394,10 @@ final class FileTypeMapper
 
 	/**
 	 * @param array<string, string> $traitMethodAliases
+	 * @param array<string, true> $activeTraitResolutions
 	 * @return array{array<string, IntermediaryNameScope>, list<string>}
 	 */
-	private function createPhpDocNodeMap(string $fileName, ?string $lookForTrait, ?string $traitUseClass, array $traitMethodAliases, string $originalClassFileName): array
+	private function createPhpDocNodeMap(string $fileName, ?string $lookForTrait, ?string $traitUseClass, array $traitMethodAliases, string $originalClassFileName, array $activeTraitResolutions = []): array
 	{
 		/** @var array<string, IntermediaryNameScope> $nameScopeMap */
 		$nameScopeMap = [];
@@ -425,7 +426,7 @@ final class FileTypeMapper
 		$constUses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$typeMapStack, &$typeAliasStack, &$classStack, &$namespace, &$functionStack, &$uses, &$constUses, &$files): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, $activeTraitResolutions, &$nameScopeMap, &$typeMapStack, &$typeAliasStack, &$classStack, &$namespace, &$functionStack, &$uses, &$constUses, &$files): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($traitFound && $fileName === $originalClassFileName) {
 						return self::SKIP_NODE;
@@ -635,12 +636,21 @@ final class FileTypeMapper
 							throw new ShouldNotHappenException();
 						}
 
+						$traitResolutionKey = $this->getTraitResolutionKey($traitReflection->getFileName(), $traitName, $className, $originalClassFileName);
+						if (isset($activeTraitResolutions[$traitResolutionKey])) {
+							continue;
+						}
+
+						$nestedActiveTraitResolutions = $activeTraitResolutions;
+						$nestedActiveTraitResolutions[$traitResolutionKey] = true;
+
 						[$traitNameScopeMap, $traitFiles] = $this->createPhpDocNodeMap(
 							$traitReflection->getFileName(),
 							$traitName,
 							$className,
 							$traitMethodAliases[$traitName] ?? [],
 							$originalClassFileName,
+							$nestedActiveTraitResolutions,
 						);
 						$nameScopeMap = array_merge($nameScopeMap, array_map(static fn ($originalNameScope) => $originalNameScope->getTraitData() === null ? $originalNameScope->withTraitData($originalClassFileName, $className, $traitName, $lookForTrait, $docComment) : $originalNameScope, $traitNameScopeMap));
 						$files = array_merge($files, $traitFiles);
@@ -816,6 +826,11 @@ final class FileTypeMapper
 	{
 		$doc = new Doc($docComment);
 		return md5(sprintf('%s-%s', $nameScopeKey, $doc->getReformattedText()));
+	}
+
+	private function getTraitResolutionKey(string $fileName, string $traitName, string $className, string $originalClassFileName): string
+	{
+		return md5(sprintf('%s-%s-%s-%s', $fileName, $traitName, $className, $originalClassFileName));
 	}
 
 }

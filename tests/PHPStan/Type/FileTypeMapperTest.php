@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use BugSelfReferencedTrait\BaseModel;
 use DependentPhpDocs\Foo;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
@@ -217,14 +218,14 @@ class FileTypeMapperTest extends PHPStanTestCase
 		/** @var FileTypeMapper $fileTypeMapper */
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 
-		$realpath = realpath(__DIR__ . '/data/bug-9684/BaseModel.php');
+		$realpath = realpath(__DIR__ . '/data/bug-self-referenced-trait/BaseModel.php');
 		if ($realpath === false) {
 			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc(
 			$realpath,
-			\Bug9684\BaseModel::class,
+			BaseModel::class,
 			null,
 			null,
 			'/** @method static Builder<static>|BaseModel query() */',
@@ -232,8 +233,8 @@ class FileTypeMapperTest extends PHPStanTestCase
 
 		$this->assertArrayHasKey('query', $resolved->getMethodTags());
 		$returnTypeDescription = $resolved->getMethodTags()['query']->getReturnType()->describe(VerbosityLevel::precise());
-		$this->assertStringContainsString('Bug9684\BaseModel', $returnTypeDescription);
-		$this->assertStringContainsString('Bug9684\Builder<static(Bug9684\BaseModel)>', $returnTypeDescription);
+		$this->assertStringContainsString('BugSelfReferencedTrait\BaseModel', $returnTypeDescription);
+		$this->assertStringContainsString('BugSelfReferencedTrait\Builder<static(BugSelfReferencedTrait\BaseModel)>', $returnTypeDescription);
 	}
 
 }

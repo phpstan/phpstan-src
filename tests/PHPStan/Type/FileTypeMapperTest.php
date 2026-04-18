@@ -255,13 +255,8 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$directory1 = substr($cacheKeyHash, 0, 2);
 		$directory2 = substr($cacheKeyHash, 2, 2);
 
-		$cacheFilePath = sprintf(
-			'%s/cache/PHPStan/%s/%s/%s.php',
-			$tmpDir,
-			$directory1,
-			$directory2,
-			$cacheKeyHash,
-		);
+		$cacheTmpRootDir = sprintf('%s/cache/PHPStan', $tmpDir);
+		$cacheFilePath   = $cacheTmpRootDir . '/' . $directory1 . '/' . $directory2 . $cacheKeyHash;
 
 		if (!is_file($cacheFilePath)) {
 			return;

@@ -22,3 +22,23 @@ abstract class HelloWorld {
 		}
 	}
 }
+
+abstract class ImpureWorld {
+	/**
+	 * @phpstan-impure
+	 */
+	abstract public function getChild(): ?ImpureWorld;
+
+	public function sayHello(): void {
+		$foo = null !== $this->getChild();
+		if ($foo) {
+			assertType('Bug5207\ImpureWorld|null', $this->getChild());
+		}
+	}
+
+	public function sayHelloInline(): void {
+		if (null !== $this->getChild()) {
+			assertType('Bug5207\ImpureWorld|null', $this->getChild());
+		}
+	}
+}

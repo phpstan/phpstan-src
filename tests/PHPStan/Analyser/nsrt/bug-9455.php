@@ -50,3 +50,35 @@ class HelloWorld
 		}
 	}
 }
+
+class C {
+	/**
+	 * @phpstan-impure
+	 */
+	public function getA(): ?A {
+		return rand(0, 1) ? new A(1) : null;
+	}
+}
+
+class ImpureTest
+{
+	public function testImpureMethodNotNarrowed(): void
+	{
+		$c = new C();
+
+		$hasA = $c->getA() !== null;
+
+		if($hasA) {
+			assertType('Bug9455\A|null', $c->getA());
+		}
+	}
+
+	public function testImpureMethodInline(): void
+	{
+		$c = new C();
+
+		if($c->getA() !== null) {
+			assertType('Bug9455\A|null', $c->getA());
+		}
+	}
+}

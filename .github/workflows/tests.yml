@@ -219,6 +219,8 @@ jobs:
     name: "Tests with old PHPUnit"
     runs-on: ${{ matrix.operating-system }}
     timeout-minutes: 60
+    env:
+      COMPOSER_NO_SECURITY_BLOCKING: 1
 
     strategy:
       fail-fast: false

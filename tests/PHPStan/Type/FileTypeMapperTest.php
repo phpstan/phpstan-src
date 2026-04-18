@@ -8,7 +8,13 @@ use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
+use function clearstatcache;
+use function hash;
+use function is_file;
 use function realpath;
+use function sprintf;
+use function substr;
+use function unlink;
 
 class FileTypeMapperTest extends PHPStanTestCase
 {

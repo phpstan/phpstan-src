@@ -18,9 +18,9 @@ class BelongsTo
 }
 
 /**
- * @method static Builder<static>|BaseModel query()
+ * @method static Builder<static>|BaseModelUseTrait query()
  */
-class BaseModel extends Model
+class BaseModelUseTrait extends Model
 {
 	use RecursiveTrait;
 

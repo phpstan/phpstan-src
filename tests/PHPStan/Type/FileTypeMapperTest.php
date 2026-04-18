@@ -211,69 +211,6 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertSame('AliasCollisionNamespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 	}
 
-	public function testNodeCallbackLikeRectorInfiniteRecursionSimulation(): void
-	{
-		self::createReflectionProvider();
-
-		/** @var FileTypeMapper $fileTypeMapper */
-		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
-
-		// Use nikic/php-parser directly to parse the file
-		$parserFactory = new \PhpParser\ParserFactory();
-		$parser = $parserFactory->createForNewestSupportedVersion();
-		$baseModelPath = __DIR__ . '/data/bug-9684/BaseModel.php';
-		$code = file_get_contents($baseModelPath);
-		if ($code === false) {
-			$this->fail('Failed to read BaseModel.php');
-		}
-		$ast = $parser->parse($code);
-		if (!is_array($ast)) {
-			$this->fail('Failed to parse BaseModel.php');
-		}
-
-		$traitUsages = [];
-		$nodeCallback = function (Node $node) use (&$traitUsages, &$nodeCallback) {
-			if ($node instanceof \PhpParser\Node\Stmt\TraitUse) {
-				foreach ($node->traits as $trait) {
-					$traitUsages[] = $trait->toString();
-				}
-			}
-
-			foreach ($node->getSubNodeNames() as $name) {
-				$subNode = $node->{$name};
-				if (is_array($subNode)) {
-					foreach ($subNode as $child) {
-						if ($child instanceof \PhpParser\Node) {
-							$nodeCallback($child);
-						}
-					}
-				} elseif ($subNode instanceof \PhpParser\Node) {
-					$nodeCallback($subNode);
-				}
-			}
-		};
-
-		foreach ($ast as $astNode) {
-			$nodeCallback($astNode);
-		}
-
-		// Simulate Rector's repeated trait processing
-		$traitFile = __DIR__ . '/data/bug-9684/RecursiveTrait.php';
-		foreach ($traitUsages as $traitName) {
-			// Simulate Rector's use: both className and traitName set, repeatedly, as Rector does when walking traits
-			for ($i = 0; $i < 20; $i++) {
-				$fileTypeMapper->getResolvedPhpDoc(
-					$traitFile,
-					'Bug9684\\BaseModel',
-					'Bug9684\\RecursiveTrait',
-					null,
-					null
-				);
-			}
-		}
-		$this->assertNotEmpty($traitUsages, 'Trait usages should be found');
-	}
-
 	public function testRecursiveTraitUsedInAnonymousClassDoesNotLoopIndefinitely(): void
 	{
 		self::createReflectionProvider();

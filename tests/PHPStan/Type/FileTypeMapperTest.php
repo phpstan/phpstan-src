@@ -251,11 +251,15 @@ class FileTypeMapperTest extends PHPStanTestCase
 	private function clearFileTypeMapperCache(string $tmpDir, string $fileName): void
 	{
 		$cacheKeyHash = hash('sha256', sprintf('ftm-%s', $fileName));
+
+		$directory1 = substr($cacheKeyHash, 0, 2);
+		$directory2 = substr($cacheKeyHash, 2, 2);
+
 		$cacheFilePath = sprintf(
 			'%s/cache/PHPStan/%s/%s/%s.php',
 			$tmpDir,
-			(string) substr($cacheKeyHash, 0, 2),
-			(string) substr($cacheKeyHash, 2, 2),
+			$directory1,
+			$directory2,
 			$cacheKeyHash,
 		);
 

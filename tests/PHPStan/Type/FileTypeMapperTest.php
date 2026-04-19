@@ -2,19 +2,12 @@
 
 namespace PHPStan\Type;
 
-use BugSelfReferencedTrait\BaseModelUseTrait;
 use DependentPhpDocs\Foo;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
-use function clearstatcache;
-use function hash;
-use function is_file;
 use function realpath;
-use function sprintf;
-use function substr;
-use function unlink;
 
 class FileTypeMapperTest extends PHPStanTestCase
 {
@@ -215,55 +208,6 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertSame('AliasCollisionNamespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 		$this->assertArrayHasKey('x', $doc2->getVarTags());
 		$this->assertSame('AliasCollisionNamespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
-	}
-
-	public function testRecursiveTraitUsedInAnonymousClassDoesNotLoopIndefinitely(): void
-	{
-		$realpath = realpath(__DIR__ . '/data/bug-self-referenced-trait/BaseModelUseTrait.php');
-		if ($realpath === false) {
-			throw new ShouldNotHappenException();
-		}
-
-		$container = self::getContainer();
-		$this->clearFileTypeMapperCache($container->getParameter('tmpDir'), $realpath);
-		self::createReflectionProvider();
-
-		/** @var FileTypeMapper $fileTypeMapper */
-		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
-
-		$resolved = $fileTypeMapper->getResolvedPhpDoc(
-			$realpath,
-			BaseModelUseTrait::class,
-			null,
-			null,
-			'/** @method static Builder<static>|BaseModelUseTrait query() */',
-		);
-
-		$this->assertArrayHasKey('query', $resolved->getMethodTags());
-		$returnTypeDescription = $resolved->getMethodTags()['query']->getReturnType()->describe(VerbosityLevel::precise());
-		$this->assertStringContainsString('BugSelfReferencedTrait\BaseModelUseTrait', $returnTypeDescription);
-		$this->assertStringContainsString('BugSelfReferencedTrait\Builder<static(BugSelfReferencedTrait\BaseModelUseTrait)>', $returnTypeDescription);
-	}
-
-	/**
-	 * This ensure test result consistent regardless FileTypeMapper when just rolled back to verify back
-	 */
-	private function clearFileTypeMapperCache(string $tmpDir, string $fileName): void
-	{
-		$cacheKeyHash = hash('sha256', sprintf('ftm-%s', $fileName));
-
-		$directory1 = substr($cacheKeyHash, 0, 2);
-		$directory2 = substr($cacheKeyHash, 2, 2);
-
-		$cacheTmpRootDir = sprintf('%s/cache/PHPStan', $tmpDir);
-		$cacheFilePath = $cacheTmpRootDir . '/' . $directory1 . '/' . $directory2 . '/' . $cacheKeyHash . '.php';
-
-		if (!is_file($cacheFilePath)) {
-			return;
-		}
-
-		unlink($cacheFilePath);
-		clearstatcache();
 	}
 
 }

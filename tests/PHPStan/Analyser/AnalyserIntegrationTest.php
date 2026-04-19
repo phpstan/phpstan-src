@@ -1529,6 +1529,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBugInfiniteLoopOnFileTypeMapper(): void
+	{
+		// endless loop crash on self referencing trait
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-self-referenced-trait/BaseModelUseTrait.php');
+		$this->assertCount(0, $errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

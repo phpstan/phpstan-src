@@ -329,7 +329,7 @@ final class FileTypeMapper
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$cacheKey = sprintf('ftm-%s', $fileName);
-			$variableCacheKey = sprintf('v4-%s', ComposerHelper::getPhpDocParserVersion());
+			$variableCacheKey = sprintf('v5-%s', ComposerHelper::getPhpDocParserVersion());
 			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 			if ($cached === null) {
 				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);

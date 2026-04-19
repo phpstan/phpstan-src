@@ -80,4 +80,10 @@ class NullsafeMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12222.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14493(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14493.php'], []);
+	}
+
 }

@@ -955,9 +955,6 @@ final class AssignHandler implements ExprHandler
 					if ($item instanceof Expr && $this->exprContainsNullsafe($item)) {
 						return true;
 					}
-					if ($item instanceof Node\Arg && $this->exprContainsNullsafe($item->value)) {
-						return true;
-					}
 				}
 			}
 		}

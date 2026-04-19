@@ -973,6 +973,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			!$node instanceof Variable
 			&& !$node instanceof Expr\Closure
 			&& !$node instanceof Expr\ArrowFunction
+			&& !$this->isExpressionBasedOnNew($node)
 			&& $this->hasExpressionType($node)->yes()
 		) {
 			return $this->expressionTypes[$exprString]->getType();
@@ -2913,6 +2914,36 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	private function isExpressionBasedOnNew(Expr $expr): bool
+	{
+		if (
+			$expr instanceof MethodCall
+			|| $expr instanceof Expr\NullsafeMethodCall
+			|| $expr instanceof PropertyFetch
+			|| $expr instanceof Expr\NullsafePropertyFetch
+			|| $expr instanceof Expr\ArrayDimFetch
+		) {
+			$var = $expr->var;
+			if ($var instanceof Expr\New_ || $var instanceof Expr\Clone_) {
+				return true;
+			}
+			return $this->isExpressionBasedOnNew($var);
+		}
+
+		if (
+			($expr instanceof Expr\StaticCall || $expr instanceof Expr\StaticPropertyFetch || $expr instanceof Expr\ClassConstFetch)
+			&& $expr->class instanceof Expr
+		) {
+			$class = $expr->class;
+			if ($class instanceof Expr\New_ || $class instanceof Expr\Clone_) {
+				return true;
+			}
+			return $this->isExpressionBasedOnNew($class);
+		}
+
+		return false;
 	}
 
 	private function getIntertwinedRefRootVariableName(Expr $expr): ?string

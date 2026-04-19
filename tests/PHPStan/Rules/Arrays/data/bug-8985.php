@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bug8985;
+namespace Bug8985c;
 
 class Entity
 {

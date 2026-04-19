@@ -23,7 +23,7 @@ class OrderCustomerEntity {
 }
 
 class CustomerEntity {
-	final public const ACCOUNT_TYPE_BUSINESS = 'business';
+	public const ACCOUNT_TYPE_BUSINESS = 'business';
 
 	public function getAccountType(): string { return ''; }
 }

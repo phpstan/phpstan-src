@@ -974,8 +974,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			!$node instanceof Variable
 			&& !$node instanceof Expr\Closure
 			&& !$node instanceof Expr\ArrowFunction
-			&& !$this->expressionHasNewInChain($node)
 			&& $this->hasExpressionType($node)->yes()
+			&& (!$this->expressionHasNewInChain($node) || $this->expressionTypes[$exprString]->getExpr() === $node)
 		) {
 			return $this->expressionTypes[$exprString]->getType();
 		}

@@ -774,6 +774,7 @@ return [
 	'bcdiv' => ['hasSideEffects' => false],
 	'bcmod' => ['hasSideEffects' => false],
 	'bcmul' => ['hasSideEffects' => false],
+	'bcround' => ['hasSideEffects' => false],
 	'bcpow' => ['hasSideEffects' => false],
 	'bcpowmod' => ['hasSideEffects' => false],
 	'bcsqrt' => ['hasSideEffects' => false],

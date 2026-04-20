@@ -1331,6 +1331,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10924.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8985(): void
 	{
 		$this->checkExplicitMixed = true;

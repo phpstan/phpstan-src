@@ -48,15 +48,19 @@ function () {
 	}
 };
 
+/**
+ * @return object
+ * @throws void
+ */
+function notNullableDoesntThrow(...$args)
+{
+}
+
 function () {
-	$result = doesntThrow();
-	if ($result === null) {
-		return;
-	}
-	// $result is mixed~null, so ?-> never short-circuits
 	try {
-		$result?->{$foo = 1}($bar = 2);
+		notNullableDoesntThrow()?->{$foo = 1}($bar = 2);
 	} finally {
+		// notNullableDoesntThrow() does not return null, so ?-> will not short-circuit
 		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
 	}

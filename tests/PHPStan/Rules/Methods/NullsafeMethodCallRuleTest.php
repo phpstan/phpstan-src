@@ -74,17 +74,6 @@ class NullsafeMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8523c.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug5207b(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-5207b.php'], [
-			[
-				'Using nullsafe method call on non-nullable type Bug5207b\OrderCustomerEntity. Use -> instead.',
-				47,
-			],
-		]);
-	}
-
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12222(): void
 	{

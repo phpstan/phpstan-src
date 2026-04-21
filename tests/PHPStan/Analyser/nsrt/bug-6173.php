@@ -21,7 +21,7 @@ class HelloWorld
 			$res[$id]['bar'] = $id;
 		}
 
-		assertType('array<int, non-empty-array{foo?: int, bar?: int}>', $res);
+		assertType('non-empty-array<int, array{foo?: int, bar: int}>|array<int, array{foo: int}>', $res);
 		foreach ($res as $id => $r) {
 			assertType('non-empty-array{foo?: int, bar?: int}', $r);
 			return isset($r['foo']);

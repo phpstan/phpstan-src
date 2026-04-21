@@ -465,6 +465,29 @@ static zv::Val intersectWith(zval *first, TypeList &rest)
 	return pt_type_combinator_intersect((uint32_t) args.size(), args.data());
 }
 
+/* BleedingEdgeToggle::isBleedingEdge(): the private static the final class
+ * returns, read through the engine's static-property path under the
+ * class's own scope (the same value the method returns, without the
+ * userland frame); false = pending exception */
+[[nodiscard]] static bool isBleedingEdge(bool &out)
+{
+	zend_class_entry *ce = pt_class(PT_CLASS_BLEEDING_EDGE_TOGGLE);
+	if (UNEXPECTED(ce == NULL)) return false;
+	auto previousScope = EG(fake_scope); /* const from PHP 8.4 */
+	EG(fake_scope) = ce;
+	zval *value = zend_read_static_property(ce, PT_LC("bleedingEdge"), 1);
+	EG(fake_scope) = previousScope;
+	if (EXPECTED(value != NULL && (Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE))) {
+		out = Z_TYPE_P(value) == IS_TRUE;
+		return true;
+	}
+	if (UNEXPECTED(EG(exception))) return false;
+	zv::Val result = pt_type_call_static(PT_CLASS_BLEEDING_EDGE_TOGGLE, PT_LC("isbleedingedge"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* $type instanceof NeverType && !$type->isExplicit(); -1 = pending
  * exception */
 static int isImplicitNever(zval *type)
@@ -2129,6 +2152,36 @@ public:
 				zv::Arr result = zv::Arr::create(1);
 				result.push(std::move(intersected));
 				return zv::Val(std::move(result));
+			}
+
+			bool hasEmptyConstantArray = false;
+			for (zv::Val &arrayType : arrayTypes) {
+				int empty = isEmptyConstantArray(arrayType.raw());
+				PT_FAIL_IF_NEG(empty);
+				if (empty == 1) {
+					hasEmptyConstantArray = true;
+					break;
+				}
+			}
+
+			bool bleedingEdge;
+			if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
+			if (bleedingEdge && !hasEmptyConstantArray) {
+				// Keep each array member distinct (e.g. `list<int>|list<string>` rather
+				// than `list<int|string>`). Subsumption is handled by the outer union()
+				// loop; the `array{} | non-empty-array<X>` -> `array<X>` simplification
+				// is not expressible here and falls through to the old collapse path.
+				zv::Arr results = zv::Arr::create((uint32_t) arrayTypes.size());
+				for (zv::Val &arrayType : arrayTypes) {
+					if (accessoryTypes.empty()) {
+						results.push(arrayType.ref());
+						continue;
+					}
+					zv::Val intersected = intersectWith(arrayType.raw(), accessoryTypes);
+					PT_FAIL_IF_UNDEF(intersected);
+					results.push(std::move(intersected));
+				}
+				return zv::Val(std::move(results));
 			}
 
 			zval *templateArrayType = NULL;

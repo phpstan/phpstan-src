@@ -71,18 +71,18 @@ class Foo
 
 		$arr1 = $arr;
 		sort($arr1);
-		assertType('non-empty-list<1|2|5>', $arr1);
-		assertNativeType('non-empty-list<1|2|5>', $arr1);
+		assertType('non-empty-list<1|5>|non-empty-list<2>', $arr1);
+		assertNativeType('non-empty-list<1|5>|non-empty-list<2>', $arr1);
 
 		$arr2 = $arr;
 		rsort($arr2);
-		assertType('non-empty-list<1|2|5>', $arr2);
-		assertNativeType('non-empty-list<1|2|5>', $arr2);
+		assertType('non-empty-list<1|5>|non-empty-list<2>', $arr2);
+		assertNativeType('non-empty-list<1|5>|non-empty-list<2>', $arr2);
 
 		$arr3 = $arr;
 		usort($arr3, fn(int $a, int $b) => $a <=> $b);
-		assertType('non-empty-list<1|2|5>', $arr3);
-		assertNativeType('non-empty-list<1|2|5>', $arr3);
+		assertType('non-empty-list<1|5>|non-empty-list<2>', $arr3);
+		assertNativeType('non-empty-list<1|5>|non-empty-list<2>', $arr3);
 	}
 
 	/** @param array<mixed, string> $arr */

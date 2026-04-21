@@ -12,10 +12,10 @@ class Foo
 		$items = [0, 1, 2, 3, 4];
 
 		while ($items) {
-			assertType('non-empty-list<int<min, 4>>', $items);
+			assertType('array{0, 1, 2, 3, 4}|non-empty-list<2|3|4>', $items);
 			$batch = array_splice($items, 0, 2);
-			assertType('list<int<min, 4>>', $items);
-			assertType('non-empty-list<int<min, 4>>', $batch);
+			assertType('list<2|3|4>', $items);
+			assertType('array{0, 1}|non-empty-list<2|3|4>', $batch);
 		}
 	}
 

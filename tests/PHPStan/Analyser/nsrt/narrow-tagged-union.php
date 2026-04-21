@@ -83,11 +83,11 @@ class HelloWorld
 	public function mixedArrays(array $arr): void
 	{
 		if (count($arr, COUNT_NORMAL) === 3) {
-			assertType("non-empty-array<int|string>", $arr); // could be array{string, '', non-empty-string}|non-empty-array<int>
+			assertType("array{string, '', non-empty-string}|non-empty-array<int>", $arr); // could be array{string, '', non-empty-string}|non-empty-array<int>
 		} else {
-			assertType("array<int|string>", $arr); // could be array{string, '', non-empty-string}|array<int>
+			assertType("array{string, '', non-empty-string}|array<int>", $arr); // could be array{string, '', non-empty-string}|array<int>
 		}
-		assertType("array<int|string>", $arr); // could be array{string, '', non-empty-string}|array<int>
+		assertType("array{string, '', non-empty-string}#1|array{string, '', non-empty-string}#2|array<int>", $arr); // could be array{string, '', non-empty-string}|array<int>
 	}
 
 	public function arrayIntRangeSize(): void

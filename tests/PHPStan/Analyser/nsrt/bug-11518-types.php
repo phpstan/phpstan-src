@@ -17,7 +17,7 @@ function blah(array $a): array
 		assertType('non-empty-array&hasOffset(\'thing\')', $a);
 	}
 
-	assertType('non-empty-array&hasOffsetValue(\'thing\', mixed)', $a);
+	assertType("non-empty-array&hasOffset('thing')", $a);
 
 	return $a;
 }

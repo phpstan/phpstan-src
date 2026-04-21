@@ -13,7 +13,7 @@ assertType('array<array{add: non-empty-list}>', $changes);
 foreach (toRem() as $del) {
 	$changes[$add['id']]['del'][] = doSomething($del);
 }
-assertType('array<non-empty-array{add?: non-empty-list, del?: non-empty-list}>', $changes);
+assertType('non-empty-array<array{add?: non-empty-list, del: non-empty-list}>|array<array{add: non-empty-list}>', $changes);
 
 foreach ($changes as $changeSet) {
 	if (isset($changeSet['del'])) {

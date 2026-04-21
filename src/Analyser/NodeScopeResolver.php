@@ -1315,21 +1315,30 @@ class NodeScopeResolver
 			) {
 				$arrayExprDimFetch = new ArrayDimFetch($stmt->expr, $stmt->keyVar);
 				$arrayDimFetchLoopTypes = [];
+				$keyLoopTypes = [];
 				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
 					$arrayDimFetchLoopTypes[] = $scopeWithIterableValueType->getType($arrayExprDimFetch);
+					$keyLoopTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);
 				}
 
 				$arrayDimFetchLoopType = TypeCombinator::union(...$arrayDimFetchLoopTypes);
+				$keyLoopType = TypeCombinator::union(...$keyLoopTypes);
 
 				$arrayDimFetchLoopNativeTypes = [];
+				$keyLoopNativeTypes = [];
 				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
 					$arrayDimFetchLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($arrayExprDimFetch);
+					$keyLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($stmt->keyVar);
 				}
 
 				$arrayDimFetchLoopNativeType = TypeCombinator::union(...$arrayDimFetchLoopNativeTypes);
+				$keyLoopNativeType = TypeCombinator::union(...$keyLoopNativeTypes);
 
-				if (!$arrayDimFetchLoopType->equals($exprType->getIterableValueType())) {
-					$newExprType = TypeTraverser::map($exprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopType): Type {
+				$valueTypeChanged = !$arrayDimFetchLoopType->equals($exprType->getIterableValueType());
+				$keyTypeChanged = !$keyLoopType->equals($exprType->getIterableKeyType());
+
+				if ($valueTypeChanged || $keyTypeChanged) {
+					$newExprType = TypeTraverser::map($exprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopType, $keyLoopType, $valueTypeChanged, $keyTypeChanged): Type {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
 						}
@@ -1338,9 +1347,13 @@ class NodeScopeResolver
 							return $type;
 						}
 
-						return new ArrayType($type->getKeyType(), $arrayDimFetchLoopType);
+						return new ArrayType(
+							$keyTypeChanged ? $keyLoopType : $type->getKeyType(),
+							$valueTypeChanged ? $arrayDimFetchLoopType : $type->getIterableValueType(),
+						);
 					});
-					$newExprNativeType = TypeTraverser::map($scope->getNativeType($stmt->expr), static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType): Type {
+					$nativeExprType = $scope->getNativeType($stmt->expr);
+					$newExprNativeType = TypeTraverser::map($nativeExprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType, $keyLoopNativeType, $valueTypeChanged, $keyTypeChanged): Type {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
 						}
@@ -1349,7 +1362,10 @@ class NodeScopeResolver
 							return $type;
 						}
 
-						return new ArrayType($type->getKeyType(), $arrayDimFetchLoopNativeType);
+						return new ArrayType(
+							$keyTypeChanged ? $keyLoopNativeType : $type->getKeyType(),
+							$valueTypeChanged ? $arrayDimFetchLoopNativeType : $type->getIterableValueType(),
+						);
 					});
 
 					if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {

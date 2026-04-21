@@ -291,7 +291,13 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	{
 		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
 			if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $this->passedArgs)) {
-				$type = $type->toConditional($this->passedArgs[$type->getParameterName()]);
+				// Traverse children first, then convert — avoids infinite loop when
+				// the passed argument contains ConditionalTypeForParameter with a colliding parameter name.
+				$type = $traverse($type);
+				if ($type instanceof ConditionalTypeForParameter) {
+					return $type->toConditional($this->passedArgs[$type->getParameterName()]);
+				}
+				return $type;
 			}
 
 			return $traverse($type);

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
@@ -1274,7 +1273,8 @@ final class TypeCombinator
 				}
 			}
 
-			if (BleedingEdgeToggle::isBleedingEdge() && !$hasEmptyConstantArray) {
+			// TMP WIP: run for everyone, not just bleedingEdge, so CI exercises the new path
+			if (!$hasEmptyConstantArray) {
 				// Keep each array member distinct (e.g. `list<int>|list<string>` rather
 				// than `list<int|string>`). Subsumption is handled by the outer union()
 				// loop; the `array{} | non-empty-array<X>` -> `array<X>` simplification

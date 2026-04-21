@@ -10,6 +10,7 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
@@ -1272,22 +1273,7 @@ final class ClassReflection
 			}
 			$fileName = $declaringClass->getFileName();
 			$phpDocType = null;
-			$currentResolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
-				$declaringClass->getName(),
-				$name,
-			);
-			if ($currentResolvedPhpDoc === null) {
-				if ($reflectionConstant->getDocComment() !== false) {
-					$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-						$fileName,
-						$declaringClass->getName(),
-						null,
-						null,
-						$reflectionConstant->getDocComment(),
-					);
-				}
-
-			}
+			$currentResolvedPhpDoc = $this->findConstantResolvedPhpDoc($reflectionConstant);
 
 			$nativeType = null;
 			if ($reflectionConstant->getType() !== null) {
@@ -1345,29 +1331,9 @@ final class ClassReflection
 			return null;
 		}
 
-		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
-
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
-			$declaringClassName,
-			$name,
-		);
-
+		$resolvedPhpDoc = $this->findConstantResolvedPhpDoc($reflectionConstant);
 		if ($resolvedPhpDoc === null) {
-			$docComment = $reflectionConstant->getDocComment();
-			if ($docComment === false) {
-				return null;
-			}
-			$fileName = $reflectionConstant->getDeclaringClass()->getFileName();
-			if ($fileName === false) {
-				return null;
-			}
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-				$fileName,
-				$declaringClassName,
-				null,
-				null,
-				$docComment,
-			);
+			return null;
 		}
 
 		$nativeType = null;
@@ -1375,6 +1341,7 @@ final class ClassReflection
 			$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType());
 		}
 
+		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
 		if ($declaringClassName === $this->getName()) {
 			$declaringClass = $this;
 		} else {
@@ -1385,6 +1352,32 @@ final class ClassReflection
 		}
 
 		return self::resolveConstantVarPhpDocType($resolvedPhpDoc, $nativeType, $declaringClass);
+	}
+
+	private function findConstantResolvedPhpDoc(ReflectionClassConstant $reflectionConstant): ?ResolvedPhpDocBlock
+	{
+		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
+
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
+			$declaringClassName,
+			$reflectionConstant->getName(),
+		);
+		if ($resolvedPhpDoc !== null) {
+			return $resolvedPhpDoc;
+		}
+
+		$docComment = $reflectionConstant->getDocComment();
+		if ($docComment === false) {
+			return null;
+		}
+
+		return $this->fileTypeMapper->getResolvedPhpDoc(
+			$reflectionConstant->getDeclaringClass()->getFileName() ?: null,
+			$declaringClassName,
+			null,
+			null,
+			$docComment,
+		);
 	}
 
 	private static function resolveConstantVarPhpDocType(

@@ -68,6 +68,40 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14270.php'], []);
 	}
 
+	public function testBug8075(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8075.php'], [
+			[
+				'Offset \'b\' does not exist on array{a: 0}.',
+				12,
+			],
+			[
+				'Offset \'b\' does not exist on array{a: 0}.',
+				14,
+			],
+			[
+				'Offset \'b\' does not exist on array{a: 0}.',
+				17,
+			],
+			[
+				'Offset \'b\' does not exist on array{a: 0}.',
+				24,
+			],
+			[
+				'Offset \'missing\' does not exist on array{name: string, age: int}.',
+				36,
+			],
+			[
+				'Offset 2 does not exist on array{string, int}.',
+				48,
+			],
+			[
+				'Offset \'z\' does not exist on array{x: int, y: int}.',
+				60,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{

@@ -49,11 +49,13 @@ final class DumpNativeTypeRule implements Rule
 			return [];
 		}
 
+		$multipleArgs = count($args) > 1;
 		$errors = [];
-		foreach ($args as $arg) {
+		foreach ($args as $i => $arg) {
 			$errors[] = RuleErrorBuilder::message(
 				sprintf(
-					'Dumped type: %s',
+					$multipleArgs ? 'Dumped type #%d: %s' : 'Dumped type: %2$s',
+					$i + 1,
 					$scope->getNativeType($arg->value)->describe(VerbosityLevel::precise()),
 				),
 			)->nonIgnorable()->identifier('phpstan.dumpNativeType')->build();

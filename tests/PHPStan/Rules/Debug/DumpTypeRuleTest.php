@@ -54,11 +54,11 @@ class DumpTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/dump-type-variadic.php'], [
 			[
-				'Dumped type: non-empty-array',
+				'Dumped type #1: non-empty-array',
 				10,
 			],
 			[
-				'Dumped type: array',
+				'Dumped type #2: array',
 				10,
 			],
 		]);
@@ -112,6 +112,20 @@ class DumpTypeRuleTest extends RuleTestCase
 			[
 				'Dumped type: string',
 				11,
+			],
+		]);
+	}
+
+	public function testBug14508(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14508.php'], [
+			[
+				'Dumped type #1: int<0, 100>',
+				10,
+			],
+			[
+				'Dumped type #2: bool',
+				10,
 			],
 		]);
 	}

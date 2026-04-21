@@ -49,11 +49,13 @@ final class DumpPhpDocTypeRule implements Rule
 			return [];
 		}
 
+		$multipleArgs = count($args) > 1;
 		$errors = [];
-		foreach ($args as $arg) {
+		foreach ($args as $i => $arg) {
 			$errors[] = RuleErrorBuilder::message(
 				sprintf(
-					'Dumped type: %s',
+					$multipleArgs ? 'Dumped type #%d: %s' : 'Dumped type: %2$s',
+					$i + 1,
 					$this->printer->print($scope->getType($arg->value)->toPhpDocNode()),
 				),
 			)->nonIgnorable()->identifier('phpstan.dumpPhpDocType')->build();

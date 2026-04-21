@@ -57,7 +57,7 @@ function main()
 	]
 	*/
 
-	assertType("array<string, non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}>", $arrDataByKey);
+	assertType("non-empty-array<string, array{'6M'?: non-empty-list<string>, '3M': non-empty-list<string>}>|array<string, array{'6M': non-empty-list<string>}>", $arrDataByKey);
 	foreach ($arrDataByKey as $key => $arrDataByKeyForKey) {
 		assertType("non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}", $arrDataByKeyForKey);
 		echo [] === ($arrDataByKeyForKey['6M'] ?? []) ? 'No 6M data for key ' . $key . "\n" : 'We got 6M data for key ' . $key . "\n";

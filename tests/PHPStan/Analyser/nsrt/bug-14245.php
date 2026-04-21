@@ -63,7 +63,7 @@ function listKnownHugeSize(): void {
 		assertType('non-empty-array<int<-2999, max>, int>', $list);
 	}
 
-	assertType('array<int<-2999, max>, int>', $list);
+	assertType('non-empty-array<int<-2999, max>, int>|list<int>', $list);
 }
 
 function overwriteKeyLast(): void {

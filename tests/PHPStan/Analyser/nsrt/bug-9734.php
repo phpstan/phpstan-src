@@ -121,25 +121,25 @@ class Bar
 		if ($this->assertIsStringList($a)) {
 			assertType('list<string>', $a);
 		} else {
-			assertType('non-empty-array', $a);
+			assertType('non-empty-array<mixed>', $a);
 		}
 
 		if ($this->assertIsConstantList($a)) {
 			assertType('array{string, string}', $a);
 		} else {
-			assertType('array', $a);
+			assertType('non-empty-array<mixed>|list<string>', $a);
 		}
 
 		if ($this->assertIsOptionalConstantList($a)) {
 			assertType('list{0?: string, 1?: string}', $a);
 		} else {
-			assertType('non-empty-array', $a);
+			assertType('non-empty-array<mixed>', $a);
 		}
 
 		if ($this->assertIsStringArray($a)) {
-			assertType('array<string>', $a);
+			assertType('non-empty-array<string>|list{0?: string, 1?: string}', $a);
 		} else {
-			assertType('non-empty-array', $a);
+			assertType('non-empty-array<mixed>', $a);
 		}
 	}
 

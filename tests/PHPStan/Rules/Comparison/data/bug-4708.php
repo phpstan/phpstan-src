@@ -88,7 +88,7 @@ function GetASCConfig()
 		}
 	}
 
-	assertType("non-empty-array<int|string|false>", $result);
+	assertType("(non-empty-array<int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int))|array{result: false, dberror: 'xyz'}", $result);
 
 	return $result;
 }

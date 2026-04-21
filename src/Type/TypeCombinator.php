@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -920,6 +921,28 @@ final class TypeCombinator
 			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);
 			if (count($reducedArrayTypes) === 1) {
 				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];
+			}
+
+			$hasEmptyConstantArray = false;
+			foreach ($arrayTypes as $arrayType) {
+				if ($arrayType->isIterableAtLeastOnce()->no() && $arrayType->isConstantArray()->yes()) {
+					$hasEmptyConstantArray = true;
+					break;
+				}
+			}
+
+			if (BleedingEdgeToggle::isBleedingEdge() && !$hasEmptyConstantArray) {
+				// Keep each array member distinct (e.g. `list<int>|list<string>` rather
+				// than `list<int|string>`). Subsumption is handled by the outer union()
+				// loop; the `array{} | non-empty-array<X>` -> `array<X>` simplification
+				// is not expressible here and falls through to the old collapse path.
+				$results = [];
+				foreach ($arrayTypes as $arrayType) {
+					$results[] = $accessoryTypes === []
+						? $arrayType
+						: self::intersect($arrayType, ...$accessoryTypes);
+				}
+				return $results;
 			}
 
 			$templateArrayType = null;

@@ -101,12 +101,26 @@ class DumpPhpDocTypeRuleTest extends RuleTestCase
 				36,
 			],
 			[
-				'Dumped type: array{1: 1}',
+				'Dumped type #1: array{1: 1}',
 				41,
 			],
 			[
-				'Dumped type: array{2: 2}',
+				'Dumped type #2: array{2: 2}',
 				41,
+			],
+		]);
+	}
+
+	public function testBug14508(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14508-phpdoc.php'], [
+			[
+				'Dumped type #1: int<0, 100>',
+				10,
+			],
+			[
+				'Dumped type #2: bool',
+				10,
 			],
 		]);
 	}

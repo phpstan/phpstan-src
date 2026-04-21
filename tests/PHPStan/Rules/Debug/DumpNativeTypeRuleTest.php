@@ -28,12 +28,26 @@ class DumpNativeTypeRuleTest extends RuleTestCase
 				12,
 			],
 			[
-				'Dumped type: non-empty-array',
+				'Dumped type #1: non-empty-array',
 				14,
 			],
 			[
-				'Dumped type: array',
+				'Dumped type #2: array',
 				14,
+			],
+		]);
+	}
+
+	public function testBug14508(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14508-native.php'], [
+			[
+				'Dumped type #1: int',
+				10,
+			],
+			[
+				'Dumped type #2: bool',
+				10,
 			],
 		]);
 	}

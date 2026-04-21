@@ -865,8 +865,6 @@ final class AssignHandler implements ExprHandler
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
 				&& !$expr instanceof FuncCall
-				&& !$expr instanceof MethodCall
-				&& !$expr instanceof Expr\StaticCall
 			) {
 				continue;
 			}
@@ -906,8 +904,6 @@ final class AssignHandler implements ExprHandler
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
 				&& !$expr instanceof FuncCall
-				&& !$expr instanceof MethodCall
-				&& !$expr instanceof Expr\StaticCall
 			) {
 				continue;
 			}

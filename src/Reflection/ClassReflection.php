@@ -1332,8 +1332,9 @@ final class ClassReflection
 	}
 
 	/**
-	 * Like getConstant() but only resolves the @var type — skips the ancestor
-	 * walk that can recurse through @extends back into constant resolution.
+	 * Returns the @var PHPDoc type of a class constant, if any.
+	 * Does not walk ancestors, so it's safe to call from class-constant
+	 * type resolution (which re-enters via @extends<value-of<...>>).
 	 *
 	 * @internal
 	 */

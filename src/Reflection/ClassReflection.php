@@ -10,6 +10,7 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
@@ -1272,22 +1273,7 @@ final class ClassReflection
 			}
 			$fileName = $declaringClass->getFileName();
 			$phpDocType = null;
-			$currentResolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
-				$declaringClass->getName(),
-				$name,
-			);
-			if ($currentResolvedPhpDoc === null) {
-				if ($reflectionConstant->getDocComment() !== false) {
-					$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-						$fileName,
-						$declaringClass->getName(),
-						null,
-						null,
-						$reflectionConstant->getDocComment(),
-					);
-				}
-
-			}
+			$currentResolvedPhpDoc = $this->findConstantResolvedPhpDoc($reflectionConstant);
 
 			$nativeType = null;
 			if ($reflectionConstant->getType() !== null) {
@@ -1311,18 +1297,7 @@ final class ClassReflection
 				}
 				$isInternal = $resolvedPhpDoc->isInternal();
 				$isFinal = $resolvedPhpDoc->isFinal();
-				$varTags = $resolvedPhpDoc->getVarTags();
-				if (isset($varTags[0]) && count($varTags) === 1) {
-					$varTag = $varTags[0];
-					if ($varTag->isExplicit() || $nativeType === null || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
-						$phpDocType = TemplateTypeHelper::resolveTemplateTypes(
-							$varTag->getType(),
-							$declaringClass->getActiveTemplateTypeMap(),
-							$declaringClass->getCallSiteVarianceMap(),
-							TemplateTypeVariance::createInvariant(),
-						);
-					}
-				}
+				$phpDocType = self::resolveConstantVarPhpDocType($resolvedPhpDoc, $nativeType, $declaringClass);
 			}
 
 			$this->constants[$name] = new RealClassClassConstantReflection(
@@ -1340,6 +1315,93 @@ final class ClassReflection
 			);
 		}
 		return $this->constants[$name];
+	}
+
+	/**
+	 * Returns the @var PHPDoc type of a class constant, if any.
+	 * Does not walk ancestors, so it's safe to call from class-constant
+	 * type resolution (which re-enters via @extends<value-of<...>>).
+	 *
+	 * @internal
+	 */
+	public function getConstantPhpDocType(string $name): ?Type
+	{
+		$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);
+		if ($reflectionConstant === false) {
+			return null;
+		}
+
+		$resolvedPhpDoc = $this->findConstantResolvedPhpDoc($reflectionConstant);
+		if ($resolvedPhpDoc === null) {
+			return null;
+		}
+
+		$nativeType = null;
+		if ($reflectionConstant->getType() !== null) {
+			$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType());
+		}
+
+		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
+		if ($declaringClassName === $this->getName()) {
+			$declaringClass = $this;
+		} else {
+			$declaringClass = $this->getAncestorWithClassName($declaringClassName);
+			if ($declaringClass === null) {
+				return null;
+			}
+		}
+
+		return self::resolveConstantVarPhpDocType($resolvedPhpDoc, $nativeType, $declaringClass);
+	}
+
+	private function findConstantResolvedPhpDoc(ReflectionClassConstant $reflectionConstant): ?ResolvedPhpDocBlock
+	{
+		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
+
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
+			$declaringClassName,
+			$reflectionConstant->getName(),
+		);
+		if ($resolvedPhpDoc !== null) {
+			return $resolvedPhpDoc;
+		}
+
+		$docComment = $reflectionConstant->getDocComment();
+		if ($docComment === false) {
+			return null;
+		}
+
+		return $this->fileTypeMapper->getResolvedPhpDoc(
+			$reflectionConstant->getDeclaringClass()->getFileName() ?: null,
+			$declaringClassName,
+			null,
+			null,
+			$docComment,
+		);
+	}
+
+	private static function resolveConstantVarPhpDocType(
+		ResolvedPhpDocBlock $resolvedPhpDoc,
+		?Type $nativeType,
+		self $declaringClass,
+	): ?Type
+	{
+		$varTags = $resolvedPhpDoc->getVarTags();
+		if (!isset($varTags[0]) || count($varTags) !== 1) {
+			return null;
+		}
+
+		$varTag = $varTags[0];
+		if (!$varTag->isExplicit() && $nativeType !== null && !$nativeType->isSuperTypeOf($varTag->getType())->yes()) {
+			return null;
+		}
+
+		return TemplateTypeHelper::resolveTemplateTypes(
+			$varTag->getType(),
+			$declaringClass->getActiveTemplateTypeMap(),
+			$declaringClass->getCallSiteVarianceMap(),
+			TemplateTypeVariance::createInvariant(),
+		);
 	}
 
 	public function hasTraitUse(string $traitName): bool

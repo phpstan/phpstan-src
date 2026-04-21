@@ -35,6 +35,8 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use Throwable;
 use function array_diff_assoc;
 use function array_fill_keys;
+use function array_intersect;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -212,12 +214,33 @@ class UnionType implements CompoundType
 			break;
 		}
 
+		$innerAccepts = [];
 		$result = AcceptsResult::createNo();
 		foreach ($this->getSortedTypes() as $i => $innerType) {
-			$result = $result->or($innerType->accepts($type, $strictTypes)->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
+			$innerResult = $innerType->accepts($type, $strictTypes);
+			$innerAccepts[$i] = $innerResult;
+			$result = $result->or($innerResult->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
 		}
 		if ($result->yes()) {
 			return $result;
+		}
+
+		$commonReasons = null;
+		foreach ($innerAccepts as $innerResult) {
+			if ($commonReasons === null) {
+				$commonReasons = $innerResult->reasons;
+				continue;
+			}
+			$commonReasons = array_values(array_intersect($commonReasons, $innerResult->reasons));
+		}
+		if ($commonReasons !== null && count($commonReasons) > 0) {
+			$decorated = [];
+			foreach (array_keys($innerAccepts) as $i) {
+				foreach ($commonReasons as $reason) {
+					$decorated[] = sprintf('Type #%d from the union: %s', $i + 1, $reason);
+				}
+			}
+			$result = new AcceptsResult($result->result, $decorated);
 		}
 
 		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {

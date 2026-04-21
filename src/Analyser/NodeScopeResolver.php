@@ -1240,6 +1240,10 @@ class NodeScopeResolver
 
 			if ($stmt->valueVar instanceof Variable) {
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->valueVar, new GetIterableValueTypeExpr($stmt->expr)), $originalScope, $storage);
+			} elseif ($stmt->valueVar instanceof List_) {
+				$virtualAssign = new Assign($stmt->valueVar, new GetIterableValueTypeExpr($stmt->expr));
+				$virtualAssign->setAttributes($stmt->valueVar->getAttributes());
+				$this->callNodeCallback($nodeCallback, $virtualAssign, $scope, $storage);
 			}
 
 			$originalStorage = $storage;

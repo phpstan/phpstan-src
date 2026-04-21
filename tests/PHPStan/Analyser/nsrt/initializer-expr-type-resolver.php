@@ -14,7 +14,7 @@ class Foo
 
 	public function doFoo(): void
 	{
-		assertType('*ERROR*', self::COALESCE_SPECIAL); // could be 42
+		assertType('42', self::COALESCE_SPECIAL);
 		assertType("0|1|2|'foo'", self::COALESCE);
 		assertType("'bar'|'foo'|true", self::TERNARY_SHORT);
 		assertType("'bar'|'foo'", self::TERNARY_FULL);

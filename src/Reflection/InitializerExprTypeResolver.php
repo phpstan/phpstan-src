@@ -281,6 +281,10 @@ final class InitializerExprTypeResolver
 			$leftType = $this->getType($expr->left, $context);
 			$rightType = $this->getType($expr->right, $context);
 
+			if ($leftType instanceof ErrorType) {
+				return $rightType;
+			}
+
 			return TypeCombinator::union(TypeCombinator::removeNull($leftType), $rightType);
 		}
 

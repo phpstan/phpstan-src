@@ -68,7 +68,7 @@ final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionRetur
 		$accessoryTypes = [];
 		if ($inputType->isNonEmptyString()->yes()) {
 			if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($multiplierType)->yes()) {
-				if ($inputType->isNonFalsyString()->yes()) {
+				if ($inputType->isNonFalsyString()->yes() || IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($multiplierType)->yes()) {
 					$accessoryTypes[] = new AccessoryNonFalsyStringType();
 				} else {
 					$accessoryTypes[] = new AccessoryNonEmptyStringType();
@@ -76,6 +76,7 @@ final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionRetur
 			}
 		}
 
+		$addedNumericString = false;
 		if ($inputType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
 
@@ -93,8 +94,17 @@ final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 				if ($onlyNumbers) {
 					$accessoryTypes[] = new AccessoryNumericStringType();
+					$addedNumericString = true;
 				}
 			}
+		}
+
+		if (
+			!$addedNumericString
+			&& $inputType->isNumericString()->yes()
+			&& (new ConstantIntegerType(1))->isSuperTypeOf($multiplierType)->yes()
+		) {
+			$accessoryTypes[] = new AccessoryNumericStringType();
 		}
 
 		if ($inputType->isLowercaseString()->yes()) {

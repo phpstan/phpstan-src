@@ -1849,8 +1849,12 @@ final class TypeSpecifier
 					if ($type instanceof ConditionalTypeForParameter) {
 						$parameterName = substr($type->getParameterName(), 1);
 						if (array_key_exists($parameterName, $argsMap)) {
-							$argType = TypeCombinator::union(...array_map(static fn (Expr $expr) => $scope->getType($expr), $argsMap[$parameterName]));
-							$type = $type->toConditional($argType);
+							$type = $traverse($type);
+							if ($type instanceof ConditionalTypeForParameter) {
+								$argType = TypeCombinator::union(...array_map(static fn (Expr $expr) => $scope->getType($expr), $argsMap[substr($type->getParameterName(), 1)]));
+								return $type->toConditional($argType);
+							}
+							return $type;
 						}
 					}
 

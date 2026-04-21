@@ -1311,18 +1311,7 @@ final class ClassReflection
 				}
 				$isInternal = $resolvedPhpDoc->isInternal();
 				$isFinal = $resolvedPhpDoc->isFinal();
-				$varTags = $resolvedPhpDoc->getVarTags();
-				if (isset($varTags[0]) && count($varTags) === 1) {
-					$varTag = $varTags[0];
-					if ($varTag->isExplicit() || $nativeType === null || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
-						$phpDocType = TemplateTypeHelper::resolveTemplateTypes(
-							$varTag->getType(),
-							$declaringClass->getActiveTemplateTypeMap(),
-							$declaringClass->getCallSiteVarianceMap(),
-							TemplateTypeVariance::createInvariant(),
-						);
-					}
-				}
+				$phpDocType = self::resolveConstantVarPhpDocType($resolvedPhpDoc, $nativeType, $declaringClass);
 			}
 
 			$this->constants[$name] = new RealClassClassConstantReflection(
@@ -1340,6 +1329,85 @@ final class ClassReflection
 			);
 		}
 		return $this->constants[$name];
+	}
+
+	/**
+	 * Like getConstant() but only resolves the @var type — skips the ancestor
+	 * walk that can recurse through @extends back into constant resolution.
+	 *
+	 * @internal
+	 */
+	public function getConstantPhpDocType(string $name): ?Type
+	{
+		$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);
+		if ($reflectionConstant === false) {
+			return null;
+		}
+
+		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
+
+		$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
+			$declaringClassName,
+			$name,
+		);
+
+		if ($resolvedPhpDoc === null) {
+			$docComment = $reflectionConstant->getDocComment();
+			if ($docComment === false) {
+				return null;
+			}
+			$fileName = $reflectionConstant->getDeclaringClass()->getFileName();
+			if ($fileName === false) {
+				return null;
+			}
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$fileName,
+				$declaringClassName,
+				null,
+				null,
+				$docComment,
+			);
+		}
+
+		$nativeType = null;
+		if ($reflectionConstant->getType() !== null) {
+			$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType());
+		}
+
+		if ($declaringClassName === $this->getName()) {
+			$declaringClass = $this;
+		} else {
+			$declaringClass = $this->getAncestorWithClassName($declaringClassName);
+			if ($declaringClass === null) {
+				return null;
+			}
+		}
+
+		return self::resolveConstantVarPhpDocType($resolvedPhpDoc, $nativeType, $declaringClass);
+	}
+
+	private static function resolveConstantVarPhpDocType(
+		ResolvedPhpDocBlock $resolvedPhpDoc,
+		?Type $nativeType,
+		self $declaringClass,
+	): ?Type
+	{
+		$varTags = $resolvedPhpDoc->getVarTags();
+		if (!isset($varTags[0]) || count($varTags) !== 1) {
+			return null;
+		}
+
+		$varTag = $varTags[0];
+		if (!$varTag->isExplicit() && $nativeType !== null && !$nativeType->isSuperTypeOf($varTag->getType())->yes()) {
+			return null;
+		}
+
+		return TemplateTypeHelper::resolveTemplateTypes(
+			$varTag->getType(),
+			$declaringClass->getActiveTemplateTypeMap(),
+			$declaringClass->getCallSiteVarianceMap(),
+			TemplateTypeVariance::createInvariant(),
+		);
 	}
 
 	public function hasTraitUse(string $traitName): bool

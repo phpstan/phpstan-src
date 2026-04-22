@@ -38,7 +38,7 @@ class Foo
 	public function bar(iterable $iterable): iterable
 	{
 		if (is_array($iterable)) {
-			assertType('array<((int&TKey (method Bug4498\Foo::bar(), argument))|(string&TKey (method Bug4498\Foo::bar(), argument))), TValue (method Bug4498\Foo::bar(), argument)>', $iterable);
+			assertType('array<(TKey of int (method Bug4498\Foo::bar(), argument)|TKey of string (method Bug4498\Foo::bar(), argument)), TValue (method Bug4498\Foo::bar(), argument)>', $iterable);
 			return $iterable;
 		}
 

@@ -1399,6 +1399,50 @@ final class TypeCombinator
 					continue;
 				}
 
+				if (
+					$types[$j] instanceof TemplateMixedType
+					&& !$types[$i] instanceof TemplateType
+					&& $types[$i]->isScalar()->yes()
+					&& $types[$j]->getBound()->isSuperTypeOf($types[$i])->yes()
+				) {
+					$narrowed = TemplateTypeFactory::create(
+						$types[$j]->getScope(),
+						$types[$j]->getName(),
+						$types[$i],
+						$types[$j]->getVariance(),
+						$types[$j]->getStrategy(),
+						$types[$j]->getDefault(),
+					);
+					if (!$narrowed instanceof TemplateMixedType) {
+						$types[$j] = $narrowed;
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+				}
+
+				if (
+					$types[$i] instanceof TemplateMixedType
+					&& !$types[$j] instanceof TemplateType
+					&& $types[$j]->isScalar()->yes()
+					&& $types[$i]->getBound()->isSuperTypeOf($types[$j])->yes()
+				) {
+					$narrowed = TemplateTypeFactory::create(
+						$types[$i]->getScope(),
+						$types[$i]->getName(),
+						$types[$j],
+						$types[$i]->getVariance(),
+						$types[$i]->getStrategy(),
+						$types[$i]->getDefault(),
+					);
+					if (!$narrowed instanceof TemplateMixedType) {
+						$types[$i] = $narrowed;
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+				}
+
 				if ($types[$i] instanceof IterableType) {
 					$isSuperTypeB = $types[$i]->isSuperTypeOfMixed($types[$j]);
 				} else {

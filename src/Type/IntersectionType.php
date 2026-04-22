@@ -552,7 +552,7 @@ class IntersectionType implements CompoundType
 
 	public function hasProperty(string $propertyName): TrinaryLogic
 	{
-		return $this->intersectResultsWithNonObjectGuard(static fn (Type $type): TrinaryLogic => $type->hasProperty($propertyName));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasProperty($propertyName));
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
@@ -585,7 +585,7 @@ class IntersectionType implements CompoundType
 
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
 	{
-		return $this->intersectResultsWithNonObjectGuard(static fn (Type $type): TrinaryLogic => $type->hasInstanceProperty($propertyName));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasInstanceProperty($propertyName));
 	}
 
 	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
@@ -618,7 +618,7 @@ class IntersectionType implements CompoundType
 
 	public function hasStaticProperty(string $propertyName): TrinaryLogic
 	{
-		return $this->intersectResultsWithNonObjectGuard(static fn (Type $type): TrinaryLogic => $type->hasStaticProperty($propertyName));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasStaticProperty($propertyName));
 	}
 
 	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
@@ -656,7 +656,7 @@ class IntersectionType implements CompoundType
 
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
-		return $this->intersectResultsWithNonObjectGuard(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
 	}
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
@@ -694,7 +694,7 @@ class IntersectionType implements CompoundType
 
 	public function hasConstant(string $constantName): TrinaryLogic
 	{
-		return $this->intersectResultsWithNonObjectGuard(static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName));
 	}
 
 	public function getConstant(string $constantName): ClassConstantReflection
@@ -1481,23 +1481,6 @@ class IntersectionType implements CompoundType
 		}
 
 		return TrinaryLogic::lazyMaxMin($types, $getResult);
-	}
-
-	/**
-	 * @param callable(Type $type): TrinaryLogic $getResult
-	 */
-	private function intersectResultsWithNonObjectGuard(callable $getResult): TrinaryLogic
-	{
-		$results = [];
-		foreach ($this->types as $type) {
-			$result = $getResult($type);
-			if ($type->isObject()->no() && $result->no()) {
-				return TrinaryLogic::createNo();
-			}
-			$results[] = $result;
-		}
-
-		return TrinaryLogic::maxMin(...$results);
 	}
 
 	/**

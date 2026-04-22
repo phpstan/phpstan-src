@@ -103,6 +103,13 @@ class Foo {
 		}
 		assertType('string', $s);
 
+		if (strpos($s, '0') == 0) { // 0|false
+			assertType('string', $s);
+		} else {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
 		if (strpos($s, '0') === 0) {
 			assertType('string', $s); // could be non-empty-string
 		} else {

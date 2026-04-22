@@ -1553,16 +1553,13 @@ final class TypeSpecifier
 			&& $constantType->toBoolean()->isTrue()->yes()
 			&& ($exprNode instanceof FuncCall || $exprNode instanceof Expr\MethodCall || $exprNode instanceof Expr\StaticCall)
 		) {
-			$additionalTypes = $this->specifyTypesInCondition(
+			$types = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
+			
+			return $types->unionWith($this->specifyTypesInCondition(
 				$scope,
 				$exprNode,
 				TypeSpecifierContext::createTrue(),
-			)->setRootExpr($rootExpr);
-
-			if ($additionalTypes->getSureTypes() !== [] || $additionalTypes->getSureNotTypes() !== []) {
-				$types = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
-				return $types->unionWith($additionalTypes);
-			}
+			)->setRootExpr($rootExpr));
 		}
 
 		return null;

@@ -65,6 +65,8 @@ return [
 	'bcmod' => ['hasSideEffects' => false],
 	'bcmul' => ['hasSideEffects' => false],
 	'bcround' => ['hasSideEffects' => false],
+	'bcfloor' => ['hasSideEffects' => false],
+	'bcceil' => ['hasSideEffects' => false],
 	// continue functionMap.php, line 424
 	'chgrp' => ['hasSideEffects' => true],
 	'chmod' => ['hasSideEffects' => true],

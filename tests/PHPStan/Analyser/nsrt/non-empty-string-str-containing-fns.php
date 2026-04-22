@@ -110,6 +110,29 @@ class Foo {
 		}
 		assertType('string', $s);
 
+		$oneOrZero = rand(0, 1);
+		if (strpos($s, '0') == $oneOrZero) { // 0|1|false
+			assertType('string', $s);
+		} else {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		$oneOrZero = rand(0, 1);
+		if (strpos($s, '0') === $oneOrZero) {
+			assertType('string', $s); // could be non-empty-string
+		} else {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		if (strpos($s, '0') == 1) {
+			assertType('string', $s); // could be non-empty-string
+		} else {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
 		if (strpos($s, '0') === 0) {
 			assertType('string', $s); // could be non-empty-string
 		} else {

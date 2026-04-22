@@ -136,7 +136,18 @@ class ConstantArrayType implements Type
 
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
-			$isList = TrinaryLogic::createYes();
+			if ($unsealed === null) {
+				$isList = TrinaryLogic::createYes();
+			} else {
+				[$unsealedKeyType] = $unsealed;
+				if ($unsealedKeyType instanceof NeverType && $unsealedKeyType->isExplicit()) {
+					$isList = TrinaryLogic::createYes();
+				} elseif ($unsealedKeyType->isInteger()->yes()) {
+					$isList = TrinaryLogic::createMaybe();
+				} else {
+					$isList = TrinaryLogic::createNo();
+				}
+			}
 		}
 
 		if ($isList === null) {
@@ -554,7 +565,7 @@ class ConstantArrayType implements Type
 			$result = $result->and($acceptsValue);
 		}
 
-		$otherUnsealed = $constantArray->getUnsealedTypes();
+		$otherUnsealed = $constantArray->unsealed;
 		if ($otherUnsealed !== null && !$constantArray->isUnsealed()->no()) {
 			[$otherUnsealedKeyType, $otherUnsealedValueType] = $otherUnsealed;
 
@@ -656,7 +667,7 @@ class ConstantArrayType implements Type
 		if ($type instanceof self) {
 			$thisUnsealedness = $this->isUnsealed();
 			$typeUnsealedness = $type->isUnsealed();
-			$bothDefinite = !$thisUnsealedness->maybe() && !$typeUnsealedness->maybe();
+			$bothDefinite = $this->unsealed !== null && $type->unsealed !== null;
 
 			if (count($this->keyTypes) === 0) {
 				if (!$bothDefinite) {
@@ -672,7 +683,7 @@ class ConstantArrayType implements Type
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
 				if ($bothDefinite && $hasOffset->no() && $typeUnsealedness->yes()) {
-					[$typeUnsealedKey] = $type->getUnsealedTypes();
+					[$typeUnsealedKey] = $type->unsealed;
 					if (!$typeUnsealedKey->isSuperTypeOf($keyType)->no()) {
 						$hasOffset = TrinaryLogic::createMaybe();
 					}
@@ -690,7 +701,7 @@ class ConstantArrayType implements Type
 
 				$otherValueType = $type->getOffsetValueType($keyType);
 				if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
-					[, $typeUnsealedValue] = $type->getUnsealedTypes();
+					[, $typeUnsealedValue] = $type->unsealed;
 					$otherValueType = $typeUnsealedValue;
 				}
 				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
@@ -719,7 +730,7 @@ class ConstantArrayType implements Type
 						continue;
 					}
 
-					[$thisUnsealedKey, $thisUnsealedValue] = $this->getUnsealedTypes();
+					[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
 					$keyCheck = $thisUnsealedKey->isSuperTypeOf($typeKey);
 					if ($keyCheck->no()) {
 						if ($type->isOptionalKey($i)) {
@@ -743,8 +754,8 @@ class ConstantArrayType implements Type
 					if ($thisUnsealedness->no()) {
 						$results[] = IsSuperTypeOfResult::createMaybe();
 					} else {
-						[$thisUnsealedKey, $thisUnsealedValue] = $this->getUnsealedTypes();
-						[$typeUnsealedKey, $typeUnsealedValue] = $type->getUnsealedTypes();
+						[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+						[$typeUnsealedKey, $typeUnsealedValue] = $type->unsealed;
 						$results[] = $thisUnsealedKey->isSuperTypeOf($typeUnsealedKey);
 						$results[] = $thisUnsealedValue->isSuperTypeOf($typeUnsealedValue);
 					}
@@ -1717,7 +1728,14 @@ class ConstantArrayType implements Type
 	{
 		$keysCount = count($this->keyTypes);
 		if ($keysCount === 0) {
-			return TrinaryLogic::createNo();
+			if ($this->unsealed === null) {
+				return TrinaryLogic::createNo();
+			}
+			[$unsealedKey] = $this->unsealed;
+			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
+				return TrinaryLogic::createNo();
+			}
+			return TrinaryLogic::createMaybe();
 		}
 
 		$optionalKeysCount = count($this->optionalKeys);
@@ -2260,6 +2278,85 @@ class ConstantArrayType implements Type
 
 	public function isKeysSupersetOf(self $otherArray): bool
 	{
+		if ($this->unsealed === null || $otherArray->unsealed === null) {
+			return $this->legacyIsKeysSupersetOf($otherArray);
+		}
+
+		[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+		[$otherUnsealedKey, $otherUnsealedValue] = $otherArray->unsealed;
+		$thisHasExtras = !($thisUnsealedKey instanceof NeverType && $thisUnsealedKey->isExplicit());
+		$otherHasExtras = !($otherUnsealedKey instanceof NeverType && $otherUnsealedKey->isExplicit());
+
+		$otherHasRequiredKeys = false;
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			if ($otherArray->isOptionalKey($j)) {
+				continue;
+			}
+			$otherHasRequiredKeys = true;
+			break;
+		}
+
+		// Sealed empty $other (no keys, no extras): absorbing it is lossless iff $this
+		// already accepts []. i.e., all of $this's known keys are optional. Otherwise
+		// merge would add [] as a new instance.
+		if (!$otherHasRequiredKeys && !$otherHasExtras && count($otherArray->keyTypes) === 0) {
+			foreach ($this->keyTypes as $i => $keyType) {
+				if (!$this->isOptionalKey($i)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// With real unsealed extras on both sides that can absorb each other's
+		// required keys, merging is acceptable regardless of which keys overlap.
+		if ($thisHasExtras && $otherHasExtras) {
+			return true;
+		}
+
+		// Asymmetric extras: one side has real extras that can absorb the other's keys.
+		if ($thisHasExtras) {
+			if ($this->legacyIsKeysSupersetOf($otherArray)) {
+				return true;
+			}
+			foreach ($otherArray->keyTypes as $j => $keyType) {
+				if ($otherArray->isOptionalKey($j)) {
+					continue;
+				}
+				if ($thisUnsealedKey->isSuperTypeOf($keyType)->no()) {
+					return false;
+				}
+				if ($thisUnsealedValue->isSuperTypeOf($otherArray->valueTypes[$j])->no()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		if ($otherHasExtras) {
+			if ($this->legacyIsKeysSupersetOf($otherArray)) {
+				return true;
+			}
+			foreach ($this->keyTypes as $i => $keyType) {
+				if ($this->isOptionalKey($i)) {
+					continue;
+				}
+				if ($otherUnsealedKey->isSuperTypeOf($keyType)->no()) {
+					return false;
+				}
+				if ($otherUnsealedValue->isSuperTypeOf($this->valueTypes[$i])->no()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// Both sealed: fall back to the legacy key/value shape check.
+		return $this->legacyIsKeysSupersetOf($otherArray);
+	}
+
+	private function legacyIsKeysSupersetOf(self $otherArray): bool
+	{
 		$keyTypesCount = count($this->keyTypes);
 		$otherKeyTypesCount = count($otherArray->keyTypes);
 
@@ -2312,14 +2409,116 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		// todo unsealed
-
 		return true;
 	}
 
 	public function mergeWith(self $otherArray): self
 	{
 		// only call this after verifying isKeysSupersetOf, or if losing tagged unions is not an issue
+		if ($this->unsealed === null || $otherArray->unsealed === null) {
+			return $this->legacyMergeWith($otherArray);
+		}
+
+		[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+		[$otherUnsealedKey, $otherUnsealedValue] = $otherArray->unsealed;
+
+		$mergedUnsealedKey = TypeCombinator::union($thisUnsealedKey, $otherUnsealedKey);
+		$mergedUnsealedValue = TypeCombinator::union($thisUnsealedValue, $otherUnsealedValue);
+
+		$absorbIntoExtras = static function (Type $keyType, Type $valueType) use (&$mergedUnsealedKey, &$mergedUnsealedValue): void {
+			$mergedUnsealedKey = TypeCombinator::union($mergedUnsealedKey, $keyType);
+			$mergedUnsealedValue = TypeCombinator::union($mergedUnsealedValue, $valueType);
+		};
+
+		$canAbsorb = static function (Type $sideUnsealedKey, Type $sideUnsealedValue, Type $keyType, Type $valueType): bool {
+			if ($sideUnsealedKey instanceof NeverType && $sideUnsealedKey->isExplicit()) {
+				return false;
+			}
+			if ($sideUnsealedKey->isSuperTypeOf($keyType)->no()) {
+				return false;
+			}
+			if ($sideUnsealedValue->isSuperTypeOf($valueType)->no()) {
+				return false;
+			}
+			return true;
+		};
+
+		$keyTypes = [];
+		$valueTypes = [];
+		$optionalKeys = [];
+		$nextAutoIndexes = [0];
+
+		$otherKeyIndexMap = $otherArray->getKeyIndexMap();
+		$processed = [];
+
+		foreach ($this->keyTypes as $i => $keyType) {
+			$keyValue = $keyType->getValue();
+			$processed[$keyValue] = true;
+			$valueType = $this->valueTypes[$i];
+
+			if (array_key_exists($keyValue, $otherKeyIndexMap)) {
+				$j = $otherKeyIndexMap[$keyValue];
+				$otherValueType = $otherArray->valueTypes[$j];
+				$mergedValue = TypeCombinator::union($valueType, $otherValueType);
+				$optional = $this->isOptionalKey($i) || $otherArray->isOptionalKey($j);
+
+				$keyTypes[] = $keyType;
+				$valueTypes[] = $mergedValue;
+				if ($optional) {
+					$optionalKeys[] = count($keyTypes) - 1;
+				}
+				continue;
+			}
+
+			if ($canAbsorb($otherUnsealedKey, $otherUnsealedValue, $keyType, $valueType)) {
+				$absorbIntoExtras($keyType, $valueType);
+				continue;
+			}
+
+			$keyTypes[] = $keyType;
+			$valueTypes[] = $valueType;
+			$optionalKeys[] = count($keyTypes) - 1;
+		}
+
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			$keyValue = $keyType->getValue();
+			if (array_key_exists($keyValue, $processed)) {
+				continue;
+			}
+			$valueType = $otherArray->valueTypes[$j];
+
+			if ($canAbsorb($thisUnsealedKey, $thisUnsealedValue, $keyType, $valueType)) {
+				$absorbIntoExtras($keyType, $valueType);
+				continue;
+			}
+
+			$keyTypes[] = $keyType;
+			$valueTypes[] = $valueType;
+			$optionalKeys[] = count($keyTypes) - 1;
+		}
+
+		$resultUnsealed = [$mergedUnsealedKey, $mergedUnsealedValue];
+
+		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
+		sort($nextAutoIndexes);
+
+		$optionalKeys = array_values(array_unique($optionalKeys));
+
+		/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
+		$keyTypes = $keyTypes;
+
+		return $this->recreate(
+			$keyTypes,
+			$valueTypes,
+			$nextAutoIndexes,
+			$optionalKeys,
+			$this->isList->and($otherArray->isList),
+			$resultUnsealed,
+		);
+	}
+
+	private function legacyMergeWith(self $otherArray): self
+	{
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
 		foreach ($this->keyTypes as $i => $keyType) {
@@ -2340,7 +2539,7 @@ class ConstantArrayType implements Type
 		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
-		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList), $this->unsealed); // todo unsealed
+		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList), $this->unsealed);
 	}
 
 	/**

@@ -31,6 +31,7 @@ use function array_fill;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
+use function array_keys;
 use function array_merge;
 use function array_slice;
 use function array_splice;
@@ -919,7 +920,7 @@ final class TypeCombinator
 				$filledArrays++;
 			}
 
-			if ($generalArrayOccurred || !$isConstantArray) {
+			if (!$isConstantArray) {
 				foreach ($arrayType->getArrays() as $type) {
 					$keyTypesForGeneralArray[] = $type->getIterableKeyType();
 					$valueTypesForGeneralArray[] = $type->getItemType();
@@ -1232,7 +1233,14 @@ final class TypeCombinator
 		}
 
 		if ($emptyArray !== null) {
-			$newArrays[] = $emptyArray;
+			if ($preserveTaggedUnions && $emptyArray instanceof ConstantArrayType) {
+				// Let the empty array participate in merging — the passes below will absorb
+				// it into any array that already accepts [] (all-optional keys, compatible
+				// unsealed extras). If no such array exists, it remains as-is in the result.
+				$arraysToProcess[] = $emptyArray;
+			} else {
+				$newArrays[] = $emptyArray;
+			}
 		}
 
 		$arraysToProcessPerKey = [];
@@ -1317,6 +1325,61 @@ final class TypeCombinator
 			}
 		}
 
+		// Second pass: for arrays with definite sealedness, try to merge pairs that
+		// don't share any known key (the eligibleCombinations loop above only considers
+		// shared-key pairs).
+		$indices = array_keys($arraysToProcess);
+		$indicesCount = count($indices);
+		for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
+			$i = $indices[$ii];
+			if (!array_key_exists($i, $arraysToProcess)) {
+				continue;
+			}
+			if ($arraysToProcess[$i]->getUnsealedTypes() === null) {
+				continue;
+			}
+			for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
+				$j = $indices[$jj];
+				if (!array_key_exists($j, $arraysToProcess)) {
+					continue;
+				}
+				if ($arraysToProcess[$j]->getUnsealedTypes() === null) {
+					continue;
+				}
+				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
+					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+					unset($arraysToProcess[$i]);
+					continue 2;
+				}
+				if (!$arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
+					continue;
+				}
+
+				$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
+				unset($arraysToProcess[$j]);
+			}
+		}
+
+		// Final pass: if merging left us with a ConstantArrayType that has no known keys
+		// but has real unsealed extras, collapse it to a plain ArrayType (mirrors the same
+		// logic in ConstantArrayTypeBuilder::getArray — but applies to results produced by
+		// ConstantArrayType::mergeWith, which doesn't go through the builder).
+		foreach ($arraysToProcess as $idx => $arr) {
+			if (count($arr->getKeyTypes()) !== 0) {
+				continue;
+			}
+			$unsealed = $arr->getUnsealedTypes();
+			if ($unsealed === null) {
+				continue;
+			}
+			[$unsealedKey, $unsealedValue] = $unsealed;
+			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
+				continue;
+			}
+			$newArrays[] = new ArrayType($unsealedKey, $unsealedValue);
+			unset($arraysToProcess[$idx]);
+		}
+
 		// Final pass: collapse the loop-accumulator pattern where each iteration
 		// produced a longer non-empty list variant. When several non-empty list
 		// ConstantArrayTypes survive earlier merging and together push the
@@ -1362,6 +1425,7 @@ final class TypeCombinator
 				}
 			}
 		}
+
 
 		return array_merge($newArrays, $arraysToProcess);
 	}
@@ -1594,6 +1658,7 @@ final class TypeCombinator
 						&& $types[$j] instanceof NonEmptyArrayType
 						&& (count($types[$i]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
 						&& $types[$i]->isOptionalKey(0)
+						&& !$types[$i]->isUnsealed()->yes()
 					) {
 						$types[$i] = $types[$i]->makeOffsetRequired($types[$i]->getKeyTypes()[0]);
 						array_splice($types, $j--, 1);
@@ -1606,6 +1671,7 @@ final class TypeCombinator
 						&& $types[$i] instanceof NonEmptyArrayType
 						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$j]->isList()->yes())
 						&& $types[$j]->isOptionalKey(0)
+						&& !$types[$j]->isUnsealed()->yes()
 					) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$j]->getKeyTypes()[0]);
 						array_splice($types, $i--, 1);
@@ -1787,7 +1853,7 @@ final class TypeCombinator
 	{
 		$aSealed = $a->isUnsealed()->no();
 		$bSealed = $b->isUnsealed()->no();
-		$bothUnsealed = !$aSealed && !$bSealed;
+		$bothUnsealed = !$aSealed && !$bSealed && $a->getUnsealedTypes() !== null && $b->getUnsealedTypes() !== null;
 
 		$aKeyByValue = [];
 		foreach ($a->getKeyTypes() as $k => $keyType) {

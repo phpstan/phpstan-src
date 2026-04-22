@@ -77,7 +77,7 @@ class Foo
 	 */
 	public function edgeCases(array $a, array $b, array $c): void
 	{
-		assertType('array{...<string, UnsealedArrayShapes\Foo>}', $a);
+		assertType('array<string, UnsealedArrayShapes\Foo>', $a);
 		assertType('array{a: int, b?: string, c?: string}', $b);
 		assertType('array{a: int, b: float|string, c?: string}', $c);
 	}

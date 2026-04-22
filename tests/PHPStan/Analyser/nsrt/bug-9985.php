@@ -17,7 +17,7 @@ function (): void {
 		$warnings['c'] = true;
 	}
 
-	assertType('array{}|array{a?: true, b: true}|array{a?: true, c?: true}', $warnings);
+	assertType('array{a?: true, b: true}|array{a?: true, c?: true}', $warnings);
 
 	if (!empty($warnings)) {
 		assertType('array{a?: true, b: true}|non-empty-array{a?: true, c?: true}', $warnings);

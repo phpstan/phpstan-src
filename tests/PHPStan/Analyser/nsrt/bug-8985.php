@@ -29,6 +29,12 @@ class Repository
 		return [new Entity('test')];
 	}
 
+	/** @return array<int, Entity> */
+	public function getAllFor(mixed $filter): array
+	{
+		return [new Entity('test')];
+	}
+
 	public string $name = 'default';
 
 	/** @return array<int, Entity> */
@@ -40,6 +46,12 @@ class Repository
 	public function getEntity(): Entity
 	{
 		return new Entity('test');
+	}
+
+	/** @phpstan-impure */
+	public static function create(): self
+	{
+		return new self();
 	}
 
 	public const MY_CONST = 'const_value';
@@ -108,4 +120,29 @@ function testClassConstFetchOnUnknownClass(string $class, string $anotherClass):
 
 	$class = $anotherClass;
 	assertType("*ERROR*", (new $class())::MY_CONST);
+}
+
+function testNamedConstructor(): void {
+	assert(Repository::create()->getAll() === []);
+
+	$all = Repository::create()->getAll();
+	assertType('array<int, Bug8985\Entity>', $all);
+}
+
+function testNamedConstructorChained(): void {
+	assert(Repository::create()->getEntity()->getValue() === 'specific');
+
+	assertType('string', Repository::create()->getEntity()->getValue());
+}
+
+function testNamedConstructorProperty(): void {
+	assert(Repository::create()->name === 'foo');
+
+	assertType('string', Repository::create()->name);
+}
+
+function testImpureArgument(Repository $repository): void {
+	assert($repository->getAllFor(Repository::create()) === []);
+
+	assertType('array<int, Bug8985\Entity>', $repository->getAllFor(Repository::create()));
 }

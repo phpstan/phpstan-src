@@ -92,19 +92,27 @@ class Foo {
 
 		if (strpos($s, ':') !== false) {
 			assertType('non-falsy-string', $s);
+		} else {
+			assertType('string', $s);
 		}
 		assertType('string', $s);
 		if (strpos($s, ':') === false) {
 			assertType('string', $s);
+		} else {
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
 		if (strpos($s, ':') === 5) {
 			assertType('non-falsy-string', $s);
+		} else {
+			assertType('string', $s);
 		}
 		assertType('string', $s);
 		if (strpos($s, ':') !== 5) {
 			assertType('string', $s);
+		} else {
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 

@@ -148,21 +148,21 @@ function doFoo(string $s, $a, $strings, $mixed) {
 	} else {
 		assertType("non-empty-array<string>", $strings);
 	}
-	assertType('array<string>', $strings);
+	assertType('non-empty-array<string>', $strings);
 
 	if (in_array($s, $strings, false) === false) {
-		assertType('array<string>', $strings);
+		assertType('non-empty-array<string>', $strings);
 	} else {
 		assertType("non-empty-array<string>", $strings);
 	}
-	assertType('array<string>', $strings);
+	assertType('non-empty-array<string>', $strings);
 
 	if (in_array($s, $strings) === false) {
-		assertType('array<string>', $strings);
+		assertType('non-empty-array<string>', $strings);
 	} else {
 		assertType("non-empty-array<string>", $strings);
 	}
-	assertType('array<string>', $strings);
+	assertType('non-empty-array<string>', $strings);
 }
 
 /**

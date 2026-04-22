@@ -369,12 +369,12 @@ class Foo
 		assertType('0', min(0, ...[1, 2, 3]));
 		assertType('array{5, 6, 9}', max([1, 10, 8], [5, 6, 9]));
 		assertType('array{1, 1, 1, 1}', max(array(2, 2, 2), array(1, 1, 1, 1)));
-		assertType('array<int>', max($arrayOfUnknownIntegers, $arrayOfUnknownIntegers));
+		assertType('non-empty-array<int>&hasOffsetValue(108, int)&hasOffsetValue(42, int)', max($arrayOfUnknownIntegers, $arrayOfUnknownIntegers));
 		assertType('array{1, 1, 1, 1}', max(array(2, 2, 2), 5, array(1, 1, 1, 1)));
 		assertType('array{int, int, int}', max($arrayOfIntegers, 5));
-		assertType('array<int>', max($arrayOfUnknownIntegers, 5));
-		assertType('array<int>|int', max($arrayOfUnknownIntegers, $integer, $arrayOfUnknownIntegers));
-		assertType('array<int>', max($arrayOfUnknownIntegers, $conditionalInt));
+		assertType('non-empty-array<int>&hasOffsetValue(108, int)&hasOffsetValue(42, int)', max($arrayOfUnknownIntegers, 5));
+		assertType('(non-empty-array<int>&hasOffsetValue(108, int)&hasOffsetValue(42, int))|int', max($arrayOfUnknownIntegers, $integer, $arrayOfUnknownIntegers));
+		assertType('non-empty-array<int>&hasOffsetValue(108, int)&hasOffsetValue(42, int)', max($arrayOfUnknownIntegers, $conditionalInt));
 		assertType('5', min($arrayOfIntegers, 5));
 		assertType('5', min($arrayOfUnknownIntegers, 5));
 		assertType('1|2', min($arrayOfUnknownIntegers, $conditionalInt));

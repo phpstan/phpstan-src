@@ -1861,8 +1861,10 @@ public:
 
 	/* {{{ the array arm of doUnion() */
 
-	/* private static processArrayAccessoryTypes(array $arrayTypes): list<Type> */
-	static zv::Val processArrayAccessoryTypes(TypeList &arrayTypes)
+	/* private static processArrayAccessoryTypes(array $arrayTypes):
+	 * array{list<Type>, list<Type>} - the common accessory types are returned,
+	 * the arrays with accessory wrappers stripped go to strippedArrays */
+	static zv::Val processArrayAccessoryTypes(TypeList &arrayTypes, TypeList &strippedArrays)
 	{
 		bool allIterableAtLeastOnce = true;
 		zv::Arr accessoryTypes = zv::Arr::create(0);
@@ -1878,14 +1880,24 @@ public:
 			if (isInstance(arrayType, pt_ce_intersection_type)) {
 				zv::Val innerTypes = getTypes(arrayType);
 				PT_FAIL_IF_UNDEF(innerTypes);
+				zval *nonAccessoryInner = NULL;
+				uint32_t nonAccessoryInnerCount = 0;
+				bool skipStrip = false;
 				for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
 					zv::Val innerType = copy(entry.value().raw());
 					int isTemplate = isInstanceMap(innerType.raw(), PT_CLASS_TEMPLATE_TYPE);
 					PT_FAIL_IF_NEG(isTemplate);
-					if (isTemplate) break;
+					if (isTemplate) {
+						skipStrip = true;
+						break;
+					}
 					int isAccessory = isInstanceMap(innerType.raw(), PT_CLASS_ACCESSORY_TYPE);
 					PT_FAIL_IF_NEG(isAccessory);
-					if (!isAccessory && !isInstance(innerType.raw(), pt_ce_callable_type)) continue;
+					if (!isAccessory && !isInstance(innerType.raw(), pt_ce_callable_type)) {
+						nonAccessoryInner = entry.value().raw();
+						nonAccessoryInnerCount++;
+						continue;
+					}
 					if (isInstance(innerType.raw(), pt_ce_has_offset_type)) {
 						zv::Val offsetType = pt_has_offset_type_get_offset_type(Z_OBJ_P(innerType.raw()));
 						PT_FAIL_IF_UNDEF(offsetType);
@@ -1911,6 +1923,9 @@ public:
 					if (UNEXPECTED(key == NULL)) return zv::Val();
 					nestedIndexSet(accessoryTypes, key, (zend_ulong) i, std::move(innerType));
 				}
+				strippedArrays.push_back(copy(skipStrip || nonAccessoryInnerCount != 1 ? arrayType : nonAccessoryInner));
+			} else {
+				strippedArrays.push_back(copy(arrayType));
 			}
 
 			zend_long isConstantArray = callTrinary(arrayType, PT_LC("isconstantarray"));
@@ -2050,7 +2065,8 @@ public:
 			}
 		}
 
-		zv::Val accessoryTypesArray = processArrayAccessoryTypes(arrayTypes);
+		TypeList strippedArrays;
+		zv::Val accessoryTypesArray = processArrayAccessoryTypes(arrayTypes, strippedArrays);
 		PT_FAIL_IF_UNDEF(accessoryTypesArray);
 		TypeList accessoryTypes;
 		listFrom(accessoryTypesArray.raw(), accessoryTypes);
@@ -2149,16 +2165,17 @@ public:
 			// emergent intermediate state does not blow up. `array{} | non-empty-array<X>`
 			// -> `array<X>` still goes to the old collapse path.
 			if (!hasEmptyConstantArray) {
-				// Dedupe identical members by describe(): the last member of a
-				// description wins, at the position of the first one, like the
-				// twin's `$deduped[$description] = $arrayType`
+				// Dedupe using the stripped (accessory-free) describe as the key, but
+				// keep the original (with accessories) as the value: the first
+				// member of a description wins, like the twin's `??=`
 				Level cacheLevel(PT_LC("cache"));
 				zv::Arr deduped = zv::Arr::create((uint32_t) arrayTypes.size());
-				for (zv::Val &arrayType : arrayTypes) {
-					zv::Val description = describe(arrayType.raw(), cacheLevel);
+				for (size_t i = 0; i < strippedArrays.size(); i++) {
+					zv::Val description = describe(strippedArrays[i].raw(), cacheLevel);
 					zend_string *key = describedKey(description);
 					if (UNEXPECTED(key == NULL)) return zv::Val();
-					deduped.set(key, zv::Val::copyOf(arrayType.ref()));
+					if (zend_symtable_find(deduped.table(), key) != NULL) continue;
+					deduped.set(key, zv::Val::copyOf(arrayTypes[i].ref()));
 				}
 
 				// Budget: when more distinct shapes remain than a small union would have,

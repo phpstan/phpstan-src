@@ -27,8 +27,8 @@ abstract class Test
 	 */
 	public function testArrayKeys(array $array, array $nonEmptyArray, array $intArray, array $nonEmptyIntArray, array $emptyArray): void
 	{
-		assertType('list<(int|string)>', $this->arrayKeys($array));
-		assertType('list<int>', $this->arrayKeys($intArray));
+		assertType('non-empty-list<(int|string)>', $this->arrayKeys($array));
+		assertType('non-empty-list<int>', $this->arrayKeys($intArray));
 
 		assertType('non-empty-list<(int|string)>', $this->arrayKeys($nonEmptyArray));
 		assertType('non-empty-list<int>', $this->arrayKeys($nonEmptyIntArray));

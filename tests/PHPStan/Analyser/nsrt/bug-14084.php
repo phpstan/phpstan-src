@@ -42,5 +42,5 @@ function example3(array &$convert): void
 			$convert[$outerKey][$key] = strtoupper($val);
 		}
 	}
-	assertType('array<string, list<string>>', $convert);
+	assertType('array<string, non-empty-list<string>>', $convert);
 }

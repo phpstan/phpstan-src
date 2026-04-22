@@ -55,7 +55,7 @@ class HelloWorld
 			if (rand(0,1)) {
 				unset($list[$k]);
 			}
-			assertType('array<int<0, max>, array<string, string>>', $list);
+			assertType('non-empty-list<array<string, string>>', $list);
 			assertType('array<string, string>', $list[$k]);
 		}
 		assertType('array<string, string>', $list[$k]);

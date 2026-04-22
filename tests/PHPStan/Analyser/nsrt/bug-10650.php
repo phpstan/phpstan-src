@@ -28,6 +28,6 @@ class DistFoo
 			}
 		}
 
-		assertType('array<int<0, max>, \'x\'>', $ranges);
+		assertType("list<'x'>", $ranges);
 	}
 }

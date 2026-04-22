@@ -14,7 +14,7 @@ function fooArr(array $arr): void {
 	for ($i = 0; $i < count($arr); ++$i) {
 		assertType('non-empty-array', $arr);
 	}
-	assertType('array', $arr);
+	assertType('non-empty-array', $arr);
 }
 
 /** @param list<mixed> $arr */
@@ -28,7 +28,7 @@ function foo(array $arr): void {
 	for ($i = 0; $i < count($arr); ++$i) {
 		assertType('non-empty-list<mixed>', $arr);
 	}
-	assertType('list<mixed>', $arr);
+	assertType('non-empty-list<mixed>', $arr);
 }
 
 

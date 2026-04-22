@@ -58,7 +58,7 @@ function modeCountOnMaybeArray(array $items, int $mode) {
 	} else {
 		assertType('non-empty-list<array<int>|int>', $items);
 	}
-	assertType('list<array<int>|int>', $items);
+	assertType('non-empty-list<array<int>|int>', $items);
 }
 
 
@@ -97,7 +97,7 @@ function recursiveCountOnMaybeArray(array $items):void {
 	} else {
 		assertType('non-empty-list<array<int>|int>', $items);
 	}
-	assertType('list<array<int>|int>', $items);
+	assertType('non-empty-list<array<int>|int>', $items);
 }
 
 /**

@@ -1096,22 +1096,27 @@ final class TypeCombinator
 	}
 
 	/**
-	 * @param Type[] $arrayTypes
-	 * @return list<Type>
+	 * @param list<Type> $arrayTypes
+	 * @return array{list<Type>, list<Type>} tuple of [arrays with accessory wrappers stripped, common accessory types]
 	 */
 	private static function processArrayAccessoryTypes(array $arrayTypes): array
 	{
 		$isIterableAtLeastOnce = [];
 		$accessoryTypes = [];
+		$strippedArrays = [];
 		foreach ($arrayTypes as $i => $arrayType) {
 			$isIterableAtLeastOnce[] = $arrayType->isIterableAtLeastOnce();
 
 			if ($arrayType instanceof IntersectionType) {
+				$nonAccessoryInner = [];
+				$skipStrip = false;
 				foreach ($arrayType->getTypes() as $innerType) {
 					if ($innerType instanceof TemplateType) {
+						$skipStrip = true;
 						break;
 					}
 					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
+						$nonAccessoryInner[] = $innerType;
 						continue;
 					}
 					if ($innerType instanceof HasOffsetType) {
@@ -1124,6 +1129,9 @@ final class TypeCombinator
 
 					$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
 				}
+				$strippedArrays[] = $skipStrip || count($nonAccessoryInner) !== 1 ? $arrayType : $nonAccessoryInner[0];
+			} else {
+				$strippedArrays[] = $arrayType;
 			}
 
 			if (!$arrayType->isConstantArray()->yes()) {
@@ -1169,7 +1177,7 @@ final class TypeCombinator
 			$commonAccessoryTypes[] = new NonEmptyArrayType();
 		}
 
-		return $commonAccessoryTypes;
+		return [$strippedArrays, $commonAccessoryTypes];
 	}
 
 	/**
@@ -1220,7 +1228,7 @@ final class TypeCombinator
 			return [$emptyArray, ...self::processArrayTypes($otherArrayTypes)];
 		}
 
-		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
+		[$strippedArrays, $accessoryTypes] = self::processArrayAccessoryTypes($arrayTypes);
 
 		if (count($arrayTypes) === 1) {
 			return [
@@ -1283,12 +1291,16 @@ final class TypeCombinator
 			// not blow up. `array{} | non-empty-array<X>` -> `array<X>` still goes to
 			// the old collapse path.
 			if (!$hasEmptyConstantArray) {
-				// Dedupe identical members by describe() — many call sites feed the same
-				// shape multiple times via parallel control flow (cf. bug-7903 with 7
-				// byte-identical members). Cheap (cached describe), unconditional.
+				// Dedupe using the stripped (accessory-free) describe as the key, but
+				// keep the original (with accessories) as the value. This collapses
+				// members that share an underlying shape but differ only in stacked
+				// per-element accessories like hasOffsetValue (cf. the optional-
+				// properties repro: 4 same-shape members differing only in stacked
+				// hasOffsetValue accessories), while preserving per-member accessories
+				// like list / non-empty on whichever original survives.
 				$deduped = [];
-				foreach ($arrayTypes as $arrayType) {
-					$deduped[$arrayType->describe(VerbosityLevel::cache())] = $arrayType;
+				foreach ($strippedArrays as $i => $stripped) {
+					$deduped[$stripped->describe(VerbosityLevel::cache())] ??= $arrayTypes[$i];
 				}
 				$deduped = array_values($deduped);
 

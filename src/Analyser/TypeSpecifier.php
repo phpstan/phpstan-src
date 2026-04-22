@@ -2441,6 +2441,10 @@ final class TypeSpecifier
 			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
 				return new SpecifiedTypes([], []);
 			}
+
+			if ($this->callLikeArgsHaveSideEffects($expr, $scope)) {
+				return new SpecifiedTypes([], []);
+			}
 		}
 
 		if (
@@ -2465,6 +2469,10 @@ final class TypeSpecifier
 					}
 				}
 			}
+
+			if ($this->callLikeArgsHaveSideEffects($expr, $scope)) {
+				return new SpecifiedTypes([], []);
+			}
 		}
 
 		if (
@@ -2478,6 +2486,8 @@ final class TypeSpecifier
 				$methodReflection === null
 				|| $methodReflection->hasSideEffects()->yes()
 				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+				|| $this->expressionHasSideEffects($expr->var, $scope)
+				|| $this->callLikeArgsHaveSideEffects($expr, $scope)
 			) {
 				if (isset($containsNull) && !$containsNull) {
 					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
@@ -2503,6 +2513,8 @@ final class TypeSpecifier
 				$methodReflection === null
 				|| $methodReflection->hasSideEffects()->yes()
 				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+				|| ($expr->class instanceof Expr && $this->expressionHasSideEffects($expr->class, $scope))
+				|| $this->callLikeArgsHaveSideEffects($expr, $scope)
 			) {
 				if (isset($containsNull) && !$containsNull) {
 					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
@@ -2569,11 +2581,22 @@ final class TypeSpecifier
 			}
 		}
 
-		if ($expr instanceof Expr\CallLike && !$expr->isFirstClassCallable()) {
-			foreach ($expr->getArgs() as $arg) {
-				if ($this->expressionHasSideEffects($arg->value, $scope)) {
-					return true;
-				}
+		if ($expr instanceof Expr\CallLike && $this->callLikeArgsHaveSideEffects($expr, $scope)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private function callLikeArgsHaveSideEffects(Expr\CallLike $expr, Scope $scope): bool
+	{
+		if ($expr->isFirstClassCallable()) {
+			return false;
+		}
+
+		foreach ($expr->getArgs() as $arg) {
+			if ($this->expressionHasSideEffects($arg->value, $scope)) {
+				return true;
 			}
 		}
 

@@ -382,6 +382,13 @@ final class ConstantArrayTypeBuilder
 	{
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
+			if ($this->unsealed !== null) {
+				[$unsealedKey, $unsealedValue] = $this->unsealed;
+				$isExplicitNever = $unsealedKey instanceof NeverType && $unsealedKey->isExplicit();
+				if (!$isExplicitNever) {
+					return new ArrayType($unsealedKey, $unsealedValue);
+				}
+			}
 			return new ConstantArrayType([], [], unsealed: $this->unsealed);
 		}
 

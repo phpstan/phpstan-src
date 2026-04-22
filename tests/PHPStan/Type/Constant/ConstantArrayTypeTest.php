@@ -983,9 +983,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		try {
 			$resolver = self::getContainer()->getByType(TypeStringResolver::class);
 			if (is_string($type)) {
-				$resolved = $resolver->resolve($type, null);
-				$this->assertInstanceOf(ConstantArrayType::class, $resolved);
-				$type = $resolved;
+				$type = $resolver->resolve($type, null);
 			}
 			if (is_string($otherType)) {
 				$otherType = $resolver->resolve($otherType, null);
@@ -1392,9 +1390,10 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$builder->makeUnsealed(new IntegerType(), new StringType());
 			$array = $builder->getArray();
-			$this->assertInstanceOf(ConstantArrayType::class, $array);
-			$this->assertSame(TrinaryLogic::createNo()->describe(), $array->isSealed()->describe());
-			$this->assertSame(TrinaryLogic::createYes()->describe(), $array->isUnsealed()->describe());
+			// No known keys + real unsealed extras now collapses to a general ArrayType
+			// (see ConstantArrayTypeBuilder::getArray).
+			$this->assertInstanceOf(ArrayType::class, $array);
+			$this->assertSame('array<int, string>', $array->describe(VerbosityLevel::precise()));
 		} finally {
 			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
 		}

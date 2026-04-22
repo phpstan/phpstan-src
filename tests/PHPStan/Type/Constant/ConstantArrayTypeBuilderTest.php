@@ -2,7 +2,9 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
@@ -197,6 +199,47 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 		$builder->setOffsetValueType($oneOrFour, new NullType());
 		$this->assertFalse($builder->isList());
+	}
+
+	public function testGetArrayEmptyWithUnknownSealednessStaysConstantArrayType(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+		$this->assertSame('array{}', $array->describe(VerbosityLevel::precise()));
+	}
+
+	public function testGetArraySealedEmptyStaysConstantArrayType(): void
+	{
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+		BleedingEdgeToggle::setBleedingEdge(true);
+		try {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$array = $builder->getArray();
+			$this->assertInstanceOf(ConstantArrayType::class, $array);
+			$this->assertSame('array{}', $array->describe(VerbosityLevel::precise()));
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		}
+	}
+
+	public function testGetArrayEmptyWithRealUnsealedCollapsesToArrayType(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->makeUnsealed(new IntegerType(), new StringType());
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ArrayType::class, $array);
+		$this->assertSame('array<int, string>', $array->describe(VerbosityLevel::precise()));
+	}
+
+	public function testGetArrayWithKnownKeysAndRealUnsealedStaysConstantArrayType(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('a'), new IntegerType());
+		$builder->makeUnsealed(new StringType(), new StringType());
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+		$this->assertSame('array{a: int, ...<string, string>}', $array->describe(VerbosityLevel::precise()));
 	}
 
 }

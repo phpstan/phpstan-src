@@ -18,7 +18,6 @@ use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Generics\FunctionsAssertType\C;
 use PHPStan\PhpDoc\TypeStringResolver;
-use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
@@ -735,7 +734,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				UnionType::class,
-				'array{foo: DateTimeImmutable, bar: int}|array{foo: null, bar: string}',
+				'array{bar: int, foo: DateTimeImmutable}|array{bar: string, foo: null}',
 			],
 			[
 				[
@@ -753,7 +752,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				UnionType::class,
-				'array{foo: DateTimeImmutable, bar: int}|array{foo: null}',
+				'array{bar: int, foo: DateTimeImmutable}|array{foo: null}',
 			],
 			[
 				[
@@ -775,7 +774,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				UnionType::class,
-				'array{foo: DateTimeImmutable, bar: int}|array{foo: null, bar: string, baz: int}',
+				'array{bar: int, foo: DateTimeImmutable}|array{bar: string, baz: int, foo: null}',
 			],
 			[
 				[
@@ -2622,7 +2621,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new NonAcceptingNeverType(),
 			],
 			NeverType::class,
-			'never',
+			'never=explicit',
 		];
 		yield [
 			[
@@ -2896,10 +2895,260 @@ class TypeCombinatorTest extends PHPStanTestCase
 			StringType::class,
 			'string',
 		];
+
+		yield [
+			[
+				new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+					[new IntegerType(), new UnionType([
+						new ConstantStringType('0'),
+						new ConstantStringType('foo'),
+					])],
+				),
+				new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+					[IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+					])],
+				),
+			],
+			ConstantArrayType::class,
+			'array{int, non-empty-string}',
+		];
+
+		// current behaviour (unknown sealedness)
+		yield [
+			[
+				new ConstantArrayType(
+					[
+						new ConstantStringType('a'),
+						new ConstantStringType('b'),
+					],
+					[
+						new IntegerType(),
+						new StringType(),
+					],
+				),
+				new ConstantArrayType(
+					[
+						new ConstantStringType('a'),
+					],
+					[
+						new IntegerType(),
+					],
+				),
+			],
+			ConstantArrayType::class,
+			'array{a: int, b?: string}',
+		];
+
+		// new behaviour with definitely sealed arrays
+		yield [
+			[
+				'array{a: int, b: string}',
+				'array{a: int}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, b?: string}',
+		];
+
+		yield [
+			[
+				'array{a: true, b: string}',
+				'array{a: false}',
+			],
+			UnionType::class,
+			'array{a: false}|array{a: true, b: string}',
+		];
+
+		yield [
+			[
+				'array{int, 0|\'foo\'}',
+				'array{int<0, max>, non-falsy-string}',
+			],
+			ConstantArrayType::class,
+			'array{int, 0|non-falsy-string}',
+		];
+
+		yield [
+			[
+				'array{a: int, b: string}',
+				'array{a: int<0, max>, ...}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, ...}',
+		];
+
+		yield [
+			[
+				'array{a: int, b: string}',
+				'array{a: int<0, max>, ...<int, string>}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, b?: string, ...<int, string>}',
+		];
+
+		yield [
+			[
+				'array{a: int, b: string, ...}',
+				'array{a: int<0, max>, ...}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, ...}',
+		];
+
+		yield [
+			[
+				'array{a: int, ...}',
+				'array{b: string, ...}',
+			],
+			IntersectionType::class,
+			'non-empty-array',
+		];
+
+		yield [
+			[
+				'array{a: int, ...<int, string>}',
+				'array{b: string, ...<int, string>}',
+			],
+			IntersectionType::class,
+			'non-empty-array{a?: int, b?: string, ...<int, string>}',
+		];
+
+		yield [
+			[
+				'array{a: int, ...<string, string>}',
+				'array{b: string, ...<string, string>}',
+			],
+			IntersectionType::class,
+			'non-empty-array{a?: int, ...<string, string>}',
+		];
+
+		yield [
+			[
+				'array{a: string, ...<string, string>}',
+				'array{b: string, ...<string, string>}',
+			],
+			IntersectionType::class,
+			'non-empty-array<string, string>',
+		];
+
+		yield [
+			[
+				'array{a: int, ...<string, string>}',
+				'array{a: int, ...<string, non-empty-string>}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, ...<string, string>}',
+		];
+
+		yield [
+			[
+				'array{a: int, ...<array-key, string>}',
+				'array{a: int, ...<string, string>}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, ...<string>}',
+		];
+
+		yield [
+			[
+				'array{...<int, int<0, max>>}',
+				'array{...<int, int<min, 10>>}',
+			],
+			ArrayType::class,
+			'array<int, int>',
+		];
+
+		yield [
+			[
+				'array{...<int, string>}',
+				'array{...<string, string>}',
+			],
+			ArrayType::class,
+			'array<int|string, string>',
+		];
+
+		yield [
+			[
+				'array{...<int, string>}',
+				'array{...<int, int>}',
+			],
+			ArrayType::class,
+			'array<int, int|string>',
+		];
+
+		yield [
+			[
+				'array{a: int, ...}',
+				'array{...<string, string>}',
+			],
+			ArrayType::class,
+			'array<string, int|string>',
+		];
+
+		yield [
+			[
+				'array{a: non-empty-string, ...}',
+				'array{...<string, string>}',
+			],
+			ArrayType::class,
+			'array<string, string>',
+		];
+
+		yield [
+			[
+				'array{a: int, ...}',
+				'array{a: string, ...}',
+			],
+			UnionType::class,
+			'array{a: int, ...}|array{a: string, ...}',
+		];
+
+		yield [
+			[
+				'array{a: int}',
+				'array{...<int, int>}',
+			],
+			ArrayType::class,
+			'array<\'a\'|int, int>',
+		];
+
+		yield [
+			[
+				'array{a: int}',
+				'array{...<string, int>}',
+			],
+			ArrayType::class,
+			'array<string, int>',
+		];
+
+		// Both unsealed with a shared known key → result preserves the shape as ConstantArrayType
+		// (only the "empty known keys + real unsealed extras" combination collapses to ArrayType).
+		yield [
+			[
+				'array{a: int, ...<int, string>}',
+				'array{a: int, ...<int, non-empty-string>}',
+			],
+			ConstantArrayType::class,
+			'array{a: int, ...<int, string>}',
+		];
+
+		// Sealed empty arrays stay as ConstantArrayType — explicit-Never unsealed
+		// is NOT "real" extras, so it doesn't trigger the ArrayType collapse.
+		yield [
+			[
+				'array{}',
+				'array{}',
+			],
+			ConstantArrayType::class,
+			'array{}',
+		];
 	}
 
 	/**
-	 * @param list<Type> $types
+	 * @param list<Type>|list<string> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataUnion')]
@@ -2909,29 +3158,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 		string $expectedTypeDescription,
 	): void
 	{
-		$actualType = TypeCombinator::union(...$types);
-		$actualTypeDescription = $actualType->describe(VerbosityLevel::precise());
-		if ($actualType instanceof MixedType) {
-			if ($actualType->isExplicitMixed()) {
-				$actualTypeDescription .= '=explicit';
-			} else {
-				$actualTypeDescription .= '=implicit';
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		foreach ($types as $i => $type) {
+			BleedingEdgeToggle::setBleedingEdge(true);
+			if (!is_string($type)) {
+				continue;
 			}
-		}
-		if (get_class($actualType) === ObjectType::class) {
-			$actualClassReflection = $actualType->getClassReflection();
-			if (
-				$actualClassReflection !== null
-				&& $actualClassReflection->hasFinalByKeywordOverride()
-				&& $actualClassReflection->isFinal()
-			) {
-				$actualTypeDescription .= '=final';
-			}
+
+			$types[$i] = $typeStringResolver->resolve($type, null);
 		}
 
+		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		$actualType = TypeCombinator::union(...$types);
 		$this->assertSame(
 			$expectedTypeDescription,
-			$actualTypeDescription,
+			self::describeForIntersectTest($actualType),
 			sprintf('union(%s)', implode(', ', array_map(
 				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
 				$types,
@@ -2966,28 +3208,23 @@ class TypeCombinatorTest extends PHPStanTestCase
 	): void
 	{
 		$types = array_reverse($types);
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		foreach ($types as $i => $type) {
+			BleedingEdgeToggle::setBleedingEdge(true);
+			if (!is_string($type)) {
+				continue;
+			}
+
+			$types[$i] = $typeStringResolver->resolve($type, null);
+		}
+
+		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+
 		$actualType = TypeCombinator::union(...$types);
-		$actualTypeDescription = $actualType->describe(VerbosityLevel::precise());
-		if ($actualType instanceof MixedType) {
-			if ($actualType->isExplicitMixed()) {
-				$actualTypeDescription .= '=explicit';
-			} else {
-				$actualTypeDescription .= '=implicit';
-			}
-		}
-		if (get_class($actualType) === ObjectType::class) {
-			$actualClassReflection = $actualType->getClassReflection();
-			if (
-				$actualClassReflection !== null
-				&& $actualClassReflection->hasFinalByKeywordOverride()
-				&& $actualClassReflection->isFinal()
-			) {
-				$actualTypeDescription .= '=final';
-			}
-		}
 		$this->assertSame(
 			$expectedTypeDescription,
-			$actualTypeDescription,
+			self::describeForIntersectTest($actualType),
 			sprintf('union(%s)', implode(', ', array_map(
 				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
 				$types,
@@ -5208,8 +5445,17 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<int, int<0, max>>}',
 				'array{...<int, int<min, 10>>}',
 			],
+			ArrayType::class,
+			'array<int, int<0, 10>>',
+		];
+
+		yield [
+			[
+				'array{a: int, ...<int, int<0, max>>}',
+				'array{a: int, ...<int, int<min, 10>>}',
+			],
 			ConstantArrayType::class,
-			'array{...<int, int<0, 10>>}',
+			'array{a: int, ...<int, int<0, 10>>}',
 		];
 
 		// both unsealed, unsealed key types incompatible — no valid key overlap
@@ -5238,8 +5484,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{a: int, ...}',
 				'array{...<string, string>}',
 			],
-			NeverType::class,
-			'*NEVER*=implicit',
+			ConstantArrayType::class,
+			'array{a: *NEVER*}',
 		];
 
 		// both unsealed: known key value is compatible with other side's unsealed value
@@ -5249,7 +5495,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<string, string>}',
 			],
 			ConstantArrayType::class,
-			'array{a: non-empty-string, ...<string, string>}',
+			'array{a: non-empty-string}',
 		];
 
 		// both unsealed with same known key, value types incompatible at that key
@@ -5308,11 +5554,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
 
 		$actualType = TypeCombinator::intersect(...$types);
-		$actualTypeDescription = self::describeForIntersectTest($actualType);
-
 		$this->assertSame(
-			self::sortExpectedDescription($expectedTypeDescription, $typeStringResolver),
-			$actualTypeDescription,
+			$expectedTypeDescription,
+			self::describeForIntersectTest($actualType),
+			sprintf('intersect(%s)', implode(', ', array_map(
+				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
+				$types,
+			))),
 		);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
@@ -5342,20 +5590,26 @@ class TypeCombinatorTest extends PHPStanTestCase
 		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
 
 		$actualType = TypeCombinator::intersect(...array_reverse($types));
-		$actualTypeDescription = self::describeForIntersectTest($actualType);
-
 		$this->assertSame(
-			self::sortExpectedDescription($expectedTypeDescription, $typeStringResolver),
-			$actualTypeDescription,
+			$expectedTypeDescription,
+			self::describeForIntersectTest($actualType),
+			sprintf('union(%s)', implode(', ', array_map(
+				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
+				$types,
+			))),
 		);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	private static function describeForIntersectTest(Type $type): string
 	{
-		if ($type instanceof ConstantArrayType) {
-			$type = $type->sortKeys();
-		}
+		$type = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof ConstantArrayType) {
+				return $traverse($type->sortKeys());
+			}
+
+			return $traverse($type);
+		});
 		$description = $type->describe(VerbosityLevel::precise());
 		if ($type instanceof MixedType) {
 			$description .= $type->isExplicitMixed() ? '=explicit' : '=implicit';
@@ -5373,25 +5627,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$description .= '=final';
 			}
 		}
-		return $description;
-	}
-
-	private static function sortExpectedDescription(string $description, TypeStringResolver $resolver): string
-	{
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
-		BleedingEdgeToggle::setBleedingEdge(true);
-		try {
-			$type = $resolver->resolve($description, null);
-		} catch (ParserException) {
-			return $description;
-		} finally {
-			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
-		}
-
-		if ($type instanceof ConstantArrayType) {
-			return $type->sortKeys()->describe(VerbosityLevel::precise());
-		}
-
 		return $description;
 	}
 

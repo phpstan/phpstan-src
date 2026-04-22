@@ -162,6 +162,12 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8015.php'], []);
 	}
 
+	public function testBug8648(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-8648.php'], []);
+	}
+
 	public function testBug11572(): void
 	{
 		$this->checkUnionTypes = true;

@@ -1543,42 +1543,33 @@ final class TypeCombinator
 						continue 2;
 					}
 
-					if ($types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType)) {
-						$newArray = ConstantArrayTypeBuilder::createEmpty();
-						$valueTypes = $types[$i]->getValueTypes();
-						foreach ($types[$i]->getKeyTypes() as $k => $keyType) {
-							$hasOffset = $types[$j]->hasOffsetValueType($keyType);
-							if ($hasOffset->no()) {
-								continue;
-							}
-							$newArray->setOffsetValueType(
-								self::intersect($keyType, $types[$j]->getIterableKeyType()),
-								self::intersect($valueTypes[$k], $types[$j]->getOffsetValueType($keyType)),
-								$types[$i]->isOptionalKey($k) && !$hasOffset->yes(),
-							);
-						}
-						$types[$i] = $newArray->getArray();
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue 2;
-					}
+					$constArrayIsI = $types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType);
+					$constArrayIsJ = $types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType);
+					if ($constArrayIsI || $constArrayIsJ) {
+						$constArray = $constArrayIsI ? $types[$i] : $types[$j];
+						$otherArray = $constArrayIsI ? $types[$j] : $types[$i];
 
-					if ($types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType)) {
 						$newArray = ConstantArrayTypeBuilder::createEmpty();
-						$valueTypes = $types[$j]->getValueTypes();
-						foreach ($types[$j]->getKeyTypes() as $k => $keyType) {
-							$hasOffset = $types[$i]->hasOffsetValueType($keyType);
+						$valueTypes = $constArray->getValueTypes();
+						foreach ($constArray->getKeyTypes() as $k => $keyType) {
+							$hasOffset = $otherArray->hasOffsetValueType($keyType);
 							if ($hasOffset->no()) {
 								continue;
 							}
 							$newArray->setOffsetValueType(
-								self::intersect($keyType, $types[$i]->getIterableKeyType()),
-								self::intersect($valueTypes[$k], $types[$i]->getOffsetValueType($keyType)),
-								$types[$j]->isOptionalKey($k) && !$hasOffset->yes(),
+								self::intersect($keyType, $otherArray->getIterableKeyType()),
+								self::intersect($valueTypes[$k], $otherArray->getOffsetValueType($keyType)),
+								$constArray->isOptionalKey($k) && !$hasOffset->yes(),
 							);
 						}
-						$types[$j] = $newArray->getArray();
-						array_splice($types, $i--, 1);
+
+						if ($constArrayIsI) {
+							$types[$i] = $newArray->getArray();
+							array_splice($types, $j--, 1);
+						} else {
+							$types[$j] = $newArray->getArray();
+							array_splice($types, $i--, 1);
+						}
 						$typesCount--;
 						continue 2;
 					}

@@ -57,6 +57,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -647,13 +648,29 @@ class ConstantArrayType implements Type
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
+			$thisUnsealedness = $this->isUnsealed();
+			$typeUnsealedness = $type->isUnsealed();
+			$bothDefinite = !$thisUnsealedness->maybe() && !$typeUnsealedness->maybe();
+
 			if (count($this->keyTypes) === 0) {
-				return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+				if (!$bothDefinite) {
+					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+				}
+				if ($thisUnsealedness->no()) {
+					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+				}
+				// $this is unsealed with no known keys — fall through to extras/unsealed-part checks below
 			}
 
 			$results = [];
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
+				if ($bothDefinite && $hasOffset->no() && $typeUnsealedness->yes()) {
+					[$typeUnsealedKey] = $type->getUnsealedTypes();
+					if (!$typeUnsealedKey->isSuperTypeOf($keyType)->no()) {
+						$hasOffset = TrinaryLogic::createMaybe();
+					}
+				}
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
 						return IsSuperTypeOfResult::createNo();
@@ -665,11 +682,67 @@ class ConstantArrayType implements Type
 					$results[] = IsSuperTypeOfResult::createMaybe();
 				}
 
-				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
+				$otherValueType = $type->getOffsetValueType($keyType);
+				if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
+					[, $typeUnsealedValue] = $type->getUnsealedTypes();
+					$otherValueType = $typeUnsealedValue;
+				}
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
 				if ($isValueSuperType->no()) {
 					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
 				}
 				$results[] = $isValueSuperType;
+			}
+
+			if ($bothDefinite) {
+				$thisKeyValues = [];
+				foreach ($this->keyTypes as $thisKeyType) {
+					$thisKeyValues[$thisKeyType->getValue()] = true;
+				}
+
+				foreach ($type->getKeyTypes() as $i => $typeKey) {
+					if (array_key_exists($typeKey->getValue(), $thisKeyValues)) {
+						continue;
+					}
+
+					if ($thisUnsealedness->no()) {
+						if (!$type->isOptionalKey($i)) {
+							return IsSuperTypeOfResult::createNo();
+						}
+						$results[] = IsSuperTypeOfResult::createMaybe();
+						continue;
+					}
+
+					[$thisUnsealedKey, $thisUnsealedValue] = $this->getUnsealedTypes();
+					$keyCheck = $thisUnsealedKey->isSuperTypeOf($typeKey);
+					if ($keyCheck->no()) {
+						if ($type->isOptionalKey($i)) {
+							$results[] = IsSuperTypeOfResult::createMaybe();
+							continue;
+						}
+						return IsSuperTypeOfResult::createNo();
+					}
+					$valueCheck = $thisUnsealedValue->isSuperTypeOf($type->getValueTypes()[$i]);
+					if ($valueCheck->no()) {
+						if ($type->isOptionalKey($i)) {
+							$results[] = IsSuperTypeOfResult::createMaybe();
+							continue;
+						}
+						return IsSuperTypeOfResult::createNo();
+					}
+					$results[] = $keyCheck->and($valueCheck);
+				}
+
+				if ($typeUnsealedness->yes()) {
+					if ($thisUnsealedness->no()) {
+						$results[] = IsSuperTypeOfResult::createMaybe();
+					} else {
+						[$thisUnsealedKey, $thisUnsealedValue] = $this->getUnsealedTypes();
+						[$typeUnsealedKey, $typeUnsealedValue] = $type->getUnsealedTypes();
+						$results[] = $thisUnsealedKey->isSuperTypeOf($typeUnsealedKey);
+						$results[] = $thisUnsealedValue->isSuperTypeOf($typeUnsealedValue);
+					}
+				}
 			}
 
 			return IsSuperTypeOfResult::createYes()->and(...$results);

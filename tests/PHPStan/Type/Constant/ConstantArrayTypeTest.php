@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use Closure;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
+use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -909,11 +910,87 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			]),
 			TrinaryLogic::createYes(),
 		];
+
+		// definite sealedness tests (bleeding edge)
+
+		// both sealed, same keys, compatible values
+		yield ['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
+
+		// both sealed, bigger vs smaller (subset) — sealed requires exact keys
+		yield ['array{a: int, b: string}', 'array{a: int}', TrinaryLogic::createNo()];
+		yield ['array{a: int}', 'array{a: int, b: string}', TrinaryLogic::createNo()];
+
+		// both sealed, narrower value
+		yield ['array{a: int}', 'array{a: int<0, max>}', TrinaryLogic::createYes()];
+		yield ['array{a: int<0, max>}', 'array{a: int}', TrinaryLogic::createMaybe()];
+
+		// both sealed, optional key in left only
+		yield ['array{a: int, b?: string}', 'array{a: int}', TrinaryLogic::createYes()];
+		yield ['array{a: int, b?: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
+
+		// both unsealed, compatible known keys + compatible unsealed
+		yield ['array{a: int, ...}', 'array{a: int<0, max>, ...}', TrinaryLogic::createYes()];
+		yield ['array{a: int<0, max>, ...}', 'array{a: int, ...}', TrinaryLogic::createMaybe()];
+
+		// both unsealed, bigger known on right (right's extra fits left's unsealed extras)
+		yield ['array{a: int, ...}', 'array{a: int, b: string, ...}', TrinaryLogic::createYes()];
+
+		// both unsealed, right has known key left doesn't require; left's unsealed must cover
+		yield ['array{a: int, ...<string, string>}', 'array{a: int, b: int, ...<string, string>}', TrinaryLogic::createNo()];
+		yield ['array{a: int, ...<string, string>}', 'array{a: int, b: non-empty-string, ...<string, string>}', TrinaryLogic::createYes()];
+
+		// both unsealed, narrower unsealed value on right
+		yield ['array{a: int, ...<string, string>}', 'array{a: int, ...<string, non-empty-string>}', TrinaryLogic::createYes()];
+		yield ['array{a: int, ...<string, non-empty-string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createMaybe()];
+
+		// both unsealed, narrower unsealed key on right (array-key ⊃ string)
+		yield ['array{a: int, ...<array-key, string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createYes()];
+		yield ['array{a: int, ...<string, string>}', 'array{a: int, ...<array-key, string>}', TrinaryLogic::createMaybe()];
+
+		// both unsealed, incompatible unsealed key types
+		yield ['array{...<int, string>}', 'array{...<string, string>}', TrinaryLogic::createNo()];
+
+		// both unsealed, incompatible unsealed value types
+		yield ['array{...<int, string>}', 'array{...<int, int>}', TrinaryLogic::createNo()];
+
+		// unsealed vs sealed — sealed's extras must fit unsealed's unsealed
+		yield ['array{a: int, ...}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
+		yield ['array{a: int, ...<string, int>}', 'array{a: int, b: string}', TrinaryLogic::createNo()];
+
+		// sealed vs unsealed — unsealed might have extras sealed doesn't allow
+		yield ['array{a: int}', 'array{a: int, ...}', TrinaryLogic::createMaybe()];
+		yield ['array{a: int, b: string}', 'array{a: int<0, max>, ...}', TrinaryLogic::createMaybe()];
+
+		// sealed vs unsealed where sealed's keys can't be in unsealed's extras
+		yield ['array{a: int}', 'array{...<int, int>}', TrinaryLogic::createNo()];
+
+		// sealed vs unsealed where sealed fits unsealed's extras
+		yield ['array{a: int}', 'array{...<string, int>}', TrinaryLogic::createMaybe()];
 	}
 
+	/**
+	 * @param ConstantArrayType|string $type
+	 * @param Type|string $otherType
+	 */
 	#[DataProvider('dataIsSuperTypeOf')]
-	public function testIsSuperTypeOf(ConstantArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
 	{
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+		BleedingEdgeToggle::setBleedingEdge(true);
+		try {
+			$resolver = self::getContainer()->getByType(TypeStringResolver::class);
+			if (is_string($type)) {
+				$resolved = $resolver->resolve($type, null);
+				$this->assertInstanceOf(ConstantArrayType::class, $resolved);
+				$type = $resolved;
+			}
+			if (is_string($otherType)) {
+				$otherType = $resolver->resolve($otherType, null);
+			}
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		}
+
 		$actualResult = $type->isSuperTypeOf($otherType);
 		$this->assertSame(
 			$expectedResult->describe(),

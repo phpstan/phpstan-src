@@ -67,6 +67,7 @@ use function array_map;
 use function array_reverse;
 use function get_class;
 use function implode;
+use function is_string;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -5130,7 +5131,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					[new IntegerType(), new UnionType([
 						new ConstantStringType('0'),
 						new ConstantStringType('foo'),
-					])]
+					])],
 				),
 				new ConstantArrayType(
 					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
@@ -5333,9 +5334,11 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		foreach ($types as $i => $type) {
 			BleedingEdgeToggle::setBleedingEdge(true);
-			if (is_string($type)) {
-				$types[$i] = $typeStringResolver->resolve($type, null);
+			if (!is_string($type)) {
+				continue;
 			}
+
+			$types[$i] = $typeStringResolver->resolve($type, null);
 		}
 
 		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
@@ -5351,7 +5354,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param list<Type> $types
+	 * @param list<Type>|list<string> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataIntersect')]
@@ -5365,9 +5368,11 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		foreach ($types as $i => $type) {
 			BleedingEdgeToggle::setBleedingEdge(true);
-			if (is_string($type)) {
-				$types[$i] = $typeStringResolver->resolve($type, null);
+			if (!is_string($type)) {
+				continue;
 			}
+
+			$types[$i] = $typeStringResolver->resolve($type, null);
 		}
 
 		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);

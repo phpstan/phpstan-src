@@ -37,6 +37,8 @@ namespace sigs = ptdecl::TypeCombinator::sig;
 
 zend_class_entry *pt_ce_type_combinator = nullptr;
 
+#define PT_TC_KEEP_SEPARATE_ARRAYS_LIMIT 4
+
 /* an UNDEF zv::Val / a negative int = pending exception */
 #define PT_FAIL_IF_UNDEF(v) \
 	do { \
@@ -2142,22 +2144,40 @@ public:
 			}
 
 			// TMP WIP: run for everyone, not just bleedingEdge, so CI exercises the new path
+			// Keep distinct array shapes (e.g. `list<int>|list<string>` rather than
+			// `list<int|string>`), but reduce the result before returning so analysis-
+			// emergent intermediate state does not blow up. `array{} | non-empty-array<X>`
+			// -> `array<X>` still goes to the old collapse path.
 			if (!hasEmptyConstantArray) {
-				// Keep each array member distinct (e.g. `list<int>|list<string>` rather
-				// than `list<int|string>`). Subsumption is handled by the outer union()
-				// loop; the `array{} | non-empty-array<X>` -> `array<X>` simplification
-				// is not expressible here and falls through to the old collapse path.
-				zv::Arr results = zv::Arr::create((uint32_t) arrayTypes.size());
+				// Dedupe identical members by describe(): the last member of a
+				// description wins, at the position of the first one, like the
+				// twin's `$deduped[$description] = $arrayType`
+				Level cacheLevel(PT_LC("cache"));
+				zv::Arr deduped = zv::Arr::create((uint32_t) arrayTypes.size());
 				for (zv::Val &arrayType : arrayTypes) {
-					if (accessoryTypes.empty()) {
-						results.push(arrayType.ref());
-						continue;
-					}
-					zv::Val intersected = intersectWith(arrayType.raw(), accessoryTypes);
-					PT_FAIL_IF_UNDEF(intersected);
-					results.push(std::move(intersected));
+					zv::Val description = describe(arrayType.raw(), cacheLevel);
+					zend_string *key = describedKey(description);
+					if (UNEXPECTED(key == NULL)) return zv::Val();
+					deduped.set(key, zv::Val::copyOf(arrayType.ref()));
 				}
-				return zv::Val(std::move(results));
+
+				// Budget: when more distinct shapes remain than a small union would have,
+				// they are almost certainly analysis-emergent rather than user-written;
+				// fall through to the old collapse path to keep downstream tractable.
+				if (countOf(deduped.raw()) <= PT_TC_KEEP_SEPARATE_ARRAYS_LIMIT) {
+					zv::Arr results = zv::Arr::create(countOf(deduped.raw()));
+					for (zv::ArrayEntry entry : zv::ArrRef(deduped.raw())) {
+						zval *arrayType = entry.value().raw();
+						if (accessoryTypes.empty()) {
+							results.push(zv::Ref(arrayType));
+							continue;
+						}
+						zv::Val intersected = intersectWith(arrayType, accessoryTypes);
+						PT_FAIL_IF_UNDEF(intersected);
+						results.push(std::move(intersected));
+					}
+					return zv::Val(std::move(results));
+				}
 			}
 
 			zval *templateArrayType = NULL;
@@ -4449,6 +4469,7 @@ PT_MINIT_REGISTRATION(pt_register_type_combinator)
 
 	reg::Class cls("PHPStan\\Type\\TypeCombinator");
 	ptdecl::TypeCombinator::declareClass(cls);
+	cls.privateClassConstantLong("KEEP_SEPARATE_ARRAYS_LIMIT", PT_TC_KEEP_SEPARATE_ARRAYS_LIMIT);
 	cls.privateStaticTypedPropertyDefaultNull("cacheEnabled", MAY_BE_BOOL);
 
 	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {

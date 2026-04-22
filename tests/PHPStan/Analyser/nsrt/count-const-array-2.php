@@ -29,7 +29,7 @@ class HelloWorld
 			}
 			array_unshift($otherMinPrices, $otherMinPrice);
 		}
-		assertType('non-empty-list<stdClass>', $otherMinPrices);
+		assertType('array{stdClass}|(non-empty-list<stdClass>&hasOffsetValue(1, stdClass))', $otherMinPrices);
 		return [$bestMinPrice, ...$otherMinPrices];
 	}
 }

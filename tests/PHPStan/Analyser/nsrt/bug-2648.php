@@ -28,13 +28,13 @@ class Foo
 		if (count($list) > 1) {
 			assertType('int<2, max>', count($list));
 			foreach ($list as $key => $item) {
-				assertType('0|int<2, max>', count($list));
+				assertType('int<2, max>', count($list));
 				if ($item === false) {
 					unset($list[$key]);
 					assertType('int<0, max>', count($list));
 				}
 
-				assertType('int<0, max>', count($list));
+				assertType('int<1, max>', count($list));
 
 				if (count($list) === 1) {
 					assertType('1', count($list));
@@ -44,7 +44,7 @@ class Foo
 				}
 			}
 
-			assertType('int<0, max>', count($list));
+			assertType('int<1, max>', count($list));
 		}
 
 		assertType('int<0, max>', count($list));

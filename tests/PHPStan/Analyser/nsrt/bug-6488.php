@@ -22,5 +22,5 @@ function test() {
 		}
 	}
 
-	assertType('bool',sizeof($items) > 0);
+	assertType('true',sizeof($items) > 0);
 }

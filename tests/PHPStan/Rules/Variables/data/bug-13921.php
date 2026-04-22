@@ -8,35 +8,35 @@ use function PHPStan\Testing\assertType;
 /** @param list<array<?string>> $x */
 function foo(array $x): void {
 	var_dump($x[0]['bar'] ?? null);
-	assertType("list<array<string|null>>", $x);
+	assertType("non-empty-list<array<string|null>>&hasOffsetValue(0, non-empty-array<string|null>&hasOffsetValue('bar', string))", $x);
 	var_dump($x[0] ?? null);
 }
 
 /** @param non-empty-list<array<?string>> $x */
 function nonEmptyFoo(array $x): void {
 	var_dump($x[0]['bar'] ?? null);
-	assertType("non-empty-list<array<string|null>>", $x);
+	assertType("non-empty-list<array<string|null>>&hasOffsetValue(0, non-empty-array<string|null>&hasOffsetValue('bar', string))", $x);
 	var_dump($x[0] ?? null);
 }
 
 /** @param list<array<?string>> $x */
 function bar(array $x): void {
 	var_dump($x[0] ?? null);
-	assertType("list<array<string|null>>", $x);
+	assertType('non-empty-list<array<string|null>>&hasOffsetValue(0, array<string|null>)', $x);
 	var_dump($x[0]['bar'] ?? null);
 }
 
 /** @param list<array<?string>> $x */
 function baz(array $x): void {
 	var_dump($x[1] ?? null);
-	assertType("list<array<string|null>>", $x);
+	assertType('non-empty-list<array<string|null>>&hasOffsetValue(1, array<string|null>)', $x);
 	var_dump($x[0]['bar'] ?? null);
 }
 
 /** @param list<array<?string>> $x */
 function boo(array $x): void {
 	var_dump($x[0]['bar'] ?? null);
-	assertType("list<array<string|null>>", $x);
+	assertType("non-empty-list<array<string|null>>&hasOffsetValue(0, non-empty-array<string|null>&hasOffsetValue('bar', string))", $x);
 	var_dump($x[1] ?? null);
 }
 
@@ -51,6 +51,6 @@ function doBar(array $array)
 /** @param list<SimpleXMLElement> $x */
 function sooSimpleElement(array $x): void {
 	var_dump($x[0]['bar'] ?? null);
-	assertType("list<SimpleXMLElement>", $x);
+	assertType("non-empty-list<SimpleXMLElement>&hasOffsetValue(0, SimpleXMLElement&hasOffset('bar'))", $x);
 	var_dump($x[0] ?? null);
 }

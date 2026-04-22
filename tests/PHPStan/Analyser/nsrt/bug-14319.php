@@ -43,7 +43,7 @@ final class test
 			if ($rows['rap_roz3']) {
 				$raport .= 'Roz: '.$rows['rap_roz3'].", \n";
 			}
-			assertType("(non-empty-array&hasOffsetValue('rap_br', mixed)&hasOffsetValue('rap_cz', mixed)&hasOffsetValue('rap_fil', mixed)&hasOffsetValue('rap_ks', mixed)&hasOffsetValue('rap_roz', mixed)&hasOffsetValue('rap_roz2', mixed)&hasOffsetValue('rap_roz3', mixed)&hasOffsetValue('rap_tr', mixed))|(ArrayAccess&hasOffsetValue('rap_br', mixed)&hasOffsetValue('rap_cz', mixed)&hasOffsetValue('rap_fil', mixed)&hasOffsetValue('rap_ks', mixed)&hasOffsetValue('rap_roz', mixed)&hasOffsetValue('rap_roz2', mixed)&hasOffsetValue('rap_roz3', mixed)&hasOffsetValue('rap_tr', mixed))", $rows);
+			assertType("(non-empty-array&hasOffsetValue('rap_br', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_cz', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_fil', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_ks', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_roz', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_roz2', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_roz3', 0|0.0|''|'0'|array{}|false|null)&hasOffsetValue('rap_tr', 0|0.0|''|'0'|array{}|false|null))|(ArrayAccess&hasOffsetValue('rap_br', mixed)&hasOffsetValue('rap_cz', mixed)&hasOffsetValue('rap_fil', mixed)&hasOffsetValue('rap_ks', mixed)&hasOffsetValue('rap_roz', mixed)&hasOffsetValue('rap_roz2', mixed)&hasOffsetValue('rap_roz3', mixed)&hasOffsetValue('rap_tr', mixed))", $rows);
 		}
 	}
 }

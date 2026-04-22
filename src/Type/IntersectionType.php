@@ -656,6 +656,12 @@ class IntersectionType implements CompoundType
 
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
+		foreach ($this->types as $type) {
+			if ($type->isObject()->no() && $type->hasMethod($methodName)->no()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
 	}
 

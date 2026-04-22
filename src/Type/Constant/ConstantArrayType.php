@@ -84,6 +84,7 @@ class ConstantArrayType implements Type
 
 	private const DESCRIBE_LIMIT = 8;
 	private const CHUNK_FINITE_TYPES_LIMIT = 5;
+	private const OPTIONAL_KEYS_POWER_SET_LIMIT = 10;
 
 	private TrinaryLogic $isList;
 
@@ -232,7 +233,7 @@ class ConstantArrayType implements Type
 			return $this->allArrays;
 		}
 
-		if (count($this->optionalKeys) <= 10) {
+		if (count($this->optionalKeys) <= self::OPTIONAL_KEYS_POWER_SET_LIMIT) {
 			$optionalKeysCombinations = $this->powerSet($this->optionalKeys);
 		} else {
 			$optionalKeysCombinations = [

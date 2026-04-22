@@ -397,6 +397,36 @@ class ConstantArrayType implements Type
 		return in_array($i, $this->optionalKeys, true);
 	}
 
+	public function sortKeys(): self
+	{
+		$indices = array_keys($this->keyTypes);
+		usort($indices, fn (int $a, int $b): int => $this->keyTypes[$a]->getValue() <=> $this->keyTypes[$b]->getValue());
+
+		$newKeyTypes = [];
+		$newValueTypes = [];
+		$indexMap = [];
+		foreach ($indices as $newIdx => $oldIdx) {
+			$newKeyTypes[] = $this->keyTypes[$oldIdx];
+			$newValueTypes[] = $this->valueTypes[$oldIdx];
+			$indexMap[$oldIdx] = $newIdx;
+		}
+
+		$newOptionalKeys = [];
+		foreach ($this->optionalKeys as $oldIdx) {
+			$newOptionalKeys[] = $indexMap[$oldIdx];
+		}
+		sort($newOptionalKeys);
+
+		return $this->recreate(
+			$newKeyTypes,
+			$newValueTypes,
+			$this->nextAutoIndexes,
+			$newOptionalKeys,
+			$this->isList,
+			$this->unsealed,
+		);
+	}
+
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType && !$type instanceof IntersectionType) {

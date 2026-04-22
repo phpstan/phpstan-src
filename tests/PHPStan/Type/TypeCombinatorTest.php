@@ -5083,6 +5083,27 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ConstantArrayType::class,
 			'array{0|1|2|3, stdClass}',
 		];
+
+		yield [
+			[
+				new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+					[new IntegerType(), new UnionType([
+						new ConstantStringType('0'),
+						new ConstantStringType('foo'),
+					])]
+				),
+				new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+					[IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+					])],
+				),
+			],
+			ConstantArrayType::class,
+			"array{int<0, max>, 'foo'}",
+		];
 	}
 
 	/**

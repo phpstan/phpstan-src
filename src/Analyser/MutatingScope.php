@@ -975,7 +975,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			&& !$node instanceof Expr\Closure
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
-			&& (!$this->expressionHasNewInChain($node) || $this->expressionTypes[$exprString]->getExpr() === $node)
 		) {
 			return $this->expressionTypes[$exprString]->getType();
 		}
@@ -990,27 +989,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return new MixedType();
-	}
-
-	private function expressionHasNewInChain(Expr $expr): bool
-	{
-		if (
-			$expr instanceof MethodCall ||
-			$expr instanceof Expr\NullsafeMethodCall ||
-			$expr instanceof Expr\ArrayDimFetch ||
-			$expr instanceof PropertyFetch ||
-			$expr instanceof Expr\NullsafePropertyFetch
-		) {
-			return $expr->var instanceof Expr\New_ || $this->expressionHasNewInChain($expr->var);
-		}
-		if (
-			$expr instanceof Expr\StaticCall
-			|| $expr instanceof Expr\StaticPropertyFetch
-		) {
-			return $expr->class instanceof Expr\New_ || ($expr->class instanceof Expr && $this->expressionHasNewInChain($expr->class));
-		}
-
-		return false;
 	}
 
 	/**

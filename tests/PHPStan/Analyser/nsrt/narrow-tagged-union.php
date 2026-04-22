@@ -87,7 +87,7 @@ class HelloWorld
 		} else {
 			assertType("array{string, '', non-empty-string}|array<int>", $arr); // could be array{string, '', non-empty-string}|array<int>
 		}
-		assertType("array{string, '', non-empty-string}#1|array{string, '', non-empty-string}#2|array<int>", $arr); // could be array{string, '', non-empty-string}|array<int>
+		assertType("array{string, '', non-empty-string}|array<int>", $arr); // could be array{string, '', non-empty-string}|array<int>
 	}
 
 	public function arrayIntRangeSize(): void

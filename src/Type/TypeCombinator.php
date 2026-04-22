@@ -48,6 +48,8 @@ use const PHP_INT_MIN;
 final class TypeCombinator
 {
 
+	private const KEEP_SEPARATE_ARRAYS_LIMIT = 4;
+
 	public static function addNull(Type $type): Type
 	{
 		$nullType = new NullType();
@@ -931,18 +933,36 @@ final class TypeCombinator
 			}
 
 			// TMP WIP: run for everyone, not just bleedingEdge, so CI exercises the new path
-			if (!$hasEmptyConstantArray) {
-				// Keep each array member distinct (e.g. `list<int>|list<string>` rather
-				// than `list<int|string>`). Subsumption is handled by the outer union()
-				// loop; the `array{} | non-empty-array<X>` -> `array<X>` simplification
-				// is not expressible here and falls through to the old collapse path.
-				$results = [];
+			// Keep distinct array shapes (e.g. `list<int>|list<string>` rather than
+			// `list<int|string>`), but reduce the result before returning so analysis-
+			// emergent intermediate state (foreach over mixed[], deeply nested
+			// ArrayDimFetch writes, sequential `if ($x !== null) $arr['x'] = $x;`) does
+			// not blow up. `array{} | non-empty-array<X>` -> `array<X>` and the
+			// $overflowed safety valve still go to the old collapse path.
+			if (!$hasEmptyConstantArray && !$overflowed) {
+				// Dedupe identical members by describe() — many call sites feed the same
+				// shape multiple times via parallel control flow (cf. bug-7903 with 7
+				// byte-identical members). Cheap (cached describe), unconditional.
+				$deduped = [];
 				foreach ($arrayTypes as $arrayType) {
-					$results[] = $accessoryTypes === []
-						? $arrayType
-						: self::intersect($arrayType, ...$accessoryTypes);
+					$deduped[$arrayType->describe(VerbosityLevel::cache())] = $arrayType;
 				}
-				return $results;
+				$deduped = array_values($deduped);
+
+				// Budget: when more distinct shapes remain than a small union would have,
+				// they are almost certainly analysis-emergent rather than user-written;
+				// fall through to the old collapse path to keep downstream tractable.
+				// Mirrors optimizeConstantArrays() which generalizes once a similar
+				// budget (256 constant value types) is exceeded.
+				if (count($deduped) <= self::KEEP_SEPARATE_ARRAYS_LIMIT) {
+					$results = [];
+					foreach ($deduped as $arrayType) {
+						$results[] = $accessoryTypes === []
+							? $arrayType
+							: self::intersect($arrayType, ...$accessoryTypes);
+					}
+					return $results;
+				}
 			}
 
 			$templateArrayType = null;

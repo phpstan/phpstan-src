@@ -61,6 +61,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
@@ -1138,9 +1139,14 @@ final class TypeNodeResolver
 				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
 			}
 
+			$isStatic = false;
 			if ($nameScope->getClassName() !== null) {
 				switch (strtolower($constExpr->className)) {
 					case 'static':
+						$className = $nameScope->getClassName();
+						$isStatic = true;
+						break;
+
 					case 'self':
 						$className = $nameScope->getClassName();
 						break;
@@ -1168,9 +1174,17 @@ final class TypeNodeResolver
 			}
 			$classReflection = $this->getReflectionProvider()->getClass($className);
 
+			if ($isStatic && $classReflection->isFinal()) {
+				$isStatic = false;
+			}
+
 			$constantName = $constExpr->name;
 			if (!$classReflection->hasConstant($constantName)) {
 				return new ErrorType();
+			}
+
+			if ($isStatic) {
+				return new ClassConstantAccessType(new StaticType($classReflection), $constantName);
 			}
 
 			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);
@@ -1228,9 +1242,14 @@ final class TypeNodeResolver
 				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
 			}
 
+			$isStatic = false;
 			if ($nameScope->getClassName() !== null) {
 				switch (strtolower($constExpr->className)) {
 					case 'static':
+						$className = $nameScope->getClassName();
+						$isStatic = true;
+						break;
+
 					case 'self':
 						$className = $nameScope->getClassName();
 						break;
@@ -1258,6 +1277,10 @@ final class TypeNodeResolver
 			}
 
 			$classReflection = $this->getReflectionProvider()->getClass($className);
+
+			if ($isStatic && $classReflection->isFinal()) {
+				$isStatic = false;
+			}
 
 			$constantName = $constExpr->name;
 			if (Strings::contains($constantName, '*')) {
@@ -1301,6 +1324,10 @@ final class TypeNodeResolver
 
 			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
 				return new EnumCaseObjectType($classReflection->getName(), $constantName);
+			}
+
+			if ($isStatic) {
+				return new ClassConstantAccessType(new StaticType($classReflection), $constantName);
 			}
 
 			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);

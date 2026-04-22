@@ -1554,7 +1554,7 @@ final class TypeSpecifier
 			&& ($exprNode instanceof FuncCall || $exprNode instanceof Expr\MethodCall || $exprNode instanceof Expr\StaticCall)
 		) {
 			$types = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
-			
+
 			return $types->unionWith($this->specifyTypesInCondition(
 				$scope,
 				$exprNode,

@@ -103,12 +103,27 @@ class Foo {
 		}
 		assertType('string', $s);
 
+		if (strpos($s, '0') === 0) {
+			assertType('string', $s); // could be non-empty-string
+		} else {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		if (strpos($s, '0') === 5) {
+			assertType('non-empty-string', $s); // could be non-falsy-string
+		} else {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
 		if (strpos($s, ':') === 5) {
 			assertType('non-falsy-string', $s);
 		} else {
 			assertType('string', $s);
 		}
 		assertType('string', $s);
+
 		if (strpos($s, ':') !== 5) {
 			assertType('string', $s);
 		} else {

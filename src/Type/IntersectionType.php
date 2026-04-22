@@ -552,6 +552,12 @@ class IntersectionType implements CompoundType
 
 	public function hasProperty(string $propertyName): TrinaryLogic
 	{
+		foreach ($this->types as $type) {
+			if ($type->isObject()->no() && $type->hasProperty($propertyName)->no()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasProperty($propertyName));
 	}
 
@@ -585,6 +591,12 @@ class IntersectionType implements CompoundType
 
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
 	{
+		foreach ($this->types as $type) {
+			if ($type->isObject()->no() && $type->hasInstanceProperty($propertyName)->no()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasInstanceProperty($propertyName));
 	}
 
@@ -618,6 +630,12 @@ class IntersectionType implements CompoundType
 
 	public function hasStaticProperty(string $propertyName): TrinaryLogic
 	{
+		foreach ($this->types as $type) {
+			if ($type->isObject()->no() && $type->hasStaticProperty($propertyName)->no()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasStaticProperty($propertyName));
 	}
 
@@ -700,6 +718,12 @@ class IntersectionType implements CompoundType
 
 	public function hasConstant(string $constantName): TrinaryLogic
 	{
+		foreach ($this->types as $type) {
+			if ($type->isObject()->no() && $type->hasConstant($constantName)->no()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName));
 	}
 

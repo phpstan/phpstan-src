@@ -39,14 +39,14 @@ zend_class_entry *pt_ce_constant_array_type = nullptr;
 /* AcceptsResult.cpp: new <result class>($trinary, $reasons, $lazyReasons) */
 bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zval *reasons, zval *lazyReasons);
 
-/* the twin's private constants */
+/* the twin's private constants; getAllArrays() enumerates the power set of
+ * up to OPTIONAL_KEYS_POWER_SET_LIMIT optional keys */
 #define PT_CAT_DESCRIBE_LIMIT 8
 #define PT_CAT_CHUNK_FINITE_TYPES_LIMIT 5
 #define PT_CAT_UNSEALED_ARRAY_SHAPES_LINK "https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys"
-/* the twin's inline thresholds: getAllArrays() enumerates the power set of
- * up to this many optional keys, generalize() keeps per-offset accessories
- * below this many required keys */
 #define PT_CAT_POWER_SET_OPTIONAL_KEYS_LIMIT 10
+/* the twin's inline threshold: generalize() keeps per-offset accessories
+ * below this many required keys */
 #define PT_CAT_GENERALIZE_OFFSET_ACCESSORIES_LIMIT 32
 
 /* PHP's CASE_LOWER / CASE_UPPER */
@@ -7308,6 +7308,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	cls.privateClassConstantLong("DESCRIBE_LIMIT", PT_CAT_DESCRIBE_LIMIT);
 	cls.privateClassConstantLong("CHUNK_FINITE_TYPES_LIMIT", PT_CAT_CHUNK_FINITE_TYPES_LIMIT);
 	cls.privateClassConstantString("UNSEALED_ARRAY_SHAPES_LINK", PT_CAT_UNSEALED_ARRAY_SHAPES_LINK);
+	cls.privateClassConstantLong("OPTIONAL_KEYS_POWER_SET_LIMIT", PT_CAT_POWER_SET_OPTIONAL_KEYS_LIMIT);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *keyTypes, *valueTypes, *nextAutoIndexes = NULL, *optionalKeys = NULL, *isList = NULL, *unsealed = NULL;

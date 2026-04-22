@@ -2942,6 +2942,30 @@ final class TypeSpecifier
 			)->setRootExpr($expr);
 		}
 
+		// filter_var($a, FILTER_VALIDATE_*) === false
+		if (
+			!$context->null()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& strtolower($unwrappedLeftExpr->name->toString()) === 'filter_var'
+			&& $rightType->isFalse()->yes()
+			&& count($unwrappedLeftExpr->getArgs()) >= 1
+		) {
+			$funcCallTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+
+			if ($context->false()) {
+				$argSpecifiedTypes = $this->specifyTypesInCondition(
+					$scope,
+					$leftExpr,
+					TypeSpecifierContext::createTrue(),
+				)->setRootExpr($expr);
+
+				return $funcCallTypes->unionWith($argSpecifiedTypes);
+			}
+
+			return $funcCallTypes;
+		}
+
 		// get_class($a) === 'Foo'
 		if (
 			$context->true()

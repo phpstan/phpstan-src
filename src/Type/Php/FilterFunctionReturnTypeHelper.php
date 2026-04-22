@@ -532,6 +532,37 @@ final class FilterFunctionReturnTypeHelper
 		);
 	}
 
+	public function getInputNarrowingType(?Type $filterType, ?Type $flagsType): ?Type
+	{
+		if ($filterType === null) {
+			return null;
+		}
+
+		if (!$filterType instanceof ConstantIntegerType) {
+			return null;
+		}
+
+		$filterValue = $filterType->getValue();
+
+		if (($filterValue & self::VALIDATION_FILTER_BITMASK) === 0) {
+			return null;
+		}
+
+		$returnType = $this->getType(new StringType(), $filterType, $flagsType);
+		$successType = TypeCombinator::remove($returnType, new ConstantBooleanType(false));
+		$successType = TypeCombinator::remove($successType, new NullType());
+
+		if (!$successType->isString()->yes() || !$successType->isNonEmptyString()->yes()) {
+			return null;
+		}
+
+		if ($successType->isNonFalsyString()->yes()) {
+			return new AccessoryNonFalsyStringType();
+		}
+
+		return new AccessoryNonEmptyStringType();
+	}
+
 	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): TrinaryLogic
 	{
 		// If it is a validation filter, the string will not be changed

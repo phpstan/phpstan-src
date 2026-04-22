@@ -60,6 +60,9 @@ final class NullsafeMethodCallHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$scopeBeforeNullsafe = $scope;
+		$varType = $scope->getType($expr->var);
+
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureShallowNonNullability($scope, $scope, $expr->var);
 		$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]);
 		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
@@ -77,6 +80,16 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			$context,
 		);
 		$scope = $this->nonNullabilityHelper->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
+
+		$varIsNull = $varType->isNull();
+		if ($varIsNull->yes()) {
+			// Arguments are never evaluated when the var is always null.
+			$scope = $scopeBeforeNullsafe;
+		} elseif ($varIsNull->maybe()) {
+			// Arguments might not be evaluated (short-circuit).
+			// Merge with the original scope so variables assigned in arguments become "maybe defined".
+			$scope = $scope->mergeWith($scopeBeforeNullsafe);
+		}
 
 		return new ExpressionResult(
 			$scope,

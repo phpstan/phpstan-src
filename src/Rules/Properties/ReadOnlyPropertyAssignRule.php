@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
@@ -30,6 +31,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ConstructorsHelper $constructorsHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -77,11 +79,16 @@ final class ReadOnlyPropertyAssignRule implements Rule
 
 			$scopeClassReflection = $scope->getClassReflection();
 			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
-					->line($propertyFetch->name->getStartLine())
-					->identifier('property.readOnlyAssignOutOfClass')
-					->build();
-				continue;
+				$allowedInSubclass = $this->phpVersion->supportsAsymmetricVisibility()
+					&& !$propertyReflection->isPrivateSet()
+					&& $scopeClassReflection->isSubclassOfClass($propertyReflection->getDeclaringClass());
+				if (!$allowedInSubclass) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
+						->identifier('property.readOnlyAssignOutOfClass')
+						->build();
+					continue;
+				}
 			}
 
 			$scopeMethod = $scope->getFunction();

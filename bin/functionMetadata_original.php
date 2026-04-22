@@ -64,6 +64,7 @@ return [
 	'bcdiv' => ['hasSideEffects' => false],
 	'bcmod' => ['hasSideEffects' => false],
 	'bcmul' => ['hasSideEffects' => false],
+	'bcround' => ['hasSideEffects' => false],
 	// continue functionMap.php, line 424
 	'chgrp' => ['hasSideEffects' => true],
 	'chmod' => ['hasSideEffects' => true],

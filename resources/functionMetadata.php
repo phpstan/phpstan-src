@@ -776,6 +776,7 @@ return [
 	'bcmul' => ['hasSideEffects' => false],
 	'bcpow' => ['hasSideEffects' => false],
 	'bcpowmod' => ['hasSideEffects' => false],
+	'bcround' => ['hasSideEffects' => false],
 	'bcsqrt' => ['hasSideEffects' => false],
 	'bcsub' => ['hasSideEffects' => false],
 	'bin2hex' => ['hasSideEffects' => false],

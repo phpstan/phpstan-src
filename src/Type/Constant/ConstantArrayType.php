@@ -78,6 +78,7 @@ use function range;
 use function sort;
 use function sprintf;
 use function str_contains;
+use function usort;
 
 /**
  * @api

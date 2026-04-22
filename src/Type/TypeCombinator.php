@@ -1714,9 +1714,11 @@ final class TypeCombinator
 			$keysToProcess[$keyValue] = [$k, $bKeyByValue[$keyValue] ?? null];
 		}
 		foreach ($bKeyByValue as $keyValue => $k) {
-			if (!array_key_exists($keyValue, $keysToProcess)) {
-				$keysToProcess[$keyValue] = [null, $k];
+			if (array_key_exists($keyValue, $keysToProcess)) {
+				continue;
 			}
+
+			$keysToProcess[$keyValue] = [null, $k];
 		}
 
 		foreach ($keysToProcess as [$aIdx, $bIdx]) {

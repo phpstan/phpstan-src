@@ -31,6 +31,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function array_map;
+use function is_string;
 use function sprintf;
 
 class ConstantArrayTypeTest extends PHPStanTestCase
@@ -616,9 +617,11 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			$actualResult->result->describe(),
 			$testDescription,
 		);
-		if ($reasons !== null) {
-			$this->assertSame($reasons, $actualResult->reasons, $testDescription);
+		if ($reasons === null) {
+			return;
 		}
+
+		$this->assertSame($reasons, $actualResult->reasons, $testDescription);
 	}
 
 	public static function dataIsSuperTypeOf(): iterable

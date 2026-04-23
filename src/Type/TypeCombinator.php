@@ -1156,7 +1156,14 @@ final class TypeCombinator
 		}
 
 		if ($emptyArray !== null) {
-			$newArrays[] = $emptyArray;
+			if ($preserveTaggedUnions && $emptyArray instanceof ConstantArrayType) {
+				// Let the empty array participate in merging — the passes below will absorb
+				// it into any array that already accepts [] (all-optional keys, compatible
+				// unsealed extras). If no such array exists, it remains as-is in the result.
+				$arraysToProcess[] = $emptyArray;
+			} else {
+				$newArrays[] = $emptyArray;
+			}
 		}
 
 		$arraysToProcessPerKey = [];

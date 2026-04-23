@@ -2178,40 +2178,43 @@ class ConstantArrayType implements Type
 			return $this->legacyIsKeysSupersetOf($otherArray);
 		}
 
-		$keyIndexMap = $this->getKeyIndexMap();
-		$otherKeyIndexMap = $otherArray->getKeyIndexMap();
-
-		// Disjoint values at a common key prevent a lossless merge
-		$hasCommon = false;
-		foreach ($otherKeyIndexMap as $keyValue => $j) {
-			if (!array_key_exists($keyValue, $keyIndexMap)) {
-				continue;
-			}
-			$i = $keyIndexMap[$keyValue];
-			$valueType = $this->valueTypes[$i];
-			$otherValueType = $otherArray->valueTypes[$j];
-			if ($valueType->isSuperTypeOf($otherValueType)->no() && $otherValueType->isSuperTypeOf($valueType)->no()) {
-				return false;
-			}
-			$hasCommon = true;
-		}
-
 		[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
 		[$otherUnsealedKey, $otherUnsealedValue] = $otherArray->unsealed;
 		$thisHasExtras = !($thisUnsealedKey instanceof NeverType && $thisUnsealedKey->isExplicit());
 		$otherHasExtras = !($otherUnsealedKey instanceof NeverType && $otherUnsealedKey->isExplicit());
 
-		if ($hasCommon) {
+		$otherHasRequiredKeys = false;
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			if ($otherArray->isOptionalKey($j)) {
+				continue;
+			}
+			$otherHasRequiredKeys = true;
+			break;
+		}
+
+		// Sealed empty $other (no keys, no extras): absorbing it is lossless iff $this
+		// already accepts []. i.e., all of $this's known keys are optional. Otherwise
+		// merge would add [] as a new instance.
+		if (!$otherHasRequiredKeys && !$otherHasExtras && count($otherArray->keyTypes) === 0) {
+			foreach ($this->keyTypes as $i => $keyType) {
+				if (!$this->isOptionalKey($i)) {
+					return false;
+				}
+			}
 			return true;
 		}
 
+		// With real unsealed extras on both sides that can absorb each other's
+		// required keys, merging is acceptable regardless of which keys overlap.
 		if ($thisHasExtras && $otherHasExtras) {
 			return true;
 		}
 
-		// Mixed or both sealed, no common keys — only merge if one side's extras can
-		// absorb the other side's required keys (preserves tagged-union otherwise).
+		// Asymmetric extras: one side has real extras that can absorb the other's keys.
 		if ($thisHasExtras) {
+			if ($this->legacyIsKeysSupersetOf($otherArray)) {
+				return true;
+			}
 			foreach ($otherArray->keyTypes as $j => $keyType) {
 				if ($otherArray->isOptionalKey($j)) {
 					continue;
@@ -2227,6 +2230,9 @@ class ConstantArrayType implements Type
 		}
 
 		if ($otherHasExtras) {
+			if ($this->legacyIsKeysSupersetOf($otherArray)) {
+				return true;
+			}
 			foreach ($this->keyTypes as $i => $keyType) {
 				if ($this->isOptionalKey($i)) {
 					continue;
@@ -2241,7 +2247,8 @@ class ConstantArrayType implements Type
 			return true;
 		}
 
-		return false;
+		// Both sealed: fall back to the legacy key/value shape check.
+		return $this->legacyIsKeysSupersetOf($otherArray);
 	}
 
 	private function legacyIsKeysSupersetOf(self $otherArray): bool
@@ -2352,7 +2359,7 @@ class ConstantArrayType implements Type
 				$j = $otherKeyIndexMap[$keyValue];
 				$otherValueType = $otherArray->valueTypes[$j];
 				$mergedValue = TypeCombinator::union($valueType, $otherValueType);
-				$optional = $this->isOptionalKey($i) && $otherArray->isOptionalKey($j);
+				$optional = $this->isOptionalKey($i) || $otherArray->isOptionalKey($j);
 
 				$keyTypes[] = $keyType;
 				$valueTypes[] = $mergedValue;

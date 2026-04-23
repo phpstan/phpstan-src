@@ -3102,8 +3102,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{a: int, ...}',
 				'array{a: string, ...}',
 			],
-			UnionType::class,
-			'array{a: int, ...}|array{a: string, ...}',
+			ConstantArrayType::class,
+			'array{a: int|string, ...}',
 		];
 
 		yield [

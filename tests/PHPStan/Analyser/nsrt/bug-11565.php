@@ -34,3 +34,10 @@ assertType('list<string>', $items);
 $x = getItems();
 $items2 = iteratorToList($x);
 assertType('list<string>', $items2);
+
+// Same variable reassignment inside if condition (truthy context)
+// Non-null context recurses into $expr->var, not $expr->expr, so not affected
+$items3 = getItems();
+if ($items3 = iteratorToList($items3)) {
+	assertType('non-empty-list<string>', $items3);
+}

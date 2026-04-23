@@ -21,6 +21,8 @@ use const PHP_INT_MAX;
 final class TypeUtils
 {
 
+	private const FLATTEN_CONSTANT_ARRAYS_LIMIT = 16384;
+
 	/**
 	 * @return list<ConstantIntegerType>
 	 */
@@ -157,7 +159,7 @@ final class TypeUtils
 			foreach ($constantArrays as $constantArray) {
 				$optionalCount = count($constantArray->getOptionalKeys());
 				$arrayCount = $optionalCount <= 20 ? (1 << $optionalCount) : PHP_INT_MAX;
-				if ($arrayCount > 16384 || $estimatedCount > 16384 / max($arrayCount, 1)) {
+				if ($arrayCount > self::FLATTEN_CONSTANT_ARRAYS_LIMIT || $estimatedCount > self::FLATTEN_CONSTANT_ARRAYS_LIMIT / max($arrayCount, 1)) {
 					$bail = true;
 					break;
 				}

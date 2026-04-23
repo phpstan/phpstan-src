@@ -54,15 +54,15 @@ class Foo
 		}
 
 		if (! in_array(rand() ? FooUnitEnum::A : FooUnitEnum::B, $haystack, true)) {
-			assertType('array<InArrayEnum\FooUnitEnum|int>', $haystack);
+			assertType('array<InArrayEnum\FooUnitEnum::B|int>|non-empty-array<InArrayEnum\FooUnitEnum|int>', $haystack);
 		}
 
 		if (! in_array(rand() ? 5 : 6, $haystack, true)) {
-			assertType('array<InArrayEnum\FooUnitEnum|int>', $haystack);
+			assertType('array<InArrayEnum\FooUnitEnum::B|int>|non-empty-array<InArrayEnum\FooUnitEnum|int>', $haystack);
 		}
 
 		if (! in_array(rand() ? 5 : rand(), $haystack, true)) {
-			assertType('array<InArrayEnum\FooUnitEnum|int>', $haystack);
+			assertType('array<InArrayEnum\FooUnitEnum::B|int>|non-empty-array<InArrayEnum\FooUnitEnum|int>', $haystack);
 		}
 	}
 

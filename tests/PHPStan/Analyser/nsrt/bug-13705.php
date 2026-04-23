@@ -36,16 +36,16 @@ function countLessThanRange(array $arr, int $boundedRange, int $unboundedMaxRang
 
 	// count($arr) < unbounded max range → falsey + max is null → fallback via min (branch 3/4)
 	if (count($arr) < $unboundedMaxRange) {
-		assertType('list<string>', $arr);
+		assertType('non-empty-list<string>&hasOffsetValue(1, string)', $arr);
 	} else {
 		assertType('non-empty-list<string>&hasOffsetValue(1, string)', $arr);
 	}
 
 	// count($arr) < unbounded min range → fallback branch (min is null)
 	if (count($arr) < $unboundedMinRange) {
-		assertType('list<string>', $arr);
+		assertType('non-empty-list<string>&hasOffsetValue(1, string)', $arr);
 	} else {
-		assertType('list<string>', $arr);
+		assertType('non-empty-list<string>&hasOffsetValue(1, string)', $arr);
 	}
 }
 

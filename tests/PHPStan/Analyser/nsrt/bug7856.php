@@ -10,7 +10,7 @@ function doFoo() {
 	$endDate = new DateTimeImmutable('+1year');
 
 	do {
-		assertType("list<literal-string&lowercase-string&non-falsy-string>", $intervals);
+		assertType("array{'+1week', '+1months', '+6months', '+17months'}|list<'+17months'|'+1months'|'+6months'>", $intervals);
 		$periodEnd = $periodEnd->modify(array_shift($intervals));
 	} while (count($intervals) > 0 && $periodEnd->format('U') < $endDate);
 }

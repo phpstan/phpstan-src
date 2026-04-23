@@ -94,7 +94,7 @@ function testShouldLooseListbyAst(array $list, int $i): void
 		$list[1+$i] = 21;
 		assertType('non-empty-array<int<0, max>, int>', $list);
 	}
-	assertType('array<int<0, max>, int>', $list);
+	assertType('list<int>', $list);
 }
 
 /** @param list<int> $list */
@@ -105,5 +105,5 @@ function testShouldLooseListbyAst2(array $list, int $i): void
 		$list[2+$i] = 21;
 		assertType('non-empty-array<int<0, max>, int>', $list);
 	}
-	assertType('array<int<0, max>, int>', $list);
+	assertType('list<int>', $list);
 }

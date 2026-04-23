@@ -23,7 +23,7 @@ function x(array $foos, array $bars): void
 		$arr[$bar->groupId]['bar'][] = $bar;
 	}
 
-	assertType('array<int, non-empty-array{foo?: non-empty-list<Bug10025\MyClass>, bar?: non-empty-list<Bug10025\MyClass>}>', $arr);
+	assertType('non-empty-array<int, array{foo?: non-empty-list<Bug10025\MyClass>, bar: non-empty-list<Bug10025\MyClass>}>|array<int, array{foo: non-empty-list<Bug10025\MyClass>}>', $arr);
 	foreach ($arr as $groupId => $group) {
 		if (isset($group['foo'])) {
 		}

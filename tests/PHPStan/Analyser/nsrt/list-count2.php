@@ -133,7 +133,7 @@ class HelloWorld
 			assertType('array{mixed, mixed, mixed}', $arrB);
 		}
 		assertType('array{int, int, int}', $arrA);
-		assertType('non-empty-list', $arrB);
+		assertType('non-empty-list&hasOffsetValue(1, mixed)', $arrB);
 	}
 
 	/**
@@ -186,7 +186,7 @@ class HelloWorld
 			assertType('array{mixed, mixed, mixed}', $arrB);
 		}
 		assertType('array{int, int, int}', $arrA);
-		assertType('non-empty-list', $arrB);
+		assertType('non-empty-list&hasOffsetValue(1, mixed)', $arrB);
 	}
 
 	/**

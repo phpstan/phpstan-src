@@ -43,7 +43,7 @@ abstract class HelloWorld
 		}
 		ksort($res);
 
-		assertType('array<T of Bug7511\PositionEntityInterface&Bug7511\TgEntityInterface (method Bug7511\HelloWorld::computeForFrontByPosition(), parameter)>', $res);
+		assertType('non-empty-array<T of Bug7511\PositionEntityInterface&Bug7511\TgEntityInterface (method Bug7511\HelloWorld::computeForFrontByPosition(), parameter)>', $res);
 
 		return $res;
 	}

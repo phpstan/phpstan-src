@@ -18,8 +18,8 @@ class Foo
 				continue;
 			}
 
-			assertType('array{items: array<string, stdClass>, isActive: bool, productsCount: int}', $this->foreignSection);
-			assertType('array<string, stdClass>', $this->foreignSection['items']);
+			assertType('array{items: non-empty-array<string, stdClass>, isActive: bool, productsCount: int}', $this->foreignSection);
+			assertType('non-empty-array<string, stdClass>', $this->foreignSection['items']);
 			unset($this->foreignSection['items'][$foreignCountryNo]);
 			assertType('array{items: array<string, stdClass>, isActive: bool, productsCount: int}', $this->foreignSection);
 			assertType('array<string, stdClass>', $this->foreignSection['items']);

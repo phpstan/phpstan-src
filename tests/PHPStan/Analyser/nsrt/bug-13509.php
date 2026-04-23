@@ -80,7 +80,7 @@ function alert(): ?array
 		return null;
 	}
 
-	assertType('non-empty-list<non-empty-array<literal-string&lowercase-string&non-falsy-string, int|(literal-string&non-falsy-string)|null>&oversized-array>&oversized-array', $alerts);
+	assertType("non-empty-list<(array{message: 'Foo', details: 'bar', duration: int<1, max>|null, severity: 100}&oversized-array)|(array{message: 'Idle', duration: int<1, max>|null, severity: 23}&oversized-array)|(array{message: 'No Queue', duration: int<1, max>|null, severity: 60}&oversized-array)|(array{message: 'Not Scheduled', duration: null, severity: 25}&oversized-array)|(array{message: 'Offline', duration: int<1, max>|null, severity: 99}&oversized-array)|(array{message: 'On Break'|'On Lunch', duration: int<1, max>|null, severity: 24}&oversized-array)|(array{message: 'Running W/O Operator', duration: int<1, max>|null, severity: 75}&oversized-array)>&oversized-array", $alerts);
 
 	usort($alerts, fn ($a, $b) => $b['severity'] <=> $a['severity']);
 

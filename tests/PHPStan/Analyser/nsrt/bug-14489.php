@@ -23,7 +23,7 @@ function () {
 	}
 
 	$values = array_values($cData);
-	assertType('non-empty-list<non-empty-array<0|1, 1|4>>', $values);
+	assertType('list{0?: non-empty-array<0|1, 1|4>, 1?: non-empty-array<0|1, 1|4>}', $values);
 };
 
 function () {
@@ -35,12 +35,12 @@ function () {
 	$cData = [];
 	while (rand(0, 1)) {
 		if (array_key_exists($c, $cData)) {
-			assertType('non-empty-array<\'c1\'|\'c2\', array{1}|array{4}>', $cData);
+			assertType('non-empty-array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
 			assertType('array{1}|array{4}', $cData[$c]);
 			$cData[$c] = $cData[$c];
 		} else {
 			$cData[$c] = $ids;
 		}
 	}
-	assertType('array<\'c1\'|\'c2\', array{1}|array{4}>', $cData);
+	assertType('array{}|array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
 };

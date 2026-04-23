@@ -83,7 +83,7 @@ function testMultipleScalarKeyValues(bool $key): void
 
 	// $key could be 1 (true) so $b[1] = 3 might also update $a
 	$b[1] = 3;
-	assertType('1|2|3', $a);
+	assertType('2|3', $a);
 }
 
 /** @param 'a'|'b' $key */

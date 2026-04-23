@@ -78,7 +78,7 @@ class HelloWorld
 		assertType('array{foo: 1, bar?: 2}', array_change_key_case($arr9));
 		assertType('array{foo: 1, bar?: 2}', array_change_key_case($arr9, CASE_LOWER));
 		assertType('array{FOO: 1, BAR?: 2}', array_change_key_case($arr9, CASE_UPPER));
-		assertType("non-empty-array<'BAR'|'bar'|'FOO'|'foo', 1|2>", array_change_key_case($arr9, $case));
+		assertType("non-empty-array{foo?: 1, FOO?: 1, bar?: 2, BAR?: 2}", array_change_key_case($arr9, $case));
 
 		assertType("array<'bar'|'foo', string>", array_change_key_case($arr10));
 		assertType("array<'bar'|'foo', string>", array_change_key_case($arr10, CASE_LOWER));

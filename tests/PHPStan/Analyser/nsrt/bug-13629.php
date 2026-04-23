@@ -32,7 +32,7 @@ function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces
 			}
 		}
 		// After assigning with string keys ($viewHelper['name']), $xsdFiles[$xmlNamespace] should NOT be a list
-		assertType('array<int<0, max>|string, array{xmlNamespace: string, namespace: string, name: string}>', $xsdFiles[$xmlNamespace]);
+		assertType('array<string, array{xmlNamespace: string, namespace: string, name: string}>', $xsdFiles[$xmlNamespace]);
 		$xsdFiles[$xmlNamespace] = array_values($xsdFiles[$xmlNamespace]);
 	}
 }

@@ -23,7 +23,7 @@ function () {
 	}
 
 	$values = array_values($cData);
-	assertType('list{0?: non-empty-array<0|1, 1|4>, 1?: non-empty-array<0|1, 1|4>}', $values);
+	assertType('list{0?: array{1}|array{4}, 1?: array{1}|array{4}}', $values);
 };
 
 function () {
@@ -43,4 +43,23 @@ function () {
 		}
 	}
 	assertType('array{}|array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
+};
+
+/**
+ * @param list<array<'c1'|'c2', array{1}|array{4}>> $data
+ */
+function (array $data) {
+	$cData = [];
+	foreach ($data as $cMap) {
+		foreach ($cMap as $c => $ids) {
+			if (array_key_exists($c, $cData)) {
+				$cData[$c] = array_unique(array_merge($cData[$c], $ids));
+			} else {
+				$cData[$c] = $ids;
+			}
+		}
+	}
+
+	$values = array_values($cData);
+	assertType('list', $values);
 };

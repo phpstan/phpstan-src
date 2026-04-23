@@ -187,6 +187,7 @@ class NodeScopeResolver
 
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
+	private const FOREACH_UNROLL_LIMIT = 16;
 
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -1247,31 +1248,38 @@ class NodeScopeResolver
 			}
 
 			$originalStorage = $storage;
+			$unrolledEndScope = null;
 			if ($context->isTopLevel()) {
 				$storage = $originalStorage->duplicate();
 
 				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
-				$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $nodeCallback);
-				$count = 0;
-				do {
-					$prevScope = $bodyScope;
-					$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
-					$storage = $originalStorage->duplicate();
-					$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
-					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
-					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-					}
-					if ($bodyScope->equals($prevScope)) {
-						break;
-					}
+				$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($stmt, $originalScope, $originalStorage, $context);
+				if ($unrolledResult !== null) {
+					$bodyScope = $unrolledResult['bodyScope'];
+					$unrolledEndScope = $unrolledResult['endScope'];
+				} else {
+					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $nodeCallback);
+					$count = 0;
+					do {
+						$prevScope = $bodyScope;
+						$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
+						$storage = $originalStorage->duplicate();
+						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
+						$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+						$bodyScope = $bodyScopeResult->getScope();
+						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						}
+						if ($bodyScope->equals($prevScope)) {
+							break;
+						}
 
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope);
-					}
-					$count++;
-				} while ($count < self::LOOP_SCOPE_ITERATIONS);
+						if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+							$bodyScope = $prevScope->generalizeWith($bodyScope);
+						}
+						$count++;
+					} while ($count < self::LOOP_SCOPE_ITERATIONS);
+				}
 			}
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
@@ -1304,6 +1312,10 @@ class NodeScopeResolver
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 			foreach ($breakExitPoints as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+			}
+
+			if ($unrolledEndScope !== null) {
+				$finalScope = $unrolledEndScope;
 			}
 
 			$exprType = $scope->getType($stmt->expr);
@@ -3834,6 +3846,135 @@ class NodeScopeResolver
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * @return array{bodyScope: MutatingScope, endScope: MutatingScope}|null
+	 */
+	private function tryProcessUnrolledConstantArrayForeach(
+		Foreach_ $stmt,
+		MutatingScope $originalScope,
+		ExpressionResultStorage $originalStorage,
+		StatementContext $context,
+	): ?array
+	{
+		if ($stmt->byRef) {
+			return null;
+		}
+		if (!($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))) {
+			return null;
+		}
+		if ($stmt->keyVar !== null && !($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name))) {
+			return null;
+		}
+
+		$iterateeType = $originalScope->getType($stmt->expr);
+		if (!$iterateeType->isConstantArray()->yes()) {
+			return null;
+		}
+		$constantArrays = $iterateeType->getConstantArrays();
+		if (count($constantArrays) !== 1) {
+			return null;
+		}
+		$constantArray = $constantArrays[0];
+		$keyTypes = $constantArray->getKeyTypes();
+		$valueTypes = $constantArray->getValueTypes();
+		if (count($keyTypes) === 0 || count($keyTypes) > self::FOREACH_UNROLL_LIMIT) {
+			return null;
+		}
+
+		$nativeIterateeType = $originalScope->getNativeType($stmt->expr);
+		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
+		$nativeConstantArray = count($nativeConstantArrays) === 1 ? $nativeConstantArrays[0] : null;
+
+		$optionalKeys = array_fill_keys($constantArray->getOptionalKeys(), true);
+		$valueVarName = $stmt->valueVar->name;
+		$keyVarName = $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name) ? $stmt->keyVar->name : null;
+
+		$chainScope = $originalScope;
+		$entryScopes = [];
+		$breakScopes = [];
+		foreach ($keyTypes as $i => $keyType) {
+			$valueType = $valueTypes[$i];
+			$isOptional = isset($optionalKeys[$i]);
+
+			$nativeKeyType = $nativeConstantArray !== null && isset($nativeConstantArray->getKeyTypes()[$i])
+				? $nativeConstantArray->getKeyTypes()[$i]
+				: $keyType;
+			$nativeValueType = $nativeConstantArray !== null && isset($nativeConstantArray->getValueTypes()[$i])
+				? $nativeConstantArray->getValueTypes()[$i]
+				: $valueType;
+
+			$iterScope = $chainScope->assignVariable(
+				$valueVarName,
+				$valueType,
+				$nativeValueType,
+				TrinaryLogic::createYes(),
+			);
+			if ($keyVarName !== null) {
+				$iterScope = $iterScope->assignVariable(
+					$keyVarName,
+					$keyType,
+					$nativeKeyType,
+					TrinaryLogic::createYes(),
+				);
+				$iterScope = $iterScope->assignExpression(
+					new OriginalForeachKeyExpr($keyVarName),
+					$keyType,
+					$nativeKeyType,
+				);
+				$iterScope = $iterScope->assignExpression(
+					new ArrayDimFetch($stmt->expr, $stmt->keyVar),
+					$valueType,
+					$nativeValueType,
+				);
+			}
+
+			$entryScopes[] = $iterScope;
+
+			$iterStorage = $originalStorage->duplicate();
+			$bodyResult = $this->processStmtNodesInternal(
+				$stmt,
+				$stmt->stmts,
+				$iterScope,
+				$iterStorage,
+				new NoopNodeCallback(),
+				$context->enterDeep(),
+			)->filterOutLoopExitPoints();
+
+			$iterEndScope = $bodyResult->getScope();
+			foreach ($bodyResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+				$iterEndScope = $iterEndScope->mergeWith($continueExitPoint->getScope());
+			}
+			foreach ($bodyResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+				$breakScopes[] = $breakExitPoint->getScope();
+			}
+
+			if ($isOptional) {
+				$chainScope = $iterEndScope->mergeWith($chainScope);
+			} else {
+				$chainScope = $iterEndScope;
+			}
+		}
+
+		$bodyScope = $entryScopes[0];
+		for ($i = 1, $c = count($entryScopes); $i < $c; $i++) {
+			$bodyScope = $bodyScope->mergeWith($entryScopes[$i]);
+		}
+		if (count($entryScopes) === 1) {
+			// For a single-iteration unrolling, the merged entry scope does
+			// not include any post-body state. Merge the chain end scope in
+			// so that rules analysing the body see that prior iterations
+			// (which in this case means: this same iteration, from a rule
+			// author's perspective) could have modified variables.
+			$bodyScope = $bodyScope->mergeWith($chainScope);
+		}
+
+		foreach ($breakScopes as $breakScope) {
+			$chainScope = $chainScope->mergeWith($breakScope);
+		}
+
+		return ['bodyScope' => $bodyScope, 'endScope' => $chainScope];
 	}
 
 	/**

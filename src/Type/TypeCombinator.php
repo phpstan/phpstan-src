@@ -1709,7 +1709,7 @@ final class TypeCombinator
 	{
 		$aSealed = $a->isUnsealed()->no();
 		$bSealed = $b->isUnsealed()->no();
-		$bothUnsealed = !$aSealed && !$bSealed;
+		$bothUnsealed = !$aSealed && !$bSealed && $a->getUnsealedTypes() !== null && $b->getUnsealedTypes() !== null;
 
 		$aKeyByValue = [];
 		foreach ($a->getKeyTypes() as $k => $keyType) {

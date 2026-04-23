@@ -3197,7 +3197,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param list<Type> $types
+	 * @param list<Type>|list<string> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataUnion')]

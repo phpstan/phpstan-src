@@ -560,7 +560,7 @@ class ConstantArrayType implements Type
 			$result = $result->and($acceptsValue);
 		}
 
-		$otherUnsealed = $constantArray->getUnsealedTypes();
+		$otherUnsealed = $constantArray->unsealed;
 		if ($otherUnsealed !== null && !$constantArray->isUnsealed()->no()) {
 			[$otherUnsealedKeyType, $otherUnsealedValueType] = $otherUnsealed;
 
@@ -662,7 +662,7 @@ class ConstantArrayType implements Type
 		if ($type instanceof self) {
 			$thisUnsealedness = $this->isUnsealed();
 			$typeUnsealedness = $type->isUnsealed();
-			$bothDefinite = !$thisUnsealedness->maybe() && !$typeUnsealedness->maybe();
+			$bothDefinite = $this->unsealed !== null && $type->unsealed !== null;
 
 			if (count($this->keyTypes) === 0) {
 				if (!$bothDefinite) {
@@ -678,7 +678,7 @@ class ConstantArrayType implements Type
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
 				if ($bothDefinite && $hasOffset->no() && $typeUnsealedness->yes()) {
-					[$typeUnsealedKey] = $type->getUnsealedTypes();
+					[$typeUnsealedKey] = $type->unsealed;
 					if (!$typeUnsealedKey->isSuperTypeOf($keyType)->no()) {
 						$hasOffset = TrinaryLogic::createMaybe();
 					}
@@ -696,7 +696,7 @@ class ConstantArrayType implements Type
 
 				$otherValueType = $type->getOffsetValueType($keyType);
 				if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
-					[, $typeUnsealedValue] = $type->getUnsealedTypes();
+					[, $typeUnsealedValue] = $type->unsealed;
 					$otherValueType = $typeUnsealedValue;
 				}
 				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
@@ -725,7 +725,7 @@ class ConstantArrayType implements Type
 						continue;
 					}
 
-					[$thisUnsealedKey, $thisUnsealedValue] = $this->getUnsealedTypes();
+					[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
 					$keyCheck = $thisUnsealedKey->isSuperTypeOf($typeKey);
 					if ($keyCheck->no()) {
 						if ($type->isOptionalKey($i)) {
@@ -749,8 +749,8 @@ class ConstantArrayType implements Type
 					if ($thisUnsealedness->no()) {
 						$results[] = IsSuperTypeOfResult::createMaybe();
 					} else {
-						[$thisUnsealedKey, $thisUnsealedValue] = $this->getUnsealedTypes();
-						[$typeUnsealedKey, $typeUnsealedValue] = $type->getUnsealedTypes();
+						[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+						[$typeUnsealedKey, $typeUnsealedValue] = $type->unsealed;
 						$results[] = $thisUnsealedKey->isSuperTypeOf($typeUnsealedKey);
 						$results[] = $thisUnsealedValue->isSuperTypeOf($typeUnsealedValue);
 					}

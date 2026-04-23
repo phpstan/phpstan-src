@@ -54,7 +54,7 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8')]
+	#[RequiresPhp('< 8.0.0')]
 	public function testRulePhp7(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects.php'], [

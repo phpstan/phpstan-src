@@ -1347,4 +1347,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14553.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug12110(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12110.php'], []);
+	}
+
 }

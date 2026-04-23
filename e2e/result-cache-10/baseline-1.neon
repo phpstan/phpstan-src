@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Access to protected property TestResultCache10\\\\Foo\\:\\:\\$x\\.$#"
+			count: 1
+			path: src/Bar.php

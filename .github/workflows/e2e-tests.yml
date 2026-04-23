@@ -105,6 +105,26 @@ jobs:
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-9
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b src/Foo.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv src/Foo.php.orig src/Foo.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
+              cd e2e/result-cache-10
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b src/Foo.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv src/Foo.php.orig src/Foo.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
               cd e2e/bug10449
               ../../bin/phpstan analyze
               git apply patch.diff

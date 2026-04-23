@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#1 \\$strings of method TestResultCache9\\\\Bar\\:\\:acceptStrings\\(\\) expects list\\<string\\>, list\\<int\\> given\\.$#"
+			count: 1
+			path: src/Bar.php

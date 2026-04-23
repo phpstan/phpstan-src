@@ -1,0 +1,10 @@
+--- src/Foo.php	2022-10-24 14:28:45.000000000 +0200
++++ src/Foo.php	2022-10-24 14:30:02.000000000 +0200
+@@ -7,7 +7,7 @@
+
+ 	public function __construct(
+-		/** @var list<string> */
++		/** @var list<int> */
+ 		public array $x,
+ 	)
+ 	{

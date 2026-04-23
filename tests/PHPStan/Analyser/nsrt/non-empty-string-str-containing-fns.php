@@ -100,7 +100,7 @@ class Foo {
 		assertType('string', $s);
 
 		if (strpos($s, ':') === 5) {
-			assertType('string', $s); // could be non-empty-string
+			assertType('non-empty-string', $s);
 		}
 		assertType('string', $s);
 		if (strpos($s, ':') !== 5) {
@@ -152,7 +152,7 @@ class Foo {
 		assertType('string', $s);
 
 		if (mb_strpos($s, ':') === 5) {
-			assertType('string', $s); // could be non-empty-string
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if (mb_strpos($s, ':') !== 5) {

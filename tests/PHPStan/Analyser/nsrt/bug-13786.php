@@ -14,7 +14,7 @@ foreach ($arr as $id => $dummy) {
     foreach ($cols as $col) {
         $total[$id][$col] = '0';
     }
-    assertType("non-empty-array{a?: '0', b?: '0', c?: '0', d?: '0'}", $total[$id]);
+    assertType("non-empty-array{a?: '0', b?: '0', c?: '0'}", $total[$id]);
     $total[$id]['d'] = '0';
     assertType("array{a?: '0', b?: '0', c?: '0', d: '0'}", $total[$id]);
 }

@@ -240,6 +240,7 @@ final class AssignHandler implements ExprHandler
 				}
 				$assignedExpr = $this->unwrapAssign($assignedExpr);
 				$type = $scopeBeforeAssignEval->getType($assignedExpr);
+				$isImpure = count($impurePoints) > 0;
 
 				$conditionalExpressions = [];
 				if ($assignedExpr instanceof Ternary) {
@@ -256,67 +257,63 @@ final class AssignHandler implements ExprHandler
 					$falseyType = $falsyScope->getType($assignedExpr->else);
 
 					if (
-						count($impurePoints) === 0
-						&& $truthyType->isSuperTypeOf($falseyType)->no()
+						$truthyType->isSuperTypeOf($falseyType)->no()
 						&& $falseyType->isSuperTypeOf($truthyType)->no()
 					) {
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $isImpure);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $isImpure);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $isImpure);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $isImpure);
 					}
 				}
 
 				$truthyType = TypeCombinator::removeFalsey($type);
 				if (
-					count($impurePoints) === 0
-					&& $truthyType !== $type
+					$truthyType !== $type
 				) {
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $isImpure);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $isImpure);
 
 					$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
 					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $isImpure);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $isImpure);
 				}
 
-				if (count($impurePoints) === 0) {
-					foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
-						$falseyType = ConstantTypeHelper::getTypeFromValue($falseyScalar);
-						$withoutFalseyType = TypeCombinator::remove($type, $falseyType);
-						if (
-							$withoutFalseyType->equals($type)
-							|| $withoutFalseyType->equals($truthyType)
-						) {
-							continue;
-						}
-
-						if ($falseyScalar === null) {
-							$astNode = new ConstFetch(new Name('null'));
-						} elseif ($falseyScalar === false) {
-							$astNode = new ConstFetch(new Name('false'));
-						} elseif ($falseyScalar === 0) {
-							$astNode = new Node\Scalar\Int_($falseyScalar);
-						} elseif ($falseyScalar === 0.0) {
-							$astNode = new Node\Scalar\Float_($falseyScalar);
-						} elseif (in_array($falseyScalar, ['', '0'], true)) {
-							$astNode = new Node\Scalar\String_($falseyScalar);
-						} elseif ($falseyScalar === []) {
-							$astNode = new Node\Expr\Array_($falseyScalar);
-						}
-
-						$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
-						$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType);
-
-						$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
-						$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
+					$falseyType = ConstantTypeHelper::getTypeFromValue($falseyScalar);
+					$withoutFalseyType = TypeCombinator::remove($type, $falseyType);
+					if (
+						$withoutFalseyType->equals($type)
+						|| $withoutFalseyType->equals($truthyType)
+					) {
+						continue;
 					}
+
+					if ($falseyScalar === null) {
+						$astNode = new ConstFetch(new Name('null'));
+					} elseif ($falseyScalar === false) {
+						$astNode = new ConstFetch(new Name('false'));
+					} elseif ($falseyScalar === 0) {
+						$astNode = new Node\Scalar\Int_($falseyScalar);
+					} elseif ($falseyScalar === 0.0) {
+						$astNode = new Node\Scalar\Float_($falseyScalar);
+					} elseif (in_array($falseyScalar, ['', '0'], true)) {
+						$astNode = new Node\Scalar\String_($falseyScalar);
+					} elseif ($falseyScalar === []) {
+						$astNode = new Node\Expr\Array_($falseyScalar);
+					}
+
+					$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
+					$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $isImpure);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $isImpure);
+
+					$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
+					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $isImpure);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $isImpure);
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
@@ -856,7 +853,14 @@ final class AssignHandler implements ExprHandler
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	private function processSureTypesForConditionalExpressionsAfterAssign(
+		Scope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		SpecifiedTypes $specifiedTypes,
+		Type $variableType,
+		bool $isImpure
+	): array
 	{
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
 			if ($expr instanceof Variable) {
@@ -875,6 +879,8 @@ final class AssignHandler implements ExprHandler
 				&& !$expr instanceof Expr\StaticCall
 				&& !$expr instanceof Expr\BinaryOp\Pipe
 			) {
+				continue;
+			} elseif ($isImpure) {
 				continue;
 			}
 
@@ -898,7 +904,14 @@ final class AssignHandler implements ExprHandler
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	private function processSureNotTypesForConditionalExpressionsAfterAssign(
+		Scope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		SpecifiedTypes $specifiedTypes,
+		Type $variableType,
+		bool $isImpure
+	): array
 	{
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
 			if ($expr instanceof Variable) {
@@ -917,6 +930,8 @@ final class AssignHandler implements ExprHandler
 				&& !$expr instanceof Expr\StaticCall
 				&& !$expr instanceof Expr\BinaryOp\Pipe
 			) {
+				continue;
+			} elseif ($isImpure) {
 				continue;
 			}
 

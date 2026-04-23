@@ -1531,7 +1531,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10729(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

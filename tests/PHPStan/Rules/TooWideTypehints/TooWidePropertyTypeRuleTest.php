@@ -138,7 +138,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13624.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11844(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-11844.php'], []);

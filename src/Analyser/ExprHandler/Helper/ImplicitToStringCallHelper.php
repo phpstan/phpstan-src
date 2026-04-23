@@ -28,6 +28,15 @@ final class ImplicitToStringCallHelper
 		$impurePoints = [];
 
 		$exprType = $scope->getType($expr);
+		if ($exprType->isObject()->no()) {
+			return new ExpressionResult(
+				$scope,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+			);
+		}
 		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
 		if ($toStringMethod === null) {
 			return new ExpressionResult(

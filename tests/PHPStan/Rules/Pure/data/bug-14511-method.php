@@ -31,4 +31,17 @@ class Foo
 		return null;
 	}
 
+	/**
+	 * @phpstan-pure
+	 * @template T of mixed
+	 * @param T $val
+	 */
+	public function testEmptyNonArray(mixed $val): ?string
+	{
+		if (empty($val) && !\is_array($val)) {
+			return (string) $val;
+		}
+		return null;
+	}
+
 }

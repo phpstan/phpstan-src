@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -51,9 +50,6 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 	public function filterTypes(callable $filterCb): Type
 	{
 		$result = parent::filterTypes($filterCb);
-		if ($result instanceof NeverType) {
-			return $result;
-		}
 		if (!$result instanceof TemplateType) {
 			return TemplateTypeFactory::create(
 				$this->getScope(),

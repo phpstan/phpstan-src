@@ -12,6 +12,13 @@ abstract class BenchCase
 
 	use PHPStanTestCaseTrait;
 
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/../../conf/bleedingEdge.neon',
+		];
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

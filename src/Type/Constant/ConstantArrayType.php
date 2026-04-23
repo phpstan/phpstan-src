@@ -187,6 +187,7 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * @phpstan-pure
 	 * @return array{Type, Type}|null
 	 */
 	public function getUnsealedTypes(): ?array

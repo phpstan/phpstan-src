@@ -14,11 +14,14 @@ use function preg_quote;
 use function sprintf;
 use function str_replace;
 
+/**
+ * @phpstan-import-type ExpandedIgnoredErrorData from IgnoredErrorHelperResult
+ */
 final class IgnoredError
 {
 
 	/**
-	 * @param array{message?: string, rawMessage?: string, identifier?: string, identifiers?: list<string>, path?: string, paths?: list<string>}|string $ignoredError
+	 * @param ExpandedIgnoredErrorData|string $ignoredError
 	 */
 	public static function getIgnoredErrorLabel(array|string $ignoredError): string
 	{

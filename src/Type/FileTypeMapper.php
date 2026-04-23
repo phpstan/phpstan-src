@@ -349,7 +349,7 @@ final class FileTypeMapper
 				}
 				$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
 			} else {
-				[$nameScopeMap, $files] = $cached;
+				[$nameScopeMap] = $cached;
 			}
 			if ($this->memoryCacheCount >= $this->nameScopeMapMemoryCacheCountMax) {
 				$this->memoryCache = array_slice(
@@ -360,7 +360,7 @@ final class FileTypeMapper
 				$this->memoryCacheCount--;
 			}
 
-			$this->memoryCache[$fileName] = [$nameScopeMap, $files];
+			$this->memoryCache[$fileName] = [$nameScopeMap];
 			$this->memoryCacheCount++;
 		}
 

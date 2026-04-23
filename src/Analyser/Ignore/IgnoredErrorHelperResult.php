@@ -13,14 +13,39 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
+/**
+ * `IgnoredErrorHelper` may collapse several configured ignores into one
+ * merged entry, so `message`/`rawMessage`/`identifier` are nullable here.
+ * It also attaches `realPath` once the configured path is resolved. The
+ * `messages`/`rawMessages`/`identifiers` keys remain in the inferred shape
+ * even after expansion + unset (PHPStan does not strip optional keys via
+ * negative isset on sealed shapes), so the type lists them explicitly here
+ * — they are never read, only tolerated. `paths` is `array<int<0, max>,
+ * string>` rather than `list<string>` because `process()` unsets matched
+ * entries by index, breaking list-ness.
+ *
+ * @phpstan-type ExpandedIgnoredErrorData = array{
+ *     message?: string|null,
+ *     rawMessage?: string|null,
+ *     identifier?: string|null,
+ *     messages?: list<string>,
+ *     rawMessages?: list<string>,
+ *     identifiers?: list<string>,
+ *     path?: string,
+ *     paths?: array<int<0, max>, string>,
+ *     count?: int,
+ *     reportUnmatched?: bool,
+ *     realPath?: string,
+ * }
+ */
 final class IgnoredErrorHelperResult
 {
 
 	/**
 	 * @param list<string> $errors
-	 * @param array<array<mixed>> $otherIgnoreErrors
-	 * @param array<string, array<array<mixed>>> $ignoreErrorsByFile
-	 * @param (string|mixed[])[] $ignoreErrors
+	 * @param array<array{index: int<0, max>, ignoreError: string|ExpandedIgnoredErrorData}> $otherIgnoreErrors
+	 * @param array<string, array<array{index: int<0, max>, ignoreError: string|ExpandedIgnoredErrorData}>> $ignoreErrorsByFile
+	 * @param (string|ExpandedIgnoredErrorData)[] $ignoreErrors
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -55,7 +80,14 @@ final class IgnoredErrorHelperResult
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
 		$stringErrors = [];
 
-		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors): bool {
+		// Per-entry runtime state for `count`-bounded ignores. Tracked in side
+		// maps keyed by the same index so `$unmatchedIgnoredErrors` keeps the
+		// `(string|ExpandedIgnoredErrorData)[]` shape across the closure's
+		// offset writes — otherwise PHPStan widens it to `array<mixed>`.
+		$realCounts = [];
+		$matchedAt = [];
+
+		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors, &$realCounts, &$matchedAt): bool {
 			$shouldBeIgnored = false;
 			if (is_string($ignore)) {
 				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: $ignore, ignoredErrorMessage: null, identifier: null, path: null);
@@ -67,13 +99,11 @@ final class IgnoredErrorHelperResult
 					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: $ignore['message'] ?? null, ignoredErrorMessage: $ignore['rawMessage'] ?? null, identifier: $ignore['identifier'] ?? null, path: $ignore['path']);
 					if ($shouldBeIgnored) {
 						if (isset($ignore['count'])) {
-							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
-							$realCount++;
-							$unmatchedIgnoredErrors[$i]['realCount'] = $realCount;
+							$realCount = ($realCounts[$i] ?? 0) + 1;
+							$realCounts[$i] = $realCount;
 
-							if (!isset($unmatchedIgnoredErrors[$i]['file'])) {
-								$unmatchedIgnoredErrors[$i]['file'] = $error->getFile();
-								$unmatchedIgnoredErrors[$i]['line'] = $error->getLine();
+							if (!isset($matchedAt[$i])) {
+								$matchedAt[$i] = ['file' => $error->getFile(), 'line' => $error->getLine()];
 							}
 
 							if ($realCount > $ignore['count']) {
@@ -171,14 +201,18 @@ final class IgnoredErrorHelperResult
 
 		$errors = array_values($errors);
 
-		foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
-			if (!isset($unmatchedIgnoredError['count']) || !isset($unmatchedIgnoredError['realCount'])) {
+		foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
+			if (!is_array($unmatchedIgnoredError) || !isset($unmatchedIgnoredError['count']) || !isset($realCounts[$i])) {
 				continue;
 			}
 
-			if ($unmatchedIgnoredError['realCount'] <= $unmatchedIgnoredError['count']) {
+			$realCount = $realCounts[$i];
+			if ($realCount <= $unmatchedIgnoredError['count']) {
 				continue;
 			}
+
+			$matchedFile = $matchedAt[$i]['file'] ?? null;
+			$matchedLine = $matchedAt[$i]['line'] ?? null;
 
 			$errors[] = (new Error(sprintf(
 				'%s %s is expected to occur %d %s, but occurred %d %s.',
@@ -186,33 +220,40 @@ final class IgnoredErrorHelperResult
 				IgnoredError::stringifyPattern($unmatchedIgnoredError),
 				$unmatchedIgnoredError['count'],
 				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
-				$unmatchedIgnoredError['realCount'],
-				$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
-			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
+				$realCount,
+				$realCount === 1 ? 'time' : 'times',
+			), $matchedFile ?? '', $matchedLine, false))->withIdentifier('ignore.count');
 		}
 
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
 		if (!$hasInternalErrors) {
-			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
-				$reportUnmatched = $unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
+			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
+				$reportUnmatched = is_array($unmatchedIgnoredError)
+					? ($unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors)
+					: $this->reportUnmatchedIgnoredErrors;
 				if ($reportUnmatched === false) {
 					continue;
 				}
+				$realCount = $realCounts[$i] ?? null;
 				if (
-					isset($unmatchedIgnoredError['count'], $unmatchedIgnoredError['realCount'])
+					isset($unmatchedIgnoredError['count'])
+					&& $realCount !== null
 					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
-					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
+					if ($realCount < $unmatchedIgnoredError['count']) {
+						$matchedFile = $matchedAt[$i]['file'] ?? null;
+						$matchedLine = $matchedAt[$i]['line'] ?? null;
+						// $realCount is at least 1 (it was incremented in the closure)
+						// and strictly less than count, so count is always >= 2.
 						$errors[] = (new Error(sprintf(
-							'%s %s is expected to occur %d %s, but occurred only %d %s.',
+							'%s %s is expected to occur %d times, but occurred only %d %s.',
 							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 							$unmatchedIgnoredError['count'],
-							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
-							$unmatchedIgnoredError['realCount'],
-							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
-						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
+							$realCount,
+							$realCount === 1 ? 'time' : 'times',
+						), $matchedFile ?? '', $matchedLine, false))->withIdentifier('ignore.count');
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
 					if (!array_key_exists($unmatchedIgnoredError['realPath'], $analysedFilesKeys)) {

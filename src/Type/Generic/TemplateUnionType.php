@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
@@ -38,9 +37,6 @@ final class TemplateUnionType extends UnionType implements TemplateType
 	public function filterTypes(callable $filterCb): Type
 	{
 		$result = parent::filterTypes($filterCb);
-		if ($result instanceof NeverType) {
-			return $result;
-		}
 		if (!$result instanceof TemplateType) {
 			return TemplateTypeFactory::create(
 				$this->getScope(),

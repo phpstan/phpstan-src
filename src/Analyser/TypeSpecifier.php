@@ -121,7 +121,7 @@ final class TypeSpecifier
 		private array $functionTypeSpecifyingExtensions,
 		private array $methodTypeSpecifyingExtensions,
 		private array $staticMethodTypeSpecifyingExtensions,
-		private bool $rememberPossiblyImpureFunctionValues,
+		private ExprSideEffectsHelper $exprSideEffectsHelper,
 	)
 	{
 	}
@@ -2422,109 +2422,35 @@ final class TypeSpecifier
 			}
 		}
 
-		if (
-			$expr instanceof FuncCall
-			&& $expr->name instanceof Name
-		) {
-			$has = $this->reflectionProvider->hasFunction($expr->name, $scope);
-			if (!$has) {
-				// backwards compatibility with previous behaviour
-				return new SpecifiedTypes([], []);
-			}
-
-			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-			$hasSideEffects = $functionReflection->hasSideEffects();
-			if ($hasSideEffects->yes()) {
-				return new SpecifiedTypes([], []);
-			}
-
-			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
-				return new SpecifiedTypes([], []);
-			}
-
-			if ($this->callLikeArgsHaveSideEffects($expr, $scope)) {
-				return new SpecifiedTypes([], []);
-			}
-		}
-
-		if (
-			$expr instanceof FuncCall
-			&& !$expr->name instanceof Name
-		) {
-			$nameType = $scope->getType($expr->name);
-			if ($nameType->isCallable()->yes()) {
-				$isPure = null;
-				foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
-					$variantIsPure = $variant->isPure();
-					$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
-				}
-
-				if ($isPure !== null) {
-					if ($isPure->no()) {
-						return new SpecifiedTypes([], []);
-					}
-
-					if (!$this->rememberPossiblyImpureFunctionValues && !$isPure->yes()) {
-						return new SpecifiedTypes([], []);
-					}
-				}
-			}
-
-			if ($this->callLikeArgsHaveSideEffects($expr, $scope)) {
-				return new SpecifiedTypes([], []);
-			}
+		if ($expr instanceof FuncCall && !$this->exprSideEffectsHelper->rememberFuncCall($expr, $scope)) {
+			return new SpecifiedTypes([], []);
 		}
 
 		if (
 			$expr instanceof MethodCall
 			&& $expr->name instanceof Node\Identifier
+			&& !$this->exprSideEffectsHelper->rememberMethodCall($expr, $scope)
 		) {
-			$methodName = $expr->name->toString();
-			$calledOnType = $scope->getType($expr->var);
-			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if (
-				$methodReflection === null
-				|| $methodReflection->hasSideEffects()->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-				|| $this->expressionHasSideEffects($expr->var, $scope)
-				|| $this->callLikeArgsHaveSideEffects($expr, $scope)
-			) {
-				if (isset($containsNull) && !$containsNull) {
-					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
-				}
-
-				return new SpecifiedTypes([], []);
+			if (isset($containsNull) && !$containsNull) {
+				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
 			}
+
+			return new SpecifiedTypes([], []);
 		}
 
 		if (
 			$expr instanceof StaticCall
 			&& $expr->name instanceof Node\Identifier
+			&& !$this->exprSideEffectsHelper->rememberStaticCall($expr, $scope)
 		) {
-			$methodName = $expr->name->toString();
-			if ($expr->class instanceof Name) {
-				$calledOnType = $scope->resolveTypeByName($expr->class);
-			} else {
-				$calledOnType = $scope->getType($expr->class);
+			if (isset($containsNull) && !$containsNull) {
+				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
 			}
 
-			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if (
-				$methodReflection === null
-				|| $methodReflection->hasSideEffects()->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-				|| ($expr->class instanceof Expr && $this->expressionHasSideEffects($expr->class, $scope))
-				|| $this->callLikeArgsHaveSideEffects($expr, $scope)
-			) {
-				if (isset($containsNull) && !$containsNull) {
-					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
-				}
-
-				return new SpecifiedTypes([], []);
-			}
+			return new SpecifiedTypes([], []);
 		}
 
-		if ($this->subExpressionsHaveSideEffects($expr, $scope)) {
+		if ($this->exprSideEffectsHelper->subExpressionsHaveSideEffects($expr, $scope)) {
 			if (isset($containsNull) && !$containsNull) {
 				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
 			}
@@ -2558,160 +2484,6 @@ final class TypeSpecifier
 		}
 
 		return $types;
-	}
-
-	private function subExpressionsHaveSideEffects(Expr $expr, Scope $scope): bool
-	{
-		if (
-			$expr instanceof MethodCall
-			|| $expr instanceof Expr\NullsafeMethodCall
-			|| $expr instanceof PropertyFetch
-			|| $expr instanceof Expr\NullsafePropertyFetch
-			|| $expr instanceof ArrayDimFetch
-		) {
-			if ($this->expressionHasSideEffects($expr->var, $scope)) {
-				return true;
-			}
-		} elseif (
-			$expr instanceof StaticCall
-			|| $expr instanceof StaticPropertyFetch
-		) {
-			if ($expr->class instanceof Expr && $this->expressionHasSideEffects($expr->class, $scope)) {
-				return true;
-			}
-		}
-
-		if ($expr instanceof Expr\CallLike && $this->callLikeArgsHaveSideEffects($expr, $scope)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	private function callLikeArgsHaveSideEffects(Expr\CallLike $expr, Scope $scope): bool
-	{
-		if ($expr->isFirstClassCallable()) {
-			return false;
-		}
-
-		foreach ($expr->getArgs() as $arg) {
-			if ($this->expressionHasSideEffects($arg->value, $scope)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private function expressionHasSideEffects(Expr $expr, Scope $scope): bool
-	{
-		if ($expr instanceof Expr\New_) {
-			return true;
-		}
-
-		if ($expr instanceof FuncCall) {
-			if ($expr->isFirstClassCallable()) {
-				return false;
-			}
-			if ($expr->name instanceof Name) {
-				if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
-					return true;
-				}
-				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-				$hasSideEffects = $functionReflection->hasSideEffects();
-				if ($hasSideEffects->yes()) {
-					return true;
-				}
-				if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
-					return true;
-				}
-			} else {
-				return true;
-			}
-			foreach ($expr->getArgs() as $arg) {
-				if ($this->expressionHasSideEffects($arg->value, $scope)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		if ($expr instanceof MethodCall || $expr instanceof Expr\NullsafeMethodCall) {
-			if ($expr->isFirstClassCallable()) {
-				return $this->expressionHasSideEffects($expr->var, $scope);
-			}
-			if ($expr->name instanceof Node\Identifier) {
-				$calledOnType = $scope->getType($expr->var);
-				$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
-				if (
-					$methodReflection === null
-					|| $methodReflection->hasSideEffects()->yes()
-					|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-				) {
-					return true;
-				}
-			} else {
-				return true;
-			}
-			foreach ($expr->getArgs() as $arg) {
-				if ($this->expressionHasSideEffects($arg->value, $scope)) {
-					return true;
-				}
-			}
-			return $this->expressionHasSideEffects($expr->var, $scope);
-		}
-
-		if ($expr instanceof StaticCall) {
-			if ($expr->isFirstClassCallable()) {
-				if ($expr->class instanceof Expr) {
-					return $this->expressionHasSideEffects($expr->class, $scope);
-				}
-				return false;
-			}
-			if ($expr->name instanceof Node\Identifier) {
-				if ($expr->class instanceof Name) {
-					$calledOnType = $scope->resolveTypeByName($expr->class);
-				} else {
-					$calledOnType = $scope->getType($expr->class);
-				}
-				$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
-				if (
-					$methodReflection === null
-					|| $methodReflection->hasSideEffects()->yes()
-					|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-				) {
-					return true;
-				}
-			} else {
-				return true;
-			}
-			foreach ($expr->getArgs() as $arg) {
-				if ($this->expressionHasSideEffects($arg->value, $scope)) {
-					return true;
-				}
-			}
-			if ($expr->class instanceof Expr) {
-				return $this->expressionHasSideEffects($expr->class, $scope);
-			}
-			return false;
-		}
-
-		if ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
-			return $this->expressionHasSideEffects($expr->var, $scope);
-		}
-
-		if ($expr instanceof ArrayDimFetch) {
-			return $this->expressionHasSideEffects($expr->var, $scope);
-		}
-
-		if ($expr instanceof StaticPropertyFetch) {
-			if ($expr->class instanceof Expr) {
-				return $this->expressionHasSideEffects($expr->class, $scope);
-			}
-			return false;
-		}
-
-		return false;
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

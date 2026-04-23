@@ -35,7 +35,7 @@ final class TypeSpecifierFactory
 			$functionTypeSpecifying,
 			$methodTypeSpecifying,
 			$staticMethodTypeSpecifying,
-			$this->container->getParameter('rememberPossiblyImpureFunctionValues'),
+			$this->container->getByType(ExprSideEffectsHelper::class),
 		);
 
 		foreach (array_merge(

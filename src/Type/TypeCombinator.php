@@ -1403,6 +1403,7 @@ final class TypeCombinator
 					$types[$j] instanceof TemplateMixedType
 					&& !$types[$i] instanceof TemplateType
 					&& $types[$i]->isScalar()->yes()
+					&& !$types[$i]->isConstantScalarValue()->yes()
 					&& $types[$j]->getBound()->isSuperTypeOf($types[$i])->yes()
 				) {
 					$narrowed = TemplateTypeFactory::create(
@@ -1425,6 +1426,7 @@ final class TypeCombinator
 					$types[$i] instanceof TemplateMixedType
 					&& !$types[$j] instanceof TemplateType
 					&& $types[$j]->isScalar()->yes()
+					&& !$types[$j]->isConstantScalarValue()->yes()
 					&& $types[$i]->getBound()->isSuperTypeOf($types[$j])->yes()
 				) {
 					$narrowed = TemplateTypeFactory::create(

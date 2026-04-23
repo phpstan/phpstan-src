@@ -872,15 +872,18 @@ final class AssignHandler implements ExprHandler
 					continue;
 				}
 			} elseif (
-				!$expr instanceof PropertyFetch
-				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof FuncCall
-				&& !$expr instanceof MethodCall
-				&& !$expr instanceof Expr\StaticCall
-				&& !$expr instanceof Expr\BinaryOp\Pipe
+				(
+					$expr instanceof FuncCall
+					|| $expr instanceof MethodCall
+					|| $expr instanceof Expr\StaticCall
+				)
+				&& $isImpure
 			) {
 				continue;
-			} elseif ($isImpure) {
+			} elseif (
+				!$expr instanceof PropertyFetch
+				&& !$expr instanceof ArrayDimFetch
+			) {
 				continue;
 			}
 
@@ -923,15 +926,18 @@ final class AssignHandler implements ExprHandler
 					continue;
 				}
 			} elseif (
-				!$expr instanceof PropertyFetch
-				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof FuncCall
-				&& !$expr instanceof MethodCall
-				&& !$expr instanceof Expr\StaticCall
-				&& !$expr instanceof Expr\BinaryOp\Pipe
+				(
+					$expr instanceof FuncCall
+					|| $expr instanceof MethodCall
+					|| $expr instanceof Expr\StaticCall
+				)
+				&& $isImpure
 			) {
 				continue;
-			} elseif ($isImpure) {
+			} elseif (
+				!$expr instanceof PropertyFetch
+				&& !$expr instanceof ArrayDimFetch
+			) {
 				continue;
 			}
 

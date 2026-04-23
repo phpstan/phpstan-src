@@ -23,6 +23,8 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 		private bool $variadic,
 		private bool $hasDefault,
 		private array $attributes,
+		private ?ExportedPhpDocNode $phpDoc = null,
+		private int $flags = 0,
 	)
 	{
 	}
@@ -43,11 +45,24 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 			}
 		}
 
+		if ($this->phpDoc === null) {
+			if ($node->phpDoc !== null) {
+				return false;
+			}
+		} elseif ($node->phpDoc !== null) {
+			if (!$this->phpDoc->equals($node->phpDoc)) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+
 		return $this->name === $node->name
 			&& $this->type === $node->type
 			&& $this->byRef === $node->byRef
 			&& $this->variadic === $node->variadic
-			&& $this->hasDefault === $node->hasDefault;
+			&& $this->hasDefault === $node->hasDefault
+			&& $this->flags === $node->flags;
 	}
 
 	/**
@@ -62,6 +77,8 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$properties['variadic'],
 			$properties['hasDefault'],
 			$properties['attributes'],
+			$properties['phpDoc'] ?? null,
+			$properties['flags'] ?? 0,
 		);
 	}
 
@@ -81,6 +98,8 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 				'variadic' => $this->variadic,
 				'hasDefault' => $this->hasDefault,
 				'attributes' => $this->attributes,
+				'phpDoc' => $this->phpDoc,
+				'flags' => $this->flags,
 			],
 		];
 	}
@@ -102,6 +121,8 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 				}
 				return ExportedAttributeNode::decode($attributeData['data']);
 			}, $data['attributes']),
+			isset($data['phpDoc']) ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
+			$data['flags'] ?? 0,
 		);
 	}
 

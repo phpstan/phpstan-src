@@ -221,7 +221,7 @@ final class ExportedNodeResolver
 				),
 				$node->byRef,
 				NodeTypePrinter::printType($node->returnType),
-				$this->exportParameterNodes($node->params),
+				$this->exportParameterNodes($node->params, $fileName, null),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
@@ -233,7 +233,7 @@ final class ExportedNodeResolver
 	 * @param Node\Param[] $params
 	 * @return ExportedParameterNode[]
 	 */
-	private function exportParameterNodes(array $params): array
+	private function exportParameterNodes(array $params, string $fileName, ?string $className): array
 	{
 		$nodes = [];
 		foreach ($params as $param) {
@@ -254,6 +254,7 @@ final class ExportedNodeResolver
 					$type = new Node\NullableType($type);
 				}
 			}
+			$docComment = $param->getDocComment();
 			$nodes[] = new ExportedParameterNode(
 				$param->var->name,
 				NodeTypePrinter::printType($type),
@@ -261,6 +262,13 @@ final class ExportedNodeResolver
 				$param->variadic,
 				$param->default !== null,
 				$this->exportAttributeNodes($param->attrGroups),
+				$this->exportPhpDocNode(
+					$fileName,
+					$className,
+					null,
+					$docComment !== null ? $docComment->getText() : null,
+				),
+				$param->flags,
 			);
 		}
 
@@ -335,7 +343,7 @@ final class ExportedNodeResolver
 					$node->isFinal(),
 					$node->isStatic(),
 					NodeTypePrinter::printType($node->returnType),
-					$this->exportParameterNodes($node->params),
+					$this->exportParameterNodes($node->params, $fileName, $namespacedName),
 					$this->exportAttributeNodes($node->attrGroups),
 				);
 			}
@@ -482,7 +490,7 @@ final class ExportedNodeResolver
 				$hook->body === null,
 				$hook->isFinal(),
 				$hook->body instanceof Expr,
-				$this->exportParameterNodes($hook->params),
+				$this->exportParameterNodes($hook->params, $fileName, $namespacedName),
 				$this->exportAttributeNodes($hook->attrGroups),
 			);
 		}

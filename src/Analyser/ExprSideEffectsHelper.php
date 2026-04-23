@@ -171,19 +171,19 @@ final class ExprSideEffectsHelper
 			if ($expr->isFirstClassCallable()) {
 				return false;
 			}
-			if ($expr->name instanceof Name) {
-				if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
-					return true;
-				}
-				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-				$hasSideEffects = $functionReflection->hasSideEffects();
-				if ($hasSideEffects->yes()) {
-					return true;
-				}
-				if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
-					return true;
-				}
-			} else {
+			if (!($expr->name instanceof Name)) {
+				return true;
+			}
+
+			if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
+				return true;
+			}
+			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+			$hasSideEffects = $functionReflection->hasSideEffects();
+			if ($hasSideEffects->yes()) {
+				return true;
+			}
+			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
 				return true;
 			}
 			foreach ($expr->getArgs() as $arg) {
@@ -198,17 +198,17 @@ final class ExprSideEffectsHelper
 			if ($expr->isFirstClassCallable()) {
 				return $this->expressionHasSideEffects($expr->var, $scope);
 			}
-			if ($expr->name instanceof Node\Identifier) {
-				$calledOnType = $scope->getType($expr->var);
-				$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
-				if (
-					$methodReflection === null
-					|| $methodReflection->hasSideEffects()->yes()
-					|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-				) {
-					return true;
-				}
-			} else {
+			if (!($expr->name instanceof Node\Identifier)) {
+				return true;
+			}
+
+			$calledOnType = $scope->getType($expr->var);
+			$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
+			if (
+				$methodReflection === null
+				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+			) {
 				return true;
 			}
 			foreach ($expr->getArgs() as $arg) {
@@ -226,21 +226,21 @@ final class ExprSideEffectsHelper
 				}
 				return false;
 			}
-			if ($expr->name instanceof Node\Identifier) {
-				if ($expr->class instanceof Name) {
-					$calledOnType = $scope->resolveTypeByName($expr->class);
-				} else {
-					$calledOnType = $scope->getType($expr->class);
-				}
-				$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
-				if (
-					$methodReflection === null
-					|| $methodReflection->hasSideEffects()->yes()
-					|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-				) {
-					return true;
-				}
+			if (!($expr->name instanceof Node\Identifier)) {
+				return true;
+			}
+
+			if ($expr->class instanceof Name) {
+				$calledOnType = $scope->resolveTypeByName($expr->class);
 			} else {
+				$calledOnType = $scope->getType($expr->class);
+			}
+			$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
+			if (
+				$methodReflection === null
+				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+			) {
 				return true;
 			}
 			foreach ($expr->getArgs() as $arg) {

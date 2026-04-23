@@ -1248,38 +1248,77 @@ final class TypeCombinator
 			}
 		}
 
-		// Second pass: for arrays with definite sealedness, try to merge pairs that
-		// don't share any known key (the eligibleCombinations loop above only considers
-		// shared-key pairs).
+		// Second pass: merge pairs that the eligibleCombinations loop above couldn't touch.
+		// That loop only considers pairs sharing at least one known key, so it never fires
+		// for e.g. `array{}` ∪ `array{a?: 1}` (disjoint, one empty) or for two
+		// unsealed-extras arrays with disjoint required keys. Both collapse losslessly if
+		// one side's extras or optional-key shape can absorb the other side's content.
+		//
+		// Performance: two sealed, non-empty, no-extras arrays with disjoint keys cannot
+		// merge losslessly (legacyIsKeysSupersetOf returns false immediately on the first
+		// missing key). Skip those pairs via a candidate flag to avoid an O(n²) scan that
+		// dominated analyse time on files accumulating many sealed ConstantArrayType
+		// variants (bug-7581 / bug-8146a). A pair is worth checking only if at least one
+		// side is (a) empty, or (b) has real unsealed extras, or (c) has optional keys —
+		// the last case covers the narrowing shape used by e.g. array_key_exists checks
+		// over large optional-key shapes (bug-14032).
 		$indices = array_keys($arraysToProcess);
 		$indicesCount = count($indices);
-		for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
-			$i = $indices[$ii];
-			if (!array_key_exists($i, $arraysToProcess)) {
-				continue;
+		if ($indicesCount > 1) {
+			$candidateFlags = [];
+			foreach ($indices as $idx) {
+				$arr = $arraysToProcess[$idx];
+				$unsealed = $arr->getUnsealedTypes();
+				if ($unsealed === null) {
+					$candidateFlags[$idx] = false;
+					continue;
+				}
+				[$unsealedKey] = $unsealed;
+				$hasRealExtras = !($unsealedKey instanceof NeverType && $unsealedKey->isExplicit());
+				if ($hasRealExtras) {
+					$candidateFlags[$idx] = true;
+					continue;
+				}
+				$keyTypesCount = count($arr->getKeyTypes());
+				if ($keyTypesCount === 0) {
+					$candidateFlags[$idx] = true;
+					continue;
+				}
+				$hasOptional = count($arr->getOptionalKeys()) > 0;
+				$candidateFlags[$idx] = $hasOptional;
 			}
-			if ($arraysToProcess[$i]->getUnsealedTypes() === null) {
-				continue;
-			}
-			for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
-				$j = $indices[$jj];
-				if (!array_key_exists($j, $arraysToProcess)) {
-					continue;
-				}
-				if ($arraysToProcess[$j]->getUnsealedTypes() === null) {
-					continue;
-				}
-				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
-					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-					unset($arraysToProcess[$i]);
-					continue 2;
-				}
-				if (!$arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
-					continue;
-				}
 
-				$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
-				unset($arraysToProcess[$j]);
+			for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
+				$i = $indices[$ii];
+				if (!array_key_exists($i, $arraysToProcess)) {
+					continue;
+				}
+				if ($arraysToProcess[$i]->getUnsealedTypes() === null) {
+					continue;
+				}
+				for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
+					$j = $indices[$jj];
+					if (!array_key_exists($j, $arraysToProcess)) {
+						continue;
+					}
+					if (!$candidateFlags[$i] && !$candidateFlags[$j]) {
+						continue;
+					}
+					if ($arraysToProcess[$j]->getUnsealedTypes() === null) {
+						continue;
+					}
+					if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
+						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						unset($arraysToProcess[$i]);
+						continue 2;
+					}
+					if (!$arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
+						continue;
+					}
+
+					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
+					unset($arraysToProcess[$j]);
+				}
 			}
 		}
 

@@ -100,7 +100,7 @@ class Foo {
 		assertType('string', $s);
 
 		if (strpos($s, ':') === 5) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if (strpos($s, ':') !== 5) {

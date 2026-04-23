@@ -303,4 +303,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11146(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11146.php'], []);
+	}
+
 }

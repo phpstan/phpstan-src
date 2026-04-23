@@ -274,7 +274,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				952,
 			],
 			[
-				'Method ReturnTypes\VariableOverwrittenInForeach::doFoo() should return int but returns int|string.',
+				'Method ReturnTypes\VariableOverwrittenInForeach::doFoo() should return int but returns string.',
 				1010,
 			],
 			[

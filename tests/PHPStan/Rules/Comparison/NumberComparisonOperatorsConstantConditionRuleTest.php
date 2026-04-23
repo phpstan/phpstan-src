@@ -250,7 +250,12 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 	public function testBug6642(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-6642.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6642.php'], [
+			[
+				'Comparison operation "<" between 0|1|2 and 3 is always true.',
+				7,
+			],
+		]);
 	}
 
 	public function testBug9850(): void

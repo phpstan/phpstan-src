@@ -18,8 +18,27 @@ function makeValidNumbers(): array
 {
 	$validNumbers = [1, 2];
 	foreach ($validNumbers as $k => $v) {
-		assertType("non-empty-list<-2|-1|1|2|' 1'|' 2'>", $validNumbers);
+		assertType("array{1, 2, -1, ' 1'}|array{1, 2}", $validNumbers);
 		assertType('0|1', $k);
+		assertType('1|2', $v);
+		$validNumbers[] = -$v;
+		$validNumbers[] = ' ' . (string)$v;
+		assertType("array{1, 2, -1, ' 1', -2|-1, ' 1'|' 2'}|array{1, 2, -2|-1, ' 1'|' 2'}", $validNumbers);
+	}
+
+	assertType("array{1, 2, -1, ' 1', -2, ' 2'}", $validNumbers);
+
+	return $validNumbers;
+}
+
+/**
+ * @param non-empty-list<1|2> $validNumbers
+ */
+function makeValidNumbers2(array $validNumbers): array
+{
+	foreach ($validNumbers as $k => $v) {
+		assertType("non-empty-list<-2|-1|1|2|' 1'|' 2'>", $validNumbers);
+		assertType('int<0, max>', $k);
 		assertType('1|2', $v);
 		$validNumbers[] = -$v;
 		$validNumbers[] = ' ' . (string)$v;

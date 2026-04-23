@@ -13,7 +13,7 @@ function demo(): void
 		$outerList[$id] = [];
 		array_push($outerList[$id], []);
 	}
-	assertType('non-empty-array<1|2, array{array{}}>', $outerList);
+	assertType('array{1: array{array{}}, 2: array{array{}}}', $outerList);
 
 	foreach ($outerList as $key => $outerElement) {
 		$result = false;
@@ -23,6 +23,31 @@ function demo(): void
 			$result = true;
 		}
 		assertType('true', $result);
+
+	}
+}
+
+/**
+ * @param non-empty-list<1|2> $idList
+ */
+function demo2(array $idList): void
+{
+	$outerList = [];
+
+	foreach ($idList as $id) {
+		$outerList[$id] = [];
+		array_push($outerList[$id], []);
+	}
+	assertType('non-empty-array{1?: array{}|array{array{}}, 2?: array{}|array{array{}}}', $outerList);
+
+	foreach ($outerList as $key => $outerElement) {
+		$result = false;
+
+		assertType('array{}|array{array{}}', $outerElement);
+		foreach ($outerElement as $innerElement) {
+			$result = true;
+		}
+		assertType('bool', $result);
 
 	}
 }

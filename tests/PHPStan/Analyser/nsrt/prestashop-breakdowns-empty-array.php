@@ -21,7 +21,7 @@ class Foo
 
 		foreach ($breakdowns as $type => $bd) {
 			if (empty($bd)) {
-				assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
+				assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax: array<mixed>}', $breakdowns);
 				unset($breakdowns[$type]);
 				assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
 			}
@@ -36,6 +36,27 @@ class Foo
 		assertType('array{foo: 1, bar: 2}', $a);
 		unset($a['foo']);
 		assertType('array{bar: 2}', $a);
+	}
+
+}
+
+class Foo2
+{
+
+	/**
+	 * @param non-empty-array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>} $breakdowns
+	 */
+	public function getTaxBreakdown(array $breakdowns): void
+	{
+		foreach ($breakdowns as $type => $bd) {
+			if (empty($bd)) {
+				assertType('non-empty-array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
+				unset($breakdowns[$type]);
+				assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
+			}
+		}
+
+		assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
 	}
 
 }

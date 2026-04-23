@@ -594,9 +594,9 @@ final class ResultCacheManager
 			return true;
 		}
 
-		foreach ($fileExportedNodes as $i => $fileExportedNode) {
+		foreach ($fileExportedNodes as $i => $fileExportedNodeAgain) {
 			$cachedExportedNode = $cachedFileExportedNodes[$i];
-			if (!$cachedExportedNode->equals($fileExportedNode)) {
+			if (!$cachedExportedNode->equals($fileExportedNodeAgain)) {
 				return false;
 			}
 		}

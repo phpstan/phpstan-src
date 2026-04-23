@@ -79,7 +79,7 @@ class Bug14314Test
 			assertType('array{string, string, string, string}', $arr);
 			return;
 		}
-		assertType('array{}|array{string, string, string, string}|array{string}', $arr);
+		assertType('array{}|array{string}', $arr);
 	}
 }
 

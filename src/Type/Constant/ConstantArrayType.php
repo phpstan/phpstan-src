@@ -2321,9 +2321,6 @@ class ConstantArrayType implements Type
 		$mergedUnsealedKey = TypeCombinator::union($thisUnsealedKey, $otherUnsealedKey);
 		$mergedUnsealedValue = TypeCombinator::union($thisUnsealedValue, $otherUnsealedValue);
 
-		$resultUnsealed = [$mergedUnsealedKey, $mergedUnsealedValue];
-		$resultHasExtras = !($mergedUnsealedKey instanceof NeverType && $mergedUnsealedKey->isExplicit());
-
 		$absorbIntoExtras = static function (Type $keyType, Type $valueType) use (&$mergedUnsealedKey, &$mergedUnsealedValue): void {
 			$mergedUnsealedKey = TypeCombinator::union($mergedUnsealedKey, $keyType);
 			$mergedUnsealedValue = TypeCombinator::union($mergedUnsealedValue, $valueType);

@@ -859,7 +859,7 @@ final class AssignHandler implements ExprHandler
 		array $conditionalExpressions,
 		SpecifiedTypes $specifiedTypes,
 		Type $variableType,
-		bool $isImpure
+		bool $isImpure,
 	): array
 	{
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
@@ -913,7 +913,7 @@ final class AssignHandler implements ExprHandler
 		array $conditionalExpressions,
 		SpecifiedTypes $specifiedTypes,
 		Type $variableType,
-		bool $isImpure
+		bool $isImpure,
 	): array
 	{
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {

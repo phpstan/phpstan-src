@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug13629;
+namespace Bug14336;
 
 use function PHPStan\Testing\assertType;
 
@@ -9,7 +9,7 @@ use function PHPStan\Testing\assertType;
  * @param array<string, list<array{xmlNamespace: string, namespace: string, name: string}>> $groupedByNamespace
  * @param array<string, list<string>> $extraNamespaces
  */
-function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces): void {
+function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces, int $int): void {
 	foreach ($extraNamespaces as $mergedNamespace) {
 		if (count($mergedNamespace) < 2) {
 			continue;
@@ -27,12 +27,11 @@ function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces
 		$xsdFiles[$xmlNamespace] = [];
 		foreach ($mergedNamespace as $namespace) {
 			foreach ($groupedByNamespace[$namespace] ?? [] as $viewHelper) {
-				assertType('string', $viewHelper['name']);
-				$xsdFiles[$xmlNamespace][$viewHelper['name']] = $viewHelper;
+				$xsdFiles[$xmlNamespace][$int] = $viewHelper;
 			}
 		}
-		// After assigning with string keys ($viewHelper['name']), $xsdFiles[$xmlNamespace] should NOT be a list
-		assertType('array<string, array{xmlNamespace: string, namespace: string, name: string}>', $xsdFiles[$xmlNamespace]);
+		// After assigning any int, $xsdFiles[$xmlNamespace] should NOT be a list
+		assertType('array<int, array{xmlNamespace: string, namespace: string, name: string}>', $xsdFiles[$xmlNamespace]);
 		$xsdFiles[$xmlNamespace] = array_values($xsdFiles[$xmlNamespace]);
 	}
 }

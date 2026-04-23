@@ -369,7 +369,12 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 
-		$this->analyse([__DIR__ . '/data/bug-6163.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6163.php'], [
+			[
+				'Offset \'123\' on array{123: true, abc: true} in isset() always exists and is not nullable.',
+				11,
+			],
+		]);
 	}
 
 	public function testBug6997(): void

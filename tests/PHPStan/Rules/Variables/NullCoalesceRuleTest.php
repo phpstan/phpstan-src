@@ -249,6 +249,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
 	}
 
+	public function testBug13623(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13623.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7109(): void
 	{

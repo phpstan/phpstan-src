@@ -11,5 +11,17 @@ function sayHello(): void
 		// ...
 	}
 
+	assertType('7', $foo);
+}
+
+/**
+ * @param non-empty-list<5|6|7> $foo
+ */
+function sayHello2(array $foo): void
+{
+	foreach ($foo as $i => $foo) {
+		// ...
+	}
+
 	assertType('5|6|7', $foo);
 }

@@ -286,7 +286,7 @@ final class ConstantArrayTypeBuilder
 					return;
 				}
 
-				if (!$hasMatch && count($this->keyTypes) > 0) {
+				if (!$hasMatch) {
 					foreach ($scalarTypes as $scalarType) {
 						$this->keyTypes[] = $scalarType;
 						$this->valueTypes[] = $valueType;

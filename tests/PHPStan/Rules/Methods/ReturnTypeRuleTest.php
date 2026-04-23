@@ -274,7 +274,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				952,
 			],
 			[
-				'Method ReturnTypes\VariableOverwrittenInForeach::doFoo() should return int but returns int|string.',
+				'Method ReturnTypes\VariableOverwrittenInForeach::doFoo() should return int but returns string.',
 				1010,
 			],
 			[
@@ -1329,6 +1329,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug11430(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-11430.php'], []);
+	}
+
+	public function testBug12653(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12653.php'], []);
 	}
 
 }

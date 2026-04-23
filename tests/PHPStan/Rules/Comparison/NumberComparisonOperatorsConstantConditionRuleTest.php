@@ -256,7 +256,12 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 	public function testBug6642(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-6642.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6642.php'], [
+			[
+				'Comparison operation "<" between 0|1|2 and 3 is always true.',
+				7,
+			],
+		]);
 	}
 
 	public function testBug9850(): void
@@ -313,6 +318,11 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
+	}
+
+	public function testBug11146(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11146.php'], []);
 	}
 
 }

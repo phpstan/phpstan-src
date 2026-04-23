@@ -1007,7 +1007,7 @@ final class AssignHandler implements ExprHandler
 	}
 
 	/**
-	 * @param list<ArrayDimFetch> $dimFetchStack
+	 * @param non-empty-list<ArrayDimFetch> $dimFetchStack
 	 * @param non-empty-list<array{Type|null, ArrayDimFetch}> $offsetTypes
 	 *
 	 * @return array{Type, list<array{Expr, Type}>}
@@ -1025,11 +1025,15 @@ final class AssignHandler implements ExprHandler
 			} else {
 				$has = $offsetValueType->hasOffsetValueType($offsetType);
 				if ($has->yes()) {
-					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					if ($scope->hasExpressionType($dimFetch)->yes()) {
+						$offsetValueType = $scope->getType($dimFetch);
+					} else {
+						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					}
 				} elseif ($has->maybe()) {
 					if ($scope->hasExpressionType($dimFetch)->yes()) {
 						$generalizeOnWrite = false;
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+						$offsetValueType = $scope->getType($dimFetch);
 					} else {
 						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 					}
@@ -1042,6 +1046,8 @@ final class AssignHandler implements ExprHandler
 			$offsetValueTypeStack[] = $offsetValueType;
 		}
 
+		$lastDimKey = array_key_last($dimFetchStack);
+		$computedContainerValues = [];
 		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
@@ -1104,33 +1110,34 @@ final class AssignHandler implements ExprHandler
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
-			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {
+			if ($arrayDimFetch !== null && $offsetValueType->isList()->yes() && $this->shouldKeepList($arrayDimFetch, $scope, $offsetValueType)) {
+				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+			}
+
+			$containerKey = $lastDimKey - $i - 1;
+			if ($containerKey < 0) {
 				continue;
 			}
 
-			if (!$this->shouldKeepList($arrayDimFetch, $scope, $offsetValueType)) {
-				continue;
-			}
-
-			$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+			$computedContainerValues[$containerKey] = $valueToWrite;
 		}
 
 		$additionalExpressions = [];
-		$offsetValueType = $valueToWrite;
-		$lastDimKey = array_key_last($dimFetchStack);
 		foreach ($dimFetchStack as $key => $dimFetch) {
 			if ($dimFetch->dim === null) {
 				continue;
 			}
 
 			if ($key === $lastDimKey) {
-				$offsetValueType = $originalValueToWrite;
+				$additionalValueType = $originalValueToWrite;
+			} elseif (isset($computedContainerValues[$key])) {
+				$additionalValueType = $computedContainerValues[$key];
 			} else {
 				$offsetType = $scope->getType($dimFetch->dim);
-				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+				$additionalValueType = $valueToWrite->getOffsetValueType($offsetType);
 			}
 
-			$additionalExpressions[] = [$dimFetch, $offsetValueType];
+			$additionalExpressions[] = [$dimFetch, $additionalValueType];
 		}
 
 		return [$valueToWrite, $additionalExpressions];

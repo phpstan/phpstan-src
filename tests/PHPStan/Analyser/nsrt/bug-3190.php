@@ -6,6 +6,7 @@ use function PHPStan\Testing\assertType;
 
 interface Server
 {
+	/** @pure */
 	public function isDedicated(): bool;
 
 	public function getSize(): int;

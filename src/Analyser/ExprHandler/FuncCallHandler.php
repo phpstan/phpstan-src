@@ -234,8 +234,8 @@ final class FuncCallHandler implements ExprHandler
 				$arrayWalkOriginalArrayType = $scope->getType($arrayWalkArrayArg);
 				$arrayWalkOriginalArrayNativeType = $scope->getNativeType($arrayWalkArrayArg);
 
-				$nodeCallbackForArgs = static function (Node $node, Scope $scope) use ($nodeCallback, $firstParamName, &$arrayWalkValueTypes): void {
-					if ($node instanceof ClosureReturnStatementsNode) {
+				$nodeCallbackForArgs = static function (Node $node, Scope $scope) use ($nodeCallback, $callbackArg, $firstParamName, &$arrayWalkValueTypes): void {
+					if ($node instanceof ClosureReturnStatementsNode && $node->getClosureExpr() === $callbackArg) {
 						$types = [];
 						$nativeTypes = [];
 						$stmtResult = $node->getStatementResult();

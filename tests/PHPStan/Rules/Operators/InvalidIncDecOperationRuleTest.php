@@ -249,4 +249,9 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/inc-dec-bcmath-number.php'], []);
 	}
 
+	public function testGmp(): void
+	{
+		$this->analyse([__DIR__ . '/data/inc-dec-gmp.php'], []);
+	}
+
 }

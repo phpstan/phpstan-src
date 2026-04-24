@@ -814,6 +814,7 @@ final class TypeSpecifier
 
 			if ($context->null()) {
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+				$specifiedTypes = $specifiedTypes->removeExpr($this->exprPrinter->printExpr($expr->var));
 			} else {
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
 			}

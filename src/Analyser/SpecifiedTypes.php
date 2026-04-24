@@ -119,6 +119,21 @@ final class SpecifiedTypes
 		return $this->rootExpr;
 	}
 
+	public function removeExpr(string $exprString): self
+	{
+		$sureTypes = $this->sureTypes;
+		$sureNotTypes = $this->sureNotTypes;
+		unset($sureTypes[$exprString]);
+		unset($sureNotTypes[$exprString]);
+
+		$self = new self($sureTypes, $sureNotTypes);
+		$self->overwrite = $this->overwrite;
+		$self->newConditionalExpressionHolders = $this->newConditionalExpressionHolders;
+		$self->rootExpr = $this->rootExpr;
+
+		return $self;
+	}
+
 	/** @api */
 	public function intersectWith(SpecifiedTypes $other): self
 	{

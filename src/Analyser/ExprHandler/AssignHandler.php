@@ -34,6 +34,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
@@ -84,6 +85,8 @@ final class AssignHandler implements ExprHandler
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
+		private bool $rememberPossiblyImpureFunctionValues,
 	)
 	{
 	}
@@ -933,6 +936,10 @@ final class AssignHandler implements ExprHandler
 					|| $expr instanceof Expr\StaticCall
 				)
 			) {
+				if (!$this->rememberPossiblyImpureFunctionValues) {
+					continue;
+				}
+
 				if ($isImpure) {
 					continue;
 				}

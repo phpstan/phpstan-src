@@ -37,3 +37,23 @@ $items3 = getItems();
 if ($items3 = iteratorToList($items3)) {
 	assertType('non-empty-list<string>', $items3);
 }
+
+// Property fetch as LHS - exercises removeExpr for non-Variable expressions
+class Holder {
+	/** @var iterable<string, string> */
+	public iterable $items;
+}
+
+function testPropertyFetch(Holder $holder): void {
+	$holder->items = iteratorToList($holder->items);
+	assertType('list<string>', $holder->items);
+}
+
+// Array dim fetch as LHS
+/**
+ * @param array{items: iterable<string, string>} $data
+ */
+function testArrayDimFetch(array $data): void {
+	$data['items'] = iteratorToList($data['items']);
+	assertType('list<string>', $data['items']);
+}

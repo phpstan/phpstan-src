@@ -13,7 +13,9 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
@@ -44,6 +46,7 @@ use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
+use PHPStan\Node\VirtualNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -259,23 +262,23 @@ final class AssignHandler implements ExprHandler
 						$truthyType->isSuperTypeOf($falseyType)->no()
 						&& $falseyType->isSuperTypeOf($truthyType)->no()
 					) {
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 					}
 				}
 
 				$truthyType = TypeCombinator::removeFalsey($type);
 				if ($truthyType !== $type) {
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
 
 					$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
 					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 				}
 
 				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
@@ -304,13 +307,13 @@ final class AssignHandler implements ExprHandler
 
 					$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
 					$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType);
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr);
 
 					$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
 					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
@@ -848,24 +851,13 @@ final class AssignHandler implements ExprHandler
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr): array
 	{
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
-			if ($expr instanceof Variable) {
-				if (!is_string($expr->name)) {
-					continue;
-				}
-
-				if ($expr->name === $variableName) {
-					continue;
-				}
-			} elseif (
-				!$expr instanceof PropertyFetch
-				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof FuncCall
-			) {
+			if (!$this->isExprSafeToProjectThroughVariable($expr, $variableName, $rhsImpurePoints, $assignedExpr)) {
 				continue;
 			}
 
@@ -887,24 +879,13 @@ final class AssignHandler implements ExprHandler
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr): array
 	{
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
-			if ($expr instanceof Variable) {
-				if (!is_string($expr->name)) {
-					continue;
-				}
-
-				if ($expr->name === $variableName) {
-					continue;
-				}
-			} elseif (
-				!$expr instanceof PropertyFetch
-				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof FuncCall
-			) {
+			if (!$this->isExprSafeToProjectThroughVariable($expr, $variableName, $rhsImpurePoints, $assignedExpr)) {
 				continue;
 			}
 
@@ -922,6 +903,76 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $conditionalExpressions;
+	}
+
+	/**
+	 * We're about to remember "when $variableName is truthy/falsy, $expr has a narrower type".
+	 * Whether that's safe to project forward depends on whether re-evaluating $expr later will
+	 * still return the same value as when we observed the narrowing — i.e. whether $expr is
+	 * referentially transparent with respect to the intervening code.
+	 *
+	 * Scalar/const-fetch literals are never narrowing targets, so skip them up front (they also
+	 * happen to stringify to numeric exprStrings which collide with PHP's numeric-string
+	 * array-key autocast).
+	 *
+	 * A plain variable is always safe: reading it doesn't produce side effects, and if it gets
+	 * reassigned the existing conditional-expression-holder machinery invalidates the binding.
+	 * This case matters for e.g. `$ok = preg_match(..., $matches); if ($ok) { use $matches }` —
+	 * `preg_match` itself has impure points, but `$matches` is a plain variable and the
+	 * narrowing attached to it should still survive.
+	 *
+	 * Other common tracked expressions (property/dim fetches, function/method calls) can always
+	 * carry narrowings: PHPStan already memoises their types per exprString, and condition
+	 * checks like `$x = $obj->foo() !== null; if ($x) { $obj->foo(); }` rely on this even when
+	 * the RHS itself has impure points (as a method call without @phpstan-pure always does).
+	 *
+	 * Anything else is accepted only when the right-hand side evaluation recorded zero impure
+	 * points — in that case all sub-expressions it produced sure types for were evaluated
+	 * without side effects and can be re-evaluated later with the same result.
+	 *
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 */
+	private function isExprSafeToProjectThroughVariable(Expr $expr, string $variableName, array $rhsImpurePoints, Expr $assignedExpr): bool
+	{
+		// Scalar/const-fetch literals and PHPStan virtual nodes (e.g. NativeTypeExpr) are never
+		// narrowing targets at a usage site — skip them so they don't collide with PHP's
+		// numeric-string array-key autocast or leak internal virtual expressions into the
+		// conditional-expression map.
+		if ($expr instanceof Node\Scalar || $expr instanceof ConstFetch || $expr instanceof VirtualNode) {
+			return false;
+		}
+
+		if ($expr instanceof Variable) {
+			return is_string($expr->name) && $expr->name !== $variableName;
+		}
+
+		if (
+			$expr instanceof PropertyFetch
+			|| $expr instanceof ArrayDimFetch
+		) {
+			return true;
+		}
+
+		if (
+			$expr instanceof FuncCall
+			|| $expr instanceof MethodCall
+			|| $expr instanceof NullsafeMethodCall
+			|| $expr instanceof StaticCall
+		) {
+			// A call's type can change between evaluations. We're willing to project the
+			// narrowing through a stored boolean only when the sure-type expression is a
+			// *sub*-expression of the assigned RHS — e.g. `$ok = $x->foo() !== null` builds
+			// a sure type for the sub-call `$x->foo()`. In that case the RHS as a whole
+			// carries the comparison result, and later `if ($ok)` usefully re-narrows the
+			// remembered sub-call. When the sure-type expression IS the whole RHS (e.g.
+			// `$device = $this->nullable(); if ($device === null) { … }` with the
+			// falsey-scalar loop producing `$this->nullable() === null` narrowings), the
+			// projection would survive across subsequent reassignments of the target
+			// expression and wrongly re-narrow fresh calls — so skip it.
+			return $expr !== $assignedExpr;
+		}
+
+		return count($rhsImpurePoints) === 0;
 	}
 
 	/**

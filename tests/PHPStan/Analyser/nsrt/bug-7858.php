@@ -46,32 +46,8 @@ function ban(string $year): void
 
 function bak($mixed): void
 {
-	if (!is_numeric($mixed) || !(bool)$mixed) {
+	if (!is_numeric($mixed) || (int)$mixed < 2022) {
 		throw new \RuntimeException();
 	}
-	assertType("float|int<min, -1>|int<1, max>|(non-falsy-string&numeric-string)", $mixed);
-}
-
-function bal($mixed): void
-{
-	if (!is_numeric($mixed) || (bool)$mixed) {
-		throw new \RuntimeException();
-	}
-	assertType("0|0.0|'0'", $mixed);
-}
-
-function bau($mixed): void
-{
-	if (!is_numeric($mixed) || (string)$mixed) {
-		throw new \RuntimeException();
-	}
-	assertType("0|0.0", $mixed);
-}
-
-function baw($mixed): void
-{
-	if (!is_numeric($mixed) || !(string)$mixed) {
-		throw new \RuntimeException();
-	}
-	assertType("float|int|numeric-string", $mixed);
+	assertType("float|int<2022, max>|numeric-string", $mixed);
 }

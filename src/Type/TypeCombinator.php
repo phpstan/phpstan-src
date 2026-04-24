@@ -1843,6 +1843,7 @@ final class TypeCombinator
 				$value = self::intersect($aValue, $bValue);
 				$optional = $a->isOptionalKey($aIdx);
 			} else {
+				/** @var int<0, max> $bIdx */
 				$keyType = $b->getKeyTypes()[$bIdx];
 				$bValue = $b->getValueTypes()[$bIdx];
 				$aValue = $resolveOtherValue($a, $keyType);

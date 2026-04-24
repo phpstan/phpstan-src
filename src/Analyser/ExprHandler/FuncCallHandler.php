@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use Closure;
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
@@ -28,6 +29,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\TypeExpr;
@@ -61,6 +63,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use Throwable;
+use function array_fill;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -68,6 +71,7 @@ use function array_slice;
 use function array_values;
 use function count;
 use function in_array;
+use function is_string;
 use function sprintf;
 use function str_starts_with;
 
@@ -201,12 +205,88 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		/** @var array{Type, Type}|null $arrayWalkValueTypes */
+		$arrayWalkValueTypes = null;
+		$arrayWalkArrayArg = null;
+		$arrayWalkOriginalArrayType = null;
+		$arrayWalkOriginalArrayNativeType = null;
+		$nodeCallbackForArgs = $nodeCallback;
+		if (
+			$functionReflection !== null
+			&& $functionReflection->getName() === 'array_walk'
+			&& count($normalizedExpr->getArgs()) >= 2
+		) {
+			$callbackArg = $normalizedExpr->getArgs()[1]->value;
+			$firstParamName = null;
+
+			if (
+				$callbackArg instanceof Expr\Closure
+				&& isset($callbackArg->params[0])
+				&& $callbackArg->params[0]->byRef
+				&& $callbackArg->params[0]->var instanceof Variable
+				&& is_string($callbackArg->params[0]->var->name)
+			) {
+				$firstParamName = $callbackArg->params[0]->var->name;
+			}
+
+			if ($firstParamName !== null) {
+				$arrayWalkArrayArg = $normalizedExpr->getArgs()[0]->value;
+				$arrayWalkOriginalArrayType = $scope->getType($arrayWalkArrayArg);
+				$arrayWalkOriginalArrayNativeType = $scope->getNativeType($arrayWalkArrayArg);
+
+				$nodeCallbackForArgs = static function (Node $node, Scope $scope) use ($nodeCallback, $firstParamName, &$arrayWalkValueTypes): void {
+					if ($node instanceof ClosureReturnStatementsNode) {
+						$types = [];
+						$nativeTypes = [];
+						$stmtResult = $node->getStatementResult();
+						foreach ($stmtResult->getExitPoints() as $exitPoint) {
+							$exitScope = $exitPoint->getScope();
+							if (!$exitScope->hasVariableType($firstParamName)->yes()) {
+								continue;
+							}
+
+							$types[] = $exitScope->getVariableType($firstParamName);
+							$nativeTypes[] = $exitScope->getNativeType(new Variable($firstParamName));
+						}
+						if (!$stmtResult->isAlwaysTerminating()) {
+							$stmtScope = $stmtResult->getScope();
+							if ($stmtScope->hasVariableType($firstParamName)->yes()) {
+								$types[] = $stmtScope->getVariableType($firstParamName);
+								$nativeTypes[] = $stmtScope->getNativeType(new Variable($firstParamName));
+							}
+						}
+						if (count($types) > 0) {
+							$arrayWalkValueTypes = [
+								TypeCombinator::union(...$types),
+								TypeCombinator::union(...$nativeTypes),
+							];
+						}
+					}
+					$nodeCallback($node, $scope);
+				};
+			}
+		}
+
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallbackForArgs, $context);
 		$scope = $argsResult->getScope();
 		$hasYield = $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
+
+		if ($arrayWalkValueTypes !== null && $arrayWalkArrayArg !== null) {
+			$newArrayType = $this->getArrayWalkResultType($arrayWalkOriginalArrayType, $arrayWalkValueTypes[0]);
+			$newArrayNativeType = $this->getArrayWalkResultType($arrayWalkOriginalArrayNativeType, $arrayWalkValueTypes[1]);
+
+			$scope = $nodeScopeResolver->processVirtualAssign(
+				$scope,
+				$storage,
+				$stmt,
+				$arrayWalkArrayArg,
+				new NativeTypeExpr($newArrayType, $newArrayNativeType),
+				$nodeCallback,
+			)->getScope();
+		}
 
 		if ($normalizedExpr->name instanceof Expr) {
 			$nameType = $scope->getType($normalizedExpr->name);
@@ -702,6 +782,31 @@ final class FuncCallHandler implements ExprHandler
 			}
 
 			return $newArrayType;
+		});
+	}
+
+	private function getArrayWalkResultType(Type $arrayType, Type $newValueType): Type
+	{
+		return TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use ($newValueType): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+
+			if ($type instanceof ConstantArrayType) {
+				return new ConstantArrayType(
+					$type->getKeyTypes(),
+					array_fill(0, count($type->getValueTypes()), $newValueType),
+					$type->getNextAutoIndexes(),
+					$type->getOptionalKeys(),
+					$type->isList(),
+				);
+			}
+
+			if (!$type instanceof ArrayType) {
+				return $type;
+			}
+
+			return new ArrayType($type->getKeyType(), $newValueType);
 		});
 	}
 

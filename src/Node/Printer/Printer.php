@@ -15,6 +15,7 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
+use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -116,6 +117,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_OriginalForeachKeyExpr(OriginalForeachKeyExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanOriginalForeachKey(%s)', $expr->getVariableName());
+	}
+
+	protected function pPHPStan_Node_OriginalForeachValueExpr(OriginalForeachValueExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanOriginalForeachValue(%s)', $expr->getVariableName());
 	}
 
 	protected function pPHPStan_Node_IntertwinedVariableByReferenceWithExpr(IntertwinedVariableByReferenceWithExpr $expr): string // phpcs:ignore

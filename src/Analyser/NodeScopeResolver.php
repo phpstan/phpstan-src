@@ -79,6 +79,7 @@ use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
+use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
@@ -1330,10 +1331,27 @@ class NodeScopeResolver
 				&& $exprType->isConstantArray()->no()
 			) {
 				$arrayExprDimFetch = new ArrayDimFetch($stmt->expr, $stmt->keyVar);
+				$originalValueExpr = null;
+				if ($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)) {
+					$originalValueExpr = new OriginalForeachValueExpr($stmt->valueVar->name);
+				}
 				$arrayDimFetchLoopTypes = [];
 				$keyLoopTypes = [];
 				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
-					$arrayDimFetchLoopTypes[] = $scopeWithIterableValueType->getType($arrayExprDimFetch);
+					$dimFetchType = $scopeWithIterableValueType->getType($arrayExprDimFetch);
+					// Condition-based narrowings like `is_string($type)` apply to the value
+					// variable but not automatically to the array dim fetch, even though the
+					// two describe the same element for a given iteration. If the value var
+					// hasn't been reassigned (OriginalForeachValueExpr still tracked) we use
+					// the narrowed value-var type in place of the broader dim fetch type so
+					// the loop's final array rewrite below picks up the sharper element type.
+					if ($originalValueExpr !== null && $scopeWithIterableValueType->hasExpressionType($originalValueExpr)->yes()) {
+						$valueVarType = $scopeWithIterableValueType->getType($stmt->valueVar);
+						if ($dimFetchType->isSuperTypeOf($valueVarType)->yes()) {
+							$dimFetchType = $valueVarType;
+						}
+					}
+					$arrayDimFetchLoopTypes[] = $dimFetchType;
 					$keyLoopTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);
 				}
 
@@ -1343,8 +1361,15 @@ class NodeScopeResolver
 				$arrayDimFetchLoopNativeTypes = [];
 				$keyLoopNativeTypes = [];
 				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
-					$arrayDimFetchLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($arrayExprDimFetch);
-					$keyLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($stmt->keyVar);
+					$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($arrayExprDimFetch);
+					if ($originalValueExpr !== null && $scopeWithIterableValueType->hasExpressionType($originalValueExpr)->yes()) {
+						$valueVarNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
+						if ($dimFetchNativeType->isSuperTypeOf($valueVarNativeType)->yes()) {
+							$dimFetchNativeType = $valueVarNativeType;
+						}
+					}
+					$arrayDimFetchLoopNativeTypes[] = $dimFetchNativeType;
+					$keyLoopNativeTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);
 				}
 
 				$arrayDimFetchLoopNativeType = TypeCombinator::union(...$arrayDimFetchLoopNativeTypes);
@@ -3910,6 +3935,11 @@ class NodeScopeResolver
 				$valueType,
 				$nativeValueType,
 				TrinaryLogic::createYes(),
+			);
+			$iterScope = $iterScope->assignExpression(
+				new OriginalForeachValueExpr($valueVarName),
+				$valueType,
+				$nativeValueType,
 			);
 			if ($keyVarName !== null) {
 				$iterScope = $iterScope->assignVariable(

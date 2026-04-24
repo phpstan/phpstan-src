@@ -30,6 +30,7 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
+use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -2355,6 +2356,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$nativeValueType,
 			TrinaryLogic::createYes(),
 		);
+		// Track the original foreach value so narrowings applied to the value
+		// variable (e.g. is_string($type)) can later be projected back onto the
+		// corresponding array dim fetch without being confused by a reassignment
+		// ($type = 'foo' invalidates this expression, same as OriginalForeachKeyExpr).
+		$scope = $scope->assignExpression(new OriginalForeachValueExpr($valueName), $valueType, $nativeValueType);
 		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 			$scope = $scope->assignExpression(
 				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetExistingOffsetValueTypeExpr(

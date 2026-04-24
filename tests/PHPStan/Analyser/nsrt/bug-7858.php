@@ -46,24 +46,32 @@ function ban(string $year): void
 
 function bak($mixed): void
 {
-	if (!(bool)$mixed) {
+	if (!is_numeric($mixed) || !(bool)$mixed) {
 		throw new \RuntimeException();
 	}
-	assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $mixed);
+	assertType("float|int<min, -1>|int<1, max>|(non-falsy-string&numeric-string)", $mixed);
 }
 
 function bal($mixed): void
 {
-	if ((bool)$mixed) {
+	if (!is_numeric($mixed) || (bool)$mixed) {
 		throw new \RuntimeException();
 	}
-	assertType("0|0.0|''|'0'|array{}|false|null", $mixed);
+	assertType("0|0.0|'0'", $mixed);
 }
 
 function bau($mixed): void
 {
-	if ((string)$mixed) {
+	if (!is_numeric($mixed) || (string)$mixed) {
 		throw new \RuntimeException();
 	}
-	assertType("0|0.0|''|false|null", $mixed);
+	assertType("0|0.0", $mixed);
+}
+
+function baw($mixed): void
+{
+	if (!is_numeric($mixed) || !(string)$mixed) {
+		throw new \RuntimeException();
+	}
+	assertType("float|int|numeric-string", $mixed);
 }

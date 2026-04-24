@@ -23,7 +23,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use function array_keys;
 use function count;
 use function in_array;
 use function is_int;
@@ -51,6 +50,8 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			$argType = $scope->getType($arg->value);
 
 			if ($arg->unpack) {
+				$startIndex = count($argTypes);
+
 				if ($argType->isConstantArray()->yes()) {
 					foreach ($argType->getConstantArrays() as $constantArray) {
 						foreach ($constantArray->getValueTypes() as $valueType) {
@@ -62,10 +63,8 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 				}
 
 				if (!$argType->isIterableAtLeastOnce()->yes()) {
-					// unpacked params can be empty, making them optional
-					$optionalArgTypesOffset = count($argTypes) - 1;
-					foreach (array_keys($argTypes) as $key) {
-						$optionalArgTypes[] = $optionalArgTypesOffset + $key;
+					for ($i = $startIndex; $i < count($argTypes); $i++) {
+						$optionalArgTypes[] = $i;
 					}
 				}
 			} else {
@@ -80,7 +79,9 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 
 		if ($allConstant->yes()) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($argTypes as $argType) {
+			foreach ($argTypes as $argIndex => $argType) {
+				$isOptionalArg = in_array($argIndex, $optionalArgTypes, true);
+
 				/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
 				$keyTypes = [];
 				foreach ($argType->getConstantArrays() as $constantArray) {
@@ -93,7 +94,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 					$newArrayBuilder->setOffsetValueType(
 						$keyType instanceof ConstantIntegerType ? null : $keyType,
 						$argType->getOffsetValueType($keyType),
-						!$argType->hasOffsetValueType($keyType)->yes(),
+						$isOptionalArg || !$argType->hasOffsetValueType($keyType)->yes(),
 					);
 				}
 			}
@@ -102,7 +103,11 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		}
 
 		$offsetTypes = [];
-		foreach ($argTypes as $argType) {
+		foreach ($argTypes as $argIndex => $argType) {
+			if (in_array($argIndex, $optionalArgTypes, true)) {
+				continue;
+			}
+
 			$constArrays = $argType->getConstantArrays();
 			if ($constArrays !== []) {
 				foreach ($constArrays as $constantArray) {

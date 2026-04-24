@@ -43,3 +43,27 @@ function ban(string $year): void
 	}
 	assertType('numeric-string', $year);
 }
+
+function bak($mixed): void
+{
+	if (!(bool)$mixed) {
+		throw new \RuntimeException();
+	}
+	assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $mixed);
+}
+
+function bal($mixed): void
+{
+	if ((bool)$mixed) {
+		throw new \RuntimeException();
+	}
+	assertType("0|0.0|''|'0'|array{}|false|null", $mixed);
+}
+
+function bau($mixed): void
+{
+	if ((string)$mixed) {
+		throw new \RuntimeException();
+	}
+	assertType("0|0.0|''|false|null", $mixed);
+}

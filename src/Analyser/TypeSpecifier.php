@@ -814,8 +814,10 @@ final class TypeSpecifier
 
 			if ($context->null()) {
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+				// RHS recursion may produce specifiedTypes for the LHS variable via conditional return types — remove to prevent circular evaluation
 				$specifiedTypes = $specifiedTypes->removeExpr($this->exprPrinter->printExpr($expr->var));
 			} else {
+				// non-null context recurses into $expr->var, not $expr->expr, so conditional return types are not re-evaluated
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
 			}
 

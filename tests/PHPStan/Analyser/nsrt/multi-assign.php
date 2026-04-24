@@ -55,12 +55,12 @@ function (bool $b): void {
 function (bool $b): void {
 	$foo = $bar = $baz = $b;
 	if ($bar) {
-		assertType('bool', $b);
+		assertType('true', $b);
 		assertType('bool', $foo);
 		assertType('true', $bar);
 		assertType('bool', $baz);
 	} else {
-		assertType('bool', $b);
+		assertType('false', $b);
 		assertType('bool', $foo);
 		assertType('false', $bar);
 		assertType('bool', $baz);
@@ -70,12 +70,12 @@ function (bool $b): void {
 function (bool $b): void {
 	$foo = $bar = $baz = $b;
 	if ($baz) {
-		assertType('bool', $b);
+		assertType('true', $b);
 		assertType('bool', $foo);
 		assertType('bool', $bar);
 		assertType('true', $baz);
 	} else {
-		assertType('bool', $b);
+		assertType('false', $b);
 		assertType('bool', $foo);
 		assertType('bool', $bar);
 		assertType('false', $baz);

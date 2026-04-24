@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Bug9455;
+namespace Bug9455DoNotRememberedPossiblyImpureFunctionValues;
 
 use function PHPStan\Testing\assertType;
 
@@ -39,7 +39,7 @@ class HelloWorld
 		$hasA = $b->getPure() !== null;
 
 		if($hasA) {
-			assertType('Bug9455\A|null', $b->getPure());
+			assertType('Bug9455DoNotRememberedPossiblyImpureFunctionValues\A|null', $b->getPure());
 		}
 	}
 
@@ -49,7 +49,7 @@ class HelloWorld
 		$b = new B(1, $a);
 
 		if($b->getPure() !== null) {
-			assertType('Bug9455\A', $b->getPure());
+			assertType('Bug9455DoNotRememberedPossiblyImpureFunctionValues\A', $b->getPure());
 		}
 	}
 }
@@ -72,7 +72,7 @@ class ImpureTest
 		$hasA = $c->getImpure() !== null;
 
 		if($hasA) {
-			assertType('Bug9455\A|null', $c->getImpure());
+			assertType('Bug9455DoNotRememberedPossiblyImpureFunctionValues\A|null', $c->getImpure());
 		}
 	}
 
@@ -81,7 +81,7 @@ class ImpureTest
 		$c = new C();
 
 		if($c->getImpure() !== null) {
-			assertType('Bug9455\A|null', $c->getImpure());
+			assertType('Bug9455DoNotRememberedPossiblyImpureFunctionValues\A|null', $c->getImpure());
 		}
 	}
 }
@@ -99,6 +99,6 @@ function doUnknownPurity(): void
 	$hasA = $d->getUnknownPurity() !== null;
 
 	if($hasA) {
-		assertType('Bug9455\A|null', $d->getUnknownPurity());
+		assertType('Bug9455DoNotRememberedPossiblyImpureFunctionValues\A|null', $d->getUnknownPurity());
 	}
 }

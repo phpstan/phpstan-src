@@ -95,7 +95,6 @@ return [
 	'fgets' => ['hasSideEffects' => true],
 	'fgetss' => ['hasSideEffects' => true],
 	'file_put_contents' => ['hasSideEffects' => true],
-	'function_exists' => ['hasSideEffects' => false],
 	'flock' => ['hasSideEffects' => true],
 	'fopen' => ['hasSideEffects' => true],
 	'fpassthru' => ['hasSideEffects' => true],

@@ -24,7 +24,7 @@ class B {
 	/**
 	 * @phpstan-pure
 	 */
-	public function getA(): ?A {
+	public function getPure(): ?A {
 		return $this->a;
 	}
 }
@@ -36,10 +36,10 @@ class HelloWorld
 		$a = new A(1);
 		$b = new B(1, $a);
 
-		$hasA = $b->getA() !== null;
+		$hasA = $b->getPure() !== null;
 
 		if($hasA) {
-			assertType('Bug9455\A', $b->getA());
+			assertType('Bug9455\A', $b->getPure());
 		}
 	}
 
@@ -48,8 +48,8 @@ class HelloWorld
 		$a = new A(1);
 		$b = new B(1, $a);
 
-		if($b->getA() !== null) {
-			assertType('Bug9455\A', $b->getA());
+		if($b->getPure() !== null) {
+			assertType('Bug9455\A', $b->getPure());
 		}
 	}
 }
@@ -58,7 +58,7 @@ class C {
 	/**
 	 * @phpstan-impure
 	 */
-	public function getA(): ?A {
+	public function getImpure(): ?A {
 		return rand(0, 1) ? new A(1) : null;
 	}
 }
@@ -69,10 +69,10 @@ class ImpureTest
 	{
 		$c = new C();
 
-		$hasA = $c->getA() !== null;
+		$hasA = $c->getImpure() !== null;
 
 		if($hasA) {
-			assertType('Bug9455\A|null', $c->getA());
+			assertType('Bug9455\A|null', $c->getImpure());
 		}
 	}
 
@@ -80,8 +80,25 @@ class ImpureTest
 	{
 		$c = new C();
 
-		if($c->getA() !== null) {
-			assertType('Bug9455\A|null', $c->getA());
+		if($c->getImpure() !== null) {
+			assertType('Bug9455\A|null', $c->getImpure());
 		}
+	}
+}
+
+class D {
+	public function getUnknownPurity(): ?A {
+		return rand(0, 1) ? new A(1) : null;
+	}
+}
+
+function doUnknownPurity(): void
+{
+	$d = new D();
+
+	$hasA = $d->getUnknownPurity() !== null;
+
+	if($hasA) {
+		assertType('Bug9455\A|null', $d->getUnknownPurity());
 	}
 }

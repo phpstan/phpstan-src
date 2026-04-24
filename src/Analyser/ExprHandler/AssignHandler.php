@@ -881,6 +881,10 @@ final class AssignHandler implements ExprHandler
 					|| $expr instanceof Expr\StaticCall
 				)
 			) {
+				if (!$this->rememberPossiblyImpureFunctionValues) {
+					continue;
+				}
+
 				if ($isImpure) {
 					continue;
 				}

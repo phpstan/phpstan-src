@@ -3360,7 +3360,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function addConditionalExpressions(string $exprString, array $conditionalExpressionHolders): self
 	{
 		$conditionalExpressions = $this->conditionalExpressions;
-		$conditionalExpressions[$exprString] = $conditionalExpressionHolders;
+		// Merge rather than overwrite: multiple independent holders can target the same
+		// expression (e.g. `$xIsA = $x instanceof A && $y instanceof A` stores a holder
+		// for `$x` keyed on `$xIsA`; later `$yIsA = $y instanceof A && $x instanceof A`
+		// stores another holder for the same target `$x` keyed on `$yIsA`). Replacing
+		// the existing entry here would throw away the earlier binding, breaking
+		// narrowing inside later `if ($xIsA) { … }` inside `if ($xIsA || $yIsA)`.
+		// Holder keys (`getKey()`) disambiguate identical entries so we still dedupe.
+		$existing = $conditionalExpressions[$exprString] ?? [];
+		foreach ($conditionalExpressionHolders as $holder) {
+			$existing[$holder->getKey()] = $holder;
+		}
+		$conditionalExpressions[$exprString] = $existing;
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),

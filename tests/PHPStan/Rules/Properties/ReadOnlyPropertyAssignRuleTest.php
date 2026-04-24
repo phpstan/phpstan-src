@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -25,6 +26,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 					'ReadonlyPropertyAssign\\TestCase::setUp',
 				],
 			),
+			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -36,25 +38,34 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property ReadonlyPropertyAssign\Foo::$foo is assigned outside of the constructor.',
 				21,
 			],
-			[
-				'Readonly property ReadonlyPropertyAssign\Foo::$bar is assigned outside of its declaring class.',
-				33,
-			],
-			[
-				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
-				34,
-			],
-			[
-				'Readonly property ReadonlyPropertyAssign\Foo::$bar is assigned outside of its declaring class.',
-				39,
-			],
 		];
 
 		if (PHP_VERSION_ID < 80400) {
+			// Since PHP 8.4, readonly is implicitly protected(set),
+			// so child classes may initialize the property.
+			$errors[] = [
+				'Readonly property ReadonlyPropertyAssign\Foo::$bar is assigned outside of its declaring class.',
+				33,
+			];
+			$errors[] = [
+				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
+				34,
+			];
+			$errors[] = [
+				'Readonly property ReadonlyPropertyAssign\Foo::$bar is assigned outside of its declaring class.',
+				39,
+			];
 			// reported by AccessPropertiesInAssignRule on 8.4+
 			$errors[] = [
 				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
 				46,
+			];
+		} else {
+			// On PHP 8.4+ the assignment is allowed by visibility rules,
+			// but still has to happen in a constructor of the child class.
+			$errors[] = [
+				'Readonly property ReadonlyPropertyAssign\Foo::$bar is assigned outside of the constructor.',
+				39,
 			];
 		}
 
@@ -178,6 +189,19 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	public function testCloneWith(): void
 	{
 		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug12871(): void
+	{
+		// The private(set) assignment in a subclass is reported by AccessPropertiesInAssignRule,
+		// so this rule only reports the write outside of a constructor.
+		$this->analyse([__DIR__ . '/data/bug-12871.php'], [
+			[
+				'Readonly property Bug12871\A::$foo is assigned outside of the constructor.',
+				54,
+			],
+		]);
 	}
 
 }

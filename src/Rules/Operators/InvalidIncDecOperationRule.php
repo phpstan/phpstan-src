@@ -113,7 +113,7 @@ final class InvalidIncDecOperationRule implements Rule
 			$deprecatedString = true;
 		}
 
-		$allowedTypes = [new FloatType(), new IntegerType(), $string, new ObjectType('SimpleXMLElement')];
+		$allowedTypes = [new FloatType(), new IntegerType(), $string, new ObjectType('SimpleXMLElement'), new ObjectType('GMP')];
 		$deprecatedNull = false;
 		if (
 			!$this->phpVersion->deprecatesDecOnNonNumericString()

@@ -95,3 +95,31 @@ function arrayWalkNestedArray(): void
 	});
 	assertType("array{a: 1|2, b: 1|2}", $array);
 }
+
+function arrayWalkWithNestedClosure(): void
+{
+	/** @var array<string, int> $array */
+	$array = ['a' => 1, 'b' => 2];
+	array_walk($array, function (&$value): void {
+		$inner = array_map(function ($x) {
+			return $x * 2;
+		}, [1, 2, 3]);
+		$value = (string) $value;
+	});
+	assertType("array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+}
+
+function arrayWalkWithNestedClosureByRef(): void
+{
+	/** @var array<string, int> $array */
+	$array = ['a' => 1, 'b' => 2];
+	array_walk($array, function (&$value): void {
+		$capture = null;
+		$fn = function () use (&$capture): void {
+			$capture = 'hello';
+		};
+		$fn();
+		$value = (string) $value;
+	});
+	assertType("array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+}

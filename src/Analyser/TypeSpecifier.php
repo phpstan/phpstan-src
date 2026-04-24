@@ -493,63 +493,123 @@ final class TypeSpecifier
 			}
 
 			$leftExpr = $expr->left;
+			$leftPartialCast = null;
 			if ($leftExpr instanceof Expr\Cast) {
 				$castedType = $scope->getType($leftExpr);
 				$innerType = $scope->getType($leftExpr->expr);
 				if ($castedType->equals($innerType)) {
 					$leftExpr = $leftExpr->expr;
+				} elseif ($innerType instanceof UnionType) {
+					$nonRedundant = $this->filterNonRedundantCastTypes($leftExpr, $innerType);
+					if ($nonRedundant !== null) {
+						$leftPartialCast = [$leftExpr->expr, $castedType, $nonRedundant];
+					}
 				}
 			}
 			$rightExpr = $expr->right;
+			$rightPartialCast = null;
 			if ($rightExpr instanceof Expr\Cast) {
 				$castedType = $scope->getType($rightExpr);
 				$innerType = $scope->getType($rightExpr->expr);
 				if ($castedType->equals($innerType)) {
 					$rightExpr = $rightExpr->expr;
+				} elseif ($innerType instanceof UnionType) {
+					$nonRedundant = $this->filterNonRedundantCastTypes($rightExpr, $innerType);
+					if ($nonRedundant !== null) {
+						$rightPartialCast = [$rightExpr->expr, $castedType, $nonRedundant];
+					}
 				}
 			}
 
 			if ($context->true()) {
 				if (!$leftExpr instanceof Node\Scalar) {
+					$narrowedLeftType = $orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion);
 					$result = $result->unionWith(
 						$this->create(
 							$leftExpr,
-							$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
+							$narrowedLeftType,
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
 					);
+					if ($leftPartialCast !== null) {
+						[$innerExpr, $castType, $nonRedundantType] = $leftPartialCast;
+						$result = $result->unionWith(
+							$this->create(
+								$innerExpr,
+								TypeCombinator::union(TypeCombinator::intersect($narrowedLeftType, $castType), $nonRedundantType),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
 				}
 				if (!$rightExpr instanceof Node\Scalar) {
+					$narrowedRightType = $orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion);
 					$result = $result->unionWith(
 						$this->create(
 							$rightExpr,
-							$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
+							$narrowedRightType,
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
 					);
+					if ($rightPartialCast !== null) {
+						[$innerExpr, $castType, $nonRedundantType] = $rightPartialCast;
+						$result = $result->unionWith(
+							$this->create(
+								$innerExpr,
+								TypeCombinator::union(TypeCombinator::intersect($narrowedRightType, $castType), $nonRedundantType),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
 				}
 			} elseif ($context->false()) {
 				if (!$leftExpr instanceof Node\Scalar) {
+					$narrowedLeftType = $orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion);
 					$result = $result->unionWith(
 						$this->create(
 							$leftExpr,
-							$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
+							$narrowedLeftType,
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
 					);
+					if ($leftPartialCast !== null) {
+						[$innerExpr, $castType, $nonRedundantType] = $leftPartialCast;
+						$result = $result->unionWith(
+							$this->create(
+								$innerExpr,
+								TypeCombinator::union(TypeCombinator::intersect($narrowedLeftType, $castType), $nonRedundantType),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
 				}
 				if (!$rightExpr instanceof Node\Scalar) {
+					$narrowedRightType = $orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion);
 					$result = $result->unionWith(
 						$this->create(
 							$rightExpr,
-							$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
+							$narrowedRightType,
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
 					);
+					if ($rightPartialCast !== null) {
+						[$innerExpr, $castType, $nonRedundantType] = $rightPartialCast;
+						$result = $result->unionWith(
+							$this->create(
+								$innerExpr,
+								TypeCombinator::union(TypeCombinator::intersect($narrowedRightType, $castType), $nonRedundantType),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
 				}
 			}
 
@@ -3247,6 +3307,38 @@ final class TypeSpecifier
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	private function filterNonRedundantCastTypes(Expr\Cast $cast, UnionType $innerType): ?Type
+	{
+		$nonRedundantTypes = [];
+		$hasRedundant = false;
+		foreach ($innerType->getTypes() as $memberType) {
+			$convertedType = null;
+			if ($cast instanceof Expr\Cast\Int_) {
+				$convertedType = $memberType->toInteger();
+			} elseif ($cast instanceof Expr\Cast\Double) {
+				$convertedType = $memberType->toFloat();
+			} elseif ($cast instanceof Expr\Cast\String_) {
+				$convertedType = $memberType->toString();
+			} elseif ($cast instanceof Expr\Cast\Bool_) {
+				$convertedType = $memberType->toBoolean();
+			} elseif ($cast instanceof Expr\Cast\Array_) {
+				$convertedType = $memberType->toArray();
+			}
+
+			if ($convertedType !== null && $convertedType->equals($memberType)) {
+				$hasRedundant = true;
+			} else {
+				$nonRedundantTypes[] = $memberType;
+			}
+		}
+
+		if ($hasRedundant && $nonRedundantTypes !== []) {
+			return TypeCombinator::union(...$nonRedundantTypes);
+		}
+
+		return null;
 	}
 
 }

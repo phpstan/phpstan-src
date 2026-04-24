@@ -877,9 +877,10 @@ final class AssignHandler implements ExprHandler
 					|| $expr instanceof MethodCall
 					|| $expr instanceof Expr\StaticCall
 				)
-				&& $isImpure
 			) {
-				continue;
+				if ($isImpure) {
+					continue;
+				}
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
@@ -931,9 +932,10 @@ final class AssignHandler implements ExprHandler
 					|| $expr instanceof MethodCall
 					|| $expr instanceof Expr\StaticCall
 				)
-				&& $isImpure
 			) {
-				continue;
+				if ($isImpure) {
+					continue;
+				}
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch

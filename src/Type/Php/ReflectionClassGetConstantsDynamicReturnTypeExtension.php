@@ -2,7 +2,10 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
@@ -11,7 +14,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -56,7 +58,16 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 			? $scope->getType($methodCall->getArgs()[0]->value)
 			: null;
 
-		return $this->resolveGetConstants($classReflections, $filterType);
+		return $this->resolveGetConstants($scope, $classReflections, $filterType);
+	}
+
+	/** @param non-empty-string $name */
+	private function getConstantType(Scope $scope, ClassReflection $classReflection, string $name): Type
+	{
+		return $scope->getType(new ClassConstFetch(
+			new FullyQualified($classReflection->getName()),
+			new Identifier($name),
+		));
 	}
 
 	/**
@@ -76,10 +87,11 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 			foreach ($classReflections as $classReflection) {
 				foreach ($constantNames as $constantName) {
 					$name = $constantName->getValue();
-					if ($classReflection->isEnum() && $classReflection->hasEnumCase($name)) {
-						$types[] = new EnumCaseObjectType($classReflection->getName(), $name);
-					} elseif ($classReflection->hasConstant($name)) {
-						$types[] = $classReflection->getConstant($name)->getValueType();
+					if ($name === '') {
+						continue;
+					}
+					if ($classReflection->hasConstant($name)) {
+						$types[] = $this->getConstantType($scope, $classReflection, $name);
 					} else {
 						$types[] = new ConstantBooleanType(false);
 					}
@@ -95,8 +107,8 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 
 		$allConstantTypes = [];
 		foreach ($classReflections as $classReflection) {
-			foreach ($this->getClassConstants($classReflection) as [$name, $valueType]) {
-				$allConstantTypes[] = $valueType;
+			foreach ($this->getConstantNames($classReflection) as $name) {
+				$allConstantTypes[] = $this->getConstantType($scope, $classReflection, $name);
 			}
 		}
 
@@ -112,35 +124,59 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 	/**
 	 * @param list<ClassReflection> $classReflections
 	 */
-	private function resolveGetConstants(array $classReflections, ?Type $filterType): ?Type
+	private function resolveGetConstants(Scope $scope, array $classReflections, ?Type $filterType): ?Type
 	{
-		$filter = null;
-		$filterIsUncertain = false;
-		if ($filterType !== null) {
-			$filterScalars = $filterType->getConstantScalarValues();
-			$intFilters = [];
-			foreach ($filterScalars as $scalar) {
-				if (!is_int($scalar)) {
-					$intFilters = null;
-					break;
-				}
-				$intFilters[] = $scalar;
-			}
-
-			if ($intFilters !== null && count($intFilters) === 1) {
-				$filter = $intFilters[0];
-			} elseif ($intFilters !== null && count($intFilters) > 1) {
-				return $this->resolveGetConstantsForMultipleFilters($classReflections, $intFilters);
-			} else {
-				$filterIsUncertain = true;
-			}
+		if ($filterType === null) {
+			return $this->buildConstantsArray($scope, $classReflections, null, false);
 		}
 
+		$filterScalars = $filterType->getConstantScalarValues();
+		$intFilters = [];
+		foreach ($filterScalars as $scalar) {
+			if (!is_int($scalar)) {
+				$intFilters = null;
+				break;
+			}
+			$intFilters[] = $scalar;
+		}
+
+		if ($intFilters !== null && count($intFilters) === 1) {
+			return $this->buildConstantsArray($scope, $classReflections, $intFilters[0], false);
+		}
+
+		if ($intFilters !== null && count($intFilters) > 1) {
+			$types = [];
+			foreach ($intFilters as $filter) {
+				$result = $this->buildConstantsArray($scope, $classReflections, $filter, false);
+				if ($result !== null) {
+					$types[] = $result;
+				}
+			}
+
+			if (count($types) === 0) {
+				return null;
+			}
+
+			return TypeCombinator::union(...$types);
+		}
+
+		return $this->buildConstantsArray($scope, $classReflections, null, true);
+	}
+
+	/**
+	 * @param list<ClassReflection> $classReflections
+	 */
+	private function buildConstantsArray(Scope $scope, array $classReflections, ?int $filter, bool $optional): ?Type
+	{
 		$types = [];
 		foreach ($classReflections as $classReflection) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($this->getClassConstants($classReflection, $filter) as [$name, $valueType]) {
-				$builder->setOffsetValueType(new ConstantStringType($name), $valueType, $filterIsUncertain);
+			foreach ($this->getConstantNames($classReflection, $filter) as $name) {
+				$builder->setOffsetValueType(
+					new ConstantStringType($name),
+					$this->getConstantType($scope, $classReflection, $name),
+					$optional,
+				);
 			}
 			$types[] = $builder->getArray();
 		}
@@ -153,55 +189,25 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 	}
 
 	/**
-	 * @param list<ClassReflection> $classReflections
-	 * @param list<int> $filters
+	 * @return list<non-empty-string>
 	 */
-	private function resolveGetConstantsForMultipleFilters(array $classReflections, array $filters): ?Type
+	private function getConstantNames(ClassReflection $classReflection, ?int $filter = null): array
 	{
-		$types = [];
-		foreach ($filters as $filter) {
-			foreach ($classReflections as $classReflection) {
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($this->getClassConstants($classReflection, $filter) as [$name, $valueType]) {
-					$builder->setOffsetValueType(new ConstantStringType($name), $valueType);
-				}
-				$types[] = $builder->getArray();
-			}
-		}
-
-		if (count($types) === 0) {
-			return null;
-		}
-
-		return TypeCombinator::union(...$types);
-	}
-
-	/**
-	 * @return list<array{string, Type}>
-	 */
-	private function getClassConstants(ClassReflection $classReflection, ?int $filter = null): array
-	{
-		$constants = [];
+		$names = [];
 		foreach ($classReflection->getNativeReflection()->getReflectionConstants() as $reflectionConstant) {
-			$constantName = $reflectionConstant->getName();
-
 			if ($filter !== null && ($reflectionConstant->getModifiers() & $filter) === 0) {
 				continue;
 			}
 
-			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
-				$constants[] = [$constantName, new EnumCaseObjectType($classReflection->getName(), $constantName)];
+			$name = $reflectionConstant->getName();
+			if ($name === '') {
 				continue;
 			}
 
-			if (!$classReflection->hasConstant($constantName)) {
-				continue;
-			}
-
-			$constants[] = [$constantName, $classReflection->getConstant($constantName)->getValueType()];
+			$names[] = $name;
 		}
 
-		return $constants;
+		return $names;
 	}
 
 }

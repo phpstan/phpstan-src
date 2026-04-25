@@ -203,3 +203,47 @@ function testGetConstantsWithMultipleConstantFilters(ReflectionClass $ref, int $
 {
 	assertType("array{A: 1, B: 'hello'}|array{C: 3.14}", $ref->getConstants($filter));
 }
+
+/**
+ * @param ReflectionClass<covariant Foo> $ref
+ */
+function testGetConstantCovariant(ReflectionClass $ref): void
+{
+	assertType('mixed', $ref->getConstant('A'));
+	assertType('mixed', $ref->getConstant('nonExistent'));
+}
+
+/**
+ * @param ReflectionClass<covariant Foo> $ref
+ */
+function testGetConstantCovariantDynamic(ReflectionClass $ref, string $name): void
+{
+	assertType('mixed', $ref->getConstant($name));
+}
+
+/**
+ * @param ReflectionClass<covariant Foo> $ref
+ */
+function testGetConstantsCovariant(ReflectionClass $ref): void
+{
+	assertType('array<string, mixed>', $ref->getConstants());
+}
+
+/**
+ * @param ReflectionClass<covariant FinalClass> $ref
+ */
+function testGetConstantCovariantFinalClass(ReflectionClass $ref): void
+{
+	assertType('1', $ref->getConstant('ONE'));
+	assertType('false', $ref->getConstant('nonExistent'));
+	assertType('array{ONE: 1, TWO: 2}', $ref->getConstants());
+}
+
+/**
+ * @param ReflectionClass<covariant SimpleEnum> $ref
+ */
+function testGetConstantCovariantEnum(ReflectionClass $ref): void
+{
+	assertType('ReflectionClassGetConstants\SimpleEnum::Hearts', $ref->getConstant('Hearts'));
+	assertType('array{Hearts: ReflectionClassGetConstants\SimpleEnum::Hearts, Diamonds: ReflectionClassGetConstants\SimpleEnum::Diamonds}', $ref->getConstants());
+}

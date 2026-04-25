@@ -50,6 +50,10 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 			return null;
 		}
 
+		if ($this->isCovariantWithNonFinalClass($calledOnType, $classReflections)) {
+			return null;
+		}
+
 		if ($methodReflection->getName() === 'getConstant') {
 			return $this->resolveGetConstant($methodCall, $scope, $classReflections);
 		}
@@ -208,6 +212,34 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 		}
 
 		return $names;
+	}
+
+	/** @param list<ClassReflection> $classReflections */
+	private function isCovariantWithNonFinalClass(Type $calledOnType, array $classReflections): bool
+	{
+		$hasNonFinalClass = false;
+		foreach ($classReflections as $classReflection) {
+			if (!$classReflection->isFinal() && !$classReflection->isEnum()) {
+				$hasNonFinalClass = true;
+				break;
+			}
+		}
+
+		if (!$hasNonFinalClass) {
+			return false;
+		}
+
+		foreach ($calledOnType->getObjectClassReflections() as $reflectionClassReflection) {
+			if ($reflectionClassReflection->getName() !== 'ReflectionClass') {
+				continue;
+			}
+			$variance = $reflectionClassReflection->getCallSiteVarianceMap()->getVariance('T');
+			if ($variance !== null && $variance->covariant()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

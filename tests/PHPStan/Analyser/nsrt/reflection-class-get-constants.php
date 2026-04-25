@@ -186,3 +186,11 @@ function testGetConstantsWithFilter(ReflectionClass $ref): void
 	assertType('array{C: 3.14}', $ref->getConstants(\ReflectionClassConstant::IS_PROTECTED));
 	assertType('array{D: true}', $ref->getConstants(\ReflectionClassConstant::IS_PRIVATE));
 }
+
+/**
+ * @param ReflectionClass<Foo> $ref
+ */
+function testGetConstantsWithDynamicFilter(ReflectionClass $ref, int $filter): void
+{
+	assertType("array{A?: 1, B?: 'hello', C?: 3.14, D?: true}", $ref->getConstants($filter));
+}

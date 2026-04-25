@@ -115,10 +115,13 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 	private function resolveGetConstants(array $classReflections, ?Type $filterType): ?Type
 	{
 		$filter = null;
+		$filterIsUncertain = false;
 		if ($filterType !== null) {
 			$filterScalars = $filterType->getConstantScalarValues();
 			if (count($filterScalars) === 1 && is_int($filterScalars[0])) {
 				$filter = $filterScalars[0];
+			} else {
+				$filterIsUncertain = true;
 			}
 		}
 
@@ -126,7 +129,7 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 		foreach ($classReflections as $classReflection) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($this->getClassConstants($classReflection, $filter) as [$name, $valueType]) {
-				$builder->setOffsetValueType(new ConstantStringType($name), $valueType);
+				$builder->setOffsetValueType(new ConstantStringType($name), $valueType, $filterIsUncertain);
 			}
 			$types[] = $builder->getArray();
 		}

@@ -7,7 +7,10 @@ use function PHPStan\Testing\assertType;
 class ClassA {}
 class ClassB {}
 
-function instanceofVariants(mixed $obj): void
+/**
+ * @param mixed $obj
+ */
+function instanceofVariants($obj): void
 {
 	$isA = $obj instanceof ClassA;
 	$isB = $obj instanceof ClassB;
@@ -28,7 +31,10 @@ function instanceofVariants(mixed $obj): void
  */
 class ClassC {}
 
-function threeWayInstanceof(mixed $obj): void
+/**
+ * @param mixed $obj
+ */
+function threeWayInstanceof($obj): void
 {
 	$isA = $obj instanceof ClassA;
 	$isB = $obj instanceof ClassB;
@@ -42,8 +48,10 @@ function threeWayInstanceof(mixed $obj): void
 /**
  * Different narrowing kinds across the OR's arms — `null !==` on the left,
  * `instanceof` on the right.
+ *
+ * @param mixed $b
  */
-function mixedNarrowingKinds(?ClassA $a, mixed $b): void
+function mixedNarrowingKinds(?ClassA $a, $b): void
 {
 	$aNotNull = $a !== null;
 	$bIsB = $b instanceof ClassB;

@@ -3349,6 +3349,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	public function getConditionalExpressions(): array
+	{
+		return $this->conditionalExpressions;
+	}
+
+	/**
 	 * @param ConditionalExpressionHolder[] $conditionalExpressionHolders
 	 */
 	public function addConditionalExpressions(string $exprString, array $conditionalExpressionHolders): self

@@ -14,12 +14,10 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use ReflectionClass;
 use function count;
-use function is_int;
 
 #[AutowiredService]
 final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -41,16 +39,12 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 		$calledOnType = $scope->getType($methodCall->var);
 		$reflectionType = $calledOnType->getTemplateType(ReflectionClass::class, 'T');
 
-		if ((new ObjectWithoutClassType())->isSuperTypeOf($reflectionType)->no()) {
-			return null;
-		}
-
 		$classReflections = $reflectionType->getObjectClassReflections();
 		if (count($classReflections) === 0) {
 			return null;
 		}
 
-		if ($this->isCovariantWithNonFinalClass($calledOnType, $classReflections)) {
+		if (!$this->isInvariantOrFinalClass($calledOnType, $classReflections)) {
 			return null;
 		}
 
@@ -65,17 +59,38 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 		return $this->resolveGetConstants($scope, $classReflections, $filterType);
 	}
 
-	/** @param non-empty-string $name */
-	private function getConstantType(Scope $scope, ClassReflection $classReflection, string $name): Type
+	/**
+	 * @param non-empty-list<ClassReflection> $classReflections
+	 */
+	private function isInvariantOrFinalClass(Type $calledOnType, array $classReflections): bool
 	{
-		return $scope->getType(new ClassConstFetch(
-			new FullyQualified($classReflection->getName()),
-			new Identifier($name),
-		));
+		$hasNonFinalClass = false;
+		foreach ($classReflections as $classReflection) {
+			if (!$classReflection->isFinal() && !$classReflection->isEnum()) {
+				$hasNonFinalClass = true;
+				break;
+			}
+		}
+
+		if (!$hasNonFinalClass) {
+			return true;
+		}
+
+		foreach ($calledOnType->getObjectClassReflections() as $reflectionClassReflection) {
+			if ($reflectionClassReflection->getName() !== 'ReflectionClass') {
+				return false;
+			}
+			$variance = $reflectionClassReflection->getCallSiteVarianceMap()->getVariance('T');
+			if ($variance !== null && $variance->covariant()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
-	 * @param list<ClassReflection> $classReflections
+	 * @param non-empty-list<ClassReflection> $classReflections
 	 */
 	private function resolveGetConstant(MethodCall $methodCall, Scope $scope, array $classReflections): ?Type
 	{
@@ -126,70 +141,14 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 	}
 
 	/**
-	 * @param list<ClassReflection> $classReflections
+	 * @param non-empty-string $name
 	 */
-	private function resolveGetConstants(Scope $scope, array $classReflections, ?Type $filterType): ?Type
+	private function getConstantType(Scope $scope, ClassReflection $classReflection, string $name): Type
 	{
-		if ($filterType === null) {
-			return $this->buildConstantsArray($scope, $classReflections, null, false);
-		}
-
-		$filterScalars = $filterType->getConstantScalarValues();
-		$intFilters = [];
-		foreach ($filterScalars as $scalar) {
-			if (!is_int($scalar)) {
-				$intFilters = null;
-				break;
-			}
-			$intFilters[] = $scalar;
-		}
-
-		if ($intFilters !== null && count($intFilters) === 1) {
-			return $this->buildConstantsArray($scope, $classReflections, $intFilters[0], false);
-		}
-
-		if ($intFilters !== null && count($intFilters) > 1) {
-			$types = [];
-			foreach ($intFilters as $filter) {
-				$result = $this->buildConstantsArray($scope, $classReflections, $filter, false);
-				if ($result !== null) {
-					$types[] = $result;
-				}
-			}
-
-			if (count($types) === 0) {
-				return null;
-			}
-
-			return TypeCombinator::union(...$types);
-		}
-
-		return $this->buildConstantsArray($scope, $classReflections, null, true);
-	}
-
-	/**
-	 * @param list<ClassReflection> $classReflections
-	 */
-	private function buildConstantsArray(Scope $scope, array $classReflections, ?int $filter, bool $optional): ?Type
-	{
-		$types = [];
-		foreach ($classReflections as $classReflection) {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($this->getConstantNames($classReflection, $filter) as $name) {
-				$builder->setOffsetValueType(
-					new ConstantStringType($name),
-					$this->getConstantType($scope, $classReflection, $name),
-					$optional,
-				);
-			}
-			$types[] = $builder->getArray();
-		}
-
-		if (count($types) === 0) {
-			return null;
-		}
-
-		return TypeCombinator::union(...$types);
+		return $scope->getType(new ClassConstFetch(
+			new FullyQualified($classReflection->getName()),
+			new Identifier($name),
+		));
 	}
 
 	/**
@@ -214,32 +173,47 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 		return $names;
 	}
 
-	/** @param list<ClassReflection> $classReflections */
-	private function isCovariantWithNonFinalClass(Type $calledOnType, array $classReflections): bool
+	/**
+	 * @param non-empty-list<ClassReflection> $classReflections
+	 */
+	private function resolveGetConstants(Scope $scope, array $classReflections, ?Type $filterType): ?Type
 	{
-		$hasNonFinalClass = false;
+		if ($filterType === null) {
+			return $this->buildConstantsArray($scope, $classReflections, null, false);
+		}
+
+		$filterScalars = $filterType->getConstantScalarValues();
+		if (count($filterScalars) === 0) {
+			return $this->buildConstantsArray($scope, $classReflections, null, true);
+		}
+
+		$types = [];
+		foreach ($filterScalars as $filter) {
+			$types[] = $this->buildConstantsArray($scope, $classReflections, (int) $filter, false);
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	/**
+	 * @param non-empty-list<ClassReflection> $classReflections
+	 */
+	private function buildConstantsArray(Scope $scope, array $classReflections, ?int $filter, bool $optional): Type
+	{
+		$types = [];
 		foreach ($classReflections as $classReflection) {
-			if (!$classReflection->isFinal() && !$classReflection->isEnum()) {
-				$hasNonFinalClass = true;
-				break;
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($this->getConstantNames($classReflection, $filter) as $name) {
+				$builder->setOffsetValueType(
+					new ConstantStringType($name),
+					$this->getConstantType($scope, $classReflection, $name),
+					$optional,
+				);
 			}
+			$types[] = $builder->getArray();
 		}
 
-		if (!$hasNonFinalClass) {
-			return false;
-		}
-
-		foreach ($calledOnType->getObjectClassReflections() as $reflectionClassReflection) {
-			if ($reflectionClassReflection->getName() !== 'ReflectionClass') {
-				continue;
-			}
-			$variance = $reflectionClassReflection->getCallSiteVarianceMap()->getVariance('T');
-			if ($variance !== null && $variance->covariant()) {
-				return true;
-			}
-		}
-
-		return false;
+		return TypeCombinator::union(...$types);
 	}
 
 }

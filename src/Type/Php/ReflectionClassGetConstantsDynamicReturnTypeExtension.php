@@ -118,8 +118,19 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 		$filterIsUncertain = false;
 		if ($filterType !== null) {
 			$filterScalars = $filterType->getConstantScalarValues();
-			if (count($filterScalars) === 1 && is_int($filterScalars[0])) {
-				$filter = $filterScalars[0];
+			$intFilters = [];
+			foreach ($filterScalars as $scalar) {
+				if (!is_int($scalar)) {
+					$intFilters = null;
+					break;
+				}
+				$intFilters[] = $scalar;
+			}
+
+			if ($intFilters !== null && count($intFilters) === 1) {
+				$filter = $intFilters[0];
+			} elseif ($intFilters !== null && count($intFilters) > 1) {
+				return $this->resolveGetConstantsForMultipleFilters($classReflections, $intFilters);
 			} else {
 				$filterIsUncertain = true;
 			}
@@ -132,6 +143,30 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 				$builder->setOffsetValueType(new ConstantStringType($name), $valueType, $filterIsUncertain);
 			}
 			$types[] = $builder->getArray();
+		}
+
+		if (count($types) === 0) {
+			return null;
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	/**
+	 * @param list<ClassReflection> $classReflections
+	 * @param list<int> $filters
+	 */
+	private function resolveGetConstantsForMultipleFilters(array $classReflections, array $filters): ?Type
+	{
+		$types = [];
+		foreach ($filters as $filter) {
+			foreach ($classReflections as $classReflection) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($this->getClassConstants($classReflection, $filter) as [$name, $valueType]) {
+					$builder->setOffsetValueType(new ConstantStringType($name), $valueType);
+				}
+				$types[] = $builder->getArray();
+			}
 		}
 
 		if (count($types) === 0) {

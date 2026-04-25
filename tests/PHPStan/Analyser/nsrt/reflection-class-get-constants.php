@@ -247,3 +247,19 @@ function testGetConstantCovariantEnum(ReflectionClass $ref): void
 	assertType('ReflectionClassGetConstants\SimpleEnum::Hearts', $ref->getConstant('Hearts'));
 	assertType('array{Hearts: ReflectionClassGetConstants\SimpleEnum::Hearts, Diamonds: ReflectionClassGetConstants\SimpleEnum::Diamonds}', $ref->getConstants());
 }
+
+function testGetConstantDirectInstantiation(): void
+{
+	$ref = new ReflectionClass(Foo::class);
+	assertType('1', $ref->getConstant('A'));
+	assertType("'hello'", $ref->getConstant('B'));
+	assertType('false', $ref->getConstant('nonExistent'));
+	assertType("array{A: 1, B: 'hello', C: 3.14, D: true}", $ref->getConstants());
+}
+
+function testGetConstantDirectInstantiationFinalClass(): void
+{
+	$ref = new ReflectionClass(FinalClass::class);
+	assertType('1', $ref->getConstant('ONE'));
+	assertType('array{ONE: 1, TWO: 2}', $ref->getConstants());
+}

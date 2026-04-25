@@ -141,6 +141,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -4062,6 +4064,14 @@ class NodeScopeResolver
 				)->getScope();
 				$vars = array_merge($vars, $this->getAssignedVariables($stmt->keyVar));
 			}
+
+			if ($stmt->valueVar instanceof List_) {
+				$scope = $this->addDestructureTaggedUnionConditionalHolders(
+					$scope,
+					$originalScope->getIterableValueType($iterateeType),
+					$stmt->valueVar,
+				);
+			}
 		}
 
 		$constantArrays = $iterateeType->getConstantArrays();
@@ -4118,6 +4128,115 @@ class NodeScopeResolver
 		}
 
 		return $this->processVarAnnotation($scope, $vars, $stmt);
+	}
+
+	/**
+	 * When destructuring an iterable whose value type is a tagged union of
+	 * constant arrays — e.g. `array<array{null, int}|array{int, null}>` — the
+	 * variants describe a relationship between the destructured variables that
+	 * a per-variable narrowing would normally lose: knowing `$x === null` should
+	 * imply `$y === int`, but `foreach ($a as [$x, $y])` assigns `$x` and `$y`
+	 * independently, so each ends up as the union (`int|null`) and the link is
+	 * dropped.
+	 *
+	 * Recover the link by storing conditional-expression holders on each
+	 * destructured variable: for every variant, "when this variable matches the
+	 * variant's value at its position, the other variables match the variant's
+	 * values at their positions". A later `if ($x === null)` then fires the
+	 * matching holder and narrows `$y` accordingly.
+	 *
+	 * Only handles flat positional / keyed destructure patterns (List_) where
+	 * each item's target is a plain Variable; nested destructure is left for
+	 * the regular per-variable type tracking.
+	 */
+	private function addDestructureTaggedUnionConditionalHolders(
+		MutatingScope $scope,
+		Type $iterableValueType,
+		List_ $list,
+	): MutatingScope
+	{
+		$constantArrays = $iterableValueType->getConstantArrays();
+		if (count($constantArrays) < 2) {
+			return $scope;
+		}
+
+		// Collect each list item's array-key value and target variable.
+		$items = [];
+		foreach ($list->items as $position => $item) {
+			if ($item === null) {
+				continue;
+			}
+			if (!$item->value instanceof Variable || !is_string($item->value->name)) {
+				return $scope;
+			}
+			if ($item->key === null) {
+				$keyValue = $position;
+			} elseif ($item->key instanceof Node\Scalar\String_) {
+				$keyValue = $item->key->value;
+			} elseif ($item->key instanceof Node\Scalar\Int_) {
+				$keyValue = $item->key->value;
+			} else {
+				return $scope;
+			}
+			$items[] = ['key' => $keyValue, 'name' => $item->value->name];
+		}
+
+		if (count($items) < 2) {
+			return $scope;
+		}
+
+		// For every variant, every item must have a matching key with a single
+		// value type at it; otherwise the variants don't all describe the same
+		// destructure shape and we can't form a sound holder set.
+		$variantValuesByItem = [];
+		foreach ($items as $itemIdx => $itemInfo) {
+			$variantValuesByItem[$itemIdx] = [];
+			foreach ($constantArrays as $variantIdx => $variant) {
+				$keyType = is_int($itemInfo['key']) ? new ConstantIntegerType($itemInfo['key']) : new ConstantStringType($itemInfo['key']);
+				if (!$variant->hasOffsetValueType($keyType)->yes()) {
+					return $scope;
+				}
+				$variantValuesByItem[$itemIdx][$variantIdx] = $variant->getOffsetValueType($keyType);
+			}
+		}
+
+		// For each item × variant, build a holder: "when item is variant's value
+		// at this position, the *other* items are the variant's values at their
+		// positions". Skip the variant if the condition value is too wide to be
+		// a useful discriminator (i.e. equal to the union of all the variant
+		// values at this position — narrowing it back wouldn't pick a variant).
+		foreach ($items as $itemIdx => $itemInfo) {
+			$exprString = '$' . $itemInfo['name'];
+			$variantConditionTypes = $variantValuesByItem[$itemIdx];
+			$itemUnionType = TypeCombinator::union(...array_values($variantConditionTypes));
+			$holders = [];
+			foreach (array_keys($constantArrays) as $variantIdx) {
+				$conditionType = $variantConditionTypes[$variantIdx];
+				if ($conditionType->equals($itemUnionType)) {
+					continue;
+				}
+				$conditions = [
+					$exprString => ExpressionTypeHolder::createYes(new Variable($itemInfo['name']), $conditionType),
+				];
+				foreach ($items as $otherIdx => $otherInfo) {
+					if ($otherIdx === $itemIdx) {
+						continue;
+					}
+					$otherType = $variantValuesByItem[$otherIdx][$variantIdx];
+					$holder = new ConditionalExpressionHolder(
+						$conditions,
+						ExpressionTypeHolder::createYes(new Variable($otherInfo['name']), $otherType),
+					);
+					$holders['$' . $otherInfo['name']][$holder->getKey()] = $holder;
+				}
+			}
+
+			foreach ($holders as $targetExprString => $targetHolders) {
+				$scope = $scope->addConditionalExpressions($targetExprString, $targetHolders);
+			}
+		}
+
+		return $scope;
 	}
 
 	/**

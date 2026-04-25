@@ -82,6 +82,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
+use function array_key_first;
 use function array_last;
 use function array_map;
 use function array_merge;
@@ -783,6 +784,7 @@ final class TypeSpecifier
 					$types = $leftTypes->normalize($scope);
 				} else {
 					$types = $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
 				}
 			} else {
 				$types = $leftTypes->unionWith($rightTypes);
@@ -1939,6 +1941,81 @@ final class TypeSpecifier
 		));
 
 		return $this->specifyTypesFromAsserts($context, $call, $asserts, $parametersAcceptor, $scope);
+	}
+
+	/**
+	 * For `if ($a || $b)` truthy, expressions narrowed by stored conditional
+	 * holders (e.g. `$a = $obj instanceof ClassA;` records "when `$a` is
+	 * truthy, `$obj` is `ClassA`") need to be projected into the OR-truthy
+	 * scope as the union of the per-arm narrowings. specifyTypesInCondition
+	 * for each arm only looks at the boolean variable itself, so the held
+	 * narrowing of `$obj` would otherwise be invisible until a later check
+	 * pins one of the booleans down.
+	 *
+	 * For each conditional-holder target $T:
+	 * - resolve $T's type in the left-truthy and right-truthy filtered scopes
+	 * - if both narrow $T strictly below the original, add `$T : leftT|rightT`
+	 *   as a sure type to the OR-truthy result
+	 *
+	 * The asymmetric case (one arm narrows, the other doesn't) is intentionally
+	 * skipped: in the OR-truthy scope the arm that didn't narrow could still be
+	 * the truthy one, so the sound result is the original (unnarrowed) type.
+	 */
+	private function augmentBooleanOrTruthyWithConditionalHolders(MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
+	{
+		$leftTruthyScope = $scope->filterByTruthyValue($expr->left);
+		$rightTruthyScope = $rightScope->filterByTruthyValue($expr->right);
+
+		$seen = [];
+		foreach ([$scope, $rightScope] as $sourceScope) {
+			foreach ($sourceScope->getConditionalExpressions() as $exprString => $holders) {
+				if (isset($seen[$exprString])) {
+					continue;
+				}
+				if ($holders === []) {
+					continue;
+				}
+				$seen[$exprString] = true;
+				$targetExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
+
+				// Only project when the target stays Yes-defined in the original
+				// scope and in both filtered branches. A sure type implicitly
+				// raises certainty to Yes, which would wrongly upgrade Maybe-defined
+				// variables — `if (empty($a['bar']))` for instance leaves `$a`
+				// Maybe-defined because `empty()` tolerates undefined offsets.
+				if (!$scope->hasExpressionType($targetExpr)->yes()) {
+					continue;
+				}
+				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
+					continue;
+				}
+				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
+					continue;
+				}
+
+				$origType = $scope->getType($targetExpr);
+				$leftType = $leftTruthyScope->getType($targetExpr);
+				$rightType = $rightTruthyScope->getType($targetExpr);
+
+				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
+				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
+
+				if (!$leftNarrowed || !$rightNarrowed) {
+					continue;
+				}
+
+				$unionType = TypeCombinator::union($leftType, $rightType);
+				if ($unionType->equals($origType)) {
+					continue;
+				}
+
+				$types = $types->unionWith(
+					$this->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope),
+				);
+			}
+		}
+
+		return $types;
 	}
 
 	/**

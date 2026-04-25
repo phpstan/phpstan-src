@@ -130,6 +130,7 @@
 			],
 			"jetbrains/phpstorm-stubs": [
 				"patches/PDO.patch",
+				"patches/ReflectionClass.patch",
 				"patches/ReflectionProperty.patch",
 				"patches/SessionHandler.patch",
 				"patches/xmlreader.patch",

@@ -176,7 +176,7 @@ final class ReflectionClassGetConstantsDynamicReturnTypeExtension implements Dyn
 	/**
 	 * @param non-empty-list<ClassReflection> $classReflections
 	 */
-	private function resolveGetConstants(Scope $scope, array $classReflections, ?Type $filterType): ?Type
+	private function resolveGetConstants(Scope $scope, array $classReflections, ?Type $filterType): Type
 	{
 		if ($filterType === null) {
 			return $this->buildConstantsArray($scope, $classReflections, null, false);

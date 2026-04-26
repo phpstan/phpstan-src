@@ -66,6 +66,9 @@ final class FileTypeMapper
 	/** @var array<string, true> */
 	private array $inProcess = [];
 
+	/** @var array<string, NameScope> */
+	private array $inProcessNameScopes = [];
+
 	/** @var array<string, ResolvedPhpDocBlock> */
 	private array $resolvedPhpDocBlockCache = [];
 
@@ -200,6 +203,9 @@ final class FileTypeMapper
 	{
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
 		if (isset($this->inProcess[$nameScopeKey])) {
+			if (isset($this->inProcessNameScopes[$nameScopeKey])) {
+				return $this->inProcessNameScopes[$nameScopeKey];
+			}
 			throw new NameScopeAlreadyBeingCreatedException();
 		}
 
@@ -288,6 +294,8 @@ final class FileTypeMapper
 					continue;
 				}
 
+				$this->inProcessNameScopes[$nameScopeKey] = $nameScope;
+
 				$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($parent->getTemplatePhpDocNodes(), $nameScope);
 				$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
 				$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap, $templateTags);
@@ -319,6 +327,7 @@ final class FileTypeMapper
 			);
 		} finally {
 			unset($this->inProcess[$nameScopeKey]);
+			unset($this->inProcessNameScopes[$nameScopeKey]);
 		}
 	}
 

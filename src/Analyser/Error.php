@@ -262,6 +262,27 @@ final class Error implements JsonSerializable
 	}
 
 	/**
+	 * @internal Experimental
+	 */
+	public function withFixedErrorDiff(FixedErrorDiff $fixedErrorDiff): self
+	{
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$fixedErrorDiff,
+		);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	#[ReturnTypeWillChange]

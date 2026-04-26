@@ -43,8 +43,14 @@ final class Patcher
 	{
 		$fileContents = FileReader::read($fileName);
 		$fileHash = hash('sha256', $fileContents);
-		$diffHunks = [];
+
+		$uniqueDiffs = [];
 		foreach ($diffs as $diff) {
+			$uniqueDiffs[$diff->diff] = $diff;
+		}
+
+		$diffHunks = [];
+		foreach ($uniqueDiffs as $diff) {
 			if ($diff->originalHash !== $fileHash) {
 				throw new FileChangedException();
 			}

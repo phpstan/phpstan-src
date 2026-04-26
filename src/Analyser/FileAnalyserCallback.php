@@ -17,6 +17,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\Rules\Registry as RuleRegistry;
 use function array_keys;
 use function get_class;
+use function spl_object_id;
 use function sprintf;
 
 /**
@@ -44,6 +45,9 @@ final class FileAnalyserCallback
 
 	/** @var list<Error> */
 	private array $temporaryFileErrors = [];
+
+	/** @var array<string, list<PendingFix>> */
+	private array $pendingFixesByFile = [];
 
 	/** @var LinesToIgnore */
 	private array $linesToIgnore;
@@ -77,8 +81,6 @@ final class FileAnalyserCallback
 
 	public function __invoke(Node $node, Scope $scope): void
 	{
-		$parserNodes = $this->parserNodes;
-
 		/** @var Scope&NodeCallbackInvoker $scope */
 		if ($node instanceof Node\Stmt\Trait_) {
 			foreach (array_keys($this->linesToIgnore[$this->file] ?? []) as $lineToIgnore) {
@@ -98,14 +100,6 @@ final class FileAnalyserCallback
 			$traitFileName = $node->getTraitReflection()->getFileName();
 			if ($traitFileName !== null) {
 				$this->processedFiles[] = $traitFileName;
-			}
-		}
-
-		if ($scope->isInTrait()) {
-			$traitReflection = $scope->getTraitReflection();
-			if ($traitReflection->getFileName() !== null) {
-				$traitFilePath = $traitReflection->getFileName();
-				$parserNodes = $this->parser->parseFile($traitFilePath);
 			}
 		}
 
@@ -149,7 +143,7 @@ final class FileAnalyserCallback
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $parserNodes, $node);
+				[$error, $pendingFix] = $this->ruleErrorTransformer->transformPreserveFixable($ruleError, $scope, $node);
 
 				if ($error->canBeIgnored()) {
 					foreach ($this->ignoreErrorExtensions as $ignoreErrorExtension) {
@@ -160,6 +154,11 @@ final class FileAnalyserCallback
 				}
 
 				$this->temporaryFileErrors[] = $error;
+				if ($pendingFix === null) {
+					continue;
+				}
+
+				$this->pendingFixesByFile[$pendingFix->fixingFilePath][] = $pendingFix;
 			}
 		}
 
@@ -305,7 +304,34 @@ final class FileAnalyserCallback
 	 */
 	public function getTemporaryFileErrors(): array
 	{
-		return $this->temporaryFileErrors;
+		if ($this->pendingFixesByFile === []) {
+			return $this->temporaryFileErrors;
+		}
+
+		$parserNodesByFile = [$this->file => $this->parserNodes];
+		foreach (array_keys($this->pendingFixesByFile) as $fixingFilePath) {
+			if (isset($parserNodesByFile[$fixingFilePath])) {
+				continue;
+			}
+			$parserNodesByFile[$fixingFilePath] = $this->parser->parseFile($fixingFilePath);
+		}
+
+		$diffsByErrorId = $this->ruleErrorTransformer->finalizePendingFixes(
+			$this->pendingFixesByFile,
+			$parserNodesByFile,
+		);
+
+		if ($diffsByErrorId === []) {
+			return $this->temporaryFileErrors;
+		}
+
+		$finalErrors = [];
+		foreach ($this->temporaryFileErrors as $error) {
+			$diff = $diffsByErrorId[spl_object_id($error)] ?? null;
+			$finalErrors[] = $diff !== null ? $error->withFixedErrorDiff($diff) : $error;
+		}
+
+		return $finalErrors;
 	}
 
 	/**

@@ -14,7 +14,7 @@ final class AnonymousClassNode extends Class_
 	public static function createFromClassNode(Class_ $node): self
 	{
 		$subNodes = [];
-		foreach ($node->getSubNodeNames() as $subNodeName) {
+		foreach (['attrGroups', 'flags', 'extends', 'implements', 'stmts'] as $subNodeName) {
 			$subNodes[$subNodeName] = $node->$subNodeName;
 		}
 

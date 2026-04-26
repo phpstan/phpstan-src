@@ -943,7 +943,19 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
+		$result = $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
+
+		if (!$result->yes() && $this->isCallable()->yes() && $this->isArray()->yes()) {
+			$arrayKeyOffsetType = $offsetType->toArrayKey();
+			if (
+				(new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()
+				|| (new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()
+			) {
+				return TrinaryLogic::createYes();
+			}
+		}
+
+		return $result;
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
@@ -951,6 +963,15 @@ class IntersectionType implements CompoundType
 		$result = $this->intersectTypes(static fn (Type $type): Type => $type->getOffsetValueType($offsetType));
 		if ($this->isOversizedArray()->yes()) {
 			return TypeUtils::toBenevolentUnion($result);
+		}
+
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			$arrayKeyOffsetType = $offsetType->toArrayKey();
+			if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				$result = TypeCombinator::intersect($result, TypeCombinator::union(new ClassStringType(), new ObjectWithoutClassType()));
+			} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				$result = TypeCombinator::intersect($result, new StringType());
+			}
 		}
 
 		return $result;

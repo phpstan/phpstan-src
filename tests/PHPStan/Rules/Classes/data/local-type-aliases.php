@@ -104,3 +104,14 @@ class GenericsCheck
 {
 
 }
+
+/**
+ * Generic type alias – template params should not trigger "invalid type" errors.
+ *
+ * @phpstan-type GenericShape<TItem of object, TExtra = string> array{item: TItem, extra: TExtra}
+ */
+class GenericAlias
+{
+
+}
+

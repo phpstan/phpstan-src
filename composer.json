@@ -139,10 +139,14 @@
 				"patches/DependencyChecker.patch",
 				"patches/Resolver.patch"
 			],
-			"symfony/console": [
-				"patches/OutputFormatter.patch"
-			]
-		}
+                        "symfony/console": [
+                                "patches/OutputFormatter.patch"
+                        ],
+                        "phpstan/phpdoc-parser": [
+                                "patches/TypeAliasTagValueNode.patch",
+                                "patches/PhpDocParser.patch"
+                        ]
+                }
 	},
 	"autoload": {
 		"psr-4": {

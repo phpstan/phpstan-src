@@ -114,7 +114,18 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 
 		try {
 			$unresolvedAlias = $localTypeAliases[$aliasName];
-			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
+
+			// For a generic alias used bare (no type args provided), build a GenericTypeAliasType
+			// with empty args. If all params have declared defaults, isResolvable() will be true and
+			// the type is immediately expanded to the concrete default form. When at least one param
+			// has no default, the GenericTypeAliasType stays unresolved so that
+			// MissingTypehintCheck::getNonGenericObjectTypesWithGenericClass() can detect the bare-usage error.
+			if ($unresolvedAlias->isGeneric()) {
+				$appType = $unresolvedAlias->createApplicationType($this->typeNodeResolver, []);
+				$resolvedAliasType = $appType->isResolvable() ? $appType->resolve() : $appType;
+			} else {
+				$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
+			}
 		} catch (CircularTypeAliasDefinitionException) {
 			$resolvedAliasType = new CircularTypeAliasErrorType();
 		}

@@ -128,4 +128,30 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/inherit-phpdoc-return-type-with-narrower-native-return-type.php'], []);
 	}
 
+	public function testGenericTypeAliasMissingTypehint(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-type-alias-missing-typehint.php'], [
+			[
+				'Method GenericTypeAliasMissingTypehint\RawUsage::getRaw() return type with generic type alias Filter does not specify its types: TItem',
+				28,
+			],
+		]);
+	}
+
+	public function testGenericTypeAliasWrongArgCount(): void
+	{
+		$this->analyse([__DIR__ . '/../PhpDoc/data/generic-type-alias-wrong-arg-count.php'], [
+			[
+				'Method GenericTypeAliasWrongArgCount\TooManyArgs::badReturn() return type has no value type specified in iterable type array.',
+				22,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method GenericTypeAliasWrongArgCount\TooFewArgs::badReturn() return type has no value type specified in iterable type array.',
+				52,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+		]);
+	}
+
 }

@@ -3,6 +3,9 @@
 namespace PHPStan\Type\Generic;
 
 use function sprintf;
+use function str_starts_with;
+use function strlen;
+use function substr;
 
 final class TemplateTypeScope
 {
@@ -10,6 +13,11 @@ final class TemplateTypeScope
 	public static function createWithAnonymousFunction(): self
 	{
 		return new self(null, null);
+	}
+
+	public static function createWithTypeAlias(string $className, string $aliasName): self
+	{
+		return new self($className, '__typeAlias_' . $aliasName);
 	}
 
 	public static function createWithFunction(string $functionName): self
@@ -41,6 +49,22 @@ final class TemplateTypeScope
 	public function getFunctionName(): ?string
 	{
 		return $this->functionName;
+	}
+
+	/** @api */
+	public function isTypeAlias(): bool
+	{
+		return $this->functionName !== null && str_starts_with($this->functionName, '__typeAlias_');
+	}
+
+	/** @api */
+	public function getTypeAliasName(): ?string
+	{
+		if (!$this->isTypeAlias() || $this->functionName === null) {
+			return null;
+		}
+
+		return substr($this->functionName, strlen('__typeAlias_'));
 	}
 
 	/** @api */

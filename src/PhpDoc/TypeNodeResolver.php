@@ -103,6 +103,7 @@ use PHPStan\Type\StringNeverAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;
@@ -111,6 +112,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueOfType;
 use PHPStan\Type\VoidType;
 use Traversable;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -834,6 +836,23 @@ final class TypeNodeResolver
 			return new ErrorType();
 		}
 
+		// Check for a generic type alias (e.g. MyList<string>) before falling through to
+		// class-based generic resolution.
+		$genericTypeAlias = $this->findGenericTypeAlias($typeNode->type->name, $nameScope);
+		if ($genericTypeAlias !== null) {
+			$templateNodes = $genericTypeAlias->getTemplateTagValueNodes();
+			$totalParams = count($templateNodes);
+			$requiredParams = count(array_filter($templateNodes, static fn ($tvn) => $tvn->default === null));
+			$providedArgs = count($genericTypes);
+
+			if ($providedArgs > $totalParams || $providedArgs < $requiredParams) {
+				return new ErrorType();
+			}
+
+			$appType = $genericTypeAlias->createApplicationType($this, $genericTypes);
+			return $appType->isResolvable() ? $appType->resolve() : $appType;
+		}
+
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
 		$mainTypeObjectClassNames = $mainType->getObjectClassNames();
 		if (count($mainTypeObjectClassNames) > 1) {
@@ -1390,6 +1409,41 @@ final class TypeNodeResolver
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
 		return $this->typeAliasResolverProvider->getTypeAliasResolver();
+	}
+
+	/**
+	 * Returns the TypeAlias for $name if it is a generic (parameterised) type alias
+	 * visible in the current $nameScope, or null otherwise.
+	 */
+	private function findGenericTypeAlias(string $name, NameScope $nameScope): ?TypeAlias
+	{
+		if ($nameScope->shouldBypassTypeAliases()) {
+			return null;
+		}
+
+		// Fast path: if the name isn't registered as a type alias in this scope, skip the
+		// more expensive ClassReflection::getTypeAliases() call. This also prevents a circular
+		// NameScope-building issue: getTypeAliases() can trigger FileTypeMapper::getResolvedPhpDoc()
+		// which calls getNameScope() — if we are already inside getNameScope() for this class,
+		// that throws NameScopeAlreadyBeingCreatedException, causing the class's ResolvedPhpDocBlock
+		// to be poisoned with an empty block and all its type aliases to be lost.
+		// UsefulTypeAliasResolver uses the same guard.
+		if (!$nameScope->hasTypeAlias($name)) {
+			return null;
+		}
+
+		$className = $nameScope->getClassNameForTypeAlias();
+		if ($className === null || !$this->getReflectionProvider()->hasClass($className)) {
+			return null;
+		}
+
+		$typeAliases = $this->getReflectionProvider()->getClass($className)->getTypeAliases();
+		if (!array_key_exists($name, $typeAliases)) {
+			return null;
+		}
+
+		$typeAlias = $typeAliases[$name];
+		return $typeAlias->isGeneric() ? $typeAlias : null;
 	}
 
 }

@@ -148,4 +148,38 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericTypeAliasMissingTypehint(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-type-alias-missing-typehint.php'], [
+			[
+				'Method GenericTypeAliasMissingTypehint\RawUsage::check() has parameter $b with generic type alias Filter but does not specify its types: TItem',
+				18,
+			],
+			[
+				'Method GenericTypeAliasMissingTypehint\PartialDefault::check() has parameter $noArgs with generic type alias Pair but does not specify its types: TFirst',
+				61,
+			],
+			[
+				'Method GenericTypeAliasMissingTypehint\ImportedRawUsage::check() has parameter $bad with generic type alias Filter but does not specify its types: TItem',
+				77,
+			],
+		]);
+	}
+
+	public function testGenericTypeAliasWrongArgCount(): void
+	{
+		$this->analyse([__DIR__ . '/../PhpDoc/data/generic-type-alias-wrong-arg-count.php'], [
+			[
+				'Method GenericTypeAliasWrongArgCount\TooManyArgs::badParam() has parameter $x with no value type specified in iterable type array.',
+				17,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method GenericTypeAliasWrongArgCount\TooFewArgs::badParam() has parameter $x with no value type specified in iterable type array.',
+				47,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+		]);
+	}
+
 }

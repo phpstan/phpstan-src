@@ -2359,7 +2359,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		// corresponding array dim fetch without being confused by a reassignment
 		// ($type = 'foo' invalidates this expression, same as OriginalForeachKeyExpr).
 		$scope = $scope->assignExpression(new OriginalForeachValueExpr($valueName), $valueType, $nativeValueType);
-		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
+		if ($valueByRef && $iterateeType->isArray()->yes()) {
 			$scope = $scope->assignExpression(
 				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetExistingOffsetValueTypeExpr(
 					$iteratee,
@@ -2373,7 +2373,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
 
-			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
+			if ($valueByRef && $iterateeType->isArray()->yes()) {
 				$scope = $scope->assignExpression(
 					new IntertwinedVariableByReferenceWithExpr($valueName, new Expr\ArrayDimFetch($iteratee, new Variable($keyName)), new Variable($valueName)),
 					$valueType,

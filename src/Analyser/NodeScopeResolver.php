@@ -3885,9 +3885,6 @@ class NodeScopeResolver
 		StatementContext $context,
 	): ?array
 	{
-		if ($stmt->byRef) {
-			return null;
-		}
 		if (!($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))) {
 			return null;
 		}
@@ -3980,6 +3977,32 @@ class NodeScopeResolver
 			}
 			foreach ($bodyResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 				$breakScopes[] = $breakExitPoint->getScope();
+			}
+
+			if ($stmt->byRef) {
+				$newValueType = $iterEndScope->getType(new Variable($valueVarName));
+				$newNativeValueType = $iterEndScope->getNativeType(new Variable($valueVarName));
+
+				$currentArrayType = $iterEndScope->getType($stmt->expr);
+				$currentNativeArrayType = $iterEndScope->getNativeType($stmt->expr);
+
+				$newArrayType = $currentArrayType->setExistingOffsetValueType($keyType, $newValueType);
+				$newNativeArrayType = $currentNativeArrayType->setExistingOffsetValueType($nativeKeyType, $newNativeValueType);
+
+				if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+					$iterEndScope = $iterEndScope->assignVariable(
+						$stmt->expr->name,
+						$newArrayType,
+						$newNativeArrayType,
+						TrinaryLogic::createYes(),
+					);
+				} else {
+					$iterEndScope = $iterEndScope->assignExpression(
+						$stmt->expr,
+						$newArrayType,
+						$newNativeArrayType,
+					);
+				}
 			}
 
 			if ($isOptional) {

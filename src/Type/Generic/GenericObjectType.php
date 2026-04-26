@@ -21,6 +21,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -123,7 +124,17 @@ class GenericObjectType extends ObjectType
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			$result = $type->isAcceptedBy($this, $strictTypes);
+			if (!$result->yes() && $type instanceof UnionType) {
+				$mergedType = $this->mergeUnionMembers($type);
+				if ($mergedType !== null) {
+					$mergedResult = $this->isSuperTypeOfInternal($mergedType, true)->toAcceptsResult();
+					if ($mergedResult->yes()) {
+						return $mergedResult;
+					}
+				}
+			}
+			return $result;
 		}
 
 		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
@@ -207,6 +218,43 @@ class GenericObjectType extends ObjectType
 		}
 
 		return $result;
+	}
+
+	private function mergeUnionMembers(UnionType $unionType): ?self
+	{
+		$className = $this->getClassName();
+		$paramCount = count($this->types);
+		$typeParameterArrays = [];
+
+		foreach ($unionType->getTypes() as $memberType) {
+			if (!$memberType instanceof ObjectType) {
+				return null;
+			}
+			$ancestor = $memberType->getAncestorWithClassName($className);
+			if (!$ancestor instanceof self) {
+				return null;
+			}
+			if (count($ancestor->getTypes()) !== $paramCount) {
+				return null;
+			}
+			foreach ($ancestor->getTypes() as $typeParam) {
+				if (count($typeParam->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant())) > 0) {
+					return null;
+				}
+			}
+			$typeParameterArrays[] = $ancestor->getTypes();
+		}
+
+		$mergedTypes = [];
+		for ($i = 0; $i < $paramCount; $i++) {
+			$typesAtPosition = [];
+			foreach ($typeParameterArrays as $types) {
+				$typesAtPosition[] = $types[$i];
+			}
+			$mergedTypes[$i] = TypeCombinator::union(...$typesAtPosition);
+		}
+
+		return new self($className, $mergedTypes);
 	}
 
 	public function getClassReflection(): ?ClassReflection

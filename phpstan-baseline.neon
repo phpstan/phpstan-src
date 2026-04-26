@@ -1122,7 +1122,7 @@ parameters:
 		-
 			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 3
+			count: 4
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
@@ -1134,7 +1134,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 2
+			count: 3
 			path: src/Type/Generic/GenericObjectType.php
 
 		-

@@ -374,6 +374,11 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4510(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4510.php'], []);
+	}
+
 	public function testMaybeNotCallable(): void
 	{
 		$errors = [];

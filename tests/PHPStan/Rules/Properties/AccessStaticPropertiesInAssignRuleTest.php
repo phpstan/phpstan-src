@@ -80,6 +80,11 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2861(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2861-assign.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testAsymmetricVisibility(): void
 	{

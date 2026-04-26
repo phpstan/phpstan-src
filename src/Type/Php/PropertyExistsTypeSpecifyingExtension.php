@@ -15,11 +15,13 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Accessory\HasPropertyType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -66,16 +68,34 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		}
 
 		$objectType = $scope->getType($args[0]->value);
-		if ($objectType instanceof ConstantStringType) {
-			return new SpecifiedTypes([], []);
-		} elseif ($objectType->isObject()->yes()) {
-			$propertyNode = new PropertyFetch(
-				$args[0]->value,
-				new Identifier($propertyNameType->getValue()),
+		if ($objectType->isString()->yes()) {
+			return $this->typeSpecifier->create(
+				new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
+				new ConstantBooleanType(true),
+				$context,
+				$scope,
 			);
-		} else {
-			return new SpecifiedTypes([], []);
 		}
+
+		if (!$objectType->isObject()->yes()) {
+			return $this->typeSpecifier->create(
+				$args[0]->value,
+				new UnionType([
+					new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasPropertyType($propertyNameType->getValue()),
+					]),
+					new ClassStringType(),
+				]),
+				$context,
+				$scope,
+			);
+		}
+
+		$propertyNode = new PropertyFetch(
+			$args[0]->value,
+			new Identifier($propertyNameType->getValue()),
+		);
 
 		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
 		if ($propertyReflection !== null) {

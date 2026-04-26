@@ -153,18 +153,18 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 	public function testBug11314(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-11314.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-11314.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug13332(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-13332.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13332.php'], []);
 	}
 
 	public function testBug7152(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7152.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7152.php'], []);
 	}
 
 }

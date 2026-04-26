@@ -1704,7 +1704,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 18
+			count: 20
 			path: src/Type/TypeCombinator.php
 
 		-

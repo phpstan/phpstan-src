@@ -88,6 +88,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
@@ -1911,6 +1912,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				$nativeExpressionTypes[$exprString] = $expressionTypeHolder;
 			}
+		} elseif (isset($restoreThisScope->expressionTypes['$this'])) {
+			$expressionTypes['$this'] = $restoreThisScope->expressionTypes['$this'];
+			if (isset($restoreThisScope->nativeExpressionTypes['$this'])) {
+				$nativeExpressionTypes['$this'] = $restoreThisScope->nativeExpressionTypes['$this'];
+			} else {
+				unset($nativeExpressionTypes['$this']);
+			}
 		} else {
 			unset($expressionTypes['$this']);
 			unset($nativeExpressionTypes['$this']);
@@ -2107,6 +2115,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$expressionTypes[$exprString] = $typeHolder;
 				}
 			}
+		} elseif (!$closure->static && !$this->isInClosureBind()) {
+			$node = new Variable('this');
+			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, new ObjectWithoutClassType());
+			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, new ObjectWithoutClassType());
 		}
 
 		$filteredConditionalExpressions = [];
@@ -2251,6 +2263,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		if ($arrowFunction->static) {
 			$arrowFunctionScope = $arrowFunctionScope->invalidateExpression(new Variable('this'));
+		} elseif (!$this->hasVariableType('this')->yes() && !$this->isInClosureBind()) {
+			$arrowFunctionScope = $arrowFunctionScope->assignVariable('this', new ObjectWithoutClassType(), new ObjectWithoutClassType(), TrinaryLogic::createYes());
 		}
 
 		return $this->scopeFactory->create(

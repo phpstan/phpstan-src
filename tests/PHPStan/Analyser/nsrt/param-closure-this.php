@@ -153,36 +153,36 @@ class Foo
 }
 
 function (Foo $f): void {
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 	$f->paramClosureClass(function () {
 		assertType(Some::class, $this);
 	});
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 	$f->paramClosureClass(static function () {
 		assertType('*ERROR*', $this);
 	});
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 };
 
 function (Foo $f): void {
 	$a = 1;
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 	$f->paramClosureClass(function () use (&$a) {
 		assertType(Some::class, $this);
 	});
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 	$f->paramClosureClass(static function () use (&$a) {
 		assertType('*ERROR*', $this);
 	});
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 };
 
 function (Foo $f): void {
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 	$f->paramClosureClass(fn () => assertType(Some::class, $this));
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 	$f->paramClosureClass(static fn () => assertType('*ERROR*', $this));
-	assertType('*ERROR*', $this);
+	assertType('object', $this);
 };
 
 class Bar extends Foo

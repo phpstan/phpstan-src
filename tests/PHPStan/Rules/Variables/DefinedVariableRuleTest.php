@@ -705,10 +705,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 			],
 			[
 				'Undefined variable: $this',
-				26,
-			],
-			[
-				'Undefined variable: $this',
 				38,
 			],
 		]);
@@ -1558,6 +1554,24 @@ class DefinedVariableRuleTest extends RuleTestCase
 			[
 				'Variable $format might not be defined.',
 				38,
+			],
+		]);
+	}
+
+	public function testBug1348(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-1348.php'], [
+			[
+				'Undefined variable: $this',
+				25,
+			],
+			[
+				'Undefined variable: $this',
+				28,
 			],
 		]);
 	}

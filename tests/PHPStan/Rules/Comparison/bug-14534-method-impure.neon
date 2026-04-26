@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- data/bug-14534-method-impure.stub

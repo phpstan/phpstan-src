@@ -1,0 +1,8 @@
+<?php
+
+class Memcached {
+	/**
+	 * @phpstan-impure
+	 */
+	public function getResultCode(): int {}
+}

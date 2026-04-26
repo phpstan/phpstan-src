@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @phpstan-all-methods-pure
+ */
+class Memcached {}

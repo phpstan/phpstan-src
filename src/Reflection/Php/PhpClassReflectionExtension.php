@@ -618,6 +618,7 @@ final class PhpClassReflectionExtension
 			$acceptsNamedArguments = true;
 			$selfOutType = null;
 			$phpDocComment = null;
+			$currentResolvedPhpDoc = null;
 			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $methodReflection);
 			foreach ($methodSignaturesResult as $signatureType => $methodSignatures) {
 				if ($methodSignatures === null) {
@@ -731,6 +732,22 @@ final class PhpClassReflectionExtension
 				$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects']);
 			} else {
 				$hasSideEffects = TrinaryLogic::createMaybe();
+			}
+
+			$isPure = null;
+			if ($currentResolvedPhpDoc !== null) {
+				$isPure = $currentResolvedPhpDoc->isPure();
+			}
+			if ($isPure === null) {
+				$classResolvedPhpDoc = $declaringClass->getResolvedPhpDoc();
+				if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
+					$isPure = true;
+				} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
+					$isPure = false;
+				}
+			}
+			if ($isPure !== null) {
+				$hasSideEffects = TrinaryLogic::createFromBoolean(!$isPure);
 			}
 			return new NativeMethodReflection(
 				$this->reflectionProviderProvider->getReflectionProvider(),

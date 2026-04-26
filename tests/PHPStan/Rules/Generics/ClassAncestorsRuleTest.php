@@ -290,4 +290,9 @@ class ClassAncestorsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7021.php'], []);
 	}
 
+	public function testBug7152(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7152.php'], []);
+	}
+
 }

@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Type\UnionTypeMethodReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
@@ -23,9 +24,11 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
+use function count;
 use function in_array;
 
 #[AutowiredService]
@@ -63,6 +66,42 @@ final class MethodThrowPointHelper
 		Type $methodCallReturnType,
 	): ?InternalThrowPoint
 	{
+		if ($methodReflection instanceof UnionTypeMethodReflection) {
+			$throwPoints = [];
+			foreach ($methodReflection->getMethods() as $innerMethodReflection) {
+				$throwPoint = $this->getThrowPoint($innerMethodReflection, $parametersAcceptor, $normalizedMethodCall, $scope, $context, $methodCallReturnType);
+				if ($throwPoint === null) {
+					continue;
+				}
+
+				$throwPoints[] = $throwPoint;
+			}
+
+			if (count($throwPoints) === 0) {
+				return null;
+			}
+
+			$throwTypes = [];
+			$canContainAnyThrowable = false;
+			$isExplicit = false;
+			foreach ($throwPoints as $throwPoint) {
+				$throwTypes[] = $throwPoint->getType();
+				if ($throwPoint->canContainAnyThrowable()) {
+					$canContainAnyThrowable = true;
+				}
+				if (!$throwPoint->isExplicit()) {
+					continue;
+				}
+				$isExplicit = true;
+			}
+
+			if (!$isExplicit) {
+				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
+			}
+
+			return InternalThrowPoint::createExplicit($scope, TypeCombinator::union(...$throwTypes), $normalizedMethodCall, $canContainAnyThrowable);
+		}
+
 		if ($normalizedMethodCall instanceof MethodCall) {
 			foreach ($this->dynamicMethodThrowTypeExtensions->getAll() as $extension) {
 				if (!$extension->isMethodSupported($methodReflection)) {

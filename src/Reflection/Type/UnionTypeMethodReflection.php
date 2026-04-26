@@ -11,6 +11,7 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
@@ -19,6 +20,7 @@ use function count;
 use function implode;
 use function is_bool;
 
+#[ReferencedByTurboExtension(key: 'unionTypeMethodReflection')]
 final class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
 
@@ -32,6 +34,14 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->methods[0]->getDeclaringClass();
+	}
+
+	/**
+	 * @return ExtendedMethodReflection[]
+	 */
+	public function getMethods(): array
+	{
+		return $this->methods;
 	}
 
 	public function isStatic(): bool

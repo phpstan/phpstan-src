@@ -26,6 +26,7 @@ namespace sigs = ptdecl::MethodThrowPointHelper::sig;
 #include "TypeOps.h"
 #include "AcceptorValues.h"
 #include "ParserVisitors.h"
+#include "AnalyserValues.h"
 
 static zend_class_entry *pt_ce_method_throw_point_helper;
 
@@ -104,6 +105,12 @@ public:
 	 * exception */
 	zv::Val getThrowPoint(zval *methodReflection, zval *parametersAcceptor, zval *normalizedMethodCall, zval *scope, zval *context, zval *methodCallReturnType) const
 	{
+		zend_class_entry *unionTypeMethodReflectionCe = pt_class(PT_CLASS_UNION_TYPE_METHOD_REFLECTION);
+		if (UNEXPECTED(unionTypeMethodReflectionCe == NULL)) return zv::Val();
+		if (instanceof_function(Z_OBJCE_P(methodReflection), unionTypeMethodReflectionCe)) {
+			return getUnionThrowPoint(methodReflection, parametersAcceptor, normalizedMethodCall, scope, context, methodCallReturnType);
+		}
+
 		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
 		if (UNEXPECTED(methodCallCe == NULL)) return zv::Val();
 		bool isMethodCall = instanceof_function(Z_OBJCE_P(normalizedMethodCall), methodCallCe);
@@ -257,6 +264,52 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors getThrowPoint()'s UnionTypeMethodReflection arm: the inner
+	 * methods' throw points, combined */
+	zv::Val getUnionThrowPoint(zval *methodReflection, zval *parametersAcceptor, zval *normalizedMethodCall, zval *scope, zval *context, zval *methodCallReturnType) const
+	{
+		zv::Val methods = pt_type_call(Z_OBJ_P(methodReflection), PT_LC("getmethods"), 0, NULL);
+		if (UNEXPECTED(methods.isUndef())) return zv::Val();
+
+		zv::Arr throwTypes = zv::Arr::create(0);
+		bool canContainAnyThrowable = false;
+		bool isExplicit = false;
+		if (EXPECTED(Z_TYPE_P(methods.raw()) == IS_ARRAY)) {
+			for (zv::ArrayEntry entry : zv::ArrRef(methods.raw())) {
+				zval *innerMethodReflection = entry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(innerMethodReflection) != IS_OBJECT)) {
+					zend_type_error("PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper::getThrowPoint(): Argument #1 ($methodReflection) must be of type PHPStan\\Reflection\\MethodReflection, %s given", zend_zval_value_name(innerMethodReflection));
+					return zv::Val();
+				}
+				zv::Val throwPoint = getThrowPoint(innerMethodReflection, parametersAcceptor, normalizedMethodCall, scope, context, methodCallReturnType);
+				if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
+				if (Z_TYPE_P(throwPoint.raw()) == IS_NULL) continue;
+
+				zv::Val typeHold;
+				zval *type = pt_internal_throw_point_type(throwPoint.raw(), typeHold);
+				if (UNEXPECTED(type == NULL)) return zv::Val();
+				throwTypes.push(zv::Val::copyOf(zv::Ref(type)));
+				bool innerCanContainAnyThrowable;
+				if (UNEXPECTED(!pt_internal_throw_point_can_contain_any_throwable(throwPoint.raw(), innerCanContainAnyThrowable))) return zv::Val();
+				if (innerCanContainAnyThrowable) canContainAnyThrowable = true;
+				bool innerIsExplicit;
+				if (UNEXPECTED(!pt_internal_throw_point_is_explicit(throwPoint.raw(), innerIsExplicit))) return zv::Val();
+				if (innerIsExplicit) isExplicit = true;
+			}
+		}
+
+		HashTable *table = throwTypes.table();
+		uint32_t count = zend_hash_num_elements(table);
+		if (count == 0) return zv::Val::null();
+		if (!isExplicit) return createImplicit(scope, normalizedMethodCall);
+
+		zv::Val throwType = EXPECTED(HT_IS_PACKED(table) && table->nNumUsed == count)
+			? pt_type_combinator_union(count, table->arPacked)
+			: pt_type_combinator_call_spread(PT_LC("union"), table);
+		if (UNEXPECTED(throwType.isUndef())) return zv::Val();
+		return createExplicit(scope, throwType.raw(), normalizedMethodCall, canContainAnyThrowable);
+	}
 
 	zval *slot(uint32_t index) const { return OBJ_PROP_NUM(self, index); }
 

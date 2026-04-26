@@ -519,6 +519,8 @@ enum {
 	/* the class names of Type::toPhpDocNode() and how describe() prints them */
 	PT_CLASS_FULLY_QUALIFIED_NAME_NODE,
 	PT_CLASS_TYPE_NODE_DESCRIBER,
+	/* MethodThrowPointHelper's union arm */
+	PT_CLASS_UNION_TYPE_METHOD_REFLECTION,
 	PT_CLASS_COUNT
 };
 

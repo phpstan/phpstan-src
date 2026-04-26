@@ -59,7 +59,7 @@ class Foo
 			break;
 		}
 
-		assertType('int<1, max>', $i);
+		assertType('int<1, 49>', $i);
 	}
 
 }

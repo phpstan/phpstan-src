@@ -34,6 +34,14 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->methods[0]->getDeclaringClass();
 	}
 
+	/**
+	 * @return ExtendedMethodReflection[]
+	 */
+	public function getMethods(): array
+	{
+		return $this->methods;
+	}
+
 	public function isStatic(): bool
 	{
 		foreach ($this->methods as $method) {

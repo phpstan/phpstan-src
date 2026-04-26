@@ -4,5 +4,10 @@ parameters:
         - src
         - rules
 
+    # force the use of parallel processing
+    parallel:
+        jobSize: 1
+        minimumNumberOfJobsPerProcess: 1
+
 rules:
     - Rules\DummyRule

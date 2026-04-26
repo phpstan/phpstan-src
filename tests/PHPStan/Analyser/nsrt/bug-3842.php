@@ -47,6 +47,13 @@ function check(array $values): void {
 function checkClassString(array $values): void {
 }
 
+/** @param 0|1 $offset */
+function testCallableArrayUnionOffset(callable $value, int $offset): void {
+	if (is_array($value)) {
+		assertType('object|string', $value[$offset]);
+	}
+}
+
 function testPassCallableArray(callable $value): void {
 	if (is_array($value)) {
 		check($value);

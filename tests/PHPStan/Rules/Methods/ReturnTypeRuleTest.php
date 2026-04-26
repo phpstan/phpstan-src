@@ -1341,4 +1341,5 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-12110.php'], []);
 	}
+
 }

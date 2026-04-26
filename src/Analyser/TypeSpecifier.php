@@ -847,6 +847,31 @@ final class TypeSpecifier
 						$specifiedTypes = $specifiedTypes->unionWith(
 							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
 						);
+					} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
+						// The array might be empty here, so we cannot register
+						// $arr[$key] unconditionally. Attach a conditional holder
+						// that fires once the user narrows $key to non-null
+						// (e.g. `if ($key !== null)`), giving the deep-write
+						// path the same shape information `isset($arr[$key])`
+						// would have provided.
+						$keyType = $scope->getType($expr->expr);
+						$nonNullKeyType = TypeCombinator::removeNull($keyType);
+						if (!$nonNullKeyType instanceof NeverType && !$keyType->isNull()->yes()) {
+							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+							$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
+							$keyExprString = $this->exprPrinter->printExpr($expr->var);
+
+							$holder = new ConditionalExpressionHolder(
+								[$keyExprString => ExpressionTypeHolder::createYes($expr->var, $nonNullKeyType)],
+								ExpressionTypeHolder::createYes($dimFetch, $arrayType->getIterableValueType()),
+							);
+
+							$specifiedTypes = $specifiedTypes->unionWith(
+								(new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
+									$dimFetchString => [$holder->getKey() => $holder],
+								]),
+							);
+						}
 					}
 				}
 			}

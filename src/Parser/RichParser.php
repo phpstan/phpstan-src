@@ -361,7 +361,6 @@ final class RichParser implements Parser
 			throw new IgnoreParseException('Missing identifier', 1);
 		}
 
-		/** @phpstan-ignore return.type (return type is correct, not sure why it's being changed from array shape to key-value shape) */
 		return $identifiers;
 	}
 

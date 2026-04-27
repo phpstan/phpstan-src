@@ -49,8 +49,10 @@ final class ArrayHandler implements ExprHandler
 
 		if (
 			count($expr->items) === 2
-			&& $type->isCallable()->maybe()
 			&& isset($expr->items[0], $expr->items[1])
+			&& $expr->items[0]->key === null
+			&& $expr->items[1]->key === null
+			&& $type->isCallable()->maybe()
 		) {
 			$isCallableCall = new FuncCall(
 				new FullyQualified('is_callable'),

@@ -61,7 +61,7 @@ final class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 			]);
 			$methodExistsTypes = $this->methodExistsExtension->specifyTypes($functionReflection, $functionCall, $scope, $context);
 
-			$isCallableMarker = $this->typeSpecifier->create(
+			return $methodExistsTypes->unionWith($this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('is_callable'), [
 					new Arg($value->items[0]->value),
 					new Arg($value->items[1]->value),
@@ -69,9 +69,7 @@ final class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 				new ConstantBooleanType(true),
 				$context,
 				$scope,
-			);
-
-			return $methodExistsTypes->unionWith($isCallableMarker);
+			));
 		}
 
 		return $this->typeSpecifier->create($value, new CallableType(), $context, $scope);

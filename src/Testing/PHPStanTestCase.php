@@ -149,7 +149,7 @@ abstract class PHPStanTestCase extends TestCase
 			$messages = [];
 			foreach ($errors as $error) {
 				if ($error instanceof Error) {
-					$messages[] = sprintf("- %s\n  in %s on line %d\n", rtrim($error->getMessage(), '.'), $error->getFile(), $error->getLine() ?? 0);
+					$messages[] = sprintf("- %s\n  in %s on line %d%s\n", rtrim($error->getMessage(), '.'), $error->getFile(), $error->getLine() ?? 0, $error->getTip() !== null ? sprintf("\n💡 %s", $error->getTip()) : '');
 				} else {
 					$messages[] = $error;
 				}

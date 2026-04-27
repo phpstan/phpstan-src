@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @phpstan-all-methods-impure
+ */
+class SplFileObject {}

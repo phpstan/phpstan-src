@@ -11,7 +11,7 @@ use function PHPStan\Testing\assertType;
  */
 function addSomeKey(array $arr, int $value): array {
 	$arr['mykey'] = $value;
-	assertType("T of array (function Bug3931\\addSomeKey(), argument)&hasOffsetValue('mykey', int)&non-empty-array", $arr);
+	assertType("T of array (function Bug3931\addSomeKey(), argument)&hasOffsetValue('mykey', int)&non-empty-array", $arr);
 	return $arr;
 }
 
@@ -22,5 +22,5 @@ function addSomeKey(array $arr, int $value): array {
 function test(array $arr): void
 {
 	$r = addSomeKey($arr, 1);
-	assertType("array{mykey: int}", $r); // could be better, the T part currently disappears
+	assertType("T of array (function Bug3931\addSomeKey(), argument)&hasOffsetValue('mykey', int)&non-empty-array", $r);
 }

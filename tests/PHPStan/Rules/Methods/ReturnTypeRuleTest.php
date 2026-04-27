@@ -377,6 +377,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2885.php'], []);
 	}
 
+	public function testBug8636(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8636.php'], []);
+	}
+
 	public function testMergeInheritedPhpDocs(): void
 	{
 		$this->analyse([__DIR__ . '/data/merge-inherited-return.php'], [

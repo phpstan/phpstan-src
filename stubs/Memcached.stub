@@ -4,3 +4,8 @@
  * @phpstan-all-methods-impure
  */
 class Memcached {}
+
+/**
+ * @phpstan-all-methods-impure
+ */
+class MemcachePool {}

@@ -1465,7 +1465,6 @@ final class TypeCombinator
 			}
 		}
 
-
 		return array_merge($newArrays, $arraysToProcess);
 	}
 

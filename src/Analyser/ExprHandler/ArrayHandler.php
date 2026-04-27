@@ -23,6 +23,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function count;
 
 /**
  * @implements ExprHandler<Array_>
@@ -47,7 +48,8 @@ final class ArrayHandler implements ExprHandler
 		$type = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
 
 		if (
-			$type->isCallable()->maybe()
+			count($expr->items) === 2
+			&& $type->isCallable()->maybe()
 			&& isset($expr->items[0], $expr->items[1])
 		) {
 			$isCallableCall = new FuncCall(

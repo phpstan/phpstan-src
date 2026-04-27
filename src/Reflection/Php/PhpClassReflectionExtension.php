@@ -620,6 +620,12 @@ final class PhpClassReflectionExtension
 			$acceptsNamedArguments = true;
 			$selfOutType = null;
 			$phpDocComment = null;
+
+			$isPure = null;
+			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
+				$isPure = !$this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects'];
+			}
+
 			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $methodReflection);
 			foreach ($methodSignaturesResult as $signatureType => $methodSignatures) {
 				if ($methodSignatures === null) {
@@ -695,6 +701,7 @@ final class PhpClassReflectionExtension
 
 						$asserts = Assertions::createFromResolvedPhpDocBlock($currentResolvedPhpDoc);
 						$acceptsNamedArguments = $currentResolvedPhpDoc->acceptsNamedArguments();
+						$isPure ??= $currentResolvedPhpDoc->isPure();
 
 						$selfOutTypeTag = $currentResolvedPhpDoc->getSelfOutTag();
 						if ($selfOutTypeTag !== null) {
@@ -729,11 +736,15 @@ final class PhpClassReflectionExtension
 				}
 			}
 
-			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
-				$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects']);
-			} else {
-				$hasSideEffects = TrinaryLogic::createMaybe();
+			if ($isPure === null) {
+				$classResolvedPhpDoc = $declaringClass->getResolvedPhpDoc();
+				if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
+					$isPure = true;
+				} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
+					$isPure = false;
+				}
 			}
+
 			return new NativeMethodReflection(
 				$this->reflectionProviderProvider->getReflectionProvider(),
 				$declaringClass,
@@ -741,7 +752,7 @@ final class PhpClassReflectionExtension
 				$currentResolvedPhpDoc ?? null,
 				$variantsByType['positional'],
 				$variantsByType['named'] ?? null,
-				$hasSideEffects,
+				$isPure !== null ? TrinaryLogic::createFromBoolean(!$isPure) : TrinaryLogic::createMaybe(),
 				$throwType,
 				$asserts,
 				$acceptsNamedArguments,

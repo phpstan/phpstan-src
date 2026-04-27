@@ -1362,21 +1362,7 @@ class NodeScopeResolver
 				$valueTypeChanged = false;
 				$keyTypeChanged = false;
 
-				if ($byRefWithoutKey) {
-					$arrayDimFetchLoopTypes = [];
-					foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
-						$arrayDimFetchLoopTypes[] = $scopeWithIterableValueType->getType($stmt->valueVar);
-					}
-					$arrayDimFetchLoopType = TypeCombinator::union(...$arrayDimFetchLoopTypes);
-
-					$arrayDimFetchLoopNativeTypes = [];
-					foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
-						$arrayDimFetchLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
-					}
-					$arrayDimFetchLoopNativeType = TypeCombinator::union(...$arrayDimFetchLoopNativeTypes);
-
-					$valueTypeChanged = !$arrayDimFetchLoopType->equals($exprType->getIterableValueType());
-				} elseif ($stmt->keyVar !== null) {
+				if ($stmt->keyVar !== null) {
 					$arrayExprDimFetch = new ArrayDimFetch($stmt->expr, $stmt->keyVar);
 					$originalValueExpr = null;
 					if ($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)) {
@@ -1424,6 +1410,20 @@ class NodeScopeResolver
 
 					$valueTypeChanged = !$arrayDimFetchLoopType->equals($exprType->getIterableValueType());
 					$keyTypeChanged = !$keyLoopType->equals($exprType->getIterableKeyType());
+				} elseif ($byRefWithoutKey) {
+					$arrayDimFetchLoopTypes = [];
+					foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
+						$arrayDimFetchLoopTypes[] = $scopeWithIterableValueType->getType($stmt->valueVar);
+					}
+					$arrayDimFetchLoopType = TypeCombinator::union(...$arrayDimFetchLoopTypes);
+
+					$arrayDimFetchLoopNativeTypes = [];
+					foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
+						$arrayDimFetchLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
+					}
+					$arrayDimFetchLoopNativeType = TypeCombinator::union(...$arrayDimFetchLoopNativeTypes);
+
+					$valueTypeChanged = !$arrayDimFetchLoopType->equals($exprType->getIterableValueType());
 				}
 
 				if ($valueTypeChanged || $keyTypeChanged) {

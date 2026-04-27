@@ -376,22 +376,22 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testBug4510(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4510.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4510.php'], [
 			[
 				'Trying to invoke array{$this(Bug4510\HelloWorld), string} but it might not be a callable.',
-				12,
+				16,
 			],
 			[
 				"Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.",
-				22,
+				27,
 			],
 			[
 				"Trying to invoke array{'Bug4510\\\HelloWorld', string} but it might not be a callable.",
-				39,
+				46,
 			],
 			[
 				"Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.",
-				55,
+				90,
 			],
 		]);
 	}

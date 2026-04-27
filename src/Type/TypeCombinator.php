@@ -37,6 +37,7 @@ use function array_splice;
 use function array_values;
 use function count;
 use function get_class;
+use function implode;
 use function in_array;
 use function is_int;
 use function sprintf;
@@ -1008,6 +1009,53 @@ final class TypeCombinator
 			return $types;
 		}
 
+		// Stage 1: collapse same-key-set ConstantArrayType variants per-position
+		// before the (lossy) generalization below kicks in. Variants with the
+		// same key signature mergeWith losslessly into a single shape whose
+		// values at each position are the union of the variants' values, which
+		// drops the count while keeping the per-position structure. Without
+		// this, a list of N similarly-shaped records (e.g. bug-7963) hits the
+		// limit and the generalization decomposes every nested constant array
+		// into a flat `non-empty-list<unionOfAllPositionValues>`, losing the
+		// shape entirely.
+		$signatureGroups = [];
+		$nonConstantTypes = [];
+		foreach ($types as $idx => $type) {
+			if (!$type instanceof ConstantArrayType) {
+				$nonConstantTypes[$idx] = $type;
+				continue;
+			}
+			$signatureParts = [];
+			$signatureParts[] = $type->isList()->yes() ? 'L' : 'A';
+			foreach ($type->getKeyTypes() as $i => $keyType) {
+				$signatureParts[] = ($type->isOptionalKey($i) ? '?' : '!') . ($keyType instanceof ConstantIntegerType ? 'i' : 's') . $keyType->getValue();
+			}
+			$signatureGroups[implode(',', $signatureParts)][] = $type;
+		}
+		if ($signatureGroups !== []) {
+			$collapsed = $nonConstantTypes;
+			$anyMerged = false;
+			foreach ($signatureGroups as $group) {
+				if (count($group) === 1) {
+					$collapsed[] = $group[0];
+					continue;
+				}
+				$merged = $group[0];
+				for ($i = 1, $count = count($group); $i < $count; $i++) {
+					$merged = $merged->mergeWith($group[$i]);
+				}
+				$collapsed[] = $merged;
+				$anyMerged = true;
+			}
+			if ($anyMerged) {
+				$types = array_values($collapsed);
+				$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
+				if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+					return $types;
+				}
+			}
+		}
+
 		$results = [];
 		$eachIsOversized = true;
 		foreach ($types as $type) {
@@ -1236,6 +1284,52 @@ final class TypeCombinator
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
 					unset($arraysToProcess[$i]);
 					continue 2;
+				}
+			}
+		}
+
+		// Final pass: collapse the loop-accumulator pattern where each iteration
+		// produced a longer non-empty list variant. When several non-empty list
+		// ConstantArrayTypes survive earlier merging and together push the
+		// constant-array value count past the limit, fold them into a single
+		// non-empty-list<unionValueType> so the result stays bounded without
+		// going through the lossier optimizeConstantArrays generalization.
+		// Skip when every list variant shares one key signature — those collapse
+		// losslessly via the stage 1 same-key-set merge in optimizeConstantArrays
+		// (each position keeps its own value union), which is strictly more
+		// precise than this flat fold.
+		if ($preserveTaggedUnions && count($arraysToProcess) > 1) {
+			$listVariantIndices = [];
+			$listValueTypes = [];
+			$listVariants = [];
+			$listVariantSignatures = [];
+			foreach ($arraysToProcess as $idx => $arr) {
+				if (!$arr->isList()->yes() || !$arr->isIterableAtLeastOnce()->yes()) {
+					continue;
+				}
+				$listVariantIndices[] = $idx;
+				$listValueTypes[] = $arr->getIterableValueType();
+				$listVariants[] = $arr;
+				$signatureParts = [];
+				foreach ($arr->getKeyTypes() as $i => $keyType) {
+					$signatureParts[] = ($arr->isOptionalKey($i) ? '?' : '!') . ($keyType instanceof ConstantIntegerType ? 'i' : 's') . $keyType->getValue();
+				}
+				$listVariantSignatures[implode(',', $signatureParts)] = true;
+			}
+			if (
+				count($listVariantIndices) >= 2
+				&& count($listVariantSignatures) >= 2
+				&& self::countConstantArrayValueTypes($listVariants) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+			) {
+				$mergedValueType = self::union(...$listValueTypes);
+				$merged = self::intersect(
+					new ArrayType(new IntegerType(), $mergedValueType),
+					new NonEmptyArrayType(),
+					new AccessoryArrayListType(),
+				);
+				$newArrays[] = $merged;
+				foreach ($listVariantIndices as $idx) {
+					unset($arraysToProcess[$idx]);
 				}
 			}
 		}

@@ -854,113 +854,62 @@ final class TypeSpecifier
 							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
 						);
 					} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
-						// The array might be empty here, so we cannot register
-						// $arr[$key] unconditionally. Attach a conditional holder
-						// that fires once the user narrows $key to non-null
-						// (e.g. `if ($key !== null)`), giving the deep-write
-						// path the same shape information `isset($arr[$key])`
-						// would have provided.
 						$keyType = $scope->getType($expr->expr);
 						$nonNullKeyType = TypeCombinator::removeNull($keyType);
-						if (!$nonNullKeyType instanceof NeverType && !$keyType->isNull()->yes()) {
-							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-							$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
-							$keyExprString = $this->exprPrinter->printExpr($expr->var);
-
-							$holder = new ConditionalExpressionHolder(
-								[$keyExprString => ExpressionTypeHolder::createYes($expr->var, $nonNullKeyType)],
-								ExpressionTypeHolder::createYes($dimFetch, $arrayType->getIterableValueType()),
-							);
-
+						if (!$nonNullKeyType instanceof NeverType) {
 							$specifiedTypes = $specifiedTypes->unionWith(
-								(new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
-									$dimFetchString => [$holder->getKey() => $holder],
-								]),
+								$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $arrayType, $nonNullKeyType),
 							);
 						}
 					}
 				}
 			}
 
-			// infer $arr[$key] after $key = array_search($needle, $arr)
+			// infer $arr[$key] after $key = array_search($needle, $arr) or $key = array_find_key($arr, $callback)
 			if (
 				$expr->expr instanceof FuncCall
 				&& $expr->expr->name instanceof Name
-				&& $expr->expr->name->toLowerString() === 'array_search'
 				&& count($expr->expr->getArgs()) >= 2
 			) {
-				$arrayArg = $expr->expr->getArgs()[1]->value;
-				$arrayType = $scope->getType($arrayArg);
+				$funcName = $expr->expr->name->toLowerString();
+				$arrayArgIndex = null;
+				$sentinelType = null;
+				$narrowToNonEmpty = false;
 
-				if ($arrayType->isArray()->yes()) {
-					if ($context->true()) {
-						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-
-						$specifiedTypes = $specifiedTypes->unionWith(
-							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-					} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
-						$keyType = $scope->getType($expr->expr);
-						$nonFalseKeyType = TypeCombinator::remove($keyType, new ConstantBooleanType(false));
-						if (!$nonFalseKeyType instanceof NeverType && !$keyType->isFalse()->yes()) {
-							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-							$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
-							$keyExprString = $this->exprPrinter->printExpr($expr->var);
-
-							$holder = new ConditionalExpressionHolder(
-								[$keyExprString => ExpressionTypeHolder::createYes($expr->var, $nonFalseKeyType)],
-								ExpressionTypeHolder::createYes($dimFetch, $arrayType->getIterableValueType()),
-							);
-
-							$specifiedTypes = $specifiedTypes->unionWith(
-								(new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
-									$dimFetchString => [$holder->getKey() => $holder],
-								]),
-							);
-						}
-					}
+				if ($funcName === 'array_search') {
+					$arrayArgIndex = 1;
+					$sentinelType = new ConstantBooleanType(false);
+				} elseif ($funcName === 'array_find_key') {
+					$arrayArgIndex = 0;
+					$sentinelType = new NullType();
+					$narrowToNonEmpty = true;
 				}
-			}
 
-			// infer $arr[$key] after $key = array_find_key($arr, $callback)
-			if (
-				$expr->expr instanceof FuncCall
-				&& $expr->expr->name instanceof Name
-				&& $expr->expr->name->toLowerString() === 'array_find_key'
-				&& count($expr->expr->getArgs()) >= 2
-			) {
-				$arrayArg = $expr->expr->getArgs()[0]->value;
-				$arrayType = $scope->getType($arrayArg);
+				if ($arrayArgIndex !== null && $sentinelType !== null) {
+					$arrayArg = $expr->expr->getArgs()[$arrayArgIndex]->value;
+					$arrayType = $scope->getType($arrayArg);
 
-				if ($arrayType->isArray()->yes()) {
-					if ($context->true()) {
-						$specifiedTypes = $specifiedTypes->unionWith(
-							$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
-						);
+					if ($arrayType->isArray()->yes()) {
+						if ($context->true()) {
+							if ($narrowToNonEmpty) {
+								$specifiedTypes = $specifiedTypes->unionWith(
+									$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
+								);
+							}
 
-						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-
-						$specifiedTypes = $specifiedTypes->unionWith(
-							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-					} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
-						$keyType = $scope->getType($expr->expr);
-						$nonNullKeyType = TypeCombinator::removeNull($keyType);
-						if (!$nonNullKeyType instanceof NeverType && !$keyType->isNull()->yes()) {
 							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-							$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
-							$keyExprString = $this->exprPrinter->printExpr($expr->var);
-
-							$holder = new ConditionalExpressionHolder(
-								[$keyExprString => ExpressionTypeHolder::createYes($expr->var, $nonNullKeyType)],
-								ExpressionTypeHolder::createYes($dimFetch, $arrayType->getIterableValueType()),
-							);
 
 							$specifiedTypes = $specifiedTypes->unionWith(
-								(new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
-									$dimFetchString => [$holder->getKey() => $holder],
-								]),
+								$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
 							);
+						} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
+							$keyType = $scope->getType($expr->expr);
+							$narrowedKeyType = TypeCombinator::remove($keyType, $sentinelType);
+							if (!$narrowedKeyType instanceof NeverType) {
+								$specifiedTypes = $specifiedTypes->unionWith(
+									$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $arrayType, $narrowedKeyType),
+								);
+							}
 						}
 					}
 				}
@@ -2464,6 +2413,27 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function createArrayDimFetchConditionalExpressionHolder(
+		Expr\Variable $keyVar,
+		Expr $arrayArg,
+		Type $arrayType,
+		Type $narrowedKeyType,
+	): SpecifiedTypes
+	{
+		$dimFetch = new ArrayDimFetch($arrayArg, $keyVar);
+		$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
+		$keyExprString = $this->exprPrinter->printExpr($keyVar);
+
+		$holder = new ConditionalExpressionHolder(
+			[$keyExprString => ExpressionTypeHolder::createYes($keyVar, $narrowedKeyType)],
+			ExpressionTypeHolder::createYes($dimFetch, $arrayType->getIterableValueType()),
+		);
+
+		return (new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
+			$dimFetchString => [$holder->getKey() => $holder],
+		]);
 	}
 
 	private function createForExpr(

@@ -14,12 +14,26 @@ use function is_array;
 use function is_file;
 use function sprintf;
 
+/**
+ * @phpstan-type IgnoredErrorData = array{
+ *     message?: string,
+ *     messages?: list<string>,
+ *     rawMessage?: string,
+ *     rawMessages?: list<string>,
+ *     identifier?: string,
+ *     identifiers?: list<string>,
+ *     path?: string,
+ *     paths?: list<string>,
+ *     count?: int,
+ *     reportUnmatched?: bool,
+ * }
+ */
 #[AutowiredService]
 final class IgnoredErrorHelper
 {
 
 	/**
-	 * @param (string|mixed[])[] $ignoreErrors
+	 * @param (string|IgnoredErrorData)[] $ignoreErrors
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -106,7 +120,7 @@ final class IgnoredErrorHelper
 				continue;
 			}
 
-			$reportUnmatched = (bool) ($uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors);
+			$reportUnmatched = $uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
 			if (!$reportUnmatched) {
 				$reportUnmatched = $ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
 			}

@@ -2838,6 +2838,22 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4090.php'], []);
 	}
 
+	public function testBug2940(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2940.php'], [
+			[
+				'Parameter #1 $input of function Bug2940\foo expects array{foo2: string, foo1: string, foobarbar1?: string, foobarbar2?: int, foobarbar3?: string, foobarbar4: string, foobarbar6?: string, foobarbar7: int}, array{xx: 3} given.',
+				25,
+				"Array does not have offset 'foo2'.",
+			],
+			[
+				'Parameter #1 $input of function Bug2940\foo2 expects array{foo2: string, foo1: string, foobarbar1?: string, foobarbar2?: int, foobarbar3?: string, foobarbar4: string, foobarbar6?: string, foobarbar7: int, ...}, array{xx: 3} given.',
+				73,
+				"Array does not have offset 'foo2'.",
+			],
+		]);
+	}
+
 	public function testBug11533(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11533.php'], []);

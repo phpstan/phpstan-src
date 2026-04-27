@@ -42,7 +42,7 @@ function () {
 			$cData[$c] = $ids;
 		}
 	}
-	assertType('array{}|array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
+	assertType('array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
 };
 
 /**

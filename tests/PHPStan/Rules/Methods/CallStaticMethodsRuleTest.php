@@ -563,10 +563,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $data of static method Discussion7004\Foo::fromArray2() expects array{array{newsletterName: string, subscriberCount: int}}, array<mixed, mixed> given.',
 				47,
+				'Sealed array shape can only accept a constant array. Extra keys are not allowed.',
 			],
 			[
 				'Parameter #1 $data of static method Discussion7004\Foo::fromArray3() expects array{newsletterName: string, subscriberCount: int}, array<mixed, mixed> given.',
 				48,
+				'Sealed array shape can only accept a constant array. Extra keys are not allowed.',
 			],
 		]);
 	}

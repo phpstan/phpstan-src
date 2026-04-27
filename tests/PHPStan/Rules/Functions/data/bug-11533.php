@@ -13,7 +13,7 @@ function hello(array $param): void
     world($param);
 }
 
-/** @param array{need: string, field: string} $param */
+/** @param array{need: string, field: string, ...} $param */
 function world(array $param): void
 {
 }

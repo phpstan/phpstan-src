@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 /**
  * @template T of array
  * @param T $arr
- * @return T & array{mykey: int}
+ * @return T & array{mykey: int, ...}
  */
 function addSomeKey(array $arr, int $value): array {
 	$arr['mykey'] = $value;

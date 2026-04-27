@@ -481,3 +481,27 @@ class ConstantArrayClass implements ConstantArrayInterface
 		];
 	}
 }
+
+interface ConstantArrayInterfaceUnsealed
+{
+
+	/**
+	 * @return array{foo: string, ...}
+	 */
+	public function foobar(): array;
+
+}
+
+class ConstantArrayClass2 implements ConstantArrayInterfaceUnsealed
+{
+	/**
+	 * @return array{foo: string, bar: string}
+	 */
+	public function foobar(): array
+	{
+		return [
+			'foo' => '',
+			'bar' => '',
+		];
+	}
+}

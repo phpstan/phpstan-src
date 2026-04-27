@@ -533,6 +533,16 @@ class CallMethodsRuleTest extends RuleTestCase
 				"Array does not have offset 'id'.",
 			],
 			[
+				'Parameter #1 $param of method Test\ConstantArrayAccepts::doBar() expects array{name: string, color?: string}, array{name: string, color: string, year: int} given.',
+				1614,
+				"Sealed array shape does not accept array with extra key 'year'.",
+			],
+			[
+				'Parameter #1 $params of method Test\ConstantArrayAcceptsOptionalKey::doFoo() expects array{wrapperClass?: class-string}, array{wrapperClass: \'stdClass\', undocumented: 42} given.',
+				1638,
+				"Sealed array shape does not accept array with extra key 'undocumented'.",
+			],
+			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
 				1657,
 			],
@@ -858,6 +868,16 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
 				"Array does not have offset 'id'.",
+			],
+			[
+				'Parameter #1 $param of method Test\ConstantArrayAccepts::doBar() expects array{name: string, color?: string}, array{name: string, color: string, year: int} given.',
+				1614,
+				"Sealed array shape does not accept array with extra key 'year'.",
+			],
+			[
+				'Parameter #1 $params of method Test\ConstantArrayAcceptsOptionalKey::doFoo() expects array{wrapperClass?: class-string}, array{wrapperClass: \'stdClass\', undocumented: 42} given.',
+				1638,
+				"Sealed array shape does not accept array with extra key 'undocumented'.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -2204,7 +2224,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-5258.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-5258.php'], [
+			[
+				'Parameter #1 $params of method Bug5258\HelloWorld::method2() expects array{other_key: string}, array{some_key: non-falsy-string, other_key: string} given.',
+				12,
+				"Sealed array shape does not accept array with extra key 'some_key'.",
+			],
+			[
+				'Parameter #1 $params of method Bug5258\HelloWorld::method2() expects array{other_key: string}, array{some_key?: string, other_key: non-falsy-string} given.',
+				14,
+				"Sealed array shape does not accept array with extra key 'some_key'.",
+			],
+		]);
 	}
 
 	public function testBug5591(): void

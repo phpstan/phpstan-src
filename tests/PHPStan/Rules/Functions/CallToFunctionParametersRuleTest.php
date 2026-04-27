@@ -1337,7 +1337,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-2911.php'], [
 			[
-				'Parameter #1 $array of function Bug2911\bar expects array{bar: string}, non-empty-array<mixed> given.',
+				'Parameter #1 $array of function Bug2911\bar expects array{bar: string, ...}, non-empty-array<mixed> given.',
 				23,
 			],
 		]);
@@ -2957,7 +2957,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $a of function Bug11494\test expects array{long: string, details: string}|array{short: string}, array{short: \'thing\', extra: \'other\'} given.',
 				18,
-				"• Type #1 from the union: Sealed array shape does not accept array with extra key 'extra'.\n• Type #2 from the union: Sealed array shape does not accept array with extra key 'extra'.",
+				"• Type #1 from the union: Array does not have offset 'long'.\n• Type #2 from the union: Sealed array shape does not accept array with extra key 'extra'.",
 			],
 		]);
 	}

@@ -81,6 +81,10 @@ class MethodSignatureRuleTest extends RuleTestCase
 					'Parameter #1 $node (PhpParser\Node\Expr\StaticCall) of method MethodSignature\Rule::processNode() should be contravariant with parameter $node (PhpParser\Node) of method MethodSignature\GenericRule<PhpParser\Node>::processNode()',
 					454,
 				],
+				[
+					'Return type (array{foo: string, bar: string}) of method MethodSignature\ConstantArrayClass::foobar() should be compatible with return type (array{foo: string}) of method MethodSignature\ConstantArrayInterface::foobar()',
+					476,
+				],
 			],
 		);
 	}
@@ -183,6 +187,10 @@ class MethodSignatureRuleTest extends RuleTestCase
 				[
 					'Return type (MethodSignature\Cat) of method MethodSignature\SubClass::returnTypeTest5() should be compatible with return type (MethodSignature\Dog) of method MethodSignature\BaseInterface::returnTypeTest5()',
 					358,
+				],
+				[
+					'Return type (array{foo: string, bar: string}) of method MethodSignature\ConstantArrayClass::foobar() should be compatible with return type (array{foo: string}) of method MethodSignature\ConstantArrayInterface::foobar()',
+					476,
 				],
 			],
 		);

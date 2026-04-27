@@ -6,7 +6,7 @@ class X{}
 
 class LocationFixtures
 {
-	/** @return array<non-empty-string, array<non-empty-string, array{constituencies: non-empty-list<non-empty-string>, coordinates: array{lat: float, lng: float}}>> */
+	/** @return array<non-empty-string, array<non-empty-string, array{constituencies: non-empty-list<non-empty-string>, coordinates: array{lat: float, lng: float, ...}}>> */
 	public function getData(): array
 	{
 		return [

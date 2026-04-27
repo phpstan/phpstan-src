@@ -967,16 +967,14 @@ class IntersectionType implements CompoundType
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
 			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
 			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-				$narrowedTypes = [];
-				if (!$arrayKeyOffsetType->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
-					$narrowedTypes[] = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
+				if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+					$narrowedType = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
+				} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+					$narrowedType = new StringType();
+				} else {
+					$narrowedType = new UnionType([new StringType(), new ObjectWithoutClassType()]);
 				}
-				if (!$arrayKeyOffsetType->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
-					$narrowedTypes[] = new StringType();
-				}
-				if ($narrowedTypes !== []) {
-					$result = TypeCombinator::intersect($result, TypeCombinator::union(...$narrowedTypes));
-				}
+				$result = TypeCombinator::intersect($result, $narrowedType);
 			}
 		}
 

@@ -8,4 +8,9 @@ class Memcached {}
 /**
  * @phpstan-all-methods-impure
  */
+class Memcache {}
+
+/**
+ * @phpstan-all-methods-impure
+ */
 class MemcachePool {}

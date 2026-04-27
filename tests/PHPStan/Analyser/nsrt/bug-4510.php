@@ -43,6 +43,15 @@ function testIsCallableWithClassString(string $method): void {
 	assertType("list{'Bug4510Nsrt\\\\Foo', string}&callable(): mixed", [Foo::class, $method]);
 }
 
+function testIsCallableExplicitKeys(string $method): void {
+	$instance = new Foo();
+	if (!is_callable([0 => $instance, 1 => $method])) {
+		return;
+	}
+
+	assertType('list{Bug4510Nsrt\Foo, string}&callable(): mixed', [0 => $instance, 1 => $method]);
+}
+
 function testNoMethodExists(string $method): void {
 	$instance = new Foo();
 	assertType('array{Bug4510Nsrt\Foo, string}', [$instance, $method]);

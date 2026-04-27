@@ -79,3 +79,12 @@ function isCallableWithThis(string $method): void {
 
 	[$instance, $method](); // ok - is_callable verifies callability
 }
+
+function isCallableWithExplicitKeys(string $method): void {
+	$instance = new HelloWorld();
+	if (!is_callable([0 => $instance, 1 => $method])) {
+		return;
+	}
+
+	[0 => $instance, 1 => $method](); // ok - is_callable verifies callability
+}

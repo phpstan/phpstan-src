@@ -50,12 +50,14 @@ final class ArrayHandler implements ExprHandler
 			$type->isCallable()->maybe()
 			&& isset($expr->items[0], $expr->items[1])
 		) {
-			$methodExistsCall = new FuncCall(
-				new FullyQualified('method_exists'),
+			$isCallableCall = new FuncCall(
+				new FullyQualified('is_callable'),
 				[new Arg($expr->items[0]->value), new Arg($expr->items[1]->value)],
 			);
-			$methodExistsType = $scope->getType($methodExistsCall);
-			if ((new ConstantBooleanType(true))->isSuperTypeOf($methodExistsType)->yes()) {
+			if (
+				$scope->hasExpressionType($isCallableCall)->yes()
+				&& (new ConstantBooleanType(true))->isSuperTypeOf($scope->getType($isCallableCall))->yes()
+			) {
 				$type = TypeCombinator::intersect($type, new CallableType());
 			}
 		}

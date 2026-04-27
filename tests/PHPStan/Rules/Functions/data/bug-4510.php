@@ -9,7 +9,7 @@ class HelloWorld
 			return;
 		}
 
-		[$this, $method]();
+		[$this, $method](); // error - method_exists doesn't imply callable
 	}
 }
 
@@ -19,7 +19,7 @@ function bar(string $method): void {
 		return;
 	}
 
-	[$instance, $method]();
+	[$instance, $method](); // error - method_exists doesn't imply callable
 }
 
 function baz(string $method): void {
@@ -28,7 +28,7 @@ function baz(string $method): void {
 		return;
 	}
 
-	[$instance, $method]();
+	[$instance, $method](); // ok - is_callable verifies callability
 }
 
 function withClassString(string $method): void {
@@ -36,7 +36,7 @@ function withClassString(string $method): void {
 		return;
 	}
 
-	[HelloWorld::class, $method]();
+	[HelloWorld::class, $method](); // error - method_exists doesn't imply callable
 }
 
 function withDynamicMethodExistsAndVariable(string $method): void {
@@ -46,12 +46,36 @@ function withDynamicMethodExistsAndVariable(string $method): void {
 		return;
 	}
 
-	$callable();
+	$callable(); // ok - is_callable on variable already worked
 }
 
 function methodExistsInElseBranch(string $method): void {
 	$instance = new HelloWorld();
 	if (method_exists($instance, $method)) {
-		[$instance, $method]();
+		[$instance, $method](); // error - method_exists doesn't imply callable
 	}
+}
+
+function isCallableInElseBranch(string $method): void {
+	$instance = new HelloWorld();
+	if (is_callable([$instance, $method])) {
+		[$instance, $method](); // ok - is_callable verifies callability
+	}
+}
+
+function isCallableWithClassString(string $method): void {
+	if (!is_callable([HelloWorld::class, $method])) {
+		return;
+	}
+
+	[HelloWorld::class, $method](); // ok - is_callable verifies callability
+}
+
+function isCallableWithThis(string $method): void {
+	$instance = new HelloWorld();
+	if (!is_callable([$instance, $method])) {
+		return;
+	}
+
+	[$instance, $method](); // ok - is_callable verifies callability
 }

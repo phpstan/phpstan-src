@@ -15,7 +15,7 @@ function testMethodExists(string $method): void {
 		return;
 	}
 
-	assertType('list{Bug4510Nsrt\Foo, string}&callable(): mixed', [$instance, $method]);
+	assertType('array{Bug4510Nsrt\Foo, string}', [$instance, $method]);
 }
 
 function testIsCallableInlineArray(string $method): void {
@@ -29,6 +29,14 @@ function testIsCallableInlineArray(string $method): void {
 
 function testMethodExistsWithClassString(string $method): void {
 	if (!method_exists(Foo::class, $method)) {
+		return;
+	}
+
+	assertType("array{'Bug4510Nsrt\\\\Foo', string}", [Foo::class, $method]);
+}
+
+function testIsCallableWithClassString(string $method): void {
+	if (!is_callable([Foo::class, $method])) {
 		return;
 	}
 

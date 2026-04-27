@@ -601,6 +601,16 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			],
 		];
 
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new UnionType([
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new StringType(),
+			]),
+			TrinaryLogic::createMaybe(),
+			[],
+		];
+
 		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
 	}
 

@@ -6,7 +6,7 @@ namespace Bug7156;
 use function PHPStan\Testing\assertType;
 
 /**
- * @param array{value: string} $foo
+ * @param array{value: string, ...} $foo
  */
 function foo($foo): void {
 	print_r($foo);

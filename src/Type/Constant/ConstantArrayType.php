@@ -465,6 +465,10 @@ class ConstantArrayType implements Type
 			return $result;
 		}
 
+		if ($result->no()) {
+			return $result;
+		}
+
 		[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
 
 		if ($isUnsealed->no()) {

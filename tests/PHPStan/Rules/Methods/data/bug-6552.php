@@ -6,7 +6,7 @@ class HelloWorld
 {
 	/**
 	 * @param mixed $a
-	 * @return array{schemaVersion: mixed}|null
+	 * @return array{schemaVersion: mixed, ...}|null
 	 */
 	public function sayHello($a)
 	{

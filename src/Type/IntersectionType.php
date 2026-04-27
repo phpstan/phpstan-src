@@ -969,7 +969,7 @@ class IntersectionType implements CompoundType
 			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
 				$narrowedTypes = [];
 				if (!$arrayKeyOffsetType->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
-					$narrowedTypes[] = TypeCombinator::union(new ClassStringType(), new ObjectWithoutClassType());
+					$narrowedTypes[] = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
 				}
 				if (!$arrayKeyOffsetType->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
 					$narrowedTypes[] = new StringType();

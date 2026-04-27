@@ -31,7 +31,7 @@ interface FieldDescriptionInterface
 class HelloWorld
 {
 	/**
-	 * @phpstan-return array<array{string, string, mixed, array<string, mixed>, ...}>
+	 * @phpstan-return array<int, non-empty-list<mixed>>
 	 */
 	public function getRenderViewElementTests(): array
 	{

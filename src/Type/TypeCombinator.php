@@ -1789,6 +1789,19 @@ final class TypeCombinator
 							$newArrayType = $merged;
 						} else {
 							$newArray = ConstantArrayTypeBuilder::createEmpty();
+							// Preserve unsealed extras from the source shape so the
+							// rebuild doesn't silently turn `array{k: int, ...} & X`
+							// into a sealed `array{k: int}` — intersect with the other
+							// side's iterable key/value so the open part keeps both
+							// sides' refinements.
+							$constUnsealed = $constArray->getUnsealedTypes();
+							if ($constUnsealed !== null && $constArray->isUnsealed()->yes()) {
+								$newUnsealedKey = self::intersect($constUnsealed[0], $otherArray->getIterableKeyType());
+								$newUnsealedValue = self::intersect($constUnsealed[1], $otherArray->getIterableValueType());
+								if (!$newUnsealedKey instanceof NeverType && !$newUnsealedValue instanceof NeverType) {
+									$newArray->makeUnsealed($newUnsealedKey, $newUnsealedValue);
+								}
+							}
 							$valueTypes = $constArray->getValueTypes();
 							foreach ($constArray->getKeyTypes() as $k => $keyType) {
 								$hasOffset = $otherArray->hasOffsetValueType($keyType);

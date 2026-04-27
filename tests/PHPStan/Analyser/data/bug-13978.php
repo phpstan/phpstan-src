@@ -11,6 +11,9 @@ namespace Bug13978;
  * @param-out array{
  *   key1: int
  * }|array{
+ *   key1: int,
+ *   key2: float
+ * }|array{
  *   key2: float
  * } $item
  *

@@ -5485,7 +5485,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<string, string>}',
 			],
 			ConstantArrayType::class,
-			'array{a: *NEVER*}',
+			'array{a: *NEVER*, ...<string, string>}',
 		];
 
 		// both unsealed: known key value is compatible with other side's unsealed value
@@ -5495,7 +5495,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<string, string>}',
 			],
 			ConstantArrayType::class,
-			'array{a: non-empty-string}',
+			'array{a: non-empty-string, ...<string, string>}',
 		];
 
 		// both unsealed with same known key, value types incompatible at that key

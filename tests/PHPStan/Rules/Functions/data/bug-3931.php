@@ -22,5 +22,5 @@ function addSomeKey(array $arr, int $value): array {
 function test(array $arr): void
 {
 	$r = addSomeKey($arr, 1);
-	assertType("T of array (function Bug3931\addSomeKey(), argument)&hasOffsetValue('mykey', int)&non-empty-array", $r);
+	assertType('array{mykey: int, ...}', $r);
 }

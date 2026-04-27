@@ -75,6 +75,17 @@ class ArrayType implements Type
 		return $this->itemType;
 	}
 
+	/**
+	 * Build a same-kind array with new key/item types. Subclasses
+	 * (e.g. {@see TemplateArrayType}) override this to preserve their
+	 * extra metadata across array-mutating operations such as offset
+	 * writes and unsets.
+	 */
+	protected function withTypes(Type $keyType, Type $itemType): self
+	{
+		return new self($keyType, $itemType);
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return array_merge(
@@ -388,7 +399,7 @@ class ArrayType implements Type
 			}
 
 			return new IntersectionType([
-				new self(
+				$this->withTypes(
 					TypeCombinator::union($this->keyType, $offsetType),
 					TypeCombinator::union($this->itemType, $valueType),
 				),
@@ -398,7 +409,7 @@ class ArrayType implements Type
 		}
 
 		return new IntersectionType([
-			new self(
+			$this->withTypes(
 				TypeCombinator::union($this->keyType, $offsetType),
 				$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
 			),
@@ -655,7 +666,7 @@ class ArrayType implements Type
 				return new ConstantArrayType([], []);
 			}
 
-			return new self($keyType, $itemType);
+			return $this->withTypes($keyType, $itemType);
 		}
 
 		return $this;
@@ -698,7 +709,7 @@ class ArrayType implements Type
 				return new ConstantArrayType([], []);
 			}
 
-			return new self($keyType, $itemType);
+			return $this->withTypes($keyType, $itemType);
 		}
 
 		return $this;

@@ -35,4 +35,16 @@ final class TemplateArrayType extends ArrayType implements TemplateType
 		$this->default = $default;
 	}
 
+	protected function withTypes(Type $keyType, Type $itemType): ArrayType
+	{
+		return new self(
+			$this->scope,
+			$this->strategy,
+			$this->variance,
+			$this->name,
+			new ArrayType($keyType, $itemType),
+			$this->default,
+		);
+	}
+
 }

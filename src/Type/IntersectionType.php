@@ -42,6 +42,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -399,6 +400,21 @@ class IntersectionType implements CompoundType
 		$isList = $this->isList()->yes();
 		$isArray = $this->isArray()->yes();
 		$isNonEmptyArray = $this->isIterableAtLeastOnce()->yes();
+		// When a TemplateArrayType carries the array refinement, we describe
+		// it via its own describe() (e.g. "T of array") rather than collapsing
+		// it into a generic `array<...>` prefix. In that case the
+		// `NonEmptyArrayType` and `AccessoryArrayListType` markers must
+		// describe themselves explicitly — they cannot be absorbed into a
+		// non-existent `non-empty-array` prefix.
+		$hasTemplateArray = false;
+		if ($isArray || $isList) {
+			foreach ($this->types as $type) {
+				if ($type instanceof TemplateArrayType) {
+					$hasTemplateArray = true;
+					break;
+				}
+			}
+		}
 		$describedTypes = [];
 		foreach ($this->getSortedTypes() as $i => $type) {
 			if ($type instanceof AccessoryNonEmptyStringType
@@ -438,6 +454,14 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 			if ($isList || $isArray) {
+				if ($type instanceof TemplateArrayType) {
+					// Preserve the template's own describe (e.g. "T of array")
+					// instead of collapsing it to a generic array shape — the
+					// other intersection members already carry the array
+					// refinement.
+					$describedTypes[$i] = $type->describe($level);
+					continue;
+				}
 				if ($type instanceof ArrayType) {
 					$keyType = $type->getKeyType();
 					$valueType = $type->getItemType();
@@ -475,6 +499,9 @@ class IntersectionType implements CompoundType
 					continue;
 				}
 				if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
+					if ($hasTemplateArray) {
+						$describedTypes[$i] = $type->describe($level);
+					}
 					continue;
 				}
 			}

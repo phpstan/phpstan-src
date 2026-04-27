@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use Override;
+use PHPStan\Internal\AgentDetector;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -95,9 +96,10 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		$ci = $this->isCiDetected();
-		$this->progressBar->setOverwrite(!$ci);
+		$agent = AgentDetector::isRunningInAgent();
+		$this->progressBar->setOverwrite(!$ci && !$agent);
 
-		if ($ci) {
+		if ($ci || $agent) {
 			$this->progressBar->minSecondsBetweenRedraws(15);
 			$this->progressBar->maxSecondsBetweenRedraws(30);
 		} elseif (DIRECTORY_SEPARATOR === '\\') {

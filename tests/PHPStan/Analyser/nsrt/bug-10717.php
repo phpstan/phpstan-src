@@ -1046,7 +1046,7 @@ function test(string $code): void
 	if ($country === 'fo' || $country === 'Faroese' || $country === 'Føroyskt') {
 		// foo
 	} else {
-		assertType('(bool|(literal-string&non-falsy-string))', $country);
+		assertType("'al'|'am'|'az'|'ba'|'bd'|'bg'|'br'|'by'|'ca'|'cn'|'cz'|'de'|'dk'|'ee'|'eo'|'er'|'es'|'es-ca'|'es-ga'|'et'|'eus'|'fi'|'fj'|'fr'|'fr-co'|'gb'|'gb-sct'|'gb-wls'|'ge'|'gh'|'gr'|'hmn'|'hr'|'ht'|'hu'|'hw'|'id'|'ie'|'il'|'in'|'iq'|'ir'|'is'|'it'|'jp'|'ke'|'kg'|'kh'|'kr'|'kz'|'la'|'lk'|'lt'|'lu'|'lv'|'mg'|'mk'|'ml'|'mm'|'mn'|'mt'|'mw'|'my'|'ne'|'ng'|'nl'|'no'|'np'|'nz'|'pf'|'ph'|'pk'|'pl'|'pt'|'ro'|'rs'|'ru'|'rw'|'sa'|'sd'|'se'|'si'|'sk'|'so'|'th'|'tj'|'to'|'tr'|'tw'|'ua'|'ug'|'uig'|'uz'|'vn'|'ws'|'za'|'zw'", $country);
 	}
 }
 

@@ -3900,113 +3900,141 @@ class NodeScopeResolver
 			return null;
 		}
 		$constantArrays = $iterateeType->getConstantArrays();
-		if (count($constantArrays) !== 1) {
+		if (count($constantArrays) === 0) {
 			return null;
 		}
-		$constantArray = $constantArrays[0];
-		$keyTypes = $constantArray->getKeyTypes();
-		$valueTypes = $constantArray->getValueTypes();
-		if (count($keyTypes) === 0 || count($keyTypes) > self::FOREACH_UNROLL_LIMIT) {
+
+		$totalKeys = 0;
+		foreach ($constantArrays as $constantArray) {
+			$totalKeys += count($constantArray->getKeyTypes());
+		}
+		if ($totalKeys === 0 || $totalKeys > self::FOREACH_UNROLL_LIMIT) {
 			return null;
 		}
 
 		$nativeIterateeType = $originalScope->getNativeType($stmt->expr);
 		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
-		$nativeConstantArray = count($nativeConstantArrays) === 1 ? $nativeConstantArrays[0] : null;
+		$matchedNativeArrays = count($nativeConstantArrays) === count($constantArrays) ? $nativeConstantArrays : null;
 
-		$optionalKeys = array_fill_keys($constantArray->getOptionalKeys(), true);
 		$valueVarName = $stmt->valueVar->name;
 		$keyVarName = $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name) ? $stmt->keyVar->name : null;
 
-		$chainScope = $originalScope;
-		$entryScopes = [];
-		$breakScopes = [];
-		foreach ($keyTypes as $i => $keyType) {
-			$valueType = $valueTypes[$i];
-			$isOptional = isset($optionalKeys[$i]);
+		$allBodyScopes = [];
+		$allChainScopes = [];
+		$allBreakScopes = [];
 
-			$nativeKeyType = $nativeConstantArray !== null && isset($nativeConstantArray->getKeyTypes()[$i])
-				? $nativeConstantArray->getKeyTypes()[$i]
-				: $keyType;
-			$nativeValueType = $nativeConstantArray !== null && isset($nativeConstantArray->getValueTypes()[$i])
-				? $nativeConstantArray->getValueTypes()[$i]
-				: $valueType;
+		foreach ($constantArrays as $arrayIndex => $constantArray) {
+			$keyTypes = $constantArray->getKeyTypes();
+			$valueTypes = $constantArray->getValueTypes();
+			if (count($keyTypes) === 0) {
+				continue;
+			}
 
-			$iterScope = $chainScope->assignVariable(
-				$valueVarName,
-				$valueType,
-				$nativeValueType,
-				TrinaryLogic::createYes(),
-			);
-			$iterScope = $iterScope->assignExpression(
-				new OriginalForeachValueExpr($valueVarName),
-				$valueType,
-				$nativeValueType,
-			);
-			if ($keyVarName !== null) {
-				$iterScope = $iterScope->assignVariable(
-					$keyVarName,
-					$keyType,
-					$nativeKeyType,
+			$nativeConstantArray = $matchedNativeArrays !== null ? $matchedNativeArrays[$arrayIndex] : null;
+			$optionalKeys = array_fill_keys($constantArray->getOptionalKeys(), true);
+
+			$chainScope = $originalScope;
+			$entryScopes = [];
+
+			foreach ($keyTypes as $i => $keyType) {
+				$valueType = $valueTypes[$i];
+				$isOptional = isset($optionalKeys[$i]);
+
+				$nativeKeyType = $nativeConstantArray !== null && isset($nativeConstantArray->getKeyTypes()[$i])
+					? $nativeConstantArray->getKeyTypes()[$i]
+					: $keyType;
+				$nativeValueType = $nativeConstantArray !== null && isset($nativeConstantArray->getValueTypes()[$i])
+					? $nativeConstantArray->getValueTypes()[$i]
+					: $valueType;
+
+				$iterScope = $chainScope->assignVariable(
+					$valueVarName,
+					$valueType,
+					$nativeValueType,
 					TrinaryLogic::createYes(),
 				);
 				$iterScope = $iterScope->assignExpression(
-					new OriginalForeachKeyExpr($keyVarName),
-					$keyType,
-					$nativeKeyType,
-				);
-				$iterScope = $iterScope->assignExpression(
-					new ArrayDimFetch($stmt->expr, $stmt->keyVar),
+					new OriginalForeachValueExpr($valueVarName),
 					$valueType,
 					$nativeValueType,
 				);
+				if ($keyVarName !== null) {
+					$iterScope = $iterScope->assignVariable(
+						$keyVarName,
+						$keyType,
+						$nativeKeyType,
+						TrinaryLogic::createYes(),
+					);
+					$iterScope = $iterScope->assignExpression(
+						new OriginalForeachKeyExpr($keyVarName),
+						$keyType,
+						$nativeKeyType,
+					);
+					$iterScope = $iterScope->assignExpression(
+						new ArrayDimFetch($stmt->expr, $stmt->keyVar),
+						$valueType,
+						$nativeValueType,
+					);
+				}
+
+				$entryScopes[] = $iterScope;
+
+				$iterStorage = $originalStorage->duplicate();
+				$bodyResult = $this->processStmtNodesInternal(
+					$stmt,
+					$stmt->stmts,
+					$iterScope,
+					$iterStorage,
+					new NoopNodeCallback(),
+					$context->enterDeep(),
+				)->filterOutLoopExitPoints();
+
+				$iterEndScope = $bodyResult->getScope();
+				foreach ($bodyResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+					$iterEndScope = $iterEndScope->mergeWith($continueExitPoint->getScope());
+				}
+				foreach ($bodyResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+					$allBreakScopes[] = $breakExitPoint->getScope();
+				}
+
+				if ($isOptional) {
+					$chainScope = $iterEndScope->mergeWith($chainScope);
+				} else {
+					$chainScope = $iterEndScope;
+				}
 			}
 
-			$entryScopes[] = $iterScope;
-
-			$iterStorage = $originalStorage->duplicate();
-			$bodyResult = $this->processStmtNodesInternal(
-				$stmt,
-				$stmt->stmts,
-				$iterScope,
-				$iterStorage,
-				new NoopNodeCallback(),
-				$context->enterDeep(),
-			)->filterOutLoopExitPoints();
-
-			$iterEndScope = $bodyResult->getScope();
-			foreach ($bodyResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$iterEndScope = $iterEndScope->mergeWith($continueExitPoint->getScope());
+			$arrayBodyScope = $entryScopes[0];
+			for ($i = 1, $c = count($entryScopes); $i < $c; $i++) {
+				$arrayBodyScope = $arrayBodyScope->mergeWith($entryScopes[$i]);
 			}
-			foreach ($bodyResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$breakScopes[] = $breakExitPoint->getScope();
+			if (count($entryScopes) === 1) {
+				$arrayBodyScope = $arrayBodyScope->mergeWith($chainScope);
 			}
 
-			if ($isOptional) {
-				$chainScope = $iterEndScope->mergeWith($chainScope);
-			} else {
-				$chainScope = $iterEndScope;
-			}
+			$allBodyScopes[] = $arrayBodyScope;
+			$allChainScopes[] = $chainScope;
 		}
 
-		$bodyScope = $entryScopes[0];
-		for ($i = 1, $c = count($entryScopes); $i < $c; $i++) {
-			$bodyScope = $bodyScope->mergeWith($entryScopes[$i]);
-		}
-		if (count($entryScopes) === 1) {
-			// For a single-iteration unrolling, the merged entry scope does
-			// not include any post-body state. Merge the chain end scope in
-			// so that rules analysing the body see that prior iterations
-			// (which in this case means: this same iteration, from a rule
-			// author's perspective) could have modified variables.
-			$bodyScope = $bodyScope->mergeWith($chainScope);
+		if ($allBodyScopes === []) {
+			return null;
 		}
 
-		foreach ($breakScopes as $breakScope) {
-			$chainScope = $chainScope->mergeWith($breakScope);
+		$bodyScope = $allBodyScopes[0];
+		for ($i = 1, $c = count($allBodyScopes); $i < $c; $i++) {
+			$bodyScope = $bodyScope->mergeWith($allBodyScopes[$i]);
 		}
 
-		return ['bodyScope' => $bodyScope, 'endScope' => $chainScope];
+		$endScope = $allChainScopes[0];
+		for ($i = 1, $c = count($allChainScopes); $i < $c; $i++) {
+			$endScope = $endScope->mergeWith($allChainScopes[$i]);
+		}
+
+		foreach ($allBreakScopes as $breakScope) {
+			$endScope = $endScope->mergeWith($breakScope);
+		}
+
+		return ['bodyScope' => $bodyScope, 'endScope' => $endScope];
 	}
 
 	/**

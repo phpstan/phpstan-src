@@ -19,6 +19,12 @@ parameters:
 			path: src/Analyser/ArgumentsNormalizer.php
 
 		-
+			rawMessage: Casting to string something that's already string.
+			identifier: cast.useless
+			count: 3
+			path: src/Analyser/ExprHandler/AssignHandler.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -47,12 +53,6 @@ parameters:
 			identifier: offsetAssign.dimType
 			count: 1
 			path: src/Analyser/Ignore/IgnoredErrorHelperResult.php
-
-		-
-			rawMessage: Casting to string something that's already string.
-			identifier: cast.useless
-			count: 3
-			path: src/Analyser/ExprHandler/AssignHandler.php
 
 		-
 			rawMessage: Casting to string something that's already string.

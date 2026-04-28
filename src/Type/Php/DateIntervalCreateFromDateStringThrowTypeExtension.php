@@ -12,6 +12,7 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Throwable;
 use function count;
 
 #[AutowiredService]
@@ -44,7 +45,7 @@ final class DateIntervalCreateFromDateStringThrowTypeExtension implements Dynami
 		foreach ($constantStrings as $constantString) {
 			try {
 				@DateInterval::createFromDateString($constantString->getValue());
-			} catch (\Throwable) {
+			} catch (Throwable) {
 				return $methodReflection->getThrowType();
 			}
 

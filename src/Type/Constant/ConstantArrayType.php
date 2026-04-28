@@ -249,6 +249,16 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			foreach ($unsealedKeyType->getReferencedClasses() as $referencedClass) {
+				$referencedClasses[] = $referencedClass;
+			}
+			foreach ($unsealedValueType->getReferencedClasses() as $referencedClass) {
+				$referencedClasses[] = $referencedClass;
+			}
+		}
+
 		return $referencedClasses;
 	}
 
@@ -854,6 +864,25 @@ class ConstantArrayType implements Type
 
 		if ($this->optionalKeys !== $type->optionalKeys) {
 			return false;
+		}
+
+		// Both `unsealed === null` and `unsealed === [explicitNever, explicitNever]`
+		// mean "sealed", just from different code paths (pre-bleeding-edge vs.
+		// fresh bleeding-edge builder). Treat them as equivalent here, only
+		// comparing the actual extras when both sides have real ones.
+		$thisIsSealed = $this->isUnsealed()->no();
+		$otherIsSealed = $type->isUnsealed()->no();
+		if ($thisIsSealed !== $otherIsSealed) {
+			return false;
+		}
+
+		if (!$thisIsSealed && $this->unsealed !== null && $type->unsealed !== null) {
+			if (!$this->unsealed[0]->equals($type->unsealed[0])) {
+				return false;
+			}
+			if (!$this->unsealed[1]->equals($type->unsealed[1])) {
+				return false;
+			}
 		}
 
 		return true;
@@ -2264,6 +2293,16 @@ class ConstantArrayType implements Type
 
 		foreach ($this->valueTypes as $type) {
 			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		if ($this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			foreach ($unsealedKeyType->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+			foreach ($unsealedValueType->getReferencedTemplateTypes($variance) as $reference) {
 				$references[] = $reference;
 			}
 		}

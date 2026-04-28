@@ -111,6 +111,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				'Template type T of function TestFunctionTypehints\templateTypeMissingInParameter() is not referenced in a parameter.',
 				96,
 			],
+			[
+				'Parameter $a of function TestFunctionTypehints\nonexistentClassesInUnsealedExtras() has invalid type TestFunctionTypehints\NonexistentUnsealedValueClass.',
+				104,
+			],
 		]);
 	}
 

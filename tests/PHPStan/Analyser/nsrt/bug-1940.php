@@ -83,7 +83,6 @@ function byRefWithoutKeyNonEmpty(array $arr): void
 }
 
 /**
- * By-ref without key with break — should NOT rewrite since not all elements may be visited.
  * @param array<int, string> $arr
  */
 function byRefWithoutKeyBreak(array $arr): void
@@ -99,7 +98,6 @@ function byRefWithoutKeyBreak(array $arr): void
 }
 
 /**
- * By-ref without key with continue — should still rewrite since all elements are visited.
  * @param array<int, string> $arr
  */
 function byRefWithoutKeyContinue(array $arr): void
@@ -115,7 +113,6 @@ function byRefWithoutKeyContinue(array $arr): void
 }
 
 /**
- * By-ref without key with continue where value is overwritten in all branches.
  * @param array<int, string> $arr
  */
 function byRefWithoutKeyContinueBranches(array $arr): void
@@ -132,7 +129,6 @@ function byRefWithoutKeyContinueBranches(array $arr): void
 }
 
 /**
- * By-ref without key with continue where value is NOT overwritten in the continue branch.
  * @param array<int, string> $arr
  */
 function byRefWithoutKeyContinuePartial(array $arr): void
@@ -152,9 +148,6 @@ class Foo
 	/** @var array<string, int> */
 	private array $prop;
 
-	/**
-	 * By-ref without key on a property.
-	 */
 	public function byRefWithoutKeyProperty(): void
 	{
 		foreach ($this->prop as &$v) {
@@ -166,7 +159,6 @@ class Foo
 }
 
 /**
- * By-ref without key with intval transformation.
  * @param array<int, string> $arr
  */
 function byRefWithoutKeyTransform(array $arr): void
@@ -179,15 +171,61 @@ function byRefWithoutKeyTransform(array $arr): void
 }
 
 /**
- * By-ref without key — value not overwritten at all.
  * @param array<int, string> $arr
  */
 function byRefWithoutKeyNoOverwrite(array $arr): void
 {
 	foreach ($arr as &$v) {
-		// just read, don't write
 		echo $v;
 	}
 
 	assertType('array<int, string>', $arr);
+}
+
+/**
+ * @param list<array{one: string}> $a
+ */
+function byRefWithKeyModifySubElement(array $a): void
+{
+	foreach ($a as $k => &$testArray) {
+		$testArray['two'] = 'two';
+	}
+
+	assertType("list<array{one: string, two: 'two'}>", $a);
+}
+
+/**
+ * @param list<array{one: string}> $a
+ */
+function byRefWithoutKeyModifySubElement(array $a): void
+{
+	foreach ($a as &$testArray) {
+		$testArray['two'] = 'two';
+	}
+
+	assertType("list<array{one: string, two: 'two'}>", $a);
+}
+
+/**
+ * @param array<int, string> $arr
+ */
+function byRefWithKeyDirectOverwrite(array $arr): void
+{
+	foreach ($arr as $k => &$v) {
+		$v = 1;
+	}
+
+	assertType('array<int, 1>', $arr);
+}
+
+/**
+ * @param array<int, string> $arr
+ */
+function byRefWithoutKeyDirectOverwrite(array $arr): void
+{
+	foreach ($arr as &$v) {
+		$v = 1;
+	}
+
+	assertType('array<int, 1>', $arr);
 }

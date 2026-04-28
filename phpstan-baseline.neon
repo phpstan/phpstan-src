@@ -1692,13 +1692,13 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 5
+			count: 7
 			path: src/Type/TypeCombinator.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\CallableType is error-prone and deprecated. Use Type::isCallable() and Type::getCallableParametersAcceptors() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 1
+			count: 3
 			path: src/Type/TypeCombinator.php
 
 		-

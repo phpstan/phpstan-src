@@ -4017,4 +4017,17 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13272.php'], []);
 	}
 
+	public function testBug14549(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14549.php'], [
+			[
+				'Parameter #1 $task of method Bug14549Rule\Foo::call() expects array<int>, callable&list<object|string> given.',
+				10,
+			],
+		]);
+	}
+
 }

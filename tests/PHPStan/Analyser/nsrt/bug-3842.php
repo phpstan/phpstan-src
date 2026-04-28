@@ -20,7 +20,7 @@ class ClassB
 
 function testIsArrayOnCallable(callable $value): void {
 	if (is_array($value)) {
-		assertType('array<mixed, mixed>&callable(): mixed', $value);
+		assertType('list{class-string|object, string}&callable(): mixed', $value);
 		assertType('class-string|object', $value[0]);
 		assertType('string', $value[1]);
 	}

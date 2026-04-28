@@ -86,6 +86,16 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				'Method MissingMethodParameterTypehint\Baz::acceptsGenericWithSomeDefaults() has parameter $c with generic class MissingMethodParameterTypehint\GenericClassWithSomeDefaults but does not specify its types: T, U (1-2 required)',
 				270,
 			],
+			[
+				'Method MissingMethodParameterTypehint\UnsealedArrayShape::doFoo() has parameter $a with no value type specified in unsealed extra keys (...).',
+				284,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method MissingMethodParameterTypehint\UnsealedArrayShape::doBar() has parameter $a with no value type specified in unsealed extra keys (...).',
+				293,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);

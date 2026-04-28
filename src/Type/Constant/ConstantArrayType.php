@@ -196,6 +196,21 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * @internal
+	 */
+	public function dropUnsealedTypes(): self
+	{
+		return $this->recreate(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			$this->isList,
+			null,
+		);
+	}
+
+	/**
 	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param list<int> $nextAutoIndexes

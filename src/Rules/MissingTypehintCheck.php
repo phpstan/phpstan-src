@@ -14,6 +14,7 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
@@ -23,6 +24,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use Traversable;
 use function array_filter;
@@ -105,6 +107,26 @@ final class MissingTypehintCheck
 				return $type;
 			}
 			if ($type->isIterable()->yes()) {
+				if ($type->isConstantArray()->yes()) {
+					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$descriptions) {
+						if ($type instanceof UnionType || $type instanceof IntersectionType) {
+							return $traverse($type);
+						}
+
+						if ($type instanceof ConstantArrayType) {
+							$unsealed = $type->getUnsealedTypes();
+							if ($unsealed !== null) {
+								$iterableUnsealedValue = $unsealed[1];
+								if ($iterableUnsealedValue instanceof MixedType && !$iterableUnsealedValue->isExplicitMixed()) {
+									$descriptions[] = 'unsealed extra keys (...)';
+								}
+								return $traverse($type->dropUnsealedTypes());
+							}
+						}
+
+						return $traverse($type);
+					});
+				}
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
 					$descriptions[] = sprintf('iterable type %s', $type->describe(VerbosityLevel::typeOnly()));

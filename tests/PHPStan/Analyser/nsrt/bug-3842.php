@@ -28,7 +28,7 @@ function testIsArrayOnCallable(callable $value): void {
 
 /** @param callable-array $value */
 function testCallableArrayPhpDoc(array $value): void {
-	assertType('array&callable(): mixed', $value);
+	assertType('list{class-string|object, string}&callable(): mixed', $value);
 	assertType('class-string|object', $value[0]);
 	assertType('string', $value[1]);
 }

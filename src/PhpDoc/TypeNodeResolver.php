@@ -429,7 +429,7 @@ final class TypeNodeResolver
 				return new IntersectionType([new ObjectWithoutClassType(), new CallableType()]);
 
 			case 'callable-array':
-				return new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]);
+				return TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new CallableType());
 
 			case 'never':
 			case 'noreturn':

@@ -36,8 +36,7 @@ class Foo
 	public function testConstantArrayNarrowing(array $task): void
 	{
 		if (\is_callable($task)) {
-			// ConstantArrayType keeps its shape, callable narrows offset access
-			assertType('list{string, string}&callable(): mixed', $task);
+			assertType('list{class-string, string}&callable(): mixed', $task);
 			assertType('class-string', $task[0]);
 			assertType('string', $task[1]);
 		}
@@ -56,7 +55,7 @@ class Foo
 	/** @param callable-array $value */
 	public function testCallableArrayPhpDoc(array $value): void
 	{
-		assertType('array&callable(): mixed', $value);
+		assertType('list{class-string|object, string}&callable(): mixed', $value);
 		assertType('class-string|object', $value[0]);
 		assertType('string', $value[1]);
 	}

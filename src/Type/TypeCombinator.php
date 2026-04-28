@@ -1723,6 +1723,28 @@ final class TypeCombinator
 						continue;
 					}
 
+					if (
+						$types[$i] instanceof ConstantArrayType
+						&& $types[$j] instanceof CallableType
+					) {
+						$types[$i] = self::narrowConstantArrayWithCallable($types[$i]);
+						if ($types[$i] instanceof NeverType) {
+							return new NeverType();
+						}
+						continue;
+					}
+
+					if (
+						$types[$j] instanceof ConstantArrayType
+						&& $types[$i] instanceof CallableType
+					) {
+						$types[$j] = self::narrowConstantArrayWithCallable($types[$j]);
+						if ($types[$j] instanceof NeverType) {
+							return new NeverType();
+						}
+						continue;
+					}
+
 					continue;
 				}
 
@@ -1817,6 +1839,35 @@ final class TypeCombinator
 	public static function removeTruthy(Type $type): Type
 	{
 		return self::remove($type, StaticTypeFactory::truthy());
+	}
+
+	private static function narrowConstantArrayWithCallable(ConstantArrayType $constantArray): Type
+	{
+		$keyTypes = $constantArray->getKeyTypes();
+		$valueTypes = $constantArray->getValueTypes();
+		$newValueTypes = $valueTypes;
+
+		foreach ($keyTypes as $k => $keyType) {
+			if ((new ConstantIntegerType(0))->isSuperTypeOf($keyType)->yes()) {
+				$newValueTypes[$k] = self::intersect($valueTypes[$k], new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
+				if ($newValueTypes[$k] instanceof NeverType) {
+					return new NeverType();
+				}
+			} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($keyType)->yes()) {
+				$newValueTypes[$k] = self::intersect($valueTypes[$k], new StringType());
+				if ($newValueTypes[$k] instanceof NeverType) {
+					return new NeverType();
+				}
+			}
+		}
+
+		return new ConstantArrayType(
+			$keyTypes,
+			$newValueTypes,
+			$constantArray->getNextAutoIndexes(),
+			$constantArray->getOptionalKeys(),
+			$constantArray->isList(),
+		);
 	}
 
 }

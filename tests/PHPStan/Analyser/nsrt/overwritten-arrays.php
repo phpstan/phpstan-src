@@ -127,7 +127,7 @@ class Foo
 			$v = 1;
 		}
 
-		assertType('array<int, 1|string>', $a); // could be array<int, 1>
+		assertType('array<int, 1>', $a);
 	}
 
 	/**

@@ -13,7 +13,7 @@ function example(array $convert): void {
 	foreach ($convert as &$item) {
 		$item = strtoupper($item);
 	}
-	assertType('list<string>', $convert);
+	assertType('list<uppercase-string>', $convert);
 }
 
 /**

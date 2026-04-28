@@ -3,6 +3,7 @@
 namespace UnsealedArrayShapes;
 
 use DateTimeImmutable;
+use stdClass;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -83,3 +84,45 @@ class Foo
 	}
 
 }
+
+class Generics
+{
+
+	/**
+	 * @template T
+	 * @param T $a
+	 * @return array{a: int, ...<int, T>}
+	 */
+	public function replace($a): array
+	{
+
+	}
+
+	/**
+	 * @template T
+	 * @param array{a: int, ...<int, T>} $a
+	 * @return T
+	 */
+	public function infer(array $a)
+	{
+
+	}
+
+}
+
+/**
+ * @param Generics $g
+ * @param array{a: 1, b: 2, ...<int, stdClass>} $a
+ * @param array{a: 1, b: 2, ...<string, stdClass>} $b
+ * @param array<int, stdClass> $c
+ * @param array<string, stdClass> $d
+ * @return void
+ */
+function doFoo(Generics $g, array $a, array $b, array $c, array $d): void {
+	assertType('array{a: int, ...<int, stdClass>}', $g->replace(new stdClass()));
+	assertType('1|2|3', $g->infer([1, 2, 3, 'a' => 4]));
+	assertType('stdClass', $g->infer($a));
+	assertType('*NEVER*', $g->infer($b));
+	assertType('stdClass', $g->infer($c));
+	assertType('stdClass', $g->infer($d));
+};

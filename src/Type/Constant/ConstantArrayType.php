@@ -2181,6 +2181,43 @@ class ConstantArrayType implements Type
 				$typeMap = $typeMap->union($valueType->inferTemplateTypes($receivedValueType));
 			}
 
+			$unsealed = $this->getUnsealedTypes();
+			if ($unsealed !== null) {
+				[$unsealedKeyType, $unsealedValueType] = $unsealed;
+
+				// Received's explicit keys not in $this's explicit keys are
+				// candidates for matching $this's unsealed extras pattern.
+				// Only contribute when the key type matches; mismatched explicit
+				// keys are extra entries the parameter wouldn't accept anyway,
+				// surfaced by the regular argument-type check.
+				$receivedKeyTypes = $receivedType->getKeyTypes();
+				$receivedValueTypes = $receivedType->getValueTypes();
+				foreach ($receivedKeyTypes as $j => $receivedKeyType) {
+					if ($this->hasOffsetValueType($receivedKeyType)->yes()) {
+						continue;
+					}
+					if (!$unsealedKeyType->isSuperTypeOf($receivedKeyType)->yes()) {
+						continue;
+					}
+					$typeMap = $typeMap->union($unsealedKeyType->inferTemplateTypes($receivedKeyType));
+					$typeMap = $typeMap->union($unsealedValueType->inferTemplateTypes($receivedValueTypes[$j]));
+				}
+
+				// Received's own unsealed extras describe "all the rest" — when
+				// the key type doesn't fit $this's unsealed key pattern there
+				// is no valid template assignment, so force NEVER.
+				$receivedUnsealed = $receivedType->getUnsealedTypes();
+				if ($receivedUnsealed !== null) {
+					[$receivedUnsealedKey, $receivedUnsealedValue] = $receivedUnsealed;
+					if ($unsealedKeyType->isSuperTypeOf($receivedUnsealedKey)->no()) {
+						$typeMap = $typeMap->union($unsealedValueType->inferTemplateTypes(new NeverType()));
+					} else {
+						$typeMap = $typeMap->union($unsealedKeyType->inferTemplateTypes($receivedUnsealedKey));
+						$typeMap = $typeMap->union($unsealedValueType->inferTemplateTypes($receivedUnsealedValue));
+					}
+				}
+			}
+
 			return $typeMap;
 		}
 

@@ -1352,7 +1352,7 @@ class NodeScopeResolver
 				&& ($stmt->keyVar !== null || $byRefWithoutKey)
 				&& (!$hasExpr->no() || !$stmt->expr instanceof Variable)
 				&& $exprType->isArray()->yes()
-				&& $exprType->isConstantArray()->no()
+				&& ($exprType->isConstantArray()->no() || $stmt->byRef)
 			) {
 				$nativeExprType = $scope->getNativeType($stmt->expr);
 				$arrayDimFetchLoopType = $exprType->getIterableValueType();
@@ -1372,17 +1372,13 @@ class NodeScopeResolver
 					$keyLoopTypes = [];
 					foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
 						$dimFetchType = $scopeWithIterableValueType->getType($arrayExprDimFetch);
-						// Condition-based narrowings like `is_string($type)` apply to the value
-						// variable but not automatically to the array dim fetch, even though the
-						// two describe the same element for a given iteration. If the value var
-						// hasn't been reassigned (OriginalForeachValueExpr still tracked) we use
-						// the narrowed value-var type in place of the broader dim fetch type so
-						// the loop's final array rewrite below picks up the sharper element type.
 						if ($originalValueExpr !== null && $scopeWithIterableValueType->hasExpressionType($originalValueExpr)->yes()) {
 							$valueVarType = $scopeWithIterableValueType->getType($stmt->valueVar);
 							if ($dimFetchType->isSuperTypeOf($valueVarType)->yes()) {
 								$dimFetchType = $valueVarType;
 							}
+						} elseif ($stmt->byRef && $originalValueExpr !== null) {
+							$dimFetchType = $scopeWithIterableValueType->getType($stmt->valueVar);
 						}
 						$arrayDimFetchLoopTypes[] = $dimFetchType;
 						$keyLoopTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);
@@ -1400,6 +1396,8 @@ class NodeScopeResolver
 							if ($dimFetchNativeType->isSuperTypeOf($valueVarNativeType)->yes()) {
 								$dimFetchNativeType = $valueVarNativeType;
 							}
+						} elseif ($stmt->byRef && $originalValueExpr !== null) {
+							$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
 						}
 						$arrayDimFetchLoopNativeTypes[] = $dimFetchNativeType;
 						$keyLoopNativeTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);
@@ -1432,6 +1430,10 @@ class NodeScopeResolver
 							return $traverse($type);
 						}
 
+						if ($type->isConstantArray()->yes() && $valueTypeChanged && !$keyTypeChanged) {
+							return $type->traverse(static fn () => $arrayDimFetchLoopType);
+						}
+
 						if (!$type instanceof ArrayType) {
 							return $type;
 						}
@@ -1444,6 +1446,10 @@ class NodeScopeResolver
 					$newExprNativeType = TypeTraverser::map($nativeExprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType, $keyLoopNativeType, $valueTypeChanged, $keyTypeChanged): Type {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
+						}
+
+						if ($type->isConstantArray()->yes() && $valueTypeChanged && !$keyTypeChanged) {
+							return $type->traverse(static fn () => $arrayDimFetchLoopNativeType);
 						}
 
 						if (!$type instanceof ArrayType) {

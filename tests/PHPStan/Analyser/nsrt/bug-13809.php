@@ -13,7 +13,7 @@ function foo(array $list): void
 		$value = 'foo';
 	}
 
-	assertType('list<mixed>', $list);
+	assertType("list<'foo'>", $list);
 }
 
 /**
@@ -56,7 +56,7 @@ function bar3(array $list): void
 		}
 	}
 
-	assertType("list<mixed>", $list); // could be list<'foo'|'maybe'>
+	assertType("list<'foo'|'maybe'>", $list);
 }
 
 /**
@@ -68,7 +68,7 @@ function baz(array $list): void
 		$value = 'bar';
 	}
 
-	assertType('list<string>', $list);
+	assertType("list<'bar'>", $list);
 }
 
 /**

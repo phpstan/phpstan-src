@@ -17,7 +17,7 @@ function example3a(array &$convert): void
 			}
 		}
 	}
-	assertType('array<string, list<list<string>>>', $convert);
+	assertType('array<string, list<list<uppercase-string>>>', $convert);
 }
 
 /**

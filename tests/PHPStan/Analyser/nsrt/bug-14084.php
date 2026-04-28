@@ -16,7 +16,7 @@ function example(array $convert): void
 			$val = strtoupper($val); // https://github.com/phpstan/phpstan/issues/14083
 		}
 	}
-	assertType('array<string, list<string>>', $convert);
+	assertType('array<string, list<uppercase-string>>', $convert);
 }
 
 /**
@@ -29,7 +29,7 @@ function example2(array $convert): void
 			$inner[$key] = strtoupper($val);
 		}
 	}
-	assertType('array<string, list<string>>', $convert);
+	assertType('array<string, list<uppercase-string>>', $convert);
 }
 
 /**

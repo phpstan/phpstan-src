@@ -19,7 +19,6 @@ use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\CallableType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
@@ -56,10 +55,7 @@ final class ArrayHandler implements ExprHandler
 				new FullyQualified('is_callable'),
 				[new Arg($expr->items[0]->value), new Arg($expr->items[1]->value)],
 			);
-			if (
-				$scope->hasExpressionType($isCallableCall)->yes()
-				&& (new ConstantBooleanType(true))->isSuperTypeOf($scope->getType($isCallableCall))->yes()
-			) {
+			if ($scope->hasExpressionType($isCallableCall)->yes()) {
 				$type = TypeCombinator::intersect($type, new CallableType());
 			}
 		}

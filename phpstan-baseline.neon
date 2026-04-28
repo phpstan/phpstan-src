@@ -52,6 +52,12 @@ parameters:
 			rawMessage: Casting to string something that's already string.
 			identifier: cast.useless
 			count: 3
+			path: src/Analyser/ExprHandler/AssignHandler.php
+
+		-
+			rawMessage: Casting to string something that's already string.
+			identifier: cast.useless
+			count: 3
 			path: src/Analyser/MutatingScope.php
 
 		-

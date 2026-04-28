@@ -1377,8 +1377,6 @@ class NodeScopeResolver
 							if ($dimFetchType->isSuperTypeOf($valueVarType)->yes()) {
 								$dimFetchType = $valueVarType;
 							}
-						} elseif ($stmt->byRef && $originalValueExpr !== null) {
-							$dimFetchType = $scopeWithIterableValueType->getType($stmt->valueVar);
 						}
 						$arrayDimFetchLoopTypes[] = $dimFetchType;
 						$keyLoopTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);
@@ -1396,8 +1394,6 @@ class NodeScopeResolver
 							if ($dimFetchNativeType->isSuperTypeOf($valueVarNativeType)->yes()) {
 								$dimFetchNativeType = $valueVarNativeType;
 							}
-						} elseif ($stmt->byRef && $originalValueExpr !== null) {
-							$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
 						}
 						$arrayDimFetchLoopNativeTypes[] = $dimFetchNativeType;
 						$keyLoopNativeTypes[] = $scopeWithIterableValueType->getType($stmt->keyVar);

@@ -2373,7 +2373,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
 
-			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
+			if ($valueByRef && $iterateeType->isArray()->yes()) {
 				$scope = $scope->assignExpression(
 					new IntertwinedVariableByReferenceWithExpr($valueName, new Expr\ArrayDimFetch($iteratee, new Variable($keyName)), new Variable($valueName)),
 					$valueType,

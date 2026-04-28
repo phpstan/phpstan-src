@@ -15,7 +15,7 @@ function example3a(array &$convert): void
 			$val = strtoupper($val);
 		}
 	}
-	assertType('array<string, list<uppercase-string>>', $convert);
+	assertType('array<string, list<string>>', $convert);
 }
 
 /**

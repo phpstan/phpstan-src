@@ -23,6 +23,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\VerbosityLevel;
 use Traversable;
 use function array_filter;
 use function array_keys;
@@ -61,12 +62,16 @@ final class MissingTypehintCheck
 	}
 
 	/**
-	 * @return Type[]
+	 * Each returned string is a fully formatted phrase describing the
+	 * offending type — e.g. `iterable type array` — so callers can drop it
+	 * straight into their error message without further formatting.
+	 *
+	 * @return string[]
 	 */
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
-		$iterablesWithMissingValueTypehint = [];
-		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
+		$descriptions = [];
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$descriptions): Type {
 			if ($type instanceof TemplateType) {
 				return $type;
 			}
@@ -91,8 +96,8 @@ final class MissingTypehintCheck
 				return $traverse(new IntersectionType($nonArrayInner));
 			}
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$iterablesWithMissingValueTypehint = array_merge(
-					$iterablesWithMissingValueTypehint,
+				$descriptions = array_merge(
+					$descriptions,
 					$this->getIterableTypesWithMissingValueTypehint($type->getIf()),
 					$this->getIterableTypesWithMissingValueTypehint($type->getElse()),
 				);
@@ -102,7 +107,7 @@ final class MissingTypehintCheck
 			if ($type->isIterable()->yes()) {
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
-					$iterablesWithMissingValueTypehint[] = $type;
+					$descriptions[] = sprintf('iterable type %s', $type->describe(VerbosityLevel::typeOnly()));
 				}
 				if ($type instanceof IntersectionType) {
 					if ($type->isList()->yes()) {
@@ -115,7 +120,7 @@ final class MissingTypehintCheck
 			return $traverse($type);
 		});
 
-		return $iterablesWithMissingValueTypehint;
+		return $descriptions;
 	}
 
 	/**

@@ -175,10 +175,9 @@ final class AssertRuleHelper
 				continue;
 			}
 
-			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($assertedType) as $iterableType) {
-				$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($assertedType) as $iterableTypeDescription) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag %s for %s has no value type specified in iterable type %s.',
+					'PHPDoc tag %s for %s has no value type specified in %s.',
 					$tagName,
 					$assertedExprString,
 					$iterableTypeDescription,

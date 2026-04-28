@@ -194,10 +194,9 @@ final class LocalTypeAliasesCheck
 				continue;
 			}
 
-			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($resolvedType) as $iterableType) {
-				$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($resolvedType) as $iterableTypeDescription) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s %s has type alias %s with no value type specified in iterable type %s.',
+					'%s %s has type alias %s with no value type specified in %s.',
 					$reflection->getClassTypeDescription(),
 					$reflection->getDisplayName(),
 					$aliasName,

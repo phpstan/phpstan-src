@@ -58,10 +58,9 @@ final class MissingClassConstantTypehintRule implements Rule
 		}
 
 		$errors = [];
-		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($constantType) as $iterableType) {
-			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($constantType) as $iterableTypeDescription) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Constant %s::%s type has no value type specified in iterable type %s.',
+				'Constant %s::%s type has no value type specified in %s.',
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$iterableTypeDescription,

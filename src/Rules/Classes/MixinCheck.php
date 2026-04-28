@@ -76,10 +76,9 @@ final class MixinCheck
 				continue;
 			}
 
-			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
-				$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableTypeDescription) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s %s has PHPDoc tag @mixin with no value type specified in iterable type %s.',
+					'%s %s has PHPDoc tag @mixin with no value type specified in %s.',
 					$classReflection->getClassTypeDescription(),
 					$classReflection->getDisplayName(),
 					$iterableTypeDescription,

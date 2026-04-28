@@ -81,10 +81,9 @@ final class MissingMethodParameterTypehintRule implements Rule
 		}
 
 		$messages = [];
-		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
-			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableTypeDescription) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has %s with no value type specified in iterable type %s.',
+				'Method %s::%s() has %s with no value type specified in %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterMessage,

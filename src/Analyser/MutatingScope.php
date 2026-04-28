@@ -2869,7 +2869,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 			$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr), false, $invalidatingClass)) {
+			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr), $requireMoreCharacters, $invalidatingClass)) {
 				$invalidated = true;
 				continue;
 			}

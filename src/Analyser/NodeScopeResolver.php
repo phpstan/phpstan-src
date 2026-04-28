@@ -3986,7 +3986,7 @@ class NodeScopeResolver
 					$iterScope,
 					$iterStorage,
 					new NoopNodeCallback(),
-					$context->enterDeep(),
+					$context,
 				)->filterOutLoopExitPoints();
 
 				$iterEndScope = $bodyResult->getScope();

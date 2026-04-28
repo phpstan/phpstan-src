@@ -319,7 +319,7 @@ final class AssignHandler implements ExprHandler
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {
-					$scope = $scope->addConditionalExpressions($exprString, $holders);
+					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}
 
 				if ($assignedExpr instanceof Expr\Array_) {
@@ -861,6 +861,8 @@ final class AssignHandler implements ExprHandler
 				continue;
 			}
 
+			$exprString = (string) $exprString;
+
 			if (!isset($conditionalExpressions[$exprString])) {
 				$conditionalExpressions[$exprString] = [];
 			}
@@ -888,6 +890,8 @@ final class AssignHandler implements ExprHandler
 			if (!$this->isExprSafeToProjectThroughVariable($expr, $variableName, $rhsImpurePoints, $assignedExpr)) {
 				continue;
 			}
+
+			$exprString = (string) $exprString;
 
 			if (!isset($conditionalExpressions[$exprString])) {
 				$conditionalExpressions[$exprString] = [];
@@ -938,7 +942,7 @@ final class AssignHandler implements ExprHandler
 		// narrowing targets at a usage site — skip them so they don't collide with PHP's
 		// numeric-string array-key autocast or leak internal virtual expressions into the
 		// conditional-expression map.
-		if ($expr instanceof Node\Scalar || $expr instanceof ConstFetch || $expr instanceof VirtualNode) {
+		if ($expr instanceof Node\Scalar || $expr instanceof ConstFetch || $expr instanceof VirtualNode || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
 			return false;
 		}
 

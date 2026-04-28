@@ -98,6 +98,26 @@ function testIsCallableInElseBranch(string $method): void {
 	}
 }
 
+function testIsCallableNamedArg(string $method): void {
+	$instance = new HelloWorld();
+	if (!is_callable(value: [$instance, $method])) {
+		return;
+	}
+
+	assertType('list{Bug4510\HelloWorld, string}&callable(): mixed', [$instance, $method]);
+	[$instance, $method](); // ok - is_callable verifies callability
+}
+
+function testMethodExistsNamedArgs(string $method): void {
+	$instance = new HelloWorld();
+	if (!method_exists(object_or_class: $instance, method: $method)) {
+		return;
+	}
+
+	assertType('array{Bug4510\HelloWorld, string}', [$instance, $method]);
+	[$instance, $method](); // error - method_exists doesn't imply callable
+}
+
 function testNoMethodExists(string $method): void {
 	$instance = new HelloWorld();
 	assertType('array{Bug4510\HelloWorld, string}', [$instance, $method]);

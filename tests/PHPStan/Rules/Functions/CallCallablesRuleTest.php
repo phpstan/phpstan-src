@@ -393,6 +393,10 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.',
 				90,
 			],
+			[
+				'Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.',
+				118,
+			],
 		]);
 	}
 

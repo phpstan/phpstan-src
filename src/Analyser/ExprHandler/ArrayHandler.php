@@ -53,9 +53,12 @@ final class ArrayHandler implements ExprHandler
 		) {
 			$isCallableCall = new FuncCall(
 				new FullyQualified('is_callable'),
-				[new Arg($expr->items[0]->value), new Arg($expr->items[1]->value)],
+				[new Arg($expr)],
 			);
-			if ($scope->hasExpressionType($isCallableCall)->yes()) {
+			if (
+				$scope->hasExpressionType($isCallableCall)->yes()
+				&& $scope->getType($isCallableCall)->isTrue()->yes()
+			) {
 				$type = TypeCombinator::intersect($type, new CallableType());
 			}
 		}

@@ -122,3 +122,13 @@ function testNoMethodExists(string $method): void {
 	$instance = new HelloWorld();
 	assertType('array{Bug4510\HelloWorld, string}', [$instance, $method]);
 }
+
+function testIsCallableFalseBranch(string $method): void {
+	$instance = new HelloWorld();
+	if (is_callable([$instance, $method])) {
+		return;
+	}
+
+	assertType('array{Bug4510\HelloWorld, string}', [$instance, $method]);
+	[$instance, $method](); // error - is_callable was false
+}

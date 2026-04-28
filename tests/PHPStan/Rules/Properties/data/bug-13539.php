@@ -19,7 +19,10 @@ function works_too(string $x): void {
 	}
 }
 
-function also_ok(mixed $tmp): void {
+/**
+ * @param mixed $tmp
+ */
+function also_ok($tmp): void {
 	if (isset($tmp->foo) && isset($tmp->bar)) {
 		echo $tmp->foo;
 		echo $tmp->bar;

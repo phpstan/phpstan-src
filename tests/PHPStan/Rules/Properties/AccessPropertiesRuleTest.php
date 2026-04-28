@@ -1280,7 +1280,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13539.php'], [
 			[
 				'Access to an undefined property object::$baz.',
-				26,
+				29,
 				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
 			],
 		]);

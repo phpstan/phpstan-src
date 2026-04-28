@@ -494,7 +494,7 @@ final class TypeSpecifier
 			}
 
 			if ($context->true()) {
-				if (!$expr->left instanceof Node\Scalar) {
+				if (!$expr->left instanceof Node\Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Node\Scalar)) {
 					$result = $result->unionWith(
 						$this->create(
 							$expr->left,
@@ -504,7 +504,7 @@ final class TypeSpecifier
 						)->setRootExpr($expr),
 					);
 				}
-				if (!$expr->right instanceof Node\Scalar) {
+				if (!$expr->right instanceof Node\Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Node\Scalar)) {
 					$result = $result->unionWith(
 						$this->create(
 							$expr->right,
@@ -515,7 +515,7 @@ final class TypeSpecifier
 					);
 				}
 			} elseif ($context->false()) {
-				if (!$expr->left instanceof Node\Scalar) {
+				if (!$expr->left instanceof Node\Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Node\Scalar)) {
 					$result = $result->unionWith(
 						$this->create(
 							$expr->left,
@@ -525,7 +525,7 @@ final class TypeSpecifier
 						)->setRootExpr($expr),
 					);
 				}
-				if (!$expr->right instanceof Node\Scalar) {
+				if (!$expr->right instanceof Node\Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Node\Scalar)) {
 					$result = $result->unionWith(
 						$this->create(
 							$expr->right,

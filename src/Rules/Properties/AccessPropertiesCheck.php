@@ -144,6 +144,10 @@ final class AccessPropertiesCheck
 				if ($maybePropertyReflection !== null && $maybePropertyReflection->isDummy()->no()) {
 					return [];
 				}
+
+				if ($type->getObjectClassNames() === []) {
+					return [];
+				}
 			}
 		}
 

@@ -132,6 +132,9 @@ final class InitializerExprTypeResolver
 	/** @var array<string, true> */
 	private array $currentlyResolvingClassConstant = [];
 
+	/** @var array<string, Type> */
+	private array $classConstantValueTypeCache = [];
+
 	public function __construct(
 		private ConstantResolver $constantResolver,
 		private ReflectionProviderProvider $reflectionProviderProvider,
@@ -2530,6 +2533,11 @@ final class InitializerExprTypeResolver
 				continue;
 			}
 
+			if (!$isObject && array_key_exists($resolvingName, $this->classConstantValueTypeCache)) {
+				$types[] = $this->classConstantValueTypeCache[$resolvingName];
+				continue;
+			}
+
 			$this->currentlyResolvingClassConstant[$resolvingName] = true;
 
 			if (!$isObject) {
@@ -2544,13 +2552,15 @@ final class InitializerExprTypeResolver
 				if ($reflectionConstant->getType() !== null) {
 					$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $constantClassReflection);
 				}
-				$types[] = $this->constantResolver->resolveClassConstantType(
+				$resolvedType = $this->constantResolver->resolveClassConstantType(
 					$constantClassReflection->getName(),
 					$constantName,
 					$constantType,
 					$nativeType,
 					$constantClassReflection->getConstantPhpDocType($constantName),
 				);
+				$this->classConstantValueTypeCache[$resolvingName] = $resolvedType;
+				$types[] = $resolvedType;
 				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				continue;
 			}

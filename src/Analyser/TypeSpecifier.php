@@ -886,7 +886,7 @@ final class TypeSpecifier
 					$narrowToNonEmpty = true;
 				}
 
-				if ($arrayArgIndex !== null && $sentinelType !== null) {
+				if ($arrayArgIndex !== null) {
 					$arrayArg = $expr->expr->getArgs()[$arrayArgIndex]->value;
 					$arrayType = $scope->getType($arrayArg);
 

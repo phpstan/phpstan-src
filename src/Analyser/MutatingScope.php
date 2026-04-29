@@ -1089,6 +1089,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 
 			if ($result !== null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheck($expr->var, $typeCallback, $result);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheck($expr->class, $typeCallback, $result);
+				}
+
 				return $result;
 			}
 

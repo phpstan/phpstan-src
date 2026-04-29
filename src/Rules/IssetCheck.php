@@ -196,6 +196,14 @@ final class IssetCheck
 			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $scope, $expr);
 			$propertyType = $propertyReflection->getWritableType();
 			if ($error !== null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->check($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->check($expr->class, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error);
+				}
+
 				return $error;
 			}
 			if (!$this->checkAdvancedIsset) {

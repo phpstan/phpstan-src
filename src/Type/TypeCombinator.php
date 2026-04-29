@@ -1688,18 +1688,11 @@ final class TypeCombinator
 						&& get_class($types[$i]) === ArrayType::class
 						&& $types[$j] instanceof CallableType
 					) {
-						$existingValueType = $types[$i]->getItemType();
-						$offset0ValueType = self::intersect($existingValueType, new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
-						$offset1ValueType = self::intersect($existingValueType, new StringType());
-						if ($offset0ValueType instanceof NeverType || $offset1ValueType instanceof NeverType) {
+						$narrowed = self::narrowArrayTypeWithCallable($types[$i]);
+						if ($narrowed instanceof NeverType) {
 							return new NeverType();
 						}
-						$types[$i] = new ConstantArrayType(
-							[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-							[$offset0ValueType, $offset1ValueType],
-							[2],
-							isList: TrinaryLogic::createYes(),
-						);
+						$types[$i] = $narrowed;
 						continue;
 					}
 
@@ -1708,18 +1701,11 @@ final class TypeCombinator
 						&& get_class($types[$j]) === ArrayType::class
 						&& $types[$i] instanceof CallableType
 					) {
-						$existingValueType = $types[$j]->getItemType();
-						$offset0ValueType = self::intersect($existingValueType, new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
-						$offset1ValueType = self::intersect($existingValueType, new StringType());
-						if ($offset0ValueType instanceof NeverType || $offset1ValueType instanceof NeverType) {
+						$narrowed = self::narrowArrayTypeWithCallable($types[$j]);
+						if ($narrowed instanceof NeverType) {
 							return new NeverType();
 						}
-						$types[$j] = new ConstantArrayType(
-							[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-							[$offset0ValueType, $offset1ValueType],
-							[2],
-							isList: TrinaryLogic::createYes(),
-						);
+						$types[$j] = $narrowed;
 						continue;
 					}
 
@@ -1839,6 +1825,27 @@ final class TypeCombinator
 	public static function removeTruthy(Type $type): Type
 	{
 		return self::remove($type, StaticTypeFactory::truthy());
+	}
+
+	private static function narrowArrayTypeWithCallable(ArrayType $arrayType): Type
+	{
+		if ($arrayType->getKeyType()->isSuperTypeOf(new IntegerType())->no()) {
+			return new NeverType();
+		}
+
+		$existingValueType = $arrayType->getItemType();
+		$offset0ValueType = self::intersect($existingValueType, new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
+		$offset1ValueType = self::intersect($existingValueType, new StringType());
+		if ($offset0ValueType instanceof NeverType || $offset1ValueType instanceof NeverType) {
+			return new NeverType();
+		}
+
+		return new ConstantArrayType(
+			[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+			[$offset0ValueType, $offset1ValueType],
+			[2],
+			isList: TrinaryLogic::createYes(),
+		);
 	}
 
 	private static function narrowConstantArrayWithCallable(ConstantArrayType $constantArray): Type

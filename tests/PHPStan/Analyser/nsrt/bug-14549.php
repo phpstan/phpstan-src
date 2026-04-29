@@ -52,6 +52,14 @@ class Foo
 		}
 	}
 
+	/** @param array<string, mixed> $task */
+	public function testStringKeyedArrayNarrowing(array $task): void
+	{
+		if (\is_callable($task)) {
+			assertType('*NEVER*', $task);
+		}
+	}
+
 	/** @param callable-array $value */
 	public function testCallableArrayPhpDoc(array $value): void
 	{

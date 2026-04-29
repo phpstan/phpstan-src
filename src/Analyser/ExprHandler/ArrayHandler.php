@@ -2,8 +2,11 @@
 
 namespace PHPStan\Analyser\ExprHandler;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -15,8 +18,11 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function count;
 
 /**
  * @implements ExprHandler<Array_>
@@ -38,7 +44,26 @@ final class ArrayHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
-		return $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
+		$type = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
+
+		if (
+			count($expr->items) === 2
+			&& isset($expr->items[0], $expr->items[1])
+			&& $type->isCallable()->maybe()
+		) {
+			$isCallableCall = new FuncCall(
+				new FullyQualified('is_callable'),
+				[new Arg($expr)],
+			);
+			if (
+				$scope->hasExpressionType($isCallableCall)->yes()
+				&& $scope->getType($isCallableCall)->isTrue()->yes()
+			) {
+				$type = TypeCombinator::intersect($type, new CallableType());
+			}
+		}
+
+		return $type;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

@@ -283,9 +283,8 @@ final class ConstantArrayTypeBuilder
 				}
 			}
 			if (count($scalarTypes) > 0 && count($scalarTypes) < self::ARRAY_COUNT_LIMIT) {
-				$match = true;
-				$hasMatch = false;
 				$valueTypes = $this->valueTypes;
+				$unmatchedScalars = [];
 				foreach ($scalarTypes as $scalarType) {
 					$offsetMatch = false;
 
@@ -304,61 +303,97 @@ final class ConstantArrayTypeBuilder
 					}
 
 					if ($offsetMatch) {
-						$hasMatch = true;
 						continue;
 					}
 
-					$match = false;
+					$unmatchedScalars[] = $scalarType;
 				}
 
-				if ($match) {
-					$this->valueTypes = $valueTypes;
+				$this->valueTypes = $valueTypes;
+
+				if (count($unmatchedScalars) === 0) {
 					return;
 				}
 
-				if (!$hasMatch) {
-					foreach ($scalarTypes as $scalarType) {
-						$this->keyTypes[] = $scalarType;
-						$this->valueTypes[] = $valueType;
-						$this->optionalKeys[] = count($this->keyTypes) - 1;
+				foreach ($unmatchedScalars as $scalarType) {
+					$this->keyTypes[] = $scalarType;
+					$this->valueTypes[] = $valueType;
+					$this->optionalKeys[] = count($this->keyTypes) - 1;
 
-						if (!($scalarType instanceof ConstantIntegerType)) {
-							continue;
-						}
-
-						if (count($this->nextAutoIndexes) === 0) {
-							continue;
-						}
-
-						$max = max($this->nextAutoIndexes);
-						$offsetValue = $scalarType->getValue();
-						if ($offsetValue < $max) {
-							continue;
-						}
-
-						/** @var int|float $newAutoIndex */
-						$newAutoIndex = $offsetValue + 1;
-						if (is_float($newAutoIndex)) {
-							continue;
-						}
-						$this->nextAutoIndexes[] = $newAutoIndex;
+					if (!($scalarType instanceof ConstantIntegerType)) {
+						continue;
 					}
 
-					$this->isList = TrinaryLogic::createNo();
-
-					if (
-						!$this->disableArrayDegradation
-						&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
-					) {
-						$this->degradeToGeneralArray = true;
-						$this->oversized = true;
+					if (count($this->nextAutoIndexes) === 0) {
+						continue;
 					}
 
-					return;
+					$max = max($this->nextAutoIndexes);
+					$offsetValue = $scalarType->getValue();
+					if ($offsetValue < $max) {
+						continue;
+					}
+
+					/** @var int|float $newAutoIndex */
+					$newAutoIndex = $offsetValue + 1;
+					if (is_float($newAutoIndex)) {
+						continue;
+					}
+					$this->nextAutoIndexes[] = $newAutoIndex;
 				}
+
+				$this->isList = TrinaryLogic::createNo();
+
+				if (
+					!$this->disableArrayDegradation
+					&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
+				) {
+					$this->degradeToGeneralArray = true;
+					$this->oversized = true;
+				}
+
+				return;
 			}
 
 			$this->isList = TrinaryLogic::createNo();
+
+			// If the builder is already unsealed (e.g. fresh bleeding-edge
+			// builder, or a PHPDoc shape like `array{a: int, ...<int, T>}`),
+			// fold the unknown offset/value into the existing unsealed
+			// extras instead of dropping per-key precision by degrading to a
+			// general array. The actual decision between unsealed
+			// ConstantArrayType and general ArrayType is then made in
+			// getArray() based on whether any constant keys ended up
+			// alongside these extras.
+			if ($this->unsealed !== null) {
+				// Existing keys whose value the new offset could overwrite
+				// must widen to a union of (existing, new) — the assignment
+				// might or might not have hit them.
+				$residualOffset = $offsetType;
+				foreach ($this->keyTypes as $i => $keyType) {
+					if ($offsetType->isSuperTypeOf($keyType)->no()) {
+						continue;
+					}
+					$this->valueTypes[$i] = TypeCombinator::union($this->valueTypes[$i], $valueType);
+					$residualOffset = TypeCombinator::remove($residualOffset, $keyType);
+				}
+
+				if ($residualOffset instanceof NeverType) {
+					return;
+				}
+
+				[$existingKey, $existingValue] = $this->unsealed;
+				$isExplicitNever = $existingKey instanceof NeverType && $existingKey->isExplicit();
+				if ($isExplicitNever) {
+					$this->unsealed = [$residualOffset, $valueType];
+				} else {
+					$this->unsealed = [
+						TypeCombinator::union($existingKey, $residualOffset),
+						TypeCombinator::union($existingValue, $valueType),
+					];
+				}
+				return;
+			}
 		}
 
 		if ($offsetType === null) {
@@ -405,7 +440,11 @@ final class ConstantArrayTypeBuilder
 				[$unsealedKey, $unsealedValue] = $this->unsealed;
 				$isExplicitNever = $unsealedKey instanceof NeverType && $unsealedKey->isExplicit();
 				if (!$isExplicitNever) {
-					return new ArrayType($unsealedKey, $unsealedValue);
+					$arrayType = new ArrayType($unsealedKey, $unsealedValue);
+					if ($this->isNonEmpty->yes()) {
+						return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+					}
+					return $arrayType;
 				}
 			}
 			return new ConstantArrayType([], [], unsealed: $this->unsealed);
@@ -414,7 +453,7 @@ final class ConstantArrayTypeBuilder
 		if (!$this->degradeToGeneralArray) {
 			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			$array = new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, , $this->unsealed);
+			$array = new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $this->unsealed);
 			if ($this->isNonEmpty->yes() && !$array->isIterableAtLeastOnce()->yes()) {
 				return TypeCombinator::intersect($array, new NonEmptyArrayType());
 			}

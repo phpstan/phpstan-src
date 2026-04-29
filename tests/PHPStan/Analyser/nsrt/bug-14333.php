@@ -45,8 +45,8 @@ function testNonConstantKeyBreaksImplicitIndex(int $key): void
 	// Since $key is non-constant, we don't know the implicit indices of &$a and &$c
 	// so we can't correctly track the reference propagation
 	$b[2] = 2;
-	assertType("1|2|'test'|'x'", $a); // Could be 1|2
-	assertType("1|2|'test'|'x'", $c); // Could be 'test'|2
+	assertType("1|2|'test'", $a); // Could be 1|2
+	assertType("1|2|'test'", $c); // Could be 'test'|2
 }
 
 function testNested(): void

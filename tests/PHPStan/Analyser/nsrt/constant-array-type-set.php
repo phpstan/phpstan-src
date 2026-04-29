@@ -11,7 +11,7 @@ class Foo
 	{
 		$a = [1, 2, 3];
 		$a[$i] = 4;
-		assertType('non-empty-array<int, 1|2|3|4>', $a);
+		assertType('array{1|4, 2|4, 3|4, ...<int<min, -1>|int<3, max>, 4>}', $a);
 
 		$b = [1, 2, 3];
 		$b[3] = 4;
@@ -33,7 +33,7 @@ class Foo
 		/** @var 0|1|2|3 $offset3 */
 		$offset3 = doFoo();
 		$e[$offset3] = true;
-		assertType('non-empty-array<0|1|2|3, bool>', $e);
+		assertType('array{0: bool, 1: bool, 2: bool, 3?: true}', $e);
 
 		$f = [false, false, false];
 		/** @var 0|1 $offset4 */
@@ -72,7 +72,7 @@ class Foo
 	{
 		$a = [false, false, false, false, false];
 		$a[$offset] = true;
-		assertType('non-empty-array<int<0, max>, bool>', $a);
+		assertType('array{bool, bool, bool, bool, bool, ...<int<5, max>, true>}', $a);
 	}
 
 	/**
@@ -83,7 +83,7 @@ class Foo
 	{
 		$a = [false, false, false, false, false];
 		$a[$offset] = true;
-		assertType('non-empty-array<int<min, 4>, bool>', $a);
+		assertType('array{bool, false, false, false, false, ...<int<min, -1>, true>}', $a);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class Foo
 	{
 		$a = [false, false, false];
 		$a[$offset] = true;
-		assertType('non-empty-array<int<0, 4>, bool>', $a);
+		assertType('array{0: bool, 1: bool, 2: bool, 3?: true, 4?: true}', $a);
 	}
 
 	public function doBar6(bool $offset): void

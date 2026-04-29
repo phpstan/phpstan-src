@@ -83,6 +83,59 @@ class Foo
 		assertType('array{a: int, b: float|string, c?: string}', $c);
 	}
 
+	/**
+	 * @param array<int, string> $a
+	 * @param array<string, string> $b
+	 * @param array<string, string> $c
+	 * @return void
+	 */
+	public function generalArray(array $a, array $b, array $c): void
+	{
+		$a[1] = 'foo';
+		assertType("non-empty-array<int, string>&hasOffsetValue(1, 'foo')", $a);
+
+		$b[1] = 'foo';
+		assertType("non-empty-array<1|string, string>&hasOffsetValue(1, 'foo')", $b);
+
+		$c['foo'] = 1;
+		assertType("non-empty-array<string, 1|string>&hasOffsetValue('foo', 1)", $c);
+	}
+
+	public function sealedBecomesUnsealed(string $s, int $i): void
+	{
+		$a = [];
+		$a[] = 5;
+		assertType('array{5}', $a);
+		$a[$s] = 6;
+		assertType('array{5, ...<string, 6>}', $a);
+		$a[$i] = 7;
+		assertType('array{5|7, ...<int<min,-1>|int<1,max>|string, 6|7>}', $a);
+
+		$b = [];
+		$b[$s] = 1;
+		assertType('non-empty-array<string, 1>', $b);
+
+		$b[$i] = 2;
+		assertType('non-empty-array<int|string, 1|2>', $b);
+
+		$c = [
+			1 => 'foo',
+			$s => 'bar',
+		];
+		assertType("array{1: 'foo', ...<string, 'bar'>}", $c);
+
+		$d = [
+			$s => 'foo',
+			1 => 'bar',
+		];
+		assertType("array{1: 'bar', ...<string, 'foo'>}", $d);
+
+		$e = [
+			$s => 'foo',
+		];
+		assertType('non-empty-array<string, \'foo\'>', $e);
+	}
+
 }
 
 class Generics

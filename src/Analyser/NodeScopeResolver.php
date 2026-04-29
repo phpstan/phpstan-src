@@ -4141,6 +4141,7 @@ class NodeScopeResolver
 		if (
 			$stmt->expr instanceof FuncCall
 			&& $stmt->expr->name instanceof Name
+			&& !$stmt->expr->isFirstClassCallable()
 			&& $stmt->expr->name->toLowerString() === 'array_keys'
 			&& $stmt->valueVar instanceof Variable
 		) {
@@ -4816,6 +4817,7 @@ class NodeScopeResolver
 				&& $lastCondExpr->left instanceof Variable
 				&& $lastCondExpr->right instanceof FuncCall
 				&& $lastCondExpr->right->name instanceof Name
+				&& !$lastCondExpr->right->isFirstClassCallable()
 				&& in_array($lastCondExpr->right->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($lastCondExpr->right->getArgs()) > 0
 				&& $lastCondExpr->right->getArgs()[0]->value instanceof Variable
@@ -4840,6 +4842,7 @@ class NodeScopeResolver
 				&& $lastCondExpr->right instanceof Variable
 				&& $lastCondExpr->left instanceof FuncCall
 				&& $lastCondExpr->left->name instanceof Name
+				&& !$lastCondExpr->left->isFirstClassCallable()
 				&& in_array($lastCondExpr->left->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($lastCondExpr->left->getArgs()) > 0
 				&& $lastCondExpr->left->getArgs()[0]->value instanceof Variable

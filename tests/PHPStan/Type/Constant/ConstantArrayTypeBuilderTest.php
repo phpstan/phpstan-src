@@ -267,4 +267,50 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 		$this->assertInstanceOf(ErrorType::class, $result);
 	}
 
+	public function testNonOptionalUnionOffsetOnEmptyArrayIsNonEmpty(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$aOrB = TypeCombinator::union(
+			new ConstantStringType('a'),
+			new ConstantStringType('b'),
+		);
+		$builder->setOffsetValueType($aOrB, new ConstantIntegerType(1));
+
+		$array = $builder->getArray();
+		$this->assertSame('non-empty-array{a?: 1, b?: 1}', $array->describe(VerbosityLevel::precise()));
+	}
+
+	public function testOptionalSingleOffsetOnEmptyArrayIsPossiblyEmpty(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantStringType('a'), new ConstantIntegerType(1), true);
+
+		$array = $builder->getArray();
+		$this->assertSame('array{a?: 1}', $array->describe(VerbosityLevel::precise()));
+	}
+
+	public function testOptionalUnionOffsetOnEmptyArrayIsPossiblyEmpty(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$aOrB = TypeCombinator::union(
+			new ConstantStringType('a'),
+			new ConstantStringType('b'),
+		);
+		$builder->setOffsetValueType($aOrB, new ConstantIntegerType(1), true);
+
+		$array = $builder->getArray();
+		$this->assertSame('array{a?: 1, b?: 1}', $array->describe(VerbosityLevel::precise()));
+	}
+
+	public function testOptionalNullOffsetOnEmptyArrayIsPossiblyEmpty(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(null, new ConstantIntegerType(1), true);
+
+		$array = $builder->getArray();
+		$this->assertSame('array{0?: 1}', $array->describe(VerbosityLevel::precise()));
+	}
+
 }

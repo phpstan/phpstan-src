@@ -41,6 +41,8 @@ final class ConstantArrayTypeBuilder
 
 	private bool $oversized = false;
 
+	private TrinaryLogic $isNonEmpty;
+
 	/**
 	 * @param list<Type> $keyTypes
 	 * @param array<int, Type> $valueTypes
@@ -55,6 +57,7 @@ final class ConstantArrayTypeBuilder
 		private TrinaryLogic $isList,
 	)
 	{
+		$this->isNonEmpty = TrinaryLogic::createNo();
 	}
 
 	public static function createEmpty(): self
@@ -71,6 +74,7 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->getOptionalKeys(),
 			$startArrayType->isList(),
 		);
+		$builder->isNonEmpty = $startArrayType->isIterableAtLeastOnce();
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
 			$builder->degradeToGeneralArray(true);
@@ -87,6 +91,10 @@ final class ConstantArrayTypeBuilder
 
 		if ($offsetType === null && count($this->nextAutoIndexes) === 0) {
 			return;
+		}
+
+		if (!$optional) {
+			$this->isNonEmpty = TrinaryLogic::createYes();
 		}
 
 		if (!$this->degradeToGeneralArray) {
@@ -388,7 +396,11 @@ final class ConstantArrayTypeBuilder
 		if (!$this->degradeToGeneralArray) {
 			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+			$array = new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+			if ($this->isNonEmpty->yes() && !$array->isIterableAtLeastOnce()->yes()) {
+				return TypeCombinator::intersect($array, new NonEmptyArrayType());
+			}
+			return $array;
 		}
 
 		if ($this->degradeClosures === true) {
@@ -410,7 +422,7 @@ final class ConstantArrayTypeBuilder
 		);
 
 		$types = [];
-		if (count($this->optionalKeys) < $keyTypesCount) {
+		if ($this->isNonEmpty->yes() || count($this->optionalKeys) < $keyTypesCount) {
 			$types[] = new NonEmptyArrayType();
 		}
 

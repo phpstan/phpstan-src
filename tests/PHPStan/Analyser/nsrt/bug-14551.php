@@ -15,7 +15,7 @@ function foreachTwoKeys(array $keys): void
 		$result[$k]['y'] = 2;
 	}
 
-	assertType("array{a?: array{x: 1, y: 2}, b?: array{x: 1, y: 2}}", $result);
+	assertType("non-empty-array{a?: array{x: 1, y: 2}, b?: array{x: 1, y: 2}}", $result);
 }
 
 /**
@@ -30,7 +30,7 @@ function foreachThreeKeys(array $keys): void
 		$result[$k]['z'] = 3;
 	}
 
-	assertType("array{a?: array{x: 1, y: 2, z: 3}, b?: array{x: 1, y: 2, z: 3}}", $result);
+	assertType("non-empty-array{a?: array{x: 1, y: 2, z: 3}, b?: array{x: 1, y: 2, z: 3}}", $result);
 }
 
 /**
@@ -43,7 +43,7 @@ function withoutForeach(string $k): void
 	$result[$k]['x'] = 1;
 	$result[$k]['y'] = 2;
 
-	assertType("array{a?: array{x: 1, y: 2}, b?: array{x: 1, y: 2}}", $result);
+	assertType("non-empty-array{a?: array{x: 1, y: 2}, b?: array{x: 1, y: 2}}", $result);
 }
 
 /**
@@ -56,7 +56,7 @@ function integerKeys(int $k): void
 	$result[$k]['x'] = 1;
 	$result[$k]['y'] = 2;
 
-	assertType("array{0?: array{x: 1, y: 2}, 1?: array{x: 1, y: 2}}", $result);
+	assertType("non-empty-array{0?: array{x: 1, y: 2}, 1?: array{x: 1, y: 2}}", $result);
 }
 
 /**
@@ -69,7 +69,7 @@ function threeWayUnion(string $k): void
 	$result[$k]['x'] = 1;
 	$result[$k]['y'] = 2;
 
-	assertType("array{a?: array{x: 1, y: 2}, b?: array{x: 1, y: 2}, c?: array{x: 1, y: 2}}", $result);
+	assertType("non-empty-array{a?: array{x: 1, y: 2}, b?: array{x: 1, y: 2}, c?: array{x: 1, y: 2}}", $result);
 }
 
 /**

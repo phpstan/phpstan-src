@@ -18,9 +18,10 @@ class Bug14534Test extends RuleTestCase
 		return new StrictComparisonOfDifferentTypesRule(
 			self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
 			new PossiblyImpureTipHelper(true),
-			true,
-			true,
-			true,
+			self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			treatPhpDocTypesAsCertain: true,
+			reportAlwaysTrueInLastCondition: true,
+			treatPhpDocTypesAsCertainTip: true,
 		);
 	}
 

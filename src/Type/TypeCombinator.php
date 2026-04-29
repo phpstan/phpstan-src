@@ -1847,17 +1847,25 @@ final class TypeCombinator
 		$valueTypes = $constantArray->getValueTypes();
 		$newValueTypes = $valueTypes;
 
+		$offset0Index = null;
+		$offset1Index = null;
+
 		foreach ($keyTypes as $k => $keyType) {
 			if ((new ConstantIntegerType(0))->isSuperTypeOf($keyType)->yes()) {
-				$newValueTypes[$k] = self::intersect($valueTypes[$k], new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
-				if ($newValueTypes[$k] instanceof NeverType) {
-					return new NeverType();
-				}
+				$offset0Index = $k;
 			} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($keyType)->yes()) {
-				$newValueTypes[$k] = self::intersect($valueTypes[$k], new StringType());
-				if ($newValueTypes[$k] instanceof NeverType) {
-					return new NeverType();
-				}
+				$offset1Index = $k;
+			}
+		}
+
+		if ($offset0Index !== null && $offset1Index !== null) {
+			$newValueTypes[$offset0Index] = self::intersect($valueTypes[$offset0Index], new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
+			if ($newValueTypes[$offset0Index] instanceof NeverType) {
+				return new NeverType();
+			}
+			$newValueTypes[$offset1Index] = self::intersect($valueTypes[$offset1Index], new StringType());
+			if ($newValueTypes[$offset1Index] instanceof NeverType) {
+				return new NeverType();
 			}
 		}
 

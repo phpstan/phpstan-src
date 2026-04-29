@@ -782,6 +782,9 @@ class IntersectionType implements CompoundType
 
 	public function getIterableKeyType(): Type
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+		}
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
@@ -797,7 +800,17 @@ class IntersectionType implements CompoundType
 
 	public function getIterableValueType(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableValueType());
+		$result = $this->intersectTypes(static fn (Type $type): Type => $type->getIterableValueType());
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return TypeCombinator::intersect(
+				$result,
+				new UnionType([
+					new ObjectWithoutClassType(),
+					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
+				]),
+			);
+		}
+		return $result;
 	}
 
 	public function getFirstIterableValueType(): Type
@@ -960,9 +973,7 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		$result = $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
-
-		if (!$result->yes() && $this->isCallable()->yes() && $this->isArray()->yes()) {
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
 			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
 			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
@@ -970,7 +981,7 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		return $result;
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
@@ -991,17 +1002,14 @@ class IntersectionType implements CompoundType
 
 		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
-			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
-			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-				if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-					$narrowedType = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
-				} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-					$narrowedType = new StringType();
-				} else {
-					$narrowedType = new UnionType([new StringType(), new ObjectWithoutClassType()]);
-				}
-				$result = TypeCombinator::intersect($result, $narrowedType);
+			if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				$narrowedType = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
+			} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				$narrowedType = new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
+			} else {
+				$narrowedType = new UnionType([new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]), new ObjectWithoutClassType()]);
 			}
+			$result = TypeCombinator::intersect($result, $narrowedType);
 		}
 
 		return $result;

@@ -22,7 +22,7 @@ function testIsArrayOnCallable(callable $value): void {
 	if (is_array($value)) {
 		assertType('array<mixed, mixed>&callable(): mixed', $value);
 		assertType('class-string|object', $value[0]);
-		assertType('string', $value[1]);
+		assertType('non-falsy-string', $value[1]);
 	}
 }
 
@@ -30,7 +30,7 @@ function testIsArrayOnCallable(callable $value): void {
 function testCallableArrayPhpDoc(array $value): void {
 	assertType('array&callable(): mixed', $value);
 	assertType('class-string|object', $value[0]);
-	assertType('string', $value[1]);
+	assertType('non-falsy-string', $value[1]);
 }
 
 function testIsStringOnCallable(callable $value): void {
@@ -50,7 +50,7 @@ function checkClassString(array $values): void {
 /** @param 0|1 $offset */
 function testCallableArrayUnionOffset(callable $value, int $offset): void {
 	if (is_array($value)) {
-		assertType('object|string', $value[$offset]);
+		assertType('object|non-falsy-string', $value[$offset]);
 	}
 }
 

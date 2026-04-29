@@ -73,6 +73,23 @@ final class MissingTypehintCheck
 			if ($type instanceof AccessoryType) {
 				return $type;
 			}
+			if (
+				$type instanceof IntersectionType
+				&& $type->isCallable()->yes()
+				&& $type->isArray()->yes()
+			) {
+				$nonArrayInner = [];
+				foreach ($type->getTypes() as $innerType) {
+					if ($innerType->isArray()->yes()) {
+						continue;
+					}
+					$nonArrayInner[] = $innerType;
+				}
+				if (count($nonArrayInner) === 1) {
+					return $traverse($nonArrayInner[0]);
+				}
+				return $traverse(new IntersectionType($nonArrayInner));
+			}
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 				$iterablesWithMissingValueTypehint = array_merge(
 					$iterablesWithMissingValueTypehint,

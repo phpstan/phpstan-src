@@ -13,7 +13,7 @@ class Foo
 	{
 		foreach($task as $k => $v) {
 			assertType('0|1', $k);
-			assertType('object|string', $v);
+			assertType('object|non-empty-string', $v);
 		}
 		assertType('class-string|object', $task[0]);
 		assertType('string', $task[1]);
@@ -34,7 +34,7 @@ class Foo
 
 				foreach($list as $k => $v) {
 					assertType('0|1', $k);
-					assertType('string', $v);
+					assertType('non-empty-string', $v);
 				}
 			}
 		}

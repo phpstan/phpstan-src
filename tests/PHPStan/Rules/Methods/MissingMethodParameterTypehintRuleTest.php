@@ -152,7 +152,7 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14549.php'], [
 			[
-				'Method Bug14549\MondayMorning::call() has parameter $task with no signature specified for callable.',
+				'Method Bug14549\Foo::doFoo() has parameter $task with no signature specified for callable.',
 				12,
 			],
 		]);

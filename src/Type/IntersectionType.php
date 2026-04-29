@@ -802,7 +802,13 @@ class IntersectionType implements CompoundType
 	{
 		$result = $this->intersectTypes(static fn (Type $type): Type => $type->getIterableValueType());
 		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
-			return TypeCombinator::intersect($result, new UnionType([new ObjectWithoutClassType(), new StringType()]));
+			return TypeCombinator::intersect(
+				$result,
+				new UnionType([
+					new ObjectWithoutClassType(),
+					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+				])
+			);
 		}
 		return $result;
 	}

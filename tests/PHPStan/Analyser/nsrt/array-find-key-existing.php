@@ -28,3 +28,14 @@ function arrayFindKeyStringKey(array $map): void
 		assertType('int', $map[$key]);
 	}
 }
+
+/**
+ * @param list<string> $list
+ */
+function arrayFindKeyReversedComparison(array $list, string $s): void
+{
+	$key = array_find_key($list, fn (string $v) => $v === $s);
+	if (null !== $key) {
+		assertType('string', $list[$key]);
+	}
+}

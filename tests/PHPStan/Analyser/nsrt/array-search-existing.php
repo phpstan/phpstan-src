@@ -30,10 +30,10 @@ function arraySearchStringKey(array $map, int $needle): void
 /**
  * @param list<string> $list
  */
-function arraySearchDeepWrite(array $list, string $s): void
+function arraySearchReversedComparison(array $list, string $s): void
 {
 	$key = array_search($s, $list);
-	if ($key !== false) {
+	if (false !== $key) {
 		assertType('string', $list[$key]);
 	}
 }

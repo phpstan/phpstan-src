@@ -1305,11 +1305,19 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11218.php'], []);
 	}
 
-	public function testBug14537(): void
+	public function testArraySearchExisting(): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
 
-		$this->analyse([__DIR__ . '/data/bug-14537.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-search-existing.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testArrayFindKeyExisting(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-find-key-existing.php'], []);
 	}
 
 }

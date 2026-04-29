@@ -4,11 +4,14 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
+use const PHP_INT_MAX;
 
 class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 {
@@ -197,6 +200,71 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 		$builder->setOffsetValueType($oneOrFour, new NullType());
 		$this->assertFalse($builder->isList());
+	}
+
+	public function testAppendToBuilderWithEmptyNextAutoIndexes(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray(new ConstantArrayType(
+			[new ConstantIntegerType(PHP_INT_MAX)],
+			[new ConstantIntegerType(4)],
+			[],
+		));
+
+		$builder->setOffsetValueType(null, new ConstantIntegerType(5));
+
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+		$this->assertSame(sprintf('array{%d: 4}', PHP_INT_MAX), $array->describe(VerbosityLevel::precise()));
+		$this->assertSame([], $array->getNextAutoIndexes());
+	}
+
+	public function testAddIntegerOffsetToBuilderWithEmptyNextAutoIndexes(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray(new ConstantArrayType(
+			[new ConstantIntegerType(PHP_INT_MAX)],
+			[new ConstantIntegerType(4)],
+			[],
+		));
+
+		$builder->setOffsetValueType(new ConstantIntegerType(5), new ConstantStringType('x'));
+
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+		$this->assertSame(sprintf("array{%d: 4, 5: 'x'}", PHP_INT_MAX), $array->describe(VerbosityLevel::precise()));
+		$this->assertSame([], $array->getNextAutoIndexes());
+		$this->assertFalse($builder->isList());
+	}
+
+	public function testAddIntegerUnionOffsetToBuilderWithEmptyNextAutoIndexes(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray(new ConstantArrayType(
+			[new ConstantIntegerType(PHP_INT_MAX)],
+			[new ConstantIntegerType(4)],
+			[],
+		));
+
+		$twoOrThree = TypeCombinator::union(
+			new ConstantIntegerType(2),
+			new ConstantIntegerType(3),
+		);
+		$builder->setOffsetValueType($twoOrThree, new ConstantStringType('x'));
+
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+		$this->assertSame(sprintf("array{%d: 4, 2?: 'x', 3?: 'x'}", PHP_INT_MAX), $array->describe(VerbosityLevel::precise()));
+		$this->assertSame([], $array->getNextAutoIndexes());
+	}
+
+	public function testSetOffsetValueTypeOnConstantArrayWithEmptyNextAutoIndexesReturnsErrorType(): void
+	{
+		$arrayType = new ConstantArrayType(
+			[new ConstantIntegerType(PHP_INT_MAX)],
+			[new ConstantIntegerType(4)],
+			[],
+		);
+
+		$result = $arrayType->setOffsetValueType(null, new ConstantIntegerType(5));
+		$this->assertInstanceOf(ErrorType::class, $result);
 	}
 
 }

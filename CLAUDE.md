@@ -240,11 +240,36 @@ Historical analysis of `Type.php` via `git blame` shows that new methods are add
 
 When considering a bug fix that involves checking "is this type a Foo?", first check whether an appropriate method already exists on `Type`. If not, consider whether adding one would be the right fix — especially if the check is needed in more than one place or involves logic that varies by type class.
 
+### Type system: never sort, compare, or transform types via `describe()`
+
+`describe()` is for human-readable error messages, not for ordering or matching. To sort the keys of a `ConstantArrayType`, sort the underlying key `Type` objects (introduce a new method on `ConstantArrayType` if needed) — never `usort()` on `describe()` output. To compare types, use `equals()`, `isSuperTypeOf()`, or `accepts()`, not `describe() === describe()`. String-manipulating type descriptions is a recurring red flag.
+
+### Performance fixes: solve the algorithm, not the limit
+
+When PHPStan is slow on a case, do not "fix" it by lowering or introducing a hard cap on iterations, recursion depth, fan-out, or array size. Find the algorithmic root cause first. It is fine to *temporarily* raise an existing limit to make the slowness visible during investigation — but restore the original limit once the algorithmic fix lands. Limits are last-resort safety nets, not fixes. Dumbing down analysis to make a benchmark pass is not acceptable.
+
+### Don't refactor code under analysis — make PHPStan smarter
+
+When `make phpstan` flags PHPStan's own source, or when an issue's playground sample reproduces a bug, the default fix is to teach inference to handle the original code, not to rewrite the code. The same applies to regression test data: copy the reproducer from the issue's playground link as close to verbatim as practical, and once the test fails for the right reason, do not simplify or rephrase it.
+
+### After fixing one bug, look for the same bug in adjacent code
+
+Bugs in PHPStan's type system rarely live alone. A fix in one accessory type usually has counterparts in the other accessory types. A fix in property handling often has analogues in methods and class constants. A fix at one call site of a `Type` API often repeats at other call sites. After landing a fix, actively scan the parallel code paths (sibling `*Type` classes, the same trait, the same dispatch table, all callers of the changed API) and try to reproduce and fix the pattern there too — each with its own failing test.
+
+### Magic numbers belong in named `_LIMIT` constants
+
+Every threshold, fan-out cap, recursion bound, or collection-size limit must be a class constant whose name ends in `_LIMIT`, declared at the top of the owning class. Inline numerics in conditionals (`if (count($this->optionalKeys) <= 10)`) are not acceptable — extract to `self::OPTIONAL_KEYS_LIMIT` (or similar) so the threshold is named, discoverable, and tunable in one place.
+
 ### Testing patterns
 
 - **Rule tests**: Extend `RuleTestCase`, implement `getRule()`, call `$this->analyse([__DIR__ . '/data/my-test.php'], [...expected errors...])`. Expected errors are `[message, line]` pairs. Test data files live in `tests/PHPStan/Rules/*/data/`.
 - **Type inference tests**: Use `assertType()` and `assertNativeType()` helper functions in test data files. The test runner verifies PHPStan infers the declared types at each `assertType()` call.
-- **Regression tests**: For each bug fix, add a test data file reproducing the issue (e.g. `tests/PHPStan/Rules/*/data/bug-12345.php` or `tests/PHPStan/Analyser/nsrt/bug-12345.php`).
+- **Choosing the test home for a regression**: pick by what the bug is about.
+  - *Wrong inferred type / missing narrowing* → `tests/PHPStan/Analyser/nsrt/bug-<n>.php` with `assertType()` calls.
+  - *Rule reports a wrong/missing error* → `tests/PHPStan/Rules/<Category>/data/bug-<n>.php` plus expectations in the rule's test class.
+  - If the bug touches both, add both.
+- **Always verify the test fails before the fix.** Stating "tests pass" is not enough — that only proves the fix doesn't break things. `git stash` the source change, run the test, see it fail for the right reason; `git stash pop`, run again, see it pass. Only then is the fix confirmed. The `regression-test` skill bakes this in for bug-issue workflows.
+- **Reproducers come from the OP's playground link** in the issue body, not from later comments. Copy the snippet as close to verbatim as practical.
 - **Integration tests**: `AnalyserIntegrationTest` runs full analysis on test files and checks error output.
 
 ### Adding support for new PHP versions
@@ -258,6 +283,14 @@ Recent work on PHP 8.5 support shows the pattern:
 - **Reflection**: Support new attributes, property features (asymmetric visibility on static properties, `#[Override]` on properties)
 - **PhpVersion**: Add detection methods like `supportsPropertyHooks()`, `supportsPipeOperator()`, etc.
 - **Stubs**: Update function/class stubs for new built-in functions and changed signatures
+
+## Workflow for bug fixes
+
+- **One fix, one commit (or one PR)**. Bench scripts and tests for a fix go in the same commit as the source change, not separately.
+- **Commit messages and PR titles describe the change, not the bug they close.** Prefer "Do not subtract TemplateType from TemplateType" over "Fix #14459: type subtraction". Issue closure goes in the PR body via `Closes https://github.com/phpstan/phpstan/issues/<n>`.
+- **Standard reproducer command**: `bin/phpstan analyse -l 8 <file> --debug` (add `-vvv` for hangs and infinite loops). Files under `tests/bench/data` are not directly runnable as PHPStan inputs — copy the reproducing snippet into a `test.php` at the repo root first, then analyse that.
+- **Debug helpers in analysed code**: `\PHPStan\dumpType($expr)` prints the inferred type of an expression at that point; `\PHPStan\debugScope()` prints the current scope. Inside `NodeScopeResolver` itself, `var_dump($scope->debug())` is the canonical inspection point. Reach for these before guessing what PHPStan is doing.
+- **When the user says "I don't understand why X is needed"** about existing code, treat it as a request to investigate whether X is actually needed — not a request to defend the status quo. The answer is often that two paths can be unified or one block deleted.
 
 ## Writing PHPDocs
 

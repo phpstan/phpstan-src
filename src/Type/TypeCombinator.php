@@ -27,6 +27,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_fill;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_merge;

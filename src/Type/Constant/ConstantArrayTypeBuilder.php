@@ -269,7 +269,11 @@ final class ConstantArrayTypeBuilder
 							continue;
 						}
 
-						$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $valueType);
+						if (!$optional && in_array($i, $this->optionalKeys, true)) {
+							$valueTypes[$i] = $valueType;
+						} else {
+							$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $valueType);
+						}
 						$offsetMatch = true;
 					}
 

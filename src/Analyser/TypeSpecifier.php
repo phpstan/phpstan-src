@@ -2996,9 +2996,10 @@ final class TypeSpecifier
 		if (
 			!$context->null()
 			&& $unwrappedLeftExpr instanceof FuncCall
-			&& count($unwrappedLeftExpr->getArgs()) === 1
 			&& $unwrappedLeftExpr->name instanceof Name
+			&& !$unwrappedLeftExpr->isFirstClassCallable()
 			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['strlen', 'mb_strlen'], true)
+			&& count($unwrappedLeftExpr->getArgs()) === 1
 			&& $rightType->isInteger()->yes()
 		) {
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($rightType)->yes()) {
@@ -3034,6 +3035,7 @@ final class TypeSpecifier
 		if (
 			$unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
+			&& !$unwrappedLeftExpr->isFirstClassCallable()
 			&& in_array($unwrappedLeftExpr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 			&& $rightType->isNull()->yes()
@@ -3065,6 +3067,7 @@ final class TypeSpecifier
 			$context->true()
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
+			&& !$unwrappedLeftExpr->isFirstClassCallable()
 			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), ['get_class', 'get_debug_type'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 		) {
@@ -3090,6 +3093,7 @@ final class TypeSpecifier
 			$context->truthy()
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
+			&& !$unwrappedLeftExpr->isFirstClassCallable()
 			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), [
 				'substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'ucfirst', 'lcfirst',
 				'mb_substr', 'mb_strstr', 'mb_stristr', 'mb_strchr', 'mb_strrchr', 'mb_strtolower', 'mb_strtoupper', 'mb_ucfirst', 'mb_lcfirst',

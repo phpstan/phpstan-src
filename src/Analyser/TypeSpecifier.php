@@ -869,6 +869,7 @@ final class TypeSpecifier
 			if (
 				$expr->expr instanceof FuncCall
 				&& $expr->expr->name instanceof Name
+				&& !$expr->expr->isFirstClassCallable()
 				&& count($expr->expr->getArgs()) >= 2
 			) {
 				$funcName = $expr->expr->name->toLowerString();

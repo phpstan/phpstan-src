@@ -13,10 +13,10 @@ class Foo
 	{
 		foreach($task as $k => $v) {
 			assertType('0|1', $k);
-			assertType('object|non-empty-string', $v);
+			assertType('object|non-falsy-string', $v);
 		}
 		assertType('class-string|object', $task[0]);
-		assertType('string', $task[1]);
+		assertType('non-falsy-string', $task[1]);
 	}
 
 	/**
@@ -30,11 +30,11 @@ class Foo
 			if (is_callable($list)) {
 				assertType('non-empty-list<string>&callable(): mixed&hasOffsetValue(0, non-empty-string)', $list);
 				assertType('non-empty-string', $list[0]);
-				assertType('string', $list[1]);
+				assertType('non-falsy-string', $list[1]);
 
 				foreach($list as $k => $v) {
 					assertType('0|1', $k);
-					assertType('non-empty-string', $v);
+					assertType('non-falsy-string', $v);
 				}
 			}
 		}

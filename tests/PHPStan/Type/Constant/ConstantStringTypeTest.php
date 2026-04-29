@@ -190,7 +190,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 	{
 		$this->assertSame(
 			$trinaryLogic,
-			(new ConstantStringType($constantValue))->isCallable()
+			(new ConstantStringType($constantValue))->isCallable(),
 		);
 	}
 
@@ -199,7 +199,8 @@ class ConstantStringTypeTest extends PHPStanTestCase
 		yield [TrinaryLogic::createNo(), ''];
 		yield [TrinaryLogic::createNo(), '0'];
 		yield [TrinaryLogic::createYes(), 'substr'];
-		yield [TrinaryLogic::createYes(), self::class.'::dataIsCallable'];
-		yield [TrinaryLogic::createMaybe(), self::class.'::methodDoesNotExist'];
+		yield [TrinaryLogic::createYes(), self::class . '::dataIsCallable'];
+		yield [TrinaryLogic::createMaybe(), self::class . '::methodDoesNotExist'];
 	}
+
 }

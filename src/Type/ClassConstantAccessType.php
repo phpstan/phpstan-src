@@ -129,7 +129,7 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new ConstTypeNode(new ConstFetchNode('static', $this->constantName));
+		return new ConstTypeNode(new ConstFetchNode((string) $this->type->toPhpDocNode(), $this->constantName));
 	}
 
 }

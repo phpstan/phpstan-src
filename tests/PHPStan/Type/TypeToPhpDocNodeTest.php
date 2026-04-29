@@ -522,6 +522,18 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			new ConstantFloatType(-0.0),
 			'-0.0',
 		];
+
+		$reflectionProvider = self::createReflectionProvider();
+
+		yield [
+			new ClassConstantAccessType(new StaticType($reflectionProvider->getClass(stdClass::class)), 'FOO'),
+			'static::FOO',
+		];
+
+		yield [
+			new ClassConstantAccessType(new ObjectType('stdClass'), 'FOO'),
+			'stdClass::FOO',
+		];
 	}
 
 	#[DataProvider('dataToPhpDocNodeWithoutCheckingEquals')]

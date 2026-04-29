@@ -31,6 +31,11 @@ class Foo
 				assertType('non-empty-list<string>&callable(): mixed&hasOffsetValue(0, non-empty-string)', $list);
 				assertType('non-empty-string', $list[0]);
 				assertType('string', $list[1]);
+
+				foreach($list as $k => $v) {
+					assertType('0|1', $k);
+					assertType('string', $v);
+				}
 			}
 		}
 	}

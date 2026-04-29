@@ -57,8 +57,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 			try {
 				$result = @(new DateTime())->modify($constantString->getValue());
 			} catch (Throwable) {
-				$valueType = TypeCombinator::remove($valueType, $constantString);
-				continue;
+				$result = false;
 			}
 
 			if ($result === false) {
@@ -76,11 +75,16 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 
 		if ($hasFalse) {
 			if (!$hasDateTime) {
+				if ($this->phpVersion->hasDateTimeExceptions()) {
+					return new NeverType();
+				}
+
 				return new ConstantBooleanType(false);
 			}
 
 			return null;
-		} elseif ($hasDateTime) {
+		}
+		if ($hasDateTime) {
 			$callerType = $scope->getType($methodCall->var);
 
 			$dateTimeInterfaceType = new ObjectType(DateTimeInterface::class);
@@ -100,10 +104,6 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 					return new NeverType();
 				},
 			);
-		}
-
-		if ($this->phpVersion->hasDateTimeExceptions()) {
-			return new NeverType();
 		}
 
 		return null;

@@ -875,15 +875,15 @@ final class TypeSpecifier
 				$funcName = $expr->expr->name->toLowerString();
 				$arrayArgIndex = null;
 				$sentinelType = null;
-				$narrowToNonEmpty = false;
+				$needleArgIndex = null;
 
 				if ($funcName === 'array_search') {
 					$arrayArgIndex = 1;
 					$sentinelType = new ConstantBooleanType(false);
+					$needleArgIndex = 0;
 				} elseif ($funcName === 'array_find_key') {
 					$arrayArgIndex = 0;
 					$sentinelType = new NullType();
-					$narrowToNonEmpty = true;
 				}
 
 				if ($arrayArgIndex !== null) {
@@ -892,23 +892,40 @@ final class TypeSpecifier
 
 					if ($arrayType->isArray()->yes()) {
 						if ($context->true()) {
-							if ($narrowToNonEmpty) {
-								$specifiedTypes = $specifiedTypes->unionWith(
-									$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
-								);
-							}
+							$specifiedTypes = $specifiedTypes->unionWith(
+								$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
+							);
 
 							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
 
+							$dimFetchType = $arrayType->getIterableValueType();
+							if (
+								$needleArgIndex !== null
+								&& count($expr->expr->getArgs()) >= 3
+								&& $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes()
+							) {
+								$needleType = $scope->getType($expr->expr->getArgs()[$needleArgIndex]->value);
+								$dimFetchType = TypeCombinator::intersect($needleType, $dimFetchType);
+							}
+
 							$specifiedTypes = $specifiedTypes->unionWith(
-								$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
+								$this->create($dimFetch, $dimFetchType, TypeSpecifierContext::createTrue(), $scope),
 							);
 						} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
 							$keyType = $scope->getType($expr->expr);
 							$narrowedKeyType = TypeCombinator::remove($keyType, $sentinelType);
 							if (!$narrowedKeyType instanceof NeverType) {
+								$dimFetchType = null;
+								if (
+									$needleArgIndex !== null
+									&& count($expr->expr->getArgs()) >= 3
+									&& $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes()
+								) {
+									$needleType = $scope->getType($expr->expr->getArgs()[$needleArgIndex]->value);
+									$dimFetchType = TypeCombinator::intersect($needleType, $arrayType->getIterableValueType());
+								}
 								$specifiedTypes = $specifiedTypes->unionWith(
-									$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $arrayType, $narrowedKeyType),
+									$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $arrayType, $narrowedKeyType, $dimFetchType),
 								);
 							}
 						}
@@ -2421,6 +2438,7 @@ final class TypeSpecifier
 		Expr $arrayArg,
 		Type $arrayType,
 		Type $narrowedKeyType,
+		?Type $dimFetchType = null,
 	): SpecifiedTypes
 	{
 		$dimFetch = new ArrayDimFetch($arrayArg, $keyVar);
@@ -2429,7 +2447,7 @@ final class TypeSpecifier
 
 		$holder = new ConditionalExpressionHolder(
 			[$keyExprString => ExpressionTypeHolder::createYes($keyVar, $narrowedKeyType)],
-			ExpressionTypeHolder::createYes($dimFetch, $arrayType->getIterableValueType()),
+			ExpressionTypeHolder::createYes($dimFetch, $dimFetchType ?? $arrayType->getIterableValueType()),
 		);
 
 		return (new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([

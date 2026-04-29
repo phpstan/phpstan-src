@@ -37,3 +37,35 @@ function arraySearchReversedComparison(array $list, string $s): void
 		assertType('string', $list[$key]);
 	}
 }
+
+/**
+ * @param array<string, int|string> $arr
+ */
+function arraySearchStrictNarrowsToNeedle(array $arr, int $needle): void
+{
+	$key = array_search($needle, $arr, true);
+	if ($key !== false) {
+		assertType('int', $arr[$key]);
+	}
+}
+
+/**
+ * @param array<string, int|string> $arr
+ */
+function arraySearchLooseKeepsValueType(array $arr, int $needle): void
+{
+	$key = array_search($needle, $arr);
+	if ($key !== false) {
+		assertType('int|string', $arr[$key]);
+	}
+}
+
+/**
+ * @param array<string, int|string> $arr
+ */
+function arraySearchStrictInlineAssign(array $arr, int $needle): void
+{
+	if (($key = array_search($needle, $arr, true)) !== false) {
+		assertType('int', $arr[$key]);
+	}
+}

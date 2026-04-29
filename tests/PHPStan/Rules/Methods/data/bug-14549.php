@@ -4,12 +4,12 @@ namespace Bug14549;
 
 use function PHPStan\Testing\assertType;
 
-class MondayMorning
+class Foo
 {
 	/**
 	 * @param callable-array $task
 	 */
-	public function call(array $task): void
+	public function doFoo(array $task): void
 	{
 		foreach($task as $k => $v) {
 			assertType('0|1', $k);
@@ -17,6 +17,22 @@ class MondayMorning
 		}
 		assertType('class-string|object', $task[0]);
 		assertType('string', $task[1]);
+	}
+
+	/**
+	 * @param non-empty-list<string> $list
+	 */
+	public function doBar(array $list): void
+	{
+		if ($list[0] !== '') {
+			assertType('non-empty-list<string>&hasOffsetValue(0, non-empty-string)', $list);
+
+			if (is_callable($list)) {
+				assertType('non-empty-list<string>&callable(): mixed&hasOffsetValue(0, non-empty-string)', $list);
+				assertType('non-empty-string', $list[0]);
+				assertType('string', $list[1]);
+			}
+		}
 	}
 }
 

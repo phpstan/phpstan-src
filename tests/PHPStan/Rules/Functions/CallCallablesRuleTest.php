@@ -374,6 +374,36 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4510(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4510.php'], [
+			[
+				'Trying to invoke array{$this(Bug4510\HelloWorld), string} but it might not be a callable.',
+				16,
+			],
+			[
+				'Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.',
+				27,
+			],
+			[
+				"Trying to invoke array{'Bug4510\\\HelloWorld', string} but it might not be a callable.",
+				46,
+			],
+			[
+				'Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.',
+				90,
+			],
+			[
+				'Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.',
+				118,
+			],
+			[
+				'Trying to invoke array{Bug4510\HelloWorld, string} but it might not be a callable.',
+				133,
+			],
+		]);
+	}
+
 	public function testMaybeNotCallable(): void
 	{
 		$errors = [];

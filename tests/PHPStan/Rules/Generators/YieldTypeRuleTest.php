@@ -82,4 +82,9 @@ class YieldTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testYieldOversizedSelfRejection(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-yield-oversized-self-rejection.php'], []);
+	}
+
 }

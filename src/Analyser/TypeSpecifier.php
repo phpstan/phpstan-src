@@ -247,6 +247,7 @@ final class TypeSpecifier
 			if (
 				$expr->left instanceof FuncCall
 				&& $expr->left->name instanceof Name
+				&& !$expr->left->isFirstClassCallable()
 				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
 				&& count($expr->left->getArgs()) >= 1
 				&& (
@@ -275,6 +276,7 @@ final class TypeSpecifier
 				!$context->null()
 				&& $expr->right instanceof FuncCall
 				&& $expr->right->name instanceof Name
+				&& !$expr->right->isFirstClassCallable()
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& count($expr->right->getArgs()) >= 1
 				&& $leftType->isInteger()->yes()
@@ -378,6 +380,7 @@ final class TypeSpecifier
 				&& $expr->right instanceof Expr\BinaryOp\Minus
 				&& $expr->right->left instanceof FuncCall
 				&& $expr->right->left->name instanceof Name
+				&& !$expr->right->left->isFirstClassCallable()
 				&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
 				&& count($expr->right->left->getArgs()) >= 1
 				// constant offsets are handled via HasOffsetType/HasOffsetValueType
@@ -404,6 +407,7 @@ final class TypeSpecifier
 				!$context->null()
 				&& $expr->right instanceof FuncCall
 				&& $expr->right->name instanceof Name
+				&& !$expr->right->isFirstClassCallable()
 				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
 				&& count($expr->right->getArgs()) >= 3
 				&& (
@@ -421,6 +425,7 @@ final class TypeSpecifier
 				!$context->null()
 				&& $expr->right instanceof FuncCall
 				&& $expr->right->name instanceof Name
+				&& !$expr->right->isFirstClassCallable()
 				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
 				&& count($expr->right->getArgs()) === 1
 				&& $leftType->isInteger()->yes()
@@ -825,6 +830,7 @@ final class TypeSpecifier
 			if (
 				$expr->expr instanceof FuncCall
 				&& $expr->expr->name instanceof Name
+				&& !$expr->expr->isFirstClassCallable()
 				&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
 				&& count($expr->expr->getArgs()) >= 1
 			) {
@@ -881,6 +887,7 @@ final class TypeSpecifier
 				if (
 					$expr->expr instanceof FuncCall
 					&& $expr->expr->name instanceof Name
+					&& !$expr->expr->isFirstClassCallable()
 					&& in_array($expr->expr->name->toLowerString(), ['array_rand'], true)
 					&& count($expr->expr->getArgs()) >= 1
 				) {
@@ -911,6 +918,7 @@ final class TypeSpecifier
 					$expr->expr instanceof Expr\BinaryOp\Minus
 					&& $expr->expr->left instanceof FuncCall
 					&& $expr->expr->left->name instanceof Name
+					&& !$expr->expr->left->isFirstClassCallable()
 					&& $expr->expr->right instanceof Node\Scalar\Int_
 					&& $expr->expr->right->value === 1
 					&& in_array($expr->expr->left->name->toLowerString(), ['count', 'sizeof'], true)
@@ -938,6 +946,7 @@ final class TypeSpecifier
 				if (
 					$expr->expr instanceof FuncCall
 					&& $expr->expr->name instanceof Name
+					&& !$expr->expr->isFirstClassCallable()
 					&& $expr->expr->name->toLowerString() === 'array_search'
 					&& count($expr->expr->getArgs()) >= 2
 				) {
@@ -1596,6 +1605,7 @@ final class TypeSpecifier
 		if (
 			$exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
+			&& !$exprNode->isFirstClassCallable()
 			&& strtolower($exprNode->name->toString()) === 'gettype'
 			&& isset($exprNode->getArgs()[0])
 		) {
@@ -1636,6 +1646,7 @@ final class TypeSpecifier
 			$context->true()
 			&& $exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
+			&& !$exprNode->isFirstClassCallable()
 			&& strtolower((string) $exprNode->name) === 'get_parent_class'
 			&& isset($exprNode->getArgs()[0])
 		) {
@@ -1673,6 +1684,7 @@ final class TypeSpecifier
 			$context->false()
 			&& $exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
+			&& !$exprNode->isFirstClassCallable()
 			&& in_array(strtolower((string) $exprNode->name), [
 				'trim', 'ltrim', 'rtrim', 'chop',
 				'mb_trim', 'mb_ltrim', 'mb_rtrim',
@@ -2750,6 +2762,7 @@ final class TypeSpecifier
 			if (
 				$exprNode instanceof FuncCall
 				&& $exprNode->name instanceof Name
+				&& !$exprNode->isFirstClassCallable()
 				&& in_array(strtolower($exprNode->name->toString()), ['gettype', 'get_class', 'get_debug_type'], true)
 				&& isset($exprNode->getArgs()[0])
 				&& $constantType->isString()->yes()
@@ -2897,6 +2910,7 @@ final class TypeSpecifier
 		if (
 			!$context->null()
 			&& $unwrappedLeftExpr instanceof FuncCall
+			&& !$unwrappedLeftExpr->isFirstClassCallable()
 			&& count($unwrappedLeftExpr->getArgs()) >= 1
 			&& $unwrappedLeftExpr->name instanceof Name
 			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['count', 'sizeof'], true)
@@ -2907,6 +2921,7 @@ final class TypeSpecifier
 				$context->true()
 				&& $unwrappedRightExpr instanceof FuncCall
 				&& $unwrappedRightExpr->name instanceof Name
+				&& !$unwrappedRightExpr->isFirstClassCallable()
 				&& in_array($unwrappedRightExpr->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($unwrappedRightExpr->getArgs()) >= 1
 			) {

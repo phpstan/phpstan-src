@@ -134,6 +134,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 		if (
 			$node->dim instanceof Node\Expr\FuncCall
 			&& $node->dim->name instanceof Node\Name
+			&& !$node->dim->isFirstClassCallable()
 			&& $node->dim->name->toLowerString() === 'array_rand'
 			&& count($node->dim->getArgs()) >= 1
 		) {
@@ -162,6 +163,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$node->dim instanceof Node\Expr\BinaryOp\Minus
 			&& $node->dim->left instanceof Node\Expr\FuncCall
 			&& $node->dim->left->name instanceof Node\Name
+			&& !$node->dim->left->isFirstClassCallable()
 			&& in_array($node->dim->left->name->toLowerString(), ['count', 'sizeof'], true)
 			&& count($node->dim->left->getArgs()) >= 1
 			&& $node->dim->right instanceof Node\Scalar\Int_

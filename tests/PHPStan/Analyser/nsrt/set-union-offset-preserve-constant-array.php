@@ -13,7 +13,7 @@ class Foo
 
 		$k = rand(0, 1) ? 1 : 2;
 		$a[$k] = true;
-		assertType('array{1?: true, 2?: true}', $a);
+		assertType('non-empty-array{1?: true, 2?: true}', $a);
 	}
 
 }

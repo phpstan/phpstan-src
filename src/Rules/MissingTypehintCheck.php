@@ -73,6 +73,9 @@ final class MissingTypehintCheck
 			if ($type instanceof AccessoryType) {
 				return $type;
 			}
+			if ($type->isCallable()->yes() && $type->isArray()->yes()) {
+				return $type;
+			}
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 				$iterablesWithMissingValueTypehint = array_merge(
 					$iterablesWithMissingValueTypehint,

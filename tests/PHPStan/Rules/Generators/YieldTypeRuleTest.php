@@ -82,4 +82,14 @@ class YieldTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugYieldOversizedSelfRejection(): void
+	{
+		// Regression: PHPStan inferred the closure's Generator value type from
+		// its yields, then rejected each yield against that inferred type. The
+		// oversized-array generalization in TypeCombinator::optimizeConstantArrays
+		// produced a constraint that was not a super-type of the variants it was
+		// derived from. Each yield is well-typed; no error must be reported.
+		$this->analyse([__DIR__ . '/data/bug-yield-oversized-self-rejection.php'], []);
+	}
+
 }

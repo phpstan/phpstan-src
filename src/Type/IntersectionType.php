@@ -96,6 +96,14 @@ class IntersectionType implements CompoundType
 
 	private ?TrinaryLogic $isConstantScalarValue = null;
 
+	private ?TrinaryLogic $isCallable = null;
+
+	/** @var array<string, Type> */
+	private array $cachedGetOffsetValueType = [];
+
+	/** @var array<string, TrinaryLogic> */
+	private array $cachedHasOffsetValueType = [];
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -904,6 +912,15 @@ class IntersectionType implements CompoundType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
+		$cacheKey = $offsetType->describe(VerbosityLevel::cache());
+		if (isset($this->cachedHasOffsetValueType[$cacheKey])) {
+			return $this->cachedHasOffsetValueType[$cacheKey];
+		}
+		return $this->cachedHasOffsetValueType[$cacheKey] = $this->doHasOffsetValueType($offsetType);
+	}
+
+	private function doHasOffsetValueType(Type $offsetType): TrinaryLogic
+	{
 		if ($this->isList()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
 
@@ -957,6 +974,15 @@ class IntersectionType implements CompoundType
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
+	{
+		$cacheKey = $offsetType->describe(VerbosityLevel::cache());
+		if (isset($this->cachedGetOffsetValueType[$cacheKey])) {
+			return $this->cachedGetOffsetValueType[$cacheKey];
+		}
+		return $this->cachedGetOffsetValueType[$cacheKey] = $this->doGetOffsetValueType($offsetType);
+	}
+
+	private function doGetOffsetValueType(Type $offsetType): Type
 	{
 		$result = $this->intersectTypes(static fn (Type $type): Type => $type->getOffsetValueType($offsetType));
 		if ($this->isOversizedArray()->yes()) {
@@ -1174,7 +1200,7 @@ class IntersectionType implements CompoundType
 
 	public function isCallable(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
+		return $this->isCallable ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

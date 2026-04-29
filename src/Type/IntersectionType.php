@@ -807,7 +807,7 @@ class IntersectionType implements CompoundType
 				new UnionType([
 					new ObjectWithoutClassType(),
 					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
-				])
+				]),
 			);
 		}
 		return $result;

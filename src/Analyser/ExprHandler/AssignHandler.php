@@ -1221,7 +1221,6 @@ final class AssignHandler implements ExprHandler
 			&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
 			&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
 			&& $arrayDimFetch->dim->left->name instanceof Name
-			&& !$arrayDimFetch->dim->left->isFirstClassCallable()
 			&& in_array($arrayDimFetch->dim->left->name->toLowerString(), ['count', 'sizeof'], true)
 			&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
 			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
@@ -1232,7 +1231,6 @@ final class AssignHandler implements ExprHandler
 		} elseif ( // keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
 			$arrayDimFetch->dim instanceof Expr\FuncCall
 			&& $arrayDimFetch->dim->name instanceof Name
-			&& !$arrayDimFetch->dim->isFirstClassCallable()
 			&& in_array($arrayDimFetch->dim->name->toLowerString(), ['array_key_last', 'array_key_first'], true)
 			&& count($arrayDimFetch->dim->getArgs()) >= 1
 			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[0]->value)
@@ -1241,7 +1239,6 @@ final class AssignHandler implements ExprHandler
 		} elseif ( // keep list for $list[array_search($needle, $list)] assignments
 			$arrayDimFetch->dim instanceof Expr\FuncCall
 			&& $arrayDimFetch->dim->name instanceof Name
-			&& !$arrayDimFetch->dim->isFirstClassCallable()
 			&& $arrayDimFetch->dim->name->toLowerString() === 'array_search'
 			&& count($arrayDimFetch->dim->getArgs()) >= 1
 			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[1]->value)

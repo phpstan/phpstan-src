@@ -1004,17 +1004,14 @@ class IntersectionType implements CompoundType
 
 		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
-			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
-			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-				if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-					$narrowedType = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
-				} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-					$narrowedType = new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
-				} else {
-					$narrowedType = new UnionType([new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]), new ObjectWithoutClassType()]);
-				}
-				$result = TypeCombinator::intersect($result, $narrowedType);
+			if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				$narrowedType = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
+			} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				$narrowedType = new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
+			} else {
+				$narrowedType = new UnionType([new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]), new ObjectWithoutClassType()]);
 			}
+			$result = TypeCombinator::intersect($result, $narrowedType);
 		}
 
 		return $result;

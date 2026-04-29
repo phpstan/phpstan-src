@@ -17,7 +17,7 @@ class MyClass
 	 */
 	public function myMethod(array $items1, array $items2, array $items3): array
 	{
-		assertType('array{key: string}', $items1);
+		assertType('non-empty-array<string>', $items1);
 		assertType('array{key: string}', $items2);
 		assertType('array{key: string}', $items3);
 
@@ -40,7 +40,7 @@ class ParentClass extends MyClass
 	 */
 	public function myMethod2(array $items1, array $items2, array $items3, array $items4, array $items5): array
 	{
-		assertType('array{different_key: string}', $items1);
+		assertType('non-empty-array<string>', $items1);
 		assertType('array{different_key: string}', $items2);
 		assertType('array{key: string}', $items3);
 		assertType('array{different_key: string}', $items4);

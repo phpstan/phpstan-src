@@ -1845,7 +1845,10 @@ final class TypeCombinator
 	{
 		$keyTypes = $constantArray->getKeyTypes();
 		$valueTypes = $constantArray->getValueTypes();
-		$newValueTypes = $valueTypes;
+
+		if (count($keyTypes) < 2) {
+			return new NeverType();
+		}
 
 		$offset0Index = null;
 		$offset1Index = null;
@@ -1858,15 +1861,18 @@ final class TypeCombinator
 			}
 		}
 
-		if ($offset0Index !== null && $offset1Index !== null) {
-			$newValueTypes[$offset0Index] = self::intersect($valueTypes[$offset0Index], new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
-			if ($newValueTypes[$offset0Index] instanceof NeverType) {
-				return new NeverType();
-			}
-			$newValueTypes[$offset1Index] = self::intersect($valueTypes[$offset1Index], new StringType());
-			if ($newValueTypes[$offset1Index] instanceof NeverType) {
-				return new NeverType();
-			}
+		if ($offset0Index === null || $offset1Index === null) {
+			return new NeverType();
+		}
+
+		$newValueTypes = $valueTypes;
+		$newValueTypes[$offset0Index] = self::intersect($valueTypes[$offset0Index], new UnionType([new ClassStringType(), new ObjectWithoutClassType()]));
+		if ($newValueTypes[$offset0Index] instanceof NeverType) {
+			return new NeverType();
+		}
+		$newValueTypes[$offset1Index] = self::intersect($valueTypes[$offset1Index], new StringType());
+		if ($newValueTypes[$offset1Index] instanceof NeverType) {
+			return new NeverType();
 		}
 
 		return new ConstantArrayType(

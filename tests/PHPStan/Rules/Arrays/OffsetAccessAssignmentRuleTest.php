@@ -207,4 +207,19 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8648.php'], []);
 	}
 
+	public function testAppendToArrayWithPhpIntMaxKey(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/offset-access-assignment-php-int-max.php'], [
+			[
+				'Cannot assign new offset to array<int, int>.',
+				9,
+			],
+			[
+				'Cannot assign new offset to array<int, int>.',
+				15,
+			],
+		]);
+	}
+
 }

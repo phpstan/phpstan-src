@@ -4,8 +4,6 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
@@ -38,12 +36,6 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		$this->default = $default;
 	}
 
-	/**
-	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
-	 * @param array<int, Type> $valueTypes
-	 * @param non-empty-list<int> $nextAutoIndexes
-	 * @param int[] $optionalKeys
-	 */
 	protected function recreate(
 		array $keyTypes,
 		array $valueTypes,

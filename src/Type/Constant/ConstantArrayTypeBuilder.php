@@ -44,7 +44,7 @@ final class ConstantArrayTypeBuilder
 	/**
 	 * @param list<Type> $keyTypes
 	 * @param array<int, Type> $valueTypes
-	 * @param non-empty-list<int> $nextAutoIndexes
+	 * @param list<int> $nextAutoIndexes
 	 * @param array<int> $optionalKeys
 	 */
 	private function __construct(
@@ -85,6 +85,10 @@ final class ConstantArrayTypeBuilder
 			$offsetType = $offsetType->toArrayKey();
 		}
 
+		if ($offsetType === null && count($this->nextAutoIndexes) === 0) {
+			return;
+		}
+
 		if (!$this->degradeToGeneralArray) {
 			if (
 				$valueType instanceof ClosureType
@@ -108,6 +112,10 @@ final class ConstantArrayTypeBuilder
 			}
 
 			if ($offsetType === null) {
+				if (count($this->nextAutoIndexes) === 0) {
+					return;
+				}
+
 				$newAutoIndexes = $optional ? $this->nextAutoIndexes : [];
 				$hasOptional = false;
 				foreach ($this->keyTypes as $i => $keyType) {
@@ -127,11 +135,10 @@ final class ConstantArrayTypeBuilder
 
 					/** @var int|float $newAutoIndex */
 					$newAutoIndex = $keyType->getValue() + 1;
-					if (is_float($newAutoIndex)) {
-						$newAutoIndex = $keyType->getValue();
+					if (!is_float($newAutoIndex)) {
+						$newAutoIndexes[] = $newAutoIndex;
 					}
 
-					$newAutoIndexes[] = $newAutoIndex;
 					$hasOptional = true;
 				}
 
@@ -142,11 +149,10 @@ final class ConstantArrayTypeBuilder
 
 				/** @var int|float $newAutoIndex */
 				$newAutoIndex = $max + 1;
-				if (is_float($newAutoIndex)) {
-					$newAutoIndex = $max;
+				if (!is_float($newAutoIndex)) {
+					$newAutoIndexes[] = $newAutoIndex;
 				}
 
-				$newAutoIndexes[] = $newAutoIndex;
 				$this->nextAutoIndexes = array_values(array_unique($newAutoIndexes));
 
 				if ($optional || $hasOptional) {
@@ -180,11 +186,7 @@ final class ConstantArrayTypeBuilder
 					if (!$optional) {
 						$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
 						if ($keyType instanceof ConstantIntegerType) {
-							$nextAutoIndexes = array_values(array_filter($this->nextAutoIndexes, static fn (int $index) => $index > $keyType->getValue()));
-							if (count($nextAutoIndexes) === 0) {
-								throw new ShouldNotHappenException();
-							}
-							$this->nextAutoIndexes = $nextAutoIndexes;
+							$this->nextAutoIndexes = array_values(array_filter($this->nextAutoIndexes, static fn (int $index) => $index > $keyType->getValue()));
 						}
 					}
 					return;
@@ -194,32 +196,37 @@ final class ConstantArrayTypeBuilder
 				$this->valueTypes[] = $valueType;
 
 				if ($offsetType instanceof ConstantIntegerType) {
-					$min = min($this->nextAutoIndexes);
-					$max = max($this->nextAutoIndexes);
-					$offsetValue = $offsetType->getValue();
-					if ($offsetValue >= 0) {
-						if ($offsetValue > $min) {
-							if ($offsetValue <= $max) {
-								$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
+					if (count($this->nextAutoIndexes) > 0) {
+						$min = min($this->nextAutoIndexes);
+						$max = max($this->nextAutoIndexes);
+						$offsetValue = $offsetType->getValue();
+						if ($offsetValue >= 0) {
+							if ($offsetValue > $min) {
+								if ($offsetValue <= $max) {
+									$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
+								} else {
+									$this->isList = TrinaryLogic::createNo();
+								}
+							}
+						} else {
+							$this->isList = TrinaryLogic::createNo();
+						}
+
+						if ($offsetValue >= $max) {
+							/** @var int|float $newAutoIndex */
+							$newAutoIndex = $offsetValue + 1;
+							if (is_float($newAutoIndex)) {
+								if (!$optional) {
+									$this->nextAutoIndexes = [];
+								}
+							} elseif (!$optional) {
+								$this->nextAutoIndexes = [$newAutoIndex];
 							} else {
-								$this->isList = TrinaryLogic::createNo();
+								$this->nextAutoIndexes[] = $newAutoIndex;
 							}
 						}
 					} else {
 						$this->isList = TrinaryLogic::createNo();
-					}
-
-					if ($offsetValue >= $max) {
-						/** @var int|float $newAutoIndex */
-						$newAutoIndex = $offsetValue + 1;
-						if (is_float($newAutoIndex)) {
-							$newAutoIndex = $max;
-						}
-						if (!$optional) {
-							$this->nextAutoIndexes = [$newAutoIndex];
-						} else {
-							$this->nextAutoIndexes[] = $newAutoIndex;
-						}
 					}
 				} else {
 					$this->isList = TrinaryLogic::createNo();
@@ -300,6 +307,10 @@ final class ConstantArrayTypeBuilder
 							continue;
 						}
 
+						if (count($this->nextAutoIndexes) === 0) {
+							continue;
+						}
+
 						$max = max($this->nextAutoIndexes);
 						$offsetValue = $scalarType->getValue();
 						if ($offsetValue < $max) {
@@ -309,7 +320,7 @@ final class ConstantArrayTypeBuilder
 						/** @var int|float $newAutoIndex */
 						$newAutoIndex = $offsetValue + 1;
 						if (is_float($newAutoIndex)) {
-							$newAutoIndex = $max;
+							continue;
 						}
 						$this->nextAutoIndexes[] = $newAutoIndex;
 					}

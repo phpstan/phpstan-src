@@ -101,7 +101,7 @@ class ConstantArrayType implements Type
 	 * @api
 	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
-	 * @param non-empty-list<int> $nextAutoIndexes
+	 * @param list<int> $nextAutoIndexes
 	 * @param int[] $optionalKeys
 	 */
 	public function __construct(
@@ -128,7 +128,7 @@ class ConstantArrayType implements Type
 	/**
 	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
-	 * @param non-empty-list<int> $nextAutoIndexes
+	 * @param list<int> $nextAutoIndexes
 	 * @param int[] $optionalKeys
 	 */
 	protected function recreate(
@@ -208,7 +208,7 @@ class ConstantArrayType implements Type
 	}
 
 	/**
-	 * @return non-empty-list<int>
+	 * @return list<int>
 	 */
 	public function getNextAutoIndexes(): array
 	{
@@ -745,6 +745,10 @@ class ConstantArrayType implements Type
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
+		if ($offsetType === null && count($this->nextAutoIndexes) === 0) {
+			return new ErrorType();
+		}
+
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
 		$builder->setOffsetValueType($offsetType, $valueType);
 

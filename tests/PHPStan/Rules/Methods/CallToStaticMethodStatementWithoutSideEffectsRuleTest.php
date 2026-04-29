@@ -132,7 +132,20 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	public function testDynamicStaticCall(): void
 	{
-		$this->analyse([__DIR__ . '/data/dynamic-static-call.php'], []);
+		$this->analyse([__DIR__ . '/data/dynamic-static-call.php'], [
+			[
+				'Call to static method DynamicStaticCall\Foo::doFoo() on a separate line has no effect.',
+				32,
+			],
+			[
+				'Call to static method DynamicStaticCall\FinalFoo::doFoo() on a separate line has no effect.',
+				33,
+			],
+			[
+				'Call to static method DynamicStaticCall\Bar::finalFoo() on a separate line has no effect.',
+				34,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.5.0')]

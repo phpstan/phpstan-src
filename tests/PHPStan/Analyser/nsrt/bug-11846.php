@@ -38,16 +38,16 @@ function demo2(array $idList): void
 		$outerList[$id] = [];
 		array_push($outerList[$id], []);
 	}
-	assertType('non-empty-array{1?: array{}|array{array{}}, 2?: array{}|array{array{}}}', $outerList);
+	assertType('non-empty-array{1?: array{array{}}, 2?: array{array{}}}', $outerList);
 
 	foreach ($outerList as $key => $outerElement) {
 		$result = false;
 
-		assertType('array{}|array{array{}}', $outerElement);
+		assertType('array{array{}}', $outerElement);
 		foreach ($outerElement as $innerElement) {
 			$result = true;
 		}
-		assertType('bool', $result);
+		assertType('true', $result);
 
 	}
 }

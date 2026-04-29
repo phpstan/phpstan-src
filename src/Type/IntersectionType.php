@@ -973,9 +973,7 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		$result = $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
-
-		if (!$result->yes() && $this->isCallable()->yes() && $this->isArray()->yes()) {
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
 			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
 			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
@@ -983,7 +981,7 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		return $result;
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type

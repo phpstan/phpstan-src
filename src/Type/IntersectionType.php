@@ -806,7 +806,7 @@ class IntersectionType implements CompoundType
 				$result,
 				new UnionType([
 					new ObjectWithoutClassType(),
-					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 				]),
 			);
 		}
@@ -1009,9 +1009,9 @@ class IntersectionType implements CompoundType
 				if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
 					$narrowedType = new UnionType([new ClassStringType(), new ObjectWithoutClassType()]);
 				} elseif ((new ConstantIntegerType(1))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-					$narrowedType = new StringType();
+					$narrowedType = new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 				} else {
-					$narrowedType = new UnionType([new StringType(), new ObjectWithoutClassType()]);
+					$narrowedType = new UnionType([new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]), new ObjectWithoutClassType()]);
 				}
 				$result = TypeCombinator::intersect($result, $narrowedType);
 			}

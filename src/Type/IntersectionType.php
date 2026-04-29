@@ -782,6 +782,9 @@ class IntersectionType implements CompoundType
 
 	public function getIterableKeyType(): Type
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+		}
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
@@ -797,6 +800,9 @@ class IntersectionType implements CompoundType
 
 	public function getIterableValueType(): Type
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return new UnionType([new ObjectWithoutClassType(), new StringType()]);
+		}
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 

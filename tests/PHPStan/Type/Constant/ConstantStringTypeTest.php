@@ -185,4 +185,21 @@ class ConstantStringTypeTest extends PHPStanTestCase
 		$this->assertInstanceOf(ErrorType::class, $result);
 	}
 
+	#[DataProvider('dataIsCallable')]
+	public function testIsCallable(TrinaryLogic $trinaryLogic, string $constantValue): void
+	{
+		$this->assertSame(
+			$trinaryLogic,
+			(new ConstantStringType($constantValue))->isCallable()
+		);
+	}
+
+	public static function dataIsCallable(): iterable
+	{
+		yield [TrinaryLogic::createNo(), ''];
+		yield [TrinaryLogic::createNo(), '0'];
+		yield [TrinaryLogic::createYes(), 'substr'];
+		yield [TrinaryLogic::createYes(), self::class.'::dataIsCallable'];
+		yield [TrinaryLogic::createMaybe(), self::class.'::methodDoesNotExist'];
+	}
 }

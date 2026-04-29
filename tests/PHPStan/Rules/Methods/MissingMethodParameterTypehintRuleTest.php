@@ -155,6 +155,16 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				'Method Bug14549\Foo::doFoo() has parameter $task with no signature specified for callable.',
 				12,
 			],
+			[
+				'Method Bug14549\Foo::doIntersection() has parameter $array with no value type specified in iterable type array.',
+				46,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method Bug14549\Foo::doIntersection() has parameter $array with no value type specified in iterable type array.',
+				46,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
 		]);
 	}
 

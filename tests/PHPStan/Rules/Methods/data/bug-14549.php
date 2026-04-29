@@ -39,6 +39,14 @@ class Foo
 			}
 		}
 	}
+
+	/**
+	 * @param (array&callable(array): array) $array
+	 */
+	public function doIntersection($array): void
+	{
+	}
+
 }
 
 

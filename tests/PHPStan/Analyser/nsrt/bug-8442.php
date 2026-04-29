@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php // lint < 8.3
 
 namespace Bug8442;
 
@@ -38,4 +38,3 @@ function () {
 	assertType('DateInterval|false',DateInterval::createFromDateString());
 	assertType('DateInterval|false',DateInterval::createFromDateString(new stdClass()));
 };
-

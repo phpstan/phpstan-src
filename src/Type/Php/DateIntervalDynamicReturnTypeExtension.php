@@ -6,19 +6,22 @@ use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
-use function count;
-use function in_array;
 
 #[AutowiredService]
-final class DateIntervalDynamicReturnTypeExtension
-implements DynamicStaticMethodReturnTypeExtension
+final class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function getClass(): string
 	{
@@ -40,31 +43,38 @@ implements DynamicStaticMethodReturnTypeExtension
 
 		$strings = $scope->getType($arguments[0]->value)->getConstantStrings();
 
-		$possibleReturnTypes = [];
+		$hasFalse = false;
+		$hasDateInterval = false;
 		foreach ($strings as $string) {
 			try {
 				$result = @DateInterval::createFromDateString($string->getValue());
 			} catch (Throwable) {
-				$possibleReturnTypes[] = false;
-				continue;
+				$result = false;
 			}
-			$possibleReturnTypes[] = $result instanceof DateInterval ? DateInterval::class : false;
+
+			if ($result === false) {
+				$hasFalse = true;
+			} else {
+				$hasDateInterval = true;
+			}
 		}
 
-		// the error case, when wrong types are passed
-		if (count($possibleReturnTypes) === 0) {
+		if ($hasFalse) {
+			if (!$hasDateInterval) {
+				if ($this->phpVersion->hasDateTimeExceptions()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
+			}
+
 			return null;
 		}
-
-		if (in_array(false, $possibleReturnTypes, true) && in_array(DateInterval::class, $possibleReturnTypes, true)) {
-			return null;
+		if ($hasDateInterval) {
+			return new ObjectType(DateInterval::class);
 		}
 
-		if (in_array(false, $possibleReturnTypes, true)) {
-			return new ConstantBooleanType(false);
-		}
-
-		return new ObjectType(DateInterval::class);
+		return null;
 	}
 
 }

@@ -54,6 +54,27 @@ class Foo
 	{
 	}
 
+	/** @param array<int> $param */
+	public function call(array $param): void
+	{
+	}
+
+	/**
+	 * @param callable-array $task
+	 */
+	public function doCallWithCallableArray(array $task): void
+	{
+		$this->call($task);
+	}
+
+	/**
+	 * @param callable&array $task
+	 */
+	public function doCallWithCallableAndArray(array $task): void
+	{
+		$this->call($task);
+	}
+
 }
 
 

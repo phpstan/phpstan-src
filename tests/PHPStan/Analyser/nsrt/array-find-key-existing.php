@@ -14,8 +14,16 @@ function arrayFindKeyNotNull(array $list, string $s): void
 	$key = array_find_key($list, fn (string $v) => $v === $s);
 	if ($key !== null) {
 		assertType('non-empty-list<string>', $list);
+		assertType('int<0, max>', $key);
 		assertType('string', $list[$key]);
+	} else {
+		assertType('array{}', $list);
+		assertType('null', $key);
+		assertType('*ERROR*', $list[$key]);
 	}
+	assertType('list<string>', $list);
+	assertType('int<0, max>|null', $key);
+	assertType('string', $list[$key]);
 }
 
 /**

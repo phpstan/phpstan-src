@@ -45,8 +45,18 @@ function arraySearchStrictNarrowsToNeedle(array $arr, int $needle): void
 {
 	$key = array_search($needle, $arr, true);
 	if ($key !== false) {
+		assertType('non-empty-array<string, int|string>', $arr);
+		assertType('string', $key);
 		assertType('int', $arr[$key]);
+	} else {
+		assertType('array<string, int|string>', $arr);
+		assertType('false', $key);
+		assertType('*ERROR*', $arr[$key]);
 	}
+	assertType('array<string, int|string>', $arr);
+	assertType('string|false', $key);
+	assertType('int|string', $arr[$key]);
+
 }
 
 /**

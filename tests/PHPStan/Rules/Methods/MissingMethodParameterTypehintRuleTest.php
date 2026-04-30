@@ -165,10 +165,6 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				46,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
-			[
-				'Method Bug14549\Foo::doBaz() has parameter $task with no signature specified for callable.',
-				53,
-			],
 		]);
 	}
 

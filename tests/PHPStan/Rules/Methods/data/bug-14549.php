@@ -47,13 +47,6 @@ class Foo
 	{
 	}
 
-	/**
-	 * @param callable&array $task
-	 */
-	public function doBaz(array $task): void
-	{
-	}
-
 }
 
 

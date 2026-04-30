@@ -169,14 +169,6 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				'Method Bug14549\Foo::doBaz() has parameter $task with no signature specified for callable.',
 				53,
 			],
-			[
-				'Method Bug14549\Foo::doCallWithCallableArray() has parameter $task with no signature specified for callable.',
-				65,
-			],
-			[
-				'Method Bug14549\Foo::doCallWithCallableAndArray() has parameter $task with no signature specified for callable.',
-				73,
-			],
 		]);
 	}
 

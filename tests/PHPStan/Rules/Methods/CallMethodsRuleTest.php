@@ -4030,14 +4030,30 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-14549.php'], [
+		$this->analyse([__DIR__ . '/data/bug-14549-bis.php'], [
 			[
-				'Parameter #1 $param of method Bug14549\Foo::call() expects array<int>, array&callable given.',
-				67,
+				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayInt() expects array<int>, array&callable given.',
+				33,
 			],
 			[
-				'Parameter #1 $param of method Bug14549\Foo::call() expects array<int>, array&callable given.',
-				75,
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayStringString() expects array{string, string}, array&callable(): mixed given.',
+				34,
+			],
+			[
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, array&callable(): mixed given.',
+				36,
+			],
+			[
+				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayInt() expects array<int>, array&callable given.',
+				44,
+			],
+			[
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayStringString() expects array{string, string}, array&callable(): mixed given.',
+				45,
+			],
+			[
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, array&callable(): mixed given.',
+				47,
 			],
 		]);
 	}

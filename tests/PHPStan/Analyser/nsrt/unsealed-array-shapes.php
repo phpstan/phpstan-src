@@ -229,6 +229,77 @@ class Foo
 		assertType("non-empty-array<string, int>", $arr);
 	}
 
+	/**
+	 * `array_search` on a constant array shape with unsealed extras must
+	 * also consider the extras: a strict needle that matches the unsealed
+	 * value type makes the unsealed key type a possible result. The
+	 * extras are always uncertain (zero or more entries) so `false` stays
+	 * a possible result even when an explicit value definitely matches.
+	 *
+	 * @param array{a: 'foo', b: 'bar', ...<string, 'baz'>} $arr
+	 */
+	public function searchUnsealedExclusiveValue(array $arr): void
+	{
+		assertType("'a'", array_search('foo', $arr, true));
+		assertType("'b'", array_search('bar', $arr, true));
+		assertType("string|false", array_search('baz', $arr, true));
+		assertType("false", array_search('quux', $arr, true));
+	}
+
+	/**
+	 * Strict search: when the unsealed value type is a different type
+	 * than any explicit value, only one side can match a given needle.
+	 *
+	 * @param array{a: int, b: string, ...<int, bool>} $arr
+	 */
+	public function searchUnsealedStrictTypes(array $arr): void
+	{
+		assertType("int|false", array_search(true, $arr, true));
+		assertType("'a'|false", array_search(42, $arr, true));
+		assertType("'b'|false", array_search('hi', $arr, true));
+	}
+
+	/**
+	 * Both explicit values and the unsealed extras can match a generic
+	 * `int` needle. The explicit string keys `'a'`/`'b'` simplify into
+	 * the broader `string` from the unsealed extras' key type, so the
+	 * union collapses to `string|false`.
+	 *
+	 * @param array{a: int, b: int, ...<string, int>} $arr
+	 */
+	public function searchUnsealedNeedleInBothSides(array $arr): void
+	{
+		assertType("string|false", array_search(99, $arr, true));
+	}
+
+	/**
+	 * Non-strict search skips the value-type filter — the unsealed
+	 * extras are always considered, since loose comparison can succeed
+	 * across many otherwise-mismatched value pairs.
+	 *
+	 * @param array{a: 1, b: 2, ...<string, int>} $arr
+	 */
+	public function searchUnsealedNonStrict(array $arr): void
+	{
+		// `'a'` is a definite hit (constant value matches needle exactly,
+		// not optional) so `false` is excluded; the explicit-key match
+		// then merges into the unsealed-extras' broader `string` key.
+		assertType("string", array_search(1, $arr, false));
+		assertType("string|false", array_search(99, $arr, false));
+	}
+
+	/**
+	 * Sealed array shape: searchArray's unsealed branch is a no-op
+	 * (the `[NEVER, NEVER]` extras marker is excluded). Only the
+	 * explicit keys are considered.
+	 */
+	public function searchSealed(): void
+	{
+		$arr = ['a' => 'foo', 'b' => 'bar'];
+		assertType("'a'", array_search('foo', $arr, true));
+		assertType("false", array_search('baz', $arr, true));
+	}
+
 }
 
 class Generics

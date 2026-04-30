@@ -1419,6 +1419,26 @@ class ConstantArrayType implements Type
 			$matches[] = $this->keyTypes[$index];
 		}
 
+		// Unsealed extras can host additional entries beyond the explicit
+		// keys, so the search may also find the needle there. The unsealed
+		// extras' presence is uncertain by definition (zero or more
+		// entries), so they can never make the needle "definitely found"
+		// (`hasIdenticalValue` stays false) — `false` always remains a
+		// possible result.
+		if ($this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			$isExplicitNever = $unsealedKeyType instanceof NeverType && $unsealedKeyType->isExplicit();
+			if (!$isExplicitNever) {
+				$considerUnsealed = true;
+				if ($strict->yes()) {
+					$considerUnsealed = !$unsealedValueType->isSuperTypeOf($needleType)->no();
+				}
+				if ($considerUnsealed) {
+					$matches[] = $unsealedKeyType;
+				}
+			}
+		}
+
 		if (count($matches) > 0) {
 			if ($hasIdenticalValue) {
 				return TypeCombinator::union(...$matches);

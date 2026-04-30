@@ -25,7 +25,7 @@ function possiblyEmptyListForeach(array $keys): void
 	foreach ($keys as $k) {
 		$out[$k] = 1;
 	}
-	assertType("array{}|array{a?: 1, b?: 1}", $out);
+	assertType("array{a?: 1, b?: 1}", $out);
 }
 
 /**

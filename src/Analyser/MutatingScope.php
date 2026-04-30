@@ -4231,8 +4231,30 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 					$resultTypes[] = $resultArrayBuilder->getArray();
 				} else {
+					// Both inputs are sealed constant array shapes — their
+					// key sets are finite by construction. When taking the
+					// fall-through ArrayType path we still recurse into
+					// `generalizeType` for the iterable key, which would
+					// widen e.g. `0|1` to `int<0, max>` and lose the loop's
+					// per-iteration precision. Instead, keep the literal
+					// union of constant keys so the loop's bound stays
+					// visible.
+					$bothSealed = true;
+					foreach ([...$constantArrays['a'], ...$constantArrays['b']] as $constantArrayCheck) {
+						foreach ($constantArrayCheck->getConstantArrays() as $constantArrayInstance) {
+							if (!$constantArrayInstance->isSealed()->yes()) {
+								$bothSealed = false;
+								break 2;
+							}
+						}
+					}
+					if ($bothSealed) {
+						$resultKeyType = TypeCombinator::union($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType());
+					} else {
+						$resultKeyType = TypeCombinator::union($this->generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1));
+					}
 					$resultType = new ArrayType(
-						TypeCombinator::union($this->generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1)),
+						$resultKeyType,
 						TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1)),
 					);
 					$accessories = [];

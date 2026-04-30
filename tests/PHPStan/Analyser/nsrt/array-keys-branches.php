@@ -124,7 +124,7 @@ function (array $generalArray, array $xs) {
 	assertType('mixed~null', $generalArray['key']);
 	assertType('array{0: \'foo\', 1: \'bar\', 2?: \'baz\'}', $arrayAppendedInIf);
 	assertType('non-empty-list<\'bar\'|\'baz\'|\'foo\'>', $arrayAppendedInForeach);
-	assertType("array{literal-string&lowercase-string&non-falsy-string, literal-string&lowercase-string&non-falsy-string, ...<int<0, max>, 'baz'>}", $anotherArrayAppendedInForeach);
+	assertType("array{literal-string&lowercase-string&non-falsy-string, literal-string&lowercase-string&non-falsy-string, ...<int<2, max>, 'baz'>}", $anotherArrayAppendedInForeach);
 	assertType('\'str\'', $array['n']);
 	assertType('int<0, max>', $incremented);
 	assertType('0|1', $setFromZeroToOne);

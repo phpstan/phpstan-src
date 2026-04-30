@@ -109,7 +109,7 @@ class Foo
 		$a[$s] = 6;
 		assertType('array{5, ...<string, 6>}', $a);
 		$a[$i] = 7;
-		assertType('array{5|7, ...<int<min,-1>|int<1,max>|string, 6|7>}', $a);
+		assertType('array{5|7, ...<int<min, -1>|int<1, max>|string, 6|7>}', $a);
 
 		$b = [];
 		$b[$s] = 1;
@@ -134,6 +134,99 @@ class Foo
 			$s => 'foo',
 		];
 		assertType('non-empty-array<string, \'foo\'>', $e);
+	}
+
+	/**
+	 * Loop iteration's `generalizeType` previously widened the integer key
+	 * of a constant array shape to `int<0, max>` whenever the prev/current
+	 * iterations had different (but finite) key sets. With the fix that
+	 * keeps the constant-array key union when both shapes are sealed,
+	 * loop-bounded counters stay within their actual range.
+	 */
+	public function loopBoundedCounter(): void
+	{
+		$arr = [];
+		for ($i = 0; $i < 5; $i++) {
+			$arr[$i] = 'v';
+		}
+		assertType("non-empty-array<int<0, 4>, 'v'>", $arr);
+	}
+
+	public function loopBoundedCounterWithCondition(): void
+	{
+		$arr = [];
+		for ($i = 0; $i < 5; $i++) {
+			if (rand()) {
+				$arr[$i] = 'v';
+			}
+		}
+		assertType("array<int<0, 4>, 'v'>", $arr);
+	}
+
+	/**
+	 * The existing `'x'` key keeps its sealed slot through all iterations
+	 * while the int counter grows; generalize merges the two sealed shapes
+	 * via key union (no widening to `int<0, max>`).
+	 */
+	public function loopWithExistingSealedKey(): void
+	{
+		$arr = ['x' => 0];
+		for ($i = 0; $i < 5; $i++) {
+			$arr[$i] = $i;
+		}
+		assertType("non-empty-array<'x'|int<0, 4>, int<0, max>>", $arr);
+	}
+
+	/**
+	 * Each iteration the body assigns a sealed constant key, then a
+	 * non-constant offset — that second assignment promotes the array
+	 * from sealed to unsealed (folding the unknown offset/value into the
+	 * unsealed extras). The iteration's converged shape stays bounded by
+	 * the loop's cond instead of widening to `int<0, max>`.
+	 */
+	public function loopSealedBecomesUnsealedEachIteration(string $s): void
+	{
+		$arr = [];
+		for ($i = 0; $i < 3; $i++) {
+			$arr[$i] = 'sealed';
+			$arr[$s . '_' . $i] = 'unsealed';
+		}
+		assertType("non-empty-array<int<0, 2>|non-falsy-string, literal-string&lowercase-string&non-falsy-string>", $arr);
+	}
+
+	/**
+	 * Starting from a PHPDoc-declared unsealed shape, a loop adds further
+	 * non-constant entries. The sealed prefix (`a`) survives, the existing
+	 * unsealed extras get unioned with the loop's per-iteration extras.
+	 */
+	public function loopMergesUnsealedExtras(string $key): void
+	{
+		/** @var array{a: int, ...<string, int>} $arr */
+		$arr = ['a' => 1];
+		for ($i = 0; $i < 3; $i++) {
+			$arr[$key . $i] = $i;
+		}
+		assertType("array{a: int, ...<string, int>}", $arr);
+	}
+
+	/**
+	 * Joining two unsealed shapes with disjoint sealed prefixes via
+	 * scope merging collapses the result to a general array of
+	 * `string => int` — neither sealed prefix survives because each is
+	 * optional from the other branch's perspective and the unsealed
+	 * extras of both sides cover the same key/value space.
+	 *
+	 * @param array{a: int, ...<string, int>} $u1
+	 * @param array{b: int, ...<string, int>} $u2
+	 */
+	public function twoUnsealedJoined(array $u1, array $u2, bool $cond): void
+	{
+		if ($cond) {
+			$arr = $u1;
+		} else {
+			$arr = $u2;
+		}
+		assertType("non-empty-array<string, int>", $arr);
 	}
 
 }

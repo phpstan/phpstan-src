@@ -992,7 +992,18 @@ final class TypeCombinator
 
 		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
-			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$accessoryTypes);
+			$applied = $accessoryTypes;
+			if ($reducedArray->isIterableAtLeastOnce()->no()) {
+				// Empty arrays cannot satisfy non-empty / oversized constraints —
+				// applying those accessories would produce a contradictory intersection
+				// (e.g. `array{}&oversized-array`) that rejects the very value it
+				// represents, breaking the super-type contract of the union.
+				$applied = array_values(array_filter(
+					$applied,
+					static fn (Type $t): bool => !($t instanceof OversizedArrayType) && !($t instanceof NonEmptyArrayType),
+				));
+			}
+			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$applied);
 		}
 		return $reducedArrayTypes;
 	}
@@ -1089,7 +1100,24 @@ final class TypeCombinator
 					$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
 					$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
-					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type) use ($traverse): Type {
+					// Inner traversal of the value position. Two subtleties, both
+					// of which produced types that failed to be super-types of
+					// their contributors:
+					// - Empty constant arrays must be left alone; wrapping them
+					//   builds a contradictory `array{}&oversized-array`.
+					// - Fall through via `$innerTraverse`, not the outer
+					//   `$traverse`. The outer callback fully generalizes a
+					//   sealed `ConstantArrayType` into `array<intKey, V>&...`,
+					//   which is correct at the top level but wrong inside a
+					//   value position: it would treat a sealed `array{a: 1}`
+					//   reached via `array{}|array{a: 1}` differently from one
+					//   reached directly, leaving `processArrayTypes` with a
+					//   mix of shapes it cannot unify cleanly.
+					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type, callable $innerTraverse): Type {
+						if ($type instanceof ConstantArrayType && $type->isIterableAtLeastOnce()->no()) {
+							return $type;
+						}
+
 						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
 							return new IntersectionType([$type, new OversizedArrayType()]);
 						}
@@ -1098,7 +1126,7 @@ final class TypeCombinator
 							return $type->generalize(GeneralizePrecision::moreSpecific());
 						}
 
-						return $traverse($type);
+						return $innerTraverse($type);
 					});
 					$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
 				}

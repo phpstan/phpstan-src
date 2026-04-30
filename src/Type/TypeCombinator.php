@@ -27,6 +27,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_fill;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_merge;
@@ -959,8 +960,17 @@ final class TypeCombinator
 		}
 
 		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		$emptyArrayType = null;
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
-			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$accessoryTypes);
+			$applied = $accessoryTypes;
+			if ($reducedArray->isIterableAtLeastOnce()->no()) {
+				$emptyArrayType ??= new ConstantArrayType([], []);
+				$applied = array_values(array_filter(
+					$applied,
+					static fn (Type $t): bool => !$t->accepts($emptyArrayType, true)->no(),
+				));
+			}
+			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$applied);
 		}
 		return $reducedArrayTypes;
 	}
@@ -1057,7 +1067,11 @@ final class TypeCombinator
 					$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
 					$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
-					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type) use ($traverse): Type {
+					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type, callable $innerTraverse): Type {
+						if ($type instanceof ConstantArrayType && $type->isIterableAtLeastOnce()->no()) {
+							return $type;
+						}
+
 						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
 							return new IntersectionType([$type, new OversizedArrayType()]);
 						}
@@ -1066,7 +1080,7 @@ final class TypeCombinator
 							return $type->generalize(GeneralizePrecision::moreSpecific());
 						}
 
-						return $traverse($type);
+						return $innerTraverse($type);
 					});
 					$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
 				}

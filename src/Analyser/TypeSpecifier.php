@@ -849,7 +849,6 @@ final class TypeSpecifier
 
 					if ($isNonEmpty) {
 						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-
 						$specifiedTypes = $specifiedTypes->unionWith(
 							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
 						);
@@ -858,7 +857,7 @@ final class TypeSpecifier
 						$nonNullKeyType = TypeCombinator::removeNull($keyType);
 						if (!$nonNullKeyType instanceof NeverType) {
 							$specifiedTypes = $specifiedTypes->unionWith(
-								$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $arrayType, $nonNullKeyType),
+								$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $nonNullKeyType, $arrayType->getIterableValueType()),
 							);
 						}
 					}
@@ -875,12 +874,12 @@ final class TypeSpecifier
 				$funcName = $expr->expr->name->toLowerString();
 				$arrayArgIndex = null;
 				$sentinelType = null;
-				$needleArgIndex = null;
+				$isStrictArraySearch = false;
 
 				if ($funcName === 'array_search') {
 					$arrayArgIndex = 1;
 					$sentinelType = new ConstantBooleanType(false);
-					$needleArgIndex = 0;
+					$isStrictArraySearch = count($expr->expr->getArgs()) >= 3 && $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes();
 				} elseif ($funcName === 'array_find_key') {
 					$arrayArgIndex = 0;
 					$sentinelType = new NullType();
@@ -898,14 +897,11 @@ final class TypeSpecifier
 
 							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
 
-							$dimFetchType = $arrayType->getIterableValueType();
-							if (
-								$needleArgIndex !== null
-								&& count($expr->expr->getArgs()) >= 3
-								&& $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes()
-							) {
-								$needleType = $scope->getType($expr->expr->getArgs()[$needleArgIndex]->value);
-								$dimFetchType = TypeCombinator::intersect($needleType, $dimFetchType);
+							if ($isStrictArraySearch) {
+								$needleType = $scope->getType($expr->expr->getArgs()[0]->value);
+								$dimFetchType = TypeCombinator::intersect($needleType, $arrayType->getIterableValueType());
+							} else {
+								$dimFetchType = $arrayType->getIterableValueType();
 							}
 
 							$specifiedTypes = $specifiedTypes->unionWith(
@@ -915,17 +911,14 @@ final class TypeSpecifier
 							$keyType = $scope->getType($expr->expr);
 							$narrowedKeyType = TypeCombinator::remove($keyType, $sentinelType);
 							if (!$narrowedKeyType instanceof NeverType) {
-								$dimFetchType = null;
-								if (
-									$needleArgIndex !== null
-									&& count($expr->expr->getArgs()) >= 3
-									&& $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes()
-								) {
-									$needleType = $scope->getType($expr->expr->getArgs()[$needleArgIndex]->value);
+								if ($isStrictArraySearch) {
+									$needleType = $scope->getType($expr->expr->getArgs()[0]->value);
 									$dimFetchType = TypeCombinator::intersect($needleType, $arrayType->getIterableValueType());
+								} else {
+									$dimFetchType = $arrayType->getIterableValueType();
 								}
 								$specifiedTypes = $specifiedTypes->unionWith(
-									$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $arrayType, $narrowedKeyType, $dimFetchType),
+									$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $narrowedKeyType, $dimFetchType),
 								);
 							}
 						}
@@ -2436,9 +2429,8 @@ final class TypeSpecifier
 	private function createArrayDimFetchConditionalExpressionHolder(
 		Expr\Variable $keyVar,
 		Expr $arrayArg,
-		Type $arrayType,
 		Type $narrowedKeyType,
-		?Type $dimFetchType = null,
+		Type $dimFetchType,
 	): SpecifiedTypes
 	{
 		$dimFetch = new ArrayDimFetch($arrayArg, $keyVar);
@@ -2447,7 +2439,7 @@ final class TypeSpecifier
 
 		$holder = new ConditionalExpressionHolder(
 			[$keyExprString => ExpressionTypeHolder::createYes($keyVar, $narrowedKeyType)],
-			ExpressionTypeHolder::createYes($dimFetch, $dimFetchType ?? $arrayType->getIterableValueType()),
+			ExpressionTypeHolder::createYes($dimFetch, $dimFetchType),
 		);
 
 		return (new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([

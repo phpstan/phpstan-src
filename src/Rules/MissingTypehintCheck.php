@@ -81,10 +81,6 @@ final class MissingTypehintCheck
 				$nonArrayInner = [];
 				foreach ($type->getTypes() as $innerType) {
 					if ($innerType->isArray()->yes()) {
-						$iterableValue = $innerType->getIterableValueType();
-						if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
-							$iterablesWithMissingValueTypehint[] = $innerType;
-						}
 						continue;
 					}
 					$nonArrayInner[] = $innerType;

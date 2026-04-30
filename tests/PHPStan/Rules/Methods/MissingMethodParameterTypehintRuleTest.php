@@ -152,11 +152,6 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14549.php'], [
 			[
-				'Method Bug14549\Foo::doFoo() has parameter $task with no value type specified in iterable type array.',
-				12,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
-			],
-			[
 				'Method Bug14549\Foo::doFoo() has parameter $task with no signature specified for callable.',
 				12,
 			],
@@ -171,18 +166,16 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
-				'Method Bug14549\Foo::doIntersection() has parameter $array with no value type specified in iterable type array.',
-				46,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
-			],
-			[
-				'Method Bug14549\Foo::doBaz() has parameter $task with no value type specified in iterable type array.',
-				53,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
-			],
-			[
 				'Method Bug14549\Foo::doBaz() has parameter $task with no signature specified for callable.',
 				53,
+			],
+			[
+				'Method Bug14549\Foo::doCallWithCallableArray() has parameter $task with no signature specified for callable.',
+				65,
+			],
+			[
+				'Method Bug14549\Foo::doCallWithCallableAndArray() has parameter $task with no signature specified for callable.',
+				73,
 			],
 		]);
 	}

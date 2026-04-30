@@ -299,25 +299,17 @@ class IntersectionType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$types = $this->types;
-		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
-			$narrowedKeyType = $this->getIterableKeyType();
-			$narrowedValueType = $this->getIterableValueType();
-			$types = array_map(static function (Type $innerType) use ($narrowedKeyType, $narrowedValueType): Type {
-				if (!$innerType->isArray()->yes()) {
-					return $innerType;
-				}
-				if (!$innerType->getIterableValueType() instanceof MixedType) {
-					return $innerType;
-				}
-				return new ArrayType($narrowedKeyType, $narrowedValueType);
-			}, $types);
-		}
-
 		$result = AcceptsResult::lazyMaxMin(
-			$types,
+			$this->types,
 			static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes),
 		);
+
+		if ($result->yes()) {
+			$isSuperType = $acceptingType->isSuperTypeOf($this);
+			if ($isSuperType->no()) {
+				return $isSuperType->toAcceptsResult();
+			}
+		}
 
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {

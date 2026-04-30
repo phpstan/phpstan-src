@@ -47,4 +47,17 @@ class Foo
 		$this->callConstantArrayObjectOrStringStringString($task);
 	}
 
+	/** @param array<string> $param */
+	public function callArrayString(array $param): void
+	{
+	}
+
+	public function doCallWithHasOffsetValue(array $arr): void
+	{
+		if (isset($arr[1]) && $arr[1] === 1) {
+			$this->callArrayString($arr);
+			$this->callArrayInt($arr);
+		}
+	}
+
 }

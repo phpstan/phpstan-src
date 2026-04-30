@@ -4055,6 +4055,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, array&callable(): mixed given.',
 				47,
 			],
+			[
+				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayString() expects array<string>, array given.',
+				58,
+			],
 		]);
 	}
 

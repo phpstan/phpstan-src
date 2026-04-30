@@ -872,21 +872,20 @@ final class TypeSpecifier
 				&& count($expr->expr->getArgs()) >= 2
 			) {
 				$funcName = $expr->expr->name->toLowerString();
-				$arrayArgIndex = null;
+				$arrayArg = null;
 				$sentinelType = null;
 				$isStrictArraySearch = false;
 
 				if ($funcName === 'array_search') {
-					$arrayArgIndex = 1;
+					$arrayArg = $expr->expr->getArgs()[1]->value;
 					$sentinelType = new ConstantBooleanType(false);
 					$isStrictArraySearch = count($expr->expr->getArgs()) >= 3 && $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes();
 				} elseif ($funcName === 'array_find_key') {
-					$arrayArgIndex = 0;
+					$arrayArg = $expr->expr->getArgs()[0]->value;
 					$sentinelType = new NullType();
 				}
 
-				if ($arrayArgIndex !== null) {
-					$arrayArg = $expr->expr->getArgs()[$arrayArgIndex]->value;
+				if ($arrayArg !== null) {
 					$arrayType = $scope->getType($arrayArg);
 
 					if ($arrayType->isArray()->yes()) {

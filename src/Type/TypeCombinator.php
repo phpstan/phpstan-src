@@ -960,16 +960,22 @@ final class TypeCombinator
 		}
 
 		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		$emptyArrayType = null;
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$applied = $accessoryTypes;
 			if ($reducedArray->isIterableAtLeastOnce()->no()) {
-				// Empty arrays cannot satisfy non-empty / oversized constraints —
-				// applying those accessories would produce a contradictory intersection
-				// (e.g. `array{}&oversized-array`) that rejects the very value it
-				// represents, breaking the super-type contract of the union.
+				// Filter accessories that reject empty arrays — applying them
+				// would build a contradictory intersection (e.g.
+				// `array{}&oversized-array`, `array{}&hasOffset('foo')`) that
+				// rejects the very value it represents, breaking the super-type
+				// contract of the union. Today only `OversizedArrayType` can
+				// leak here via the partial-presence special case in
+				// `processArrayAccessoryTypes`; the predicate is general so
+				// that future accessories don't reintroduce the bug.
+				$emptyArrayType ??= new ConstantArrayType([], []);
 				$applied = array_values(array_filter(
 					$applied,
-					static fn (Type $t): bool => !($t instanceof OversizedArrayType) && !($t instanceof NonEmptyArrayType),
+					static fn (Type $t): bool => !$t->accepts($emptyArrayType, true)->no(),
 				));
 			}
 			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$applied);

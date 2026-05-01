@@ -349,7 +349,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 	public function testBug14564(): void
 	{
 		$this->reportMaybes = true;
-		$this->analyse([__DIR__ . '/data/bug-14564.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14564.php'], []);
 	}
 
 }

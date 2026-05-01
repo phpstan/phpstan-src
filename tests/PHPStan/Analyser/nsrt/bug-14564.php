@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Bug14564Nsrt;
+namespace Bug14564;
 
 use function PHPStan\Testing\assertType;
 
@@ -17,8 +17,19 @@ interface A {
 	public int $positive { get; }
 }
 
-// Promoted properties inherit from interface
+// Regular properties inherit PHPDoc types from interface
 class B implements A {
+
+	public array $test = [ 1 ];
+
+	public string $nonEmptyString = '';
+
+	public int $positive = -1;
+
+}
+
+// Promoted properties inherit from interface
+class C implements A {
 
 	public function __construct(
 
@@ -32,28 +43,91 @@ class B implements A {
 
 }
 
-function test(B $b): void {
-	assertType('array<string>', $b->test);
-	assertType('non-empty-string', $b->nonEmptyString);
-	assertType('int<1, max>', $b->positive);
+function test(C $c): void {
+	assertType('array<string>', $c->test);
+	assertType('non-empty-string', $c->nonEmptyString);
+	assertType('int<1, max>', $c->positive);
+}
+
+// Explicit @var on promoted property
+class D implements A {
+
+	public function __construct(
+
+		/** @var array<string> */
+		public array $test,
+
+		/** @var non-empty-string */
+		public string $nonEmptyString,
+
+		/** @var int<1,max> */
+		public int $positive,
+
+	) { }
+
+}
+
+function test2(D $d): void {
+	assertType('array<string>', $d->test);
+	assertType('non-empty-string', $d->nonEmptyString);
+	assertType('int<1, max>', $d->positive);
 }
 
 // Promoted properties inherit from parent class
 class ParentClass {
 	/** @var array<string> */
 	public array $items;
+
+	/** @var non-empty-string */
+	public string $name;
 }
 
 class ChildWithPromoted extends ParentClass {
 
 	public function __construct(
 		public array $items,
+		public string $name,
 	) { }
 
 }
 
-function test2(ChildWithPromoted $c): void {
+function test3(ChildWithPromoted $c): void {
 	assertType('array<string>', $c->items);
+	assertType('non-empty-string', $c->name);
+}
+
+// Inheritance from abstract class
+abstract class AbstractBase {
+	/** @var array<int, string> */
+	public array $data;
+}
+
+class ConcreteWithPromoted extends AbstractBase {
+
+	public function __construct(
+		public array $data,
+	) { }
+
+}
+
+function test4(ConcreteWithPromoted $c): void {
+	assertType('array<int, string>', $c->data);
+}
+
+// Multi-level inheritance
+class Middle extends AbstractBase {
+}
+
+class GrandchildWithPromoted extends Middle {
+
+	public function __construct(
+		public array $data,
+	) { }
+
+}
+
+function test5(GrandchildWithPromoted $g): void {
+	assertType('array<int, string>', $g->data);
 }
 
 // Constructor @param overrides inherited type
@@ -72,7 +146,7 @@ class WithParam implements A {
 
 }
 
-function test3(WithParam $w): void {
+function test6(WithParam $w): void {
 	assertType('list<string>', $w->test);
 	assertType('non-empty-string', $w->nonEmptyString);
 	assertType('int<1, max>', $w->positive);
@@ -92,31 +166,10 @@ class WithVar implements A {
 
 }
 
-function test4(WithVar $w): void {
+function test7(WithVar $w): void {
 	assertType('list<string>', $w->test);
 	assertType('non-empty-string', $w->nonEmptyString);
 	assertType('int<1, max>', $w->positive);
-}
-
-// Multi-level inheritance
-abstract class AbstractBase {
-	/** @var array<int, string> */
-	public array $data;
-}
-
-class Middle extends AbstractBase {
-}
-
-class GrandchildWithPromoted extends Middle {
-
-	public function __construct(
-		public array $data,
-	) { }
-
-}
-
-function test5(GrandchildWithPromoted $g): void {
-	assertType('array<int, string>', $g->data);
 }
 
 // Generic interface
@@ -137,6 +190,6 @@ class StringContainer implements Container {
 
 }
 
-function test6(StringContainer $c): void {
+function test8(StringContainer $c): void {
 	assertType('string', $c->value);
 }

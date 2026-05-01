@@ -329,9 +329,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 		if ($isPure === null && !$isPureUnlessCallableIsImpure) {
 			$isPure = $this->nativeFunctionReflectionProvider->getFunctionPurityFromMetadata($functionName);
-			if ($isPure === null) {
-				$isPureUnlessCallableIsImpure = $this->nativeFunctionReflectionProvider->getFunctionPureUnlessCallableIsImpureFromMetadata($functionName);
-			}
 		}
 
 		return $this->functionReflectionFactory->create(

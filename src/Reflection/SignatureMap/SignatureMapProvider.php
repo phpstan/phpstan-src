@@ -26,12 +26,12 @@ interface SignatureMapProvider
 	public function hasFunctionMetadata(string $name): bool;
 
 	/**
-	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}
+	 * @return array{hasSideEffects: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array;
 
 	/**
-	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}
+	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array;
 

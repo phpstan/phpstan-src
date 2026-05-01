@@ -24,7 +24,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
-use function count;
 use function str_contains;
 use function strtolower;
 
@@ -183,25 +182,10 @@ final class NativeFunctionReflectionProvider
 	{
 		$lowerCasedFunctionName = strtolower($functionName);
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-			$metadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
-			if (isset($metadata['pureUnlessCallableIsImpure']) && count($metadata['pureUnlessCallableIsImpure']) > 0) {
-				return null;
-			}
-			return !$metadata['hasSideEffects'];
+			return !$this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects'];
 		}
 
 		return null;
-	}
-
-	public function getFunctionPureUnlessCallableIsImpureFromMetadata(string $functionName): bool
-	{
-		$lowerCasedFunctionName = strtolower($functionName);
-		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-			$metadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
-			return isset($metadata['pureUnlessCallableIsImpure']) && count($metadata['pureUnlessCallableIsImpure']) > 0;
-		}
-
-		return false;
 	}
 
 	private function getReturnTypeFromPhpDoc(ResolvedPhpDocBlock $phpDoc): ?Type

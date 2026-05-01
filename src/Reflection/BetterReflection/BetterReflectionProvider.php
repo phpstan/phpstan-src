@@ -60,7 +60,6 @@ use function array_key_exists;
 use function array_key_first;
 use function array_map;
 use function base64_decode;
-use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -289,7 +288,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 		$isInternal = false;
 		$isPure = null;
-		$isPureUnlessCallableIsImpure = false;
 		$asserts = Assertions::createEmpty();
 		$acceptsNamedArguments = true;
 		$phpDocComment = null;
@@ -314,9 +312,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			}
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isPure = $resolvedPhpDoc->isPure();
-			if ($isPure === null && count($resolvedPhpDoc->getPureUnlessCallableIsImpureParameterNames()) > 0) {
-				$isPureUnlessCallableIsImpure = true;
-			}
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			if ($resolvedPhpDoc->hasPhpDocString()) {
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
@@ -327,7 +322,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
 		}
 
-		if ($isPure === null && !$isPureUnlessCallableIsImpure) {
+		if ($isPure === null) {
 			$isPure = $this->nativeFunctionReflectionProvider->getFunctionPurityFromMetadata($functionName);
 		}
 
@@ -342,7 +337,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$isInternal,
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure,
-			$isPureUnlessCallableIsImpure,
 			$asserts,
 			$acceptsNamedArguments,
 			$phpDocComment,

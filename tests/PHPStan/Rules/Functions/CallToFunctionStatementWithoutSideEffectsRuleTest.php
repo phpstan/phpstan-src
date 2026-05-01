@@ -160,13 +160,24 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testPureUnlessCallableIsImpure(): void
+	public function testBug11101CustomPure(): void
 	{
-		require_once __DIR__ . '/data/pure-unless-callable-is-impure-definition.php';
-		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [
+		$this->analyse([__DIR__ . '/data/bug-11101-custom-pure.php'], [
 			[
-				'Call to function PureUnlessCallableIsImpure\myFilter() on a separate line has no effect.',
-				13,
+				'Call to function Bug11101CustomPure\pureWithImmediateCallback() on a separate line has no effect.',
+				38,
+			],
+			[
+				'Call to function Bug11101CustomPure\pureWithLaterCallback() on a separate line has no effect.',
+				56,
+			],
+			[
+				'Call to function Bug11101CustomPure\pureWithLaterCallback() on a separate line has no effect.',
+				59,
+			],
+			[
+				'Call to function Bug11101CustomPure\pureWithLaterCallback() on a separate line has no effect.',
+				65,
 			],
 		]);
 	}

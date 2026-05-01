@@ -18,6 +18,7 @@ class FunctionMetadataTest extends PHPStanTestCase
 		$processor->process(Expect::arrayOf(
 			Expect::structure([
 				'hasSideEffects' => Expect::bool()->required(),
+				'pureUnlessCallableIsImpure' => Expect::bool(),
 			])->required(),
 		)->required(), $data);
 	}

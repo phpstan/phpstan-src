@@ -673,6 +673,22 @@ final class PhpDocNodeResolver
 		return false;
 	}
 
+	/**
+	 * @return array<string, true>
+	 */
+	public function resolvePureUnlessCallableIsImpure(PhpDocNode $phpDocNode): array
+	{
+		$parameters = [];
+		foreach (['@pure-unless-callable-is-impure', '@phpstan-pure-unless-callable-is-impure'] as $tagName) {
+			foreach ($phpDocNode->getPureUnlessCallableIsImpureTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$parameters[$parameterName] = true;
+			}
+		}
+
+		return $parameters;
+	}
+
 	public function resolveAllMethodsPure(PhpDocNode $phpDocNode): bool
 	{
 		return count($phpDocNode->getTagsByName('@phpstan-all-methods-pure')) > 0;

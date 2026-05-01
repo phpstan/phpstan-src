@@ -385,7 +385,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}
+	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
 	{
@@ -393,7 +393,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}
+	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array
 	{

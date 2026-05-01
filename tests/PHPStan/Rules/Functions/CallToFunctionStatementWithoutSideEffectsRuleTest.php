@@ -160,6 +160,17 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessCallableIsImpure(): void
+	{
+		require_once __DIR__ . '/data/pure-unless-callable-is-impure-definition.php';
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [
+			[
+				'Call to function PureUnlessCallableIsImpure\myFilter() on a separate line has no effect.',
+				13,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{

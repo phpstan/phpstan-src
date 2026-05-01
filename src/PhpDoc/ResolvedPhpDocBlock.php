@@ -139,6 +139,9 @@ final class ResolvedPhpDocBlock
 	/** @var bool|'notLoaded'|null */
 	private bool|string|null $isPure = 'notLoaded';
 
+	/** @var array<string, true>|false */
+	private array|false $pureUnlessCallableIsImpureParameterNames = false;
+
 	private ?bool $areAllMethodsPure = null;
 
 	private ?bool $areAllMethodsImpure = null;
@@ -237,6 +240,7 @@ final class ResolvedPhpDocBlock
 		$self->isInternal = false;
 		$self->isFinal = false;
 		$self->isPure = null;
+		$self->pureUnlessCallableIsImpureParameterNames = [];
 		$self->areAllMethodsPure = false;
 		$self->areAllMethodsImpure = false;
 		$self->isReadOnly = false;
@@ -293,6 +297,7 @@ final class ResolvedPhpDocBlock
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
 		$result->isPure = self::mergePureTags($this->isPure(), $parent);
+		$result->pureUnlessCallableIsImpureParameterNames = self::mergePureUnlessCallableIsImpureParameterNames($this->getPureUnlessCallableIsImpureParameterNames(), $parent, $parameterMapping);
 		$result->areAllMethodsPure = $this->areAllMethodsPure();
 		$result->areAllMethodsImpure = $this->areAllMethodsImpure();
 		$result->isReadOnly = $this->isReadOnly();
@@ -352,6 +357,15 @@ final class ResolvedPhpDocBlock
 			$newParamsImmediatelyInvokedCallable[$parameterNameMapping[$key]] = $immediatelyInvokedCallable;
 		}
 
+		$newPureUnlessCallableIsImpureParameterNames = [];
+		foreach ($this->getPureUnlessCallableIsImpureParameterNames() as $key => $value) {
+			if (!array_key_exists($key, $parameterNameMapping)) {
+				continue;
+			}
+
+			$newPureUnlessCallableIsImpureParameterNames[$parameterNameMapping[$key]] = $value;
+		}
+
 		$paramClosureThisTags = $this->getParamClosureThisTags();
 		$newParamClosureThisTags = [];
 		foreach ($paramClosureThisTags as $key => $paramClosureThisTag) {
@@ -399,6 +413,7 @@ final class ResolvedPhpDocBlock
 		$self->paramTags = $newParamTags;
 		$self->paramOutTags = $newParamOutTags;
 		$self->paramsImmediatelyInvokedCallable = $newParamsImmediatelyInvokedCallable;
+		$self->pureUnlessCallableIsImpureParameterNames = $newPureUnlessCallableIsImpureParameterNames;
 		$self->paramClosureThisTags = $newParamClosureThisTags;
 		$self->returnTag = $returnTag;
 		$self->throwsTag = $this->throwsTag;
@@ -582,6 +597,18 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $this->paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @return array<string, true>
+	 */
+	public function getPureUnlessCallableIsImpureParameterNames(): array
+	{
+		if ($this->pureUnlessCallableIsImpureParameterNames === false) {
+			$this->pureUnlessCallableIsImpureParameterNames = $this->phpDocNodeResolver->resolvePureUnlessCallableIsImpure($this->phpDocNode);
+		}
+
+		return $this->pureUnlessCallableIsImpureParameterNames;
 	}
 
 	/**
@@ -815,6 +842,11 @@ final class ResolvedPhpDocBlock
 			);
 			if ($impure) {
 				$this->isPure = false;
+				return $this->isPure;
+			}
+
+			if (count($this->getPureUnlessCallableIsImpureParameterNames()) > 0) {
+				$this->isPure = true;
 				return $this->isPure;
 			}
 
@@ -1083,6 +1115,25 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @param array<string, true> $parameterNames
+	 * @return array<string, true>
+	 */
+	private static function mergePureUnlessCallableIsImpureParameterNames(array $parameterNames, self $parent, InheritedPhpDocParameterMapping $parameterMapping): array
+	{
+		$parentParameterNames = $parameterMapping->transformArrayKeysWithParameterNameMapping($parent->getPureUnlessCallableIsImpureParameterNames());
+
+		foreach ($parentParameterNames as $name => $value) {
+			if (array_key_exists($name, $parameterNames)) {
+				continue;
+			}
+
+			$parameterNames[$name] = $value;
+		}
+
+		return $parameterNames;
 	}
 
 	/**

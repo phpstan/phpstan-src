@@ -53,6 +53,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private bool $isInternal,
 		private ?string $filename,
 		private ?bool $isPure,
+		private bool $isPureUnlessCallableIsImpure,
 		private Assertions $asserts,
 		private bool $acceptsNamedArguments,
 		private ?string $phpDocComment,
@@ -196,6 +197,9 @@ final class PhpFunctionReflection implements FunctionReflection
 		}
 		if ($this->isPure !== null) {
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
+		if ($this->isPureUnlessCallableIsImpure) {
+			return TrinaryLogic::createNo();
 		}
 
 		return TrinaryLogic::createMaybe();

@@ -845,11 +845,6 @@ final class ResolvedPhpDocBlock
 				return $this->isPure;
 			}
 
-			if (count($this->getPureUnlessCallableIsImpureParameterNames()) > 0) {
-				$this->isPure = true;
-				return $this->isPure;
-			}
-
 			$this->isPure = null;
 		}
 

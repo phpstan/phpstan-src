@@ -182,10 +182,25 @@ final class NativeFunctionReflectionProvider
 	{
 		$lowerCasedFunctionName = strtolower($functionName);
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-			return !$this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects'];
+			$metadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			if (isset($metadata['pureUnlessCallableIsImpure']) && $metadata['pureUnlessCallableIsImpure']) {
+				return null;
+			}
+			return !$metadata['hasSideEffects'];
 		}
 
 		return null;
+	}
+
+	public function getFunctionPureUnlessCallableIsImpureFromMetadata(string $functionName): bool
+	{
+		$lowerCasedFunctionName = strtolower($functionName);
+		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
+			$metadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			return isset($metadata['pureUnlessCallableIsImpure']) && $metadata['pureUnlessCallableIsImpure'];
+		}
+
+		return false;
 	}
 
 	private function getReturnTypeFromPhpDoc(ResolvedPhpDocBlock $phpDoc): ?Type

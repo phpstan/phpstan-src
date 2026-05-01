@@ -28,6 +28,7 @@ interface FunctionReflectionFactory
 		bool $isInternal,
 		?string $filename,
 		?bool $isPure,
+		bool $isPureUnlessCallableIsImpure,
 		Assertions $asserts,
 		bool $acceptsNamedArguments,
 		?string $phpDocComment,

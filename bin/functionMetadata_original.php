@@ -333,6 +333,8 @@ return [
 
 	'SplQueue::dequeue' => ['hasSideEffects' => true],
 
+	'SQLite3Result::fetchArray' => ['hasSideEffects' => true],
+
 	'XmlReader::next' => ['hasSideEffects' => true],
 	'XmlReader::read' => ['hasSideEffects' => true],
 ];

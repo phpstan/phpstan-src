@@ -16,6 +16,7 @@
 return [
 	'new' => [
 		'chr' => ['non-empty-string', 'ascii'=>'int<0,255>'],
+		'SQLite3Result::fetchAll' => ['($mode is SQLITE3_NUM ? list<non-empty-list<mixed>>|false : ($mode is SQLITE3_ASSOC ? list<non-empty-array<string,mixed>>|false : list<non-empty-array<int|string,mixed>>|false))', 'mode='=>'int'],
 	],
 	'old' => [
 		'chr' => ['non-empty-string', 'ascii'=>'int'],

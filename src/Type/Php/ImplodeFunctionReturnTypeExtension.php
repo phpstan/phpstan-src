@@ -61,8 +61,8 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 	private function implode(Type $arrayType, Type $separatorType): Type
 	{
-		$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
 		if (count($arrayType->getConstantArrays()) > 0 && count($separatorType->getConstantStrings()) > 0) {
+			$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
 			$result = [];
 			foreach ($separatorType->getConstantStrings() as $separator) {
 				foreach ($arrayType->getConstantArrays() as $constantArray) {

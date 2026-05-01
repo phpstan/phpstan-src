@@ -338,6 +338,28 @@ final class PhpClassReflectionExtension
 			}
 		}
 
+		if ($phpDocType === null && $constructorName !== null) {
+			$inheritedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+				$declaringClassReflection,
+				$propertyName,
+				null,
+			);
+			if ($inheritedPhpDoc !== null) {
+				$varTags = $inheritedPhpDoc->getVarTags();
+				if (isset($varTags[0]) && count($varTags) === 1) {
+					$phpDocType = $varTags[0]->getType();
+				} elseif (isset($varTags[$propertyName])) {
+					$phpDocType = $varTags[$propertyName]->getType();
+				}
+				$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
+					$phpDocType,
+					$declaringClassReflection->getActiveTemplateTypeMap(),
+					$declaringClassReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createInvariant(),
+				) : null;
+			}
+		}
+
 		if (
 			$phpDocType === null
 			&& $this->inferPrivatePropertyTypeFromConstructor

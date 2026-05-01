@@ -345,4 +345,11 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/property-override-attr-missing.php', __DIR__ . '/data/property-override-attr-missing.php.fixed');
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug14564(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/bug-14564.php'], []);
+	}
+
 }

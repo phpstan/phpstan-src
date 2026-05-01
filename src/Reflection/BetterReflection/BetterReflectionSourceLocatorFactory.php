@@ -20,6 +20,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLoc
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\BetterReflection\SourceLocator\LazySourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
@@ -80,95 +81,99 @@ final class BetterReflectionSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
-		$locators = [
-			$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(
-				PHP_VERSION_ID < 80500
-					? __DIR__ . '/../../../stubs/runtime/Attribute84.php'
-					: __DIR__ . '/../../../stubs/runtime/Attribute85.php',
-			),
-		];
+		$initializer = function () {
+			$locators = [
+				$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(
+					PHP_VERSION_ID < 80500
+						? __DIR__ . '/../../../stubs/runtime/Attribute84.php'
+						: __DIR__ . '/../../../stubs/runtime/Attribute85.php',
+				),
+			];
 
-		if ($this->singleReflectionFile !== null) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
-		}
-
-		$astLocator = new Locator($this->parser);
-		$locators[] = new AutoloadFunctionsSourceLocator(
-			new AutoloadSourceLocator($this->fileNodesFetcher, false),
-			new ReflectionClassSourceLocator(
-				$astLocator,
-				$this->reflectionSourceStubber,
-			),
-		);
-
-		$analysedDirectories = [];
-		$analysedFiles = [];
-
-		foreach (array_merge($this->analysedPaths, $this->analysedPathsFromConfig) as $analysedPath) {
-			if (is_file($analysedPath)) {
-				$analysedFiles[] = $analysedPath;
-				continue;
+			if ($this->singleReflectionFile !== null) {
+				$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
 			}
 
-			if (!is_dir($analysedPath)) {
-				continue;
-			}
+			$astLocator = new Locator($this->parser);
+			$locators[] = new AutoloadFunctionsSourceLocator(
+				new AutoloadSourceLocator($this->fileNodesFetcher, false),
+				new ReflectionClassSourceLocator(
+					$astLocator,
+					$this->reflectionSourceStubber,
+				),
+			);
 
-			$analysedDirectories[] = $analysedPath;
-		}
+			$analysedDirectories = [];
+			$analysedFiles = [];
 
-		$fileLocators = [];
-		$analysedFiles = array_unique(array_merge($analysedFiles, $this->scanFiles));
-		foreach ($analysedFiles as $analysedFile) {
-			$fileLocators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
-		}
-
-		$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
-		foreach ($directories as $directory) {
-			$fileLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
-		}
-
-		$astPhp8Locator = new Locator($this->php8Parser);
-
-		$composerLocators = [];
-
-		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
-			if ($locator === null) {
-				continue;
-			}
-			$composerLocators[] = $locator;
-		}
-
-		if (count($composerLocators) > 0) {
-			$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion);
-		}
-
-		if (extension_loaded('phar')) {
-			$pharProtocolPath = Phar::running();
-			if ($pharProtocolPath !== '') {
-				$mappings = [
-					'PHPStan\\BetterReflection\\' => [$pharProtocolPath . '/vendor/ondrejmirtes/better-reflection/src/'],
-				];
-				if ($this->playgroundMode) {
-					$mappings['PHPStan\\'] = [$pharProtocolPath . '/src/'];
-				} else {
-					$mappings['PHPStan\\Testing\\'] = [$pharProtocolPath . '/src/Testing/'];
+			foreach (array_merge($this->analysedPaths, $this->analysedPathsFromConfig) as $analysedPath) {
+				if (is_file($analysedPath)) {
+					$analysedFiles[] = $analysedPath;
+					continue;
 				}
-				$fileLocators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
-					Psr4Mapping::fromArrayMappings($mappings),
-				);
+
+				if (!is_dir($analysedPath)) {
+					continue;
+				}
+
+				$analysedDirectories[] = $analysedPath;
 			}
-		}
 
-		$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
-		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
+			$fileLocators = [];
+			$analysedFiles = array_unique(array_merge($analysedFiles, $this->scanFiles));
+			foreach ($analysedFiles as $analysedFile) {
+				$fileLocators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
+			}
 
-		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+			$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
+			foreach ($directories as $directory) {
+				$fileLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
+			}
 
-		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
+			$astPhp8Locator = new Locator($this->php8Parser);
+
+			$composerLocators = [];
+
+			foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+				$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
+				if ($locator === null) {
+					continue;
+				}
+				$composerLocators[] = $locator;
+			}
+
+			if (count($composerLocators) > 0) {
+				$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion);
+			}
+
+			if (extension_loaded('phar')) {
+				$pharProtocolPath = Phar::running();
+				if ($pharProtocolPath !== '') {
+					$mappings = [
+						'PHPStan\\BetterReflection\\' => [$pharProtocolPath . '/vendor/ondrejmirtes/better-reflection/src/'],
+					];
+					if ($this->playgroundMode) {
+						$mappings['PHPStan\\'] = [$pharProtocolPath . '/src/'];
+					} else {
+						$mappings['PHPStan\\Testing\\'] = [$pharProtocolPath . '/src/Testing/'];
+					}
+					$fileLocators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
+						Psr4Mapping::fromArrayMappings($mappings),
+					);
+				}
+			}
+
+			$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
+			$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
+
+			$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
+			$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+			$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+
+			return new AggregateSourceLocator($locators);
+		};
+
+		return new MemoizingSourceLocator(new LazySourceLocator($initializer));
 	}
 
 }

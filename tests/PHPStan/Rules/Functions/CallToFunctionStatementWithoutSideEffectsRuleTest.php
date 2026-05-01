@@ -119,6 +119,47 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11101(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11101.php'], [
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				13,
+			],
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				14,
+			],
+			[
+				'Call to function array_reduce() on a separate line has no effect.',
+				15,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug11101Php84(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11101-php84.php'], [
+			[
+				'Call to function array_find() on a separate line has no effect.',
+				13,
+			],
+			[
+				'Call to function array_find_key() on a separate line has no effect.',
+				14,
+			],
+			[
+				'Call to function array_any() on a separate line has no effect.',
+				15,
+			],
+			[
+				'Call to function array_all() on a separate line has no effect.',
+				16,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{

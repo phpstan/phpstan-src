@@ -19,6 +19,8 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
+use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -61,11 +63,12 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 	private function implode(Type $arrayType, Type $separatorType): Type
 	{
+		$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
 		if (count($arrayType->getConstantArrays()) > 0 && count($separatorType->getConstantStrings()) > 0) {
 			$result = [];
 			foreach ($separatorType->getConstantStrings() as $separator) {
 				foreach ($arrayType->getConstantArrays() as $constantArray) {
-					$constantType = $this->inferConstantType($constantArray, $separator);
+					$constantType = $this->inferConstantType($constantArray, $separator, $isNonEmpty);
 					if ($constantType !== null) {
 						$result[] = $constantType;
 						continue;
@@ -110,7 +113,7 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		return new StringType();
 	}
 
-	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType): ?Type
+	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType, bool $isNonEmpty): ?Type
 	{
 		$sep = $separatorType->getValue();
 		$valueTypes = $arrayType->getValueTypes();
@@ -144,6 +147,13 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 			$partials = $newPartials;
 			if (count($partials) > $limit) {
+				return null;
+			}
+		}
+
+		if ($isNonEmpty) {
+			$partials = array_values(array_filter($partials, static fn (array $parts): bool => $parts !== []));
+			if ($partials === []) {
 				return null;
 			}
 		}

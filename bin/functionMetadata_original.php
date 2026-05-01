@@ -315,11 +315,11 @@ return [
 	'SplFileObject::ftruncate' => ['hasSideEffects' => true],
 	'SplFileObject::fwrite' => ['hasSideEffects' => true],
 
-	'SplFixedArray::extract' => ['hasSideEffects' => true],
+	'SplFixedArray::setSize' => ['hasSideEffects' => true],
 
-	'SplHead::extract' => ['hasSideEffects' => true],
-	'SplHead::insert' => ['hasSideEffects' => true],
-	'SplHead::recoverFromCorruption' => ['hasSideEffects' => true],
+	'SplHeap::extract' => ['hasSideEffects' => true],
+	'SplHeap::insert' => ['hasSideEffects' => true],
+	'SplHeap::recoverFromCorruption' => ['hasSideEffects' => true],
 
 	'SplObjectStorage::addAll' => ['hasSideEffects' => true],
 	'SplObjectStorage::attach' => ['hasSideEffects' => true],

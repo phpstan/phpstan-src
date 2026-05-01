@@ -99,7 +99,7 @@ class SplFixedArray implements Iterator, IteratorAggregate, ArrayAccess, Countab
 	 * @param array<int, TInput> $array
 	 * @return SplFixedArray<TInput>
 	 */
-	public static function fromArray(array $array, bool $save_indexes = true): SplFixedArray { }
+	public static function fromArray(array $array, bool $preserveKeys = true): SplFixedArray { }
 
 	/**
 	 * @return array<int, TValue|null>

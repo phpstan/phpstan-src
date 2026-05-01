@@ -28,7 +28,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, mixed[]> */
 	private static array $signatureMaps = [];
 
-	/** @var array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}>|null */
+	/** @var array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}>|null */
 	private static ?array $functionMetadata = null;
 
 	public function __construct(
@@ -135,7 +135,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}
+	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
 	{
@@ -143,7 +143,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}
+	 * @return array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}
 	 */
 	public function getFunctionMetadata(string $functionName): array
 	{
@@ -157,12 +157,12 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}>
+	 * @return array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}>
 	 */
 	private static function getFunctionMetadataMap(): array
 	{
 		if (self::$functionMetadata === null) {
-			/** @var array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}> $metadata */
+			/** @var array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}> $metadata */
 			$metadata = require __DIR__ . '/../../../resources/functionMetadata.php';
 			self::$functionMetadata = array_change_key_case($metadata, CASE_LOWER);
 		}

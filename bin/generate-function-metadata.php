@@ -119,7 +119,7 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: bool}> $metadata */
+	/** @var array<string, array{hasSideEffects: bool, pureUnlessCallableIsImpure?: list<string>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
@@ -186,8 +186,9 @@ php;
 	$content = '';
 	foreach ($metadata as $name => $meta) {
 		$pairs = sprintf('%s => %s', var_export('hasSideEffects', true), var_export($meta['hasSideEffects'], true));
-		if (isset($meta['pureUnlessCallableIsImpure']) && $meta['pureUnlessCallableIsImpure']) {
-			$pairs .= sprintf(', %s => %s', var_export('pureUnlessCallableIsImpure', true), var_export(true, true));
+		if (isset($meta['pureUnlessCallableIsImpure']) && count($meta['pureUnlessCallableIsImpure']) > 0) {
+			$items = implode(', ', array_map(static fn (string $s) => var_export($s, true), $meta['pureUnlessCallableIsImpure']));
+			$pairs .= sprintf(', %s => [%s]', var_export('pureUnlessCallableIsImpure', true), $items);
 		}
 		$content .= sprintf(
 			"\t%s => [%s],\n",

@@ -4,9 +4,6 @@ namespace PHPStan\Reflection\BetterReflection;
 
 use Phar;
 use PhpParser\Parser;
-use PHPStan\BetterReflection\Identifier\Identifier;
-use PHPStan\BetterReflection\Identifier\IdentifierType;
-use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
@@ -23,6 +20,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLoc
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\BetterReflection\SourceLocator\LazySourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
@@ -31,7 +29,6 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocat
 use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
-use stdClass;
 use function array_merge;
 use function array_unique;
 use function count;
@@ -84,7 +81,7 @@ final class BetterReflectionSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
-		$initializer = function() {
+		$initializer = function () {
 			$locators = [
 				$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(
 					PHP_VERSION_ID < 80500
@@ -176,41 +173,7 @@ final class BetterReflectionSourceLocatorFactory
 			return new AggregateSourceLocator($locators);
 		};
 
-		$lazyLocator = new class($initializer) implements SourceLocator {
-			private ?SourceLocator $wrappedSourceLocator = null;
-
-			/**
-			 * @var callable():SourceLocator
-			 */
-			private $initializer;
-
-			/**
-			 * @param callable():SourceLocator $initializer
-			 */
-			public function __construct(callable $initializer)
-			{
-				$this->initializer = $initializer;
-			}
-
-			private function lazyInitialize(): SourceLocator {
-				if ($this->wrappedSourceLocator === null) {
-					$this->wrappedSourceLocator = ($this->initializer)();
-				}
-				return $this->wrappedSourceLocator;
-			}
-
-			public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?\PHPStan\BetterReflection\Reflection\Reflection
-			{
-				return $this->lazyInitialize()->locateIdentifier($reflector, $identifier);
-			}
-
-			public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
-			{
-				return $this->lazyInitialize()->locateIdentifiersByType($reflector, $identifierType);
-			}
-		};
-
-		return new MemoizingSourceLocator($lazyLocator);
+		return new MemoizingSourceLocator(new LazySourceLocator($initializer));
 	}
 
 }

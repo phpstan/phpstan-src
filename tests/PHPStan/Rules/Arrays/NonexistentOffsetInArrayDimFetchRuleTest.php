@@ -873,12 +873,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
 
-		$this->analyse([__DIR__ . '/data/array-dim-after-array-search.php'], [
-			[
-				'Offset int|string might not exist on non-empty-array.',
-				20,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/array-dim-after-array-search.php'], []);
 	}
 
 	public function testArrayDimFetchOnArrayKeyFirsOrLastOrCount(): void
@@ -1308,6 +1303,39 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->reportPossiblyNonexistentConstantArrayOffset = true;
 
 		$this->analyse([__DIR__ . '/data/bug-11218.php'], []);
+	}
+
+	public function testArraySearchExisting(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-search-existing.php'], [
+			[
+				'Offset false does not exist on array<string, int|string>.',
+				54,
+			],
+			[
+				'Offset string|false might not exist on array<string, int|string>.',
+				58,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testArrayFindKeyExisting(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-find-key-existing.php'], [
+			[
+				'Offset null does not exist on array{}.',
+				22,
+			],
+			[
+				'Offset int<0, max>|null might not exist on list<string>.',
+				26,
+			],
+		]);
 	}
 
 }

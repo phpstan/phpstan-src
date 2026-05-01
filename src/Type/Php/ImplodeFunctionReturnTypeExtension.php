@@ -19,8 +19,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_filter;
-use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -151,16 +149,16 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 			}
 		}
 
-		if ($isNonEmpty) {
-			$partials = array_values(array_filter($partials, static fn (array $parts): bool => $parts !== []));
-			if ($partials === []) {
-				return null;
-			}
-		}
-
 		$strings = [];
 		foreach ($partials as $partial) {
+			if ($partial === [] && $isNonEmpty) {
+				continue;
+			}
 			$strings[] = new ConstantStringType(implode($sep, $partial));
+		}
+
+		if ($strings === []) {
+			return null;
 		}
 
 		return TypeCombinator::union(...$strings);

@@ -301,6 +301,14 @@ final class PhpClassReflectionExtension
 			);
 		}
 
+		if ($resolvedPhpDoc === null && $constructorName !== null) {
+			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+				$declaringClassReflection,
+				$propertyName,
+				null,
+			);
+		}
+
 		if ($resolvedPhpDoc !== null) {
 			$varTags = $resolvedPhpDoc->getVarTags();
 			if (isset($varTags[0]) && count($varTags) === 1) {
@@ -326,37 +334,13 @@ final class PhpClassReflectionExtension
 			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 		}
 
-		if ($phpDocType === null) {
-			if (isset($constructorName)) {
-				$resolvedConstructorPhpDoc = $declaringClassReflection->getConstructor()->getResolvedPhpDoc();
-				if ($resolvedConstructorPhpDoc !== null) {
-					$paramTags = $resolvedConstructorPhpDoc->getParamTags();
-					if (isset($paramTags[$propertyReflection->getName()])) {
-						$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
-					}
+		if ($constructorName !== null && ($phpDocType === null || $docComment === null)) {
+			$resolvedConstructorPhpDoc = $declaringClassReflection->getConstructor()->getResolvedPhpDoc();
+			if ($resolvedConstructorPhpDoc !== null) {
+				$paramTags = $resolvedConstructorPhpDoc->getParamTags();
+				if (isset($paramTags[$propertyReflection->getName()])) {
+					$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
 				}
-			}
-		}
-
-		if ($phpDocType === null && $constructorName !== null) {
-			$inheritedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-				$declaringClassReflection,
-				$propertyName,
-				null,
-			);
-			if ($inheritedPhpDoc !== null) {
-				$varTags = $inheritedPhpDoc->getVarTags();
-				if (isset($varTags[0]) && count($varTags) === 1) {
-					$phpDocType = $varTags[0]->getType();
-				} elseif (isset($varTags[$propertyName])) {
-					$phpDocType = $varTags[$propertyName]->getType();
-				}
-				$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
-					$phpDocType,
-					$declaringClassReflection->getActiveTemplateTypeMap(),
-					$declaringClassReflection->getCallSiteVarianceMap(),
-					TemplateTypeVariance::createInvariant(),
-				) : null;
 			}
 		}
 

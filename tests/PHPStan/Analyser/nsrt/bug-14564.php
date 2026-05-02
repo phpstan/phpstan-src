@@ -193,3 +193,23 @@ class StringContainer implements Container {
 function test8(StringContainer $c): void {
 	assertType('string', $c->value);
 }
+
+// Private property in parent should not conflict with child's property
+class FooWithPrivate {
+	/** @var array<string> */
+	private array $items = [];
+}
+
+class BarWithPromoted extends FooWithPrivate {
+
+	public function __construct(
+		public array $items,
+	) {
+		parent::__construct();
+	}
+
+}
+
+function test9(BarWithPromoted $b): void {
+	assertType('array', $b->items);
+}

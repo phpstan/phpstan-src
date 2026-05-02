@@ -1090,7 +1090,7 @@ class ConstantArrayType implements Type
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if (count($this->keyTypes) === 0 && $this->unsealed === null) {
+		if (count($this->keyTypes) === 0 && !$this->isUnsealed()->yes()) {
 			return new ErrorType();
 		}
 

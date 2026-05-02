@@ -343,3 +343,19 @@ function doFoo(Generics $g, array $a, array $b, array $c, array $d): void {
 	assertType('stdClass', $g->infer($c));
 	assertType('stdClass', $g->infer($d));
 };
+
+/**
+ * @param array{a: int, b: string, ...<int, float>} $a
+ * @return void
+ */
+function unsealedForeach(array $a): void
+{
+	$i = 0;
+	foreach ($a as $k => $v) {
+		assertType("'a'|'b'|int", $k);
+		assertType('float|int|string', $v);
+		$i++;
+	}
+
+	assertType('int<2, max>', $i);
+}

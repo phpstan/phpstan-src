@@ -178,16 +178,6 @@ final class NativeFunctionReflectionProvider
 		return $functionReflection;
 	}
 
-	public function getFunctionPurityFromMetadata(string $functionName): ?bool
-	{
-		$lowerCasedFunctionName = strtolower($functionName);
-		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-			return !$this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects'];
-		}
-
-		return null;
-	}
-
 	private function getReturnTypeFromPhpDoc(ResolvedPhpDocBlock $phpDoc): ?Type
 	{
 		$returnTag = $phpDoc->getReturnTag();

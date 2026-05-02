@@ -322,10 +322,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
 		}
 
-		if ($isPure === null) {
-			$isPure = $this->nativeFunctionReflectionProvider->getFunctionPurityFromMetadata($functionName);
-		}
-
 		return $this->functionReflectionFactory->create(
 			$reflectionFunction,
 			$templateTypeMap,

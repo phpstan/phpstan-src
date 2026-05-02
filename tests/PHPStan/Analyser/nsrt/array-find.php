@@ -1,26 +1,4 @@
-<?php
-
-namespace {
-
-	if (!function_exists('array_find')) {
-		/**
-		 * @param array<mixed> $array
-		 * @param callable(mixed, array-key=): mixed $callback
-		 * @return mixed
-		 */
-		function array_find(array $array, callable $callback)
-		{
-			foreach ($array as $key => $value) {
-				if ($callback($value, $key)) { // @phpstan-ignore if.condNotBoolean
-					return $value;
-				}
-			}
-
-			return null;
-		}
-	}
-
-}
+<?php // lint >= 8.4
 
 namespace ArrayFind
 {

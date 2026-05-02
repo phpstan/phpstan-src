@@ -9,7 +9,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTextNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
-use PHPStan\Reflection\ClassReflection;
+use PHPStan\Rules\Methods\ParentMethodHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function preg_match;
@@ -27,6 +27,7 @@ final class InvalidInheritDocTagRule implements Rule
 	public function __construct(
 		private Lexer $phpDocLexer,
 		private PhpDocParser $phpDocParser,
+		private ParentMethodHelper $parentMethodHelper,
 	)
 	{
 	}
@@ -78,8 +79,23 @@ final class InvalidInheritDocTagRule implements Rule
 		$inheritanceClass = $scope->isInTrait() ? $scope->getTraitReflection() : $node->getClassReflection();
 		$methodName = $node->getMethodReflection()->getName();
 
-		if ($this->hasInheritablePhpDoc($inheritanceClass, $methodName)) {
-			return [];
+		$parentMethods = $this->parentMethodHelper->collectParentMethods($methodName, $inheritanceClass);
+
+		if ($parentMethods === []) {
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag %s on method %s::%s() does not override or implement any other method.',
+					$inheritDocTagName,
+					$inheritanceClass->getDisplayName(),
+					$methodName,
+				))->identifier('inheritDoc.noParent')->build(),
+			];
+		}
+
+		foreach ($parentMethods as [$parentMethod]) {
+			if ($parentMethod->getResolvedPhpDoc() !== null) {
+				return [];
+			}
 		}
 
 		return [
@@ -88,44 +104,8 @@ final class InvalidInheritDocTagRule implements Rule
 				$inheritDocTagName,
 				$inheritanceClass->getDisplayName(),
 				$methodName,
-			))->identifier('phpDoc.invalidInheritDoc')->build(),
+			))->identifier('inheritDoc.parentWithoutPhpDoc')->build(),
 		];
-	}
-
-	private function hasInheritablePhpDoc(ClassReflection $classReflection, string $methodName): bool
-	{
-		$parent = $classReflection->getParentClass();
-		if ($parent !== null && $this->parentHasPhpDocForMethod($parent, $methodName)) {
-			return true;
-		}
-
-		foreach ($classReflection->getImmediateInterfaces() as $interface) {
-			if ($this->parentHasPhpDocForMethod($interface, $methodName)) {
-				return true;
-			}
-		}
-
-		foreach ($classReflection->getTraits() as $trait) {
-			if ($this->parentHasPhpDocForMethod($trait, $methodName)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private function parentHasPhpDocForMethod(ClassReflection $parent, string $methodName): bool
-	{
-		if (!$parent->hasNativeMethod($methodName)) {
-			return false;
-		}
-
-		$parentMethod = $parent->getNativeMethod($methodName);
-		if ($parentMethod->isPrivate()) {
-			return false;
-		}
-
-		return $parentMethod->getResolvedPhpDoc() !== null;
 	}
 
 }

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPStan\Rules\Methods\ParentMethodHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -18,6 +19,7 @@ class InvalidInheritDocTagRuleTest extends RuleTestCase
 		return new InvalidInheritDocTagRule(
 			self::getContainer()->getByType(Lexer::class),
 			self::getContainer()->getByType(PhpDocParser::class),
+			self::getContainer()->getByType(ParentMethodHelper::class),
 		);
 	}
 
@@ -33,11 +35,11 @@ class InvalidInheritDocTagRuleTest extends RuleTestCase
 				52,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ClassWithoutParent::orphanedInheritDoc() refers to a parent method that does not have a PHPDoc.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ClassWithoutParent::orphanedInheritDoc() does not override or implement any other method.',
 				73,
 			],
 			[
-				'PHPDoc tag @inheritdoc on method InvalidInheritDocTag\ClassWithoutParent::orphanedBlockInheritDoc() refers to a parent method that does not have a PHPDoc.',
+				'PHPDoc tag @inheritdoc on method InvalidInheritDocTag\ClassWithoutParent::orphanedBlockInheritDoc() does not override or implement any other method.',
 				81,
 			],
 			[
@@ -45,19 +47,23 @@ class InvalidInheritDocTagRuleTest extends RuleTestCase
 				106,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithoutPhpDoc::traitMethodWithoutPhpDoc() refers to a parent method that does not have a PHPDoc.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithoutPhpDoc::traitMethodWithoutPhpDoc() does not override or implement any other method.',
 				216,
+			],
+			[
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithPhpDoc::traitMethodWithPhpDoc() does not override or implement any other method.',
+				231,
 			],
 			[
 				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\IssueExampleChild::f() refers to a parent method that does not have a PHPDoc.',
 				254,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ChildOfPrivateParentMethod::privateMethod() refers to a parent method that does not have a PHPDoc.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ChildOfPrivateParentMethod::privateMethod() does not override or implement any other method.',
 				280,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\OrphanedInheritDocTrait::orphaned() refers to a parent method that does not have a PHPDoc.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\OrphanedInheritDocTrait::orphaned() does not override or implement any other method.',
 				293,
 			],
 		]);

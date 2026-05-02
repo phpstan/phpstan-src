@@ -119,6 +119,100 @@ PHP;
 		self::assertSame($origOuter, $applied[0]);
 	}
 
+	public function testIdempotentDuplicateFixesOnSameNodeApplyOnce(): void
+	{
+		$code = <<<'PHP'
+<?php
+$a;
+PHP;
+
+		[$origStmts, $cloneStmts] = $this->parseAndClone($code);
+
+		$finder = new NodeFinder();
+		$origVar = $finder->findFirstInstanceOf($origStmts, Node\Expr\Variable::class);
+		self::assertInstanceOf(Node\Expr\Variable::class, $origVar);
+
+		$visitor = new BatchReplacingNodeVisitor([
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('safe', $n),
+			],
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('safe', $n),
+			],
+		]);
+
+		$result = $this->runVisitor($cloneStmts, $visitor);
+
+		self::assertSame('safe($a);', $result);
+		self::assertCount(1, $visitor->getAppliedOriginalNodes());
+	}
+
+	public function testConflictingFixesOnSameNodeAreSkipped(): void
+	{
+		$code = <<<'PHP'
+<?php
+$a;
+PHP;
+
+		[$origStmts, $cloneStmts] = $this->parseAndClone($code);
+
+		$finder = new NodeFinder();
+		$origVar = $finder->findFirstInstanceOf($origStmts, Node\Expr\Variable::class);
+		self::assertInstanceOf(Node\Expr\Variable::class, $origVar);
+
+		$visitor = new BatchReplacingNodeVisitor([
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('A', $n),
+			],
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('B', $n),
+			],
+		]);
+
+		$result = $this->runVisitor($cloneStmts, $visitor);
+
+		self::assertSame('$a;', $result);
+		self::assertSame([], $visitor->getAppliedOriginalNodes());
+	}
+
+	public function testConflictedNodeStaysSkippedEvenWhenLaterFixAgrees(): void
+	{
+		$code = <<<'PHP'
+<?php
+$a;
+PHP;
+
+		[$origStmts, $cloneStmts] = $this->parseAndClone($code);
+
+		$finder = new NodeFinder();
+		$origVar = $finder->findFirstInstanceOf($origStmts, Node\Expr\Variable::class);
+		self::assertInstanceOf(Node\Expr\Variable::class, $origVar);
+
+		$visitor = new BatchReplacingNodeVisitor([
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('A', $n),
+			],
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('B', $n),
+			],
+			[
+				'node' => $origVar,
+				'callable' => static fn (Node $n): Node => self::wrap('A', $n),
+			],
+		]);
+
+		$result = $this->runVisitor($cloneStmts, $visitor);
+
+		self::assertSame('$a;', $result);
+		self::assertSame([], $visitor->getAppliedOriginalNodes());
+	}
+
 	/**
 	 * @param non-empty-string $name
 	 */

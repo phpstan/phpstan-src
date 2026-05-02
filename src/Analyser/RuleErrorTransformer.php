@@ -28,8 +28,11 @@ use PHPStan\Rules\TipRuleError;
 use PHPStan\ShouldNotHappenException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use function array_slice;
+use function count;
 use function get_class;
 use function hash;
+use function implode;
 use function spl_object_id;
 use function str_contains;
 use function str_repeat;
@@ -127,6 +130,7 @@ final class RuleErrorTransformer
 			$canBeIgnored = false;
 		}
 
+		$wasFixable = $ruleError instanceof FixableNodeRuleError;
 		$error = new Error(
 			$ruleError->getMessage(),
 			$fileName,
@@ -139,14 +143,25 @@ final class RuleErrorTransformer
 			get_class($node),
 			$identifier,
 			$metadata,
-			null,
+			wasFixable: $wasFixable,
 		);
 
 		$pendingFix = null;
-		if ($ruleError instanceof FixableNodeRuleError) {
+		if ($wasFixable) {
 			if ($ruleError->getOriginalNode() instanceof VirtualNode) {
 				throw new ShouldNotHappenException('Cannot fix virtual node');
 			}
+
+			if ($scope->isInTrait() && !$scope->isInClass()) {
+				$error = $error->withAppendedTip(
+					'Auto-fix skipped: this trait has no consumer in the analysed code, '
+					. 'so the fix cannot be validated against the contexts it would run in. '
+					. 'Resolve manually.',
+				);
+
+				return [$error, null];
+			}
+
 			$fixingFile = $traitFilePath ?? $filePath;
 
 			$originalNode = $ruleError->getOriginalNode();
@@ -156,11 +171,17 @@ final class RuleErrorTransformer
 				throw new ShouldNotHappenException('Cannot print VirtualNode.');
 			}
 
+			$consumerClass = null;
+			if ($scope->isInTrait() && $scope->isInClass()) {
+				$consumerClass = $scope->getClassReflection()->getName();
+			}
+
 			$pendingFix = new PendingFix(
 				$error,
 				$originalNode,
 				static fn (Node $clonedNode): Node => $newNode,
 				$fixingFile,
+				$consumerClass,
 			);
 		}
 
@@ -170,11 +191,11 @@ final class RuleErrorTransformer
 	/**
 	 * @param array<string, list<PendingFix>> $pendingFixesByFile
 	 * @param array<string, Node\Stmt[]> $parserNodesByFile
-	 * @return array<int, FixedErrorDiff>
 	 */
-	public function finalizePendingFixes(array $pendingFixesByFile, array $parserNodesByFile): array
+	public function finalizePendingFixes(array $pendingFixesByFile, array $parserNodesByFile): FinalizedPendingFixes
 	{
 		$diffsByErrorId = [];
+		$skipReasonByErrorId = [];
 
 		foreach ($pendingFixesByFile as $filePath => $pendingFixes) {
 			if ($pendingFixes === []) {
@@ -191,29 +212,79 @@ final class RuleErrorTransformer
 				$batchFixes[] = [
 					'node' => $pendingFix->originalNode,
 					'callable' => $pendingFix->newNodeCallable,
+					'consumerClass' => $pendingFix->consumerClass,
 				];
 			}
 			$replacing = new BatchReplacingNodeVisitor($batchFixes);
 
 			$diff = $this->buildDiffFromVisitor($filePath, $fileNodes, $replacing);
-			if ($diff === null) {
-				continue;
-			}
 
 			$appliedSet = [];
 			foreach ($replacing->getAppliedOriginalNodes() as $applied) {
 				$appliedSet[spl_object_id($applied)] = true;
 			}
 
+			$conflictClusters = $replacing->getConflictClustersByOriginalNodeId();
+
 			foreach ($pendingFixes as $pendingFix) {
-				if (!isset($appliedSet[spl_object_id($pendingFix->originalNode)])) {
+				$nodeId = spl_object_id($pendingFix->originalNode);
+				if (isset($appliedSet[$nodeId])) {
+					if ($diff !== null) {
+						$diffsByErrorId[spl_object_id($pendingFix->error)] = $diff;
+					}
 					continue;
 				}
-				$diffsByErrorId[spl_object_id($pendingFix->error)] = $diff;
+
+				if (isset($conflictClusters[$nodeId])) {
+					$skipReasonByErrorId[spl_object_id($pendingFix->error)] =
+						self::formatConflictReport($conflictClusters[$nodeId]);
+				}
 			}
 		}
 
-		return $diffsByErrorId;
+		return new FinalizedPendingFixes($diffsByErrorId, $skipReasonByErrorId);
+	}
+
+	/**
+	 * @param array<string, list<string|null>> $clusters
+	 */
+	private static function formatConflictReport(array $clusters): string
+	{
+		$groups = [];
+		foreach ($clusters as $consumers) {
+			$names = [];
+			foreach ($consumers as $consumer) {
+				$names[] = $consumer ?? '<file-level>';
+			}
+			$groups[] = self::joinClassList($names);
+		}
+
+		$differs = $groups[0];
+		for ($i = 1; $i < count($groups); $i++) {
+			$differs .= ' differs from fix in ' . $groups[$i];
+		}
+
+		return 'Auto-fix skipped: trait consumers proposed conflicting rewrites. Fix in context of '
+			. $differs . '.';
+	}
+
+	/**
+	 * @param list<string> $names
+	 */
+	private static function joinClassList(array $names): string
+	{
+		$count = count($names);
+		$noun = $count === 1 ? 'class' : 'classes';
+		if ($count <= 1) {
+			return $noun . ' ' . ($names[0] ?? '');
+		}
+		if ($count === 2) {
+			return $noun . ' ' . $names[0] . ' and ' . $names[1];
+		}
+		$last = $names[$count - 1];
+		$head = array_slice($names, 0, $count - 1);
+
+		return $noun . ' ' . implode(', ', $head) . ', and ' . $last;
 	}
 
 	/**

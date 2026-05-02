@@ -252,4 +252,32 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertSame($expectedTip, $json['files']['/foo/bar.php']['messages'][0]['tip']);
 	}
 
+	public function testFormatSkippedFixErrorRendersTipAndIdentifier(): void
+	{
+		$skipReason = 'Auto-fix skipped: trait consumers proposed conflicting rewrites. '
+			. 'Fix in context of class A differs from fix in class B.';
+		$error = new Error(
+			'is_string($x) is equivalent to !== null here. Use the latter.',
+			'/path/to/Trait.php',
+			4,
+			tip: $skipReason,
+			identifier: 'app.type.forbidUselessIsTypeFunction',
+			wasFixable: true,
+		);
+
+		$formatter = new JsonErrorFormatter(false);
+		$formatter->formatErrors(
+			new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []),
+			$this->getOutput(),
+		);
+
+		$json = Json::decode($this->getOutputContent(), Json::FORCE_ARRAY);
+		$message = $json['files']['/path/to/Trait.php']['messages'][0];
+
+		self::assertSame('is_string($x) is equivalent to !== null here. Use the latter.', $message['message']);
+		self::assertSame(4, $message['line']);
+		self::assertSame('app.type.forbidUselessIsTypeFunction', $message['identifier']);
+		self::assertSame($skipReason, $message['tip']);
+	}
+
 }

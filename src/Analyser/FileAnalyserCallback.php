@@ -316,19 +316,27 @@ final class FileAnalyserCallback
 			$parserNodesByFile[$fixingFilePath] = $this->parser->parseFile($fixingFilePath);
 		}
 
-		$diffsByErrorId = $this->ruleErrorTransformer->finalizePendingFixes(
+		$result = $this->ruleErrorTransformer->finalizePendingFixes(
 			$this->pendingFixesByFile,
 			$parserNodesByFile,
 		);
 
-		if ($diffsByErrorId === []) {
+		if ($result->diffsByErrorId === [] && $result->skipReasonByErrorId === []) {
 			return $this->temporaryFileErrors;
 		}
 
 		$finalErrors = [];
 		foreach ($this->temporaryFileErrors as $error) {
-			$diff = $diffsByErrorId[spl_object_id($error)] ?? null;
-			$finalErrors[] = $diff !== null ? $error->withFixedErrorDiff($diff) : $error;
+			$id = spl_object_id($error);
+			$diff = $result->diffsByErrorId[$id] ?? null;
+			if ($diff !== null) {
+				$error = $error->withFixedErrorDiff($diff);
+			}
+			$skipReason = $result->skipReasonByErrorId[$id] ?? null;
+			if ($skipReason !== null) {
+				$error = $error->withAppendedTip($skipReason);
+			}
+			$finalErrors[] = $error;
 		}
 
 		return $finalErrors;

@@ -618,6 +618,55 @@ TABLE,
 		);
 	}
 
+	public function testFormatSkippedFixErrorRendersIdentifierAndTip(): void
+	{
+		putenv('COLUMNS=170');
+		$formatter = $this->createErrorFormatter(null);
+		$formatter->formatErrors(
+			new AnalysisResult(
+				[
+					new Error(
+						'is_string($x) is equivalent to !== null here. Use the latter.',
+						'Trait.php',
+						4,
+						tip: 'Auto-fix skipped: trait consumers proposed conflicting rewrites. '
+							. 'Fix in context of class A differs from fix in class B.',
+						identifier: 'app.type.forbidUselessIsTypeFunction',
+						wasFixable: true,
+					),
+				],
+				[],
+				[],
+				[],
+				[],
+				false,
+				null,
+				true,
+				0,
+				false,
+				[],
+			),
+			$this->getOutput(),
+		);
+		$this->assertSame(
+			<<<'TABLE'
+ ------ -----------------------------------------------------------------------------------------------------------------------------
+  Line   Trait.php
+ ------ -----------------------------------------------------------------------------------------------------------------------------
+  4      is_string($x) is equivalent to !== null here. Use the latter.
+         🪪  app.type.forbidUselessIsTypeFunction
+         💡  Auto-fix skipped: trait consumers proposed conflicting rewrites. Fix in context of class A differs from fix in class B.
+ ------ -----------------------------------------------------------------------------------------------------------------------------
+
+
+ [ERROR] Found 1 error
+
+
+TABLE,
+			$this->getOutputContent(),
+		);
+	}
+
 	public function testJetBrainsTerminalRelativePath(): void
 	{
 		putenv('TERMINAL_EMULATOR=JetBrains-JediTerm');

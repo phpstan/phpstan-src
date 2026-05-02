@@ -40,6 +40,7 @@ final class Error implements JsonSerializable
 		private ?string $identifier = null,
 		private array $metadata = [],
 		private ?FixedErrorDiff $fixedErrorDiff = null,
+		private bool $wasFixable = false,
 	)
 	{
 		if ($this->identifier !== null && !self::validateIdentifier($this->identifier)) {
@@ -85,6 +86,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->wasFixable,
 		);
 	}
 
@@ -103,6 +105,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->wasFixable,
 		);
 	}
 
@@ -150,6 +153,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->wasFixable,
 		);
 	}
 
@@ -172,6 +176,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->wasFixable,
 		);
 	}
 
@@ -194,6 +199,7 @@ final class Error implements JsonSerializable
 			$identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->wasFixable,
 		);
 	}
 
@@ -279,6 +285,37 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$fixedErrorDiff,
+			$this->wasFixable,
+		);
+	}
+
+	/**
+	 * @internal Experimental
+	 */
+	public function wasFixable(): bool
+	{
+		return $this->wasFixable;
+	}
+
+	/**
+	 * @internal Experimental
+	 */
+	public function withAppendedTip(string $extraTip): self
+	{
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip === null ? $extraTip : $this->tip . "\n" . $extraTip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+			$this->wasFixable,
 		);
 	}
 
@@ -310,6 +347,7 @@ final class Error implements JsonSerializable
 			'metadata' => $this->metadata,
 			'fixedErrorDiffHash' => $fixedErrorDiffHash,
 			'fixedErrorDiffDiff' => $fixedErrorDiffDiff,
+			'wasFixable' => $this->wasFixable,
 		];
 	}
 
@@ -336,6 +374,7 @@ final class Error implements JsonSerializable
 			$json['identifier'] ?? null,
 			$json['metadata'] ?? [],
 			$fixedErrorDiff,
+			$json['wasFixable'] ?? false,
 		);
 	}
 
@@ -357,6 +396,7 @@ final class Error implements JsonSerializable
 			$properties['identifier'] ?? null,
 			$properties['metadata'] ?? [],
 			$properties['fixedErrorDiff'] ?? null,
+			$properties['wasFixable'] ?? false,
 		);
 	}
 

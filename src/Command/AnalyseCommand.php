@@ -514,16 +514,20 @@ final class AnalyseCommand extends Command
 
 		if ($fix) {
 			$fixableErrors = [];
+			$preSkippedErrors = [];
 			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if ($fileSpecificError->getFixedErrorDiff() === null) {
+				if ($fileSpecificError->getFixedErrorDiff() !== null) {
+					$fixableErrors[] = $fileSpecificError;
 					continue;
 				}
-
-				$fixableErrors[] = $fileSpecificError;
+				if ($fileSpecificError->wasFixable()) {
+					$preSkippedErrors[] = $fileSpecificError;
+				}
 			}
 
 			$fixableErrorsCount = count($fixableErrors);
-			if ($fixableErrorsCount === 0) {
+			$preSkippedCount = count($preSkippedErrors);
+			if ($fixableErrorsCount === 0 && $preSkippedCount === 0) {
 				$inceptionResult->getStdOutput()->getStyle()->error('No fixable errors found');
 				$exitCode = 1;
 			} else {
@@ -542,8 +546,10 @@ final class AnalyseCommand extends Command
 					$diffsByFile[$fixFile][] = $fixableError->getFixedErrorDiff();
 				}
 
-				$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
-				$errorOutput->getStyle()->progressStart($fixableErrorsCount);
+				if ($fixableErrorsCount > 0) {
+					$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
+					$errorOutput->getStyle()->progressStart($fixableErrorsCount);
+				}
 
 				$patcher = $container->getByType(Patcher::class);
 				foreach ($diffsByFile as $file => $diffs) {
@@ -560,24 +566,46 @@ final class AnalyseCommand extends Command
 					FileWriter::write($file, $finalFileContents);
 				}
 
-				$errorOutput->getStyle()->progressFinish();
+				if ($fixableErrorsCount > 0) {
+					$errorOutput->getStyle()->progressFinish();
+				}
 
-				if ($skippedCount > 0) {
+				if ($preSkippedCount > 0) {
+					$skippedAnalysisResult = new AnalysisResult(
+						$preSkippedErrors,
+						[],
+						[],
+						[],
+						[],
+						$analysisResult->isDefaultLevelUsed(),
+						$analysisResult->getProjectConfigFile(),
+						false,
+						$analysisResult->getPeakMemoryUsageBytes(),
+						false,
+						[],
+						[],
+					);
+					$errorFormatter->formatErrors($skippedAnalysisResult, $inceptionResult->getStdOutput());
+				}
+
+				$totalSkipped = $skippedCount + $preSkippedCount;
+				if ($totalSkipped > 0) {
 					$inceptionResult->getStdOutput()->getStyle()->warning(sprintf(
 						'%d %s fixed, %d %s skipped',
 						$fixableErrorsCount,
 						$fixableErrorsCount === 1 ? 'error' : 'errors',
-						$skippedCount,
-						$skippedCount === 1 ? 'error' : 'errors',
+						$totalSkipped,
+						$totalSkipped === 1 ? 'error' : 'errors',
 					));
+					$exitCode = 1;
 				} else {
 					$inceptionResult->getStdOutput()->getStyle()->success(sprintf(
 						'%d %s fixed',
 						$fixableErrorsCount,
 						$fixableErrorsCount === 1 ? 'error' : 'errors',
 					));
+					$exitCode = 0;
 				}
-				$exitCode = 0;
 			}
 		} else {
 			if (AgentDetector::isRunningInAgent() && count($analysisResult->getFileSpecificErrors()) > 0) {

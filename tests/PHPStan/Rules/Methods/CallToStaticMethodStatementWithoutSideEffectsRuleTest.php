@@ -52,6 +52,10 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				12,
 			],
 			[
+				'Call to static method DateTimeImmutable::createFromFormat() on a separate line has no effect.',
+				13,
+			],
+			[
 				'Call to method DateTime::format() on a separate line has no effect.',
 				23,
 			],

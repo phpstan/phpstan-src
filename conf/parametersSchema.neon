@@ -47,6 +47,7 @@ parametersSchema:
 		curlSetOptArrayTypes: bool()
 		checkDateIntervalConstructor: bool()
 		reportMethodPurityOverride: bool()
+		reportInvalidInheritDocTag: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

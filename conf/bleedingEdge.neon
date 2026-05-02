@@ -16,3 +16,4 @@ parameters:
 		reportNestedTooWideType: false # tmp
 		assignToByRefForeachExpr: true
 		curlSetOptArrayTypes: true
+		reportInvalidInheritDocTag: true

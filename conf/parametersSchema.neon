@@ -45,6 +45,7 @@ parametersSchema:
 		reportNestedTooWideType: bool()
 		assignToByRefForeachExpr: bool()
 		curlSetOptArrayTypes: bool()
+		reportInvalidInheritDocTag: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

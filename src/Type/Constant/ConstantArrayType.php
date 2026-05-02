@@ -1090,7 +1090,7 @@ class ConstantArrayType implements Type
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if (count($this->keyTypes) === 0) {
+		if (count($this->keyTypes) === 0 && $this->unsealed === null) {
 			return new ErrorType();
 		}
 
@@ -1114,6 +1114,16 @@ class ConstantArrayType implements Type
 			}
 
 			$matchingValueTypes[] = $this->valueTypes[$i];
+		}
+
+		// Unsealed extras may also satisfy the offset — when their key type
+		// overlaps with the requested offset, their value is a possible result.
+		if ($this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			$isExplicitNever = $unsealedKeyType instanceof NeverType && $unsealedKeyType->isExplicit();
+			if (!$isExplicitNever && !$unsealedKeyType->isSuperTypeOf($offsetType)->no()) {
+				$matchingValueTypes[] = $unsealedValueType;
+			}
 		}
 
 		if ($all && !$this->isUnsealed()->yes()) {

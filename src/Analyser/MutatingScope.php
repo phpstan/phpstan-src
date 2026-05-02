@@ -2654,6 +2654,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
+			// When the byref's dim is non-constant AND not enumerable as a
+			// finite set of scalars (e.g. general `int` or `mixed`), the just-
+			// performed write to $array might or might not have hit the byref's
+			// slot. Union the new $array[dim] read with the byref's previous
+			// type and the pre-write $array[dim] so values that could still be
+			// at the slot (unmodified or shadowed by an explicit-key overwrite)
+			// survive. For finitely-enumerable dims (e.g. `bool`, `int<0, 5>`)
+			// the array literal builder enumerates all possibilities, so the
+			// new $array[dim] read already covers every reachable slot.
+			$unionWithOld = false;
+			if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->dim !== null) {
+				$dimType = $scope->getType($assignedExpr->dim);
+				if (count($dimType->getConstantScalarValues()) !== 1 && count($dimType->getFiniteTypes()) === 0) {
+					$unionWithOld = true;
+				}
+			}
+
+			$assignedType = $scope->getType($assignedExpr);
+			$assignedNativeType = $scope->getNativeType($assignedExpr);
+
 			$has = $scope->hasExpressionType($expressionType->getExpr()->getExpr());
 			if (
 				$expressionType->getExpr()->getExpr() instanceof Variable
@@ -2664,10 +2684,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				if (in_array($targetVarName, $intertwinedPropagatedFrom, true)) {
 					continue;
 				}
+				if ($unionWithOld) {
+					$targetVarNode = new Variable($targetVarName);
+					$assignedType = TypeCombinator::union(
+						$assignedType,
+						$this->getType($assignedExpr),
+						$scope->getType($targetVarNode),
+					);
+					$assignedNativeType = TypeCombinator::union(
+						$assignedNativeType,
+						$this->getNativeType($assignedExpr),
+						$scope->getNativeType($targetVarNode),
+					);
+				}
 				$scope = $scope->assignVariable(
 					$targetVarName,
-					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
-					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
+					$assignedType,
+					$assignedNativeType,
 					$has,
 					array_merge($intertwinedPropagatedFrom, [$variableName]),
 				);
@@ -2678,8 +2711,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				}
 				$scope = $scope->assignExpression(
 					$expressionType->getExpr()->getExpr(),
-					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
-					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
+					$assignedType,
+					$assignedNativeType,
 				);
 			}
 		}

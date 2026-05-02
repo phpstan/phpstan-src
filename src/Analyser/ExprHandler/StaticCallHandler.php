@@ -145,7 +145,7 @@ final class StaticCallHandler implements ExprHandler
 					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 				}
 			} elseif ($expr->class instanceof Expr) {
-				$classType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
+				$classType = $scope->getType($expr->class)->getObjectTypeOrClassStringObjectType();
 				$methodName = $expr->name->name;
 				$methodReflection = $scope->getMethodReflection($classType, $methodName);
 				if ($methodReflection !== null) {

@@ -565,4 +565,44 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14320.php'], []);
 	}
 
+	public function testBug14563(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-14563.php'], [
+			[
+				'Impure method Bug14563\ChildImpureOverridesPure::pure() overrides pure method Bug14563\Foo::pure().',
+				31,
+			],
+			[
+				'Impure method Bug14563\ImpureImplementation::pureMethod() overrides pure method Bug14563\PureInterface::pureMethod().',
+				93,
+			],
+			[
+				'Impure method Bug14563\ImpureChildOfAllMethodsPure::method() overrides pure method Bug14563\AllMethodsPureParent::method().',
+				126,
+			],
+			[
+				'Impure method Bug14563\ImpureTraitUser::pureTraitMethod() overrides pure method Bug14563\PureTrait::pureTraitMethod().',
+				147,
+			],
+			[
+				'Impure method Bug14563\ChildImpureOverridesPureExtended::pure() overrides pure method Bug14563\Foo::pure().',
+				158,
+			],
+			[
+				'Impure method Bug14563\GrandchildImpureOverridesPure::pure() overrides pure method Bug14563\ChildPureOverridesPure::pure().',
+				169,
+			],
+			[
+				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceA::sharedMethod().',
+				207,
+			],
+			[
+				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceB::sharedMethod().',
+				207,
+			],
+		]);
+	}
+
 }

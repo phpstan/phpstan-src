@@ -66,6 +66,16 @@ final class MethodSignatureRule implements Rule
 		$errors = [];
 		$declaringClass = $method->getDeclaringClass();
 		foreach ($this->parentMethodHelper->collectParentMethods($methodName, $method->getDeclaringClass()) as [$parentMethod, $parentMethodDeclaringClass]) {
+			if ($method->isPure()->no() && $parentMethod->isPure()->yes()) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Impure method %s::%s() overrides pure method %s::%s().',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$parentMethodDeclaringClass->getDisplayName(),
+					$parentMethod->getName(),
+				))->identifier('method.impureOverridePure')->build();
+			}
+
 			$parentVariants = $parentMethod->getVariants();
 			if (count($parentVariants) !== 1) {
 				continue;

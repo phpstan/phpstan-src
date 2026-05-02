@@ -130,27 +130,6 @@ class ImpureChildOfAllMethodsPure extends AllMethodsPureParent
 
 }
 
-trait PureTrait
-{
-
-	/** @phpstan-pure */
-	abstract public function pureTraitMethod(): int;
-
-}
-
-class ImpureTraitUser
-{
-
-	use PureTrait;
-
-	/** @phpstan-impure */
-	public function pureTraitMethod(): int
-	{
-		return random_int(0, 1);
-	}
-
-}
-
 class ChildImpureOverridesPureExtended extends Foo
 {
 

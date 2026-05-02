@@ -569,7 +569,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 	{
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
-		$errors = [
+		$this->analyse([__DIR__ . '/data/bug-14563.php'], [
 			[
 				'Impure method Bug14563\ChildImpureOverridesPure::pure() overrides pure method Bug14563\Foo::pure().',
 				31,
@@ -582,42 +582,44 @@ class MethodSignatureRuleTest extends RuleTestCase
 				'Impure method Bug14563\ImpureChildOfAllMethodsPure::method() overrides pure method Bug14563\AllMethodsPureParent::method().',
 				126,
 			],
-		];
-
-		if (PHP_VERSION_ID >= 80000) {
-			$errors[] = [
-				'Impure method Bug14563\ImpureTraitUser::pureTraitMethod() overrides pure method Bug14563\PureTrait::pureTraitMethod().',
-				147,
-			];
-		}
-
-		$errors = array_merge($errors, [
 			[
 				'Impure method Bug14563\ChildImpureOverridesPureExtended::pure() overrides pure method Bug14563\Foo::pure().',
-				158,
+				137,
 			],
 			[
 				'Impure method Bug14563\GrandchildImpureOverridesPure::pure() overrides pure method Bug14563\ChildPureOverridesPure::pure().',
-				169,
+				148,
 			],
 			[
 				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceA::sharedMethod().',
-				207,
+				186,
 			],
 			[
 				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceB::sharedMethod().',
-				207,
+				186,
 			],
 			[
 				'Impure method Bug14563\StaticChildImpureOverridesPure::pure() overrides pure method Bug14563\StaticFoo::pure().',
-				240,
+				219,
 			],
 			[
 				'Impure method Bug14563\StaticImpureImplementation::pureMethod() overrides pure method Bug14563\StaticPureInterface::pureMethod().',
-				291,
+				270,
 			],
 		]);
-		$this->analyse([__DIR__ . '/data/bug-14563.php'], $errors);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14563Trait(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-14563-trait.php'], [
+			[
+				'Impure method Bug14563Trait\ImpureTraitUser::pureTraitMethod() overrides pure method Bug14563Trait\PureTrait::pureTraitMethod().',
+				19,
+			],
+		]);
 	}
 
 }

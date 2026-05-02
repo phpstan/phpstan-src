@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\Nette\NetteContainer;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
@@ -850,6 +851,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 			false,
+			$container->getByType(FixIgnorePolicyFactory::class),
 		);
 
 		return new Analyser(

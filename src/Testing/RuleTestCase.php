@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Fixable\Patcher;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -140,6 +141,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
+				self::getContainer()->getByType(FixIgnorePolicyFactory::class),
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,

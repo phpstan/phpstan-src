@@ -11,6 +11,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
@@ -73,6 +74,7 @@ final class FileAnalyserCallback
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
+		private FixIgnorePolicyFactory $fixIgnorePolicyFactory,
 		private array $processedFiles,
 	)
 	{
@@ -316,9 +318,22 @@ final class FileAnalyserCallback
 			$parserNodesByFile[$fixingFilePath] = $this->parser->parseFile($fixingFilePath);
 		}
 
+		$errorsByFixingFile = [];
+		foreach ($this->pendingFixesByFile as $fixingFilePath => $pendingFixes) {
+			$errorsByFixingFile[$fixingFilePath] = [];
+			foreach ($pendingFixes as $pendingFix) {
+				$errorsByFixingFile[$fixingFilePath][] = $pendingFix->error;
+			}
+		}
+		$policy = $this->fixIgnorePolicyFactory->buildForFiles(
+			$errorsByFixingFile,
+			$this->linesToIgnore,
+		);
+
 		$result = $this->ruleErrorTransformer->finalizePendingFixes(
 			$this->pendingFixesByFile,
 			$parserNodesByFile,
+			$policy,
 		);
 
 		if ($result->diffsByErrorId === [] && $result->skipReasonByErrorId === []) {

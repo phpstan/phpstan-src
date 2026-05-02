@@ -12,6 +12,7 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
@@ -62,6 +63,7 @@ final class FileAnalyser
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
 		private bool $reportIgnoresWithoutComments,
+		private FixIgnorePolicyFactory $fixIgnorePolicyFactory,
 	)
 	{
 	}
@@ -112,6 +114,7 @@ final class FileAnalyser
 					$this->parser,
 					$this->dependencyResolver,
 					$this->ruleErrorTransformer,
+					$this->fixIgnorePolicyFactory,
 					$processedFiles,
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);

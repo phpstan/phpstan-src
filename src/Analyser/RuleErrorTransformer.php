@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\BatchReplacingNodeVisitor;
+use PHPStan\Fixable\FixIgnorePolicy;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
@@ -28,7 +29,9 @@ use PHPStan\Rules\TipRuleError;
 use PHPStan\ShouldNotHappenException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use function array_filter;
 use function array_slice;
+use function array_values;
 use function count;
 use function get_class;
 use function hash;
@@ -192,7 +195,11 @@ final class RuleErrorTransformer
 	 * @param array<string, list<PendingFix>> $pendingFixesByFile
 	 * @param array<string, Node\Stmt[]> $parserNodesByFile
 	 */
-	public function finalizePendingFixes(array $pendingFixesByFile, array $parserNodesByFile): FinalizedPendingFixes
+	public function finalizePendingFixes(
+		array $pendingFixesByFile,
+		array $parserNodesByFile,
+		?FixIgnorePolicy $policy = null,
+	): FinalizedPendingFixes
 	{
 		$diffsByErrorId = [];
 		$skipReasonByErrorId = [];
@@ -205,6 +212,16 @@ final class RuleErrorTransformer
 			$fileNodes = $parserNodesByFile[$filePath] ?? null;
 			if ($fileNodes === null) {
 				continue;
+			}
+
+			if ($policy !== null) {
+				$pendingFixes = array_values(array_filter(
+					$pendingFixes,
+					static fn (PendingFix $fix): bool => !$policy->shouldDrop($fix->error),
+				));
+				if ($pendingFixes === []) {
+					continue;
+				}
 			}
 
 			$batchFixes = [];

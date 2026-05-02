@@ -42,6 +42,14 @@ final class IgnoredErrorHelperResult
 	}
 
 	/**
+	 * @return (string|mixed[])[]
+	 */
+	public function getIgnoreErrors(): array
+	{
+		return $this->ignoreErrors;
+	}
+
+	/**
 	 * @param list<Error> $errors
 	 * @param string[] $analysedFiles
 	 */

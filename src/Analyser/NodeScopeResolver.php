@@ -4030,9 +4030,10 @@ class NodeScopeResolver
 		$hasUnsealed = false;
 		foreach ($constantArrays as $constantArray) {
 			$totalKeys += count($constantArray->getKeyTypes());
-			if ($constantArray->isUnsealed()->yes()) {
-				$hasUnsealed = true;
+			if (!$constantArray->isUnsealed()->yes()) {
+				continue;
 			}
+			$hasUnsealed = true;
 		}
 		if ($totalKeys === 0 || $totalKeys > self::FOREACH_UNROLL_LIMIT) {
 			return null;

@@ -359,3 +359,37 @@ function unsealedForeach(array $a): void
 
 	assertType('int<2, max>', $i);
 }
+
+/**
+ * Reading an offset from an unsealed array shape: explicit keys fully own
+ * their slots (PHP keys are unique), so the unsealed extras only contribute
+ * at offsets that fall outside the explicit set. Without this distinction,
+ * `$a['a']` would widen to `int|string` instead of the precise `int`.
+ *
+ * @param array{a: int, b: int, ...<string, string>} $a
+ * @param array{a: int, ...<string, string>} $b
+ * @param array{a: int, ...<string, string>} $c
+ * @param array{a: int, ...<int, string>} $d
+ * @param array{a: int, ...} $e
+ */
+function unsealedOffsetAccess(array $a, array $b, array $c, array $d, array $e, string $s, int $i): void
+{
+	// Explicit key fully covers offset → only the explicit value
+	assertType('int', $a['a']);
+	assertType('int', $a['b']);
+
+	// Offset is a string constant not in the explicit set → unsealed value only
+	assertType('string', $b['z']);
+
+	// Offset is a general string: 'a' part hits the explicit slot, every other
+	// string falls through to the unsealed extras → union of both
+	assertType('int|string', $c[$s]);
+
+	// Unsealed key is `int`, offset is a non-matching string → only the
+	// explicit slot can contribute (string offset can't match unsealed `int` key)
+	assertType('int', $d['a']);
+
+	// Open shape (`...` ≡ `...<array-key, mixed>`): an int offset can never
+	// hit the explicit string key 'a', so it's purely from the unsealed extras
+	assertType('mixed', $e[$i]);
+}

@@ -602,6 +602,14 @@ class MethodSignatureRuleTest extends RuleTestCase
 				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceB::sharedMethod().',
 				207,
 			],
+			[
+				'Impure method Bug14563\StaticChildImpureOverridesPure::pure() overrides pure method Bug14563\StaticFoo::pure().',
+				240,
+			],
+			[
+				'Impure method Bug14563\StaticImpureImplementation::pureMethod() overrides pure method Bug14563\StaticPureInterface::pureMethod().',
+				291,
+			],
 		]);
 	}
 

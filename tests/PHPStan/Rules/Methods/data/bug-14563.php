@@ -210,3 +210,87 @@ class ImpureMultipleInterfaces implements PureInterfaceA, PureInterfaceB
 	}
 
 }
+
+class StaticFoo
+{
+
+	/** @phpstan-pure */
+	public static function pure(): int
+	{
+		return 1;
+	}
+
+	/** @phpstan-impure */
+	public static function impure(): int
+	{
+		return random_int(0, 1);
+	}
+
+	public static function noAnnotation(): int
+	{
+		return 1;
+	}
+
+}
+
+class StaticChildImpureOverridesPure extends StaticFoo
+{
+
+	/** @phpstan-impure */
+	public static function pure(): int
+	{
+		return random_int(0, 1);
+	}
+
+}
+
+class StaticChildNoAnnotationOverridesPure extends StaticFoo
+{
+
+	public static function pure(): int
+	{
+		return 2;
+	}
+
+}
+
+class StaticChildPureOverridesPure extends StaticFoo
+{
+
+	/** @phpstan-pure */
+	public static function pure(): int
+	{
+		return 2;
+	}
+
+}
+
+class StaticChildImpureOverridesNoAnnotation extends StaticFoo
+{
+
+	/** @phpstan-impure */
+	public static function noAnnotation(): int
+	{
+		return random_int(0, 1);
+	}
+
+}
+
+interface StaticPureInterface
+{
+
+	/** @phpstan-pure */
+	public static function pureMethod(): int;
+
+}
+
+class StaticImpureImplementation implements StaticPureInterface
+{
+
+	/** @phpstan-impure */
+	public static function pureMethod(): int
+	{
+		return random_int(0, 1);
+	}
+
+}

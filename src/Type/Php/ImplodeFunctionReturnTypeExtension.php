@@ -62,10 +62,11 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 	private function implode(Type $arrayType, Type $separatorType): Type
 	{
 		if (count($arrayType->getConstantArrays()) > 0 && count($separatorType->getConstantStrings()) > 0) {
+			$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
 			$result = [];
 			foreach ($separatorType->getConstantStrings() as $separator) {
 				foreach ($arrayType->getConstantArrays() as $constantArray) {
-					$constantType = $this->inferConstantType($constantArray, $separator);
+					$constantType = $this->inferConstantType($constantArray, $separator, $isNonEmpty);
 					if ($constantType !== null) {
 						$result[] = $constantType;
 						continue;
@@ -110,7 +111,7 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		return new StringType();
 	}
 
-	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType): ?Type
+	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType, bool $isNonEmpty): ?Type
 	{
 		$sep = $separatorType->getValue();
 		$valueTypes = $arrayType->getValueTypes();
@@ -150,7 +151,14 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 		$strings = [];
 		foreach ($partials as $partial) {
+			if ($partial === [] && $isNonEmpty) {
+				continue;
+			}
 			$strings[] = new ConstantStringType(implode($sep, $partial));
+		}
+
+		if ($strings === []) {
+			return null;
 		}
 
 		return TypeCombinator::union(...$strings);

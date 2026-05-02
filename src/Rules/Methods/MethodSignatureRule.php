@@ -73,7 +73,7 @@ final class MethodSignatureRule implements Rule
 					$method->getName(),
 					$parentMethodDeclaringClass->getDisplayName(),
 					$parentMethod->getName(),
-				))->identifier('method.impureOverridePure')->build();
+				))->identifier('method.purity')->build();
 			}
 
 			$parentVariants = $parentMethod->getVariants();

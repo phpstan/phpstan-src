@@ -569,7 +569,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 	{
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
-		$this->analyse([__DIR__ . '/data/bug-14563.php'], [
+		$errors = [
 			[
 				'Impure method Bug14563\ChildImpureOverridesPure::pure() overrides pure method Bug14563\Foo::pure().',
 				31,
@@ -582,10 +582,16 @@ class MethodSignatureRuleTest extends RuleTestCase
 				'Impure method Bug14563\ImpureChildOfAllMethodsPure::method() overrides pure method Bug14563\AllMethodsPureParent::method().',
 				126,
 			],
-			[
+		];
+
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
 				'Impure method Bug14563\ImpureTraitUser::pureTraitMethod() overrides pure method Bug14563\PureTrait::pureTraitMethod().',
 				147,
-			],
+			];
+		}
+
+		$errors = array_merge($errors, [
 			[
 				'Impure method Bug14563\ChildImpureOverridesPureExtended::pure() overrides pure method Bug14563\Foo::pure().',
 				158,
@@ -611,6 +617,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 				291,
 			],
 		]);
+		$this->analyse([__DIR__ . '/data/bug-14563.php'], $errors);
 	}
 
 }

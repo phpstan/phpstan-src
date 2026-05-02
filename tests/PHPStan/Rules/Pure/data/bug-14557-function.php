@@ -45,3 +45,11 @@ function tryFromClassString(string $enum): ?MyEnum
 {
 	return $enum::tryFrom('foo');
 }
+
+/**
+ * @phpstan-pure
+ */
+function fromEnum(MyEnum $enum): MyEnum
+{
+	return $enum::from('foo');
+}

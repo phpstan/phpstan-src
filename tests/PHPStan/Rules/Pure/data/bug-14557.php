@@ -68,6 +68,14 @@ class Foo
 	}
 
 	/**
+	 * @phpstan-pure
+	 */
+	public function fromEnum(MyEnum $enum): MyEnum
+	{
+		return $enum::from('foo');
+	}
+
+	/**
 	 * @param class-string<SomeClass> $class
 	 * @phpstan-pure
 	 */

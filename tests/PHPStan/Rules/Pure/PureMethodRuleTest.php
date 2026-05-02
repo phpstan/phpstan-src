@@ -396,7 +396,7 @@ class PureMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14557.php'], [
 			[
 				'Impure call to method Bug14557\SomeClass::impureStaticMethod() in pure method Bug14557\Foo::impureViaClassString().',
-				85,
+				93,
 			],
 		]);
 	}

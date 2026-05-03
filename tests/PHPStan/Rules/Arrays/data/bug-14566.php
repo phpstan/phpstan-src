@@ -21,3 +21,26 @@ function foo2(array $test): void {
 	}
 	$test['hi'][] = 42;
 }
+
+/**
+ * @param array{}|array{hi: 'hello'}|array{hi: array{0: 42, 1?: 42}} $test
+ */
+function foo3(array $test): void {
+	if (!isset($test['hi'])) {
+		return;
+	}
+	if (\is_string($test['hi'])) {
+		return;
+	}
+	$test['hi'][] = 42;
+}
+
+/**
+ * @param array{}|array{hi: 'hello'}|array{hi: array{0: 42, 1?: 42}} $test
+ */
+function foo4(array $test): void {
+	if (!\is_array($test['hi'] ?? null)) {
+		return;
+	}
+	$test['hi'][] = 42;
+}

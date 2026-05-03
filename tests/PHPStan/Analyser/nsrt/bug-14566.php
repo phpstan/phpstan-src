@@ -78,3 +78,30 @@ function fooPartialOverlapOr(array $test): void {
 	}
 	assertType("array{hi: string}", $test);
 }
+
+class FooContainer {
+	/** @var \stdClass|string */
+	public $x;
+	/** @var \stdClass|int */
+	public $y;
+}
+
+function fooPropertyFetchInstanceof(FooContainer $c): void {
+	if ($c->x instanceof \stdClass && $c->y instanceof \stdClass) {
+		return;
+	}
+	if ($c->x instanceof \stdClass) {
+		assertType('int', $c->y);
+	}
+}
+
+function fooPropertyFetchInstanceofOr(FooContainer $c): void {
+	if (!$c->x instanceof \stdClass || !$c->y instanceof \stdClass) {
+		if ($c->x instanceof \stdClass) {
+			assertType('int', $c->y);
+		}
+		return;
+	}
+	assertType('stdClass', $c->x);
+	assertType('stdClass', $c->y);
+}

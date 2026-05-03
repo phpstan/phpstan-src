@@ -120,10 +120,6 @@ final class ConstantArrayTypeBuilder
 			}
 
 			if ($offsetType === null) {
-				if (count($this->nextAutoIndexes) === 0) {
-					return;
-				}
-
 				$newAutoIndexes = $optional ? $this->nextAutoIndexes : [];
 				$hasOptional = false;
 				foreach ($this->keyTypes as $i => $keyType) {

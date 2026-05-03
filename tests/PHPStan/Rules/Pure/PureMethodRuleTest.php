@@ -389,4 +389,16 @@ class PureMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14511-method.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug14557(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-14557.php'], [
+			[
+				'Impure call to method Bug14557\SomeClass::impureStaticMethod() in pure method Bug14557\Foo::impureViaClassString().',
+				93,
+			],
+		]);
+	}
+
 }

@@ -144,6 +144,18 @@ final class StaticCallHandler implements ExprHandler
 				} else {
 					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 				}
+			} elseif ($expr->class instanceof Expr) {
+				$classType = $scope->getType($expr->class)->getObjectTypeOrClassStringObjectType();
+				$methodName = $expr->name->name;
+				$methodReflection = $scope->getMethodReflection($classType, $methodName);
+				if ($methodReflection !== null) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$expr->getArgs(),
+						$methodReflection->getVariants(),
+						$methodReflection->getNamedArgumentsVariants(),
+					);
+				}
 			}
 		} else {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
@@ -202,7 +214,8 @@ final class StaticCallHandler implements ExprHandler
 		}
 
 		if (
-			$methodReflection !== null
+			$expr->class instanceof Name
+			&& $methodReflection !== null
 			&& (
 				(
 					!$methodReflection->isStatic()
@@ -215,7 +228,8 @@ final class StaticCallHandler implements ExprHandler
 		) {
 			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass());
 		} elseif (
-			$methodReflection !== null
+			$expr->class instanceof Name
+			&& $methodReflection !== null
 			&& $this->rememberPossiblyImpureFunctionValues
 			&& $scope->isInClass()
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
@@ -230,7 +244,8 @@ final class StaticCallHandler implements ExprHandler
 		}
 
 		if (
-			$methodReflection !== null
+			$expr->class instanceof Name
+			&& $methodReflection !== null
 			&& !$methodReflection->isStatic()
 			&& $methodReflection->getName() === '__construct'
 			&& $scopeFunction instanceof MethodReflection

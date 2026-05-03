@@ -734,15 +734,7 @@ final class TypeSpecifier
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
 			$rightScope = $scope->filterByTruthyValue($expr->left);
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-			if ($context->true()) {
-				$types = $leftTypes->unionWith($rightTypes);
-			} else {
-				$normalizedLeft = $leftTypes->normalize($scope);
-				$normalizedRight = $rightTypes->normalize($rightScope);
-				$normalizedLeft = $this->propagateArrayDimFetchNarrowingsToParent($normalizedLeft, $scope);
-				$normalizedRight = $this->propagateArrayDimFetchNarrowingsToParent($normalizedRight, $rightScope);
-				$types = $normalizedLeft->intersectWith($normalizedRight);
-			}
+			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;
@@ -796,11 +788,7 @@ final class TypeSpecifier
 				) {
 					$types = $leftTypes->normalize($scope);
 				} else {
-					$normalizedLeft = $leftTypes->normalize($scope);
-					$normalizedRight = $rightTypes->normalize($rightScope);
-					$normalizedLeft = $this->propagateArrayDimFetchNarrowingsToParent($normalizedLeft, $scope);
-					$normalizedRight = $this->propagateArrayDimFetchNarrowingsToParent($normalizedRight, $rightScope);
-					$types = $normalizedLeft->intersectWith($normalizedRight);
+					$types = $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
 					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
 				}
 			} else {
@@ -2088,54 +2076,6 @@ final class TypeSpecifier
 		return $types;
 	}
 
-	private function propagateArrayDimFetchNarrowingsToParent(SpecifiedTypes $normalizedTypes, Scope $scope): SpecifiedTypes
-	{
-		$additionalSureTypes = [];
-		foreach ($normalizedTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
-			if (
-				!$exprNode instanceof ArrayDimFetch
-				|| $exprNode->dim === null
-				|| $exprNode->var instanceof ArrayDimFetch
-			) {
-				continue;
-			}
-
-			$dimType = $scope->getType($exprNode->dim)->toArrayKey();
-			if (!$dimType instanceof ConstantIntegerType && !$dimType instanceof ConstantStringType) { // @phpstan-ignore phpstanApi.instanceofType
-				continue;
-			}
-
-			$parentExprString = $this->exprPrinter->printExpr($exprNode->var);
-			if (isset($normalizedTypes->getSureTypes()[$parentExprString]) || isset($additionalSureTypes[$parentExprString])) {
-				continue;
-			}
-
-			$parentType = $scope->getType($exprNode->var);
-			if ($parentType instanceof MixedType || !$parentType->isArray()->yes()) {
-				continue;
-			}
-
-			$narrowedParentType = TypeCombinator::intersect(
-				$parentType,
-				new HasOffsetValueType($dimType, $type),
-			);
-			if ($narrowedParentType instanceof NeverType) {
-				continue;
-			}
-
-			$additionalSureTypes[$parentExprString] = [$exprNode->var, $narrowedParentType];
-		}
-
-		if ($additionalSureTypes === []) {
-			return $normalizedTypes;
-		}
-
-		return new SpecifiedTypes(
-			$normalizedTypes->getSureTypes() + $additionalSureTypes,
-			[],
-		);
-	}
-
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
@@ -2643,6 +2583,42 @@ final class TypeSpecifier
 			if ($expr !== $originalExpr) {
 				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
 				$sureTypes[$originalExprString] = [$originalExpr, $type];
+			}
+		}
+
+		if (
+			$expr instanceof ArrayDimFetch
+			&& $expr->dim !== null
+			&& !$context->null()
+		) {
+			$dimType = $scope->getType($expr->dim);
+			if ($dimType instanceof ConstantIntegerType || $dimType->getConstantStrings() !== []) {
+				$varType = $scope->getType($expr->var);
+				$constantArrays = $varType->getConstantArrays();
+				if ($constantArrays !== []) {
+					$typesToRemove = [];
+					foreach ($constantArrays as $constantArray) {
+						if (!$constantArray->hasOffsetValueType($dimType)->yes()) {
+							continue;
+						}
+						$offsetValueType = $constantArray->getOffsetValueType($dimType);
+						if ($context->false()) {
+							if ($type->isSuperTypeOf($offsetValueType)->yes()) {
+								$typesToRemove[] = $constantArray;
+							}
+						} elseif ($context->true()) {
+							if ($type->isSuperTypeOf($offsetValueType)->no()) {
+								$typesToRemove[] = $constantArray;
+							}
+						}
+					}
+
+					if ($typesToRemove !== [] && count($typesToRemove) < count($constantArrays)) {
+						$typeToRemove = TypeCombinator::union(...$typesToRemove);
+						$varExprString = $this->exprPrinter->printExpr($expr->var);
+						$sureNotTypes[$varExprString] = [$expr->var, $typeToRemove];
+					}
+				}
 			}
 		}
 

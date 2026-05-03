@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 
@@ -27,6 +28,7 @@ final class ResultCache
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
+	 * @param array<string, array<string, FileFix>> $perAnalysedFileFixes
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -43,6 +45,7 @@ final class ResultCache
 		private array $exportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private array $perAnalysedFileFixes = [],
 	)
 	{
 	}
@@ -151,6 +154,14 @@ final class ResultCache
 	public function getCurrentFileHashes(): array
 	{
 		return $this->currentFileHashes;
+	}
+
+	/**
+	 * @return array<string, array<string, FileFix>>
+	 */
+	public function getPerAnalysedFileFixes(): array
+	{
+		return $this->perAnalysedFileFixes;
 	}
 
 }

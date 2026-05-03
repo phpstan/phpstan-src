@@ -3,16 +3,19 @@
 namespace PHPStan\Fixable;
 
 use Override;
+use PhpParser\Node\Expr\Variable;
+use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<Rule<\PhpParser\Node\Expr\Variable>>
+ * @extends RuleTestCase<Rule<Variable>>
  */
 final class PerFileBatchFixerTraitTest extends RuleTestCase
 {
 
-	/** @var Rule<\PhpParser\Node\Expr\Variable> */
+	/** @var Rule<Variable> */
 	private Rule $rule;
 
 	#[Override]
@@ -65,13 +68,13 @@ final class PerFileBatchFixerTraitTest extends RuleTestCase
 	{
 		$this->rule = new ClassAwareRenameVariableFixRule();
 
-		$errors = $this->gatherAnalyserErrors([__DIR__ . '/data/trait-disagreeing-consumers.php']);
-		$skipped = self::filterFixableSkipped($errors);
+		[$errors, $fixesByFixingFile] = $this->gatherAnalyserErrorsAndFixes([__DIR__ . '/data/trait-disagreeing-consumers.php']);
+		$skipped = self::filterFixableSkipped($errors, $fixesByFixingFile);
 
 		self::assertNotSame([], $skipped, 'expected at least one wasFixable && !applied error');
 		foreach ($skipped as $error) {
 			self::assertTrue($error->wasFixable());
-			self::assertNull($error->getFixedErrorDiff());
+			self::assertFalse(self::errorIsCoveredByAnyFix($error, $fixesByFixingFile));
 			$tip = $error->getTip();
 			self::assertNotNull($tip);
 			self::assertStringContainsString('Auto-fix skipped: trait consumers proposed conflicting rewrites.', $tip);
@@ -84,11 +87,11 @@ final class PerFileBatchFixerTraitTest extends RuleTestCase
 	{
 		$this->rule = new RenameVariableFixRule();
 
-		$errors = $this->gatherAnalyserErrors([__DIR__ . '/data/trait-single-consumer.php']);
+		[$errors, $fixesByFixingFile] = $this->gatherAnalyserErrorsAndFixes([__DIR__ . '/data/trait-single-consumer.php']);
 
 		$applied = [];
 		foreach ($errors as $error) {
-			if ($error->getFixedErrorDiff() === null) {
+			if (!self::errorIsCoveredByAnyFix($error, $fixesByFixingFile)) {
 				continue;
 			}
 			$applied[] = $error;
@@ -106,23 +109,43 @@ final class PerFileBatchFixerTraitTest extends RuleTestCase
 	}
 
 	/**
-	 * @param list<\PHPStan\Analyser\Error> $errors
-	 * @return list<\PHPStan\Analyser\Error>
+	 * @param list<Error> $errors
+	 * @param array<string, FileFix> $fixesByFixingFile
+	 * @return list<Error>
 	 */
-	private static function filterFixableSkipped(array $errors): array
+	private static function filterFixableSkipped(array $errors, array $fixesByFixingFile): array
 	{
 		$skipped = [];
 		foreach ($errors as $error) {
 			if (!$error->wasFixable()) {
 				continue;
 			}
-			if ($error->getFixedErrorDiff() !== null) {
+			if (self::errorIsCoveredByAnyFix($error, $fixesByFixingFile)) {
 				continue;
 			}
 			$skipped[] = $error;
 		}
 
 		return $skipped;
+	}
+
+	/**
+	 * @param array<string, FileFix> $fixesByFixingFile
+	 */
+	private static function errorIsCoveredByAnyFix(Error $error, array $fixesByFixingFile): bool
+	{
+		$fixingFile = $error->getTraitFilePath() ?? $error->getFilePath();
+		if (!isset($fixesByFixingFile[$fixingFile])) {
+			return false;
+		}
+		$identifier = $error->getIdentifier();
+		$line = $error->getLine();
+		foreach ($fixesByFixingFile[$fixingFile]->errorRefs as $ref) {
+			if ($ref['line'] === $line && $ref['identifier'] === $identifier) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -97,6 +97,7 @@ final class FileAnalyser
 		$exportedNodes = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
+		$fixesByFixingFile = [];
 		if (is_file($file)) {
 			try {
 				$this->collectErrors($analysedFiles);
@@ -132,6 +133,7 @@ final class FileAnalyser
 				$linesToIgnore = $nodeCallback->getLinesToIgnore();
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();
 				$temporaryFileErrors = $nodeCallback->getTemporaryFileErrors();
+				$fixesByFixingFile = $nodeCallback->getFixesByFixingFile();
 				$processedFiles = $nodeCallback->getProcessedFiles();
 
 				if ($this->reportIgnoresWithoutComments) {
@@ -250,6 +252,7 @@ final class FileAnalyser
 			$linesToIgnore,
 			$unmatchedLineIgnores,
 			$processedFiles,
+			$fixesByFixingFile,
 		);
 	}
 

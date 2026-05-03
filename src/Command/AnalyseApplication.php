@@ -74,6 +74,7 @@ final class AnalyseApplication
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		$fileSpecificErrors = [];
+		$fixesByFixingFile = [];
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$notFileSpecificErrors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
@@ -123,6 +124,8 @@ final class AnalyseApplication
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
 					processedFiles: $intermediateAnalyserResult->getProcessedFiles(),
+					fixesByFixingFile: $intermediateAnalyserResult->getFixesByFixingFile(),
+					perAnalysedFileFixes: $intermediateAnalyserResult->getPerAnalysedFileFixes(),
 				);
 			}
 
@@ -174,6 +177,7 @@ final class AnalyseApplication
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
+			$fixesByFixingFile = $analyserResult->getFixesByFixingFile();
 		}
 
 		return new AnalysisResult(
@@ -189,6 +193,7 @@ final class AnalyseApplication
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$processedFiles,
+			$fixesByFixingFile,
 		);
 	}
 
@@ -353,6 +358,8 @@ final class AnalyseApplication
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
+			fixesByFixingFile: $analyserResult->getFixesByFixingFile(),
+			perAnalysedFileFixes: $analyserResult->getPerAnalysedFileFixes(),
 		);
 	}
 

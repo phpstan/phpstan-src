@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use Closure;
+use PHPStan\Analyser\ResultCache\FileFixAggregator;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -76,6 +77,8 @@ final class Analyser
 		$usedTraitDependencies = [];
 		$exportedNodes = [];
 		$allProcessedFiles = [];
+		/** @var array<string, array<string, FileFix>> $perAnalysedFileFixes */
+		$perAnalysedFileFixes = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
 				$preFileCallback($file);
@@ -105,6 +108,11 @@ final class Analyser
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
 				if (count($fileExportedNodes) > 0) {
 					$exportedNodes[$file] = $fileExportedNodes;
+				}
+
+				$fileFixes = $fileAnalyserResult->getFixesByFixingFile();
+				if ($fileFixes !== []) {
+					$perAnalysedFileFixes[$file] = $fileFixes;
 				}
 			} catch (Throwable $t) {
 				if ($debug) {
@@ -146,6 +154,8 @@ final class Analyser
 			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
 			peakMemoryUsageBytes: memory_get_peak_usage(true),
 			processedFiles: $allProcessedFiles,
+			fixesByFixingFile: FileFixAggregator::aggregate($perAnalysedFileFixes),
+			perAnalysedFileFixes: $perAnalysedFileFixes,
 		);
 	}
 

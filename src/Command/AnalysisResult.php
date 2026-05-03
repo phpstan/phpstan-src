@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Collectors\CollectedData;
 use function count;
@@ -25,6 +26,7 @@ final class AnalysisResult
 	 * @param list<CollectedData> $collectedData
 	 * @param array<string, string> $changedProjectExtensionFilesOutsideOfAnalysedPaths
 	 * @param list<string> $processedFiles
+	 * @param array<string, FileFix> $fixesByFixingFile
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
@@ -39,6 +41,7 @@ final class AnalysisResult
 		private bool $isResultCacheUsed,
 		private array $changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		private array $processedFiles = [],
+		private array $fixesByFixingFile = [],
 	)
 	{
 		usort(
@@ -159,6 +162,14 @@ final class AnalysisResult
 	}
 
 	/**
+	 * @return array<string, FileFix>
+	 */
+	public function getFixesByFixingFile(): array
+	{
+		return $this->fixesByFixingFile;
+	}
+
+	/**
 	 * @api
 	 * @param list<Error> $fileSpecificErrors
 	 */
@@ -177,6 +188,7 @@ final class AnalysisResult
 			$this->isResultCacheUsed,
 			$this->changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$this->processedFiles,
+			$this->fixesByFixingFile,
 		);
 	}
 

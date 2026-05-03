@@ -6,6 +6,7 @@ use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
@@ -61,7 +62,7 @@ use const PHP_VERSION_ID;
 final class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v12-linesToIgnore';
+	private const CACHE_VERSION = 'v13-fileFixes';
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
@@ -362,12 +363,14 @@ final class ResultCacheManager
 		$unmatchedLineIgnores = $data['unmatchedLineIgnores'];
 		$collectedData = $data['collectedDataCallback']();
 		$exportedNodes = $data['exportedNodesCallback']();
+		$perAnalysedFileFixes = $data['perAnalysedFileFixes'] ?? [];
 		$filteredErrors = [];
 		$filteredLocallyIgnoredErrors = [];
 		$filteredLinesToIgnore = [];
 		$filteredUnmatchedLineIgnores = [];
 		$filteredCollectedData = [];
 		$filteredExportedNodes = [];
+		$filteredPerAnalysedFileFixes = [];
 		$newFileAppeared = false;
 
 		foreach (array_keys($this->getStubFiles()) as $stubFile) {
@@ -396,6 +399,9 @@ final class ResultCacheManager
 			}
 			if (array_key_exists($analysedFile, $exportedNodes)) {
 				$filteredExportedNodes[$analysedFile] = $exportedNodes[$analysedFile];
+			}
+			if (array_key_exists($analysedFile, $perAnalysedFileFixes)) {
+				$filteredPerAnalysedFileFixes[$analysedFile] = $perAnalysedFileFixes[$analysedFile];
 			}
 			if (!array_key_exists($analysedFile, $invertedDependencies)) {
 				// new file
@@ -515,6 +521,7 @@ final class ResultCacheManager
 			exportedNodes: $filteredExportedNodes,
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
+			perAnalysedFileFixes: $filteredPerAnalysedFileFixes,
 		);
 	}
 
@@ -624,7 +631,7 @@ final class ResultCacheManager
 		if ($projectConfigArray !== null) {
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, array $exportedNodes, array $projectExtensionFiles, array $perAnalysedFileFixes) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -672,7 +679,7 @@ final class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $perAnalysedFileFixes);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -688,7 +695,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles, $analyserResult->getPerAnalysedFileFixes());
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -706,6 +713,7 @@ final class ResultCacheManager
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
+		$mergedPerAnalysedFileFixes = $this->mergePerAnalysedFileFixes($resultCache, $analyserResult->getPerAnalysedFileFixes());
 
 		$saved = false;
 		if ($save !== false) {
@@ -729,7 +737,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles);
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $mergedPerAnalysedFileFixes);
 		}
 
 		$flatErrors = [];
@@ -761,6 +769,8 @@ final class ResultCacheManager
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
+			fixesByFixingFile: FileFixAggregator::aggregate($mergedPerAnalysedFileFixes),
+			perAnalysedFileFixes: $mergedPerAnalysedFileFixes,
 		), $saved);
 	}
 
@@ -946,6 +956,28 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * @param array<string, array<string, FileFix>> $freshPerAnalysedFile
+	 * @return array<string, array<string, FileFix>>
+	 */
+	private function mergePerAnalysedFileFixes(ResultCache $resultCache, array $freshPerAnalysedFile): array
+	{
+		$merged = $resultCache->getPerAnalysedFileFixes();
+		foreach ($resultCache->getFilesToAnalyse() as $file) {
+			if (array_key_exists($file, $this->fileReplacements)) {
+				unset($merged[$file]);
+				$file = $this->fileReplacements[$file];
+			}
+			if (!array_key_exists($file, $freshPerAnalysedFile)) {
+				unset($merged[$file]);
+				continue;
+			}
+			$merged[$file] = $freshPerAnalysedFile[$file];
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * @param array<string, list<Error>> $errors
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
@@ -957,6 +989,7 @@ final class ResultCacheManager
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
 	 * @param mixed[] $meta
+	 * @param array<string, array<string, FileFix>> $perAnalysedFileFixes
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
@@ -971,6 +1004,7 @@ final class ResultCacheManager
 		array $projectExtensionFiles,
 		array $currentFileHashes,
 		array $meta,
+		array $perAnalysedFileFixes,
 	): void
 	{
 		$invertedDependencies = [];
@@ -1023,6 +1057,7 @@ final class ResultCacheManager
 		ksort($unmatchedLineIgnores);
 		ksort($collectedData);
 		ksort($invertedDependencies);
+		ksort($perAnalysedFileFixes);
 
 		foreach ($collectedData as & $collectedDataPerFile) {
 			ksort($collectedDataPerFile);
@@ -1060,7 +1095,8 @@ return [
 	'unmatchedLineIgnores' => " . var_export($unmatchedLineIgnores, true) . ",
 	'collectedDataCallback' => static function (): array { return " . var_export($collectedData, true) . "; },
 	'dependencies' => " . var_export($invertedDependencies, true) . ",
-	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . '; },
+	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . "; },
+	'perAnalysedFileFixes' => " . var_export($perAnalysedFileFixes, true) . ',
 ];
 ',
 		);

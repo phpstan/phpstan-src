@@ -15,7 +15,6 @@ use PHPStan\Fixable\BatchReplacingNodeVisitor;
 use PHPStan\Fixable\FixIgnorePolicy;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
-use PHPStan\Fixable\ReplacingNodeVisitor;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\FileRuleError;
@@ -53,29 +52,6 @@ final class RuleErrorTransformer
 	)
 	{
 		$this->differ = new Differ(new UnifiedDiffOutputBuilder('', addLineNumbers: true));
-	}
-
-	/**
-	 * @param Node\Stmt[] $fileNodes
-	 */
-	public function transform(
-		RuleError $ruleError,
-		Scope $scope,
-		array $fileNodes,
-		Node $node,
-	): Error
-	{
-		[$error, $pendingFix] = $this->transformPreserveFixable($ruleError, $scope, $node);
-		if ($pendingFix === null) {
-			return $error;
-		}
-
-		$diff = $this->buildSinglePendingFixDiff($pendingFix, $fileNodes);
-		if ($diff === null) {
-			return $error;
-		}
-
-		return $error->withFixedErrorDiff($diff);
 	}
 
 	/**
@@ -201,7 +177,7 @@ final class RuleErrorTransformer
 		?FixIgnorePolicy $policy = null,
 	): FinalizedPendingFixes
 	{
-		$diffsByErrorId = [];
+		$fixesByFixingFile = [];
 		$skipReasonByErrorId = [];
 
 		foreach ($pendingFixesByFile as $filePath => $pendingFixes) {
@@ -243,23 +219,35 @@ final class RuleErrorTransformer
 
 			$conflictClusters = $replacing->getConflictClustersByOriginalNodeId();
 
+			$errorRefs = [];
 			foreach ($pendingFixes as $pendingFix) {
 				$nodeId = spl_object_id($pendingFix->originalNode);
 				if (isset($appliedSet[$nodeId])) {
 					if ($diff !== null) {
-						$diffsByErrorId[spl_object_id($pendingFix->error)] = $diff;
+						$errorRefs[] = [
+							'line' => $pendingFix->error->getLine() ?? 0,
+							'identifier' => $pendingFix->error->getIdentifier(),
+						];
 					}
 					continue;
 				}
 
-				if (isset($conflictClusters[$nodeId])) {
-					$skipReasonByErrorId[spl_object_id($pendingFix->error)] =
-						self::formatConflictReport($conflictClusters[$nodeId]);
+				if (!isset($conflictClusters[$nodeId])) {
+					continue;
 				}
+
+				$skipReasonByErrorId[spl_object_id($pendingFix->error)]
+					= self::formatConflictReport($conflictClusters[$nodeId]);
 			}
+
+			if ($diff === null || $errorRefs === []) {
+				continue;
+			}
+
+			$fixesByFixingFile[$filePath] = new FileFix($diff, $errorRefs);
 		}
 
-		return new FinalizedPendingFixes($diffsByErrorId, $skipReasonByErrorId);
+		return new FinalizedPendingFixes($fixesByFixingFile, $skipReasonByErrorId);
 	}
 
 	/**
@@ -302,20 +290,6 @@ final class RuleErrorTransformer
 		$head = array_slice($names, 0, $count - 1);
 
 		return $noun . ' ' . implode(', ', $head) . ', and ' . $last;
-	}
-
-	/**
-	 * @param Node\Stmt[] $fileNodes
-	 */
-	private function buildSinglePendingFixDiff(PendingFix $pendingFix, array $fileNodes): ?FixedErrorDiff
-	{
-		$visitor = new ReplacingNodeVisitor($pendingFix->originalNode, $pendingFix->newNodeCallable);
-		$diff = $this->buildDiffFromVisitor($pendingFix->fixingFilePath, $fileNodes, $visitor);
-		if ($diff === null || !$visitor->isFound()) {
-			return null;
-		}
-
-		return $diff;
 	}
 
 	/**

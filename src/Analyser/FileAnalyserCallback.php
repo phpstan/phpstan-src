@@ -50,6 +50,9 @@ final class FileAnalyserCallback
 	/** @var array<string, list<PendingFix>> */
 	private array $pendingFixesByFile = [];
 
+	/** @var array<string, FileFix> */
+	private array $fixesByFixingFile = [];
+
 	/** @var LinesToIgnore */
 	private array $linesToIgnore;
 
@@ -335,18 +338,15 @@ final class FileAnalyserCallback
 			$parserNodesByFile,
 			$policy,
 		);
+		$this->fixesByFixingFile = $result->fixesByFixingFile;
 
-		if ($result->diffsByErrorId === [] && $result->skipReasonByErrorId === []) {
+		if ($result->skipReasonByErrorId === []) {
 			return $this->temporaryFileErrors;
 		}
 
 		$finalErrors = [];
 		foreach ($this->temporaryFileErrors as $error) {
 			$id = spl_object_id($error);
-			$diff = $result->diffsByErrorId[$id] ?? null;
-			if ($diff !== null) {
-				$error = $error->withFixedErrorDiff($diff);
-			}
 			$skipReason = $result->skipReasonByErrorId[$id] ?? null;
 			if ($skipReason !== null) {
 				$error = $error->withAppendedTip($skipReason);
@@ -363,6 +363,14 @@ final class FileAnalyserCallback
 	public function getProcessedFiles(): array
 	{
 		return $this->processedFiles;
+	}
+
+	/**
+	 * @return array<string, FileFix>
+	 */
+	public function getFixesByFixingFile(): array
+	{
+		return $this->fixesByFixingFile;
 	}
 
 }

@@ -4,6 +4,8 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use Override;
+use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -494,6 +496,7 @@ final class AnalyseCommand extends Command
 				$analysisResult->isResultCacheUsed(),
 				$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
 				$analysisResult->getProcessedFiles(),
+				$analysisResult->getFixesByFixingFile(),
 			);
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
@@ -513,60 +516,41 @@ final class AnalyseCommand extends Command
 		}
 
 		if ($fix) {
-			$fixableErrors = [];
-			$preSkippedErrors = [];
-			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if ($fileSpecificError->getFixedErrorDiff() !== null) {
-					$fixableErrors[] = $fileSpecificError;
-					continue;
-				}
-				if ($fileSpecificError->wasFixable()) {
-					$preSkippedErrors[] = $fileSpecificError;
+			$fixesByFixingFile = $analysisResult->getFixesByFixingFile();
+			$fixedErrorCount = 0;
+			$patcherSkippedErrorCount = 0;
+
+			$patcher = $container->getByType(Patcher::class);
+			foreach ($fixesByFixingFile as $fixingFile => $fileFix) {
+				try {
+					$finalFileContents = $patcher->applyDiffs($fixingFile, [$fileFix->diff]);
+					FileWriter::write($fixingFile, $finalFileContents);
+					$fixedErrorCount += count($fileFix->errorRefs);
+				} catch (FileChangedException | MergeConflictException) {
+					$patcherSkippedErrorCount += count($fileFix->errorRefs);
 				}
 			}
 
-			$fixableErrorsCount = count($fixableErrors);
+			$preSkippedErrors = [];
+			foreach ($analysisResult->getFileSpecificErrors() as $error) {
+				if (!$error->wasFixable()) {
+					continue;
+				}
+				if (self::errorIsCoveredByAnyFix($error, $fixesByFixingFile)) {
+					continue;
+				}
+				$preSkippedErrors[] = $error;
+			}
 			$preSkippedCount = count($preSkippedErrors);
-			if ($fixableErrorsCount === 0 && $preSkippedCount === 0) {
+
+			if ($fixedErrorCount === 0 && $patcherSkippedErrorCount === 0 && $preSkippedCount === 0) {
 				$inceptionResult->getStdOutput()->getStyle()->error('No fixable errors found');
 				$exitCode = 1;
 			} else {
-				$skippedCount = 0;
-				$diffsByFile = [];
-				foreach ($fixableErrors as $fixableError) {
-					$fixFile = $fixableError->getFilePath();
-					if ($fixableError->getTraitFilePath() !== null) {
-						$fixFile = $fixableError->getTraitFilePath();
-					}
-
-					if ($fixableError->getFixedErrorDiff() === null) {
-						throw new ShouldNotHappenException();
-					}
-
-					$diffsByFile[$fixFile][] = $fixableError->getFixedErrorDiff();
-				}
-
-				if ($fixableErrorsCount > 0) {
+				if ($fixedErrorCount > 0) {
 					$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
-					$errorOutput->getStyle()->progressStart($fixableErrorsCount);
-				}
-
-				$patcher = $container->getByType(Patcher::class);
-				foreach ($diffsByFile as $file => $diffs) {
-					$diffsCount = count($diffs);
-					try {
-						$finalFileContents = $patcher->applyDiffs($file, $diffs);
-						$errorOutput->getStyle()->progressAdvance($diffsCount);
-					} catch (FileChangedException | MergeConflictException) {
-						$skippedCount += $diffsCount;
-						$errorOutput->getStyle()->progressAdvance($diffsCount);
-						continue;
-					}
-
-					FileWriter::write($file, $finalFileContents);
-				}
-
-				if ($fixableErrorsCount > 0) {
+					$errorOutput->getStyle()->progressStart($fixedErrorCount);
+					$errorOutput->getStyle()->progressAdvance($fixedErrorCount);
 					$errorOutput->getStyle()->progressFinish();
 				}
 
@@ -584,16 +568,17 @@ final class AnalyseCommand extends Command
 						false,
 						[],
 						[],
+						[],
 					);
 					$errorFormatter->formatErrors($skippedAnalysisResult, $inceptionResult->getStdOutput());
 				}
 
-				$totalSkipped = $skippedCount + $preSkippedCount;
+				$totalSkipped = $patcherSkippedErrorCount + $preSkippedCount;
 				if ($totalSkipped > 0) {
 					$inceptionResult->getStdOutput()->getStyle()->warning(sprintf(
 						'%d %s fixed, %d %s skipped',
-						$fixableErrorsCount,
-						$fixableErrorsCount === 1 ? 'error' : 'errors',
+						$fixedErrorCount,
+						$fixedErrorCount === 1 ? 'error' : 'errors',
 						$totalSkipped,
 						$totalSkipped === 1 ? 'error' : 'errors',
 					));
@@ -601,8 +586,8 @@ final class AnalyseCommand extends Command
 				} else {
 					$inceptionResult->getStdOutput()->getStyle()->success(sprintf(
 						'%d %s fixed',
-						$fixableErrorsCount,
-						$fixableErrorsCount === 1 ? 'error' : 'errors',
+						$fixedErrorCount,
+						$fixedErrorCount === 1 ? 'error' : 'errors',
 					));
 					$exitCode = 0;
 				}
@@ -694,6 +679,25 @@ final class AnalyseCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 		return new StreamOutput($resource);
+	}
+
+	/**
+	 * @param array<string, FileFix> $fixesByFixingFile
+	 */
+	private static function errorIsCoveredByAnyFix(Error $error, array $fixesByFixingFile): bool
+	{
+		$fixingFile = $error->getTraitFilePath() ?? $error->getFilePath();
+		if (!isset($fixesByFixingFile[$fixingFile])) {
+			return false;
+		}
+		$identifier = $error->getIdentifier();
+		$line = $error->getLine();
+		foreach ($fixesByFixingFile[$fixingFile]->errorRefs as $ref) {
+			if ($ref['line'] === $line && $ref['identifier'] === $identifier) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private function getMessageFromInternalError(FileHelper $fileHelper, InternalError $internalError, int $verbosity): string

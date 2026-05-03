@@ -40,6 +40,9 @@ function sscanfEdgeCases(string $s) {
 	// %g - general float
 	assertType('array{float|null}|null', sscanf($s, "%g"));
 
+	// %u - unsigned integer, can return string for values > PHP_INT_MAX
+	assertType('array{int|string|null}|null', sscanf($s, "%u"));
+
 	// mixed specifiers with %n
 	assertType('array{int|null, int|null}|null', sscanf($s, "%d%n"));
 }

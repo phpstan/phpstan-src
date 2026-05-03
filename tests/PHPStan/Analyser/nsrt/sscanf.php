@@ -20,7 +20,7 @@ function sscanfFormatInference(string $s) {
 	assertType('array{float|null}|null', sscanf($s, '%f'));
 	assertType('array{int|null}|null', sscanf($s, '%o'));
 	assertType('array{string|null}|null', sscanf($s, '%s'));
-	assertType('array{int|null}|null', sscanf($s, '%u'));
+	assertType('array{int|string|null}|null', sscanf($s, '%u'));
 	assertType('array{int|null}|null', sscanf($s, '%x'));
 
 	$mandate = "January 01 2000";

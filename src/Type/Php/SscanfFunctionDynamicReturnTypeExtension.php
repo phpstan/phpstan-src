@@ -77,8 +77,12 @@ final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 					}
 				}
 
-				if (in_array($specifier, ['d', 'D', 'i', 'n', 'o', 'u', 'x', 'X'], true)) {
+				if (in_array($specifier, ['d', 'D', 'i', 'n', 'o', 'x', 'X'], true)) {
 					$type = new IntegerType();
+				}
+
+				if ($specifier === 'u') {
+					$type = TypeCombinator::union(new IntegerType(), new StringType());
 				}
 
 				if (in_array($specifier, ['e', 'E', 'f', 'g'], true)) {

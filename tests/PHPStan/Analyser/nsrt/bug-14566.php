@@ -57,3 +57,24 @@ function fooInstanceof(array $test): void {
 	}
 	assertType("array{}|array{hi: 'hello'}", $test);
 }
+
+/**
+ * @param array{}|array{hi: string|int}|array{hi: float} $test
+ */
+function fooPartialOverlap(array $test): void {
+	if (isset($test['hi']) && is_string($test['hi'])) {
+		return;
+	}
+	assertType("array{}|array{hi: float}|array{hi: int}", $test);
+}
+
+/**
+ * @param array{}|array{hi: string|int}|array{hi: float} $test
+ */
+function fooPartialOverlapOr(array $test): void {
+	if (!isset($test['hi']) || !is_string($test['hi'])) {
+		assertType("array{}|array{hi: float}|array{hi: int}", $test);
+		return;
+	}
+	assertType("array{hi: string}", $test);
+}

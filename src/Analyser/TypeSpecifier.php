@@ -2591,32 +2591,39 @@ final class TypeSpecifier
 			&& $expr->dim !== null
 			&& !$context->null()
 		) {
-			$dimType = $scope->getType($expr->dim);
+			$dimType = $scope->getType($expr->dim)->toArrayKey();
 			if ($dimType instanceof ConstantIntegerType || $dimType->getConstantStrings() !== []) {
 				$varType = $scope->getType($expr->var);
 				$constantArrays = $varType->getConstantArrays();
 				if ($constantArrays !== []) {
-					$typesToRemove = [];
+					$refinedArrays = [];
+					$changed = false;
 					foreach ($constantArrays as $constantArray) {
 						if (!$constantArray->hasOffsetValueType($dimType)->yes()) {
+							$refinedArrays[] = $constantArray;
 							continue;
 						}
 						$offsetValueType = $constantArray->getOffsetValueType($dimType);
 						if ($context->false()) {
-							if ($type->isSuperTypeOf($offsetValueType)->yes()) {
-								$typesToRemove[] = $constantArray;
-							}
-						} elseif ($context->true()) {
-							if ($type->isSuperTypeOf($offsetValueType)->no()) {
-								$typesToRemove[] = $constantArray;
-							}
+							$narrowedValueType = TypeCombinator::remove($offsetValueType, $type);
+						} else {
+							$narrowedValueType = TypeCombinator::intersect($offsetValueType, $type);
+						}
+						if ($narrowedValueType instanceof NeverType) {
+							$changed = true;
+							continue;
+						}
+						if (!$narrowedValueType->equals($offsetValueType)) {
+							$changed = true;
+							$refinedArrays[] = $constantArray->setExistingOffsetValueType($dimType, $narrowedValueType);
+						} else {
+							$refinedArrays[] = $constantArray;
 						}
 					}
 
-					if ($typesToRemove !== [] && count($typesToRemove) < count($constantArrays)) {
-						$typeToRemove = TypeCombinator::union(...$typesToRemove);
+					if ($changed && $refinedArrays !== []) {
 						$varExprString = $this->exprPrinter->printExpr($expr->var);
-						$sureNotTypes[$varExprString] = [$expr->var, $typeToRemove];
+						$sureTypes[$varExprString] = [$expr->var, TypeCombinator::union(...$refinedArrays)];
 					}
 				}
 			}

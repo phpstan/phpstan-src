@@ -15,13 +15,13 @@ class HelloWorld
 		$hasBar = isset($array['bar']) && $array['bar'] > 1;
 
 		if ($hasFoo) {
-			assertType('array{foo: int, bar?: int}', $array);
+			assertType('array{foo: int<2, max>, bar?: int}', $array);
 			assertType('int<2, max>', $array['foo']);
 			return $array['foo'];
 		}
 
 		if ($hasBar) {
-			assertType('array{foo?: int, bar: int}', $array);
+			assertType('array{foo?: int, bar: int<2, max>}', $array);
 			assertType('int<2, max>', $array['bar']);
 			return $array['bar'];
 		}
@@ -38,13 +38,13 @@ class HelloWorld
 		$hasFoo = isset($array['foo']) && $array['foo'] > 1;
 
 		if ($hasFoo) {
-			assertType('array{foo: int, bar?: int}', $array);
+			assertType('array{foo: int<2, max>, bar?: int}', $array);
 			assertType('int<2, max>', $array['foo']);
 			return $array['foo'];
 		}
 
 		if ($hasBar) {
-			assertType('array{foo?: int, bar: int}', $array);
+			assertType('array{foo?: int, bar: int<2, max>}', $array);
 			assertType('int<2, max>', $array['bar']);
 			return $array['bar'];
 		}

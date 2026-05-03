@@ -142,4 +142,9 @@ class PrintfParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8774.php'], []);
 	}
 
+	public function testBug10260(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10260.php'], []);
+	}
+
 }

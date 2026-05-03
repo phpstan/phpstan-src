@@ -734,7 +734,13 @@ final class TypeSpecifier
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
 			$rightScope = $scope->filterByTruthyValue($expr->left);
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+			if ($context->true()) {
+				$types = $leftTypes->unionWith($rightTypes);
+			} else {
+				$leftNormalized = $this->propagateArrayDimFetchToParentArray($leftTypes->normalize($scope), $scope);
+				$rightNormalized = $this->propagateArrayDimFetchToParentArray($rightTypes->normalize($rightScope), $rightScope);
+				$types = $leftNormalized->intersectWith($rightNormalized);
+			}
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;
@@ -788,7 +794,9 @@ final class TypeSpecifier
 				) {
 					$types = $leftTypes->normalize($scope);
 				} else {
-					$types = $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+					$leftNormalized = $this->propagateArrayDimFetchToParentArray($leftTypes->normalize($scope), $scope);
+					$rightNormalized = $this->propagateArrayDimFetchToParentArray($rightTypes->normalize($rightScope), $rightScope);
+					$types = $leftNormalized->intersectWith($rightNormalized);
 					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
 				}
 			} else {
@@ -2074,6 +2082,56 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function propagateArrayDimFetchToParentArray(SpecifiedTypes $normalizedTypes, Scope $scope): SpecifiedTypes
+	{
+		$additionalSureTypes = [];
+		$sureTypes = $normalizedTypes->getSureTypes();
+		foreach ($sureTypes as $exprString => [$expr, $type]) {
+			if (
+				!$expr instanceof Expr\ArrayDimFetch
+				|| $expr->dim === null
+				|| !$expr->var instanceof Expr\Variable
+			) {
+				continue;
+			}
+			$dimType = $scope->getType($expr->dim)->toArrayKey();
+			$constantDimType = null;
+			if ($dimType instanceof ConstantIntegerType) {
+				$constantDimType = $dimType;
+			} else {
+				$constantStrings = $dimType->getConstantStrings();
+				if (count($constantStrings) === 1) {
+					$constantDimType = $constantStrings[0];
+				}
+			}
+			if ($constantDimType === null) {
+				continue;
+			}
+			$varExprString = $this->exprPrinter->printExpr($expr->var);
+			if (isset($sureTypes[$varExprString]) || isset($additionalSureTypes[$varExprString])) {
+				continue;
+			}
+			$varType = $scope->getType($expr->var);
+			if ($varType instanceof MixedType || $varType->isArray()->no()) {
+				continue;
+			}
+			$narrowedVarType = TypeCombinator::intersect($varType, new HasOffsetValueType($constantDimType, $type));
+			if ($narrowedVarType instanceof NeverType) {
+				continue;
+			}
+			$additionalSureTypes[$varExprString] = [$expr->var, $narrowedVarType];
+		}
+
+		if ($additionalSureTypes === []) {
+			return $normalizedTypes;
+		}
+
+		return new SpecifiedTypes(
+			$sureTypes + $additionalSureTypes,
+			$normalizedTypes->getSureNotTypes(),
+		);
 	}
 
 	/**

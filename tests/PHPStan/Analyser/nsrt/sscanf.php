@@ -48,3 +48,10 @@ function fooo(string $s) {
 
 	assertType('array{int|null, int|null, int|null}|null', sscanf('00ccff', '%2x%2x%2x'));
 }
+
+function sscanfSuppression(string $s) {
+	// %* means assignment suppression - these should not appear in return array
+	assertType('array{int|null}|null', sscanf($s, '%*s %d'));
+	assertType('array{string|null}|null', sscanf($s, '%*d %s'));
+	assertType('array{int|null}|null', sscanf($s, '%*[a-z]%d'));
+}

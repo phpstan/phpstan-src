@@ -2470,7 +2470,7 @@ final class TypeSpecifier
 		) {
 			if (
 				($context->true() && $type->isSuperTypeOf($scope->getType($expr->right))->no())
-				|| ($context->false() && $type->isSuperTypeOf($scope->getType($expr->right))->yes())
+				|| ($context->false() && ($type->isSuperTypeOf($scope->getType($expr->right))->yes() || $type->isNull()->no()))
 			) {
 				$expr = $expr->left;
 			}
@@ -2583,6 +2583,42 @@ final class TypeSpecifier
 			if ($expr !== $originalExpr) {
 				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
 				$sureTypes[$originalExprString] = [$originalExpr, $type];
+			}
+		}
+
+		if (
+			$expr instanceof ArrayDimFetch
+			&& $expr->dim !== null
+			&& !$context->null()
+		) {
+			$dimType = $scope->getType($expr->dim);
+			if ($dimType instanceof ConstantIntegerType || $dimType->getConstantStrings() !== []) {
+				$varType = $scope->getType($expr->var);
+				$constantArrays = $varType->getConstantArrays();
+				if ($constantArrays !== []) {
+					$typesToRemove = [];
+					foreach ($constantArrays as $constantArray) {
+						if (!$constantArray->hasOffsetValueType($dimType)->yes()) {
+							continue;
+						}
+						$offsetValueType = $constantArray->getOffsetValueType($dimType);
+						if ($context->false()) {
+							if ($type->isSuperTypeOf($offsetValueType)->yes()) {
+								$typesToRemove[] = $constantArray;
+							}
+						} elseif ($context->true()) {
+							if ($type->isSuperTypeOf($offsetValueType)->no()) {
+								$typesToRemove[] = $constantArray;
+							}
+						}
+					}
+
+					if ($typesToRemove !== [] && count($typesToRemove) < count($constantArrays)) {
+						$typeToRemove = TypeCombinator::union(...$typesToRemove);
+						$varExprString = $this->exprPrinter->printExpr($expr->var);
+						$sureNotTypes[$varExprString] = [$expr->var, $typeToRemove];
+					}
+				}
 			}
 		}
 

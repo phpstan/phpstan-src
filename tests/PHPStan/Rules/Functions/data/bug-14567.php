@@ -28,3 +28,9 @@ sscanf('0xff', "%i", $hex);
 
 // Mixed with %n
 sscanf('hello world', "%s%n", $word, $pos);
+
+// %D specifier - uppercase alias for %d, 1 placeholder
+sscanf('42', "%D", $dval);
+
+// %g specifier - general float, 1 placeholder
+sscanf('1.5', "%g", $gval);

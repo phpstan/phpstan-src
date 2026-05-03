@@ -38,7 +38,7 @@ final class PrintfHelper
 
 	public function getScanfPlaceholdersCount(string $format): ?int
 	{
-		return $this->getPlaceholdersCount('(?<specifier>[cdDeEfinosuxX%s]|\[[^\]]+\])', $format, true);
+		return $this->getPlaceholdersCount('(?<specifier>[cdDeEfginosuxX%s]|\[[^\]]+\])', $format, true);
 	}
 
 	/**

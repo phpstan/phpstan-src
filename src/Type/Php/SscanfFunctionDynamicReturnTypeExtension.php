@@ -57,7 +57,7 @@ final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 
-		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cdeEfinosuxX]{1})/', $formatValue, $matches) > 0) {
+		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cDdeEfginosuxX]{1})/', $formatValue, $matches) > 0) {
 			for ($i = 0; $i < count($matches[0]); $i++) {
 				$length = $matches[1][$i];
 				$specifier = $matches[2][$i];
@@ -77,11 +77,11 @@ final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 					}
 				}
 
-				if (in_array($specifier, ['d', 'i', 'n', 'o', 'u', 'x', 'X'], true)) {
+				if (in_array($specifier, ['d', 'D', 'i', 'n', 'o', 'u', 'x', 'X'], true)) {
 					$type = new IntegerType();
 				}
 
-				if (in_array($specifier, ['e', 'E', 'f'], true)) {
+				if (in_array($specifier, ['e', 'E', 'f', 'g'], true)) {
 					$type = new FloatType();
 				}
 

@@ -34,6 +34,12 @@ function sscanfEdgeCases(string $s) {
 	// %X - uppercase hex, same as %x
 	assertType('array{int|null}|null', sscanf($s, "%X"));
 
+	// %D - uppercase alias for %d
+	assertType('array{int|null}|null', sscanf($s, "%D"));
+
+	// %g - general float
+	assertType('array{float|null}|null', sscanf($s, "%g"));
+
 	// mixed specifiers with %n
 	assertType('array{int|null, int|null}|null', sscanf($s, "%d%n"));
 }

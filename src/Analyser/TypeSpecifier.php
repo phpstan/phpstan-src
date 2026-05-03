@@ -722,12 +722,12 @@ final class TypeSpecifier
 			if ($context->true()) {
 				$types = $leftTypes->unionWith($rightTypes);
 			} else {
-				$leftNorm = $leftTypes->normalize($scope);
-				$rightNorm = $rightTypes->normalize($rightScope);
-				$types = $leftNorm->intersectWith($rightNorm);
+				$leftNormalized = $leftTypes->normalize($scope);
+				$rightNormalized = $rightTypes->normalize($rightScope);
+				$types = $leftNormalized->intersectWith($rightNormalized);
 				$leftFalseyScope = $scope->filterByFalseyValue($expr->left);
 				$rightFalseyScope = $rightScope->filterByFalseyValue($expr->right);
-				$types = $this->augmentDisjunctionTypes($scope, $leftNorm, $rightNorm, $leftFalseyScope, $rightFalseyScope, $types);
+				$types = $this->augmentDisjunctionTypes($scope, $leftNormalized, $rightNormalized, $leftFalseyScope, $rightFalseyScope, $types);
 			}
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
@@ -782,13 +782,13 @@ final class TypeSpecifier
 				) {
 					$types = $leftTypes->normalize($scope);
 				} else {
-					$leftNorm = $leftTypes->normalize($scope);
-					$rightNorm = $rightTypes->normalize($rightScope);
-					$types = $leftNorm->intersectWith($rightNorm);
+					$leftNormalized = $leftTypes->normalize($scope);
+					$rightNormalized = $rightTypes->normalize($rightScope);
+					$types = $leftNormalized->intersectWith($rightNormalized);
 					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
 					$leftTruthyScopeForAugment = $scope->filterByTruthyValue($expr->left);
 					$rightTruthyScopeForAugment = $rightScope->filterByTruthyValue($expr->right);
-					$types = $this->augmentDisjunctionTypes($scope, $leftNorm, $rightNorm, $leftTruthyScopeForAugment, $rightTruthyScopeForAugment, $types);
+					$types = $this->augmentDisjunctionTypes($scope, $leftNormalized, $rightNormalized, $leftTruthyScopeForAugment, $rightTruthyScopeForAugment, $types);
 				}
 			} else {
 				$types = $leftTypes->unionWith($rightTypes);
@@ -2077,23 +2077,25 @@ final class TypeSpecifier
 
 	private function augmentDisjunctionTypes(
 		MutatingScope $scope,
-		SpecifiedTypes $leftNorm,
-		SpecifiedTypes $rightNorm,
+		SpecifiedTypes $leftNormalized,
+		SpecifiedTypes $rightNormalized,
 		MutatingScope $leftFilteredScope,
 		MutatingScope $rightFilteredScope,
 		SpecifiedTypes $types,
 	): SpecifiedTypes
 	{
 		$candidateExprs = [];
-		foreach ($leftNorm->getSureTypes() as $exprString => [$exprNode, $type]) {
+		foreach ($leftNormalized->getSureTypes() as $exprString => [$exprNode, $type]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
-		foreach ($rightNorm->getSureTypes() as $exprString => [$exprNode, $type]) {
+		foreach ($rightNormalized->getSureTypes() as $exprString => [$exprNode, $type]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
 
+		$existingSureTypes = $types->getSureTypes();
+
 		foreach ($candidateExprs as $exprString => $targetExpr) {
-			if (isset($types->getSureTypes()[$exprString])) {
+			if (isset($existingSureTypes[$exprString])) {
 				continue;
 			}
 
@@ -2107,19 +2109,20 @@ final class TypeSpecifier
 				continue;
 			}
 
-			$origType = $scope->getType($targetExpr);
+			$originalType = $scope->getType($targetExpr);
 			$leftType = $leftFilteredScope->getType($targetExpr);
 			$rightType = $rightFilteredScope->getType($targetExpr);
 
-			$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
-			$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
+			if ($leftType->equals($originalType) || !$originalType->isSuperTypeOf($leftType)->yes()) {
+				continue;
+			}
 
-			if (!$leftNarrowed || !$rightNarrowed) {
+			if ($rightType->equals($originalType) || !$originalType->isSuperTypeOf($rightType)->yes()) {
 				continue;
 			}
 
 			$unionType = TypeCombinator::union($leftType, $rightType);
-			if ($unionType->equals($origType)) {
+			if ($unionType->equals($originalType)) {
 				continue;
 			}
 

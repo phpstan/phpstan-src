@@ -511,7 +511,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between Bug3632\NiceClass and Bug3632\NiceClass will always evaluate to true.',
 				36,
-				$tipText,
+			],
+			[
+				'Instanceof between null and Bug3632\NiceClass will always evaluate to false.',
+				36,
 			],
 		]);
 	}

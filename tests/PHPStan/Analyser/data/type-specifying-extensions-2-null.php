@@ -10,5 +10,5 @@ $bar = null;
 if ((new \PHPStan\Tests\AssertionClass())->assertString($foo) && \PHPStan\Tests\AssertionClass::assertInt($bar)) {
 }
 
-assertType('string|null', $foo);
+assertType('string', $foo);
 assertType('int|null', $bar);

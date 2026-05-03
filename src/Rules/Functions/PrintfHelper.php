@@ -26,24 +26,24 @@ final class PrintfHelper
 
 	public function getPrintfPlaceholdersCount(string $format): ?int
 	{
-		return $this->getPlaceholdersCount(self::PRINTF_SPECIFIER_PATTERN, $format);
+		return $this->getPlaceholdersCount(self::PRINTF_SPECIFIER_PATTERN, $format, false);
 	}
 
 	/** @phpstan-return array<int, non-empty-list<PrintfPlaceholder>> parameter index => placeholders */
 	public function getPrintfPlaceholders(string $format): ?array
 	{
-		return $this->parsePlaceholders(self::PRINTF_SPECIFIER_PATTERN, $format);
+		return $this->parsePlaceholders(self::PRINTF_SPECIFIER_PATTERN, $format, false);
 	}
 
 	public function getScanfPlaceholdersCount(string $format): ?int
 	{
-		return $this->getPlaceholdersCount('(?<specifier>[cdDeEfinosuxX%s]|\[[^\]]+\])', $format);
+		return $this->getPlaceholdersCount('(?<specifier>[cdDeEfinosuxX%s]|\[[^\]]+\])', $format, true);
 	}
 
 	/**
 	 * @phpstan-return array<int, non-empty-list<PrintfPlaceholder>>|null parameter index => placeholders
 	 */
-	private function parsePlaceholders(string $specifiersPattern, string $format): ?array
+	private function parsePlaceholders(string $specifiersPattern, string $format, bool $isScanf): ?array
 	{
 		$addSpecifier = '';
 		if ($this->phpVersion->supportsHhPrintfSpecifier()) {
@@ -72,6 +72,10 @@ final class PrintfHelper
 			$showValueSuffix = false;
 
 			if (isset($placeholder['width']) && $placeholder['width'] !== '') {
+				if ($isScanf) {
+					// In scanf, * means assignment suppression - skip this placeholder entirely
+					continue;
+				}
 				$parsedPlaceholders[] = new PrintfPlaceholder(
 					sprintf('"%s" (width)', $placeholder[0]),
 					$parameterIdx++,
@@ -132,9 +136,9 @@ final class PrintfHelper
 		return 'mixed';
 	}
 
-	private function getPlaceholdersCount(string $specifiersPattern, string $format): ?int
+	private function getPlaceholdersCount(string $specifiersPattern, string $format, bool $isScanf): ?int
 	{
-		$placeholdersMap = $this->parsePlaceholders($specifiersPattern, $format);
+		$placeholdersMap = $this->parsePlaceholders($specifiersPattern, $format, $isScanf);
 		if ($placeholdersMap === null) {
 			return null;
 		}

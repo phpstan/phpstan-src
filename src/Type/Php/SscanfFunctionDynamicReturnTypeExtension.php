@@ -21,6 +21,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use function preg_match_all;
+use function strstr;
 
 #[AutowiredService]
 final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -48,9 +49,15 @@ final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 			return null;
 		}
 
-		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cdeEfosux]{1})/', $formatType->getValue(), $matches) > 0) {
-			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+		$formatValue = $formatType->getValue();
+		$beforeNul = strstr($formatValue, "\0", true);
+		if ($beforeNul !== false) {
+			$formatValue = $beforeNul;
+		}
 
+		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+
+		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cdeEfosux]{1})/', $formatValue, $matches) > 0) {
 			for ($i = 0; $i < count($matches[0]); $i++) {
 				$length = $matches[1][$i];
 				$specifier = $matches[2][$i];
@@ -81,11 +88,9 @@ final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 				$type = TypeCombinator::addNull($type);
 				$arrayBuilder->setOffsetValueType(new ConstantIntegerType($i), $type);
 			}
-
-			return TypeCombinator::addNull($arrayBuilder->getArray());
 		}
 
-		return null;
+		return TypeCombinator::addNull($arrayBuilder->getArray());
 	}
 
 }

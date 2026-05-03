@@ -12,6 +12,7 @@ use function in_array;
 use function max;
 use function sprintf;
 use function strlen;
+use function strstr;
 use const PREG_SET_ORDER;
 
 #[AutowiredService]
@@ -45,6 +46,13 @@ final class PrintfHelper
 	 */
 	private function parsePlaceholders(string $specifiersPattern, string $format, bool $isScanf): ?array
 	{
+		if ($isScanf) {
+			$beforeNul = strstr($format, "\0", true);
+			if ($beforeNul !== false) {
+				$format = $beforeNul;
+			}
+		}
+
 		$addSpecifier = '';
 		if ($this->phpVersion->supportsHhPrintfSpecifier()) {
 			$addSpecifier .= 'hH';

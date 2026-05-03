@@ -178,4 +178,15 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
+	public function testBcMathNumber(): void
+	{
+		$this->analyse([__DIR__ . '/data/unary-bcmath-number.php'], [
+			[
+				'Unary operation "~" on BcMath\Number results in an error.',
+				16,
+			],
+		]);
+	}
+
 }

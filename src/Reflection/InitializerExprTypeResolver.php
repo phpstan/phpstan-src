@@ -1006,6 +1006,10 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
+		if ((new ObjectType('BcMath\Number'))->isSuperTypeOf($leftType)->yes()) {
+			return new ErrorType();
+		}
+
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a & $b);
 		if ($result instanceof Type) {
 			return $result;
@@ -1068,6 +1072,10 @@ final class InitializerExprTypeResolver
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
+		}
+
+		if ((new ObjectType('BcMath\Number'))->isSuperTypeOf($leftType)->yes()) {
+			return new ErrorType();
 		}
 
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a | $b);
@@ -1182,6 +1190,10 @@ final class InitializerExprTypeResolver
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
+		}
+
+		if ((new ObjectType('BcMath\Number'))->isSuperTypeOf($leftType)->yes()) {
+			return new ErrorType();
 		}
 
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a ^ $b);
@@ -1794,6 +1806,10 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
+		if ((new ObjectType('BcMath\Number'))->isSuperTypeOf($leftType)->yes()) {
+			return new ErrorType();
+		}
+
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -1862,6 +1878,10 @@ final class InitializerExprTypeResolver
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
+		}
+
+		if ((new ObjectType('BcMath\Number'))->isSuperTypeOf($leftType)->yes()) {
+			return new ErrorType();
 		}
 
 		$leftTypes = $leftType->getConstantScalarTypes();

@@ -34,3 +34,25 @@ class DatePeriod implements \IteratorAggregate, \Traversable
 
 	}
 }
+
+interface DateTimeInterface {
+	/** @return \DateInterval&object{days:int} */
+	function diff(\DateTimeInterface $targetObject, bool $absolute = false): \DateInterval
+	{}
+}
+
+interface DateTimeImmutable {
+	/** @return \DateInterval&object{days:int} */
+	function diff(\DateTimeInterface $targetObject, bool $absolute = false): \DateInterval
+	{}
+}
+
+interface DateTime {
+	/** @return \DateInterval&object{days:int} */
+	function diff(\DateTimeInterface $targetObject, bool $absolute = false): \DateInterval
+	{}
+}
+
+/** @return \DateInterval&object{days:int} */
+function date_diff(\DateTimeInterface $targetObject, bool $absolute = false): \DateInterval
+{}

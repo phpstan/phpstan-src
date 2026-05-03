@@ -10,6 +10,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.checkParameterCastableToNumberFunctions%
 	PHPStan\Rules\Functions\PrintfParameterTypeRule:
 		phpstan.rules.rule: %featureToggles.checkPrintfParameterTypes%
+	PHPStan\Rules\DateIntervalInstantiationRule:
+		phpstan.rules.rule: %featureToggles.checkDateIntervalConstructor%
 
 autowiredAttributeServices:
 	# registers rules with #[RegisteredRule] attribute
@@ -22,3 +24,5 @@ services:
 		class: PHPStan\Rules\Functions\PrintfParameterTypeRule
 		arguments:
 			checkStrictPrintfPlaceholderTypes: %checkStrictPrintfPlaceholderTypes%
+	-
+		class: PHPStan\Rules\DateIntervalInstantiationRule

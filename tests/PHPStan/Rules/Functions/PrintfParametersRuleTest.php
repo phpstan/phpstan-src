@@ -85,6 +85,14 @@ class PrintfParametersRuleTest extends RuleTestCase
 				29,
 			],
 			[
+				'Call to sscanf contains an invalid placeholder.',
+				38,
+			],
+			[
+				'Call to fscanf contains an invalid placeholder.',
+				39,
+			],
+			[
 				'Call to sprintf contains 2 placeholders, 1 value given.',
 				45,
 			],

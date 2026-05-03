@@ -35,8 +35,8 @@ sscanf($str, "%20[^\n]\r\n%d", $string, $number); // ok
 sscanf($str, "%20[^abcde]a%d", $string, $number); // ok
 printf("%.E", 3.14159); // ok
 sprintf("%.E", 3.14159); // ok
-sscanf($str, '%.E', $number); // ok
-fscanf($str, '%.E', $number); // ok
+sscanf($str, '%.E', $number); // bad scan conversion character '.'
+fscanf($resource, '%.E', $number); // bad scan conversion character '.'
 sscanf($str, '%[A-Z]%d', $char, $number); // ok
 sprintf('%s %s %s', ...[1]); // do not detect unpacked arguments
 sprintf('%s %s %s', ...[1, 2, 3]); // ok

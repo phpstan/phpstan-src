@@ -16,3 +16,15 @@ sscanf('123', "\0%d");
 
 // Multiple placeholders, NUL in middle
 sscanf('123 456 789', "%d %d\0%d", $b, $c);
+
+// %n specifier - counts characters consumed, 1 placeholder
+sscanf('hello', "%n", $n);
+
+// %% - literal percent, 0 placeholders
+sscanf('100%', "100%%");
+
+// %i specifier - integer with base detection, 1 placeholder
+sscanf('0xff', "%i", $hex);
+
+// Mixed with %n
+sscanf('hello world', "%s%n", $word, $pos);

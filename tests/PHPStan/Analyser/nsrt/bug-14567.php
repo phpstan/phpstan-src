@@ -17,3 +17,23 @@ function fscanfNulTerminator($r) {
 	assertType('array{int|null, string|null}|null', fscanf($r, "%d %s\0%d"));
 	assertType('array{}|null', fscanf($r, "\0%d%s"));
 }
+
+function sscanfEdgeCases(string $s) {
+	// Empty format string - no placeholders
+	assertType('array{}|null', sscanf($s, ""));
+
+	// %n - counts characters consumed, returns integer
+	assertType('array{int|null}|null', sscanf($s, "%n"));
+
+	// %% - literal percent, not a placeholder
+	assertType('array{}|null', sscanf($s, "%%"));
+
+	// %i - integer with base detection
+	assertType('array{int|null}|null', sscanf($s, "%i"));
+
+	// %X - uppercase hex, same as %x
+	assertType('array{int|null}|null', sscanf($s, "%X"));
+
+	// mixed specifiers with %n
+	assertType('array{int|null, int|null}|null', sscanf($s, "%d%n"));
+}

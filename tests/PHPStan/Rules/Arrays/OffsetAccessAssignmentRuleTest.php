@@ -222,4 +222,15 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9004(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9004.php'], [
+			[
+				'Cannot assign new offset to list<int>|string.',
+				14,
+			],
+		]);
+	}
+
 }

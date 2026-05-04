@@ -292,6 +292,7 @@ final class PhpClassReflectionExtension
 				$currentResolvedPhpDoc,
 			);
 		} elseif ($docComment !== null) {
+			// todo could call phpDocInheritanceResolver too
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$declaringClassReflection->getFileName(),
 				$declaringClassName,

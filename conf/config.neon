@@ -125,7 +125,6 @@ parameters:
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:
-		- ../stubs/Memcached.stub
 		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClassConstant.stub
 		- ../stubs/ReflectionFunctionAbstract.stub

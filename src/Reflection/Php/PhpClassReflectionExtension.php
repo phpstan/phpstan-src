@@ -613,12 +613,6 @@ final class PhpClassReflectionExtension
 			$acceptsNamedArguments = true;
 			$selfOutType = null;
 			$phpDocComment = null;
-
-			$isPure = null;
-			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
-				$isPure = !$this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects'];
-			}
-
 			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $methodReflection);
 			foreach ($methodSignaturesResult as $signatureType => $methodSignatures) {
 				if ($methodSignatures === null) {
@@ -750,22 +744,18 @@ final class PhpClassReflectionExtension
 				}
 			}
 
-			if ($isPure === null) {
-				$classResolvedPhpDoc = $declaringClass->getResolvedPhpDoc();
-				if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
-					$isPure = true;
-				} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
-					$isPure = false;
-				}
+			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
+				$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects']);
+			} else {
+				$hasSideEffects = TrinaryLogic::createMaybe();
 			}
-
 			return new NativeMethodReflection(
 				$this->reflectionProviderProvider->getReflectionProvider(),
 				$declaringClass,
 				$methodReflection,
 				$variantsByType['positional'],
 				$variantsByType['named'] ?? null,
-				$isPure !== null ? TrinaryLogic::createFromBoolean(!$isPure) : TrinaryLogic::createMaybe(),
+				$hasSideEffects,
 				$throwType,
 				$asserts,
 				$acceptsNamedArguments,

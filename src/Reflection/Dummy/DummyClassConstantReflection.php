@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\Dummy;
 
 use PhpParser\Node\Expr;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -115,11 +114,6 @@ final class DummyClassConstantReflection implements ClassConstantReflection
 	public function getAttributes(): array
 	{
 		return [];
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return null;
 	}
 
 }

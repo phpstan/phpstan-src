@@ -3129,7 +3129,7 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, $hook, $scope, $storage);
 			$this->processAttributeGroups($stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
 
-			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->getPhpDocs($scope, $hook);
+			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment] = $this->getPhpDocs($scope, $hook);
 
 			foreach ($hook->params as $param) {
 				$this->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
@@ -3147,7 +3147,6 @@ class NodeScopeResolver
 				$deprecatedDescription,
 				$isDeprecated,
 				$phpDocComment,
-				$resolvedPhpDoc,
 			);
 			$hookReflection = $hookScope->getFunction();
 			if (!$hookReflection instanceof PhpMethodFromParserNodeReflection) {
@@ -4525,7 +4524,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool, ?ResolvedPhpDocBlock}
+	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -4568,21 +4567,12 @@ class NodeScopeResolver
 
 				return $param->var->name;
 			}, $node->getParams());
-			$currentResolvedPhpDoc = null;
-			if ($docComment !== null) {
-				$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-					$file,
-					$class,
-					$trait,
-					$node->name->name,
-					$docComment,
-				);
-			}
-			$methodNameForInheritance = $node->getAttribute('originalTraitMethodName') ?? $node->name->name;
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
+				$docComment,
+				$file,
 				$scope->getClassReflection(),
-				$methodNameForInheritance,
-				$currentResolvedPhpDoc,
+				$trait,
+				$node->name->name,
 				$positionalParameterNames,
 			);
 
@@ -4684,17 +4674,16 @@ class NodeScopeResolver
 			$isPure = $resolvedPhpDoc->isPure();
 			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
+			if ($acceptsNamedArguments && $scope->isInClass()) {
+				$acceptsNamedArguments = $scope->getClassReflection()->acceptsNamedArguments();
+			}
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 			$varTags = $resolvedPhpDoc->getVarTags();
 		}
 
-		if ($acceptsNamedArguments && $scope->isInClass()) {
-			$acceptsNamedArguments = $scope->getClassReflection()->acceptsNamedArguments();
-		}
-
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $resolvedPhpDoc];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\Type;
 
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -258,11 +257,6 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->mustUseReturnValue());
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return $this->getMethodWithMostParameters()->getResolvedPhpDoc();
 	}
 
 	/**

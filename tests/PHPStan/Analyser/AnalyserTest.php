@@ -21,6 +21,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
@@ -807,7 +808,7 @@ class AnalyserTest extends PHPStanTestCase
 		$container = self::getContainer();
 		$typeSpecifier = $container->getService('typeSpecifier');
 		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper, $container->getByType(StubPhpDocProvider::class));
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,

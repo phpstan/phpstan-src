@@ -41,7 +41,6 @@ use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
 use PHPStan\Php\PhpVersions;
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
@@ -1492,7 +1491,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		array $immediatelyInvokedCallableParameters = [],
 		array $phpDocClosureThisTypeParameters = [],
 		bool $isConstructor = false,
-		?ResolvedPhpDocBlock $resolvedPhpDocBlock = null,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -1522,7 +1520,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$asserts ?? Assertions::createEmpty(),
 				$selfOutType,
 				$phpDocComment,
-				$resolvedPhpDocBlock,
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $parameterOutTypes),
 				$immediatelyInvokedCallableParameters,
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocClosureThisTypeParameters),
@@ -1546,7 +1543,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		?string $phpDocComment,
-		?ResolvedPhpDocBlock $resolvedPhpDocBlock = null,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -1611,7 +1607,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				Assertions::createEmpty(),
 				null,
 				$phpDocComment,
-				$resolvedPhpDocBlock,
 				[],
 				[],
 				[],

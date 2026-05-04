@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PhpParser\Node\Expr;
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Type\Type;
 
 /**
@@ -37,7 +36,5 @@ interface ClassConstantReflection extends ClassMemberReflection, ConstantReflect
 	public function hasNativeType(): bool;
 
 	public function getNativeType(): ?Type;
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock;
 
 }

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\RestrictedUsage;
 
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -149,11 +148,6 @@ final class RewrittenDeclaringClassMethodReflection implements ExtendedMethodRef
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return $this->methodReflection->mustUseReturnValue();
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return $this->methodReflection->getResolvedPhpDoc();
 	}
 
 }

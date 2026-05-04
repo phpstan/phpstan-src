@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
@@ -77,7 +76,5 @@ interface ExtendedMethodReflection extends MethodReflection
 	 * PHPStan reports this during analysis regardless of PHP version.
 	 */
 	public function mustUseReturnValue(): TrinaryLogic;
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock;
 
 }

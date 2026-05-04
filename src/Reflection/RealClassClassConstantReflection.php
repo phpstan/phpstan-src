@@ -5,7 +5,6 @@ namespace PHPStan\Reflection;
 use PhpParser\Node\Expr;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\Internal\DeprecatedAttributeHelper;
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -24,7 +23,6 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 		private ReflectionClassConstant $reflection,
 		private ?Type $nativeType,
 		private ?Type $phpDocType,
-		private ?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
@@ -94,11 +92,6 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->declaringClass;
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return $this->resolvedPhpDocBlock;
 	}
 
 	public function isStatic(): bool

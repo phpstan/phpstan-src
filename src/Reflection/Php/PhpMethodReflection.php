@@ -6,7 +6,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
@@ -74,7 +73,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
 		private ?Type $phpDocThrowType,
-		private ?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
@@ -415,7 +413,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->phpDocParameterTypes,
 			$phpDocType,
 			$this->phpDocThrowType,
-			$this->resolvedPhpDocBlock,
 			$this->deprecatedDescription,
 			$this->isDeprecated,
 			$this->isInternal,
@@ -448,7 +445,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$phpDocParameterTypes,
 			$this->phpDocReturnType,
 			$this->phpDocThrowType,
-			$this->resolvedPhpDocBlock,
 			$this->deprecatedDescription,
 			$this->isDeprecated,
 			$this->isInternal,
@@ -478,11 +474,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			}
 		}
 		return TrinaryLogic::createNo();
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return $this->resolvedPhpDocBlock;
 	}
 
 }

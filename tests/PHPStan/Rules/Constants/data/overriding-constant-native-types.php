@@ -48,22 +48,3 @@ class PharChild extends \Phar
 	const int|string NONE = 1; // error
 
 }
-
-class ResultA {
-	public function __construct(public string $value) {}
-}
-
-class ResultB extends ResultA {
-	public function rot13(): string { return str_rot13($this->value); }
-}
-
-/** @template-implements I<ResultB> */
-class In implements I {
-	public const string ResultType = ResultB::class;
-}
-
-/** @template T of ResultA */
-interface I {
-	/** @var class-string<T> */
-	public const string ResultType = ResultA::class;
-}

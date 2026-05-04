@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\Dummy;
 
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -176,11 +175,6 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return $this->reflection->mustUseReturnValue();
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return $this->reflection->getResolvedPhpDoc();
 	}
 
 }

@@ -2,284 +2,154 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Type\FileTypeMapper;
-use function array_key_exists;
-use function count;
-use function is_bool;
+use function array_map;
 use function strtolower;
 
 #[AutowiredService]
 final class PhpDocInheritanceResolver
 {
 
-	public function __construct(private FileTypeMapper $fileTypeMapper)
+	public function __construct(
+		private FileTypeMapper $fileTypeMapper,
+		private StubPhpDocProvider $stubPhpDocProvider,
+	)
 	{
 	}
 
 	public function resolvePhpDocForProperty(
-		ClassReflection $declaringClass,
+		?string $docComment,
+		ClassReflection $classReflection,
+		?string $classReflectionFileName,
+		?string $declaringTraitName,
 		string $propertyName,
-		?ResolvedPhpDocBlock $currentResolvedPhpDoc,
-	): ?ResolvedPhpDocBlock
+	): ResolvedPhpDocBlock
 	{
-		$parent = $declaringClass->getParentClass();
-		if ($parent !== null) {
-			$parentMethod = $this->resolvePropertyPhpDocFromParentClass($declaringClass, $parent, $propertyName, $currentResolvedPhpDoc);
-			if ($parentMethod !== null) {
-				return $parentMethod;
-			}
-		}
+		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForProperty(
+			$docComment,
+			$classReflection,
+			null,
+			$propertyName,
+			$classReflectionFileName,
+		);
 
-		foreach ($declaringClass->getImmediateInterfaces() as $interface) {
-			$interfaceMethod = $this->resolvePropertyPhpDocFromParentClass($declaringClass, $interface, $propertyName, $currentResolvedPhpDoc);
-			if ($interfaceMethod === null) {
-				continue;
-			}
-
-			return $interfaceMethod;
-		}
-
-		return $currentResolvedPhpDoc;
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, null, $propertyName, null);
 	}
 
 	public function resolvePhpDocForConstant(
-		ClassReflection $declaringClass,
+		?string $docComment,
+		ClassReflection $classReflection,
+		?string $classReflectionFileName,
 		string $constantName,
-		?ResolvedPhpDocBlock $currentResolvedPhpDoc,
-	): ?ResolvedPhpDocBlock
-	{
-		$parent = $declaringClass->getParentClass();
-		if ($parent !== null) {
-			$parentMethod = $this->resolveConstantPhpDocFromParentClass($declaringClass, $parent, $constantName, $currentResolvedPhpDoc);
-			if ($parentMethod !== null) {
-				return $parentMethod;
-			}
-		}
-
-		foreach ($declaringClass->getImmediateInterfaces() as $interface) {
-			$interfaceMethod = $this->resolveConstantPhpDocFromParentClass($declaringClass, $interface, $constantName, $currentResolvedPhpDoc);
-			if ($interfaceMethod === null) {
-				continue;
-			}
-
-			return $interfaceMethod;
-		}
-
-		return $currentResolvedPhpDoc;
-	}
-
-	/**
-	 * @param array<int, string> $currentPositionalParameterNames
-	 */
-	public function resolvePhpDocForMethod(
-		ClassReflection $declaringClass,
-		string $methodName,
-		?ResolvedPhpDocBlock $currentResolvedPhpDoc,
-		array $currentPositionalParameterNames,
-	): ?ResolvedPhpDocBlock
-	{
-		$parent = $declaringClass->getParentClass();
-		if ($parent !== null) {
-			if ($parent->hasNativeMethod($methodName)) {
-				$parentMethod = $parent->getNativeMethod($methodName);
-				if (!$parentMethod->isPrivate() && $parentMethod->getResolvedPhpDoc() !== null) {
-					if ($parentMethod->getName() !== '__construct' || !$parentMethod->getDeclaringClass()->isBuiltin()) {
-						return $this->resolveMethodPhpDocFromParentClass($parentMethod, $parentMethod->getResolvedPhpDoc(), $declaringClass, $parent, $currentResolvedPhpDoc, $currentPositionalParameterNames);
-					}
-				}
-			}
-		}
-
-		foreach ($declaringClass->getImmediateInterfaces() as $interface) {
-			if (!$interface->hasNativeMethod($methodName)) {
-				continue;
-			}
-
-			$interfaceMethod = $interface->getNativeMethod($methodName);
-			if ($interfaceMethod->isPrivate()) {
-				continue;
-			}
-			if ($interfaceMethod->getResolvedPhpDoc() === null) {
-				continue;
-			}
-			return $this->resolveMethodPhpDocFromParentClass($interfaceMethod, $interfaceMethod->getResolvedPhpDoc(), $declaringClass, $interface, $currentResolvedPhpDoc, $currentPositionalParameterNames);
-
-		}
-
-		foreach ($declaringClass->getTraits() as $trait) {
-			if (!$trait->hasNativeMethod($methodName)) {
-				continue;
-			}
-
-			$traitMethod = $trait->getNativeMethod($methodName);
-			if ($traitMethod->getDocComment() === null) {
-				continue;
-			}
-			if ($declaringClass->getFileName() === null) {
-				continue;
-			}
-
-			$abstract = $traitMethod->isAbstract();
-			if (is_bool($abstract)) {
-				if (!$abstract) {
-					continue;
-				}
-			} elseif (!$abstract->yes()) {
-				continue;
-			}
-
-			$resolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
-				$declaringClass->getFileName(),
-				$declaringClass->getName(),
-				$trait->getName(),
-				$methodName,
-				$traitMethod->getDocComment(),
-			);
-
-			return $this->resolveMethodPhpDocFromParentClass($traitMethod, $resolvedPhpDocBlock, $declaringClass, $trait, $currentResolvedPhpDoc, $currentPositionalParameterNames);
-		}
-
-		return $currentResolvedPhpDoc;
-	}
-
-	/**
-	 * @param array<int, string> $currentPositionalParameterNames
-	 */
-	private function resolveMethodPhpDocFromParentClass(
-		ExtendedMethodReflection $parentMethod,
-		ResolvedPhpDocBlock $resolvedPhpDocBlock,
-		ClassReflection $declaringClass,
-		ClassReflection $parent,
-		?ResolvedPhpDocBlock $currentResolvedPhpDoc,
-		array $currentPositionalParameterNames,
 	): ResolvedPhpDocBlock
 	{
-		if ($currentResolvedPhpDoc === null) {
-			$currentResolvedPhpDoc = ResolvedPhpDocBlock::createEmpty();
-		}
+		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForConstant(
+			$docComment,
+			$classReflection,
+			$constantName,
+			$classReflectionFileName,
+		);
 
-		$methodVariants = $parentMethod->getVariants();
-		$positionalMethodParameterNames = [];
-		$lowercaseMethodName = strtolower($parentMethod->getName());
-		if (
-			count($methodVariants) === 1
-			&& $lowercaseMethodName !== '__construct'
-			&& $lowercaseMethodName !== strtolower($parentMethod->getDeclaringClass()->getName())
-		) {
-			$methodParameters = $methodVariants[0]->getParameters();
-			foreach ($methodParameters as $methodParameter) {
-				$positionalMethodParameterNames[] = $methodParameter->getName();
-			}
-		} else {
-			$positionalMethodParameterNames = $currentPositionalParameterNames;
-		}
-
-		$parentClassForMerge = $parent;
-		$phpDocDeclaringClass = $parentMethod->getDeclaringClass();
-		if ($phpDocDeclaringClass->getName() !== $parent->getName()) {
-			$ancestor = $parent->getAncestorWithClassName($phpDocDeclaringClass->getName());
-			if ($ancestor !== null) {
-				$parentClassForMerge = $ancestor;
-			}
-		}
-
-		return $currentResolvedPhpDoc->merge($resolvedPhpDocBlock, new InheritedPhpDocParameterMapping(self::remapParameterNames($currentPositionalParameterNames, $positionalMethodParameterNames)), $declaringClass, $parentClassForMerge);
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, null, null, null, $constantName);
 	}
 
 	/**
-	 * @param array<int, string> $originalPositionalParameterNames
-	 * @param array<int, string> $newPositionalParameterNames
-	 * @return array<string, string>
+	 * @param array<int, string> $positionalParameterNames
 	 */
-	private static function remapParameterNames(
-		array $originalPositionalParameterNames,
-		array $newPositionalParameterNames,
-	): array
+	public function resolvePhpDocForMethod(
+		?string $docComment,
+		?string $fileName,
+		ClassReflection $classReflection,
+		?string $declaringTraitName,
+		string $methodName,
+		array $positionalParameterNames,
+	): ResolvedPhpDocBlock
 	{
-		$parameterNameMapping = [];
-		foreach ($originalPositionalParameterNames as $i => $parameterName) {
-			if (!array_key_exists($i, $newPositionalParameterNames)) {
+		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
+			$docComment,
+			$classReflection,
+			$declaringTraitName,
+			$methodName,
+			$fileName,
+			$positionalParameterNames,
+			$positionalParameterNames,
+		);
+
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $phpDocBlock->getTrait(), $methodName, null, null);
+	}
+
+	private function docBlockTreeToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName, ?string $propertyName, ?string $constantName): ResolvedPhpDocBlock
+	{
+		$parents = [];
+		$parentPhpDocBlocks = [];
+
+		foreach ($phpDocBlock->getParents() as $parentPhpDocBlock) {
+			if (
+				$functionName !== null
+				&& strtolower($functionName) === '__construct'
+				&& $parentPhpDocBlock->getClassReflection()->isBuiltin()
+			) {
 				continue;
 			}
-			$parameterNameMapping[$newPositionalParameterNames[$i]] = $parameterName;
+			$parents[] = $this->docBlockTreeToResolvedDocBlock(
+				$parentPhpDocBlock,
+				$parentPhpDocBlock->getTrait(),
+				$functionName,
+				$propertyName,
+				$constantName,
+			);
+			$parentPhpDocBlocks[] = $parentPhpDocBlock;
 		}
 
-		return $parameterNameMapping;
+		$oneResolvedDockBlock = $this->docBlockToResolvedDocBlock($phpDocBlock, $traitName, $functionName, $propertyName, $constantName);
+		return $oneResolvedDockBlock->merge($parents, $parentPhpDocBlocks);
 	}
 
-	private function resolveConstantPhpDocFromParentClass(
-		ClassReflection $declaringClass,
-		ClassReflection $parent,
-		string $constantName,
-		?ResolvedPhpDocBlock $currentResolvedPhpDoc,
-	): ?ResolvedPhpDocBlock
+	private function docBlockToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName, ?string $propertyName, ?string $constantName): ResolvedPhpDocBlock
 	{
-		if (!$parent->hasConstant($constantName)) {
-			return null;
-		}
-
-		$parentConstant = $parent->getConstant($constantName);
-		if ($parentConstant->isPrivate()) {
-			return null;
-		}
-
-		if ($parentConstant->getResolvedPhpDoc() === null) {
-			return null;
-		}
-
-		if ($currentResolvedPhpDoc === null) {
-			$currentResolvedPhpDoc = ResolvedPhpDocBlock::createEmpty();
-		}
-
-		$parentClassForMerge = $parent;
-		$phpDocDeclaringClass = $parentConstant->getDeclaringClass();
-		if ($phpDocDeclaringClass->getName() !== $parent->getName()) {
-			$ancestor = $parent->getAncestorWithClassName($phpDocDeclaringClass->getName());
-			if ($ancestor !== null) {
-				$parentClassForMerge = $ancestor;
+		$classReflection = $phpDocBlock->getClassReflection();
+		if ($functionName !== null && $classReflection->getNativeReflection()->hasMethod($functionName)) {
+			$methodReflection = $classReflection->getNativeReflection()->getMethod($functionName);
+			$stub = $this->stubPhpDocProvider->findMethodPhpDoc($classReflection->getName(), $classReflection->getName(), $functionName, array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
+			if ($stub !== null) {
+				return $stub;
 			}
 		}
 
-		return $currentResolvedPhpDoc->merge($parentConstant->getResolvedPhpDoc(), new InheritedPhpDocParameterMapping([]), $declaringClass, $parentClassForMerge);
-	}
+		if ($propertyName !== null && $classReflection->getNativeReflection()->hasProperty($propertyName)) {
+			$stub = $this->stubPhpDocProvider->findPropertyPhpDoc($classReflection->getName(), $propertyName);
 
-	private function resolvePropertyPhpDocFromParentClass(
-		ClassReflection $declaringClass,
-		ClassReflection $parent,
-		string $propertyName,
-		?ResolvedPhpDocBlock $currentResolvedPhpDoc,
-	): ?ResolvedPhpDocBlock
-	{
-		if (!$parent->hasNativeProperty($propertyName)) {
-			return null;
-		}
+			if ($stub === null) {
+				$propertyReflection = $classReflection->getNativeReflection()->getProperty($propertyName);
 
-		$parentProperty = $parent->getNativeProperty($propertyName);
-		if ($parentProperty->isPrivate()) {
-			return null;
-		}
+				$propertyDeclaringClass = $propertyReflection->getBetterReflection()->getDeclaringClass();
 
-		if ($parentProperty->getResolvedPhpDoc() === null) {
-			return null;
-		}
-
-		if ($currentResolvedPhpDoc === null) {
-			$currentResolvedPhpDoc = ResolvedPhpDocBlock::createEmpty();
-		}
-
-		$parentClassForMerge = $parent;
-		$phpDocDeclaringClass = $parentProperty->getDeclaringClass();
-		if ($phpDocDeclaringClass->getName() !== $parent->getName()) {
-			$ancestor = $parent->getAncestorWithClassName($phpDocDeclaringClass->getName());
-			if ($ancestor !== null) {
-				$parentClassForMerge = $ancestor;
+				if ($propertyDeclaringClass->isTrait() && (! $propertyReflection->getDeclaringClass()->isTrait() || $propertyReflection->getDeclaringClass()->getName() !== $propertyDeclaringClass->getName())) {
+					$stub = $this->stubPhpDocProvider->findPropertyPhpDoc($propertyDeclaringClass->getName(), $propertyName);
+				}
+			}
+			if ($stub !== null) {
+				return $stub;
 			}
 		}
 
-		return $currentResolvedPhpDoc->merge($parentProperty->getResolvedPhpDoc(), new InheritedPhpDocParameterMapping([]), $declaringClass, $parentClassForMerge);
+		if ($constantName !== null && $classReflection->getNativeReflection()->hasConstant($constantName)) {
+			$stub = $this->stubPhpDocProvider->findClassConstantPhpDoc($classReflection->getName(), $constantName);
+			if ($stub !== null) {
+				return $stub;
+			}
+		}
+
+		return $this->fileTypeMapper->getResolvedPhpDoc(
+			$phpDocBlock->getFile(),
+			$classReflection->getName(),
+			$traitName,
+			$functionName,
+			$phpDocBlock->getDocComment(),
+		);
 	}
 
 }

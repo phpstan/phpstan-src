@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
-use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -66,7 +65,6 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		Assertions $assertions,
 		private ?Type $selfOutType,
 		?string $phpDocComment,
-		private ?ResolvedPhpDocBlock $resolvedPhpDoc,
 		array $parameterOutTypes,
 		array $immediatelyInvokedCallableParameters,
 		array $phpDocClosureThisTypeParameters,
@@ -296,11 +294,6 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		}
 
 		return TrinaryLogic::createMaybe();
-	}
-
-	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
-	{
-		return $this->resolvedPhpDoc;
 	}
 
 }

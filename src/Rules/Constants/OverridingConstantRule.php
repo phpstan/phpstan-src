@@ -65,9 +65,9 @@ final class OverridingConstantRule implements Rule
 		if ($prototype->isFinal()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Constant %s::%s overrides final constant %s::%s.',
-				$classReflection->getDisplayName(false),
+				$classReflection->getDisplayName(),
 				$constantReflection->getName(),
-				$prototype->getDeclaringClass()->getDisplayName(false),
+				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
 			))->identifier('classConstant.final')->nonIgnorable()->build();
 		}
@@ -77,18 +77,18 @@ final class OverridingConstantRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s constant %s::%s overriding public constant %s::%s should also be public.',
 					$constantReflection->isPrivate() ? 'Private' : 'Protected',
-					$constantReflection->getDeclaringClass()->getDisplayName(false),
+					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantReflection->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
 				))->identifier('classConstant.visibility')->nonIgnorable()->build();
 			}
 		} elseif ($constantReflection->isPrivate()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Private constant %s::%s overriding protected constant %s::%s should be protected or public.',
-				$constantReflection->getDeclaringClass()->getDisplayName(false),
+				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantReflection->getName(),
-				$prototype->getDeclaringClass()->getDisplayName(false),
+				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
 			))->identifier('classConstant.visibility')->nonIgnorable()->build();
 		}
@@ -105,19 +105,19 @@ final class OverridingConstantRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Native type %s of constant %s::%s is not covariant with native type %s of constant %s::%s.',
 						$constantNativeType->describe(VerbosityLevel::typeOnly()),
-						$constantReflection->getDeclaringClass()->getDisplayName(false),
+						$constantReflection->getDeclaringClass()->getDisplayName(),
 						$constantReflection->getName(),
 						$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
-						$prototype->getDeclaringClass()->getDisplayName(false),
+						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName(),
 					))->identifier('classConstant.nativeType')->nonIgnorable()->build();
 				}
 			} else {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Constant %s::%s overriding constant %s::%s (%s) should also have native type %s.',
-					$constantReflection->getDeclaringClass()->getDisplayName(false),
+					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantReflection->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
 					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
 					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
@@ -137,10 +137,10 @@ final class OverridingConstantRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Type %s of constant %s::%s is not covariant with type %s of constant %s::%s.',
 				$constantReflection->getValueType()->describe(VerbosityLevel::value()),
-				$constantReflection->getDeclaringClass()->getDisplayName(false),
+				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantReflection->getName(),
 				$prototype->getValueType()->describe(VerbosityLevel::value()),
-				$prototype->getDeclaringClass()->getDisplayName(false),
+				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
 			))->identifier('classConstant.type')->build();
 		}

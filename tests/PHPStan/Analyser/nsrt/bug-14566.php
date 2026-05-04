@@ -79,6 +79,32 @@ function fooPartialOverlapOr(array $test): void {
 	assertType("array{hi: string}", $test);
 }
 
+/**
+ * Regression: conditional holders for property fetches must use the right-side
+ * scope (where the base object is narrowed) to precompute the target type.
+ * Otherwise, accessing $node->name when $node is CallLike (which has no $name
+ * property) produces ErrorType.
+ */
+function fooElseifPropertyNarrowing(\PhpParser\Node\Expr\CallLike $node, \PHPStan\Analyser\Scope $scope): void {
+	if ($node instanceof \PhpParser\Node\Expr\MethodCall && $node->name instanceof \PhpParser\Node\Identifier) {
+		assertType('PhpParser\Node\Expr\MethodCall', $node);
+		assertType('PhpParser\Node\Identifier', $node->name);
+	} elseif ($node instanceof \PhpParser\Node\Expr\StaticCall && $node->name instanceof \PhpParser\Node\Identifier && $node->class instanceof \PhpParser\Node\Name) {
+		assertType('PhpParser\Node\Expr\StaticCall', $node);
+		assertType('PhpParser\Node\Identifier', $node->name);
+		assertType('PhpParser\Node\Name', $node->class);
+	} elseif ($node instanceof \PhpParser\Node\Expr\New_ && $node->class instanceof \PhpParser\Node\Name) {
+		assertType('PhpParser\Node\Expr\New_', $node);
+		assertType('PhpParser\Node\Name', $node->class);
+	} elseif ($node instanceof \PhpParser\Node\Expr\FuncCall && $node->name instanceof \PhpParser\Node\Name) {
+		assertType('PhpParser\Node\Expr\FuncCall', $node);
+		assertType('PhpParser\Node\Name', $node->name);
+	} elseif ($node instanceof \PhpParser\Node\Expr\FuncCall) {
+		assertType('PhpParser\Node\Expr\FuncCall', $node);
+		assertType('PhpParser\Node\Expr', $node->name);
+	}
+}
+
 class FooContainer {
 	/** @var \stdClass|string */
 	public $x;

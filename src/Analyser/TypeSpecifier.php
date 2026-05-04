@@ -2083,10 +2083,7 @@ final class TypeSpecifier
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureTypes() as $exprString => [$expr, $type]) {
-			if (!$expr instanceof Expr\Variable) {
-				continue;
-			}
-			if (!is_string($expr->name)) {
+			if (!$this->isTrackableExpression($expr)) {
 				continue;
 			}
 
@@ -2105,10 +2102,7 @@ final class TypeSpecifier
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
 			foreach ($rightTypes->getSureTypes() as $exprString => [$expr, $type]) {
-				if (!$expr instanceof Expr\Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
+				if (!$this->isTrackableExpression($expr)) {
 					continue;
 				}
 
@@ -2118,18 +2112,9 @@ final class TypeSpecifier
 
 				$conditions = $conditionExpressionTypes;
 				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
-					$conditionExpr = $conditionExprTypeHolder->getExpr();
-					if (!$conditionExpr instanceof Expr\Variable) {
-						continue;
+					if ($conditionExprString === $exprString) {
+						unset($conditions[$conditionExprString]);
 					}
-					if (!is_string($conditionExpr->name)) {
-						continue;
-					}
-					if ($conditionExpr->name !== $expr->name) {
-						continue;
-					}
-
-					unset($conditions[$conditionExprString]);
 				}
 
 				if (count($conditions) === 0) {
@@ -2147,6 +2132,17 @@ final class TypeSpecifier
 		}
 
 		return [];
+	}
+
+	private function isTrackableExpression(Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Variable) {
+			return is_string($expr->name);
+		}
+
+		return $expr instanceof Expr\PropertyFetch
+			|| $expr instanceof Expr\ArrayDimFetch
+			|| $expr instanceof Expr\StaticPropertyFetch;
 	}
 
 	/**
@@ -2283,10 +2279,7 @@ final class TypeSpecifier
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
-			if (!$expr instanceof Expr\Variable) {
-				continue;
-			}
-			if (!is_string($expr->name)) {
+			if (!$this->isTrackableExpression($expr)) {
 				continue;
 			}
 
@@ -2299,10 +2292,7 @@ final class TypeSpecifier
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
 			foreach ($rightTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
-				if (!$expr instanceof Expr\Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
+				if (!$this->isTrackableExpression($expr)) {
 					continue;
 				}
 
@@ -2312,18 +2302,9 @@ final class TypeSpecifier
 
 				$conditions = $conditionExpressionTypes;
 				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
-					$conditionExpr = $conditionExprTypeHolder->getExpr();
-					if (!$conditionExpr instanceof Expr\Variable) {
-						continue;
+					if ($conditionExprString === $exprString) {
+						unset($conditions[$conditionExprString]);
 					}
-					if (!is_string($conditionExpr->name)) {
-						continue;
-					}
-					if ($conditionExpr->name !== $expr->name) {
-						continue;
-					}
-
-					unset($conditions[$conditionExprString]);
 				}
 
 				if (count($conditions) === 0) {

@@ -634,18 +634,6 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11006.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug14138(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-14138.php'], [
-			[
-				'Parameter #1 $data of class Bug14138\Foo constructor expects array{foo: int, bar: int}, array{foo: 1} given.',
-				36,
-				"Array does not have offset 'bar'.",
-			],
-		]);
-	}
-
 	public function testBug14499(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14499.php'], []);

@@ -902,6 +902,14 @@ final class PhpClassReflectionExtension
 				}
 				$phpDocParameterTypes[$paramName] = $paramTag->getType();
 			}
+			foreach ($phpDocParameterTypes as $paramName => $paramType) {
+				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+					$paramType,
+					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+					$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createContravariant(),
+				);
+			}
 			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
 				$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
 					$paramOutTag->getType(),
@@ -917,38 +925,28 @@ final class PhpClassReflectionExtension
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure ??= $resolvedPhpDoc->isPure();
+			if ($isPure === null) {
+				$classResolvedPhpDoc = $phpDocBlockClassReflection->getResolvedPhpDoc();
+				if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
+					if (
+						strtolower($methodReflection->getName()) === '__construct'
+						|| (
+							($phpDocReturnType === null || !$phpDocReturnType->isVoid()->yes())
+							&& !$nativeReturnType->isVoid()->yes()
+						)
+					) {
+						$isPure = true;
+					}
+				} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
+					$isPure = false;
+				}
+			}
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 			if ($resolvedPhpDoc->hasPhpDocString()) {
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 			}
-		}
-
-		if ($isPure === null) {
-			$classResolvedPhpDoc = $phpDocBlockClassReflection->getResolvedPhpDoc();
-			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
-				if (
-					strtolower($methodReflection->getName()) === '__construct'
-					|| (
-						($phpDocReturnType === null || !$phpDocReturnType->isVoid()->yes())
-						&& !$nativeReturnType->isVoid()->yes()
-					)
-				) {
-					$isPure = true;
-				}
-			} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
-				$isPure = false;
-			}
-		}
-
-		foreach ($phpDocParameterTypes as $paramName => $paramType) {
-			$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
-				$paramType,
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
-				TemplateTypeVariance::createContravariant(),
-			);
 		}
 
 		return $this->methodReflectionFactory->create(

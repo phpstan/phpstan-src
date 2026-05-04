@@ -347,13 +347,6 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug14138Pure(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-14138-pure.php'], []);
-	}
-
 	public function testBug12382(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

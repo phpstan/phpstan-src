@@ -284,69 +284,6 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testAllMethodsArePure(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/all-methods-are-pure.php'], [
-			[
-				'Method AllMethodsArePure\Foo::pureVoid() is marked as pure but returns void.',
-				30,
-			],
-			[
-				'Method AllMethodsArePure\Foo::impure() is marked as impure but does not have any side effects.',
-				37,
-			],
-			[
-				'Method AllMethodsArePure\Foo::impureVoid() is marked as impure but does not have any side effects.',
-				45,
-			],
-			[
-				'Method AllMethodsArePure\Bar::test() is marked as impure but does not have any side effects.',
-				55,
-			],
-			[
-				'Method AllMethodsArePure\Bar::testVoid() is marked as impure but does not have any side effects.',
-				60,
-			],
-			[
-				'Method AllMethodsArePure\Bar::pureVoid() is marked as pure but returns void.',
-				75,
-			],
-			[
-				'Method AllMethodsArePure\Bar::impure() is marked as impure but does not have any side effects.',
-				82,
-			],
-			[
-				'Method AllMethodsArePure\Bar::impureVoid() is marked as impure but does not have any side effects.',
-				90,
-			],
-			[
-				'Impure call to method AllMethodsArePure\Test::impure() in pure method AllMethodsArePure\SideEffectPure::nothingWithImpure().',
-				120,
-			],
-			[
-				'Method AllMethodsArePure\SideEffectPure::impureWithPure() is marked as impure but does not have any side effects.',
-				130,
-			],
-			[
-				'Method AllMethodsArePure\SideEffectImpure::nothingWithPure() is marked as impure but does not have any side effects.',
-				143,
-			],
-			[
-				'Impure call to method AllMethodsArePure\Test::impure() in pure method AllMethodsArePure\SideEffectImpure::pureWithImpure().',
-				148,
-			],
-			[
-				'Impure call to method AllMethodsArePure\FooWithMixed::impureMethod() in pure method AllMethodsArePure\FooWithMixed::testMixed().',
-				163,
-			],
-			[
-				'Impure call to method AllMethodsArePure\FooWithMixed::impureMethod() in pure method AllMethodsArePure\FooWithMixed::testMixed2().',
-				171,
-			],
-		]);
-	}
-
 	public function testBug12382(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

@@ -4694,23 +4694,6 @@ class NodeScopeResolver
 			$acceptsNamedArguments = $scope->getClassReflection()->acceptsNamedArguments();
 		}
 
-		if ($isPure === null && $node instanceof Node\FunctionLike && $scope->isInClass()) {
-			$classResolvedPhpDoc = $scope->getClassReflection()->getResolvedPhpDoc();
-			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
-				if (
-					strtolower($functionName ?? '') === '__construct'
-					|| (
-						($phpDocReturnType === null || !$phpDocReturnType->isVoid()->yes())
-						&& !$scope->getFunctionType($node->getReturnType(), false, false)->isVoid()->yes()
-					)
-				) {
-					$isPure = true;
-				}
-			} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
-				$isPure = false;
-			}
-		}
-
 		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $resolvedPhpDoc];
 	}
 

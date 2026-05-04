@@ -139,10 +139,6 @@ final class ResolvedPhpDocBlock
 	/** @var bool|'notLoaded'|null */
 	private bool|string|null $isPure = 'notLoaded';
 
-	private ?bool $areAllMethodsPure = null;
-
-	private ?bool $areAllMethodsImpure = null;
-
 	private ?bool $isReadOnly = null;
 
 	private ?bool $isImmutable = null;
@@ -237,8 +233,6 @@ final class ResolvedPhpDocBlock
 		$self->isInternal = false;
 		$self->isFinal = false;
 		$self->isPure = null;
-		$self->areAllMethodsPure = false;
-		$self->areAllMethodsImpure = false;
 		$self->isReadOnly = false;
 		$self->isImmutable = false;
 		$self->isAllowedPrivateMutation = false;
@@ -293,8 +287,6 @@ final class ResolvedPhpDocBlock
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
 		$result->isPure = self::mergePureTags($this->isPure(), $parent);
-		$result->areAllMethodsPure = $this->areAllMethodsPure();
-		$result->areAllMethodsImpure = $this->areAllMethodsImpure();
 		$result->isReadOnly = $this->isReadOnly();
 		$result->isImmutable = $this->isImmutable();
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
@@ -822,20 +814,6 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $this->isPure;
-	}
-
-	public function areAllMethodsPure(): bool
-	{
-		return $this->areAllMethodsPure ??= $this->phpDocNodeResolver->resolveAllMethodsPure(
-			$this->phpDocNode,
-		);
-	}
-
-	public function areAllMethodsImpure(): bool
-	{
-		return $this->areAllMethodsImpure ??= $this->phpDocNodeResolver->resolveAllMethodsImpure(
-			$this->phpDocNode,
-		);
 	}
 
 	public function isReadOnly(): bool

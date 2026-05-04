@@ -927,22 +927,6 @@ final class PhpClassReflectionExtension
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure ??= $resolvedPhpDoc->isPure();
-			if ($isPure === null) {
-				$classResolvedPhpDoc = $phpDocBlockClassReflection->getResolvedPhpDoc();
-				if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
-					if (
-						strtolower($methodReflection->getName()) === '__construct'
-						|| (
-							($phpDocReturnType === null || !$phpDocReturnType->isVoid()->yes())
-							&& !$nativeReturnType->isVoid()->yes()
-						)
-					) {
-						$isPure = true;
-					}
-				} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
-					$isPure = false;
-				}
-			}
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;

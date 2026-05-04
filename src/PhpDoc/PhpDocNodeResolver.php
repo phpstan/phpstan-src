@@ -673,16 +673,6 @@ final class PhpDocNodeResolver
 		return false;
 	}
 
-	public function resolveAllMethodsPure(PhpDocNode $phpDocNode): bool
-	{
-		return count($phpDocNode->getTagsByName('@phpstan-all-methods-pure')) > 0;
-	}
-
-	public function resolveAllMethodsImpure(PhpDocNode $phpDocNode): bool
-	{
-		return count($phpDocNode->getTagsByName('@phpstan-all-methods-impure')) > 0;
-	}
-
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool
 	{
 		foreach (['@readonly', '@phan-read-only', '@psalm-readonly', '@phpstan-readonly', '@phpstan-readonly-allow-private-mutation', '@psalm-readonly-allow-private-mutation'] as $tagName) {

@@ -83,6 +83,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_key_first;
+use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;

@@ -654,12 +654,13 @@ final class PhpClassReflectionExtension
 					if (
 						$currentResolvedPhpDoc === null
 						&& $methodReflection->getDocComment() !== false
+						&& $methodReflection->getFileName() !== false
 					) {
 						$currentResolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 							$declaringClass,
 							$methodReflection->getName(),
 							$this->fileTypeMapper->getResolvedPhpDoc(
-								$methodReflection->getFileName() === false ? null : $methodReflection->getFileName(),
+								$methodReflection->getFileName(),
 								$declaringClassName,
 								null,
 								$methodReflection->getName(),
@@ -798,7 +799,7 @@ final class PhpClassReflectionExtension
 			[$currentResolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
 		}
 
-		if ($currentResolvedPhpDoc === null && $methodReflection->getDocComment() !== false) {
+		if ($currentResolvedPhpDoc === null && $methodReflection->getDocComment() !== false && $actualDeclaringClass->getFileName() !== null) {
 			$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$actualDeclaringClass->getFileName(),
 				$actualDeclaringClass->getName(),

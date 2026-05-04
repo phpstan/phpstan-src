@@ -2111,10 +2111,11 @@ final class TypeSpecifier
 				}
 
 				$conditions = $conditionExpressionTypes;
-				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
-					if ($conditionExprString === $exprString) {
-						unset($conditions[$conditionExprString]);
+				foreach (array_keys($conditions) as $conditionExprString) {
+					if ($conditionExprString !== $exprString) {
+						continue;
 					}
+					unset($conditions[$conditionExprString]);
 				}
 
 				if (count($conditions) === 0) {
@@ -2301,10 +2302,11 @@ final class TypeSpecifier
 				}
 
 				$conditions = $conditionExpressionTypes;
-				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
-					if ($conditionExprString === $exprString) {
-						unset($conditions[$conditionExprString]);
+				foreach (array_keys($conditions) as $conditionExprString) {
+					if ($conditionExprString !== $exprString) {
+						continue;
 					}
+					unset($conditions[$conditionExprString]);
 				}
 
 				if (count($conditions) === 0) {

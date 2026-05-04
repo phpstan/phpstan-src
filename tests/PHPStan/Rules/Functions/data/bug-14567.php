@@ -34,3 +34,18 @@ sscanf('42', "%D", $dval);
 
 // %g specifier - general float, 1 placeholder
 sscanf('1.5', "%g", $gval);
+
+// Size modifiers (l, L, h) - consumed before specifier, 1 placeholder each
+sscanf('42', "%ld", $long);
+sscanf('3.14', "%lf", $longf);
+sscanf('3.14', "%Lf", $longdouble);
+sscanf('42', "%hd", $short);
+
+// Size modifier with width
+sscanf('42', "%10ld", $widelong);
+
+// Size modifier with suppression - 0 capturing placeholders
+sscanf('42 hello', "%*ld %s", $afterskip);
+
+// Mixed size modifiers
+sscanf('42 3.14 hello', "%ld %lf %s", $mix1, $mix2, $mix3);

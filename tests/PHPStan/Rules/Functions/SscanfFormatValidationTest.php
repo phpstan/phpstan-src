@@ -60,7 +60,12 @@ class SscanfFormatValidationTest extends PHPStanTestCase
 	//   - %% is a literal percent, not a placeholder
 	//   - %* is assignment suppression (placeholder parsed but not counted)
 	//   - Digits after % may be either XPG3 positional (%n$) or a width
-	//   - Size modifiers (l, L, h) are consumed and ignored
+	//   - Size modifiers (l, L, h) are consumed and ignored — these are
+	//     inherited from C's scanf where they denote storage size (long,
+	//     long double, short). In PHP they have no effect on the result
+	//     type since PHP uses its own type system (zend_long, double),
+	//     but they must be accepted as valid syntax. The C code simply
+	//     advances past them: if (*ch == 'l' || *ch == 'L' || *ch == 'h')
 	//   - The switch on the specifier character is the definitive list
 	//     of valid scanf specifiers: n d D i o x X u f e E g s c [
 	//   - Character sets ([...]) handle ] as the first character and ^
@@ -279,7 +284,7 @@ class SscanfFormatValidationTest extends PHPStanTestCase
 		}
 
 		$types = [];
-		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cDdeEfginosuxX]{1})/', $format, $matches) > 0) {
+		if (preg_match_all('/%(\d*)[lLh]?(\[[^\]]+\]|[cDdeEfginosuxX])/', $format, $matches) > 0) {
 			for ($i = 0; $i < count($matches[0]); $i++) {
 				$specifier = $matches[2][$i];
 
@@ -301,11 +306,15 @@ class SscanfFormatValidationTest extends PHPStanTestCase
 	/**
 	 * Uses PHP runtime sscanf with crafted input to determine placeholder count.
 	 *
-	 * Note: sscanf('', $format) returns null for any format with specifiers
-	 * (except %n) because the C code checks *string == '\0' before each
-	 * conversion attempt and triggers underflow. A string with sufficient
-	 * matching data is needed. This method uses a numeric string that
-	 * satisfies most specifier types.
+	 * %n always provides a value (characters consumed) even with empty input,
+	 * and %*n (suppressed) still increments nconversions internally. This means
+	 * count(sscanf("", "%*n" . $format)) reliably returns the number of
+	 * capturing placeholders for any valid format string — %*n prevents the
+	 * null return path (which triggers only when underflow AND nconversions==0).
+	 *
+	 * For specifiers other than %n, sscanf("", $format) returns null when the
+	 * first non-%n specifier encounters empty input before any conversion has
+	 * succeeded. This method uses crafted input that satisfies the specifiers.
 	 *
 	 * @return array{count: int|null, error: string|null}
 	 */
@@ -548,6 +557,76 @@ class SscanfFormatValidationTest extends PHPStanTestCase
 				'error' => null,
 				'types' => ['string'],
 				'runtimeInput' => 'hello',
+			],
+
+			// =============================================
+			// Size modifiers (l, L, h)
+			// ValidateFormat consumes these before the specifier character.
+			// They have no effect on PHP's type — %ld behaves identically
+			// to %d — but they must be accepted as valid format syntax.
+			// =============================================
+			'size: %ld (long int)' => [
+				'format' => '%ld',
+				'count' => 1,
+				'error' => null,
+				'types' => ['int'],
+				'runtimeInput' => '42',
+			],
+			'size: %lf (long float/double)' => [
+				'format' => '%lf',
+				'count' => 1,
+				'error' => null,
+				'types' => ['float'],
+				'runtimeInput' => '3.14',
+			],
+			'size: %Lf (long double)' => [
+				'format' => '%Lf',
+				'count' => 1,
+				'error' => null,
+				'types' => ['float'],
+				'runtimeInput' => '3.14',
+			],
+			'size: %hd (short int)' => [
+				'format' => '%hd',
+				'count' => 1,
+				'error' => null,
+				'types' => ['int'],
+				'runtimeInput' => '42',
+			],
+			'size: %lu (long unsigned)' => [
+				'format' => '%lu',
+				'count' => 1,
+				'error' => null,
+				'types' => ['int|string'],
+				'runtimeInput' => '42',
+			],
+			'size: %lx (long hex)' => [
+				'format' => '%lx',
+				'count' => 1,
+				'error' => null,
+				'types' => ['int'],
+				'runtimeInput' => 'ff',
+			],
+			'size: %10ld (width + size modifier)' => [
+				'format' => '%10ld',
+				'count' => 1,
+				'error' => null,
+				'types' => ['int'],
+				'runtimeInput' => '42',
+			],
+			'size: %*ld (suppressed + size modifier)' => [
+				'format' => '%*ld',
+				'count' => 0,
+				'error' => null,
+				'types' => [],
+				'runtimeInput' => '42',
+			],
+			'size: %ld %lf %s (mixed with size mods)' => [
+				'format' => '%ld %lf %s',
+				'count' => 3,
+				'error' => null,
+				'types' => ['int', 'float', 'string'],
+				'runtimeInput' => '42 3.14 hello',
 			],
 
 			// =============================================

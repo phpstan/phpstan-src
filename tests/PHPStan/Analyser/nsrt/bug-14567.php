@@ -45,4 +45,12 @@ function sscanfEdgeCases(string $s) {
 
 	// mixed specifiers with %n
 	assertType('array{int|null, int|null}|null', sscanf($s, "%d%n"));
+
+	// Size modifiers (l, L, h) — consumed by ValidateFormat, no effect on PHP type
+	assertType('array{int|null}|null', sscanf($s, "%ld"));
+	assertType('array{float|null}|null', sscanf($s, "%lf"));
+	assertType('array{float|null}|null', sscanf($s, "%Lf"));
+	assertType('array{int|null}|null', sscanf($s, "%hd"));
+	assertType('array{int|string|null}|null', sscanf($s, "%lu"));
+	assertType('array{int|null, float|null, string|null}|null', sscanf($s, "%ld %lf %s"));
 }

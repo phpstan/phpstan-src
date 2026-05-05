@@ -63,4 +63,25 @@ function doFoo(string $string): void {
 	if (preg_match('/a|b/', $string, $match)) {
 		assertType('array{non-empty-string}', $match);
 	}
+
+	// Empty alternation branches
+	if (preg_match('/(|)/', $string, $match)) {
+		assertType("array{string, ''}", $match);
+	}
+
+	if (preg_match('/(foo|)/', $string, $match)) {
+		assertType("array{string, ''|'foo'}", $match);
+	}
+
+	if (preg_match('/(|bar)/', $string, $match)) {
+		assertType("array{string, ''|'bar'}", $match);
+	}
+
+	if (preg_match('/|/', $string, $match)) {
+		assertType('array{string}', $match);
+	}
+
+	if (preg_match('/foo|/', $string, $match)) {
+		assertType('array{string}', $match);
+	}
 }

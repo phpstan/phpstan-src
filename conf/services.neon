@@ -98,6 +98,7 @@ services:
 		arguments:
 			reportMaybes: %reportMaybesInMethodSignatures%
 			reportStatic: %reportStaticMethodSignatures%
+			reportMethodPurityOverride: %featureToggles.reportMethodPurityOverride%
 
 	phpstanDiagnoseExtension:
 		class: PHPStan\Diagnose\PHPStanDiagnoseExtension

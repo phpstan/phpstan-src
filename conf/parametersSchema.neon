@@ -46,6 +46,7 @@ parametersSchema:
 		assignToByRefForeachExpr: bool()
 		curlSetOptArrayTypes: bool()
 		checkDateIntervalConstructor: bool()
+		reportMethodPurityOverride: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

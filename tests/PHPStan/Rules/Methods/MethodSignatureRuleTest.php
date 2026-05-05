@@ -19,6 +19,8 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	private bool $reportStatic;
 
+	private bool $reportMethodPurityOverride = false;
+
 	protected function getRule(): Rule
 	{
 		$phpVersion = new PhpVersion(PHP_VERSION_ID);
@@ -27,7 +29,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule(new ParentMethodHelper($phpClassReflectionExtension), $this->reportMaybes, $this->reportStatic),
+			new MethodSignatureRule(new ParentMethodHelper($phpClassReflectionExtension), $this->reportMaybes, $this->reportStatic, $this->reportMethodPurityOverride),
 			true,
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
@@ -563,6 +565,69 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-14320.php'], []);
+	}
+
+	public function testBug14563(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->reportMethodPurityOverride = true;
+		$this->analyse([__DIR__ . '/data/bug-14563.php'], [
+			[
+				'Impure method Bug14563\ChildImpureOverridesPure::pure() overrides pure method Bug14563\Foo::pure().',
+				31,
+			],
+			[
+				'Impure method Bug14563\ImpureImplementation::pureMethod() overrides pure method Bug14563\PureInterface::pureMethod().',
+				93,
+			],
+			[
+				'Impure method Bug14563\ImpureChildOfAllMethodsPure::method() overrides pure method Bug14563\AllMethodsPureParent::method().',
+				126,
+			],
+			[
+				'Impure method Bug14563\ChildImpureOverridesPureExtended::pure() overrides pure method Bug14563\Foo::pure().',
+				137,
+			],
+			[
+				'Impure method Bug14563\GrandchildImpureOverridesPure::pure() overrides pure method Bug14563\ChildPureOverridesPure::pure().',
+				148,
+			],
+			[
+				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceA::sharedMethod().',
+				186,
+			],
+			[
+				'Impure method Bug14563\ImpureMultipleInterfaces::sharedMethod() overrides pure method Bug14563\PureInterfaceB::sharedMethod().',
+				186,
+			],
+			[
+				'Impure method Bug14563\ChildImpureOverridesPureVoid::pureVoid() overrides pure method Bug14563\VoidFoo::pureVoid().',
+				211,
+			],
+			[
+				'Impure method Bug14563\StaticChildImpureOverridesPure::pure() overrides pure method Bug14563\StaticFoo::pure().',
+				284,
+			],
+			[
+				'Impure method Bug14563\StaticImpureImplementation::pureMethod() overrides pure method Bug14563\StaticPureInterface::pureMethod().',
+				335,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14563Trait(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->reportMethodPurityOverride = true;
+		$this->analyse([__DIR__ . '/data/bug-14563-trait.php'], [
+			[
+				'Impure method Bug14563Trait\ImpureTraitUser::pureTraitMethod() overrides pure method Bug14563Trait\PureTrait::pureTraitMethod().',
+				19,
+			],
+		]);
 	}
 
 }

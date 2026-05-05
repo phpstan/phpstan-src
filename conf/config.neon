@@ -44,6 +44,7 @@ parameters:
 		assignToByRefForeachExpr: false
 		curlSetOptArrayTypes: false
 		checkDateIntervalConstructor: false
+		reportMethodPurityOverride: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

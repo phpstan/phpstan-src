@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use Throwable;
 use function count;
 use function sprintf;
+use function str_replace;
 use function strtolower;
 
 /**
@@ -49,7 +50,7 @@ final class DateIntervalInstantiationRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Instantiating DateInterval with %s produces an error: %s',
 					$dateIntervalString,
-					$e->getMessage(),
+					str_replace('DateInterval::__construct(): ', '', $e->getMessage()),
 				))->identifier('new.dateInterval')->build();
 			}
 		}

@@ -17,7 +17,6 @@ class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeHelper(
 				self::createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[],
 				true,
 			),
 			new PossiblyImpureTipHelper(true),

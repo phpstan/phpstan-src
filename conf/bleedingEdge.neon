@@ -17,4 +17,4 @@ parameters:
 		assignToByRefForeachExpr: true
 		curlSetOptArrayTypes: true
 		checkDateIntervalConstructor: true
-		checkMethodPurityOverride: true
+		reportMethodPurityOverride: true

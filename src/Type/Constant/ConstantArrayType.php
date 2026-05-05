@@ -381,10 +381,22 @@ class ConstantArrayType implements Type
 				continue;
 			}
 
+			if (count($keys) === 0 && $this->isUnsealed()->yes() && $this->unsealed !== null) {
+				// Variant with no explicit keys but real unsealed extras: the
+				// builder's getArray() would degrade this to a general
+				// ArrayType. Construct the CAT directly so the variant keeps
+				// its extras for downstream consumers (e.g. flattenTypes).
+				$arrays[] = new ConstantArrayType([], [], unsealed: $this->unsealed);
+				continue;
+			}
+
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$builder->disableArrayDegradation();
 			foreach ($keys as $i) {
 				$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i]);
+			}
+			if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+				$builder->makeUnsealed($this->unsealed[0], $this->unsealed[1]);
 			}
 
 			$array = $builder->getArray();
@@ -1072,10 +1084,16 @@ class ConstantArrayType implements Type
 
 		$result = TrinaryLogic::createNo();
 		foreach ($this->keyTypes as $i => $keyType) {
+			// PHP coerces decimal-integer strings to int when used as array
+			// keys ("123" → 123), so a non-constant string offset *could* hit
+			// a constant-integer slot. Skip the upgrade when the offset is
+			// definitely a non-decimal-integer string — those stay as strings
+			// and can never collide with an int key.
 			if (
 				$keyType instanceof ConstantIntegerType
 				&& !$offsetType->isString()->no()
 				&& $offsetType->isConstantScalarValue()->no()
+				&& !$offsetType->isDecimalIntegerString()->no()
 			) {
 				return TrinaryLogic::createMaybe();
 			}
@@ -1092,6 +1110,20 @@ class ConstantArrayType implements Type
 			}
 
 			$result = TrinaryLogic::createMaybe();
+		}
+
+		// Unsealed extras (zero-or-more additional entries) can never make a
+		// hit definite — they're uncertain by construction. They only matter
+		// when no explicit key matched ($result is No): if the unsealed key
+		// range overlaps the offset, upgrade No → Maybe. Explicit keys take
+		// precedence at any slot they cover (PHP keys are unique), so a
+		// non-No $result already reflects the strongest answer the unsealed
+		// extras could contribute.
+		if ($result->no() && $this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKeyType] = $this->unsealed;
+			if (!$unsealedKeyType->isSuperTypeOf($offsetType)->no()) {
+				$result = TrinaryLogic::createMaybe();
+			}
 		}
 
 		return $result;

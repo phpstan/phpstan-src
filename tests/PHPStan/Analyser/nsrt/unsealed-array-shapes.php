@@ -191,7 +191,7 @@ class Foo
 			$arr[$i] = 'sealed';
 			$arr[$s . '_' . $i] = 'unsealed';
 		}
-		assertType("non-empty-array<int<0, 2>|non-falsy-string, literal-string&lowercase-string&non-falsy-string>", $arr);
+		assertType("non-empty-array<int<0, 2>|non-falsy-string, 'sealed'|'unsealed'>", $arr);
 	}
 
 	/**

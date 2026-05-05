@@ -519,7 +519,6 @@ parameters:
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
-
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType

@@ -7,7 +7,9 @@ use function implode;
 use function in_array;
 use function preg_match;
 use function preg_quote;
+use function strcspn;
 use function strlen;
+use function strspn;
 use function substr;
 
 /**
@@ -20,7 +22,7 @@ final class PhpFileCleaner
 	/** @var array<array{name: string, length: int, pattern: string}> */
 	private array $typeConfig = [];
 
-	private string $restPattern;
+	private string $rejectChars;
 
 	private string $contents = '';
 
@@ -38,7 +40,7 @@ final class PhpFileCleaner
 			];
 		}
 
-		$this->restPattern = '{[^{}?"\'</d' . implode('', array_keys($this->typeConfig)) . ']+}A';
+		$this->rejectChars = '{}?"\'</d' . implode('', array_keys($this->typeConfig));
 	}
 
 	public function clean(string $contents, int $maxMatches): string
@@ -150,9 +152,10 @@ final class PhpFileCleaner
 				}
 
 				$this->index += 1;
-				if ($this->match($this->restPattern, $match)) {
-					$clean .= $char . $match[0];
-					$this->index += strlen($match[0]);
+				$skip = strcspn($this->contents, $this->rejectChars, $this->index);
+				if ($skip > 0) {
+					$clean .= $char . substr($this->contents, $this->index, $skip);
+					$this->index += $skip;
 				} else {
 					$clean .= $char;
 				}
@@ -203,8 +206,13 @@ final class PhpFileCleaner
 
 	private function skipString(string $delimiter): void
 	{
+		$rejectChars = '\\' . $delimiter;
 		$this->index += 1;
 		while ($this->index < $this->len) {
+			$this->index += strcspn($this->contents, $rejectChars, $this->index);
+			if ($this->index >= $this->len) {
+				break;
+			}
 			if ($this->contents[$this->index] === '\\' && ($this->peek('\\') || $this->peek($delimiter))) {
 				$this->index += 2;
 				continue;
@@ -221,7 +229,9 @@ final class PhpFileCleaner
 	{
 		$this->index += 2;
 		while ($this->index < $this->len) {
-			if ($this->contents[$this->index] === '*' && $this->peek('/')) {
+			$this->index += strcspn($this->contents, '*', $this->index);
+
+			if ($this->peek('/')) {
 				$this->index += 2;
 				break;
 			}
@@ -232,12 +242,7 @@ final class PhpFileCleaner
 
 	private function skipToNewline(): void
 	{
-		while ($this->index < $this->len) {
-			if (in_array($this->contents[$this->index], ["\r", "\n"], true)) {
-				return;
-			}
-			$this->index += 1;
-		}
+		$this->index += strcspn($this->contents, "\r\n", $this->index);
 	}
 
 	private function skipHeredoc(string $delimiter): void
@@ -265,16 +270,10 @@ final class PhpFileCleaner
 			}
 
 			// skip the rest of the line
-			while ($this->index < $this->len) {
-				$this->skipToNewline();
+			$this->skipToNewline();
 
-				// skip newlines
-				while ($this->index < $this->len && ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n")) {
-					$this->index += 1;
-				}
-
-				break;
-			}
+			// skip newlines
+			$this->index += strspn($this->contents, "\r\n", $this->index);
 		}
 	}
 

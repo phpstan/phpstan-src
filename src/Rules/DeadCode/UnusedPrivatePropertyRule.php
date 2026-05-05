@@ -7,7 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\Property\PropertyRead;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
@@ -120,6 +122,7 @@ final class UnusedPrivatePropertyRule implements Rule
 				'node' => $property,
 				'onlyReadable' => $property->isReadable() && !$property->isWritable(),
 				'onlyWritable' => $property->isWritable() && !$property->isReadable(),
+				'hasTrueRead' => $alwaysRead,
 			];
 		}
 
@@ -194,6 +197,7 @@ final class UnusedPrivatePropertyRule implements Rule
 					if (!$classType->isSuperTypeOf($fetchedOnType)->no()) {
 						if ($usage instanceof PropertyRead) {
 							$properties[$propertyName]['read'] = true;
+							$properties[$propertyName]['hasTrueRead'] = true;
 						} else {
 							$properties[$propertyName]['written'] = true;
 						}
@@ -204,6 +208,7 @@ final class UnusedPrivatePropertyRule implements Rule
 					if (!$classType->isSuperTypeOf($fetchedOnType)->no()) {
 						if ($usage instanceof PropertyRead) {
 							$properties[$propertyName]['read'] = true;
+							$properties[$propertyName]['hasTrueRead'] = true;
 						} else {
 							$properties[$propertyName]['written'] = true;
 						}
@@ -213,10 +218,23 @@ final class UnusedPrivatePropertyRule implements Rule
 
 				if ($usage instanceof PropertyRead) {
 					$properties[$propertyName]['read'] = true;
+					if (!$this->isPropertySelfWrite($usageScope, $propertyName, $propertyNode, $classReflection->getName())) {
+						$properties[$propertyName]['hasTrueRead'] = true;
+					}
 				} else {
 					$properties[$propertyName]['written'] = true;
 				}
 			}
+		}
+
+		foreach ($properties as $propertyName => $data) {
+			if (!$data['read'] || $data['hasTrueRead']) {
+				continue;
+			}
+			if (!$data['node']->isPromoted()) {
+				continue;
+			}
+			$properties[$propertyName]['read'] = false;
 		}
 
 		[$uninitializedProperties] = $node->getUninitializedProperties($scope, []);
@@ -268,6 +286,44 @@ final class UnusedPrivatePropertyRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	private function isPropertySelfWrite(
+		Scope $usageScope,
+		string $propertyName,
+		ClassPropertyNode $propertyNode,
+		string $className,
+	): bool
+	{
+		if (!$propertyNode->isPromoted()) {
+			return false;
+		}
+
+		$callStack = $usageScope->getFunctionCallStackWithParameters();
+		if ($callStack === []) {
+			return false;
+		}
+
+		$lastCall = $callStack[count($callStack) - 1];
+		[$calleeReflection, $parameterReflection] = $lastCall;
+
+		if (!$calleeReflection instanceof MethodReflection) {
+			return false;
+		}
+
+		if ($calleeReflection->getName() !== '__construct') {
+			return false;
+		}
+
+		if ($calleeReflection->getDeclaringClass()->getName() !== $className) {
+			return false;
+		}
+
+		if ($parameterReflection === null) {
+			return false;
+		}
+
+		return $parameterReflection->getName() === $propertyName;
 	}
 
 }

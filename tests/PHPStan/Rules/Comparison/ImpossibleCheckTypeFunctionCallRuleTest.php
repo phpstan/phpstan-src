@@ -6,7 +6,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use stdClass;
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -28,7 +27,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeHelper(
 				self::createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[stdClass::class],
 				$this->treatPhpDocTypesAsCertain,
 			),
 			new PossiblyImpureTipHelper(true),

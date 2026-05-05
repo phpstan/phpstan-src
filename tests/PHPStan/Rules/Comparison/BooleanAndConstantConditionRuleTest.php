@@ -23,7 +23,6 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
-					[],
 					$this->treatPhpDocTypesAsCertain,
 				),
 				$this->treatPhpDocTypesAsCertain,

@@ -50,6 +50,7 @@ final class DateIntervalInstantiationRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Instantiating DateInterval with %s produces an error: %s',
 					$dateIntervalString,
+					// normalize PHP7 errors to PHP8 format
 					str_replace('DateInterval::__construct(): ', '', $e->getMessage()),
 				))->identifier('new.dateInterval')->build();
 			}

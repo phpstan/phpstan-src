@@ -120,7 +120,6 @@ final class RegexGroupParser
 		$subjectAsGroupResult = $this->walkGroupAst(
 			$ast,
 			false,
-			false,
 			$modifiers,
 			RegexGroupWalkResult::createEmpty(),
 		);
@@ -408,7 +407,6 @@ final class RegexGroupParser
 		$walkResult = $this->walkGroupAst(
 			$group,
 			false,
-			false,
 			$patternModifiers,
 			RegexGroupWalkResult::createEmpty(),
 		);
@@ -469,7 +467,6 @@ final class RegexGroupParser
 
 	private function walkGroupAst(
 		TreeNode $ast,
-		bool $inAlternation,
 		bool $inClass,
 		string $patternModifiers,
 		RegexGroupWalkResult $walkResult,
@@ -491,7 +488,7 @@ final class RegexGroupParser
 
 				$meaningfulTokens++;
 
-				if (!$nonFalsy || $inAlternation) {
+				if (!$nonFalsy) {
 					continue;
 				}
 
@@ -504,7 +501,7 @@ final class RegexGroupParser
 				$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 
 				// two non-empty tokens concatenated results in a non-falsy string
-				if ($meaningfulTokens > 1 && !$inAlternation) {
+				if ($meaningfulTokens > 1) {
 					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				}
 			}
@@ -519,7 +516,7 @@ final class RegexGroupParser
 				if ($min >= 1) {
 					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 				}
-				if ($min >= 2 && !$inAlternation) {
+				if ($min >= 2) {
 					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				}
 			}
@@ -566,7 +563,6 @@ final class RegexGroupParser
 			foreach ($children as $child) {
 				$childResult = $this->walkGroupAst(
 					$child,
-					false,
 					$inClass,
 					$patternModifiers,
 					$walkResult->onlyLiterals([])
@@ -609,7 +605,6 @@ final class RegexGroupParser
 		foreach ($children as $child) {
 			$walkResult = $this->walkGroupAst(
 				$child,
-				$inAlternation,
 				$inClass,
 				$patternModifiers,
 				$walkResult,

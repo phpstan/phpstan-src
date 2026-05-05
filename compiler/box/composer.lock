@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8c72337081ddf7ca83d3b63b69ea241f",
+    "content-hash": "51bfee16afc8a93674e97c8eecf75069",
     "packages": [
         {
             "name": "amphp/amp",
@@ -4225,14 +4225,7 @@
         }
     ],
     "packages-dev": [],
-    "aliases": [
-        {
-            "package": "jetbrains/phpstorm-stubs",
-            "version": "9999999-dev",
-            "alias": "v2024.x-dev",
-            "alias_normalized": "2024.9999999.9999999.9999999-dev"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
         "jetbrains/phpstorm-stubs": 20

@@ -602,12 +602,16 @@ class MethodSignatureRuleTest extends RuleTestCase
 				186,
 			],
 			[
+				'Impure method Bug14563\ChildImpureOverridesPureVoid::pureVoid() overrides pure method Bug14563\VoidFoo::pureVoid().',
+				211,
+			],
+			[
 				'Impure method Bug14563\StaticChildImpureOverridesPure::pure() overrides pure method Bug14563\StaticFoo::pure().',
-				219,
+				284,
 			],
 			[
 				'Impure method Bug14563\StaticImpureImplementation::pureMethod() overrides pure method Bug14563\StaticPureInterface::pureMethod().',
-				270,
+				335,
 			],
 		]);
 	}

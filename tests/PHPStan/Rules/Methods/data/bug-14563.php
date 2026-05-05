@@ -190,6 +190,71 @@ class ImpureMultipleInterfaces implements PureInterfaceA, PureInterfaceB
 
 }
 
+class VoidFoo
+{
+
+	/** @phpstan-pure */
+	public function pureVoid(): void
+	{
+	}
+
+	public function unannotatedVoid(): void
+	{
+	}
+
+}
+
+class ChildImpureOverridesPureVoid extends VoidFoo
+{
+
+	/** @phpstan-impure */
+	public function pureVoid(): void
+	{
+		random_int(0, 1);
+	}
+
+}
+
+class ChildPureOverridesPureVoid extends VoidFoo
+{
+
+	/** @phpstan-pure */
+	public function pureVoid(): void
+	{
+	}
+
+}
+
+class ChildNoAnnotationOverridesPureVoid extends VoidFoo
+{
+
+	public function pureVoid(): void
+	{
+	}
+
+}
+
+class ChildImpureOverridesUnannotatedVoid extends VoidFoo
+{
+
+	/** @phpstan-impure */
+	public function unannotatedVoid(): void
+	{
+		random_int(0, 1);
+	}
+
+}
+
+class ChildPureOverridesUnannotatedVoid extends VoidFoo
+{
+
+	/** @phpstan-pure */
+	public function unannotatedVoid(): void
+	{
+	}
+
+}
+
 class StaticFoo
 {
 

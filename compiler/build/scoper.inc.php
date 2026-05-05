@@ -3,10 +3,6 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $stubs = [
-	'../../resources/functionMap.php',
-	'../../resources/functionMap_php74delta.php',
-	'../../resources/functionMap_php80delta.php',
-	'../../resources/functionMetadata.php',
 	'../../vendor/hoa/consistency/Prelude.php',
 	'../../vendor/composer/InstalledVersions.php',
 	'../../vendor/composer/installed.php',
@@ -14,6 +10,7 @@ $stubs = [
 $stubFinder = \Isolated\Symfony\Component\Finder\Finder::create();
 foreach ($stubFinder->files()->name('*.php')->in([
 	'../../stubs',
+	'../../resources',
 	'../../vendor/jetbrains/phpstorm-stubs',
 	'../../vendor/phpstan/php-8-stubs/stubs',
 	// when adding new polyfills, don't forget to also append them in 'exclude-namespaces' below

@@ -409,4 +409,61 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6777.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14573(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
+
+		$this->analyse([__DIR__ . '/data/bug-14573.php'], [
+			[
+				'Property Bug14573\Foo::$test is never read, only written.',
+				8,
+				$tip,
+			],
+			[
+				'Property Bug14573\Bar::$b is never read, only written.',
+				22,
+				$tip,
+			],
+			[
+				'Property Bug14573\Baz::$a is never read, only written.',
+				41,
+				$tip,
+			],
+			[
+				'Property Bug14573\Baz::$b is never read, only written.',
+				41,
+				$tip,
+			],
+			[
+				'Property Bug14573\WithNewStatic::$test is never read, only written.',
+				88,
+				$tip,
+			],
+			[
+				'Property Bug14573\WithNewClassName::$test is never read, only written.',
+				102,
+				$tip,
+			],
+			[
+				'Property Bug14573\WithNamedArgument::$a is never read, only written.',
+				135,
+				$tip,
+			],
+			[
+				'Property Bug14573\WithNamedArgument::$b is never read, only written.',
+				135,
+				$tip,
+			],
+			[
+				'Property Bug14573\MultipleReadsOnlySelfWrite::$test is never read, only written.',
+				177,
+				$tip,
+			],
+		]);
+	}
+
 }

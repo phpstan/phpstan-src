@@ -44,14 +44,9 @@ use function strtolower;
 final class ImpossibleCheckTypeHelper
 {
 
-	/**
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private TypeSpecifier $typeSpecifier,
-		#[AutowiredParameter]
-		private array $universalObjectCratesClasses,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -417,7 +412,6 @@ final class ImpossibleCheckTypeHelper
 		return new self(
 			$this->reflectionProvider,
 			$this->typeSpecifier,
-			$this->universalObjectCratesClasses,
 			false,
 		);
 	}

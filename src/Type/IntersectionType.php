@@ -617,7 +617,7 @@ class IntersectionType implements CompoundType
 			return $propertyPrototypes[0];
 		}
 
-		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
 	}
 
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
@@ -650,7 +650,7 @@ class IntersectionType implements CompoundType
 			return $propertyPrototypes[0];
 		}
 
-		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
 	}
 
 	public function hasStaticProperty(string $propertyName): TrinaryLogic
@@ -683,7 +683,7 @@ class IntersectionType implements CompoundType
 			return $propertyPrototypes[0];
 		}
 
-		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
 	}
 
 	public function canCallMethods(): TrinaryLogic

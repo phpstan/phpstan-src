@@ -41,7 +41,7 @@ final class MethodSignatureRule implements Rule
 		private ParentMethodHelper $parentMethodHelper,
 		private bool $reportMaybes,
 		private bool $reportStatic,
-		private bool $checkPurity,
+		private bool $reportMethodPurityOverride,
 	)
 	{
 	}
@@ -67,7 +67,7 @@ final class MethodSignatureRule implements Rule
 		$errors = [];
 		$declaringClass = $method->getDeclaringClass();
 		foreach ($this->parentMethodHelper->collectParentMethods($methodName, $method->getDeclaringClass()) as [$parentMethod, $parentMethodDeclaringClass]) {
-			if ($this->checkPurity && $method->isPure()->no() && $parentMethod->isPure()->yes()) {
+			if ($this->reportMethodPurityOverride && $method->isPure()->no() && $parentMethod->isPure()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Impure method %s::%s() overrides pure method %s::%s().',
 					$method->getDeclaringClass()->getDisplayName(),

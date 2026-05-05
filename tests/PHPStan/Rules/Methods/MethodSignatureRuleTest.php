@@ -19,7 +19,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	private bool $reportStatic;
 
-	private bool $checkPurity = false;
+	private bool $reportMethodPurityOverride = false;
 
 	protected function getRule(): Rule
 	{
@@ -29,7 +29,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule(new ParentMethodHelper($phpClassReflectionExtension), $this->reportMaybes, $this->reportStatic, $this->checkPurity),
+			new MethodSignatureRule(new ParentMethodHelper($phpClassReflectionExtension), $this->reportMaybes, $this->reportStatic, $this->reportMethodPurityOverride),
 			true,
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
@@ -571,7 +571,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 	{
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
-		$this->checkPurity = true;
+		$this->reportMethodPurityOverride = true;
 		$this->analyse([__DIR__ . '/data/bug-14563.php'], [
 			[
 				'Impure method Bug14563\ChildImpureOverridesPure::pure() overrides pure method Bug14563\Foo::pure().',
@@ -617,7 +617,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 	{
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
-		$this->checkPurity = true;
+		$this->reportMethodPurityOverride = true;
 		$this->analyse([__DIR__ . '/data/bug-14563-trait.php'], [
 			[
 				'Impure method Bug14563Trait\ImpureTraitUser::pureTraitMethod() overrides pure method Bug14563Trait\PureTrait::pureTraitMethod().',

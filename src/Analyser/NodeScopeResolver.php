@@ -3917,7 +3917,7 @@ class NodeScopeResolver
 		$matchedNativeArrays = count($nativeConstantArrays) === count($constantArrays) ? $nativeConstantArrays : null;
 
 		$valueVarName = $stmt->valueVar->name;
-		$keyVarName = $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name) ? $stmt->keyVar->name : null;
+		$keyVarName = $stmt->keyVar instanceof Variable ? $stmt->keyVar->name : null;
 
 		$allBodyScopes = [];
 		$allChainScopes = [];
@@ -4051,10 +4051,7 @@ class NodeScopeResolver
 			($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))
 			&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
 		) {
-			$keyVarName = null;
-			if ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)) {
-				$keyVarName = $stmt->keyVar->name;
-			}
+			$keyVarName = $stmt->keyVar instanceof Variable ? $stmt->keyVar->name : null;
 			$scope = $scope->enterForeach(
 				$originalScope,
 				$stmt->expr,

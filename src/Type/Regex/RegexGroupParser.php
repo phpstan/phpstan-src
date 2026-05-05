@@ -556,6 +556,10 @@ final class RegexGroupParser
 		}
 
 		if ($ast->getId() === '#alternation') {
+			if (count($children) === 0) {
+				return $walkResult;
+			}
+
 			$newLiterals = [];
 			$nonEmpty = TrinaryLogic::createYes();
 			$nonFalsy = TrinaryLogic::createYes();

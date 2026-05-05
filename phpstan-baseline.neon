@@ -519,17 +519,6 @@ parameters:
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
-		-
-			rawMessage: "Property PHPStan\\Reflection\\Type\\IntersectionTypeUnresolvedPropertyPrototypeReflection::$propertyName is never read, only written."
-			identifier: property.onlyWritten
-			count: 1
-			path: src/Reflection/Type/IntersectionTypeUnresolvedPropertyPrototypeReflection.php
-
-		-
-			rawMessage: "Property PHPStan\\Reflection\\Type\\UnionTypeUnresolvedPropertyPrototypeReflection::$propertyName is never read, only written."
-			identifier: property.onlyWritten
-			count: 1
-			path: src/Reflection/Type/UnionTypeUnresolvedPropertyPrototypeReflection.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
@@ -600,12 +589,6 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() or Type::getObjectClassReflections() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
-
-		-
-			rawMessage: "Property PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeHelper::$universalObjectCratesClasses is never read, only written."
-			identifier: property.onlyWritten
 			count: 1
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 

@@ -214,7 +214,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 						return $properties[0];
 					}
 
-					return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyName, $properties);
+					return new UnionTypeUnresolvedPropertyPrototypeReflection($properties);
 				}
 			}
 		}
@@ -320,7 +320,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 						return $properties[0];
 					}
 
-					return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyName, $properties);
+					return new UnionTypeUnresolvedPropertyPrototypeReflection($properties);
 				}
 			}
 		}

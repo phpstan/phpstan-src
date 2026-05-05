@@ -521,7 +521,7 @@ class UnionType implements CompoundType
 			return $propertyPrototypes[0];
 		}
 
-		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
 	}
 
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
@@ -554,7 +554,7 @@ class UnionType implements CompoundType
 			return $propertyPrototypes[0];
 		}
 
-		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
 	}
 
 	public function hasStaticProperty(string $propertyName): TrinaryLogic
@@ -587,7 +587,7 @@ class UnionType implements CompoundType
 			return $propertyPrototypes[0];
 		}
 
-		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+		return new UnionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
 	}
 
 	public function canCallMethods(): TrinaryLogic

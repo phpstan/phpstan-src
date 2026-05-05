@@ -18,7 +18,6 @@ final class UnionTypeUnresolvedPropertyPrototypeReflection implements Unresolved
 	 * @param UnresolvedPropertyPrototypeReflection[] $propertyPrototypes
 	 */
 	public function __construct(
-		private string $propertyName,
 		private array $propertyPrototypes,
 	)
 	{
@@ -29,7 +28,7 @@ final class UnionTypeUnresolvedPropertyPrototypeReflection implements Unresolved
 		if ($this->cachedDoNotResolveTemplateTypeMapToBounds !== null) {
 			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
 		}
-		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->propertyName, array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->doNotResolveTemplateTypeMapToBounds(), $this->propertyPrototypes));
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self(array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->doNotResolveTemplateTypeMapToBounds(), $this->propertyPrototypes));
 	}
 
 	public function getNakedProperty(): ExtendedPropertyReflection
@@ -50,7 +49,7 @@ final class UnionTypeUnresolvedPropertyPrototypeReflection implements Unresolved
 
 	public function withFechedOnType(Type $type): UnresolvedPropertyPrototypeReflection
 	{
-		return new self($this->propertyName, array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->withFechedOnType($type), $this->propertyPrototypes));
+		return new self(array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->withFechedOnType($type), $this->propertyPrototypes));
 	}
 
 }

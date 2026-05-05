@@ -36,6 +36,7 @@ parametersSchema:
 		stricterFunctionMap: bool()
 		reportPreciseLineForUnusedFunctionParameter: bool()
 		checkPrintfParameterTypes: bool()
+		checkUnserializeFunction: bool()
 		internalTag: bool()
 		newStaticInAbstractClassStaticMethod: bool()
 		checkExtensionsForComparisonOperators: bool()
@@ -95,6 +96,7 @@ parametersSchema:
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()
 	checkMissingOverridePropertyAttribute: schema(bool(), nullable())
+	checkInsecureUnserialize: bool()
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),

@@ -20,13 +20,6 @@ final class FileExcluder
 {
 
 	/**
-	 * Paths to exclude from analysing
-	 *
-	 * @var string[]
-	 */
-	private array $literalAnalyseExcludes = [];
-
-	/**
 	 * Directories to exclude from analysing
 	 *
 	 * @var string[]
@@ -93,11 +86,6 @@ final class FileExcluder
 	{
 		$file = $this->fileHelper->normalizePath($file);
 
-		foreach ($this->literalAnalyseExcludes as $exclude) {
-			if (str_starts_with($file, $exclude)) {
-				return true;
-			}
-		}
 		foreach ($this->literalAnalyseDirectoryExcludes as $exclude) {
 			if (str_starts_with($file, $exclude)) {
 				return true;

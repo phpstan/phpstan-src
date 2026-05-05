@@ -7,6 +7,7 @@ use function implode;
 use function in_array;
 use function preg_match;
 use function preg_quote;
+use function strcspn;
 use function strlen;
 use function substr;
 
@@ -20,7 +21,7 @@ final class PhpFileCleaner
 	/** @var array<array{name: string, length: int, pattern: string}> */
 	private array $typeConfig = [];
 
-	private string $restPattern;
+	private string $rejectChars;
 
 	private string $contents = '';
 
@@ -38,7 +39,7 @@ final class PhpFileCleaner
 			];
 		}
 
-		$this->restPattern = '{[^{}?"\'</d' . implode('', array_keys($this->typeConfig)) . ']+}A';
+		$this->rejectChars = '{}?"\'</d' . implode('', array_keys($this->typeConfig));
 	}
 
 	public function clean(string $contents, int $maxMatches): string
@@ -150,9 +151,10 @@ final class PhpFileCleaner
 				}
 
 				$this->index += 1;
-				if ($this->match($this->restPattern, $match)) {
-					$clean .= $char . $match[0];
-					$this->index += strlen($match[0]);
+				$skip = strcspn($this->contents, $this->rejectChars, $this->index);
+				if ($skip > 0) {
+					$clean .= $char . substr($this->contents, $this->index, $skip);
+					$this->index += $skip;
 				} else {
 					$clean .= $char;
 				}

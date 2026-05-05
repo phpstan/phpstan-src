@@ -45,6 +45,7 @@ parametersSchema:
 		reportNestedTooWideType: bool()
 		assignToByRefForeachExpr: bool()
 		curlSetOptArrayTypes: bool()
+		checkDateIntervalConstructor: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

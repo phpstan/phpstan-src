@@ -259,6 +259,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		// Case-folding keys doesn't change the entry count.

@@ -1991,6 +1991,15 @@ class ConstantArrayType implements Type
 		);
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		// Constant array shapes already encode precise per-slot keys; a
+		// blanket key-type rewrite (the prior `TypeTraverser`-based pattern
+		// in `NodeScopeResolver`) would coerce constants into a broader
+		// type and lose precision. Pass through unchanged.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();

@@ -394,6 +394,11 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return new NeverType();
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		return new NeverType();

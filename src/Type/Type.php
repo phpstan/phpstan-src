@@ -296,6 +296,18 @@ interface Type
 	public function mapValueType(callable $cb): Type;
 
 	/**
+	 * Replaces the iterable key type via `$cb($currentKeyType)`. For
+	 * `ArrayType` rewrites the key type wholesale; for `ConstantArrayType`
+	 * the explicit keys (which are already precise constants) are preserved
+	 * — pass-through, matching the prior `TypeTraverser`-based callers.
+	 * Used to widen / narrow the key type after a foreach narrowed `$key`
+	 * via `is_int($key)` / `is_string($key)` checks.
+	 *
+	 * @param callable(Type): Type $cb
+	 */
+	public function mapKeyType(callable $cb): Type;
+
+	/**
 	 * Models `array_change_key_case($a, $case)`. String keys are case-folded
 	 * (constant ones to a specific value, general ones via accessories);
 	 * non-string keys, values, accessories and list-ness are preserved.

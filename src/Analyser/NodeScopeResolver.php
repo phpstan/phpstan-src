@@ -139,14 +139,12 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -1381,35 +1379,22 @@ class NodeScopeResolver
 				$keyTypeChanged = !$keyLoopType->equals($exprType->getIterableKeyType());
 
 				if ($valueTypeChanged || $keyTypeChanged) {
-					$newExprType = TypeTraverser::map($exprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopType, $keyLoopType, $valueTypeChanged, $keyTypeChanged): Type {
-						if ($type instanceof UnionType || $type instanceof IntersectionType) {
-							return $traverse($type);
-						}
+					$newExprType = $exprType;
+					if ($valueTypeChanged) {
+						$newExprType = $newExprType->mapValueType(static fn (Type $type): Type => $arrayDimFetchLoopType);
+					}
+					if ($keyTypeChanged) {
+						$newExprType = $newExprType->mapKeyType(static fn (Type $type): Type => $keyLoopType);
+					}
 
-						if (!$type instanceof ArrayType) {
-							return $type;
-						}
-
-						return new ArrayType(
-							$keyTypeChanged ? $keyLoopType : $type->getKeyType(),
-							$valueTypeChanged ? $arrayDimFetchLoopType : $type->getIterableValueType(),
-						);
-					});
 					$nativeExprType = $scope->getNativeType($stmt->expr);
-					$newExprNativeType = TypeTraverser::map($nativeExprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType, $keyLoopNativeType, $valueTypeChanged, $keyTypeChanged): Type {
-						if ($type instanceof UnionType || $type instanceof IntersectionType) {
-							return $traverse($type);
-						}
-
-						if (!$type instanceof ArrayType) {
-							return $type;
-						}
-
-						return new ArrayType(
-							$keyTypeChanged ? $keyLoopNativeType : $type->getKeyType(),
-							$valueTypeChanged ? $arrayDimFetchLoopNativeType : $type->getIterableValueType(),
-						);
-					});
+					$newExprNativeType = $nativeExprType;
+					if ($valueTypeChanged) {
+						$newExprNativeType = $newExprNativeType->mapValueType(static fn (Type $type): Type => $arrayDimFetchLoopNativeType);
+					}
+					if ($keyTypeChanged) {
+						$newExprNativeType = $newExprNativeType->mapKeyType(static fn (Type $type): Type => $keyLoopNativeType);
+					}
 
 					if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 						$finalScope = $finalScope->assignVariable(

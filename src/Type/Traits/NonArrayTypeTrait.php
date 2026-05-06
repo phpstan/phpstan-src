@@ -116,7 +116,12 @@ trait NonArrayTypeTrait
 
 	public function mapValueType(callable $cb): Type
 	{
-		return new ErrorType();
+		return $this;
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
 	}
 
 	public function changeKeyCaseArray(?int $case): Type

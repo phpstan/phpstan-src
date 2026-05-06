@@ -327,6 +327,12 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new self($this->offsetType, $cb($this->valueType));
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		// The offset itself is unaffected; passes through.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		if (!$this->offsetType instanceof ConstantStringType) {

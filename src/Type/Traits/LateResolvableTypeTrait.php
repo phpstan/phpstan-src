@@ -364,6 +364,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->mapValueType($cb);
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this->resolve()->mapKeyType($cb);
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		return $this->resolve()->changeKeyCaseArray($case);

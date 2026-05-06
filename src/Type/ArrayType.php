@@ -588,6 +588,11 @@ class ArrayType implements Type
 		return new ArrayType($this->keyType, $cb($this->getItemType()));
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return new ArrayType($cb($this->keyType), $this->getItemType());
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		$newKeyType = TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use ($case): Type {

@@ -275,6 +275,12 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		// List keys are integers; case-folding leaves them alone.
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

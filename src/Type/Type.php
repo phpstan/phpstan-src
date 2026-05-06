@@ -295,6 +295,15 @@ interface Type
 	 */
 	public function mapValueType(callable $cb): Type;
 
+	/**
+	 * Models `array_change_key_case($a, $case)`. String keys are case-folded
+	 * (constant ones to a specific value, general ones via accessories);
+	 * non-string keys, values, accessories and list-ness are preserved.
+	 * `$case` matches PHP's `CASE_LOWER` / `CASE_UPPER`; `null` means the
+	 * case is non-constant and the result is the union of both folds.
+	 */
+	public function changeKeyCaseArray(?int $case): Type;
+
 	/** @return list<EnumCaseObjectType> */
 	public function getEnumCases(): array;
 

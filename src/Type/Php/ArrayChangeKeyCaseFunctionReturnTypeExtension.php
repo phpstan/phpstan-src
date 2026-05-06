@@ -6,30 +6,10 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
-use function array_map;
 use function count;
-use function strtolower;
-use function strtoupper;
 use const CASE_LOWER;
-use const CASE_UPPER;
 
 #[AutowiredService]
 final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -60,107 +40,7 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 			}
 		}
 
-		$constantArrays = $arrayType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$arrayTypes = [];
-			foreach ($constantArrays as $constantArray) {
-				$newConstantArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-				$valueTypes = $constantArray->getValueTypes();
-				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-					$valueType = $valueTypes[$i];
-
-					$constantStrings = $keyType->getConstantStrings();
-					if (count($constantStrings) > 0) {
-						$keyType = TypeCombinator::union(
-							...array_map(
-								fn (ConstantStringType $type): Type => $this->mapConstantString($type, $case),
-								$constantStrings,
-							),
-						);
-					}
-
-					$newConstantArrayBuilder->setOffsetValueType(
-						$keyType,
-						$valueType,
-						$constantArray->isOptionalKey($i),
-					);
-				}
-				$newConstantArrayType = $newConstantArrayBuilder->getArray();
-				if ($constantArray->isList()->yes()) {
-					$newConstantArrayType = TypeCombinator::intersect($newConstantArrayType, new AccessoryArrayListType());
-				}
-				$arrayTypes[] = $newConstantArrayType;
-			}
-
-			$newArrayType = TypeCombinator::union(...$arrayTypes);
-		} else {
-			$keysType = $arrayType->getIterableKeyType();
-
-			$keysType = TypeTraverser::map($keysType, function (Type $type, callable $traverse) use ($case): Type {
-				if ($type instanceof UnionType) {
-					return $traverse($type);
-				}
-
-				$constantStrings = $type->getConstantStrings();
-				if (count($constantStrings) > 0) {
-					return TypeCombinator::union(
-						...array_map(
-							fn (ConstantStringType $type): Type => $this->mapConstantString($type, $case),
-							$constantStrings,
-						),
-					);
-				}
-
-				if ($type->isString()->yes()) {
-					$types = [new StringType()];
-					if ($type->isNonFalsyString()->yes()) {
-						$types[] = new AccessoryNonFalsyStringType();
-					} elseif ($type->isNonEmptyString()->yes()) {
-						$types[] = new AccessoryNonEmptyStringType();
-					}
-					if ($type->isNumericString()->yes()) {
-						$types[] = new AccessoryNumericStringType();
-					}
-					if ($case === CASE_LOWER) {
-						$types[] = new AccessoryLowercaseStringType();
-					} elseif ($case === CASE_UPPER) {
-						$types[] = new AccessoryUppercaseStringType();
-					}
-
-					if (count($types) === 1) {
-						return $types[0];
-					}
-					return new IntersectionType($types);
-				}
-
-				return $type;
-			});
-
-			$newArrayType = TypeCombinator::intersect(new ArrayType(
-				$keysType,
-				$arrayType->getIterableValueType(),
-			), ...TypeUtils::getAccessoryTypes($arrayType));
-		}
-
-		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
-		}
-
-		return $newArrayType;
-	}
-
-	private function mapConstantString(ConstantStringType $type, ?int $case): Type
-	{
-		if ($case === CASE_LOWER) {
-			return new ConstantStringType(strtolower($type->getValue()));
-		} elseif ($case === CASE_UPPER) {
-			return new ConstantStringType(strtoupper($type->getValue()));
-		}
-
-		return TypeCombinator::union(
-			new ConstantStringType(strtolower($type->getValue())),
-			new ConstantStringType(strtoupper($type->getValue())),
-		);
+		return $arrayType->changeKeyCaseArray($case);
 	}
 
 }

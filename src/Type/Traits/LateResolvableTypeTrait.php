@@ -364,6 +364,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->mapValueType($cb);
 	}
 
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return $this->resolve()->changeKeyCaseArray($case);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

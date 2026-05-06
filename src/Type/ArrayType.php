@@ -12,6 +12,11 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -30,9 +35,14 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_map;
 use function array_merge;
 use function count;
 use function sprintf;
+use function strtolower;
+use function strtoupper;
+use const CASE_LOWER;
+use const CASE_UPPER;
 
 /** @api */
 class ArrayType implements Type
@@ -576,6 +586,66 @@ class ArrayType implements Type
 	public function mapValueType(callable $cb): Type
 	{
 		return new ArrayType($this->keyType, $cb($this->getItemType()));
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		$newKeyType = TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use ($case): Type {
+			if ($type instanceof UnionType) {
+				return $traverse($type);
+			}
+
+			$constantStrings = $type->getConstantStrings();
+			if (count($constantStrings) > 0) {
+				return TypeCombinator::union(
+					...array_map(
+						static fn (ConstantStringType $type): Type => self::foldConstantStringKeyCase($type, $case),
+						$constantStrings,
+					),
+				);
+			}
+
+			if ($type->isString()->yes()) {
+				$types = [new StringType()];
+				if ($type->isNonFalsyString()->yes()) {
+					$types[] = new AccessoryNonFalsyStringType();
+				} elseif ($type->isNonEmptyString()->yes()) {
+					$types[] = new AccessoryNonEmptyStringType();
+				}
+				if ($type->isNumericString()->yes()) {
+					$types[] = new AccessoryNumericStringType();
+				}
+				if ($case === CASE_LOWER) {
+					$types[] = new AccessoryLowercaseStringType();
+				} elseif ($case === CASE_UPPER) {
+					$types[] = new AccessoryUppercaseStringType();
+				}
+
+				if (count($types) === 1) {
+					return $types[0];
+				}
+				return new IntersectionType($types);
+			}
+
+			return $type;
+		});
+
+		return new ArrayType($newKeyType, $this->getItemType());
+	}
+
+	private static function foldConstantStringKeyCase(ConstantStringType $type, ?int $case): Type
+	{
+		if ($case === CASE_LOWER) {
+			return new ConstantStringType(strtolower($type->getValue()));
+		}
+		if ($case === CASE_UPPER) {
+			return new ConstantStringType(strtoupper($type->getValue()));
+		}
+
+		return TypeCombinator::union(
+			new ConstantStringType(strtolower($type->getValue())),
+			new ConstantStringType(strtoupper($type->getValue())),
+		);
 	}
 
 	public function isCallable(): TrinaryLogic

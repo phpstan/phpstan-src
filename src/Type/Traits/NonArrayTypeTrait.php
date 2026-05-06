@@ -119,4 +119,9 @@ trait NonArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return new ErrorType();
+	}
+
 }

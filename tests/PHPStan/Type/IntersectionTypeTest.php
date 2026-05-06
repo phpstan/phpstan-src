@@ -121,14 +121,14 @@ class IntersectionTypeTest extends PHPStanTestCase
 			TrinaryLogic::createYes(),
 		];
 
-		// array&callable isAcceptedBy array - failure
+		// array&callable isAcceptedBy array<int> - failure
 		yield [
 			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
 			new ArrayType(new MixedType(), new IntegerType()),
 			TrinaryLogic::createNo(),
 		];
 
-		// array&callable isAcceptedBy constantArray - success
+		// array&callable isAcceptedBy constantArray{stdClass, string} - maybe
 		yield [
 			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
 			new ConstantArrayType(
@@ -138,7 +138,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 			TrinaryLogic::createMaybe(),
 		];
 
-		// array&callable isAcceptedBy constantArray - failure
+		// array&callable isAcceptedBy constantArray{string, string} - maybe
 		yield [
 			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
 			new ConstantArrayType(
@@ -170,7 +170,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 			TrinaryLogic::createNo(),
 		];
 
-		// array&hasOffsetValue isAcceptedBy array - success (matching value type)
+		// array&hasOffsetValue isAcceptedBy array<int> - success (matching value type)
 		yield [
 			new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
@@ -181,7 +181,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 			TrinaryLogic::createYes(),
 		];
 
-		// array&hasOffsetValue isAcceptedBy constantArray - success
+		// array&hasOffsetValue isAcceptedBy constantArray{int, int} - success
 		yield [
 			new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
@@ -195,18 +195,18 @@ class IntersectionTypeTest extends PHPStanTestCase
 			TrinaryLogic::createMaybe(),
 		];
 
-		// array&hasOffsetValue isAcceptedBy constantArray - failure
+		// array&hasOffsetValue isAcceptedBy constantArray{string, string} - failure
 		yield [
 			new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
 				new NonEmptyArrayType(),
-				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+				new HasOffsetValueType(new ConstantIntegerType(0), new IntegerType()),
 			]),
 			new ConstantArrayType(
 				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 				[new StringType(), new StringType()],
 			),
-			TrinaryLogic::createMaybe(),
+			TrinaryLogic::createNo(),
 		];
 	}
 

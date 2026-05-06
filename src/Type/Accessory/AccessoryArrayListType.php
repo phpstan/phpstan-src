@@ -281,6 +281,12 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		// Filtering creates gaps in the integer-key sequence — list-ness lost.
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

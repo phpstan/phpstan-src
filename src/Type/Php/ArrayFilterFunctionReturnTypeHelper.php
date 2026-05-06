@@ -29,7 +29,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -152,42 +151,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 
 	private function removeFalsey(Type $type): Type
 	{
-		$falseyTypes = StaticTypeFactory::falsey();
-
-		if (count($type->getConstantArrays()) > 0) {
-			$result = [];
-			foreach ($type->getConstantArrays() as $constantArray) {
-				$keys = $constantArray->getKeyTypes();
-				$values = $constantArray->getValueTypes();
-
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-
-				foreach ($values as $offset => $value) {
-					$isFalsey = $falseyTypes->isSuperTypeOf($value);
-
-					if ($isFalsey->maybe()) {
-						$builder->setOffsetValueType($keys[$offset], TypeCombinator::remove($value, $falseyTypes), true);
-					} elseif ($isFalsey->no()) {
-						$builder->setOffsetValueType($keys[$offset], $value, $constantArray->isOptionalKey($offset));
-					}
-				}
-
-				$result[] = $builder->getArray();
-			}
-
-			return TypeCombinator::union(...$result);
-		}
-
-		$keyType = $type->getIterableKeyType();
-		$valueType = $type->getIterableValueType();
-
-		$valueType = TypeCombinator::remove($valueType, $falseyTypes);
-
-		if ($valueType instanceof NeverType) {
-			return new ConstantArrayType([], []);
-		}
-
-		return new ArrayType($keyType, $valueType);
+		return $type->filterArrayRemovingFalsey();
 	}
 
 	private function filterByTruthyValue(Scope $scope, Error|Variable|null $itemVar, Type $arrayType, Error|Variable|null $keyVar, Expr $expr): Type

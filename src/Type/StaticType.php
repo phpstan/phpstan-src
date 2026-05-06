@@ -573,6 +573,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->changeKeyCaseArray($case);
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return $this->getStaticObjectType()->filterArrayRemovingFalsey();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();

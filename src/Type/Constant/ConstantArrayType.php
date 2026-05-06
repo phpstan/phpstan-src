@@ -42,6 +42,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\RecursionGuard;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -2006,6 +2007,26 @@ class ConstantArrayType implements Type
 			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
 		}
 		return $result;
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		$falseyTypes = StaticTypeFactory::falsey();
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($this->keyTypes as $i => $keyType) {
+			$value = $this->valueTypes[$i];
+			$isFalsey = $falseyTypes->isSuperTypeOf($value);
+			if ($isFalsey->yes()) {
+				continue;
+			}
+			if ($isFalsey->maybe()) {
+				$builder->setOffsetValueType($keyType, TypeCombinator::remove($value, $falseyTypes), true);
+				continue;
+			}
+			$builder->setOffsetValueType($keyType, $value, $this->isOptionalKey($i));
+		}
+
+		return $builder->getArray();
 	}
 
 	private static function foldConstantStringKeyCase(ConstantStringType $type, ?int $case): Type

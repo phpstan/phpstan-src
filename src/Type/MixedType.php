@@ -332,6 +332,15 @@ class MixedType implements CompoundType, SubtractableType
 		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

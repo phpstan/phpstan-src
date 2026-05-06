@@ -633,6 +633,17 @@ class ArrayType implements Type
 		return new ArrayType($newKeyType, $this->getItemType());
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		$falseyTypes = StaticTypeFactory::falsey();
+		$valueType = TypeCombinator::remove($this->getItemType(), $falseyTypes);
+		if ($valueType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
+		return new ArrayType($this->keyType, $valueType);
+	}
+
 	private static function foldConstantStringKeyCase(ConstantStringType $type, ?int $case): Type
 	{
 		if ($case === CASE_LOWER) {

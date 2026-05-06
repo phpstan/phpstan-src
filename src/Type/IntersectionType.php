@@ -1199,6 +1199,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->changeKeyCaseArray($case));
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->filterArrayRemovingFalsey());
+	}
+
 	public function getEnumCases(): array
 	{
 		$compare = [];

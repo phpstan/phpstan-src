@@ -21,6 +21,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -341,6 +342,22 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		}
 
 		// Unknown case → drop the specific-offset assertion.
+		return new MixedType();
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		$falseyTypes = StaticTypeFactory::falsey();
+		$isFalsey = $falseyTypes->isSuperTypeOf($this->valueType);
+		if ($isFalsey->yes()) {
+			// Definitely filtered out — the offset assertion no longer holds.
+			return new MixedType();
+		}
+		if ($isFalsey->no()) {
+			// Definitely survives.
+			return $this;
+		}
+		// Maybe filtered: drop the specific-value assertion.
 		return new MixedType();
 	}
 

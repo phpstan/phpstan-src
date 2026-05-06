@@ -304,6 +304,14 @@ interface Type
 	 */
 	public function changeKeyCaseArray(?int $case): Type;
 
+	/**
+	 * Models `array_filter($a)` (no callback): drops entries whose value is
+	 * definitely falsey, marks possibly-falsey entries optional, keeps
+	 * definitely-truthy entries unchanged. Keys are preserved; list-ness
+	 * is downgraded since gaps may appear.
+	 */
+	public function filterArrayRemovingFalsey(): Type;
+
 	/** @return list<EnumCaseObjectType> */
 	public function getEnumCases(): array;
 

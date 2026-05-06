@@ -124,4 +124,9 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return new ErrorType();
+	}
+
 }

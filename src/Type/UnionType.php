@@ -914,6 +914,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->mapValueType($cb));
 	}
 
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->changeKeyCaseArray($case));
+	}
+
 	public function getEnumCases(): array
 	{
 		return $this->pickFromTypes(

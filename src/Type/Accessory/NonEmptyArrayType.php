@@ -259,6 +259,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		// Case-folding keys doesn't change the entry count.
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

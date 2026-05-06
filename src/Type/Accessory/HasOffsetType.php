@@ -32,6 +32,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
+use function strtolower;
+use function strtoupper;
+use const CASE_LOWER;
+use const CASE_UPPER;
 
 class HasOffsetType implements CompoundType, AccessoryType
 {
@@ -232,6 +236,26 @@ class HasOffsetType implements CompoundType, AccessoryType
 		// `HasOffsetType` only records that an offset exists, not its
 		// value; the assertion still holds after a value transformation.
 		return $this;
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		// A string offset is itself case-folded; an int offset is unchanged.
+		if (!$this->offsetType instanceof ConstantStringType) {
+			return $this;
+		}
+
+		$value = $this->offsetType->getValue();
+		if ($case === CASE_LOWER) {
+			return new self(new ConstantStringType(strtolower($value)));
+		}
+		if ($case === CASE_UPPER) {
+			return new self(new ConstantStringType(strtoupper($value)));
+		}
+
+		// Unknown case → could be either fold; the accessory weakens to
+		// "no specific offset known".
+		return new MixedType();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

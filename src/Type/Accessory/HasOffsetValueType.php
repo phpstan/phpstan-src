@@ -36,6 +36,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
+use function strtolower;
+use function strtoupper;
+use const CASE_LOWER;
+use const CASE_UPPER;
 
 class HasOffsetValueType implements CompoundType, AccessoryType
 {
@@ -320,6 +324,24 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		// The assertion is "offset X has value V"; after the transform
 		// the value at X is `cb(V)`.
 		return new self($this->offsetType, $cb($this->valueType));
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		if (!$this->offsetType instanceof ConstantStringType) {
+			return $this;
+		}
+
+		$value = $this->offsetType->getValue();
+		if ($case === CASE_LOWER) {
+			return new self(new ConstantStringType(strtolower($value)), $this->valueType);
+		}
+		if ($case === CASE_UPPER) {
+			return new self(new ConstantStringType(strtoupper($value)), $this->valueType);
+		}
+
+		// Unknown case → drop the specific-offset assertion.
+		return new MixedType();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

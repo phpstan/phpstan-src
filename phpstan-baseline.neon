@@ -838,6 +838,12 @@ parameters:
 			path: src/Type/Accessory/HasMethodType.php
 
 		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Accessory/HasOffsetType.php
+
+		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -852,7 +858,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 2
+			count: 3
 			path: src/Type/Accessory/HasOffsetValueType.php
 
 		-
@@ -954,7 +960,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 2
+			count: 3
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-

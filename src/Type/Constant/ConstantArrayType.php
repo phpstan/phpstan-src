@@ -69,6 +69,10 @@ use function range;
 use function sort;
 use function sprintf;
 use function str_contains;
+use function strtolower;
+use function strtoupper;
+use const CASE_LOWER;
+use const CASE_UPPER;
 
 /**
  * @api
@@ -1983,6 +1987,39 @@ class ConstantArrayType implements Type
 			$this->nextAutoIndexes,
 			$this->optionalKeys,
 			$this->isList,
+		);
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($this->keyTypes as $i => $keyType) {
+			if ($keyType instanceof ConstantStringType) {
+				$newKeyType = self::foldConstantStringKeyCase($keyType, $case);
+			} else {
+				$newKeyType = $keyType;
+			}
+			$builder->setOffsetValueType($newKeyType, $this->valueTypes[$i], $this->isOptionalKey($i));
+		}
+		$result = $builder->getArray();
+		if ($this->isList()->yes()) {
+			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+		}
+		return $result;
+	}
+
+	private static function foldConstantStringKeyCase(ConstantStringType $type, ?int $case): Type
+	{
+		if ($case === CASE_LOWER) {
+			return new ConstantStringType(strtolower($type->getValue()));
+		}
+		if ($case === CASE_UPPER) {
+			return new ConstantStringType(strtoupper($type->getValue()));
+		}
+
+		return TypeCombinator::union(
+			new ConstantStringType(strtolower($type->getValue())),
+			new ConstantStringType(strtoupper($type->getValue())),
 		);
 	}
 

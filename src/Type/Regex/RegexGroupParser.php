@@ -448,18 +448,38 @@ final class RegexGroupParser
 		if (
 			$group->getId() === '#capturing'
 			&& count($group->getChildren()) === 1
-			&& $group->getChild(0)->getId() === '#alternation'
 		) {
-			return $group->getChild(0);
+			$child = $group->getChild(0);
+			if ($child->getId() === '#alternation') {
+				return $child;
+			}
+
+			if (
+				$child->getId() === '#noncapturing'
+				&& count($child->getChildren()) === 1
+				&& $child->getChild(0)->getId() === '#alternation'
+			) {
+				return $child->getChild(0);
+			}
 		}
 
 		// 1st token within a named capturing group is a token holding the group-name
 		if (
 			$group->getId() === '#namedcapturing'
 			&& count($group->getChildren()) === 2
-			&& $group->getChild(1)->getId() === '#alternation'
 		) {
-			return $group->getChild(1);
+			$child = $group->getChild(1);
+			if ($child->getId() === '#alternation') {
+				return $child;
+			}
+
+			if (
+				$child->getId() === '#noncapturing'
+				&& count($child->getChildren()) === 1
+				&& $child->getChild(0)->getId() === '#alternation'
+			) {
+				return $child->getChild(0);
+			}
 		}
 
 		return null;
@@ -606,6 +626,10 @@ final class RegexGroupParser
 			$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
 		}
 
+		if (in_array($ast->getId(), ['#lookahead', '#negativelookahead', '#lookbehind', '#negativelookbehind'], true)) {
+			return $walkResult;
+		}
+
 		foreach ($children as $child) {
 			$walkResult = $this->walkGroupAst(
 				$child,
@@ -620,6 +644,10 @@ final class RegexGroupParser
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
+		if (in_array($node->getId(), ['#lookahead', '#negativelookahead', '#lookbehind', '#negativelookbehind'], true)) {
+			return true;
+		}
+
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
 
@@ -638,6 +666,25 @@ final class RegexGroupParser
 				$isNonFalsy = true;
 			}
 			return $literal === '';
+		}
+
+		if ($node->getId() === '#alternation') {
+			$allNonFalsy = true;
+			foreach ($node->getChildren() as $child) {
+				$childNonFalsy = false;
+				if ($this->isMaybeEmptyNode($child, $patternModifiers, $childNonFalsy)) {
+					return true;
+				}
+				if ($childNonFalsy) {
+					continue;
+				}
+
+				$allNonFalsy = false;
+			}
+			if ($allNonFalsy) {
+				$isNonFalsy = true;
+			}
+			return false;
 		}
 
 		foreach ($node->getChildren() as $child) {

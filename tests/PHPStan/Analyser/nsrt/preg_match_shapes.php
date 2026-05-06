@@ -1074,6 +1074,53 @@ function bug12792(string $string): void {
 	}
 }
 
+function bug12840(string $s): void {
+	// Empty alternation in non-capturing group
+	if (preg_match('~^((?:|\d+))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, ''|numeric-string}", $matches);
+	}
+
+	// Lookahead in alternation - lookahead is zero-width
+	if (preg_match('~^(a?(?:(?=x)|y))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, string}", $matches);
+	}
+
+	// Lookbehind in alternation - lookbehind is zero-width
+	if (preg_match('~^(a?(?:(?<=x)|y))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, string}", $matches);
+	}
+
+	// Negative lookahead - zero-width
+	if (preg_match('~^(a?(?:(?!z)|y))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, string}", $matches);
+	}
+
+	// Negative lookbehind - zero-width
+	if (preg_match('~^(a?(?:(?<!z)|y))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, string}", $matches);
+	}
+
+	// Lookahead alone in group should not produce non-empty-string (it's zero-width)
+	if (preg_match('~^((?=x))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, string}", $matches);
+	}
+
+	// Two non-capturing groups with empty alternation
+	if (preg_match('~^((?:|\d+)(?:|\w+))x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, string}", $matches);
+	}
+
+	// Named capturing group with non-capturing wrapper alternation
+	if (preg_match('~^(?P<g>(?:|\d+))x$~s', $s, $matches) === 1) {
+		assertType("array{0: non-falsy-string, g: ''|numeric-string, 1: ''|numeric-string}", $matches);
+	}
+
+	// Lookahead in concatenation with literal - group still captures the literal
+	if (preg_match('~^((?=x)a)x$~s', $s, $matches) === 1) {
+		assertType("array{non-falsy-string, non-falsy-string}", $matches);
+	}
+}
+
 function testExtendedSyntaxEscapedHash(string $string): void {
 	// \# in extended mode should be treated as literal hash, not comment
 	if (preg_match('/^ ([\#.]) $/x', $string, $matches)) {

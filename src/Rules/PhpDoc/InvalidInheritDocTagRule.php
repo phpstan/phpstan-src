@@ -22,7 +22,7 @@ use function strtolower;
 final class InvalidInheritDocTagRule implements Rule
 {
 
-	private const INLINE_INHERIT_DOC_REGEX = '~(?<![a-zA-Z0-9])\{@inheritDoc\b[^}]*\}~i';
+	private const INLINE_INHERIT_DOC_REGEX = '~`[^`]*`(*SKIP)(*FAIL)|(?<![a-zA-Z0-9])\{@inheritDoc\b[^}]*\}~i';
 
 	public function __construct(
 		private Lexer $phpDocLexer,

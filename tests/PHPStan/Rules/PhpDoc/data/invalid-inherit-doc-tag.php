@@ -323,3 +323,16 @@ interface ExtendingInterface extends BaseInterface
 	public function baseMethod(): int;
 
 }
+
+class InheritDocInsideBackticks
+{
+
+	/**
+	 * Please do not add `{@inheritdoc}` to this method.
+	 */
+	public function methodWithInheritDocInBackticks(): int
+	{
+		return 0;
+	}
+
+}

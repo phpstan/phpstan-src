@@ -2788,9 +2788,6 @@ class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 
-		$returnType = $closureType->getReturnType();
-		$isAlwaysTerminating = ($returnType instanceof NeverType && $returnType->isExplicit());
-
 		$this->callNodeCallback($nodeCallback, new InClosureNode($closureType, $expr), $closureScope, $storage);
 
 		$executionEnds = [];
@@ -2844,7 +2841,7 @@ class NodeScopeResolver
 				array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope, $storage);
 
-			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $isAlwaysTerminating);
+			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 		}
 
 		$originalStorage = $storage;
@@ -2894,7 +2891,7 @@ class NodeScopeResolver
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope, $storage);
 
-		return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $isAlwaysTerminating, $closureResultScope, $byRefUses);
+		return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $closureResultScope, $byRefUses);
 	}
 
 	/**
@@ -3402,7 +3399,6 @@ class NodeScopeResolver
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
-					$isAlwaysTerminating = $isAlwaysTerminating || $closureResult->isAlwaysTerminating();
 				}
 
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
@@ -3462,7 +3458,6 @@ class NodeScopeResolver
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
-					$isAlwaysTerminating = $isAlwaysTerminating || $arrowFunctionResult->isAlwaysTerminating();
 				}
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
 			} else {
@@ -3492,8 +3487,6 @@ class NodeScopeResolver
 							}
 							$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 							$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $arg->value, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $acceptors[0]->getImpurePoints()));
-							$returnType = $acceptors[0]->getReturnType();
-							$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
 						}
 					}
 				}

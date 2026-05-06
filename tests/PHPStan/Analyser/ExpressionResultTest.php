@@ -111,7 +111,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			],
 			[
 				'call_user_func(fn() => exit());',
-				true,
+				false,
 			],
 			[
 				'(function() { exit(); })();',
@@ -123,7 +123,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			],
 			[
 				'call_user_func(function() { exit(); });',
-				true,
+				false,
 			],
 			[
 				'usort($arr, static function($a, $b):int { return $a <=> $b; });',

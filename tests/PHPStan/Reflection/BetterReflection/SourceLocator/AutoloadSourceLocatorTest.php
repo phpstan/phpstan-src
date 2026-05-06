@@ -59,7 +59,7 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 		$this->assertNotNull($doFooFunctionReflection->getFileName());
 		$this->assertSame('a.php', basename($doFooFunctionReflection->getFileName()));
 
-		class_exists(InCondition::class);
+		$this->assertTrue(class_exists(InCondition::class));
 		$classInCondition = $reflector->reflectClass(InCondition::class);
 		$classInConditionFilename = $classInCondition->getFileName();
 		$this->assertNotNull($classInConditionFilename);

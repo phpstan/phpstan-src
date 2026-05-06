@@ -359,6 +359,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->makeListMaybe();
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return $this->resolve()->mapValueType($cb);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

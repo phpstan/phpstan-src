@@ -229,6 +229,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

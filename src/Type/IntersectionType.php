@@ -1178,6 +1178,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->makeListMaybe());
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->mapValueType($cb));
+	}
+
 	public function getEnumCases(): array
 	{
 		$compare = [];

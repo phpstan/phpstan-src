@@ -126,29 +126,11 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			}
 			$constantArrays = $arrayType->getConstantArrays();
 			if (count($constantArrays) > 0) {
-				$arrayTypes = [];
 				$totalCount = TypeCombinator::countConstantArrayValueTypes($constantArrays) * TypeCombinator::countConstantArrayValueTypes([$valueType]);
 				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-					foreach ($constantArrays as $constantArray) {
-						$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-						$valueTypes = $constantArray->getValueTypes();
-						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-							$returnedArrayBuilder->setOffsetValueType(
-								$keyType,
-								$scope->getType(new FuncCall($callback, [
-									new Node\Arg(new TypeExpr($valueTypes[$i])),
-								])),
-								$constantArray->isOptionalKey($i),
-							);
-						}
-						$returnedArray = $returnedArrayBuilder->getArray();
-						if ($constantArray->isList()->yes()) {
-							$returnedArray = TypeCombinator::intersect($returnedArray, new AccessoryArrayListType());
-						}
-						$arrayTypes[] = $returnedArray;
-					}
-
-					$mappedArrayType = TypeCombinator::union(...$arrayTypes);
+					$mappedArrayType = $arrayType->mapValueType(static fn (Type $type): Type => $scope->getType(new FuncCall($callback, [
+						new Node\Arg(new TypeExpr($type)),
+					])));
 				} else {
 					$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 						$arrayType->getIterableKeyType(),

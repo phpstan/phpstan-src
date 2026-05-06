@@ -286,6 +286,15 @@ interface Type
 	 */
 	public function makeListMaybe(): Type;
 
+	/**
+	 * Models "same keys, every value transformed" (e.g. `array_walk`,
+	 * `array_map($cb, $a)`, `preg_replace*` over an array subject). Keys
+	 * and accessories like list-ness / non-emptiness are preserved.
+	 *
+	 * @param callable(Type): Type $cb
+	 */
+	public function mapValueType(callable $cb): Type;
+
 	/** @return list<EnumCaseObjectType> */
 	public function getEnumCases(): array;
 

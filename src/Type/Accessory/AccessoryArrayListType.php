@@ -280,6 +280,12 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// Marking keys optional in an arbitrary list keeps it a list.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		// List keys are integers; case-folding leaves them alone.

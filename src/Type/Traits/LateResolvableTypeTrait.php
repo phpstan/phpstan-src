@@ -369,6 +369,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->mapKeyType($cb);
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return $this->resolve()->makeAllArrayKeysOptional();
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		return $this->resolve()->changeKeyCaseArray($case);

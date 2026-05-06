@@ -308,6 +308,15 @@ interface Type
 	public function mapKeyType(callable $cb): Type;
 
 	/**
+	 * Marks every explicit key in a `ConstantArrayType` as optional (the
+	 * shape can have any subset of the original keys). For non-`CAT` arrays
+	 * this is a no-op — they already model arbitrary subsets. Used by
+	 * `preg_replace*` over array subjects, where the callback can drop
+	 * entries.
+	 */
+	public function makeAllArrayKeysOptional(): Type;
+
+	/**
 	 * Models `array_change_key_case($a, $case)`. String keys are case-folded
 	 * (constant ones to a specific value, general ones via accessories);
 	 * non-string keys, values, accessories and list-ness are preserved.

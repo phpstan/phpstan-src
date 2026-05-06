@@ -264,6 +264,13 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// Without `ConstantArrayType` keys to mark optional, this is a no-op.
+		// Non-emptiness is unrelated to per-key optionality and is preserved.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		// Case-folding keys doesn't change the entry count.

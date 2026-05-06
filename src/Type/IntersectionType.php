@@ -1183,6 +1183,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->mapValueType($cb));
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->mapKeyType($cb));
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->changeKeyCaseArray($case));

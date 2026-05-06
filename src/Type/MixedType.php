@@ -323,6 +323,18 @@ class MixedType implements CompoundType, SubtractableType
 		);
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(
+			$cb(new MixedType($this->isExplicitMixed)),
+			new MixedType($this->isExplicitMixed),
+		);
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		if ($this->isArray()->no()) {

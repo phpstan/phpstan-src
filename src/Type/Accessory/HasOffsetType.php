@@ -238,6 +238,13 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		// Match the prior `TypeTraverser`-based pattern that left
+		// accessories untouched while rewriting the array key type.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		// A string offset is itself case-folded; an int offset is unchanged.

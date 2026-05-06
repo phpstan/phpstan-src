@@ -234,6 +234,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		return $this;

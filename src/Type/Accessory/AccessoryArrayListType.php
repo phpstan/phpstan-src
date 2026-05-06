@@ -275,6 +275,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		// List keys are integers; case-folding leaves them alone.

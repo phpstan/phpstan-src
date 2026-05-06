@@ -88,7 +88,7 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 		$isFinalClass = count($classReflections) === 1 && $classReflections[0]->isFinal();
 
 		if ($isFinalClass || $constantReflection->isFinal()) {
-			return $constantReflection->getValueType();
+			return $constantReflection->getInitializerExprType();
 		}
 
 		if (!$constantReflection->hasPhpDocType() && !$constantReflection->hasNativeType()) {

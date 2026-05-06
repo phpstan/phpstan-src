@@ -173,7 +173,7 @@ class WithFinalTypedConstant
 
 function testFinalTypedConstant(WithFinalTypedConstant $foo): void
 {
-	assertType('non-empty-string', $foo->test());
+	assertType("'foo'", $foo->test());
 }
 
 final class FinalClassWithNativeType
@@ -240,7 +240,7 @@ class WithFinalPhpDocConstant
 
 function testFinalPhpDocConstant(WithFinalPhpDocConstant $foo): void
 {
-	assertType('non-empty-string', $foo->test());
+	assertType("'foo'", $foo->test());
 }
 
 class WithFinalNativeConstant
@@ -256,5 +256,5 @@ class WithFinalNativeConstant
 
 function testFinalNativeConstant(WithFinalNativeConstant $foo): void
 {
-	assertType('string', $foo->test());
+	assertType("'foo'", $foo->test());
 }

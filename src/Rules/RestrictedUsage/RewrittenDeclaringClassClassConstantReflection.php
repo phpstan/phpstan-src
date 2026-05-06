@@ -119,4 +119,9 @@ final class RewrittenDeclaringClassClassConstantReflection implements ClassConst
 		return $this->constantReflection->getResolvedPhpDoc();
 	}
 
+	public function getInitializerExprType(): Type
+	{
+		return $this->constantReflection->getInitializerExprType();
+	}
+
 }

@@ -91,6 +91,11 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 		return $this->valueType;
 	}
 
+	public function getInitializerExprType(): Type
+	{
+		return $this->initializerExprTypeResolver->getType($this->getValueExpr(), InitializerExprContext::fromClassReflection($this->declaringClass));
+	}
+
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->declaringClass;

@@ -425,7 +425,7 @@ final class ConstantResolver
 				return $constantType;
 			}
 			if (in_array($constantName, $this->dynamicConstantNames, true)) {
-				return $this->generalizeDynamicConstantType($constantType);
+				return $this->generalizeConstantType($constantType);
 			}
 		}
 
@@ -460,14 +460,14 @@ final class ConstantResolver
 			}
 
 			if ($constantType->isConstantValue()->yes()) {
-				return $this->generalizeDynamicConstantType($constantType);
+				return $this->generalizeConstantType($constantType);
 			}
 		}
 
 		return $constantType;
 	}
 
-	private function generalizeDynamicConstantType(Type $constantType): Type
+	private function generalizeConstantType(Type $constantType): Type
 	{
 		$generalized = $constantType->generalize(GeneralizePrecision::lessSpecific());
 		if ($generalized->isConstantValue()->yes() && $generalized->isArray()->yes()) {

@@ -221,6 +221,12 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// Having an offset doesn't conflict with list-being-maybe.
+		return $this;
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

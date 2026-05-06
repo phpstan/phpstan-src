@@ -566,6 +566,13 @@ class ArrayType implements Type
 		return $arrayType;
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// `ArrayType` doesn't carry list-ness on its own — that's an
+		// `AccessoryArrayListType` in an enclosing `IntersectionType`.
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

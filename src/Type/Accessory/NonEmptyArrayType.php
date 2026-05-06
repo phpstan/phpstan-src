@@ -247,6 +247,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// Non-emptiness is independent of list-ness; weaken-list keeps it.
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

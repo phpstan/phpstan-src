@@ -260,6 +260,15 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// This accessory is the list assertion itself; weakening the
+		// list-ness to "maybe" means the accessory no longer applies.
+		// Returning `MixedType` lets the enclosing `IntersectionType` drop
+		// it via `TypeCombinator::intersect` while preserving the rest.
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

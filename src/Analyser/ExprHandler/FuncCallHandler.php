@@ -750,39 +750,7 @@ final class FuncCallHandler implements ExprHandler
 
 	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type
 	{
-		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
-			if ($type instanceof UnionType) {
-				return $traverse($type);
-			}
-
-			$constantArrays = $type->getConstantArrays();
-			if (count($constantArrays) > 0) {
-				$types = [];
-				foreach ($constantArrays as $constantArray) {
-					$types[] = new ConstantArrayType(
-						$constantArray->getKeyTypes(),
-						$constantArray->getValueTypes(),
-						$constantArray->getNextAutoIndexes(),
-						$constantArray->getOptionalKeys(),
-						$constantArray->isList()->and(TrinaryLogic::createMaybe()),
-					);
-				}
-
-				return TypeCombinator::union(...$types);
-			}
-
-			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
-			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = new IntersectionType([$newArrayType, new NonEmptyArrayType()]);
-			}
-
-			return $newArrayType;
-		});
+		return $type->makeListMaybe();
 	}
 
 	private function getArrayWalkResultType(Type $arrayType, Type $newValueType): Type

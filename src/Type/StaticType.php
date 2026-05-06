@@ -558,6 +558,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->spliceArray($offsetType, $lengthType, $replacementType);
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this->getStaticObjectType()->makeListMaybe();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();

@@ -563,6 +563,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->makeListMaybe();
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return $this->getStaticObjectType()->mapValueType($cb);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();

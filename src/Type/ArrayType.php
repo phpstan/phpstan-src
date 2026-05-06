@@ -573,6 +573,11 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return new ArrayType($this->keyType, $cb($this->getItemType()));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

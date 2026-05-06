@@ -269,6 +269,12 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		// Mapping values doesn't disturb list-ness.
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -253,6 +253,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		// Mapping doesn't change the entry count; non-emptiness is preserved.
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

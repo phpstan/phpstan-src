@@ -389,6 +389,11 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return new NeverType();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

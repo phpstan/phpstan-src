@@ -1970,6 +1970,22 @@ class ConstantArrayType implements Type
 		);
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		$newValueTypes = [];
+		foreach ($this->valueTypes as $valueType) {
+			$newValueTypes[] = $cb($valueType);
+		}
+
+		return $this->recreate(
+			$this->keyTypes,
+			$newValueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			$this->isList,
+		);
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		$items = [];

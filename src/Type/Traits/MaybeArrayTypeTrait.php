@@ -114,4 +114,9 @@ trait MaybeArrayTypeTrait
 		return $this;
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		return new ErrorType();
+	}
+
 }

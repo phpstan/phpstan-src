@@ -315,6 +315,13 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		// The assertion is "offset X has value V"; after the transform
+		// the value at X is `cb(V)`.
+		return new self($this->offsetType, $cb($this->valueType));
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

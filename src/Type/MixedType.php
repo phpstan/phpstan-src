@@ -311,6 +311,18 @@ class MixedType implements CompoundType, SubtractableType
 		return $this;
 	}
 
+	public function mapValueType(callable $cb): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(
+			new MixedType($this->isExplicitMixed),
+			$cb(new MixedType($this->isExplicitMixed)),
+		);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

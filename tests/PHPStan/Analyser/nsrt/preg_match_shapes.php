@@ -321,7 +321,7 @@ function (string $size): void {
 	if (preg_match('~\{(?:(include)\\s+(?:[$]?\\w+(?<!file))\\s)|(?:(include\\s+file)\\s+(?:[$]?\\w+)\\s)|(?:(include(?:Template|(?:\\s+file)))\\s+(?:\'?.*?\.latte\'?)\\s)~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType("array{non-empty-string, '', '', non-falsy-string}|array{non-empty-string, '', non-falsy-string}|array{non-empty-string, 'include'}", $matches);
+	assertType("array{non-falsy-string, '', '', non-falsy-string}|array{non-falsy-string, '', non-falsy-string}|array{non-falsy-string, 'include'}", $matches);
 };
 
 
@@ -519,7 +519,7 @@ function bug11323(string $s): void {
 		assertType('array{non-falsy-string, non-empty-string, "\n", "\n"}', $matches);
 	}
 	if (preg_match('/foo(*:first)|bar(*:second)([x])/', $s, $matches)) {
-		assertType("array{0: non-empty-string, 1?: 'x', MARK?: 'first'|'second'}", $matches);
+		assertType("array{0: non-falsy-string, 1?: 'x', MARK?: 'first'|'second'}", $matches);
 	}
 }
 
@@ -762,13 +762,13 @@ function bug11604 (string $string): void {
 		return;
 	}
 
-	assertType("list{0: non-empty-string, 1?: ''|'XX', 2?: 'YY'}", $matches);
+	assertType("list{0: non-falsy-string, 1?: ''|'XX', 2?: 'YY'}", $matches);
 	// could be array{string, '', 'YY'}|array{string, 'XX'}|array{string}
 }
 
 function bug11604b (string $string): void {
 	if (preg_match('/(XX)|(YY)?(ZZ)/', $string, $matches)) {
-		assertType("list{0: non-empty-string, 1?: ''|'XX', 2?: ''|'YY', 3?: 'ZZ'}", $matches);
+		assertType("list{0: non-falsy-string, 1?: ''|'XX', 2?: ''|'YY', 3?: 'ZZ'}", $matches);
 	}
 }
 
@@ -890,7 +890,7 @@ function testEscapedDelimiter (string $string): void {
 	if (preg_match(<<<'EOD'
 		{(x\\\{)|(y\\\\\})}
 		EOD, $string, $matches)) {
-		assertType("array{non-empty-string, '', 'y\\\\\\\}'}|array{non-empty-string, 'x\\\{'}", $matches);
+		assertType("array{non-falsy-string, '', 'y\\\\\\\}'}|array{non-falsy-string, 'x\\\{'}", $matches);
 	}
 }
 

@@ -393,3 +393,55 @@ function unsealedOffsetAccess(array $a, array $b, array $c, array $d, array $e, 
 	// hit the explicit string key 'a', so it's purely from the unsealed extras
 	assertType('mixed', $e[$i]);
 }
+
+/**
+ * `array_key_exists`/`isset` over an unsealed shape should promote the
+ * matching key out of the unsealed extras into a definite explicit slot,
+ * carrying the unsealed value type. The remaining unsealed extras stay
+ * around — there can still be additional entries at other keys.
+ *
+ * @param array{a: int, ...<string, float>} $stringExtras
+ * @param array{a: int, ...<int, float>} $intExtras
+ * @param array{a: int, ...} $open
+ * @param array{a?: int, ...<string, float>} $optionalExplicit
+ */
+function unsealedNarrowing(array $stringExtras, array $intExtras, array $open, array $optionalExplicit, int $i): void
+{
+	// Promote 'b' (matches the unsealed string key) into the explicit set
+	// with the unsealed value type `float`. The unsealed extras remain.
+	if (array_key_exists('b', $stringExtras)) {
+		assertType('array{a: int, b: float, ...<string, float>}', $stringExtras);
+	}
+
+	if (isset($stringExtras['b'])) {
+		// `isset` additionally rules out null at the offset — but `float`
+		// already excludes null, so the shape is the same as above.
+		assertType('array{a: int, b: float, ...<string, float>}', $stringExtras);
+	}
+
+	// Same idea with an integer-keyed unsealed range: 5 gets pulled out.
+	if (array_key_exists(5, $intExtras)) {
+		assertType('array{a: int, 5: float, ...<int, float>}', $intExtras);
+	}
+
+	// Open shape `...` is `...<array-key, mixed>`: any constant key matches
+	// the unsealed range, so we promote with `mixed`.
+	if (array_key_exists('foo', $open)) {
+		assertType('array{a: int, foo: mixed, ...}', $open);
+	}
+
+	// Existing optional explicit key — promotion is the existing
+	// `optional → required` flip; no new key is added.
+	if (array_key_exists('a', $optionalExplicit)) {
+		assertType('array{a: int, ...<string, float>}', $optionalExplicit);
+	}
+
+	// `isset` produces a `HasOffsetValueType` whose offset doesn't match the
+	// only explicit key (`'a'`) and lies outside the unsealed key range
+	// (`int 5` vs. `string` extras). The array can't hold this offset under
+	// any concrete instance, so the truthy branch's intersection collapses
+	// to `*NEVER*`.
+	if (isset($stringExtras[5])) {
+		assertType('*NEVER*', $stringExtras);
+	}
+}

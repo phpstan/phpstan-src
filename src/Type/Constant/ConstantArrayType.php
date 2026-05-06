@@ -2764,7 +2764,36 @@ class ConstantArrayType implements Type
 				return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList, $this->unsealed);
 			}
 
-			break;
+			return $this;
+		}
+
+		// Offset isn't in the explicit set. If the unsealed extras' key range
+		// covers it (e.g. `array{a: int, ...<string, float>}` narrowing on
+		// `array_key_exists('b', $arr)`), promote it into the explicit set as
+		// a required slot with the unsealed value type. The unsealed extras
+		// stay around — additional entries at other matching keys are still
+		// possible.
+		if (
+			$this->isUnsealed()->yes()
+			&& $this->unsealed !== null
+			&& ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType)
+		) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			if (!$unsealedKeyType->isSuperTypeOf($offsetType)->no()) {
+				$keyTypes = $this->keyTypes;
+				$valueTypes = $this->valueTypes;
+				$keyTypes[] = $offsetType;
+				$valueTypes[] = $unsealedValueType;
+
+				return $this->recreate(
+					$keyTypes,
+					$valueTypes,
+					$this->nextAutoIndexes,
+					$this->optionalKeys,
+					TrinaryLogic::createNo(),
+					$this->unsealed,
+				);
+			}
 		}
 
 		return $this;
@@ -2797,6 +2826,7 @@ class ConstantArrayType implements Type
 			$this->nextAutoIndexes,
 			$this->optionalKeys,
 			TrinaryLogic::createMaybe(),
+			$this->unsealed,
 		);
 	}
 
@@ -2807,12 +2837,17 @@ class ConstantArrayType implements Type
 			$newValueTypes[] = $cb($valueType);
 		}
 
+		$newUnsealed = $this->unsealed === null
+			? null
+			: [$this->unsealed[0], $cb($this->unsealed[1])];
+
 		return $this->recreate(
 			$this->keyTypes,
 			$newValueTypes,
 			$this->nextAutoIndexes,
 			$this->optionalKeys,
 			$this->isList,
+			$newUnsealed,
 		);
 	}
 
@@ -2838,6 +2873,7 @@ class ConstantArrayType implements Type
 			$this->nextAutoIndexes,
 			range(0, $keyCount - 1),
 			$this->isList,
+			$this->unsealed,
 		);
 	}
 

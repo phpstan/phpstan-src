@@ -109,4 +109,9 @@ trait NonArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this;
+	}
+
 }

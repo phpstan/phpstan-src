@@ -1955,6 +1955,21 @@ class ConstantArrayType implements Type
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
 	}
 
+	public function makeListMaybe(): Type
+	{
+		if (!$this->isList->yes()) {
+			return $this;
+		}
+
+		return $this->recreate(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			TrinaryLogic::createMaybe(),
+		);
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		$items = [];

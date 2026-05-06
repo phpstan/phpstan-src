@@ -1184,6 +1184,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->makeListMaybe());
+	}
+
 	public function getEnumCases(): array
 	{
 		$compare = [];

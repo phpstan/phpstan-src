@@ -278,6 +278,14 @@ interface Type
 	/** Models array_splice() effect on the array (the modified array, not the removed portion). */
 	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type;
 
+	/**
+	 * Downgrades the list-ness of the array from `Yes` to `Maybe` (e.g. for
+	 * `asort`/`uksort`/etc. which preserve keys but break list ordering).
+	 * Other shape information (keys, values, accessories like NonEmpty) is
+	 * preserved.
+	 */
+	public function makeListMaybe(): Type;
+
 	/** @return list<EnumCaseObjectType> */
 	public function getEnumCases(): array;
 

@@ -309,6 +309,12 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// Knowing a specific offset/value is independent of list-ness.
+		return $this;
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

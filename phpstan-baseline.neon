@@ -31,6 +31,12 @@ parameters:
 			path: src/Analyser/ExprHandler/AssignHandler.php
 
 		-
+			rawMessage: 'Parameter #2 $variableNames of method PHPStan\Analyser\NodeScopeResolver::processVarAnnotation() expects array<int, string>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ExprHandler/AssignHandler.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -47,6 +53,12 @@ parameters:
 			identifier: preInc.nonNumeric
 			count: 1
 			path: src/Analyser/ExprHandler/PreIncHandler.php
+
+		-
+			rawMessage: 'Method PHPStan\Analyser\Ignore\IgnoreLexer::tokenize() should return list<array{string, 1|2|3|4|5|6|7, int}> but returns list<array{mixed, 1|2|3|4|5|6|7, int<1, max>}>.'
+			identifier: return.type
+			count: 1
+			path: src/Analyser/Ignore/IgnoreLexer.php
 
 		-
 			rawMessage: Cannot assign offset 'realCount' to array<mixed>|string.
@@ -79,10 +91,100 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			rawMessage: 'Method PHPStan\Analyser\NodeScopeResolver::createCallableParameters() should return array<PHPStan\Reflection\ParameterReflection>|null but returns list|null.'
+			identifier: return.type
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Stmt\ClassLike given.'
 			identifier: argument.type
 			count: 1
 			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter #2 $variableNames of method PHPStan\Analyser\NodeScopeResolver::processVarAnnotation() expects array<int, string>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter #3 $methodCalls of class PHPStan\Node\ClassMethodsNode constructor expects array<int, PHPStan\Node\Method\MethodCall>, array<PHPStan\Node\Method\MethodCall> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter #4 $currentPositionalParameterNames of method PHPStan\PhpDoc\PhpDocInheritanceResolver::resolvePhpDocForMethod() expects array<int, string>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter #5 $methodCalls of class PHPStan\Node\ClassPropertiesNode constructor expects array<int, PHPStan\Node\Method\MethodCall>, array<PHPStan\Node\Method\MethodCall> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Property PHPStan\Analyser\NodeScopeResolver::$calledMethodResults (array<string, PHPStan\Analyser\MutatingScope|null>) does not accept array<string, mixed>.'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter #10 $projectExtensionFiles of method PHPStan\Analyser\ResultCache\ResultCacheManager::save() expects array<string, array{string, bool, string}>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter #2 $errors of method PHPStan\Analyser\ResultCache\ResultCacheManager::save() expects array<string, list<PHPStan\Analyser\Error>>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter #7 $dependencies of method PHPStan\Analyser\ResultCache\ResultCacheManager::save() expects array<string, array<string>>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter #8 $usedTraitDependencies of method PHPStan\Analyser\ResultCache\ResultCacheManager::save() expects array<string, array<string>>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter #9 $exportedNodes of method PHPStan\Analyser\ResultCache\ResultCacheManager::save() expects array<string, array<PHPStan\Dependency\RootExportedNode>>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter $collectedData of class PHPStan\Analyser\ResultCache\ResultCache constructor expects array<string, array<class-string<PHPStan\Collectors\Collector<PhpParser\Node, mixed>>, list<mixed>>>, array<string, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter $errors of class PHPStan\Analyser\ResultCache\ResultCache constructor expects array<string, list<PHPStan\Analyser\Error>>, array<string, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter $exportedNodes of class PHPStan\Analyser\ResultCache\ResultCache constructor expects array<string, array<PHPStan\Dependency\RootExportedNode>>, array<string, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
+
+		-
+			rawMessage: 'Parameter $locallyIgnoredErrors of class PHPStan\Analyser\ResultCache\ResultCache constructor expects array<string, list<PHPStan\Analyser\Error>>, array<string, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
@@ -205,6 +307,18 @@ parameters:
 			path: src/Command/ErrorsConsoleStyle.php
 
 		-
+			rawMessage: 'Parameter #2 $dependenciesReflections of method PHPStan\Dependency\DependencyResolver::addClassToDependencies() expects array<int, PHPStan\Reflection\ClassReflection|PHPStan\Reflection\FunctionReflection>, array<PHPStan\Reflection\ClassReflection|PHPStan\Reflection\FunctionReflection> given.'
+			identifier: argument.type
+			count: 12
+			path: src/Dependency/DependencyResolver.php
+
+		-
+			rawMessage: 'Parameter #2 $reflections of class PHPStan\Dependency\NodeDependencies constructor expects array<int, PHPStan\Reflection\ClassReflection|PHPStan\Reflection\FunctionReflection>, array<PHPStan\Reflection\ClassReflection|PHPStan\Reflection\FunctionReflection> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Dependency/DependencyResolver.php
+
+		-
 			rawMessage: 'Call to static method escape() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
 			identifier: staticMethod.internalClass
 			count: 1
@@ -247,6 +361,12 @@ parameters:
 			path: src/DependencyInjection/NeonAdapter.php
 
 		-
+			rawMessage: 'Parameter #2 $suggestOptional of class PHPStan\DependencyInjection\InvalidExcludePathsException constructor expects array{analyse?: list<string>, analyseAndScan?: list<string>}, array{}|array{analyseAndScan?: non-empty-list<mixed>, analyse?: non-empty-list<mixed>} given.'
+			identifier: argument.type
+			count: 1
+			path: src/DependencyInjection/ValidateExcludePathsExtension.php
+
+		-
 			rawMessage: 'Parameter #1 $path of function dirname expects string, string|false given.'
 			identifier: argument.type
 			count: 1
@@ -271,6 +391,12 @@ parameters:
 			path: src/Fixable/Patcher.php
 
 		-
+			rawMessage: 'Method PHPStan\Fixable\Patcher::splitStringByLines() should return array<string> but returns array.'
+			identifier: return.type
+			count: 1
+			path: src/Fixable/Patcher.php
+
+		-
 			rawMessage: 'Call to method getTokenCode() of internal class PhpParser\Internal\TokenStream from outside its root namespace PhpParser.'
 			identifier: method.internalClass
 			count: 1
@@ -289,6 +415,24 @@ parameters:
 			path: src/Fixable/PhpPrinterIndentationDetectorVisitor.php
 
 		-
+			rawMessage: 'Method PHPStan\Internal\ComposerHelper::getComposerConfig() should return array<string, mixed>|null but returns array<mixed>.'
+			identifier: return.type
+			count: 1
+			path: src/Internal/ComposerHelper.php
+
+		-
+			rawMessage: 'Parameter #2 $subNodes of class PHPStan\Node\AnonymousClassNode constructor expects array{flags?: int, extends?: PhpParser\Node\Name|null, implements?: array<PhpParser\Node\Name>, stmts?: array<PhpParser\Node\Stmt>, attrGroups?: array<PhpParser\Node\AttributeGroup>}, array<string, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Node/AnonymousClassNode.php
+
+		-
+			rawMessage: 'Parameter #2 $attributes of class PhpParser\Error constructor expects array<string, mixed>, array<mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Parser/PhpParserDecorator.php
+
+		-
 			rawMessage: 'Call to function method_exists() with PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode and ''getParamOutTypeTagV…'' will always evaluate to true.'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -303,6 +447,12 @@ parameters:
 		-
 			rawMessage: 'Method PHPStan\PhpDoc\ResolvedPhpDocBlock::getNameScope() should return PHPStan\Analyser\NameScope but returns PHPStan\Analyser\NameScope|null.'
 			identifier: return.type
+			count: 1
+			path: src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			rawMessage: 'Property PHPStan\PhpDoc\ResolvedPhpDocBlock::$templateTags (array<string, PHPStan\PhpDoc\Tag\TemplateTag>) does not accept array<PHPStan\PhpDoc\Tag\TemplateTag>.'
+			identifier: assign.propertyType
 			count: 1
 			path: src/PhpDoc/ResolvedPhpDocBlock.php
 
@@ -349,6 +499,18 @@ parameters:
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-
+			rawMessage: 'Parameter #4 $variances of class PHPStan\Type\Generic\GenericStaticType constructor expects array<int, PHPStan\Type\Generic\TemplateTypeVariance>, array<PHPStan\Type\Generic\TemplateTypeVariance> given.'
+			identifier: argument.type
+			count: 1
+			path: src/PhpDoc/TypeNodeResolver.php
+
+		-
+			rawMessage: 'Parameter $variances of class PHPStan\Type\Generic\GenericObjectType constructor expects array<int, PHPStan\Type\Generic\TemplateTypeVariance>, array<PHPStan\Type\Generic\TemplateTypeVariance> given.'
+			identifier: argument.type
+			count: 4
+			path: src/PhpDoc/TypeNodeResolver.php
+
+		-
 			rawMessage: Dead catch - PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName is never thrown in the try block.
 			identifier: catch.neverThrown
 			count: 4
@@ -379,16 +541,76 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
 
 		-
+			rawMessage: 'Method PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker::packageToPsr0AutoloadNamespaces() should return array<string, array<int, string>> but returns array<array>.'
+			identifier: return.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
+
+		-
+			rawMessage: 'Method PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker::packageToPsr4AutoloadNamespaces() should return array<string, array<int, string>> but returns array<array>.'
+			identifier: return.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
+
+		-
+			rawMessage: 'Parameter #1 $mappings of static method PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr0Mapping::fromArrayMappings() expects array<string, list<string>>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
+
+		-
+			rawMessage: 'Parameter #1 $mappings of static method PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping::fromArrayMappings() expects array<string, list<string>>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
+
+		-
+			rawMessage: 'Parameter #1 $paths of method PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker::prefixPaths() expects array<int, string>, array<string> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
+
+		-
+			rawMessage: 'Parameter #3 $package of method PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker::prefixWithPackagePath() expects array<string, array<int, string>>, array given.'
+			identifier: argument.type
+			count: 2
+			path: src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
+
+		-
 			rawMessage: 'Method PHPStan\Reflection\BetterReflection\SourceLocator\FileReadTrapStreamWrapper::invokeWithRealFileStreamWrapper() has parameter $cb with no signature specified for callable.'
 			identifier: missingType.callable
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/FileReadTrapStreamWrapper.php
 
 		-
+			rawMessage: 'Parameter #2 $data of static method PHPStan\BetterReflection\Reflection\ReflectionClass::importFromCache() expects array<string, mixed>, array<mixed, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+
+		-
+			rawMessage: 'Parameter #2 $data of static method PHPStan\BetterReflection\Reflection\ReflectionEnum::importFromCache() expects array<string, mixed>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+
+		-
 			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\ClassLike|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Function_ given.'
 			identifier: argument.type
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+
+		-
+			rawMessage: 'Parameter #2 $data of static method PHPStan\BetterReflection\Reflection\ReflectionClass::importFromCache() expects array<string, mixed>, array<mixed, mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedSingleFileSourceLocator.php
+
+		-
+			rawMessage: 'Parameter #2 $data of static method PHPStan\BetterReflection\Reflection\ReflectionEnum::importFromCache() expects array<string, mixed>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedSingleFileSourceLocator.php
 
 		-
 			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Stmt\ClassLike given.'
@@ -433,6 +655,24 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
+			rawMessage: 'Method PHPStan\Reflection\ClassReflection::getEnumCases() should return array<string, PHPStan\Reflection\EnumCaseReflection> but returns array<PHPStan\Reflection\EnumCaseReflection>.'
+			identifier: return.type
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
+			rawMessage: 'Method PHPStan\Reflection\ClassReflection::getTypeAliases() should return array<string, PHPStan\Type\TypeAlias> but returns array<PHPStan\Type\TypeAlias>.'
+			identifier: return.type
+			count: 2
+			path: src/Reflection/ClassReflection.php
+
+		-
+			rawMessage: 'Property PHPStan\Reflection\ClassReflection::$typeAliases (array<string, PHPStan\Type\TypeAlias>|null) does not accept array<PHPStan\Type\TypeAlias>.'
+			identifier: assign.propertyType
+			count: 2
 			path: src/Reflection/ClassReflection.php
 
 		-
@@ -514,10 +754,34 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			rawMessage: 'Parameter #3 $operationCallable of method PHPStan\Reflection\InitializerExprTypeResolver::getFiniteOrConstantScalarTypes() expects callable(bool|float|int|string|null, bool|float|int|string|null): string, Closure(mixed, mixed): mixed given.'
+			identifier: argument.type
+			count: 3
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
+			rawMessage: 'Parameter #2 $nodes of method PHPStan\Reflection\Php\PhpClassReflectionExtension::findClassNode() expects array<PhpParser\Node>, array given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			rawMessage: 'Parameter #1 $signatureMap of method PHPStan\Reflection\SignatureMap\FunctionSignatureMapProvider::computeSignatureMapFile() expects array<string, mixed>, array<mixed> given.'
+			identifier: argument.type
+			count: 8
+			path: src/Reflection/SignatureMap/FunctionSignatureMapProvider.php
+
+		-
 			rawMessage: Creating new PHPStan\Php8StubsMap is not covered by backward compatibility promise. The class might change in a minor PHPStan version.
 			identifier: phpstanApi.constructor
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
+
+		-
+			rawMessage: 'Parameter #1 $parameterMap of method PHPStan\Reflection\SignatureMap\SignatureMapParser::getParameters() expects array<string, string>, array<mixed> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Reflection/SignatureMap/SignatureMapParser.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
@@ -664,6 +928,12 @@ parameters:
 			path: src/Rules/DirectRegistry.php
 
 		-
+			rawMessage: 'Parameter #2 $callback of function array_filter expects (callable(mixed): bool)|null, Closure(array): bool given.'
+			identifier: argument.type
+			count: 1
+			path: src/Rules/Functions/PrintfHelper.php
+
+		-
 			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -775,6 +1045,18 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
+			path: src/Testing/TypeInferenceTestCase.php
+
+		-
+			rawMessage: 'Method PHPStan\Testing\TypeInferenceTestCase::gatherAssertTypes() should return array<string, array{0: ''superType'', 1: string, 2: string, 3: string, 4: bool, 5: int, 6?: non-empty-list<non-falsy-string>}|array{0: ''type'', 1: string, 2: bool|float|int|string|null, 3: string, 4: int, 5?: non-empty-list<non-falsy-string>}|array{0: ''variableCertainty'', 1: string, 2: PHPStan\TrinaryLogic, 3: PHPStan\TrinaryLogic, 4: string, 5: int, 6?: non-empty-list<non-falsy-string>}> but returns non-empty-array<non-falsy-string, array{''superType'', string, string, string, bool, -1|int<1, max>, non-empty-list<non-falsy-string>}|array{''type'', string, bool|float|int|string|null, string, -1|int<1, max>, non-empty-list<non-falsy-string>}|array{''variableCertainty'', string, mixed, PHPStan\TrinaryLogic, non-falsy-string, -1|int<1, max>, non-empty-list<non-falsy-string>}>.'
+			identifier: return.type
+			count: 1
+			path: src/Testing/TypeInferenceTestCase.php
+
+		-
+			rawMessage: 'Method PHPStan\Testing\TypeInferenceTestCase::gatherAssertTypes() should return array<string, array{0: ''superType'', 1: string, 2: string, 3: string, 4: bool, 5: int, 6?: non-empty-list<non-falsy-string>}|array{0: ''type'', 1: string, 2: bool|float|int|string|null, 3: string, 4: int, 5?: non-empty-list<non-falsy-string>}|array{0: ''variableCertainty'', 1: string, 2: PHPStan\TrinaryLogic, 3: PHPStan\TrinaryLogic, 4: string, 5: int, 6?: non-empty-list<non-falsy-string>}> but returns non-empty-array<non-falsy-string, array{''superType'', string, string, string, bool, -1|int<1, max>}|array{''type'', string, bool|float|int|string|null, string, -1|int<1, max>}|array{''variableCertainty'', string, mixed, PHPStan\TrinaryLogic, non-falsy-string, -1|int<1, max>}>.'
+			identifier: return.type
+			count: 1
 			path: src/Testing/TypeInferenceTestCase.php
 
 		-
@@ -1147,6 +1429,18 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() or Type::getObjectClassReflections() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
+			path: src/Type/Generic/GenericObjectType.php
+
+		-
+			rawMessage: 'Parameter #2 $types of class PHPStan\Type\Generic\GenericObjectType constructor expects array<int, PHPStan\Type\Type>, array<PHPStan\Type\Type> given.'
+			identifier: argument.type
+			count: 1
+			path: src/Type/Generic/GenericObjectType.php
+
+		-
+			rawMessage: 'Parameter #5 $variances of class PHPStan\Type\Generic\GenericObjectType constructor expects array<int, PHPStan\Type\Generic\TemplateTypeVariance>, array<PHPStan\Type\Generic\TemplateTypeVariance> given.'
+			identifier: argument.type
+			count: 1
 			path: src/Type/Generic/GenericObjectType.php
 
 		-

@@ -59,7 +59,12 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-9307.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-9307.php'], [
+			[
+				'Parameter #1 $objects of method Bug9307\Aaa::acceptObjects() expects array<int, Bug9307\Item>, array<mixed> given.',
+				36,
+			],
+		]);
 	}
 
 }

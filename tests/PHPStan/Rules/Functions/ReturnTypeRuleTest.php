@@ -218,7 +218,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Function Bug6568\test() should return T of array but returns array<mixed, mixed>.',
 				12,
-				'Type array<mixed, mixed> is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+				'Type array<int|string, mixed> is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
 			],
 		]);
 	}
@@ -436,6 +436,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14428.php'], []);
+	}
+
+	public function testBug8681(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-8681.php'], [
+			[
+				'Function Bug8681Functions\test() should return array<string, string> but returns array.',
+				12,
+			],
+		]);
 	}
 
 }

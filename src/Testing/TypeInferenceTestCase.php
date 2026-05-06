@@ -492,7 +492,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		return [];
 	}
 
-	/** @return string[] */
+	/** @return list<string> */
 	protected static function getEarlyTerminatingFunctionCalls(): array
 	{
 		return [];

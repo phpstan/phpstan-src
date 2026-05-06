@@ -57,11 +57,12 @@ final class RuleLevelHelper
 
 	private function transformCommonType(Type $type): Type
 	{
-		if (!$this->checkExplicitMixed && !$this->checkImplicitMixed) {
+		if (!$this->checkExplicitMixed && !$this->checkImplicitMixed && $type instanceof MixedType) {
 			return $type;
 		}
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
+		$isTopLevel = true;
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$isTopLevel) {
 			if ($type instanceof TemplateMixedType) {
 				if ($this->checkExplicitMixed) {
 					return $type->toStrictMixedType();
@@ -69,14 +70,17 @@ final class RuleLevelHelper
 			}
 			if (
 				$type instanceof MixedType
+				&& !$type instanceof TemplateMixedType
 				&& (
 					($type->isExplicitMixed() && $this->checkExplicitMixed)
 					|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
+					|| (!$type->isExplicitMixed() && !$isTopLevel)
 				)
 			) {
 				return new StrictMixedType();
 			}
 
+			$isTopLevel = false;
 			return $traverse($type);
 		});
 	}

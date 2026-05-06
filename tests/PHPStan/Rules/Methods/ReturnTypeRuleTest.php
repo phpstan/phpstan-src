@@ -822,7 +822,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				// there should be no errors
 				'Method Bug8071\Inheritance::inherit() should return array<TKey of (int|string), TValues of bool|float|int|string|null> but returns array<string>.',
 				17,
-				'Type string is not always the same as TValues. It breaks the contract for some argument types, typically subtypes.',
+				"• Type string is not always the same as TValues. It breaks the contract for some argument types, typically subtypes.\n• Type string is not always the same as TKey. It breaks the contract for some argument types, typically subtypes.\n• Type int is not always the same as TKey. It breaks the contract for some argument types, typically subtypes.",
 			],
 		]);
 	}
@@ -1047,7 +1047,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Method WrongListTip\Test3::doFoo() should return non-empty-list<WrongListTip\Foo> but returns array<WrongListTip\Bar>.',
 				67,
-				"• array<WrongListTip\Bar> might not be a list.\n• array<WrongListTip\Bar> might be empty.",
+				"• array<int|string, WrongListTip\Bar> might not be a list.\n• array<int|string, WrongListTip\Bar> might be empty.",
 			],
 		]);
 	}
@@ -1345,6 +1345,28 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug14553(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14553.php'], []);
+	}
+
+	public function testBug8681(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8681.php'], [
+			[
+				'Method Bug8681\HelloWorld::test() should return array<string, string> but returns array.',
+				14,
+			],
+			[
+				'Method Bug8681\HelloWorld::testExplicitMixed() should return array<string, string> but returns array<mixed>.',
+				24,
+			],
+			[
+				'Method Bug8681\HelloWorld::testIterable() should return iterable<string, string> but returns iterable.',
+				34,
+			],
+			[
+				'Method Bug8681\HelloWorld::testNested() should return array<string, array<string, int>> but returns array<string, array>.',
+				44,
+			],
+		]);
 	}
 
 }

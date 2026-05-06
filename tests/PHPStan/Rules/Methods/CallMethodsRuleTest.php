@@ -468,6 +468,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				1092,
 			],
 			[
+				'Parameter #1 $as of method Test\AssertInForeach::doBar() expects array<Test\AssertInForeach>, list<mixed> given.',
+				1177,
+			],
+			[
 				'Call to an undefined method Test\AssertInFor::doBar().',
 				1207,
 			],
@@ -485,6 +489,14 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $parameter of method Test\SubtractedMixed::requireIntOrString() expects int|string, mixed given.',
 				1285,
 				'Type int|string has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #2 $y of method Test\NonEmptyArrayAcceptsBug::doBaz() expects array<stdClass>, array given.',
+				1332,
+			],
+			[
+				'Parameter #2 $y of method Test\NonEmptyArrayAcceptsBug::doLorem() expects iterable<stdClass>, array given.',
+				1333,
 			],
 			[
 				'Parameter #2 $b of method Test\ExpectsExceptionGenerics::expectsExceptionUpperBound() expects Exception, Throwable given.',
@@ -560,6 +572,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
 				1802,
+			],
+			[
+				'Parameter #1 $strings of method Test\WeirdArrayBug::doFoo() expects array<string>|string, array given.',
+				1819,
 			],
 			[
 				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, numeric-string given.',
@@ -811,6 +827,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				1072,
 			],
 			[
+				'Parameter #1 $as of method Test\AssertInForeach::doBar() expects array<Test\AssertInForeach>, list<mixed> given.',
+				1177,
+			],
+			[
 				'Parameter #1 $i of method Test\SubtractedMixed::requireInt() expects int, mixed given.',
 				1277,
 				'Type int has already been eliminated from mixed.',
@@ -824,6 +844,14 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $parameter of method Test\SubtractedMixed::requireIntOrString() expects int|string, mixed given.',
 				1285,
 				'Type int|string has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #2 $y of method Test\NonEmptyArrayAcceptsBug::doBaz() expects array<stdClass>, array given.',
+				1332,
+			],
+			[
+				'Parameter #2 $y of method Test\NonEmptyArrayAcceptsBug::doLorem() expects iterable<stdClass>, array given.',
+				1333,
 			],
 			[
 				'Parameter #2 $b of method Test\ExpectsExceptionGenerics::expectsExceptionUpperBound() expects Exception, Throwable given.',
@@ -887,6 +915,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
 				1802,
+			],
+			[
+				'Parameter #1 $strings of method Test\WeirdArrayBug::doFoo() expects array<string>|string, array given.',
+				1819,
 			],
 			[
 				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, numeric-string given.',
@@ -1654,7 +1686,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				false,
-				[],
+				[
+					[
+						'Parameter #1 $cb of method CheckImplicitMixedMethodCall\CallableMixed::doBar2() expects callable(): int, Closure(): mixed given.',
+						139,
+					],
+				],
 			],
 		];
 	}
@@ -2857,7 +2894,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array<int> given.',
 				15,
-				'array<int> might be empty.',
+				'array<int|string, int> might be empty.',
 			],
 			[
 				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array{} given.',

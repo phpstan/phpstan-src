@@ -102,6 +102,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
+	/** @return list<string> */
 	protected static function getEarlyTerminatingFunctionCalls(): array
 	{
 		return ['baz'];

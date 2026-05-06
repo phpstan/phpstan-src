@@ -1283,13 +1283,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #1 $foo of function Discussion7450\foo expects array{policy: non-empty-string, entitlements: array<non-empty-string>}, array{policy: mixed, entitlements: mixed} given.',
 				18,
 				"• Offset 'policy' (non-empty-string) does not accept type mixed.
-• Offset 'entitlements' (array<non-empty-string>) does not accept type mixed.",
+• Offset 'entitlements' (array<int|string, non-empty-string>) does not accept type mixed.",
 			],
 			[
 				'Parameter #1 $foo of function Discussion7450\foo expects array{policy: non-empty-string, entitlements: array<non-empty-string>}, array{policy: mixed, entitlements: mixed} given.',
 				28,
 				"• Offset 'policy' (non-empty-string) does not accept type mixed.
-• Offset 'entitlements' (array<non-empty-string>) does not accept type mixed.",
+• Offset 'entitlements' (array<int|string, non-empty-string>) does not accept type mixed.",
 			],
 		]);
 	}
@@ -1428,6 +1428,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $value of function curl_setopt expects non-empty-string|null, \'\' given.',
 				34,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects array<int, string>, array given.',
+				44,
 			],
 			[
 				'Parameter #3 $value of function curl_setopt expects array<int, string>, array<string, string> given.',
@@ -2201,7 +2205,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug3107(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-3107.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-3107.php'], [
+			[
+				'Parameter #1 $a of function Bug3107\take expects array<string, int>, array<int> given.',
+				19,
+			],
+		]);
 	}
 
 	public function testBug12676(): void

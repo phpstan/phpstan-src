@@ -90,6 +90,14 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				144,
 			],
 			[
+				'Property PropertiesAssignedTypes\ConcreteIterableAcceptsMixedIterable::$array (array<PropertiesAssignedTypes\Foo>) does not accept array.',
+				240,
+			],
+			[
+				'Property PropertiesAssignedTypes\ConcreteIterableAcceptsMixedIterable::$iterable (iterable<PropertiesAssignedTypes\Foo>) does not accept iterable.',
+				242,
+			],
+			[
 				'Property PropertiesAssignedTypes\AssignRefFoo::$stringProperty (string) does not accept int.',
 				312,
 			],
@@ -262,6 +270,10 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/../Arrays/data/appended-array-key.php'], [
 			[
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<mixed, mixed>.',
+				27,
+			],
+			[
 				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, mixed>.',
 				28,
 			],
@@ -379,7 +391,12 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug4906(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4906.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4906.php'], [
+			[
+				'Property Bug4906\Connection::$params (array<string, mixed>) does not accept array.',
+				26,
+			],
+		]);
 	}
 
 	public function testBug4910(): void
@@ -512,6 +529,14 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				26,
 				"Offset 'age' (int) does not accept type int|string.",
 			],
+			[
+				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<mixed>.',
+				27,
+			],
+			[
+				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array.',
+				29,
+			],
 		]);
 	}
 
@@ -619,7 +644,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property PropertyTypeAfterUnset\Foo::$nonEmpty (non-empty-array<int>) does not accept array<int>.',
 				19,
-				'array<int> might be empty.',
+				'array<int|string, int> might be empty.',
 			],
 			[
 				'Property PropertyTypeAfterUnset\Foo::$listProp (list<int>) does not accept array<int<0, max>, int>.',
@@ -637,7 +662,12 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	public function testGenericsInCallableInConstructor(): void
 	{
 		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/generics-in-callable-in-constructor.php'], []);
+		$this->analyse([__DIR__ . '/data/generics-in-callable-in-constructor.php'], [
+			[
+				'Property GenericsInCallableInConstructor\Foo::$differ (GenericsInCallableInConstructor\Differ<GenericsInCallableInConstructor\Node>) does not accept GenericsInCallableInConstructor\Differ<mixed>.',
+				35,
+			],
+		]);
 	}
 
 	public function testBug10686(): void
@@ -1069,6 +1099,16 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	public function testBug10749(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10749.php'], []);
+	}
+
+	public function testBug8681(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8681.php'], [
+			[
+				'Property Bug8681Properties\Foo::$prop (array<string, string>) does not accept array.',
+				14,
+			],
+		]);
 	}
 
 }

@@ -593,6 +593,12 @@ class ArrayType implements Type
 		return new ArrayType($cb($this->keyType), $this->getItemType());
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// `ArrayType` already models arbitrary key subsets.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		$newKeyType = TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use ($case): Type {

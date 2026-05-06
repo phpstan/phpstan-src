@@ -335,6 +335,12 @@ class MixedType implements CompoundType, SubtractableType
 		);
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// `mixed` is already arbitrary; nothing to weaken.
+		return $this;
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		if ($this->isArray()->no()) {

@@ -573,6 +573,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->mapKeyType($cb);
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return $this->getStaticObjectType()->makeAllArrayKeysOptional();
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		return $this->getStaticObjectType()->changeKeyCaseArray($case);

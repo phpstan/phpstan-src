@@ -333,6 +333,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return new MixedType();
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		if (!$this->offsetType instanceof ConstantStringType) {

@@ -245,6 +245,12 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// "Has offset X" is no longer guaranteed when X is now optional.
+		return new MixedType();
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		// A string offset is itself case-folded; an int offset is unchanged.

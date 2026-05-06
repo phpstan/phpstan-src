@@ -2000,6 +2000,22 @@ class ConstantArrayType implements Type
 		return $this;
 	}
 
+	public function makeAllArrayKeysOptional(): Type
+	{
+		$keyCount = count($this->keyTypes);
+		if ($keyCount === 0) {
+			return $this;
+		}
+
+		return $this->recreate(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			range(0, $keyCount - 1),
+			$this->isList,
+		);
+	}
+
 	public function changeKeyCaseArray(?int $case): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();

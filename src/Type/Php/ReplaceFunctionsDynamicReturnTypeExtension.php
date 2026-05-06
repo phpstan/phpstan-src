@@ -8,14 +8,11 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -134,35 +131,14 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 				true,
 			);
 
-			$constantArrays = $arrayArgumentType->getConstantArrays();
-			if ($constantArrays !== []) {
-				foreach ($constantArrays as $constantArray) {
-					$valueTypes = $constantArray->getValueTypes();
-
-					$builder = ConstantArrayTypeBuilder::createEmpty();
-					foreach ($constantArray->getKeyTypes() as $index => $keyType) {
-						$builder->setOffsetValueType(
-							$keyType,
-							$this->getReplaceType($valueTypes[$index], $replaceArgumentType),
-							$keyShouldBeOptional || $constantArray->isOptionalKey($index),
-						);
-					}
-					$result[] = $builder->getArray();
-				}
-			} else {
-				$newArrayType = new ArrayType(
-					$arrayArgumentType->getIterableKeyType(),
-					$this->getReplaceType($arrayArgumentType->getIterableValueType(), $replaceArgumentType),
-				);
-				if ($arrayArgumentType->isList()->yes()) {
-					$newArrayType = TypeCombinator::intersect($newArrayType, new AccessoryArrayListType());
-				}
-				if ($arrayArgumentType->isIterableAtLeastOnce()->yes()) {
-					$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
-				}
-
-				$result[] = $newArrayType;
+			$mapped = $arrayArgumentType->mapValueType(
+				fn (Type $value): Type => $this->getReplaceType($value, $replaceArgumentType),
+			);
+			if ($keyShouldBeOptional) {
+				$mapped = $mapped->makeAllArrayKeysOptional();
 			}
+
+			$result[] = $mapped;
 		}
 
 		return TypeCombinator::union(...$result);

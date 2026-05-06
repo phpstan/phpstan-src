@@ -324,13 +324,21 @@ interface ExtendingInterface extends BaseInterface
 
 }
 
-class InheritDocInsideBackticks
+class InheritDocMentionedInDescription
 {
 
 	/**
 	 * Please do not add `{@inheritdoc}` to this method.
 	 */
 	public function methodWithInheritDocInBackticks(): int
+	{
+		return 0;
+	}
+
+	/**
+	 * Foo @inheritDoc
+	 */
+	public function methodWithInheritDocInTextNotAtLineStart(): int
 	{
 		return 0;
 	}

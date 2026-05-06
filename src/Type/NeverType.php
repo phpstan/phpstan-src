@@ -399,6 +399,11 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return new NeverType();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

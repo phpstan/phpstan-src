@@ -258,6 +258,13 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		// We don't track the value at this offset, so we can't guarantee
+		// it survives a falsey filter. Drop the assertion.
+		return new MixedType();
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

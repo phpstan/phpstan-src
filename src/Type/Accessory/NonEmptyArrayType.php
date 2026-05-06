@@ -265,6 +265,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		// Filtering may leave the array empty — drop the assertion.
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

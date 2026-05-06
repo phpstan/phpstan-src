@@ -369,6 +369,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->changeKeyCaseArray($case);
 	}
 
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return $this->resolve()->filterArrayRemovingFalsey();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

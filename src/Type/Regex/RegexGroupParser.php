@@ -120,7 +120,6 @@ final class RegexGroupParser
 		$subjectAsGroupResult = $this->walkGroupAst(
 			$ast,
 			false,
-			false,
 			$modifiers,
 			RegexGroupWalkResult::createEmpty(),
 		);
@@ -408,7 +407,6 @@ final class RegexGroupParser
 		$walkResult = $this->walkGroupAst(
 			$group,
 			false,
-			false,
 			$patternModifiers,
 			RegexGroupWalkResult::createEmpty(),
 		);
@@ -469,7 +467,6 @@ final class RegexGroupParser
 
 	private function walkGroupAst(
 		TreeNode $ast,
-		bool $inAlternation,
 		bool $inClass,
 		string $patternModifiers,
 		RegexGroupWalkResult $walkResult,
@@ -491,7 +488,7 @@ final class RegexGroupParser
 
 				$meaningfulTokens++;
 
-				if (!$nonFalsy || $inAlternation) {
+				if (!$nonFalsy) {
 					continue;
 				}
 
@@ -504,7 +501,7 @@ final class RegexGroupParser
 				$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 
 				// two non-empty tokens concatenated results in a non-falsy string
-				if ($meaningfulTokens > 1 && !$inAlternation) {
+				if ($meaningfulTokens > 1) {
 					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				}
 			}
@@ -519,7 +516,7 @@ final class RegexGroupParser
 				if ($min >= 1) {
 					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 				}
-				if ($min >= 2 && !$inAlternation) {
+				if ($min >= 2) {
 					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				}
 			}
@@ -559,22 +556,35 @@ final class RegexGroupParser
 		}
 
 		if ($ast->getId() === '#alternation') {
+			if (count($children) === 0) {
+				return $walkResult;
+			}
+
 			$newLiterals = [];
+			$nonEmpty = TrinaryLogic::createYes();
+			$nonFalsy = TrinaryLogic::createYes();
+			$numeric = TrinaryLogic::createYes();
 			foreach ($children as $child) {
-				$walkResult = $this->walkGroupAst(
+				$childResult = $this->walkGroupAst(
 					$child,
-					true,
 					$inClass,
 					$patternModifiers,
-					$walkResult->onlyLiterals([]),
+					$walkResult->onlyLiterals([])
+						->nonEmpty(TrinaryLogic::createMaybe())
+						->nonFalsy(TrinaryLogic::createMaybe())
+						->numeric(TrinaryLogic::createMaybe()),
 				);
+
+				$nonEmpty = $nonEmpty->and($childResult->isNonEmpty());
+				$nonFalsy = $nonFalsy->and($childResult->isNonFalsy());
+				$numeric = $numeric->and($childResult->isNumeric());
 
 				if ($newLiterals === null) {
 					continue;
 				}
 
-				if (count($walkResult->getOnlyLiterals() ?? []) > 0) {
-					foreach ($walkResult->getOnlyLiterals() as $alternationLiterals) {
+				if (count($childResult->getOnlyLiterals() ?? []) > 0) {
+					foreach ($childResult->getOnlyLiterals() as $alternationLiterals) {
 						$newLiterals[] = $alternationLiterals;
 					}
 				} else {
@@ -582,7 +592,11 @@ final class RegexGroupParser
 				}
 			}
 
-			return $walkResult->onlyLiterals($newLiterals);
+			return $walkResult
+				->onlyLiterals($newLiterals)
+				->nonEmpty($walkResult->isNonEmpty()->or($nonEmpty))
+				->nonFalsy($walkResult->isNonFalsy()->or($nonFalsy))
+				->numeric($walkResult->isNumeric()->and($numeric));
 		}
 
 		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically
@@ -595,7 +609,6 @@ final class RegexGroupParser
 		foreach ($children as $child) {
 			$walkResult = $this->walkGroupAst(
 				$child,
-				$inAlternation,
 				$inClass,
 				$patternModifiers,
 				$walkResult,

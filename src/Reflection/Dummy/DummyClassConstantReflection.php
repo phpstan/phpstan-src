@@ -127,4 +127,9 @@ final class DummyClassConstantReflection implements ClassConstantReflection
 		return new MixedType();
 	}
 
+	public function getTypeByStaticAccess(bool $isFinalClass): Type
+	{
+		return new MixedType();
+	}
+
 }

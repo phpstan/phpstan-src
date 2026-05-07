@@ -7,6 +7,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 
@@ -94,6 +95,19 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 	public function getInitializerExprType(): Type
 	{
 		return $this->initializerExprTypeResolver->getType($this->getValueExpr(), InitializerExprContext::fromClassReflection($this->declaringClass));
+	}
+
+	public function getTypeByStaticAccess(bool $isFinalClass): Type
+	{
+		if ($isFinalClass || $this->isFinal()) {
+			return $this->getInitializerExprType();
+		}
+
+		if (!$this->hasPhpDocType() && !$this->hasNativeType()) {
+			return new MixedType();
+		}
+
+		return $this->getValueType();
 	}
 
 	public function getDeclaringClass(): ClassReflection

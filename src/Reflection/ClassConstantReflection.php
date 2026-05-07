@@ -42,4 +42,6 @@ interface ClassConstantReflection extends ClassMemberReflection, ConstantReflect
 
 	public function getInitializerExprType(): Type;
 
+	public function getTypeByStaticAccess(bool $isFinalClass): Type;
+
 }

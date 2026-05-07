@@ -66,6 +66,11 @@ class BooleanType implements Type
 		return $this->toInteger();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

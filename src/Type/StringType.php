@@ -145,6 +145,11 @@ class StringType implements Type
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

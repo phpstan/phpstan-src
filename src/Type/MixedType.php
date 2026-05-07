@@ -614,6 +614,11 @@ class MixedType implements CompoundType, SubtractableType
 		);
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

@@ -753,6 +753,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

@@ -434,6 +434,11 @@ class NeverType implements CompoundType
 		return $this;
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return $this;
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this;

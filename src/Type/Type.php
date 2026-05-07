@@ -373,6 +373,9 @@ interface Type
 	/** Models numeric coercion for arithmetic operators. */
 	public function toNumber(): Type;
 
+	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
+	public function toBitwiseNotType(): Type;
+
 	/** Models the (int) cast. */
 	public function toInteger(): Type;
 

@@ -109,3 +109,23 @@ function test(): void
 		assertType('int', impure());
 	}
 }
+
+function testClassExistsFalseNotRemembered(): void
+{
+	if (!class_exists('Bug8579FalseNotRememberedA')) {
+		// class_exists returned false here, but we don't exit
+	}
+
+	assertType('bool', class_exists('Bug8579FalseNotRememberedA'));
+}
+
+function testClassExistsFalseNotRememberedElse(): void
+{
+	if (class_exists('Bug8579FalseNotRememberedB')) {
+		// true branch
+	} else {
+		// class_exists returned false in this branch
+	}
+
+	assertType('bool', class_exists('Bug8579FalseNotRememberedB'));
+}

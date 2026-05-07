@@ -109,4 +109,34 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this;
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return $this;
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return new ErrorType();
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return new ErrorType();
+	}
+
 }

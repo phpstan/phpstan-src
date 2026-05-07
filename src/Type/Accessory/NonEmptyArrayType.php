@@ -247,6 +247,42 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// Non-emptiness is independent of list-ness; weaken-list keeps it.
+		return $this;
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		// Mapping doesn't change the entry count; non-emptiness is preserved.
+		return $this;
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// Without `ConstantArrayType` keys to mark optional, this is a no-op.
+		// Non-emptiness is unrelated to per-key optionality and is preserved.
+		return $this;
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		// Case-folding keys doesn't change the entry count.
+		return $this;
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		// Filtering may leave the array empty — drop the assertion.
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -278,6 +278,61 @@ interface Type
 	/** Models array_splice() effect on the array (the modified array, not the removed portion). */
 	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type;
 
+	/**
+	 * Downgrades the list-ness of the array from `Yes` to `Maybe` (e.g. for
+	 * `asort`/`uksort`/etc. which preserve keys but break list ordering).
+	 * Other shape information (keys, values, accessories like NonEmpty) is
+	 * preserved.
+	 */
+	public function makeListMaybe(): Type;
+
+	/**
+	 * Models "same keys, every value transformed" (e.g. `array_walk`,
+	 * `array_map($cb, $a)`, `preg_replace*` over an array subject). Keys
+	 * and accessories like list-ness / non-emptiness are preserved.
+	 *
+	 * @param callable(Type): Type $cb
+	 */
+	public function mapValueType(callable $cb): Type;
+
+	/**
+	 * Replaces the iterable key type via `$cb($currentKeyType)`. For
+	 * `ArrayType` rewrites the key type wholesale; for `ConstantArrayType`
+	 * the explicit keys (which are already precise constants) are preserved
+	 * — pass-through, matching the prior `TypeTraverser`-based callers.
+	 * Used to widen / narrow the key type after a foreach narrowed `$key`
+	 * via `is_int($key)` / `is_string($key)` checks.
+	 *
+	 * @param callable(Type): Type $cb
+	 */
+	public function mapKeyType(callable $cb): Type;
+
+	/**
+	 * Marks every explicit key in a `ConstantArrayType` as optional (the
+	 * shape can have any subset of the original keys). For non-`CAT` arrays
+	 * this is a no-op — they already model arbitrary subsets. Used by
+	 * `preg_replace*` over array subjects, where the callback can drop
+	 * entries.
+	 */
+	public function makeAllArrayKeysOptional(): Type;
+
+	/**
+	 * Models `array_change_key_case($a, $case)`. String keys are case-folded
+	 * (constant ones to a specific value, general ones via accessories);
+	 * non-string keys, values, accessories and list-ness are preserved.
+	 * `$case` matches PHP's `CASE_LOWER` / `CASE_UPPER`; `null` means the
+	 * case is non-constant and the result is the union of both folds.
+	 */
+	public function changeKeyCaseArray(?int $case): Type;
+
+	/**
+	 * Models `array_filter($a)` (no callback): drops entries whose value is
+	 * definitely falsey, marks possibly-falsey entries optional, keeps
+	 * definitely-truthy entries unchanged. Keys are preserved; list-ness
+	 * is downgraded since gaps may appear.
+	 */
+	public function filterArrayRemovingFalsey(): Type;
+
 	/** @return list<EnumCaseObjectType> */
 	public function getEnumCases(): array;
 

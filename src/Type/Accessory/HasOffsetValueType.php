@@ -21,6 +21,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -36,6 +37,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
+use function strtolower;
+use function strtoupper;
+use const CASE_LOWER;
+use const CASE_UPPER;
 
 class HasOffsetValueType implements CompoundType, AccessoryType
 {
@@ -306,6 +311,64 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			return $this;
 		}
 
+		return new MixedType();
+	}
+
+	public function makeListMaybe(): Type
+	{
+		// Knowing a specific offset/value is independent of list-ness.
+		return $this;
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		// The assertion is "offset X has value V"; after the transform
+		// the value at X is `cb(V)`.
+		return new self($this->offsetType, $cb($this->valueType));
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		// The offset itself is unaffected; passes through.
+		return $this;
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return new MixedType();
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		if (!$this->offsetType instanceof ConstantStringType) {
+			return $this;
+		}
+
+		$value = $this->offsetType->getValue();
+		if ($case === CASE_LOWER) {
+			return new self(new ConstantStringType(strtolower($value)), $this->valueType);
+		}
+		if ($case === CASE_UPPER) {
+			return new self(new ConstantStringType(strtoupper($value)), $this->valueType);
+		}
+
+		// Unknown case → drop the specific-offset assertion.
+		return new MixedType();
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		$falseyTypes = StaticTypeFactory::falsey();
+		$isFalsey = $falseyTypes->isSuperTypeOf($this->valueType);
+		if ($isFalsey->yes()) {
+			// Definitely filtered out — the offset assertion no longer holds.
+			return new MixedType();
+		}
+		if ($isFalsey->no()) {
+			// Definitely survives.
+			return $this;
+		}
+		// Maybe filtered: drop the specific-value assertion.
 		return new MixedType();
 	}
 

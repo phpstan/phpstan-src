@@ -354,6 +354,36 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->spliceArray($offsetType, $lengthType, $replacementType);
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this->resolve()->makeListMaybe();
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		return $this->resolve()->mapValueType($cb);
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this->resolve()->mapKeyType($cb);
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return $this->resolve()->makeAllArrayKeysOptional();
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return $this->resolve()->changeKeyCaseArray($case);
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return $this->resolve()->filterArrayRemovingFalsey();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

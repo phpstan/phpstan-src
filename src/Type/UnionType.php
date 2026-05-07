@@ -909,6 +909,36 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->makeListMaybe());
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->mapValueType($cb));
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->mapKeyType($cb));
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->makeAllArrayKeysOptional());
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->changeKeyCaseArray($case));
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->filterArrayRemovingFalsey());
+	}
+
 	public function getEnumCases(): array
 	{
 		return $this->pickFromTypes(

@@ -558,6 +558,36 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->spliceArray($offsetType, $lengthType, $replacementType);
 	}
 
+	public function makeListMaybe(): Type
+	{
+		return $this->getStaticObjectType()->makeListMaybe();
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		return $this->getStaticObjectType()->mapValueType($cb);
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this->getStaticObjectType()->mapKeyType($cb);
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		return $this->getStaticObjectType()->makeAllArrayKeysOptional();
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		return $this->getStaticObjectType()->changeKeyCaseArray($case);
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		return $this->getStaticObjectType()->filterArrayRemovingFalsey();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();

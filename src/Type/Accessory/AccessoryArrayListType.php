@@ -260,6 +260,44 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// This accessory is the list assertion itself; weakening the
+		// list-ness to "maybe" means the accessory no longer applies.
+		// Returning `MixedType` lets the enclosing `IntersectionType` drop
+		// it via `TypeCombinator::intersect` while preserving the rest.
+		return new MixedType();
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		// Mapping values doesn't disturb list-ness.
+		return $this;
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// Marking keys optional in an arbitrary list keeps it a list.
+		return $this;
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		// List keys are integers; case-folding leaves them alone.
+		return $this;
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		// Filtering creates gaps in the integer-key sequence — list-ness lost.
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

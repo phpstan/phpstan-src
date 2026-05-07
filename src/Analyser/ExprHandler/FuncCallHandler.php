@@ -63,7 +63,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use Throwable;
-use function array_fill;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -750,64 +749,12 @@ final class FuncCallHandler implements ExprHandler
 
 	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type
 	{
-		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
-			if ($type instanceof UnionType) {
-				return $traverse($type);
-			}
-
-			$constantArrays = $type->getConstantArrays();
-			if (count($constantArrays) > 0) {
-				$types = [];
-				foreach ($constantArrays as $constantArray) {
-					$types[] = new ConstantArrayType(
-						$constantArray->getKeyTypes(),
-						$constantArray->getValueTypes(),
-						$constantArray->getNextAutoIndexes(),
-						$constantArray->getOptionalKeys(),
-						$constantArray->isList()->and(TrinaryLogic::createMaybe()),
-					);
-				}
-
-				return TypeCombinator::union(...$types);
-			}
-
-			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
-			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = new IntersectionType([$newArrayType, new NonEmptyArrayType()]);
-			}
-
-			return $newArrayType;
-		});
+		return $type->makeListMaybe();
 	}
 
 	private function getArrayWalkResultType(Type $arrayType, Type $newValueType): Type
 	{
-		return TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use ($newValueType): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-
-			if ($type instanceof ConstantArrayType) {
-				return new ConstantArrayType(
-					$type->getKeyTypes(),
-					array_fill(0, count($type->getValueTypes()), $newValueType),
-					$type->getNextAutoIndexes(),
-					$type->getOptionalKeys(),
-					$type->isList(),
-				);
-			}
-
-			if (!$type instanceof ArrayType) {
-				return $type;
-			}
-
-			return new ArrayType($type->getKeyType(), $newValueType);
-		});
+		return $arrayType->mapValueType(static fn (Type $type): Type => $newValueType);
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

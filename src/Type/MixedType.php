@@ -306,6 +306,60 @@ class MixedType implements CompoundType, SubtractableType
 		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
 	}
 
+	public function makeListMaybe(): Type
+	{
+		// `mixed` doesn't track list-ness; nothing to weaken.
+		return $this;
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(
+			new MixedType($this->isExplicitMixed),
+			$cb(new MixedType($this->isExplicitMixed)),
+		);
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(
+			$cb(new MixedType($this->isExplicitMixed)),
+			new MixedType($this->isExplicitMixed),
+		);
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		// `mixed` is already arbitrary; nothing to weaken.
+		return $this;
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

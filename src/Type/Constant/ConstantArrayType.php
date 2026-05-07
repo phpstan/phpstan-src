@@ -42,6 +42,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\RecursionGuard;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -69,6 +70,10 @@ use function range;
 use function sort;
 use function sprintf;
 use function str_contains;
+use function strtolower;
+use function strtoupper;
+use const CASE_LOWER;
+use const CASE_UPPER;
 
 /**
  * @api
@@ -1953,6 +1958,115 @@ class ConstantArrayType implements Type
 		}
 
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
+	}
+
+	public function makeListMaybe(): Type
+	{
+		if (!$this->isList->yes()) {
+			return $this;
+		}
+
+		return $this->recreate(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			TrinaryLogic::createMaybe(),
+		);
+	}
+
+	public function mapValueType(callable $cb): Type
+	{
+		$newValueTypes = [];
+		foreach ($this->valueTypes as $valueType) {
+			$newValueTypes[] = $cb($valueType);
+		}
+
+		return $this->recreate(
+			$this->keyTypes,
+			$newValueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			$this->isList,
+		);
+	}
+
+	public function mapKeyType(callable $cb): Type
+	{
+		// Constant array shapes already encode precise per-slot keys; a
+		// blanket key-type rewrite (the prior `TypeTraverser`-based pattern
+		// in `NodeScopeResolver`) would coerce constants into a broader
+		// type and lose precision. Pass through unchanged.
+		return $this;
+	}
+
+	public function makeAllArrayKeysOptional(): Type
+	{
+		$keyCount = count($this->keyTypes);
+		if ($keyCount === 0) {
+			return $this;
+		}
+
+		return $this->recreate(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			range(0, $keyCount - 1),
+			$this->isList,
+		);
+	}
+
+	public function changeKeyCaseArray(?int $case): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($this->keyTypes as $i => $keyType) {
+			if ($keyType instanceof ConstantStringType) {
+				$newKeyType = self::foldConstantStringKeyCase($keyType, $case);
+			} else {
+				$newKeyType = $keyType;
+			}
+			$builder->setOffsetValueType($newKeyType, $this->valueTypes[$i], $this->isOptionalKey($i));
+		}
+		$result = $builder->getArray();
+		if ($this->isList()->yes()) {
+			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+		}
+		return $result;
+	}
+
+	public function filterArrayRemovingFalsey(): Type
+	{
+		$falseyTypes = StaticTypeFactory::falsey();
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($this->keyTypes as $i => $keyType) {
+			$value = $this->valueTypes[$i];
+			$isFalsey = $falseyTypes->isSuperTypeOf($value);
+			if ($isFalsey->yes()) {
+				continue;
+			}
+			if ($isFalsey->maybe()) {
+				$builder->setOffsetValueType($keyType, TypeCombinator::remove($value, $falseyTypes), true);
+				continue;
+			}
+			$builder->setOffsetValueType($keyType, $value, $this->isOptionalKey($i));
+		}
+
+		return $builder->getArray();
+	}
+
+	private static function foldConstantStringKeyCase(ConstantStringType $type, ?int $case): Type
+	{
+		if ($case === CASE_LOWER) {
+			return new ConstantStringType(strtolower($type->getValue()));
+		}
+		if ($case === CASE_UPPER) {
+			return new ConstantStringType(strtoupper($type->getValue()));
+		}
+
+		return TypeCombinator::union(
+			new ConstantStringType(strtolower($type->getValue())),
+			new ConstantStringType(strtoupper($type->getValue())),
+		);
 	}
 
 	public function toPhpDocNode(): TypeNode

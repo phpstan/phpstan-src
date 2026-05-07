@@ -2912,6 +2912,13 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $value, $this->isOptionalKey($i));
 		}
 
+		if ($this->unsealed !== null) {
+			$unsealedValue = TypeCombinator::remove($this->unsealed[1], $falseyTypes);
+			if (!$unsealedValue instanceof NeverType) {
+				$builder->makeUnsealed($this->unsealed[0], $unsealedValue);
+			}
+		}
+
 		return $builder->getArray();
 	}
 

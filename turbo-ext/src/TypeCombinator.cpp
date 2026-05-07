@@ -1423,6 +1423,18 @@ public:
 	 * pending exception */
 	static int compareTypesInUnion(zval *a, zval *b, zv::Val &merged)
 	{
+		int aClosure = isClosureOrNonCommonCallableType(a);
+		if (UNEXPECTED(aClosure < 0)) return -1;
+		if (aClosure) {
+			int bClosure = isClosureOrNonCommonCallableType(b);
+			if (UNEXPECTED(bClosure < 0)) return -1;
+			if (bClosure) {
+				int equal = typeEquals(a, b);
+				if (UNEXPECTED(equal < 0)) return -1;
+				if (!equal) return 0;
+			}
+		}
+
 		if (isInstance(a, pt_ce_integer_range_type)) {
 			zv::Val type = call(a, PT_LC("tryunion"), 1, b);
 			if (UNEXPECTED(type.isUndef())) return -1;
@@ -1552,6 +1564,17 @@ public:
 		}
 
 		return 0;
+	}
+
+	/* $type instanceof ClosureType || ($type instanceof CallableType &&
+	 * !$type->isCommonCallable()); -1 = pending exception */
+	static int isClosureOrNonCommonCallableType(zval *type)
+	{
+		if (isInstance(type, pt_ce_closure_type)) return 1;
+		if (!isInstance(type, pt_ce_callable_type)) return 0;
+		int common = callBool(type, PT_LC("iscommoncallable"));
+		if (UNEXPECTED(common < 0)) return -1;
+		return !common;
 	}
 
 	/* the SubtractableType arm of compareTypesInUnion(): whether

@@ -7,11 +7,13 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -417,6 +419,31 @@ trait LateResolvableTypeTrait
 	public function toNumber(): Type
 	{
 		return $this->resolve()->toNumber();
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return $this->resolve()->toBitwiseNotType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this->resolve()->toGetClassResultType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this->resolve()->toClassConstantType($reflectionProvider);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return $this->resolve()->toObjectTypeForInstanceofCheck();
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		return $this->resolve()->toObjectTypeForIsACheck($objectOrClassType, $allowString, $allowSameClass);
 	}
 
 	public function toAbsoluteNumber(): Type

@@ -10,17 +10,26 @@ use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassNameToObjectTypeResult;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
+use function count;
 
 trait ObjectTypeTrait
 {
@@ -39,6 +48,46 @@ trait ObjectTypeTrait
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this->getClassStringType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		$classNames = $this->getObjectClassNames();
+		if (count($classNames) === 1 && $reflectionProvider->hasClass($classNames[0])) {
+			$reflection = $reflectionProvider->getClass($classNames[0]);
+			if ($reflection->isFinalByKeyword()) {
+				return new ConstantStringType($reflection->getName(), true);
+			}
+		}
+
+		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		// Definite-object types keep themselves as the comparison target —
+		// they're already an `ObjectType` (or its accessory). The
+		// uncertainty flag is set because the `instanceof` decision can
+		// only be made at runtime when comparing against a class name
+		// computed from the value.
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function isEnum(): TrinaryLogic
@@ -286,6 +335,11 @@ trait ObjectTypeTrait
 	}
 
 	public function toNumber(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toBitwiseNotType(): Type
 	{
 		return new ErrorType();
 	}

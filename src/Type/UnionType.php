@@ -17,6 +17,7 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -1090,6 +1091,55 @@ class UnionType implements CompoundType
 		$type = $this->unionTypes(static fn (Type $type): Type => $type->toNumber());
 
 		return $type;
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toBitwiseNotType());
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toGetClassResultType());
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toClassConstantType($reflectionProvider));
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		$types = [];
+		$uncertainty = false;
+		foreach ($this->getTypes() as $innerType) {
+			$result = $innerType->toObjectTypeForInstanceofCheck();
+			$types[] = $result->type;
+			if (!$result->uncertainty) {
+				continue;
+			}
+
+			$uncertainty = true;
+		}
+
+		return new ClassNameToObjectTypeResult(TypeCombinator::union(...$types), $uncertainty);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		$types = [];
+		$uncertainty = false;
+		foreach ($this->getTypes() as $innerType) {
+			$result = $innerType->toObjectTypeForIsACheck($objectOrClassType, $allowString, $allowSameClass);
+			$types[] = $result->type;
+			if (!$result->uncertainty) {
+				continue;
+			}
+
+			$uncertainty = true;
+		}
+
+		return new ClassNameToObjectTypeResult(TypeCombinator::union(...$types), $uncertainty);
 	}
 
 	public function toAbsoluteNumber(): Type

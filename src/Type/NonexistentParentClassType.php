@@ -9,10 +9,12 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -161,6 +163,38 @@ class NonexistentParentClassType implements Type
 	public function toNumber(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this->getClassStringType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function toAbsoluteNumber(): Type

@@ -9,14 +9,20 @@ use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 trait MaybeObjectTypeTrait
 {
@@ -34,6 +40,33 @@ trait MaybeObjectTypeTrait
 	public function getClassStringType(): Type
 	{
 		return new ClassStringType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return new UnionType([$this->getClassStringType(), new ConstantBooleanType(false)]);
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function isEnum(): TrinaryLogic

@@ -9,6 +9,7 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
@@ -432,6 +433,31 @@ class NeverType implements CompoundType
 	public function toNumber(): Type
 	{
 		return $this;
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return $this;
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this;
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this;
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, false);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, false);
 	}
 
 	public function toAbsoluteNumber(): Type

@@ -10,11 +10,13 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -756,6 +758,45 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function toNumber(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		// Preserve static binding (`class-string<static>` /
+		// `class-string<$this>`) by going through `getClassStringType()`
+		// directly instead of delegating to the underlying object type,
+		// which would resolve `static` away.
+		return $this->getClassStringType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// Like `toGetClassResultType()`, project through this `StaticType`'s
+		// own `getClassStringType()` so that `static::class` reads as
+		// `class-string<static>` rather than the underlying class.
+		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function toAbsoluteNumber(): Type

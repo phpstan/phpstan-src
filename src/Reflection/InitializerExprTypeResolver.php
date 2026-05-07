@@ -93,7 +93,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeResult;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -2451,54 +2450,7 @@ final class InitializerExprTypeResolver
 		}
 
 		if (strtolower($constantName) === 'class') {
-			return TypeTraverser::map(
-				$constantClassType,
-				function (Type $type, callable $traverse): Type {
-					if ($type instanceof UnionType || $type instanceof IntersectionType) {
-						return $traverse($type);
-					}
-
-					if ($type instanceof NullType) {
-						return $type;
-					}
-
-					if ($type instanceof EnumCaseObjectType) {
-						return new IntersectionType([
-							new GenericClassStringType(new ObjectType($type->getClassName())),
-							new AccessoryLiteralStringType(),
-						]);
-					}
-
-					$objectClassNames = $type->getObjectClassNames();
-					if (count($objectClassNames) > 1) {
-						throw new ShouldNotHappenException();
-					}
-
-					if ($type instanceof TemplateType && $objectClassNames === []) {
-						return new IntersectionType([
-							new GenericClassStringType($type),
-							new AccessoryLiteralStringType(),
-						]);
-					} elseif ($objectClassNames !== [] && $this->getReflectionProvider()->hasClass($objectClassNames[0])) {
-						$reflection = $this->getReflectionProvider()->getClass($objectClassNames[0]);
-						if ($reflection->isFinalByKeyword()) {
-							return new ConstantStringType($reflection->getName(), true);
-						}
-
-						return new IntersectionType([
-							new GenericClassStringType($type),
-							new AccessoryLiteralStringType(),
-						]);
-					} elseif ($type->isObject()->yes()) {
-						return new IntersectionType([
-							new ClassStringType(),
-							new AccessoryLiteralStringType(),
-						]);
-					}
-
-					return new ErrorType();
-				},
-			);
+			return $constantClassType->toClassConstantType($this->getReflectionProvider());
 		}
 
 		if ($constantClassType->isClassString()->yes()) {
@@ -2699,33 +2651,7 @@ final class InitializerExprTypeResolver
 
 	public function getBitwiseNotTypeFromType(Type $exprType): Type
 	{
-		return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-			if ($type instanceof ConstantStringType) {
-				return new ConstantStringType(~$type->getValue());
-			}
-			if ($type->isString()->yes()) {
-				$accessories = [];
-				if (!$type->isNonEmptyString()->yes()) {
-					return new StringType();
-				}
-
-				$accessories[] = new AccessoryNonEmptyStringType();
-				// it is not useful to apply numeric and literal strings here.
-				// numeric string isn't certainly kept numeric: 3v4l.org/JERDB
-
-				return new IntersectionType([new StringType(), ...$accessories]);
-			}
-			if ($type instanceof ConstantIntegerType || $type instanceof ConstantFloatType) {
-				return new ConstantIntegerType(~ (int) $type->getValue());
-			}
-			if ($type->isInteger()->yes() || $type->isFloat()->yes()) {
-				return new IntegerType();
-			}
-			return new ErrorType();
-		});
+		return $exprType->toBitwiseNotType();
 	}
 
 	private function resolveName(Name $name, ?ClassReflection $classReflection): string

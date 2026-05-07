@@ -165,24 +165,9 @@ final class TypeSpecifier
 			}
 
 			$classType = $scope->getType($expr->class);
-			$uncertainty = false;
-			$type = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-				if ($type->getObjectClassNames() !== []) {
-					$uncertainty = true;
-					return $type;
-				}
-				if ($type instanceof GenericClassStringType) {
-					$uncertainty = true;
-					return $type->getGenericType();
-				}
-				if ($type instanceof ConstantStringType) {
-					return new ObjectType($type->getValue());
-				}
-				return new MixedType();
-			});
+			$result = $classType->toObjectTypeForInstanceofCheck();
+			$type = $result->type;
+			$uncertainty = $result->uncertainty;
 
 			if (!$type->isSuperTypeOf(new MixedType())->yes()) {
 				if ($context->true()) {

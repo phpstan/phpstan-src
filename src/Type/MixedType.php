@@ -13,6 +13,7 @@ use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
@@ -613,6 +614,50 @@ class MixedType implements CompoundType, SubtractableType
 			$this->toInteger(),
 			$this->toFloat(),
 		);
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		$isObject = $this->isObject();
+		if ($isObject->no()) {
+			return new ConstantBooleanType(false);
+		}
+
+		$classString = $this->getClassStringType();
+		if ($isObject->yes()) {
+			return $classString;
+		}
+
+		return new UnionType([$classString, new ConstantBooleanType(false)]);
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// `mixed::class` is undefined — the original `TypeTraverser` cb fell
+		// through to `ErrorType` for any leaf that wasn't a definite object.
+		return new ErrorType();
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function toAbsoluteNumber(): Type

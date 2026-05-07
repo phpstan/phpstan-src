@@ -178,6 +178,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		]);
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

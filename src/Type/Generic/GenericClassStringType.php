@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -43,6 +44,27 @@ class GenericClassStringType extends ClassStringType
 	public function getGenericType(): Type
 	{
 		return $this->type;
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		// `class-string<X>` narrows to `X` for the comparison target, but
+		// the actual runtime class can be any subclass of `X` — keep
+		// uncertainty so the caller falls back to `BooleanType` instead
+		// of a definite yes when `$x instanceof Y` and `Y === X`.
+		return new ClassNameToObjectTypeResult($this->getGenericType(), true);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				TypeCombinator::union($this->getGenericType(), $this),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult($this->getGenericType(), false);
 	}
 
 	public function getClassStringObjectType(): Type

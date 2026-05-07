@@ -103,6 +103,11 @@ class FloatType implements Type
 		return $this;
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new IntegerType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this;

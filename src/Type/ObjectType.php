@@ -23,6 +23,7 @@ use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
@@ -33,6 +34,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
@@ -761,6 +763,45 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return new ErrorType();
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this->getClassStringType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		if ($reflectionProvider->hasClass($this->className)) {
+			$reflection = $reflectionProvider->getClass($this->className);
+			if ($reflection->isFinalByKeyword()) {
+				return new ConstantStringType($reflection->getName(), true);
+			}
+		}
+
+		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function toAbsoluteNumber(): Type

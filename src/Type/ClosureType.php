@@ -30,6 +30,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\ClosureCallUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
@@ -508,6 +509,38 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function toNumber(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return $this->getClassStringType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this->objectType->toClassConstantType($reflectionProvider);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function toAbsoluteNumber(): Type

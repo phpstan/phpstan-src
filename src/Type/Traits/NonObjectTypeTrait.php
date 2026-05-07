@@ -6,13 +6,20 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassNameToObjectTypeResult;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 trait NonObjectTypeTrait
 {
@@ -25,6 +32,33 @@ trait NonObjectTypeTrait
 	public function getClassStringType(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return new ConstantBooleanType(false);
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
 	}
 
 	public function isEnum(): TrinaryLogic

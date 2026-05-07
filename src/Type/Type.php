@@ -10,6 +10,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
@@ -372,6 +373,46 @@ interface Type
 
 	/** Models numeric coercion for arithmetic operators. */
 	public function toNumber(): Type;
+
+	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
+	public function toBitwiseNotType(): Type;
+
+	/**
+	 * Models `get_class($x)`'s return type per leaf: definite objects yield
+	 * their `class-string` projection, definite non-objects yield `false`,
+	 * and possibly-objects yield the union of both.
+	 */
+	public function toGetClassResultType(): Type;
+
+	/**
+	 * Models the type of `$x::class`. For known final classes the literal
+	 * class name is returned; for everything else an
+	 * `IntersectionType[ClassString<X>, AccessoryLiteralStringType]`.
+	 * `NullType` passes through (mirrors PHP's nullsafe `::class` semantics).
+	 * `ReflectionProvider` is needed for the final-class lookup.
+	 */
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type;
+
+	/**
+	 * Projects a class-name-or-object `Type` (the right-hand side of
+	 * `$x instanceof <expr>`) to the `ObjectType` it should be compared
+	 * against. Constant class strings collapse to their `ObjectType`
+	 * exactly; everything kept symbolically (object class names,
+	 * `class-string<X>`) carries an uncertainty flag so the caller can
+	 * fall back to `BooleanType` instead of a definite yes/no.
+	 */
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult;
+
+	/**
+	 * Projects a class-name-or-object `Type` (the second argument of
+	 * `is_a($x, $class, $allow_string)`) to the `ObjectType` to narrow
+	 * `$x` against. When `$allowString` is true, the `is_a()` result also
+	 * keeps the original class-string accepted alongside the object.
+	 * `$allowSameClass` controls whether matching the input's own class
+	 * collapses to `NeverType` for final classes (the call site's
+	 * "always-true" suppression).
+	 */
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult;
 
 	/** Models the (int) cast. */
 	public function toInteger(): Type;

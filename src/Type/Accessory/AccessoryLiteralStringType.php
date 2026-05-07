@@ -181,6 +181,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

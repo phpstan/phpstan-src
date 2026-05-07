@@ -60,7 +60,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use Throwable;
 use function array_filter;
@@ -274,8 +273,10 @@ final class FuncCallHandler implements ExprHandler
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		if ($arrayWalkValueTypes !== null && $arrayWalkArrayArg !== null) {
-			$newArrayType = $this->getArrayWalkResultType($arrayWalkOriginalArrayType, $arrayWalkValueTypes[0]);
-			$newArrayNativeType = $this->getArrayWalkResultType($arrayWalkOriginalArrayNativeType, $arrayWalkValueTypes[1]);
+			$arrayWalkValueType = $arrayWalkValueTypes[0];
+			$arrayWalkValueNativeType = $arrayWalkValueTypes[1];
+			$newArrayType = $arrayWalkOriginalArrayType->mapValueType(static fn (Type $type): Type => $arrayWalkValueType);
+			$newArrayNativeType = $arrayWalkOriginalArrayNativeType->mapValueType(static fn (Type $type): Type => $arrayWalkValueNativeType);
 
 			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
@@ -462,7 +463,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($this->getArraySortPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg))),
+				new NativeTypeExpr($scope->getType($arrayArg)->sortArray(), $scope->getNativeType($arrayArg)->sortArray()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -479,7 +480,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg))),
+				new NativeTypeExpr($scope->getType($arrayArg)->makeListMaybe(), $scope->getNativeType($arrayArg)->makeListMaybe()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -720,41 +721,6 @@ final class FuncCallHandler implements ExprHandler
 		);
 
 		return $arrayType;
-	}
-
-	private function getArraySortPreserveListFunctionType(Type $type): Type
-	{
-		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-
-			if (!$type instanceof ArrayType && !$type instanceof ConstantArrayType) {
-				return $type;
-			}
-
-			$newArrayType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $type->getIterableValueType()), new AccessoryArrayListType()]);
-			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
-			}
-
-			return $newArrayType;
-		});
-	}
-
-	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type
-	{
-		return $type->makeListMaybe();
-	}
-
-	private function getArrayWalkResultType(Type $arrayType, Type $newValueType): Type
-	{
-		return $arrayType->mapValueType(static fn (Type $type): Type => $newValueType);
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

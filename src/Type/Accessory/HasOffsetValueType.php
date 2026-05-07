@@ -291,6 +291,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new NonEmptyArrayType();
 	}
 
+	public function sortArray(): Type
+	{
+		return $this;
+	}
+
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		if (

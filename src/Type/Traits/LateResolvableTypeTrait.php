@@ -346,6 +346,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->shuffleArray();
 	}
 
+	public function sortArray(): Type
+	{
+		return $this->resolve()->sortArray();
+	}
+
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		return $this->resolve()->sliceArray($offsetType, $lengthType, $preserveKeys);

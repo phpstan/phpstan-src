@@ -9,6 +9,7 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
@@ -440,6 +441,11 @@ class NeverType implements CompoundType
 	}
 
 	public function toGetClassResultType(): Type
+	{
+		return $this;
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
 	{
 		return $this;
 	}

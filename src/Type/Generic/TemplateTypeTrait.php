@@ -4,13 +4,17 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
@@ -262,6 +266,32 @@ trait TemplateTypeTrait
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
 		return $this;
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// `T::class` keeps the template variable visible — express the
+		// result as `class-string<T>&literal-string` rather than the bound
+		// class, regardless of whether `T` has an object bound or not.
+		// Only when the bound is a known final class does the result
+		// collapse to the literal class name (the bound is the only
+		// possible substitution in that case).
+		if ($this->isNull()->yes()) {
+			return new NullType();
+		}
+
+		$classNames = $this->getObjectClassNames();
+		if (count($classNames) === 1 && $reflectionProvider->hasClass($classNames[0])) {
+			$reflection = $reflectionProvider->getClass($classNames[0]);
+			if ($reflection->isFinalByKeyword()) {
+				return new ConstantStringType($reflection->getName(), true);
+			}
+		}
+
+		return new IntersectionType([
+			new GenericClassStringType($this),
+			new AccessoryLiteralStringType(),
+		]);
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

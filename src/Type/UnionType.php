@@ -17,6 +17,7 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -1095,6 +1096,11 @@ class UnionType implements CompoundType
 	public function toGetClassResultType(): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->toGetClassResultType());
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toClassConstantType($reflectionProvider));
 	}
 
 	public function toAbsoluteNumber(): Type

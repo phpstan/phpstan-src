@@ -5,6 +5,8 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Constant\ConstantStringType;
 use function sprintf;
 
 /** @api */
@@ -83,6 +85,20 @@ class ThisType extends StaticType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new ThisTypeNode();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// `$this` in a `final` class is pinned to that one class, so
+		// `$this::class` collapses to its literal name. For non-final
+		// classes `$this` could still be a subclass, so fall back to the
+		// `class-string<$this>` projection from the parent.
+		$reflection = $this->getClassReflection();
+		if ($reflection->isFinalByKeyword()) {
+			return new ConstantStringType($reflection->getName(), true);
+		}
+
+		return parent::toClassConstantType($reflectionProvider);
 	}
 
 }

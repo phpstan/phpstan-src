@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -147,6 +148,13 @@ class NullType implements ConstantScalarType
 	public function toBitwiseNotType(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// Null `::class` reads as `null` (mirrors how `null::class` flows
+		// through the `::class` resolution pipeline alongside object types).
+		return $this;
 	}
 
 	public function toAbsoluteNumber(): Type

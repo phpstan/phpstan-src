@@ -93,7 +93,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeResult;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -2451,54 +2450,7 @@ final class InitializerExprTypeResolver
 		}
 
 		if (strtolower($constantName) === 'class') {
-			return TypeTraverser::map(
-				$constantClassType,
-				function (Type $type, callable $traverse): Type {
-					if ($type instanceof UnionType || $type instanceof IntersectionType) {
-						return $traverse($type);
-					}
-
-					if ($type instanceof NullType) {
-						return $type;
-					}
-
-					if ($type instanceof EnumCaseObjectType) {
-						return new IntersectionType([
-							new GenericClassStringType(new ObjectType($type->getClassName())),
-							new AccessoryLiteralStringType(),
-						]);
-					}
-
-					$objectClassNames = $type->getObjectClassNames();
-					if (count($objectClassNames) > 1) {
-						throw new ShouldNotHappenException();
-					}
-
-					if ($type instanceof TemplateType && $objectClassNames === []) {
-						return new IntersectionType([
-							new GenericClassStringType($type),
-							new AccessoryLiteralStringType(),
-						]);
-					} elseif ($objectClassNames !== [] && $this->getReflectionProvider()->hasClass($objectClassNames[0])) {
-						$reflection = $this->getReflectionProvider()->getClass($objectClassNames[0]);
-						if ($reflection->isFinalByKeyword()) {
-							return new ConstantStringType($reflection->getName(), true);
-						}
-
-						return new IntersectionType([
-							new GenericClassStringType($type),
-							new AccessoryLiteralStringType(),
-						]);
-					} elseif ($type->isObject()->yes()) {
-						return new IntersectionType([
-							new ClassStringType(),
-							new AccessoryLiteralStringType(),
-						]);
-					}
-
-					return new ErrorType();
-				},
-			);
+			return $constantClassType->toClassConstantType($this->getReflectionProvider());
 		}
 
 		if ($constantClassType->isClassString()->yes()) {

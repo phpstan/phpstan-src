@@ -7,6 +7,7 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
@@ -427,6 +428,11 @@ trait LateResolvableTypeTrait
 	public function toGetClassResultType(): Type
 	{
 		return $this->resolve()->toGetClassResultType();
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this->resolve()->toClassConstantType($reflectionProvider);
 	}
 
 	public function toAbsoluteNumber(): Type

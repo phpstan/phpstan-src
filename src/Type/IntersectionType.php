@@ -1444,6 +1444,23 @@ class IntersectionType implements CompoundType
 		return new ClassNameToObjectTypeResult(TypeCombinator::intersect(...$types), $uncertainty);
 	}
 
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		$types = [];
+		$uncertainty = false;
+		foreach ($this->getTypes() as $innerType) {
+			$result = $innerType->toObjectTypeForIsACheck($objectOrClassType, $allowString, $allowSameClass);
+			$types[] = $result->type;
+			if (!$result->uncertainty) {
+				continue;
+			}
+
+			$uncertainty = true;
+		}
+
+		return new ClassNameToObjectTypeResult(TypeCombinator::intersect(...$types), $uncertainty);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toAbsoluteNumber());

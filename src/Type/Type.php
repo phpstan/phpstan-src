@@ -403,6 +403,17 @@ interface Type
 	 */
 	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult;
 
+	/**
+	 * Projects a class-name-or-object `Type` (the second argument of
+	 * `is_a($x, $class, $allow_string)`) to the `ObjectType` to narrow
+	 * `$x` against. When `$allowString` is true, the `is_a()` result also
+	 * keeps the original class-string accepted alongside the object.
+	 * `$allowSameClass` controls whether matching the input's own class
+	 * collapses to `NeverType` for final classes (the call site's
+	 * "always-true" suppression).
+	 */
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult;
+
 	/** Models the (int) cast. */
 	public function toInteger(): Type;
 

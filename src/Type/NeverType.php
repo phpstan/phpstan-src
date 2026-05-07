@@ -455,6 +455,11 @@ class NeverType implements CompoundType
 		return new ClassNameToObjectTypeResult($this, false);
 	}
 
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, false);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this;

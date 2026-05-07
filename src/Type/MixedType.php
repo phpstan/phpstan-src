@@ -647,6 +647,18 @@ class MixedType implements CompoundType, SubtractableType
 		return new ClassNameToObjectTypeResult(new MixedType(), false);
 	}
 
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

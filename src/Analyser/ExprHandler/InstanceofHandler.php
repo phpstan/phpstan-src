@@ -91,8 +91,7 @@ final class InstanceofHandler implements ExprHandler
 				$classType = new ObjectType($className);
 			}
 		} else {
-			$classType = $scope->getType($expr->class);
-			$result = $classType->toObjectTypeForInstanceofCheck();
+			$result = $scope->getType($expr->class)->toObjectTypeForInstanceofCheck();
 			$classType = $result->type;
 			$uncertainty = $result->uncertainty;
 		}

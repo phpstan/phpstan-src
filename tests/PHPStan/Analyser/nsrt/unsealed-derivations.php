@@ -23,3 +23,115 @@ class FilterFalsey
 	}
 
 }
+
+class ChangeKeyCase
+{
+
+	/**
+	 * @param array{Foo: int, ...<string, float>} $arr
+	 */
+	public function lowerCaseUnsealed(array $arr): void
+	{
+		// `array_change_key_case` folds explicit constant-string keys.
+		// The unsealed slot must be carried through — and the unsealed
+		// key picks up the matching `lowercase-string` accessory (every
+		// key after CASE_LOWER is lowercase).
+		assertType(
+			'array{foo: int, ...<lowercase-string, float>}',
+			array_change_key_case($arr, CASE_LOWER),
+		);
+	}
+
+	/**
+	 * @param array{Foo: int, ...<string, float>} $arr
+	 */
+	public function upperCaseUnsealed(array $arr): void
+	{
+		assertType(
+			'array{FOO: int, ...<uppercase-string, float>}',
+			array_change_key_case($arr, CASE_UPPER),
+		);
+	}
+
+	/**
+	 * @param array{Foo: int, ...<int|string, float>} $arr
+	 */
+	public function mixedKeyUnsealed(array $arr): void
+	{
+		// Int keys aren't affected by `array_change_key_case`; only the
+		// string portion of the unsealed key picks up the accessory.
+		assertType(
+			'array{foo: int, ...<int|lowercase-string, float>}',
+			array_change_key_case($arr, CASE_LOWER),
+		);
+	}
+
+	/**
+	 * @param array{a: int, ...<lowercase-string, float>} $arr
+	 */
+	public function lowercaseToUpper(array $arr): void
+	{
+		// CASE_UPPER on a `lowercase-string` unsealed key drops the
+		// lowercase property and replaces it with uppercase —
+		// `array_change_key_case` rewrites every key, so the prior case
+		// constraint no longer holds.
+		assertType(
+			'array{A: int, ...<uppercase-string, float>}',
+			array_change_key_case($arr, CASE_UPPER),
+		);
+	}
+
+	/**
+	 * @param array{a: int, ...<non-empty-string, float>} $arr
+	 */
+	public function preserveNonEmpty(array $arr): void
+	{
+		// Case-folding keeps the string length unchanged, so non-empty
+		// is preserved alongside the new case accessory on the unsealed
+		// key.
+		assertType(
+			'array{a: int, ...<lowercase-string&non-empty-string, float>}',
+			array_change_key_case($arr, CASE_LOWER),
+		);
+	}
+
+	/**
+	 * @param array{Foo: int, BAR: string, ...<string, float>} $arr
+	 */
+	public function multipleConstantKeys(array $arr): void
+	{
+		// Each `ConstantStringType` explicit key is independently folded.
+		assertType(
+			'array{foo: int, bar: string, ...<lowercase-string, float>}',
+			array_change_key_case($arr, CASE_LOWER),
+		);
+	}
+
+	/**
+	 * @param array{Foo: int, foo: string} $arr
+	 */
+	public function collidingConstantKeys(array $arr): void
+	{
+		// `Foo` and `foo` both fold to `foo`. PHP semantics: the later
+		// pair overwrites the earlier (the `foo: string` entry wins).
+		assertType(
+			'array{foo: string}',
+			array_change_key_case($arr, CASE_LOWER),
+		);
+	}
+
+	/**
+	 * @param array{Foo: int} $arr
+	 */
+	public function unknownCase(array $arr, int $case): void
+	{
+		// Non-constant `$case` — could be either CASE_LOWER or CASE_UPPER.
+		// `Foo` folds to `'foo'|'FOO'` and the builder splits the union
+		// into two optional keys, with at least one guaranteed present.
+		assertType(
+			'non-empty-array{foo?: int, FOO?: int}',
+			array_change_key_case($arr, $case),
+		);
+	}
+
+}

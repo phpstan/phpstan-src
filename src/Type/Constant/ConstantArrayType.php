@@ -25,6 +25,11 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -2888,6 +2893,11 @@ class ConstantArrayType implements Type
 			}
 			$builder->setOffsetValueType($newKeyType, $this->valueTypes[$i], $this->isOptionalKey($i));
 		}
+
+		if ($this->unsealed !== null) {
+			$builder->makeUnsealed(self::foldUnsealedKeyCase($this->unsealed[0], $case), $this->unsealed[1]);
+		}
+
 		$result = $builder->getArray();
 		if ($this->isList()->yes()) {
 			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
@@ -2934,6 +2944,57 @@ class ConstantArrayType implements Type
 		return TypeCombinator::union(
 			new ConstantStringType(strtolower($type->getValue())),
 			new ConstantStringType(strtoupper($type->getValue())),
+		);
+	}
+
+	private static function foldUnsealedKeyCase(Type $key, ?int $case): Type
+	{
+		if ($key instanceof ConstantStringType) {
+			return self::foldConstantStringKeyCase($key, $case);
+		}
+
+		if ($key instanceof UnionType) {
+			$folded = [];
+			foreach ($key->getTypes() as $innerKey) {
+				$folded[] = self::foldUnsealedKeyCase($innerKey, $case);
+			}
+
+			return TypeCombinator::union(...$folded);
+		}
+
+		// `array_change_key_case` only folds string keys — int keys
+		// (e.g. `...<int, ...>`) pass through unchanged.
+		if (!$key->isString()->yes()) {
+			return $key;
+		}
+
+		// Rebuild from a clean `string` plus the non-case accessories that
+		// case-folding preserves (length is unchanged, so numeric / non-
+		// falsy / non-empty all survive). Any prior lowercase/uppercase
+		// accessory is dropped — matches the `ArrayType::changeKeyCaseArray`
+		// behavior where `strtoupper(lowercase-string)` reads as
+		// `uppercase-string`, not the contradictory intersection.
+		$preserved = [new StringType()];
+		if ($key->isNumericString()->yes()) {
+			$preserved[] = new AccessoryNumericStringType();
+		} elseif ($key->isNonFalsyString()->yes()) {
+			$preserved[] = new AccessoryNonFalsyStringType();
+		} elseif ($key->isNonEmptyString()->yes()) {
+			$preserved[] = new AccessoryNonEmptyStringType();
+		}
+
+		if ($case === CASE_LOWER) {
+			return new IntersectionType([...$preserved, new AccessoryLowercaseStringType()]);
+		}
+		if ($case === CASE_UPPER) {
+			return new IntersectionType([...$preserved, new AccessoryUppercaseStringType()]);
+		}
+
+		// `null` (PHP <8.4 / unspecified) yields lower- or upper-case
+		// keys; record both as a union.
+		return TypeCombinator::union(
+			new IntersectionType([...$preserved, new AccessoryLowercaseStringType()]),
+			new IntersectionType([...$preserved, new AccessoryUppercaseStringType()]),
 		);
 	}
 

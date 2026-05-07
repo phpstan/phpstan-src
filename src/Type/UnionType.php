@@ -895,6 +895,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->shuffleArray());
 	}
 
+	public function sortArray(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->sortArray());
+	}
+
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->sliceArray($offsetType, $lengthType, $preserveKeys));

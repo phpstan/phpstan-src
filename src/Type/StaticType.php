@@ -550,6 +550,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->shuffleArray();
 	}
 
+	public function sortArray(): Type
+	{
+		return $this;
+	}
+
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		return $this->getStaticObjectType()->sliceArray($offsetType, $lengthType, $preserveKeys);

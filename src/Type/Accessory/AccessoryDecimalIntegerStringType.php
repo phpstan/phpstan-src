@@ -220,6 +220,18 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		return $this->toNumber()->toAbsoluteNumber();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		// Decimal integer strings are non-empty when not inverted
+		// (`"0"` / `"123"` are still at least one character). `~$s`
+		// returns a string of the same length, so the non-empty flag
+		// survives. The decimal-integer property doesn't survive the
+		// bitwise-not, hence we drop the accessory.
+		return $this->isNonEmptyString()->yes()
+			? new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])
+			: new StringType();
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		return $this->isNonFalsyString()->negate()->toBooleanType();

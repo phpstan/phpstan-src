@@ -84,7 +84,7 @@ final class InvalidInheritDocTagRule implements Rule
 		if ($parentMethods === []) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag %s on method %s::%s() does not override or implement any other method.',
+					'PHPDoc tag %s on method %s::%s() refers to non-existent parent method.',
 					$inheritDocTagName,
 					$inheritanceClass->getDisplayName(),
 					$methodName,

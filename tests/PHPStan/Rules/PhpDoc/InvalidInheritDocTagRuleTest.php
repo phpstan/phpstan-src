@@ -35,11 +35,11 @@ class InvalidInheritDocTagRuleTest extends RuleTestCase
 				52,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ClassWithoutParent::orphanedInheritDoc() does not override or implement any other method.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ClassWithoutParent::orphanedInheritDoc() refers to non-existent parent method.',
 				73,
 			],
 			[
-				'PHPDoc tag @inheritdoc on method InvalidInheritDocTag\ClassWithoutParent::orphanedBlockInheritDoc() does not override or implement any other method.',
+				'PHPDoc tag @inheritdoc on method InvalidInheritDocTag\ClassWithoutParent::orphanedBlockInheritDoc() refers to non-existent parent method.',
 				81,
 			],
 			[
@@ -47,11 +47,11 @@ class InvalidInheritDocTagRuleTest extends RuleTestCase
 				106,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithoutPhpDoc::traitMethodWithoutPhpDoc() does not override or implement any other method.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithoutPhpDoc::traitMethodWithoutPhpDoc() refers to non-existent parent method.',
 				216,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithPhpDoc::traitMethodWithPhpDoc() does not override or implement any other method.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\UsesTraitWithPhpDoc::traitMethodWithPhpDoc() refers to non-existent parent method.',
 				231,
 			],
 			[
@@ -59,11 +59,11 @@ class InvalidInheritDocTagRuleTest extends RuleTestCase
 				254,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ChildOfPrivateParentMethod::privateMethod() does not override or implement any other method.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\ChildOfPrivateParentMethod::privateMethod() refers to non-existent parent method.',
 				280,
 			],
 			[
-				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\OrphanedInheritDocTrait::orphaned() does not override or implement any other method.',
+				'PHPDoc tag {@inheritdoc} on method InvalidInheritDocTag\OrphanedInheritDocTrait::orphaned() refers to non-existent parent method.',
 				293,
 			],
 		]);

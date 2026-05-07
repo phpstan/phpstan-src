@@ -41,6 +41,11 @@ trait ObjectTypeTrait
 		return TrinaryLogic::createYes();
 	}
 
+	public function toGetClassResultType(): Type
+	{
+		return $this->getClassStringType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

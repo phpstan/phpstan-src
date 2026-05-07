@@ -619,6 +619,21 @@ class MixedType implements CompoundType, SubtractableType
 		return new ErrorType();
 	}
 
+	public function toGetClassResultType(): Type
+	{
+		$isObject = $this->isObject();
+		if ($isObject->no()) {
+			return new ConstantBooleanType(false);
+		}
+
+		$classString = $this->getClassStringType();
+		if ($isObject->yes()) {
+			return $classString;
+		}
+
+		return new UnionType([$classString, new ConstantBooleanType(false)]);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

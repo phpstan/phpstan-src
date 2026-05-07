@@ -439,6 +439,11 @@ class NeverType implements CompoundType
 		return $this;
 	}
 
+	public function toGetClassResultType(): Type
+	{
+		return $this;
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this;

@@ -10,11 +10,8 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -48,29 +45,7 @@ final class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			return new ClassStringType();
 		}
 
-		return TypeTraverser::map(
-			$argType,
-			static function (Type $type, callable $traverse): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-
-				$isObject = $type->isObject();
-				if ($isObject->no()) {
-					return new ConstantBooleanType(false);
-				}
-
-				$classStringType = $type->getClassStringType();
-				if ($isObject->yes()) {
-					return $classStringType;
-				}
-
-				return new UnionType([
-					$classStringType,
-					new ConstantBooleanType(false),
-				]);
-			},
-		);
+		return $argType->toGetClassResultType();
 	}
 
 }

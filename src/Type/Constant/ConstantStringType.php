@@ -25,6 +25,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
@@ -291,6 +292,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function toBitwiseNotType(): Type
 	{
 		return new ConstantStringType(~$this->value);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new ObjectType($this->value), false);
 	}
 
 	public function toAbsoluteNumber(): Type

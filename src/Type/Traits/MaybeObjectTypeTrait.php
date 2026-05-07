@@ -15,6 +15,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
@@ -48,6 +49,11 @@ trait MaybeObjectTypeTrait
 	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
 	}
 
 	public function isEnum(): TrinaryLogic

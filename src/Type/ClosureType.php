@@ -526,6 +526,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->toClassConstantType($reflectionProvider);
 	}
 
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

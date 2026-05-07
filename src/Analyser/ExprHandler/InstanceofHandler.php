@@ -12,7 +12,6 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Traverser\InstanceOfClassTypeTraverser;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -21,7 +20,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use function array_merge;
 use function strtolower;
@@ -94,9 +92,9 @@ final class InstanceofHandler implements ExprHandler
 			}
 		} else {
 			$classType = $scope->getType($expr->class);
-			$traverser = new InstanceOfClassTypeTraverser();
-			$classType = TypeTraverser::map($classType, $traverser);
-			$uncertainty = $traverser->getUncertainty();
+			$result = $classType->toObjectTypeForInstanceofCheck();
+			$classType = $result->type;
+			$uncertainty = $result->uncertainty;
 		}
 
 		if ($classType->isSuperTypeOf(new MixedType())->yes()) {

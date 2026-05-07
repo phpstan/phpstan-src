@@ -11,9 +11,11 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 trait NonObjectTypeTrait
@@ -37,6 +39,11 @@ trait NonObjectTypeTrait
 	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
 	}
 
 	public function isEnum(): TrinaryLogic

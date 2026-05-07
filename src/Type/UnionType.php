@@ -1103,6 +1103,23 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->toClassConstantType($reflectionProvider));
 	}
 
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		$types = [];
+		$uncertainty = false;
+		foreach ($this->getTypes() as $innerType) {
+			$result = $innerType->toObjectTypeForInstanceofCheck();
+			$types[] = $result->type;
+			if (!$result->uncertainty) {
+				continue;
+			}
+
+			$uncertainty = true;
+		}
+
+		return new ClassNameToObjectTypeResult(TypeCombinator::union(...$types), $uncertainty);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		$type = $this->unionTypes(static fn (Type $type): Type => $type->toAbsoluteNumber());

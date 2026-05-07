@@ -777,6 +777,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
 	}
 
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult($this, true);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

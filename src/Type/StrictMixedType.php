@@ -418,6 +418,11 @@ class StrictMixedType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

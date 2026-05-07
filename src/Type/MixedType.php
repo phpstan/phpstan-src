@@ -642,6 +642,11 @@ class MixedType implements CompoundType, SubtractableType
 		return new ErrorType();
 	}
 
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return new ClassNameToObjectTypeResult(new MixedType(), false);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

@@ -129,3 +129,30 @@ function testClassExistsFalseNotRemembered(): void
 
 	assertType('bool', \class_exists('Bug8579FalseNotRememberedA'));
 }
+
+function testInterfaceExistsFalseNotRemembered(): void
+{
+	if (!\interface_exists('Bug8579FalseNotRememberedC')) {
+		assertType('bool', \interface_exists('Bug8579FalseNotRememberedC'));
+	}
+
+	assertType('bool', \interface_exists('Bug8579FalseNotRememberedC'));
+}
+
+function testTraitExistsFalseNotRemembered(): void
+{
+	if (!\trait_exists('Bug8579FalseNotRememberedD')) {
+		assertType('bool', \trait_exists('Bug8579FalseNotRememberedD'));
+	}
+
+	assertType('bool', \trait_exists('Bug8579FalseNotRememberedD'));
+}
+
+function testEnumExistsFalseNotRemembered(): void
+{
+	if (!\enum_exists('Bug8579FalseNotRememberedE')) {
+		assertType('bool', \enum_exists('Bug8579FalseNotRememberedE'));
+	}
+
+	assertType('bool', \enum_exists('Bug8579FalseNotRememberedE'));
+}

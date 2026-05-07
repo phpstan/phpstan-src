@@ -110,22 +110,22 @@ function test(): void
 	}
 }
 
-function testClassExistsFalseNotRemembered(): void
+function testClassExistsRemembered(): void
 {
-	if (!class_exists('Bug8579FalseNotRememberedA')) {
-		assertType('bool', class_exists('Bug8579FalseNotRememberedA'));
+	if (\class_exists('Bug8579RememberedA')) {
+		assertType('true', \class_exists('Bug8579RememberedA'));
+	} else {
+		assertType('bool', \class_exists('Bug8579RememberedA'));
 	}
 
-	assertType('bool', class_exists('Bug8579FalseNotRememberedA'));
+	assertType('bool', \class_exists('Bug8579RememberedA'));
 }
 
-function testClassExistsFalseNotRememberedElse(): void
+function testClassExistsFalseNotRemembered(): void
 {
-	if (class_exists('Bug8579FalseNotRememberedB')) {
-		assertType('bool', class_exists('Bug8579FalseNotRememberedB'));
-	} else {
-		assertType('bool', class_exists('Bug8579FalseNotRememberedB'));
+	if (!\class_exists('Bug8579FalseNotRememberedA')) {
+		assertType('bool', \class_exists('Bug8579FalseNotRememberedA'));
 	}
 
-	assertType('bool', class_exists('Bug8579FalseNotRememberedB'));
+	assertType('bool', \class_exists('Bug8579FalseNotRememberedA'));
 }

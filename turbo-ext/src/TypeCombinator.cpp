@@ -1566,15 +1566,19 @@ public:
 		return 0;
 	}
 
-	/* $type instanceof ClosureType || ($type instanceof CallableType &&
-	 * !$type->isCommonCallable()); -1 = pending exception */
+	/* private static isClosureOrNonCommonCallableType(Type $type): bool
+	 * — -1 = pending exception */
 	static int isClosureOrNonCommonCallableType(zval *type)
 	{
 		if (isInstance(type, pt_ce_closure_type)) return 1;
-		if (!isInstance(type, pt_ce_callable_type)) return 0;
-		int common = callBool(type, PT_LC("iscommoncallable"));
-		if (UNEXPECTED(common < 0)) return -1;
-		return !common;
+		/* get_class($type) === CallableType::class && !$type->equals(new CallableType()) */
+		if (Z_TYPE_P(type) != IS_OBJECT || Z_OBJCE_P(type) != pt_ce_callable_type) return 0;
+		zval raw;
+		zv::Val commonCallable = adopted(pt_callable_type_new(&raw), raw);
+		if (UNEXPECTED(commonCallable.isUndef())) return -1;
+		int equal = typeEquals(type, commonCallable.raw());
+		if (UNEXPECTED(equal < 0)) return -1;
+		return !equal;
 	}
 
 	/* the SubtractableType arm of compareTypesInUnion(): whether

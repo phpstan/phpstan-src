@@ -60,7 +60,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use Throwable;
 use function array_filter;
@@ -462,7 +461,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($this->getArraySortPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg))),
+				new NativeTypeExpr($scope->getType($arrayArg)->sortArray(), $scope->getNativeType($arrayArg)->sortArray()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -720,31 +719,6 @@ final class FuncCallHandler implements ExprHandler
 		);
 
 		return $arrayType;
-	}
-
-	private function getArraySortPreserveListFunctionType(Type $type): Type
-	{
-		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-
-			if (!$type instanceof ArrayType && !$type instanceof ConstantArrayType) {
-				return $type;
-			}
-
-			$newArrayType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $type->getIterableValueType()), new AccessoryArrayListType()]);
-			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
-			}
-
-			return $newArrayType;
-		});
 	}
 
 	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type

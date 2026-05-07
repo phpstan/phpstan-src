@@ -273,6 +273,14 @@ interface Type
 	/** Models shuffle() effect on the array. Result is always a list. */
 	public function shuffleArray(): Type;
 
+	/**
+	 * Models `sort` / `rsort` / `usort`: values are reordered and the array
+	 * is re-indexed as a list. Empty arrays stay empty; non-array leaves
+	 * pass through unchanged (the call site is responsible for arg-type
+	 * checks).
+	 */
+	public function sortArray(): Type;
+
 	/** Models array_slice($array, $offset, $length, $preserveKeys). */
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type;
 

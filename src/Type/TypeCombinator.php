@@ -508,14 +508,8 @@ final class TypeCombinator
 	private static function compareTypesInUnion(Type $a, Type $b): ?array
 	{
 		if (
-			(
-				$a instanceof ClosureType
-				|| ($a instanceof CallableType && !$a->isCommonCallable())
-			)
-			&& (
-				$b instanceof ClosureType
-				|| ($b instanceof CallableType && !$b->isCommonCallable())
-			)
+			self::isClosureOrNonCommonCallableType($a)
+			&& self::isClosureOrNonCommonCallableType($b)
 			&& !$a->equals($b)
 		) {
 			return null;
@@ -667,6 +661,16 @@ final class TypeCombinator
 		}
 
 		return null;
+	}
+
+	private static function isClosureOrNonCommonCallableType(Type $type): bool
+	{
+		if ($type instanceof ClosureType) {
+			return true;
+		}
+
+		return get_class($type) === CallableType::class
+			   && !$type->equals(new CallableType());
 	}
 
 	/**

@@ -10,6 +10,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
@@ -382,6 +383,15 @@ interface Type
 	 * and possibly-objects yield the union of both.
 	 */
 	public function toGetClassResultType(): Type;
+
+	/**
+	 * Models the type of `$x::class`. For known final classes the literal
+	 * class name is returned; for everything else an
+	 * `IntersectionType[ClassString<X>, AccessoryLiteralStringType]`.
+	 * `NullType` passes through (mirrors PHP's nullsafe `::class` semantics).
+	 * `ReflectionProvider` is needed for the final-class lookup.
+	 */
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type;
 
 	/** Models the (int) cast. */
 	public function toInteger(): Type;

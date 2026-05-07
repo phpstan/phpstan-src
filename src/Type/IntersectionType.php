@@ -19,6 +19,7 @@ use PHPStan\Reflection\MissingConstantFromReflectionException;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
@@ -1419,6 +1420,11 @@ class IntersectionType implements CompoundType
 	public function toGetClassResultType(): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->toGetClassResultType());
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->toClassConstantType($reflectionProvider));
 	}
 
 	public function toAbsoluteNumber(): Type

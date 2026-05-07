@@ -11,14 +11,17 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\EnumPropertyReflection;
 use PHPStan\Reflection\Php\EnumUnresolvedPropertyPrototypeReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -226,6 +229,17 @@ class EnumCaseObjectType extends ObjectType
 	public function getClassStringType(): Type
 	{
 		return new GenericClassStringType(new ObjectType($this->getClassName()));
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// Enum cases always read their `::class` as the bare enum class
+		// name. Skip the parent's finality collapse: even though enum
+		// classes are reported as `final` by reflection, `Foo::Bar::class`
+		// in user code should resolve to `class-string<Foo>&literal-string`,
+		// not the literal `'Foo'`, to keep the case-binding visible at
+		// downstream sites.
+		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
 	}
 
 	public function toPhpDocNode(): TypeNode

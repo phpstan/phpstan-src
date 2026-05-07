@@ -13,6 +13,7 @@ use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
@@ -632,6 +633,13 @@ class MixedType implements CompoundType, SubtractableType
 		}
 
 		return new UnionType([$classString, new ConstantBooleanType(false)]);
+	}
+
+	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
+	{
+		// `mixed::class` is undefined — the original `TypeTraverser` cb fell
+		// through to `ErrorType` for any leaf that wasn't a definite object.
+		return new ErrorType();
 	}
 
 	public function toAbsoluteNumber(): Type

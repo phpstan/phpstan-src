@@ -441,6 +441,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toObjectTypeForInstanceofCheck();
 	}
 
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		return $this->resolve()->toObjectTypeForIsACheck($objectOrClassType, $allowString, $allowSameClass);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->resolve()->toAbsoluteNumber();

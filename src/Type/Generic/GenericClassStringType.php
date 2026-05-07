@@ -55,6 +55,18 @@ class GenericClassStringType extends ClassStringType
 		return new ClassNameToObjectTypeResult($this->getGenericType(), true);
 	}
 
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				TypeCombinator::union($this->getGenericType(), $this),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult($this->getGenericType(), false);
+	}
+
 	public function getClassStringObjectType(): Type
 	{
 		return $this->getGenericType();

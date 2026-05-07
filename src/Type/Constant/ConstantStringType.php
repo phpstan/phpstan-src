@@ -37,6 +37,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
@@ -44,8 +45,11 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function addcslashes;
+use function array_unique;
+use function array_values;
 use function in_array;
 use function is_float;
 use function is_int;
@@ -297,6 +301,56 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
 	{
 		return new ClassNameToObjectTypeResult(new ObjectType($this->value), false);
+	}
+
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		$objectOrClassTypeClassNames = $objectOrClassType->getObjectClassNames();
+		if ($allowString) {
+			foreach ($objectOrClassType->getConstantStrings() as $constantString) {
+				$objectOrClassTypeClassNames[] = $constantString->getValue();
+			}
+			$objectOrClassTypeClassNames = array_values(array_unique($objectOrClassTypeClassNames));
+		}
+
+		$uncertainty = false;
+		if (!$allowSameClass) {
+			if ($objectOrClassTypeClassNames === [$this->value]) {
+				$isSameClass = true;
+				foreach ($objectOrClassType->getObjectClassReflections() as $classReflection) {
+					if (!$classReflection->isFinal()) {
+						$isSameClass = false;
+						break;
+					}
+				}
+
+				if ($isSameClass) {
+					return new ClassNameToObjectTypeResult(new NeverType(), false);
+				}
+			}
+
+			if (
+				// For object, as soon as the exact same type is provided
+				// in the list we cannot be sure of the result
+				in_array($this->value, $objectOrClassTypeClassNames, true)
+				// This also occurs for generic class string
+				|| ($allowString && $objectOrClassTypeClassNames === [] && $objectOrClassType->isSuperTypeOf($this)->yes())
+			) {
+				$uncertainty = true;
+			}
+		}
+
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([
+					new ObjectType($this->value),
+					new GenericClassStringType(new ObjectType($this->value)),
+				]),
+				$uncertainty,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectType($this->value), $uncertainty);
 	}
 
 	public function toAbsoluteNumber(): Type

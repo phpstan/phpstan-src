@@ -531,6 +531,18 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return new ClassNameToObjectTypeResult($this, true);
 	}
 
+	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
+	{
+		if ($allowString) {
+			return new ClassNameToObjectTypeResult(
+				new UnionType([new ObjectWithoutClassType(), new ClassStringType()]),
+				false,
+			);
+		}
+
+		return new ClassNameToObjectTypeResult(new ObjectWithoutClassType(), false);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

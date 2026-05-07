@@ -72,6 +72,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Php\VersionCompareHelper;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
@@ -81,6 +82,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_keys;
@@ -89,6 +91,7 @@ use function array_map;
 use function array_merge;
 use function array_reverse;
 use function array_shift;
+use function array_values;
 use function count;
 use function in_array;
 use function is_string;
@@ -540,6 +543,17 @@ final class TypeSpecifier
 							$scope,
 						)->setRootExpr($expr),
 					);
+				}
+			}
+
+			// version_compare(PHP_VERSION, 'x.y') [<|<=] N  or  N [<|<=] version_compare(PHP_VERSION, 'x.y')
+			$versionCompareResult = $this->specifyTypesForVersionCompare2Arg($expr->left, $expr->right, $orEqual, $scope, $context, $expr);
+			if ($versionCompareResult !== null) {
+				$result = $result->unionWith($versionCompareResult);
+			} else {
+				$versionCompareResult = $this->specifyTypesForVersionCompare2Arg($expr->right, $expr->left, $orEqual, $scope, $context, $expr, false);
+				if ($versionCompareResult !== null) {
+					$result = $result->unionWith($versionCompareResult);
 				}
 			}
 
@@ -3091,6 +3105,29 @@ final class TypeSpecifier
 			)->setRootExpr($expr);
 		}
 
+		// version_compare(PHP_VERSION, 'x.y') === N
+		if (
+			!$context->null()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& !$unwrappedLeftExpr->isFirstClassCallable()
+			&& count($unwrappedLeftExpr->getArgs()) === 2
+			&& $rightType instanceof ConstantIntegerType
+			&& in_array($rightType->getValue(), [-1, 0, 1], true)
+		) {
+			$parsed = VersionCompareHelper::parseVersionCompareFuncCall($unwrappedLeftExpr, $scope);
+			if ($parsed !== null) {
+				[$phpVersionArgIndex, $versionId] = $parsed;
+				$syntheticExpr = VersionCompareHelper::resultSetToPhpVersionIdComparison(
+					[$rightType->getValue()],
+					$phpVersionArgIndex,
+					$versionId,
+				);
+				if ($syntheticExpr !== null) {
+					return $this->specifyTypesInCondition($scope, $syntheticExpr, $context)->setRootExpr($expr);
+				}
+			}
+		}
+
 		// get_class($a) === 'Foo'
 		if (
 			$context->true()
@@ -3381,6 +3418,56 @@ final class TypeSpecifier
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	private function specifyTypesForVersionCompare2Arg(
+		Expr $funcCallSide,
+		Expr $constantSide,
+		bool $orEqual,
+		Scope $scope,
+		TypeSpecifierContext $context,
+		Expr $rootExpr,
+		bool $funcCallOnLeft = true,
+	): ?SpecifiedTypes
+	{
+		if (!$funcCallSide instanceof FuncCall || $funcCallSide->isFirstClassCallable() || count($funcCallSide->getArgs()) !== 2) {
+			return null;
+		}
+
+		$constantType = $scope->getType($constantSide);
+		if (!$constantType instanceof ConstantIntegerType) {
+			return null;
+		}
+
+		$parsed = VersionCompareHelper::parseVersionCompareFuncCall($funcCallSide, $scope);
+		if ($parsed === null) {
+			return null;
+		}
+
+		[$phpVersionArgIndex, $versionId] = $parsed;
+
+		$n = $constantType->getValue();
+		$possibleResults = [-1, 0, 1];
+
+		if ($funcCallOnLeft) {
+			// funcCall [<|<=] N
+			$resultSet = array_values(array_filter($possibleResults, static fn (int $r): bool => $orEqual ? $r <= $n : $r < $n));
+		} else {
+			// N [<|<=] funcCall
+			$resultSet = array_values(array_filter($possibleResults, static fn (int $r): bool => $orEqual ? $n <= $r : $n < $r));
+		}
+
+		$syntheticExpr = VersionCompareHelper::resultSetToPhpVersionIdComparison(
+			$resultSet,
+			$phpVersionArgIndex,
+			$versionId,
+		);
+
+		if ($syntheticExpr === null) {
+			return null;
+		}
+
+		return $this->specifyTypesInCondition($scope, $syntheticExpr, $context)->setRootExpr($rootExpr);
 	}
 
 }

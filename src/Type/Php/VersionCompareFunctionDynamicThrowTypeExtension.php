@@ -49,7 +49,7 @@ final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFu
 
 		foreach ($operatorStrings as $operatorString) {
 			$operatorValue = $operatorString->getValue();
-			if (!in_array($operatorValue, VersionCompareFunctionDynamicReturnTypeExtension::VALID_OPERATORS, true)) {
+			if (!in_array($operatorValue, VersionCompareHelper::VALID_OPERATORS, true)) {
 				return $functionReflection->getThrowType();
 			}
 		}

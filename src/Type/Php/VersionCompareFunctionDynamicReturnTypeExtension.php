@@ -30,23 +30,6 @@ use function version_compare;
 final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public const VALID_OPERATORS = [
-		'<',
-		'lt',
-		'<=',
-		'le',
-		'>',
-		'gt',
-		'>=',
-		'ge',
-		'==',
-		'=',
-		'eq',
-		'!=',
-		'<>',
-		'ne',
-	];
-
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 */
@@ -111,7 +94,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 				if (isset($operatorStrings)) {
 					foreach ($operatorStrings as $operatorString) {
 						$operatorValue = $operatorString->getValue();
-						if (!in_array($operatorValue, self::VALID_OPERATORS, true)) {
+						if (!in_array($operatorValue, VersionCompareHelper::VALID_OPERATORS, true)) {
 							if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 								$canBeNull = true;
 							}

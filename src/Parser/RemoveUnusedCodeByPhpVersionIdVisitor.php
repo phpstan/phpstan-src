@@ -6,7 +6,10 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Type\Php\VersionCompareHelper;
 use function count;
+use function in_array;
+use function strtolower;
 use function version_compare;
 
 final class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
@@ -32,6 +35,31 @@ final class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 		}
 
 		$cond = $node->cond;
+
+		$result = $this->evaluateVersionCompareCall($cond);
+		if ($result === null) {
+			$result = $this->evaluatePhpVersionIdComparison($cond);
+		}
+		if ($result === null) {
+			return null;
+		}
+		if ($result) {
+			// remove else
+			$node->cond = new Node\Expr\ConstFetch(new Node\Name('true'));
+			$node->else = null;
+
+			return $node;
+		}
+
+		// remove if
+		$node->cond = new Node\Expr\ConstFetch(new Node\Name('false'));
+		$node->stmts = [];
+
+		return $node;
+	}
+
+	private function evaluatePhpVersionIdComparison(Node\Expr $cond): ?bool
+	{
 		if (
 			!$cond instanceof Node\Expr\BinaryOp\Smaller
 			&& !$cond instanceof Node\Expr\BinaryOp\SmallerOrEqual
@@ -57,20 +85,65 @@ final class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		$result = version_compare($operands[0], $operands[1], $operator);
-		if ($result) {
-			// remove else
-			$node->cond = new Node\Expr\ConstFetch(new Node\Name('true'));
-			$node->else = null;
+		return version_compare($operands[0], $operands[1], $operator);
+	}
 
-			return $node;
+	private function evaluateVersionCompareCall(Node\Expr $cond): ?bool
+	{
+		if (!$cond instanceof Node\Expr\FuncCall) {
+			return null;
 		}
 
-		// remove if
-		$node->cond = new Node\Expr\ConstFetch(new Node\Name('false'));
-		$node->stmts = [];
+		if (!$cond->name instanceof Node\Name) {
+			return null;
+		}
 
-		return $node;
+		if (strtolower((string) $cond->name) !== 'version_compare') {
+			return null;
+		}
+
+		$args = $cond->getArgs();
+		if (count($args) !== 3) {
+			return null;
+		}
+
+		$phpVersionArgIndex = null;
+		if (
+			$args[0]->value instanceof Node\Expr\ConstFetch
+			&& $args[0]->value->name->toString() === 'PHP_VERSION'
+		) {
+			$phpVersionArgIndex = 0;
+		} elseif (
+			$args[1]->value instanceof Node\Expr\ConstFetch
+			&& $args[1]->value->name->toString() === 'PHP_VERSION'
+		) {
+			$phpVersionArgIndex = 1;
+		}
+
+		if ($phpVersionArgIndex === null) {
+			return null;
+		}
+
+		$otherArgIndex = $phpVersionArgIndex === 0 ? 1 : 0;
+		if (!$args[$otherArgIndex]->value instanceof Node\Scalar\String_) {
+			return null;
+		}
+		$versionString = $args[$otherArgIndex]->value->value;
+
+		if (!$args[2]->value instanceof Node\Scalar\String_) {
+			return null;
+		}
+		$operator = $args[2]->value->value;
+
+		if (!in_array($operator, VersionCompareHelper::VALID_OPERATORS, true)) {
+			return null;
+		}
+
+		if ($phpVersionArgIndex === 0) {
+			return version_compare($this->phpVersionString, $versionString, $operator);
+		}
+
+		return version_compare($versionString, $this->phpVersionString, $operator);
 	}
 
 	/**

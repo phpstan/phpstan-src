@@ -58,6 +58,21 @@ class CleaningParserTest extends PHPStanTestCase
 				__DIR__ . '/data/cleaning-property-hooks-after.php',
 				80400,
 			],
+			[
+				__DIR__ . '/data/cleaning-version-compare-before.php',
+				__DIR__ . '/data/cleaning-version-compare-after-81.php',
+				80100,
+			],
+			[
+				__DIR__ . '/data/cleaning-version-compare-before.php',
+				__DIR__ . '/data/cleaning-version-compare-after-81.php',
+				80200,
+			],
+			[
+				__DIR__ . '/data/cleaning-version-compare-before.php',
+				__DIR__ . '/data/cleaning-version-compare-after-74.php',
+				70400,
+			],
 		];
 	}
 

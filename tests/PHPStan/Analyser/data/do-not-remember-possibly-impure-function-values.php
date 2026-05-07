@@ -113,7 +113,7 @@ function test(): void
 function testClassExistsFalseNotRemembered(): void
 {
 	if (!class_exists('Bug8579FalseNotRememberedA')) {
-		// class_exists returned false here, but we don't exit
+		assertType('bool', class_exists('Bug8579FalseNotRememberedA'));
 	}
 
 	assertType('bool', class_exists('Bug8579FalseNotRememberedA'));
@@ -122,9 +122,9 @@ function testClassExistsFalseNotRemembered(): void
 function testClassExistsFalseNotRememberedElse(): void
 {
 	if (class_exists('Bug8579FalseNotRememberedB')) {
-		// true branch
+		assertType('bool', class_exists('Bug8579FalseNotRememberedB'));
 	} else {
-		// class_exists returned false in this branch
+		assertType('bool', class_exists('Bug8579FalseNotRememberedB'));
 	}
 
 	assertType('bool', class_exists('Bug8579FalseNotRememberedB'));

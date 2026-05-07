@@ -393,6 +393,16 @@ interface Type
 	 */
 	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type;
 
+	/**
+	 * Projects a class-name-or-object `Type` (the right-hand side of
+	 * `$x instanceof <expr>`) to the `ObjectType` it should be compared
+	 * against. Constant class strings collapse to their `ObjectType`
+	 * exactly; everything kept symbolically (object class names,
+	 * `class-string<X>`) carries an uncertainty flag so the caller can
+	 * fall back to `BooleanType` instead of a definite yes/no.
+	 */
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult;
+
 	/** Models the (int) cast. */
 	public function toInteger(): Type;
 

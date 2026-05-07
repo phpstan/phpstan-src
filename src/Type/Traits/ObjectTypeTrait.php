@@ -19,6 +19,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
@@ -62,6 +63,16 @@ trait ObjectTypeTrait
 		}
 
 		return new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		// Definite-object types keep themselves as the comparison target —
+		// they're already an `ObjectType` (or its accessory). The
+		// uncertainty flag is set because the `instanceof` decision can
+		// only be made at runtime when comparing against a class name
+		// computed from the value.
+		return new ClassNameToObjectTypeResult($this, true);
 	}
 
 	public function isEnum(): TrinaryLogic

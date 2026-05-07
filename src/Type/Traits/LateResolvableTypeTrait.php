@@ -13,6 +13,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -433,6 +434,11 @@ trait LateResolvableTypeTrait
 	public function toClassConstantType(ReflectionProvider $reflectionProvider): Type
 	{
 		return $this->resolve()->toClassConstantType($reflectionProvider);
+	}
+
+	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
+	{
+		return $this->resolve()->toObjectTypeForInstanceofCheck();
 	}
 
 	public function toAbsoluteNumber(): Type

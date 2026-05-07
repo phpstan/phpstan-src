@@ -273,8 +273,10 @@ final class FuncCallHandler implements ExprHandler
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		if ($arrayWalkValueTypes !== null && $arrayWalkArrayArg !== null) {
-			$newArrayType = $this->getArrayWalkResultType($arrayWalkOriginalArrayType, $arrayWalkValueTypes[0]);
-			$newArrayNativeType = $this->getArrayWalkResultType($arrayWalkOriginalArrayNativeType, $arrayWalkValueTypes[1]);
+			$arrayWalkValueType = $arrayWalkValueTypes[0];
+			$arrayWalkValueNativeType = $arrayWalkValueTypes[1];
+			$newArrayType = $arrayWalkOriginalArrayType->mapValueType(static fn (Type $type): Type => $arrayWalkValueType);
+			$newArrayNativeType = $arrayWalkOriginalArrayNativeType->mapValueType(static fn (Type $type): Type => $arrayWalkValueNativeType);
 
 			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
@@ -478,7 +480,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg))),
+				new NativeTypeExpr($scope->getType($arrayArg)->makeListMaybe(), $scope->getNativeType($arrayArg)->makeListMaybe()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -719,16 +721,6 @@ final class FuncCallHandler implements ExprHandler
 		);
 
 		return $arrayType;
-	}
-
-	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type
-	{
-		return $type->makeListMaybe();
-	}
-
-	private function getArrayWalkResultType(Type $arrayType, Type $newValueType): Type
-	{
-		return $arrayType->mapValueType(static fn (Type $type): Type => $newValueType);
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

@@ -164,8 +164,7 @@ final class TypeSpecifier
 				return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
 			}
 
-			$classType = $scope->getType($expr->class);
-			$result = $classType->toObjectTypeForInstanceofCheck();
+			$result = $scope->getType($expr->class)->toObjectTypeForInstanceofCheck();
 			$type = $result->type;
 			$uncertainty = $result->uncertainty;
 

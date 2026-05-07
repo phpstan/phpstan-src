@@ -376,6 +376,13 @@ interface Type
 	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
 	public function toBitwiseNotType(): Type;
 
+	/**
+	 * Models `get_class($x)`'s return type per leaf: definite objects yield
+	 * their `class-string` projection, definite non-objects yield `false`,
+	 * and possibly-objects yield the union of both.
+	 */
+	public function toGetClassResultType(): Type;
+
 	/** Models the (int) cast. */
 	public function toInteger(): Type;
 

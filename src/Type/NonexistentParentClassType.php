@@ -168,6 +168,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function toGetClassResultType(): Type
+	{
+		return $this->getClassStringType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

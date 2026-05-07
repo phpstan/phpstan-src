@@ -10,6 +10,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -25,6 +26,11 @@ trait NonObjectTypeTrait
 	public function getClassStringType(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return new ConstantBooleanType(false);
 	}
 
 	public function isEnum(): TrinaryLogic

@@ -758,6 +758,15 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return new ErrorType();
 	}
 
+	public function toGetClassResultType(): Type
+	{
+		// Preserve static binding (`class-string<static>` /
+		// `class-string<$this>`) by going through `getClassStringType()`
+		// directly instead of delegating to the underlying object type,
+		// which would resolve `static` away.
+		return $this->getClassStringType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

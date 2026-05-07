@@ -1416,6 +1416,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->toBitwiseNotType());
 	}
 
+	public function toGetClassResultType(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->toGetClassResultType());
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toAbsoluteNumber());

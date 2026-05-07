@@ -15,8 +15,10 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 trait MaybeObjectTypeTrait
 {
@@ -34,6 +36,11 @@ trait MaybeObjectTypeTrait
 	public function getClassStringType(): Type
 	{
 		return new ClassStringType();
+	}
+
+	public function toGetClassResultType(): Type
+	{
+		return new UnionType([$this->getClassStringType(), new ConstantBooleanType(false)]);
 	}
 
 	public function isEnum(): TrinaryLogic

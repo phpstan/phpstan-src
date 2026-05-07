@@ -208,6 +208,20 @@ class IntersectionTypeTest extends PHPStanTestCase
 			),
 			TrinaryLogic::createNo(),
 		];
+
+		// array&hasOffsetValue(3, int) isAcceptedBy array<int>|array<string>
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new UnionType([
+				new ArrayType(new MixedType(), new IntegerType()),
+				new ArrayType(new MixedType(), new StringType()),
+			]),
+			TrinaryLogic::createYes(),
+		];
 	}
 
 	#[DataProvider('dataIsAcceptedBy')]

@@ -507,6 +507,20 @@ final class TypeCombinator
 	 */
 	private static function compareTypesInUnion(Type $a, Type $b): ?array
 	{
+		if (
+			(
+				$a instanceof ClosureType
+				|| ($a instanceof CallableType && !$a->isCommonCallable())
+			)
+			&& (
+				$b instanceof ClosureType
+				|| ($b instanceof CallableType && !$b->isCommonCallable())
+			)
+			&& !$a->equals($b)
+		) {
+			return null;
+		}
+
 		if ($a instanceof IntegerRangeType) {
 			$type = $a->tryUnion($b);
 			if ($type !== null) {

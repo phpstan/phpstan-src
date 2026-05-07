@@ -305,6 +305,17 @@ class IntersectionType implements CompoundType
 			static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes),
 		);
 
+		// lazyMaxMin can short-circuit to Yes when array<mixed> (inside e.g. array&callable
+		// or array&hasOffsetValue) is accepted by a specific array type like array<int>,
+		// because MixedType::isAcceptedBy() always returns Yes. The isSuperTypeOf check
+		// considers the intersection holistically and catches these false positives.
+		if ($result->yes()) {
+			$isSuperType = $acceptingType->isSuperTypeOf($this);
+			if ($isSuperType->no()) {
+				return $isSuperType->toAcceptsResult();
+			}
+		}
+
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {
 				return AcceptsResult::createYes();

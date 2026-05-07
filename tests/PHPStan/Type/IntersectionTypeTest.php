@@ -110,6 +110,132 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{Type, Type, TrinaryLogic}>
+	 */
+	public static function dataIsAcceptedBy(): Iterator
+	{
+		// array&callable isAcceptedBy array - success
+		yield [
+			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
+			new ArrayType(new MixedType(), new MixedType()),
+			TrinaryLogic::createYes(),
+		];
+
+		// array&callable isAcceptedBy array<int> - failure
+		yield [
+			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
+			new ArrayType(new MixedType(), new IntegerType()),
+			TrinaryLogic::createNo(),
+		];
+
+		// array&callable isAcceptedBy constantArray{stdClass, string} - maybe
+		yield [
+			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[new UnionType([new ObjectType('stdClass'), new StringType()]), new StringType()],
+			),
+			TrinaryLogic::createMaybe(),
+		];
+
+		// array&callable isAcceptedBy constantArray{string, string} - maybe
+		yield [
+			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[new StringType(), new StringType()],
+			),
+			TrinaryLogic::createMaybe(),
+		];
+
+		// array&hasOffsetValue isAcceptedBy array - success
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new ArrayType(new MixedType(), new MixedType()),
+			TrinaryLogic::createYes(),
+		];
+
+		// array&hasOffsetValue isAcceptedBy array - failure
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new ArrayType(new MixedType(), new StringType()),
+			TrinaryLogic::createNo(),
+		];
+
+		// array&hasOffsetValue isAcceptedBy array<int> - success (matching value type)
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new ArrayType(new MixedType(), new IntegerType()),
+			TrinaryLogic::createYes(),
+		];
+
+		// array&hasOffsetValue isAcceptedBy constantArray{int, int} - success
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(0), new IntegerType()),
+			]),
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[new IntegerType(), new IntegerType()],
+			),
+			TrinaryLogic::createMaybe(),
+		];
+
+		// array&hasOffsetValue isAcceptedBy constantArray{string, string} - failure
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(0), new IntegerType()),
+			]),
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[new StringType(), new StringType()],
+			),
+			TrinaryLogic::createNo(),
+		];
+
+		// array&hasOffsetValue(3, int) isAcceptedBy array<int>|array<string> - yes (array<int> accepts it)
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new UnionType([
+				new ArrayType(new MixedType(), new IntegerType()),
+				new ArrayType(new MixedType(), new StringType()),
+			]),
+			TrinaryLogic::createYes(),
+		];
+	}
+
+	#[DataProvider('dataIsAcceptedBy')]
+	public function testIsAcceptedBy(Type $type, Type $acceptingType, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $acceptingType->accepts($type, true)->result;
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isAcceptedBy(%s)', $type->describe(VerbosityLevel::precise()), $acceptingType->describe(VerbosityLevel::precise())),
+		);
+	}
+
 	public static function dataIsCallable(): array
 	{
 		return [
@@ -362,6 +488,53 @@ class IntersectionTypeTest extends PHPStanTestCase
 				new IntegerType(),
 			]),
 			TrinaryLogic::createYes(),
+		];
+
+		// array&callable isSubTypeOf array - success
+		yield [
+			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
+			new ArrayType(new MixedType(), new MixedType()),
+			TrinaryLogic::createYes(),
+		];
+
+		// array&callable isSubTypeOf array<int> - failure
+		yield [
+			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
+			new ArrayType(new MixedType(), new IntegerType()),
+			TrinaryLogic::createNo(),
+		];
+
+		// array&hasOffsetValue isSubTypeOf array - success
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new ArrayType(new MixedType(), new MixedType()),
+			TrinaryLogic::createYes(),
+		];
+
+		// array&hasOffsetValue isSubTypeOf array<int> - maybe
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new ArrayType(new MixedType(), new IntegerType()),
+			TrinaryLogic::createMaybe(),
+		];
+
+		// array&hasOffsetValue isSubTypeOf array<string> - failure
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+				new HasOffsetValueType(new ConstantIntegerType(3), new IntegerType()),
+			]),
+			new ArrayType(new MixedType(), new StringType()),
+			TrinaryLogic::createNo(),
 		];
 	}
 

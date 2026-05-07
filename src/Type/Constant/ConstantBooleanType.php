@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -81,6 +82,11 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public function toNumber(): Type
 	{
 		return new ConstantIntegerType((int) $this->value);
+	}
+
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
 	}
 
 	public function toAbsoluteNumber(): Type

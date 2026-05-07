@@ -1087,6 +1087,11 @@ class UnionType implements CompoundType
 		return $type;
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toBitwiseNotType());
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		$type = $this->unionTypes(static fn (Type $type): Type => $type->toAbsoluteNumber());

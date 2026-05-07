@@ -288,6 +288,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new ConstantStringType(~$this->value);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();

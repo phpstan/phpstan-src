@@ -419,6 +419,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toNumber();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return $this->resolve()->toBitwiseNotType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->resolve()->toAbsoluteNumber();

@@ -2699,33 +2699,7 @@ final class InitializerExprTypeResolver
 
 	public function getBitwiseNotTypeFromType(Type $exprType): Type
 	{
-		return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-			if ($type instanceof ConstantStringType) {
-				return new ConstantStringType(~$type->getValue());
-			}
-			if ($type->isString()->yes()) {
-				$accessories = [];
-				if (!$type->isNonEmptyString()->yes()) {
-					return new StringType();
-				}
-
-				$accessories[] = new AccessoryNonEmptyStringType();
-				// it is not useful to apply numeric and literal strings here.
-				// numeric string isn't certainly kept numeric: 3v4l.org/JERDB
-
-				return new IntersectionType([new StringType(), ...$accessories]);
-			}
-			if ($type instanceof ConstantIntegerType || $type instanceof ConstantFloatType) {
-				return new ConstantIntegerType(~ (int) $type->getValue());
-			}
-			if ($type->isInteger()->yes() || $type->isFloat()->yes()) {
-				return new IntegerType();
-			}
-			return new ErrorType();
-		});
+		return $exprType->toBitwiseNotType();
 	}
 
 	private function resolveName(Name $name, ?ClassReflection $classReflection): string

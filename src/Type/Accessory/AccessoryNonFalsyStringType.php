@@ -185,6 +185,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

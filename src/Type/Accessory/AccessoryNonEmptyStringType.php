@@ -183,6 +183,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new IntersectionType([new StringType(), new self()]);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

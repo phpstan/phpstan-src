@@ -78,6 +78,11 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		return new ConstantFloatType($this->value);
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new self(~$this->value);
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new self(abs($this->value));

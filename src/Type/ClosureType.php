@@ -510,6 +510,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return new ErrorType();
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();

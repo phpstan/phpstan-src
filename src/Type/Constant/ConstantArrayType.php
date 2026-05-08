@@ -1794,10 +1794,19 @@ class ConstantArrayType implements Type
 			// Unbounded max: probe explicit keys from `$min` onward until
 			// `hasOffsetValueType` answers `no`. Each probe contributes one
 			// optional (or required, when `hasOffsetValueType` is `yes`) slot.
+			$isUnsealed = $this->isUnsealed()->yes();
 			for ($i = $min;; $i++) {
 				$offsetType = new ConstantIntegerType($i);
 				$hasOffset = $this->hasOffsetValueType($offsetType);
 				if ($hasOffset->no()) {
+					break;
+				}
+				// Real unsealed extras make `hasOffsetValueType` answer
+				// `Maybe` for *any* in-range key, so the probe would
+				// otherwise run until `ARRAY_COUNT_LIMIT` bails (slow +
+				// lossy). Stop once the explicit keys are exhausted; the
+				// unsealed slot attached below covers further entries.
+				if ($isUnsealed && !$hasOffset->yes()) {
 					break;
 				}
 				$builderData[] = [$offsetType, $this->getOffsetValueType($offsetType), !$hasOffset->yes()];
@@ -1811,6 +1820,13 @@ class ConstantArrayType implements Type
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		foreach ($builderData as [$offsetType, $valueType, $optional]) {
 			$builder->setOffsetValueType($offsetType, $valueType, $optional);
+		}
+
+		// Carry the unsealed slot through only for the unbounded-max
+		// branch — a bounded-max range caps the result size and the
+		// unsealed extras can't fit.
+		if ($max === null && $this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$builder->makeUnsealed($this->unsealed[0], $this->unsealed[1]);
 		}
 
 		$builtArray = $builder->getArray();

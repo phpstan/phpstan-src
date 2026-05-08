@@ -153,3 +153,22 @@ class ArrayUnshift
 	}
 
 }
+
+class CountNarrowing
+{
+
+	/**
+	 * @param list{int, string, ...<float>} $arr
+	 */
+	public function geMinPreservesUnsealed(array $arr): void
+	{
+		if (count($arr) >= 5) {
+			// `count >= 5` guarantees the first 5 entries exist (the
+			// explicit prefix `[int, string]` plus three values from the
+			// unsealed `<float>` range). Beyond five, the unsealed slot
+			// is preserved so further entries can still appear.
+			assertType('array{int, string, float, float, float, ...<float>}', $arr);
+		}
+	}
+
+}

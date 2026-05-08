@@ -173,6 +173,26 @@ class ArrayFilterCallback
 
 }
 
+class ArrayColumn
+{
+
+	/**
+	 * @param list{array{name: string, age: int}, array{name: string, age: int}, ...<array{name: string, age: int}>} $rows
+	 */
+	public function preserveUnsealed(array $rows): void
+	{
+		// `array_column` plucks the named field from every row,
+		// including rows from the unsealed tail. Each row's `name`
+		// is `string`, so the unsealed slot of the result is `string`
+		// at the original integer keys.
+		assertType(
+			'array{string, string, ...<string>}',
+			array_column($rows, 'name'),
+		);
+	}
+
+}
+
 class ArrayMerge
 {
 

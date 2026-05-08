@@ -151,3 +151,12 @@ class Bar
 	}
 
 }
+
+/** @param array<mixed> $arr */
+function withHasOffset(array $arr): void
+{
+	if (array_key_exists('foo', $arr)) {
+		sort($arr);
+		assertType('non-empty-list', $arr); // This shouldn't be NEVER
+	}
+}

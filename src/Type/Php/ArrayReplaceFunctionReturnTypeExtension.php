@@ -79,6 +79,8 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 
 		if ($allConstant->yes()) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			$unsealedKeys = [];
+			$unsealedValues = [];
 
 			foreach ($argTypes as $argIndex => $argType) {
 				$isOptionalArg = in_array($argIndex, $optionalArgTypes, true);
@@ -89,6 +91,13 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 					foreach ($constantArray->getKeyTypes() as $keyType) {
 						$keyTypes[$keyType->getValue()] = $keyType;
 					}
+					if ($constantArray->isUnsealed()->yes()) {
+						$unsealedTypes = $constantArray->getUnsealedTypes();
+						if ($unsealedTypes !== null) {
+							$unsealedKeys[] = $unsealedTypes[0];
+							$unsealedValues[] = $unsealedTypes[1];
+						}
+					}
 				}
 
 				foreach ($keyTypes as $keyType) {
@@ -98,6 +107,15 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 						$isOptionalArg || !$argType->hasOffsetValueType($keyType)->yes(),
 					);
 				}
+			}
+
+			if (count($unsealedKeys) > 0) {
+				// Union all input unsealed slots — extras can come from
+				// any of the input arrays at otherwise-unmentioned keys.
+				$newArrayBuilder->makeUnsealed(
+					TypeCombinator::union(...$unsealedKeys),
+					TypeCombinator::union(...$unsealedValues),
+				);
 			}
 
 			return $newArrayBuilder->getArray();

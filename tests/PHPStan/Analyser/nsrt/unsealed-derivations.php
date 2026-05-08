@@ -154,6 +154,42 @@ class ArrayUnshift
 
 }
 
+class ArrayMerge
+{
+
+	/**
+	 * @param array{a: int, ...<string, float>} $arr
+	 */
+	public function mergePreservesUnsealed(array $arr): void
+	{
+		// `array_merge` with a sealed second arg appends `b` and keeps
+		// the unsealed extras from the first array.
+		assertType(
+			'array{a: int, b: true, ...<string, float>}',
+			array_merge($arr, ['b' => true]),
+		);
+	}
+
+}
+
+class ArrayReplace
+{
+
+	/**
+	 * @param array{a: int, ...<string, float>} $arr
+	 */
+	public function replacePreservesUnsealed(array $arr): void
+	{
+		// `array_replace` overwrites by key, but the unsealed extras
+		// from `$arr` survive at any unmentioned keys.
+		assertType(
+			'array{a: int, b: true, ...<string, float>}',
+			array_replace($arr, ['b' => true]),
+		);
+	}
+
+}
+
 class CountNarrowing
 {
 

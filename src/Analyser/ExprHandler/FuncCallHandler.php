@@ -699,6 +699,11 @@ final class FuncCallHandler implements ExprHandler
 							$constantArray->isOptionalKey($k),
 						);
 					}
+
+					$unsealedTypes = $constantArray->getUnsealedTypes();
+					if ($unsealedTypes !== null) {
+						$arrayTypeBuilder->makeUnsealed($unsealedTypes[0], $unsealedTypes[1]);
+					}
 				}
 
 				$constantArray = $arrayTypeBuilder->getArray();

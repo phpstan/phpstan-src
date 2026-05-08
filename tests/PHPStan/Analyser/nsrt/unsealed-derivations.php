@@ -135,3 +135,21 @@ class ChangeKeyCase
 	}
 
 }
+
+class ArrayUnshift
+{
+
+	/**
+	 * @param list{int, string, ...<float>} $arr
+	 */
+	public function prependPreservesUnsealed(array $arr): void
+	{
+		array_unshift($arr, true, null);
+		// `array_unshift` prepends the new values and re-indexes; the
+		// original list's unsealed tail (`...<float>`) must be carried
+		// through so the result still tracks "extra entries are
+		// `float`".
+		assertType('array{true, null, int, string, ...<float>}', $arr);
+	}
+
+}

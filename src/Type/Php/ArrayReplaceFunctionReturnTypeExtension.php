@@ -91,13 +91,17 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 					foreach ($constantArray->getKeyTypes() as $keyType) {
 						$keyTypes[$keyType->getValue()] = $keyType;
 					}
-					if ($constantArray->isUnsealed()->yes()) {
-						$unsealedTypes = $constantArray->getUnsealedTypes();
-						if ($unsealedTypes !== null) {
-							$unsealedKeys[] = $unsealedTypes[0];
-							$unsealedValues[] = $unsealedTypes[1];
-						}
+					if (!$constantArray->isUnsealed()->yes()) {
+						continue;
 					}
+
+					$unsealedTypes = $constantArray->getUnsealedTypes();
+					if ($unsealedTypes === null) {
+						continue;
+					}
+
+					$unsealedKeys[] = $unsealedTypes[0];
+					$unsealedValues[] = $unsealedTypes[1];
 				}
 
 				foreach ($keyTypes as $keyType) {

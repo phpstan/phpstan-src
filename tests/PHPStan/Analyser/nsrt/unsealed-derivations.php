@@ -249,6 +249,38 @@ class ArrayReplace
 
 }
 
+class UnpackingMakesUnsealed
+{
+
+	/**
+	 * @param list{int, string} $sealed
+	 * @param list<float> $unknownItems
+	 */
+	public function unshiftListWithUnpack(array $sealed, array $unknownItems): void
+	{
+		array_unshift($sealed, ...$unknownItems);
+		// A list can't keep precise indices when an unknown number of
+		// values are prepended — every original index is shifted by an
+		// unknown amount. The shape collapses to "non-empty list of the
+		// value union" (current behavior, kept).
+		assertType('non-empty-list<float|int|string>', $sealed);
+	}
+
+	/**
+	 * @param array{a: int, b: string} $sealed
+	 * @param list<float> $unknownItems
+	 */
+	public function unshiftAssocWithUnpack(array $sealed, array $unknownItems): void
+	{
+		array_unshift($sealed, ...$unknownItems);
+		// Associative input — string keys are preserved exactly. The
+		// unknown number of prepended values is reflected as an unsealed
+		// `int` slot on the resulting shape.
+		assertType('array{a: int, b: string, ...<int, float>}', $sealed);
+	}
+
+}
+
 class CountNarrowing
 {
 

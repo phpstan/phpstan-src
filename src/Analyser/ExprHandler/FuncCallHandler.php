@@ -709,14 +709,50 @@ final class FuncCallHandler implements ExprHandler
 				$constantArray = $arrayTypeBuilder->getArray();
 
 				if ($constantArray->isConstantArray()->yes() && $nonConstantArrayWasUnpacked) {
-					$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
-					$isList = $constantArray->isList()->yes();
-					$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
-						? new IntersectionType([$array, new NonEmptyArrayType()])
-						: $array;
-					$constantArray = $isList
-						? TypeCombinator::intersect($constantArray, new AccessoryArrayListType())
-						: $constantArray;
+					$constantArrays = $constantArray->getConstantArrays();
+					if ($constantArray->isList()->yes()) {
+						// A list can't preserve precise indices when an
+						// unknown number of values is prepended/appended —
+						// every index would be shifted by an unknown
+						// amount. Degrade to a `non-empty-list<...>` of
+						// the value union.
+						$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
+						$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
+							? new IntersectionType([$array, new NonEmptyArrayType()])
+							: $array;
+						$constantArray = TypeCombinator::intersect($constantArray, new AccessoryArrayListType());
+					} elseif (count($constantArrays) === 1) {
+						// Associative input — string keys keep their
+						// precise values and the unknown count of
+						// unpacked items lives in an unsealed `int` slot
+						// of the result. Drops the auto-indexed
+						// representatives that the unpacked-arg loop
+						// inserted (they stand in for "0..N-1 of the
+						// unpack value type" and are now subsumed by the
+						// unsealed slot).
+						$builder = ConstantArrayTypeBuilder::createEmpty();
+						$intValues = [];
+						foreach ($constantArrays[0]->getKeyTypes() as $i => $keyType) {
+							$valueType = $constantArrays[0]->getValueTypes()[$i];
+							if ($keyType->isString()->yes()) {
+								$builder->setOffsetValueType($keyType, $valueType, $constantArrays[0]->isOptionalKey($i));
+								continue;
+							}
+							$intValues[] = $valueType;
+						}
+
+						$unsealedKey = new IntegerType();
+						$unsealedValue = count($intValues) > 0 ? TypeCombinator::union(...$intValues) : new MixedType();
+						if ($constantArrays[0]->isUnsealed()->yes()) {
+							$existing = $constantArrays[0]->getUnsealedTypes();
+							if ($existing !== null) {
+								$unsealedKey = TypeCombinator::union($unsealedKey, $existing[0]);
+								$unsealedValue = TypeCombinator::union($unsealedValue, $existing[1]);
+							}
+						}
+						$builder->makeUnsealed($unsealedKey, $unsealedValue);
+						$constantArray = $builder->getArray();
+					}
 				}
 
 				$newArrayTypes[] = $constantArray;

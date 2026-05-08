@@ -181,6 +181,19 @@ final class ArrayFilterFunctionReturnTypeHelper
 					$builder->setOffsetValueType($newKeyType, $newItemType, true);
 				}
 
+				if ($constantArray->isUnsealed()->yes()) {
+					$unsealedTypes = $constantArray->getUnsealedTypes();
+					if ($unsealedTypes !== null) {
+						[$newKey, $newValue] = $this->processKeyAndItemType($scope, $unsealedTypes[0], $unsealedTypes[1], $itemVar, $keyVar, $expr);
+						// Drop the unsealed slot when the predicate
+						// rejects every possible extra (key or value
+						// narrows to `Never`).
+						if (!$newKey instanceof NeverType && !$newValue instanceof NeverType) {
+							$builder->makeUnsealed($newKey, $newValue);
+						}
+					}
+				}
+
 				$results[] = $builder->getArray();
 			}
 

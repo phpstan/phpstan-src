@@ -154,6 +154,25 @@ class ArrayUnshift
 
 }
 
+class ArrayFilterCallback
+{
+
+	/**
+	 * @param array{a: int, ...<string, int|null>} $arr
+	 */
+	public function preserveUnsealed(array $arr): void
+	{
+		// `array_filter` with a callback narrows each entry by the
+		// predicate's truthy projection. The unsealed slot must follow
+		// the same narrowing — `int|null` minus `null` is `int`.
+		assertType(
+			'array{a: int, ...<string, int>}',
+			array_filter($arr, fn ($v) => $v !== null),
+		);
+	}
+
+}
+
 class ArrayMerge
 {
 

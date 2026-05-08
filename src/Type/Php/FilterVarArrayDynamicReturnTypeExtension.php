@@ -173,6 +173,27 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 			$valueTypesBuilder->setOffsetValueType($keyType, $valueType, $optional);
 		}
 
+		// Carry the unsealed slot through from the input. The filter
+		// applies to every key, including those covered by the unsealed
+		// range — run the same filter resolution over the input's
+		// unsealed value type and attach the result.
+		if ($inputConstantArrayType !== null && $inputConstantArrayType->isUnsealed()->yes()) {
+			$unsealedTypes = $inputConstantArrayType->getUnsealedTypes();
+			if ($unsealedTypes !== null) {
+				if ($filterArgType instanceof ConstantIntegerType) {
+					$unsealedFilter = $filterArgType;
+					$unsealedFlags = null;
+				} else {
+					[$unsealedFilter, $unsealedFlags] = $this->fetchFilter(new MixedType());
+				}
+				$unsealedValueType = $this->filterFunctionReturnTypeHelper->getType($unsealedTypes[1], $unsealedFilter, $unsealedFlags);
+				if ($addEmpty) {
+					$unsealedValueType = TypeCombinator::addNull($unsealedValueType);
+				}
+				$valueTypesBuilder->makeUnsealed($unsealedTypes[0], $unsealedValueType);
+			}
+		}
+
 		return $valueTypesBuilder->getArray();
 	}
 

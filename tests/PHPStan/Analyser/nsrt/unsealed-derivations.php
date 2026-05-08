@@ -193,6 +193,26 @@ class ArrayColumn
 
 }
 
+class FilterVarArray
+{
+
+	/**
+	 * @param array{a: int, ...<string, mixed>} $arr
+	 */
+	public function preserveUnsealed(array $arr): void
+	{
+		// `filter_var_array` applies the filter to every value,
+		// including the unsealed extras. The unsealed value type
+		// becomes the filter's projected output (`int|false` for
+		// `FILTER_VALIDATE_INT` over `mixed`).
+		assertType(
+			'array{a: int, ...<string, int|false>}',
+			filter_var_array($arr, FILTER_VALIDATE_INT),
+		);
+	}
+
+}
+
 class ArrayMerge
 {
 

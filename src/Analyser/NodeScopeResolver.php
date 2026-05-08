@@ -189,6 +189,7 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 	private const FOREACH_UNROLL_LIMIT = 16;
+	private const FOREACH_UNROLL_NESTED_LIMIT = 16;
 
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -3896,6 +3897,9 @@ class NodeScopeResolver
 		if ($totalKeys === 0 || $totalKeys > self::FOREACH_UNROLL_LIMIT) {
 			return null;
 		}
+		if ($context->getForeachUnrollFactor() * $totalKeys > self::FOREACH_UNROLL_NESTED_LIMIT) {
+			return null;
+		}
 
 		$nativeIterateeType = $originalScope->getNativeType($stmt->expr);
 		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
@@ -3907,6 +3911,8 @@ class NodeScopeResolver
 		$allBodyScopes = [];
 		$allChainScopes = [];
 		$allBreakScopes = [];
+
+		$bodyContext = $context->enterUnrolledForeach($totalKeys);
 
 		foreach ($constantArrays as $arrayIndex => $constantArray) {
 			$keyTypes = $constantArray->getKeyTypes();
@@ -3971,7 +3977,7 @@ class NodeScopeResolver
 					$iterScope,
 					$iterStorage,
 					new NoopNodeCallback(),
-					$context,
+					$bodyContext,
 				)->filterOutLoopExitPoints();
 
 				$iterEndScope = $bodyResult->getScope();

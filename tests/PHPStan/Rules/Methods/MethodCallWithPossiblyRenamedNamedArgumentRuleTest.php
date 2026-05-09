@@ -36,7 +36,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 			),
 			new OverridingMethodRule(
 				$phpVersion,
-				new MethodSignatureRule(new ParentMethodHelper($phpClassReflectionExtension), true, true),
+				new MethodSignatureRule(new ParentMethodHelper($phpClassReflectionExtension), true, true, true),
 				false,
 				new MethodParameterComparisonHelper($phpVersion),
 				new MethodVisibilityComparisonHelper(),

@@ -53,6 +53,7 @@ use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
 use function substr;
+use const PHP_SAPI;
 
 /**
  * @api
@@ -138,7 +139,7 @@ final class ContainerFactory
 		$configurator->addParameters(array_merge([
 			'rootDir' => $this->rootDirectory,
 			'currentWorkingDirectory' => $this->currentWorkingDirectory,
-			'cliArgumentsVariablesRegistered' => ini_get('register_argc_argv') === '1',
+			'cliArgumentsVariablesRegistered' => PHP_SAPI === 'cli' || ini_get('register_argc_argv') === '1',
 			'tmpDir' => $tempDirectory,
 			'additionalConfigFiles' => $additionalConfigFiles,
 			'allConfigFiles' => $allConfigFiles,

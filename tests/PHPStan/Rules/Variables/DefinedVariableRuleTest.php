@@ -1540,6 +1540,29 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14585(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-14585.php'], []);
+	}
+
+	public function testBug14585NotRegistered(): void
+	{
+		$this->cliArgumentsVariablesRegistered = false;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-14585.php'], [
+			[
+				'Variable $argv might not be defined.',
+				7,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug10729(): void
 	{

@@ -13,6 +13,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -424,7 +426,7 @@ final class ConstantResolver
 				return $constantType;
 			}
 			if (in_array($constantName, $this->dynamicConstantNames, true)) {
-				return $constantType->generalize(GeneralizePrecision::lessSpecific());
+				return $this->generalizeDynamicConstantType($constantType);
 			}
 		}
 
@@ -459,11 +461,21 @@ final class ConstantResolver
 			}
 
 			if ($constantType->isConstantValue()->yes()) {
-				return $constantType->generalize(GeneralizePrecision::lessSpecific());
+				return $this->generalizeDynamicConstantType($constantType);
 			}
 		}
 
 		return $constantType;
+	}
+
+	private function generalizeDynamicConstantType(Type $constantType): Type
+	{
+		$generalized = $constantType->generalize(GeneralizePrecision::lessSpecific());
+		if ($generalized->equals(new ConstantArrayType([], []))) {
+			return new ArrayType(new MixedType(), new MixedType());
+		}
+
+		return $generalized;
 	}
 
 	private function createInteger(?int $min, ?int $max): Type

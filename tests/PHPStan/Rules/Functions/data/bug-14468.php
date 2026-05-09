@@ -56,3 +56,10 @@ function unboundedButDefinitelyWrong(int $min, int $max): void
 {
 	random_int($min, $max); // error - max <= 3 < 5 <= min
 }
+
+/** @param positive-int $positiveInt */
+function positiveInt(int $int, int $positiveInt): void
+{
+	random_int($int, $int);
+	random_int($positiveInt, $positiveInt);
+}

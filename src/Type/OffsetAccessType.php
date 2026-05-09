@@ -24,6 +24,16 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 	{
 	}
 
+	public function getAccessedType(): Type
+	{
+		return $this->type;
+	}
+
+	public function getAccessedOffset(): Type
+	{
+		return $this->offset;
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return array_merge(

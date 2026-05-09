@@ -58,15 +58,18 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\OffsetAccessType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use TypeError;
+use function array_key_exists;
 use function array_key_last;
 use function array_merge;
 use function array_pop;
@@ -439,7 +442,28 @@ final class AssignHandler implements ExprHandler
 			$offsetValueType = $varType;
 			$offsetNativeValueType = $varNativeType;
 
-			[$valueToWrite, $additionalExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope);
+			$dependentPreserved = false;
+			if (
+				count($dimFetchStack) === 1
+				&& count($offsetTypes) === 1
+				&& $offsetTypes[0][0] !== null
+				&& TypeUtils::containsTemplateType($offsetTypes[0][0])
+			) {
+				$rawValueType = $this->getRawExpressionType($scope, $assignedExpr);
+				if (
+					$rawValueType instanceof OffsetAccessType
+					&& $this->isSameTemplateOffset($rawValueType->getAccessedOffset(), $offsetTypes[0][0])
+					&& $rawValueType->getAccessedType()->isSuperTypeOf($offsetValueType)->yes()
+				) {
+					$dependentPreserved = true;
+					$additionalExpressions = [[$dimFetchStack[0], $valueToWrite]];
+					$valueToWrite = $offsetValueType;
+				}
+			}
+
+			if (!$dependentPreserved) {
+				[$valueToWrite, $additionalExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope);
+			}
 
 			if (!$offsetValueType->equals($offsetNativeValueType) || !$valueToWrite->equals($nativeValueToWrite)) {
 				[$nativeValueToWrite, $additionalNativeExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
@@ -1256,6 +1280,29 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return false;
+	}
+
+	private function isSameTemplateOffset(Type $a, Type $b): bool
+	{
+		if ($a->equals($b)) {
+			return true;
+		}
+
+		if ($a instanceof TemplateType && $b instanceof TemplateType) {
+			return $a->getScope()->equals($b->getScope()) && $a->getName() === $b->getName();
+		}
+
+		return false;
+	}
+
+	private function getRawExpressionType(MutatingScope $scope, Expr $expr): ?Type
+	{
+		$key = $scope->getNodeKey($expr);
+		if (!array_key_exists($key, $scope->expressionTypes)) {
+			return null;
+		}
+
+		return $scope->expressionTypes[$key]->getType();
 	}
 
 }

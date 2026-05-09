@@ -824,9 +824,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug7094(): void
 	{
-		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7094.php');
-		$this->assertCount(6, $errors);
+		$this->assertCount(5, $errors);
 
 		$this->assertSame('Parameter #2 $val of method Bug7094\Foo::setAttribute() contains unresolvable type.', $errors[0]->getMessage());
 		$this->assertSame(74, $errors[0]->getLine());
@@ -838,9 +837,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(78, $errors[3]->getLine());
 		$this->assertSame('Return type of call to method Bug7094\Foo::getAttribute() contains unresolvable type.', $errors[4]->getMessage());
 		$this->assertSame(79, $errors[4]->getLine());
-
-		$this->assertSame('Parameter #1 $attr of method Bug7094\Foo::setAttributes() expects array{foo?: string, bar?: 5|6|7, baz?: bool}, non-empty-array<\'bar\'|\'baz\'|\'foo\'|K of string, 5|6|7|bool|string> given.', $errors[5]->getMessage());
-		$this->assertSame(29, $errors[5]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

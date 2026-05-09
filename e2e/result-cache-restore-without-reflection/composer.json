@@ -1,7 +1,8 @@
 {
     "require-dev": {
         "phpstan/phpstan-symfony": "@dev",
-        "phpstan/extension-installer": "^1.4"
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-doctrine": "^2.0"
     },
 	"autoload": {
 		"classmap": [

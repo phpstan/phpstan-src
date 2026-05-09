@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser;
+namespace E2EFixture;
 
 use LogicException;
 use PHPStan\BetterReflection\Identifier\Identifier;

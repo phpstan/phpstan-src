@@ -3,6 +3,11 @@
         "phpstan/phpstan-symfony": "^2.0",
         "phpstan/extension-installer": "^1.4"
     },
+	"autoload": {
+		"classmap": [
+			"lib/"
+		]
+	},
     "config": {
         "allow-plugins": {
             "phpstan/extension-installer": true

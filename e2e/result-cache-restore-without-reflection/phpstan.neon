@@ -6,5 +6,5 @@ parameters:
 services:
 	betterReflectionSourceLocator:
 		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
-		factory: PHPStan\Analyser\ThrowingSourceLocator
+		factory: E2EFixture\ThrowingSourceLocator
 		autowired: false

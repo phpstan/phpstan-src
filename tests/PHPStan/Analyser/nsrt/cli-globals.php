@@ -24,6 +24,7 @@ function h() {
 }
 
 function i() {
+	// user created local variable
 	$argc = 'hallo';
 	$argv = 'welt';
 

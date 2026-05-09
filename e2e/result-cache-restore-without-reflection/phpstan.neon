@@ -1,0 +1,10 @@
+parameters:
+	level: 8
+	paths:
+		- src
+
+services:
+	betterReflectionSourceLocator:
+		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
+		factory: E2EFixture\ThrowingSourceLocator
+		autowired: false

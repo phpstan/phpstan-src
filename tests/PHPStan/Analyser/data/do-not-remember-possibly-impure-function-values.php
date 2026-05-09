@@ -109,3 +109,50 @@ function test(): void
 		assertType('int', impure());
 	}
 }
+
+function testClassExistsRemembered(): void
+{
+	if (\class_exists('Bug8579RememberedA')) {
+		assertType('true', \class_exists('Bug8579RememberedA'));
+	} else {
+		assertType('bool', \class_exists('Bug8579RememberedA'));
+	}
+
+	assertType('bool', \class_exists('Bug8579RememberedA'));
+}
+
+function testClassExistsFalseNotRemembered(): void
+{
+	if (!\class_exists('Bug8579FalseNotRememberedA')) {
+		assertType('bool', \class_exists('Bug8579FalseNotRememberedA'));
+	}
+
+	assertType('bool', \class_exists('Bug8579FalseNotRememberedA'));
+}
+
+function testInterfaceExistsFalseNotRemembered(): void
+{
+	if (!\interface_exists('Bug8579FalseNotRememberedC')) {
+		assertType('bool', \interface_exists('Bug8579FalseNotRememberedC'));
+	}
+
+	assertType('bool', \interface_exists('Bug8579FalseNotRememberedC'));
+}
+
+function testTraitExistsFalseNotRemembered(): void
+{
+	if (!\trait_exists('Bug8579FalseNotRememberedD')) {
+		assertType('bool', \trait_exists('Bug8579FalseNotRememberedD'));
+	}
+
+	assertType('bool', \trait_exists('Bug8579FalseNotRememberedD'));
+}
+
+function testEnumExistsFalseNotRemembered(): void
+{
+	if (!\enum_exists('Bug8579FalseNotRememberedE')) {
+		assertType('bool', \enum_exists('Bug8579FalseNotRememberedE'));
+	}
+
+	assertType('bool', \enum_exists('Bug8579FalseNotRememberedE'));
+}

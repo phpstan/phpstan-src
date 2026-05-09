@@ -7,6 +7,8 @@ parameters:
 		- DynamicConstants\DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT
 		- DynamicConstants\DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT
 		- DynamicConstants\DynamicConstantClass::DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT
+		- DynamicConstants\DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_NO_PHPDOC
 		- GLOBAL_DYNAMIC_CONSTANT
+		- GLOBAL_DYNAMIC_EMPTY_ARRAY
 		DynamicConstants\DynamicConstantClass::DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES_IN_CLASS: 'string|null'
 		GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES: 'string|null'

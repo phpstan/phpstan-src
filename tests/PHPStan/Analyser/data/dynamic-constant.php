@@ -7,6 +7,8 @@ use function PHPStan\Testing\assertType;
 define('GLOBAL_PURE_CONSTANT', 123);
 define('GLOBAL_DYNAMIC_CONSTANT', false);
 define('GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES', null);
+define('GLOBAL_DYNAMIC_EMPTY_ARRAY', []);
+define('GLOBAL_NON_DYNAMIC_EMPTY_ARRAY', []); // not listed in `dynamicConstantNames` NEON config
 
 class DynamicConstantClass
 {
@@ -22,6 +24,8 @@ class DynamicConstantClass
 
 	/** @var int */
 	const DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT = null;
+
+	const DYNAMIC_EMPTY_ARRAY_NO_PHPDOC = [];
 }
 
 class NoDynamicConstantClass
@@ -41,5 +45,8 @@ class NoDynamicConstantClass
 		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
 		assertType('list<string>', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_WITH_PHPDOC_CONSTANT);
 		assertType('int', DynamicConstantClass::DYNAMIC_INCOMPATIBLE_PHPDOC_CONSTANT);
+		assertType('array', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_NO_PHPDOC);
+		assertType('array', GLOBAL_DYNAMIC_EMPTY_ARRAY);
+		assertType('array{}', GLOBAL_NON_DYNAMIC_EMPTY_ARRAY);
 	}
 }

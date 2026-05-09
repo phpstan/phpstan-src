@@ -139,12 +139,17 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -153,6 +158,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -2181,7 +2187,8 @@ class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
+				$varType = $this->getGlobalVariableType($var->name);
+				$scope = $scope->assignVariable($var->name, $varType, $varType, TrinaryLogic::createYes());
 				$vars[] = $var->name;
 			}
 			$scope = $this->processVarAnnotation($scope, $vars, $stmt);
@@ -4851,6 +4858,22 @@ class NodeScopeResolver
 		}
 
 		return $bodyScope;
+	}
+
+	private function getGlobalVariableType(string $variableName): Type
+	{
+		if ($variableName === 'argc') {
+			return IntegerRangeType::fromInterval(1, null);
+		}
+		if ($variableName === 'argv') {
+			return new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()),
+				new NonEmptyArrayType(),
+				new AccessoryArrayListType(),
+			]);
+		}
+
+		return new MixedType();
 	}
 
 }

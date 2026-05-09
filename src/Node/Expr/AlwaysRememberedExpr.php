@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Type\Type;
 
+/** Wraps an expression so its type is always remembered in the scope, bypassing impurity checks. */
 final class AlwaysRememberedExpr extends Expr implements VirtualNode
 {
 

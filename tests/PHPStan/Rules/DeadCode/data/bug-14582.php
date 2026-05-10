@@ -6,6 +6,7 @@ namespace Bug14582;
 
 use Closure;
 use RuntimeException;
+use function PHPStan\Testing\assertType;
 
 /**
  * @template TLeft
@@ -52,12 +53,14 @@ function test(bool $right): void
 function testArrayFilter(): void
 {
 	$b = array_filter([], fn() => throw new \Error());
+	assertType('array{}', $b);
 	echo $b;
 }
 
 function testArrayMap(): void
 {
-	array_map(fn() => throw new \Error(), []);
+	$result = array_map(fn() => throw new \Error(), []);
+	assertType('array{}', $result);
 	echo 'reachable';
 }
 

@@ -74,4 +74,14 @@ class RandomIntParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6361.php'], []);
 	}
 
+	public function testBug14468(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14468.php'], [
+			[
+				'Parameter #1 $min (int<5, max>) of function random_int expects lower number than parameter #2 $max (int<min, 3>).',
+				57,
+			],
+		]);
+	}
+
 }

@@ -65,6 +65,15 @@ final class RandomIntParametersRule implements Rule
 
 		$isSmaller = $maxType->isSmallerThan($minType, $this->phpVersion);
 
+		if ($isSmaller->maybe() && $this->reportMaybes) {
+			if (
+				$minType instanceof IntegerRangeType && ($minType->getMin() === null || $minType->getMax() === null)
+				|| $maxType instanceof IntegerRangeType && ($maxType->getMin() === null || $maxType->getMax() === null)
+			) {
+				return [];
+			}
+		}
+
 		if ($isSmaller->yes() || $isSmaller->maybe() && $this->reportMaybes) {
 			$message = 'Parameter #1 $min (%s) of function random_int expects lower number than parameter #2 $max (%s).';
 			return [

@@ -30,4 +30,6 @@ class ApiService
 function (): void {
 	assertType('null', (new ApiService())->request(null));
 	assertType('Bug8048Nsrt\CustomResponse', (new ApiService())->request(CustomResponse::class));
+	$x = rand(0, 1) ? CustomResponse::class : null;
+	assertType('Bug8048Nsrt\CustomResponse|null', (new ApiService())->request($x));
 };

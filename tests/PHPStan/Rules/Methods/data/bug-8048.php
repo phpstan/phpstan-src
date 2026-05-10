@@ -28,4 +28,6 @@ class ApiService
 function (): void {
 	(new ApiService())->request(null);
 	(new ApiService())->request(CustomResponse::class);
+	$x = rand(0, 1) ? CustomResponse::class : null;
+	(new ApiService())->request($x);
 };

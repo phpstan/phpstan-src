@@ -59,4 +59,23 @@ class Consumer
 
 		return Converter::conditionalReturnStatic($a);
 	}
+
+	/**
+	 * @template T of string|int
+	 * @param T $a
+	 */
+	public function testMaybeMethod(mixed $a): mixed
+	{
+		$c = new Converter();
+		return $c->conditionalReturn($a);
+	}
+
+	/**
+	 * @template T of string|int
+	 * @param T $a
+	 */
+	public function testMaybeStaticMethod(mixed $a): mixed
+	{
+		return Converter::conditionalReturnStatic($a);
+	}
 }

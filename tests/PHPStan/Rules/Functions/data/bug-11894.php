@@ -68,3 +68,12 @@ function testNoRelation(mixed $a): mixed
 
 	return conditionalReturn($a);
 }
+
+/**
+ * @template T of string|int
+ * @param T $a
+ */
+function testMaybeRelation(mixed $a): mixed
+{
+	return conditionalReturn($a);
+}

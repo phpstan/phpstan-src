@@ -51,3 +51,20 @@ function testNotFullyNarrowable(mixed $a): void
 {
 	assertType('string|T of int (function Bug11894Nsrt\testNotFullyNarrowable(), argument)', conditionalReturn($a));
 }
+
+abstract class ConditionalArrayKeys
+{
+	/**
+	 * @template TKey of array-key
+	 * @template TArray of array<TKey, mixed>
+	 * @param TArray $array
+	 * @return (TArray is non-empty-array ? non-empty-list<TKey> : list<TKey>)
+	 */
+	abstract public function arrayKeys(array $array): array;
+
+	/** @param non-empty-array<int, int> $nonEmpty */
+	public function testMaybeStaysUnresolved(array $nonEmpty): void
+	{
+		assertType('non-empty-list<int>', $this->arrayKeys($nonEmpty));
+	}
+}

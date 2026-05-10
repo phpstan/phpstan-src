@@ -77,4 +77,40 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-anonymous-function-method-constant.php'], []);
 	}
 
+	public function testBug9833(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9833-arrow.php'], [
+			[
+				'Anonymous function should return array but returns null.',
+				5,
+			],
+			[
+				'Anonymous function should return int but returns null.',
+				11,
+			],
+		]);
+	}
+
+	public function testBug9833NonIgnorable(): void
+	{
+		$errors = $this->gatherAnalyserErrors([__DIR__ . '/data/bug-9833-arrow.php']);
+
+		$errorsByLine = [];
+		foreach ($errors as $error) {
+			$line = $error->getLine();
+			if ($line === null) {
+				continue;
+			}
+			$errorsByLine[$line] = $error;
+		}
+
+		// Native array return type violated → non-ignorable
+		$this->assertArrayHasKey(5, $errorsByLine);
+		$this->assertFalse($errorsByLine[5]->canBeIgnored());
+
+		// Native int return type violated → non-ignorable
+		$this->assertArrayHasKey(11, $errorsByLine);
+		$this->assertFalse($errorsByLine[11]->canBeIgnored());
+	}
+
 }

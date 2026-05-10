@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -35,17 +36,19 @@ final class FunctionReturnTypeCheck
 		string $typeMismatchMessage,
 		string $neverMessage,
 		bool $isGenerator,
+		?Type $nativeReturnType = null,
 	): array
 	{
 		$returnType = TypeUtils::resolveLateResolvableTypes($returnType);
 
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-			return [
-				RuleErrorBuilder::message($neverMessage)
-					->line($returnNode->getStartLine())
-					->identifier('return.never')
-					->build(),
-			];
+			$builder = RuleErrorBuilder::message($neverMessage)
+				->line($returnNode->getStartLine())
+				->identifier('return.never');
+			if ($nativeReturnType instanceof NeverType && $nativeReturnType->isExplicit()) {
+				$builder->nonIgnorable();
+			}
+			return [$builder->build()];
 		}
 
 		if ($isGenerator) {
@@ -62,15 +65,16 @@ final class FunctionReturnTypeCheck
 				return [];
 			}
 
-			return [
-				RuleErrorBuilder::message(sprintf(
-					$emptyReturnStatementMessage,
-					$returnType->describe($verbosityLevel),
-				))
-					->line($returnNode->getStartLine())
-					->identifier('return.empty')
-					->build(),
-			];
+			$builder = RuleErrorBuilder::message(sprintf(
+				$emptyReturnStatementMessage,
+				$returnType->describe($verbosityLevel),
+			))
+				->line($returnNode->getStartLine())
+				->identifier('return.empty');
+			if ($nativeReturnType !== null && $this->isNativeTypeViolated($nativeReturnType, new NullType(), $scope)) {
+				$builder->nonIgnorable();
+			}
+			return [$builder->build()];
 		}
 
 		if ($returnNode instanceof Expr\Yield_ || $returnNode instanceof Expr\YieldFrom) {
@@ -81,33 +85,49 @@ final class FunctionReturnTypeCheck
 		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, $returnValueType);
 
 		if ($isVoidSuperType->yes()) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					$voidMessage,
-					$returnValueType->describe($verbosityLevel),
-				))
-					->line($returnNode->getStartLine())
-					->identifier('return.void')
-					->build(),
-			];
+			$builder = RuleErrorBuilder::message(sprintf(
+				$voidMessage,
+				$returnValueType->describe($verbosityLevel),
+			))
+				->line($returnNode->getStartLine())
+				->identifier('return.void');
+			if ($nativeReturnType !== null && $nativeReturnType->isVoid()->yes()) {
+				$builder->nonIgnorable();
+			}
+			return [$builder->build()];
 		}
 
 		$accepts = $this->ruleLevelHelper->accepts($returnType, $returnValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					$typeMismatchMessage,
-					$returnType->describe($verbosityLevel),
-					$returnValueType->describe($verbosityLevel),
-				))
-					->line($returnNode->getStartLine())
-					->identifier('return.type')
-					->acceptsReasonsTip($accepts->reasons)
-					->build(),
-			];
+			$builder = RuleErrorBuilder::message(sprintf(
+				$typeMismatchMessage,
+				$returnType->describe($verbosityLevel),
+				$returnValueType->describe($verbosityLevel),
+			))
+				->line($returnNode->getStartLine())
+				->identifier('return.type')
+				->acceptsReasonsTip($accepts->reasons);
+			if ($nativeReturnType !== null && $this->isNativeTypeViolated($nativeReturnType, $scope->getNativeType($returnValue), $scope)) {
+				$builder->nonIgnorable();
+			}
+			return [$builder->build()];
 		}
 
 		return [];
+	}
+
+	private function isNativeTypeViolated(Type $nativeReturnType, Type $nativeValueType, Scope $scope): bool
+	{
+		$accepts = $nativeReturnType->accepts($nativeValueType, $scope->isDeclareStrictTypes());
+		if ($accepts->yes()) {
+			return false;
+		}
+
+		if (!$scope->isDeclareStrictTypes() && $nativeReturnType->isScalar()->yes() && $nativeValueType->isScalar()->yes()) {
+			return false;
+		}
+
+		return true;
 	}
 
 }

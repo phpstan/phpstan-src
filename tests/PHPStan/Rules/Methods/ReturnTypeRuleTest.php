@@ -1347,4 +1347,64 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14553.php'], []);
 	}
 
+	public function testBug9833(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9833.php'], [
+			[
+				'Method Bug9833\HelloWorld::nativeArrayReturnsNull() should return array but returns null.',
+				10,
+			],
+			[
+				'Method Bug9833\HelloWorld::phpDocOnlyReturnsNull() should return array<string, int> but returns null.',
+				19,
+			],
+			[
+				'Method Bug9833\HelloWorld::nativeArrayReturnsWrongPhpDoc() should return array<string, int> but returns array<string, string>.',
+				27,
+			],
+			[
+				'Method Bug9833\HelloWorld::nativeIntReturnsNull() should return int but returns null.',
+				32,
+			],
+			[
+				'Method Bug9833\HelloWorld::nativeStringReturnsNull() should return string but returns null.',
+				37,
+			],
+		]);
+	}
+
+	public function testBug9833NonIgnorable(): void
+	{
+		$errors = $this->gatherAnalyserErrors([__DIR__ . '/data/bug-9833.php']);
+
+		$errorsByLine = [];
+		foreach ($errors as $error) {
+			$line = $error->getLine();
+			if ($line === null) {
+				continue;
+			}
+			$errorsByLine[$line] = $error;
+		}
+
+		// Native array return type violated → non-ignorable
+		$this->assertArrayHasKey(10, $errorsByLine);
+		$this->assertFalse($errorsByLine[10]->canBeIgnored());
+
+		// PHPDoc-only return type violated → ignorable
+		$this->assertArrayHasKey(19, $errorsByLine);
+		$this->assertTrue($errorsByLine[19]->canBeIgnored());
+
+		// Only PHPDoc subtype violated, native type satisfied → ignorable
+		$this->assertArrayHasKey(27, $errorsByLine);
+		$this->assertTrue($errorsByLine[27]->canBeIgnored());
+
+		// Native int return type violated → non-ignorable
+		$this->assertArrayHasKey(32, $errorsByLine);
+		$this->assertFalse($errorsByLine[32]->canBeIgnored());
+
+		// Native string return type violated → non-ignorable
+		$this->assertArrayHasKey(37, $errorsByLine);
+		$this->assertFalse($errorsByLine[37]->canBeIgnored());
+	}
+
 }

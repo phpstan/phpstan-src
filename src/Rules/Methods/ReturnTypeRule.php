@@ -89,6 +89,7 @@ final class ReturnTypeRule implements Rule
 				$methodDescription,
 			),
 			$method->isGenerator(),
+			$method->getNativeReturnType(),
 		);
 
 		if (

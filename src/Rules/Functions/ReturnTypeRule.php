@@ -66,6 +66,7 @@ final class ReturnTypeRule implements Rule
 				$function->getName(),
 			),
 			$function->isGenerator(),
+			$function->getNativeReturnType(),
 		);
 	}
 

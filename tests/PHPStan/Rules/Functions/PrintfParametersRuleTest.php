@@ -85,6 +85,14 @@ class PrintfParametersRuleTest extends RuleTestCase
 				29,
 			],
 			[
+				'Call to sscanf contains an invalid placeholder.',
+				38,
+			],
+			[
+				'Call to fscanf contains an invalid placeholder.',
+				39,
+			],
+			[
 				'Call to sprintf contains 2 placeholders, 1 value given.',
 				45,
 			],
@@ -145,6 +153,11 @@ class PrintfParametersRuleTest extends RuleTestCase
 	public function testBug10260(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10260.php'], []);
+	}
+
+	public function testBug14567(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14567.php'], []);
 	}
 
 }

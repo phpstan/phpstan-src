@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <phpbench xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.5.1">
-  <suite tag="" context="" date="2026-05-02T19:32:25+00:00" config-path="/home/runner/work/phpstan-src/phpstan-src/phpbench.json" uuid="1352696b0933d455f1a325a2470cdbd47595adc5">
+  <suite tag="" context="" date="2026-05-08T10:12:02+00:00" config-path="/home/runner/work/phpstan-src/phpstan-src/phpbench.json" uuid="135269cfb3397f5e69fa91eb415321f4fa79d880">
     <env>
       <uname>
         <value name="os" type="string">Linux</value>
@@ -20,19 +20,19 @@
         <value name="enabled" type="boolean"></value>
       </opcache>
       <unix-sysload>
-        <value name="l1" type="double">0.81982421875</value>
-        <value name="l5" type="double">0.2177734375</value>
-        <value name="l15" type="double">0.07373046875</value>
+        <value name="l1" type="double">0.44384765625</value>
+        <value name="l5" type="double">0.14501953125</value>
+        <value name="l15" type="double">0.05029296875</value>
       </unix-sysload>
       <vcs>
         <value name="system" type="string">git</value>
         <value name="branch" type="string">2.1.x</value>
-        <value name="version" type="string">d34f7cc756dbb7c3ab40525aa452fc32485f4da8</value>
+        <value name="version" type="string">f46f0114d42919fe33f7e6550f17f08bb899e250</value>
       </vcs>
       <sampler>
-        <value name="nothing" type="double">0.0069141387939453</value>
-        <value name="md5" type="double">0.1521110534668</value>
-        <value name="file_rw" type="double">1.3630390167236</value>
+        <value name="nothing" type="double">0.0059604644775391</value>
+        <value name="md5" type="double">0.15616416931152</value>
+        <value name="file_rw" type="double">0.6098747253418</value>
       </sampler>
     </env>
     <benchmark class="\PHPStan\Benchmark\RegressionBench">
@@ -46,672 +46,683 @@
           <parameter-set name="and-chain-truthy-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/and-chain-truthy-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="187622" time-revs="1" time-avg="187622" mem-peak="62822672" mem-real="69206016" mem-final="54806008" comp-z-value="0.72248151871699" comp-deviation="0.44810878817892"/>
-          <iteration time-net="185286" time-revs="1" time-avg="185286" mem-peak="55733864" mem-real="58720256" mem-final="47717200" comp-z-value="-1.2939065669734" comp-deviation="-0.8025269695104"/>
-          <iteration time-net="187761" time-revs="1" time-avg="187761" mem-peak="55733864" mem-real="58720256" mem-final="47717200" comp-z-value="0.84246351525422" comp-deviation="0.52252589876061"/>
-          <iteration time-net="185453" time-revs="1" time-avg="185453" mem-peak="55733864" mem-real="58720256" mem-final="47717200" comp-z-value="-1.1497555351625" comp-deviation="-0.71311936183312"/>
-          <iteration time-net="187803" time-revs="1" time-avg="187803" mem-peak="55733864" mem-real="58720256" mem-final="47717200" comp-z-value="0.87871706816475" comp-deviation="0.54501164440399"/>
-          <stats max="187803" mean="186785" min="185286" mode="187645.37964775" rstdev="0.6202356414247" stdev="1158.5071428351" sum="933925" variance="1342138.8"/>
+          <iteration time-net="152559" time-revs="1" time-avg="152559" mem-peak="62468024" mem-real="69206016" mem-final="54960824" comp-z-value="0.59070698530902" comp-deviation="0.13652683605621"/>
+          <iteration time-net="152703" time-revs="1" time-avg="152703" mem-peak="55377392" mem-real="58720256" mem-final="47870192" comp-z-value="0.99965797513834" comp-deviation="0.23104541486436"/>
+          <iteration time-net="152637" time-revs="1" time-avg="152637" mem-peak="55377392" mem-real="58720256" mem-final="47870192" comp-z-value="0.8122221047999" comp-deviation="0.18772439957729"/>
+          <iteration time-net="151847" time-revs="1" time-avg="151847" mem-peak="55377392" mem-real="58720256" mem-final="47870192" comp-z-value="-1.4313284644026" comp-deviation="-0.33081502582851"/>
+          <iteration time-net="152009" time-revs="1" time-avg="152009" mem-peak="55377392" mem-real="58720256" mem-final="47870192" comp-z-value="-0.97125860084464" comp-deviation="-0.22448162466935"/>
+          <stats max="152703" mean="152351" min="151847" mode="152600.81604697" rstdev="0.23112446517759" stdev="352.12043394271" sum="761755" variance="123988.8"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-1388.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-1388.php" type="string"/>
           </parameter-set>
-          <iteration time-net="90560" time-revs="1" time-avg="90560" mem-peak="71188144" mem-real="73400320" mem-final="67140664" comp-z-value="-1.7164104328064" comp-deviation="-0.82963196579849"/>
-          <iteration time-net="91213" time-revs="1" time-avg="91213" mem-peak="69863568" mem-real="73400320" mem-final="65734488" comp-z-value="-0.23698063789805" comp-deviation="-0.1145452793328"/>
-          <iteration time-net="91763" time-revs="1" time-avg="91763" mem-peak="69863568" mem-real="73400320" mem-final="65734488" comp-z-value="1.0090934619482" comp-deviation="0.48774825444382"/>
-          <iteration time-net="91298" time-revs="1" time-avg="91298" mem-peak="69863568" mem-real="73400320" mem-final="65734488" comp-z-value="-0.044405549739989" comp-deviation="-0.021463551385501"/>
-          <iteration time-net="91754" time-revs="1" time-avg="91754" mem-peak="69863568" mem-real="73400320" mem-final="65734488" comp-z-value="0.98870315849619" comp-deviation="0.47789254207293"/>
-          <stats max="91763" mean="91317.6" min="90560" mode="91492.266144812" rstdev="0.48335290321092" stdev="441.38627074253" sum="456588" variance="194821.84"/>
+          <iteration time-net="78910" time-revs="1" time-avg="78910" mem-peak="71476560" mem-real="73400320" mem-final="67448856" comp-z-value="0.26501874212041" comp-deviation="0.3015019167997"/>
+          <iteration time-net="80168" time-revs="1" time-avg="80168" mem-peak="70086448" mem-real="71303168" mem-final="66042680" comp-z-value="1.670556590297" comp-deviation="1.9005297892029"/>
+          <iteration time-net="77708" time-revs="1" time-avg="77708" mem-peak="70086448" mem-real="71303168" mem-final="66042680" comp-z-value="-1.0779514434982" comp-deviation="-1.2263450646221"/>
+          <iteration time-net="77795" time-revs="1" time-avg="77795" mem-peak="70086448" mem-real="71303168" mem-final="66042680" comp-z-value="-0.98074811059569" comp-deviation="-1.1157604661332"/>
+          <iteration time-net="78783" time-revs="1" time-avg="78783" mem-peak="70086448" mem-real="71303168" mem-final="66042680" comp-z-value="0.12312422167651" comp-deviation="0.14007382475264"/>
+          <stats max="80168" mean="78672.8" min="77708" mode="78357.902152642" rstdev="1.1376626210939" stdev="895.03103856794" sum="393364" variance="801080.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-1447.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-1447.php" type="string"/>
           </parameter-set>
-          <iteration time-net="22557" time-revs="1" time-avg="22557" mem-peak="67262352" mem-real="69206016" mem-final="63920776" comp-z-value="0.014038754280922" comp-deviation="0.013301409949455"/>
-          <iteration time-net="22930" time-revs="1" time-avg="22930" mem-peak="67262248" mem-real="69206016" mem-final="63920672" comp-z-value="1.7595238698756" comp-deviation="1.6671100469983"/>
-          <iteration time-net="22344" time-revs="1" time-avg="22344" mem-peak="67262248" mem-real="69206016" mem-final="63920672" comp-z-value="-0.98271279966456" comp-deviation="-0.93109869646182"/>
-          <iteration time-net="22589" time-revs="1" time-avg="22589" mem-peak="67262248" mem-real="69206016" mem-final="63920672" comp-z-value="0.16378546661076" comp-deviation="0.15518311607697"/>
-          <iteration time-net="22350" time-revs="1" time-avg="22350" mem-peak="67262248" mem-real="69206016" mem-final="63920672" comp-z-value="-0.95463529110272" comp-deviation="-0.90449587656292"/>
-          <stats max="22930" mean="22554" min="22344" mode="22465.557729941" rstdev="0.9474779373787" stdev="213.69417399639" sum="112770" variance="45665.2"/>
+          <iteration time-net="18887" time-revs="1" time-avg="18887" mem-peak="67534480" mem-real="71303168" mem-final="64212704" comp-z-value="1.7033877771872" comp-deviation="1.4110673210124"/>
+          <iteration time-net="18637" time-revs="1" time-avg="18637" mem-peak="67599912" mem-real="71303168" mem-final="64212600" comp-z-value="0.082965614718399" comp-deviation="0.068727784280663"/>
+          <iteration time-net="18649" time-revs="1" time-avg="18649" mem-peak="67599912" mem-real="71303168" mem-final="64212600" comp-z-value="0.1607458785169" comp-deviation="0.13316008204379"/>
+          <iteration time-net="18429" time-revs="1" time-avg="18429" mem-peak="67599912" mem-real="71303168" mem-final="64212600" comp-z-value="-1.2652256244557" comp-deviation="-1.0480987102802"/>
+          <iteration time-net="18519" time-revs="1" time-avg="18519" mem-peak="67599912" mem-real="71303168" mem-final="64212600" comp-z-value="-0.68187364596689" comp-deviation="-0.56485647705674"/>
+          <stats max="18887" mean="18624.2" min="18429" mode="18579.575342466" rstdev="0.82838877906152" stdev="154.28078298998" sum="93121" variance="23802.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-3686.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-3686.php" type="string"/>
           </parameter-set>
-          <iteration time-net="12753" time-revs="1" time-avg="12753" mem-peak="66921528" mem-real="69206016" mem-final="64484528" comp-z-value="1.8250963601822" comp-deviation="1.3913181745906"/>
-          <iteration time-net="12482" time-revs="1" time-avg="12482" mem-peak="66834688" mem-real="69206016" mem-final="64401456" comp-z-value="-1.0011957175857" comp-deviation="-0.76323739863253"/>
-          <iteration time-net="12511" time-revs="1" time-avg="12511" mem-peak="66834688" mem-real="69206016" mem-final="64401456" comp-z-value="-0.69875117789834" comp-deviation="-0.53267610112896"/>
-          <iteration time-net="12544" time-revs="1" time-avg="12544" mem-peak="66834688" mem-real="69206016" mem-final="64401456" comp-z-value="-0.35459014997826" comp-deviation="-0.27031324534902"/>
-          <iteration time-net="12600" time-revs="1" time-avg="12600" mem-peak="66834688" mem-real="69206016" mem-final="64401456" comp-z-value="0.22944068528005" comp-deviation="0.17490857051996"/>
-          <stats max="12753" mean="12578" min="12482" mode="12532.381604697" rstdev="0.76232587218115" stdev="95.885348202945" sum="62890" variance="9194"/>
+          <iteration time-net="10967" time-revs="1" time-avg="10967" mem-peak="67185872" mem-real="69206016" mem-final="64775544" comp-z-value="-0.70667064525536" comp-deviation="-0.82831461486988"/>
+          <iteration time-net="10869" time-revs="1" time-avg="10869" mem-peak="67099032" mem-real="69206016" mem-final="64692472" comp-z-value="-1.4627156587382" comp-deviation="-1.714502739949"/>
+          <iteration time-net="11178" time-revs="1" time-avg="11178" mem-peak="67099032" mem-real="69206016" mem-final="64692472" comp-z-value="0.92114055724333" comp-deviation="1.0797026748413"/>
+          <iteration time-net="11218" time-revs="1" time-avg="11218" mem-peak="67099032" mem-real="69206016" mem-final="64692472" comp-z-value="1.2297303586649" comp-deviation="1.4414121136491"/>
+          <iteration time-net="11061" time-revs="1" time-avg="11061" mem-peak="67099032" mem-real="69206016" mem-final="64692472" comp-z-value="0.01851538808529" comp-deviation="0.021702566328465"/>
+          <stats max="11218" mean="11058.6" min="10869" mode="11112.138943248" rstdev="1.1721367237075" stdev="129.62191172792" sum="55293" variance="16801.84"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-4300.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-4300.php" type="string"/>
           </parameter-set>
-          <iteration time-net="5439" time-revs="1" time-avg="5439" mem-peak="67280528" mem-real="69206016" mem-final="66715112" comp-z-value="-0.032534465627421" comp-deviation="-0.033083370092637"/>
-          <iteration time-net="5525" time-revs="1" time-avg="5525" mem-peak="66416152" mem-real="69206016" mem-final="65850736" comp-z-value="1.5218900032381" comp-deviation="1.5475665343332"/>
-          <iteration time-net="5360" time-revs="1" time-avg="5360" mem-peak="66416152" mem-real="69206016" mem-final="65850736" comp-z-value="-1.4604360126085" comp-deviation="-1.4850757241582"/>
-          <iteration time-net="5411" time-revs="1" time-avg="5411" mem-peak="66416152" mem-real="69206016" mem-final="65850736" comp-z-value="-0.53862615316502" comp-deviation="-0.5477135715336"/>
-          <iteration time-net="5469" time-revs="1" time-avg="5469" mem-peak="66416152" mem-real="69206016" mem-final="65850736" comp-z-value="0.50970662816287" comp-deviation="0.51830613145125"/>
-          <stats max="5525" mean="5440.8" min="5360" mode="5437.1722113503" rstdev="1.0168714762831" stdev="55.325943281611" sum="27204" variance="3060.96"/>
+          <iteration time-net="4743" time-revs="1" time-avg="4743" mem-peak="66835392" mem-real="69206016" mem-final="66265424" comp-z-value="-0.32444276042459" comp-deviation="-1.3437057991514" reject-count="1"/>
+          <iteration time-net="5202" time-revs="1" time-avg="5202" mem-peak="66835392" mem-real="69206016" mem-final="66265424" comp-z-value="1.9808084320659" comp-deviation="8.2036775106082"/>
+          <iteration time-net="4674" time-revs="1" time-avg="4674" mem-peak="66835392" mem-real="69206016" mem-final="66265424" comp-z-value="-0.67098378936106" comp-deviation="-2.7789333555204"/>
+          <iteration time-net="4683" time-revs="1" time-avg="4683" mem-peak="66835392" mem-real="69206016" mem-final="66265424" comp-z-value="-0.62578278558674" comp-deviation="-2.5917297612114"/>
+          <iteration time-net="4736" time-revs="1" time-avg="4736" mem-peak="66835392" mem-real="69206016" mem-final="66265424" comp-z-value="-0.3595990966935" comp-deviation="-1.489308594725" reject-count="1"/>
+          <stats max="5202" mean="4807.6" min="4674" mode="4710.1643835617" rstdev="4.1415804667452" stdev="199.11062251924" sum="24038" variance="39645.04"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-4308.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-4308.php" type="string"/>
           </parameter-set>
-          <iteration time-net="2842" time-revs="1" time-avg="2842" mem-peak="54313216" mem-real="56623104" mem-final="54160016" comp-z-value="-0.1677831298074" comp-deviation="-0.23869699522607"/>
-          <iteration time-net="2925" time-revs="1" time-avg="2925" mem-peak="54308728" mem-real="56623104" mem-final="54155528" comp-z-value="1.8801580134299" comp-deviation="2.6748104465038"/>
-          <iteration time-net="2809" time-revs="1" time-avg="2809" mem-peak="54308728" mem-real="56623104" mem-final="54155528" comp-z-value="-0.9820247891668" comp-deviation="-1.3970794720584"/>
-          <iteration time-net="2821" time-revs="1" time-avg="2821" mem-peak="54308728" mem-real="56623104" mem-final="54155528" comp-z-value="-0.68593691303611" comp-deviation="-0.97584948048302"/>
-          <iteration time-net="2847" time-revs="1" time-avg="2847" mem-peak="54308728" mem-real="56623104" mem-final="54155528" comp-z-value="-0.044413181419608" comp-deviation="-0.063184498736316"/>
-          <stats max="2925" mean="2848.8" min="2809" mode="2830.5655577299" rstdev="1.4226519406336" stdev="40.528508484769" sum="14244" variance="1642.56"/>
+          <iteration time-net="2695" time-revs="1" time-avg="2695" mem-peak="54533624" mem-real="56623104" mem-final="54380400" comp-z-value="-0.17129822365607" comp-deviation="-0.7293354943274"/>
+          <iteration time-net="2676" time-revs="1" time-avg="2676" mem-peak="54529136" mem-real="56623104" mem-final="54375912" comp-z-value="-0.3356753069624" comp-deviation="-1.4292028878739"/>
+          <iteration time-net="2940" time-revs="1" time-avg="2940" mem-peak="54529136" mem-real="56623104" mem-final="54375912" comp-z-value="1.9483010084519" comp-deviation="8.2952703698247"/>
+          <iteration time-net="2644" time-revs="1" time-avg="2644" mem-peak="54529136" mem-real="56623104" mem-final="54375912" comp-z-value="-0.61252092095201" comp-deviation="-2.6079269191101"/>
+          <iteration time-net="2619" time-revs="1" time-avg="2619" mem-peak="54529136" mem-real="56623104" mem-final="54375912" comp-z-value="-0.82880655688139" comp-deviation="-3.5288050685133"/>
+          <stats max="2940" mean="2714.8" min="2619" mode="2659.831702544" rstdev="4.2576944393291" stdev="115.58788863891" sum="13574" variance="13360.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-5081.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-5081.php" type="string"/>
           </parameter-set>
-          <iteration time-net="2751924" time-revs="1" time-avg="2751924" mem-peak="91900128" mem-real="94371840" mem-final="62717832" comp-z-value="-0.045684341758281" comp-deviation="-0.0063079158239189"/>
-          <iteration time-net="2751306" time-revs="1" time-avg="2751306" mem-peak="92380472" mem-real="94371840" mem-final="63330760" comp-z-value="-0.20831638787926" comp-deviation="-0.028763514782328"/>
-          <iteration time-net="2746493" time-revs="1" time-avg="2746493" mem-peak="92380472" mem-real="94371840" mem-final="63330760" comp-z-value="-1.4748989736079" comp-deviation="-0.20364830084515"/>
-          <iteration time-net="2752337" time-revs="1" time-avg="2752337" mem-peak="92380472" mem-real="94371840" mem-final="63330760" comp-z-value="0.063000180973054" comp-deviation="0.0086988194023318"/>
-          <iteration time-net="2758428" time-revs="1" time-avg="2758428" mem-peak="92380472" mem-real="94371840" mem-final="63330760" comp-z-value="1.6658995222722" comp-deviation="0.23002091204905"/>
-          <stats max="2758428" mean="2752097.6" min="2746493" mode="2751608" rstdev="0.13807610181393" stdev="3799.9890841948" sum="13760488" variance="14439917.04"/>
+          <iteration time-net="2315392" time-revs="1" time-avg="2315392" mem-peak="92156464" mem-real="94371840" mem-final="63004752" comp-z-value="-1.5127369198094" comp-deviation="-0.52018917813684"/>
+          <iteration time-net="2333962" time-revs="1" time-avg="2333962" mem-peak="92636808" mem-real="96468992" mem-final="63552144" comp-z-value="0.80745772155542" comp-deviation="0.27766279982715"/>
+          <iteration time-net="2322349" time-revs="1" time-avg="2322349" mem-peak="92636808" mem-real="96468992" mem-final="63552144" comp-z-value="-0.64350729568578" comp-deviation="-0.22128469721624"/>
+          <iteration time-net="2328042" time-revs="1" time-avg="2328042" mem-peak="92636808" mem-real="96468992" mem-final="63552144" comp-z-value="0.067794163295894" comp-deviation="0.023312573141806"/>
+          <iteration time-net="2337752" time-revs="1" time-avg="2337752" mem-peak="92636808" mem-real="96468992" mem-final="63552144" comp-z-value="1.2809923306439" comp-deviation="0.44049850238415"/>
+          <stats max="2337752" mean="2327499.4" min="2315392" mode="2330357.0097847" rstdev="0.34387286468978" stdev="8003.6388624175" sum="11637497" variance="64058235.04"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-5231.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-5231.php" type="string"/>
           </parameter-set>
-          <iteration time-net="15785" time-revs="1" time-avg="15785" mem-peak="91890952" mem-real="96468992" mem-final="90998488" comp-z-value="-0.55243004703998" comp-deviation="-0.26284862194028"/>
-          <iteration time-net="15889" time-revs="1" time-avg="15889" mem-peak="87837944" mem-real="92274688" mem-final="87357880" comp-z-value="0.82864507055996" comp-deviation="0.39427293291041"/>
-          <iteration time-net="15811" time-revs="1" time-avg="15811" mem-peak="87837944" mem-real="92274688" mem-final="87357880" comp-z-value="-0.20716126764" comp-deviation="-0.098568233227606"/>
-          <iteration time-net="15930" time-revs="1" time-avg="15930" mem-peak="87837944" mem-real="92274688" mem-final="87357880" comp-z-value="1.3731073765369" comp-deviation="0.65333046895732"/>
-          <iteration time-net="15718" time-revs="1" time-avg="15718" mem-peak="87837944" mem-real="92274688" mem-final="87357880" comp-z-value="-1.4421611324169" comp-deviation="-0.68618654669986"/>
-          <stats max="15930" mean="15826.6" min="15718" mode="15810.101761252" rstdev="0.47580435450365" stdev="75.303651969875" sum="79133" variance="5670.64"/>
+          <iteration time-net="14857" time-revs="1" time-avg="14857" mem-peak="92257912" mem-real="96468992" mem-final="91303960" comp-z-value="1.3782906084029" comp-deviation="0.37835281399905"/>
+          <iteration time-net="14830" time-revs="1" time-avg="14830" mem-peak="88209376" mem-real="92274688" mem-final="87728888" comp-z-value="0.71375763649434" comp-deviation="0.19593270724951"/>
+          <iteration time-net="14802" time-revs="1" time-avg="14802" mem-peak="88209376" mem-real="92274688" mem-final="87728888" comp-z-value="0.024612332292908" comp-deviation="0.0067563002499831"/>
+          <iteration time-net="14741" time-revs="1" time-avg="14741" mem-peak="88209376" mem-real="92274688" mem-final="87728888" comp-z-value="-1.4767399375745" comp-deviation="-0.40537801499899"/>
+          <iteration time-net="14775" time-revs="1" time-avg="14775" mem-peak="88209376" mem-real="92274688" mem-final="87728888" comp-z-value="-0.63992063961561" comp-deviation="-0.17566380649956"/>
+          <stats max="14857" mean="14801" min="14741" mode="14807.058708415" rstdev="0.27450873690381" stdev="40.630038149133" sum="74005" variance="1650.8"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-5231_2.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-5231_2.php" type="string"/>
           </parameter-set>
-          <iteration time-net="15257" time-revs="1" time-avg="15257" mem-peak="72723192" mem-real="75497472" mem-final="72242224" comp-z-value="1.3250669808988" comp-deviation="1.0464269156898"/>
-          <iteration time-net="14910" time-revs="1" time-avg="14910" mem-peak="72076888" mem-real="75497472" mem-final="71595920" comp-z-value="-1.5850484771511" comp-deviation="-1.2517385257302"/>
-          <iteration time-net="15141" time-revs="1" time-avg="15141" mem-peak="72076888" mem-real="75497472" mem-final="71595920" comp-z-value="0.35223299492247" comp-deviation="0.27816411682893"/>
-          <iteration time-net="15159" time-revs="1" time-avg="15159" mem-peak="72076888" mem-real="75497472" mem-final="71595920" comp-z-value="0.50318999274639" comp-deviation="0.39737730975561"/>
-          <iteration time-net="15028" time-revs="1" time-avg="15028" mem-peak="72076888" mem-real="75497472" mem-final="71595920" comp-z-value="-0.59544149141656" comp-deviation="-0.47022981654414"/>
-          <stats max="15257" mean="15099" min="14910" mode="15144.27592955" rstdev="0.78971624134801" stdev="119.23925528114" sum="75495" variance="14218"/>
+          <iteration time-net="14023" time-revs="1" time-avg="14023" mem-peak="73024744" mem-real="75497472" mem-final="72543352" comp-z-value="1.5678791439964" comp-deviation="0.69509270296276"/>
+          <iteration time-net="13943" time-revs="1" time-avg="13943" mem-peak="72443976" mem-real="75497472" mem-final="71962584" comp-z-value="0.27211125639607" comp-deviation="0.12063592365469"/>
+          <iteration time-net="13900" time-revs="1" time-avg="13900" mem-peak="72443976" mem-real="75497472" mem-final="71962584" comp-z-value="-0.42436398318913" comp-deviation="-0.1881345952234"/>
+          <iteration time-net="13833" time-revs="1" time-avg="13833" mem-peak="72443976" mem-real="75497472" mem-final="71962584" comp-z-value="-1.5095695890544" comp-deviation="-0.6692421478939"/>
+          <iteration time-net="13932" time-revs="1" time-avg="13932" mem-peak="72443976" mem-real="75497472" mem-final="71962584" comp-z-value="0.093943171851015" comp-deviation="0.04164811649983"/>
+          <stats max="14023" mean="13926.2" min="13833" mode="13924.467710372" rstdev="0.4433330882832" stdev="61.739452540495" sum="69631" variance="3811.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-5390.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-5390.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1391" time-revs="1" time-avg="1391" mem-peak="55821768" mem-real="58720256" mem-final="55716720" comp-z-value="1.2582685744554" comp-deviation="1.3405216377677"/>
-          <iteration time-net="1352" time-revs="1" time-avg="1352" mem-peak="55814800" mem-real="58720256" mem-final="55709752" comp-z-value="-1.4087137300968" comp-deviation="-1.5008013988052"/>
-          <iteration time-net="1387" time-revs="1" time-avg="1387" mem-peak="55814800" mem-real="58720256" mem-final="55709752" comp-z-value="0.98473192783467" comp-deviation="1.0491038904269"/>
-          <iteration time-net="1370" time-revs="1" time-avg="1370" mem-peak="55814800" mem-real="58720256" mem-final="55709752" comp-z-value="-0.17779882030347" comp-deviation="-0.18942153577152"/>
-          <iteration time-net="1363" time-revs="1" time-avg="1363" mem-peak="55814800" mem-real="58720256" mem-final="55709752" comp-z-value="-0.65648795188977" comp-deviation="-0.69940259361794"/>
-          <stats max="1391" mean="1372.6" min="1352" mode="1367.4931506849" rstdev="1.0653700370352" stdev="14.623269128345" sum="6863" variance="213.84"/>
+          <iteration time-net="1384" time-revs="1" time-avg="1384" mem-peak="56048400" mem-real="58720256" mem-final="55943304" comp-z-value="0.6585227956883" comp-deviation="1.2139827409683"/>
+          <iteration time-net="1331" time-revs="1" time-avg="1331" mem-peak="56041432" mem-real="58720256" mem-final="55936336" comp-z-value="-1.4439897447623" comp-deviation="-2.6619862512798"/>
+          <iteration time-net="1360" time-revs="1" time-avg="1360" mem-peak="56041432" mem-real="58720256" mem-final="55936336" comp-z-value="-0.29355835470443" comp-deviation="-0.54117302910634"/>
+          <iteration time-net="1357" time-revs="1" time-avg="1357" mem-peak="56041432" mem-real="58720256" mem-final="55936336" comp-z-value="-0.41256849850352" comp-deviation="-0.76056750036566"/>
+          <iteration time-net="1405" time-revs="1" time-avg="1405" mem-peak="56041432" mem-real="58720256" mem-final="55936336" comp-z-value="1.4915938022819" comp-deviation="2.7497440397835"/>
+          <stats max="1405" mean="1367.4" min="1331" mode="1362.4246575342" rstdev="1.843493875864" stdev="25.207935258565" sum="6837" variance="635.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-6265.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-6265.php" type="string"/>
           </parameter-set>
-          <iteration time-net="172441" time-revs="1" time-avg="172441" mem-peak="69766208" mem-real="71303168" mem-final="67308992" comp-z-value="0.15283669362976" comp-deviation="0.07381881195819"/>
-          <iteration time-net="171492" time-revs="1" time-avg="171492" mem-peak="69771696" mem-real="71303168" mem-final="67314480" comp-z-value="-0.98743077692551" comp-deviation="-0.47692059486819"/>
-          <iteration time-net="171616" time-revs="1" time-avg="171616" mem-peak="69771696" mem-real="71303168" mem-final="67314480" comp-z-value="-0.83843903156318" comp-deviation="-0.4049588599404"/>
-          <iteration time-net="172199" time-revs="1" time-avg="172199" mem-peak="69771696" mem-real="71303168" mem-final="67314480" comp-z-value="-0.1379375190935" comp-deviation="-0.066622638465398"/>
-          <iteration time-net="173821" time-revs="1" time-avg="173821" mem-peak="69771696" mem-real="71303168" mem-final="67314480" comp-z-value="1.8109706339525" comp-deviation="0.87468328131584"/>
-          <stats max="173821" mean="172313.8" min="171492" mode="171943.21526419" rstdev="0.48299142179176" stdev="832.2608725634" sum="861569" variance="692658.16"/>
+          <iteration time-net="149812" time-revs="1" time-avg="149812" mem-peak="70053912" mem-real="73400320" mem-final="67596648" comp-z-value="0.96357427508484" comp-deviation="0.72464839962832"/>
+          <iteration time-net="149261" time-revs="1" time-avg="149261" mem-peak="70059400" mem-real="73400320" mem-final="67602136" comp-z-value="0.47096950094145" comp-deviation="0.35418888191148"/>
+          <iteration time-net="149822" time-revs="1" time-avg="149822" mem-peak="70059400" mem-real="73400320" mem-final="67602136" comp-z-value="0.97251447062284" comp-deviation="0.73137180285367"/>
+          <iteration time-net="147454" time-revs="1" time-avg="147454" mem-peak="70059400" mem-real="73400320" mem-final="67602136" comp-z-value="-1.1445238327738" comp-deviation="-0.86073008090944"/>
+          <iteration time-net="147322" time-revs="1" time-avg="147322" mem-peak="70059400" mem-real="73400320" mem-final="67602136" comp-z-value="-1.2625344138753" comp-deviation="-0.94947900348408"/>
+          <stats max="149822" mean="148734.2" min="147322" mode="149543.13502935" rstdev="0.75204207746675" stdev="1118.5437675835" sum="743671" variance="1251140.16"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-6442.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-6442.php" type="string"/>
           </parameter-set>
-          <iteration time-net="3041" time-revs="1" time-avg="3041" mem-peak="61736584" mem-real="65011712" mem-final="60686240" comp-z-value="1.0369538062161" comp-deviation="1.1845345045585"/>
-          <iteration time-net="2966" time-revs="1" time-avg="2966" mem-peak="61630584" mem-real="62914560" mem-final="60650472" comp-z-value="-1.147639886655" comp-deviation="-1.3109735808877"/>
-          <iteration time-net="3015" time-revs="1" time-avg="3015" mem-peak="61630584" mem-real="62914560" mem-final="60650472" comp-z-value="0.2796279926875" comp-deviation="0.31942503493711"/>
-          <iteration time-net="2964" time-revs="1" time-avg="2964" mem-peak="61630584" mem-real="62914560" mem-final="60650472" comp-z-value="-1.2058957184649" comp-deviation="-1.3775204631663"/>
-          <iteration time-net="3041" time-revs="1" time-avg="3041" mem-peak="61630584" mem-real="62914560" mem-final="60650472" comp-z-value="1.0369538062161" comp-deviation="1.1845345045585"/>
-          <stats max="3041" mean="3005.4" min="2964" mode="3029.2465753425" rstdev="1.1423213815867" stdev="34.331326802208" sum="15027" variance="1178.64"/>
+          <iteration time-net="2515" time-revs="1" time-avg="2515" mem-peak="61857456" mem-real="65011712" mem-final="60910424" comp-z-value="-1.5847364202416" comp-deviation="-1.6425498631208"/>
+          <iteration time-net="2590" time-revs="1" time-avg="2590" mem-peak="61816992" mem-real="65011712" mem-final="60809120" comp-z-value="1.2451500444755" comp-deviation="1.2905748924521"/>
+          <iteration time-net="2540" time-revs="1" time-avg="2540" mem-peak="61816992" mem-real="65011712" mem-final="60809120" comp-z-value="-0.64144093200254" comp-deviation="-0.6648416112632"/>
+          <iteration time-net="2566" time-revs="1" time-avg="2566" mem-peak="61816992" mem-real="65011712" mem-final="60809120" comp-z-value="0.33958637576605" comp-deviation="0.35197497066875"/>
+          <iteration time-net="2574" time-revs="1" time-avg="2574" mem-peak="61816992" mem-real="65011712" mem-final="60809120" comp-z-value="0.64144093200254" comp-deviation="0.6648416112632"/>
+          <stats max="2590" mean="2557" min="2515" mode="2569.7455968689" rstdev="1.0364814250123" stdev="26.502830037564" sum="12785" variance="702.4"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-6936.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-6936.php" type="string"/>
           </parameter-set>
-          <iteration time-net="76426" time-revs="1" time-avg="76426" mem-peak="71569264" mem-real="73400320" mem-final="66940264" comp-z-value="-1.0086307987182" comp-deviation="-0.95409410307119"/>
-          <iteration time-net="76886" time-revs="1" time-avg="76886" mem-peak="71570488" mem-real="73400320" mem-final="66941488" comp-z-value="-0.37840780576739" comp-deviation="-0.35794728506963"/>
-          <iteration time-net="78381" time-revs="1" time-avg="78381" mem-peak="71570488" mem-real="73400320" mem-final="66941488" comp-z-value="1.6698169213226" comp-deviation="1.5795298734354"/>
-          <iteration time-net="77578" time-revs="1" time-avg="77578" mem-peak="71570488" mem-real="73400320" mem-final="66941488" comp-z-value="0.56966678362811" comp-deviation="0.53886488461968"/>
-          <iteration time-net="76540" time-revs="1" time-avg="76540" mem-peak="71570488" mem-real="73400320" mem-final="66941488" comp-z-value="-0.85244510046514" comp-deviation="-0.80635336991428"/>
-          <stats max="78381" mean="77162.2" min="76426" mode="76751.195694716" rstdev="0.9459299718824" stdev="729.90037676384" sum="385811" variance="532754.56"/>
+          <iteration time-net="68903" time-revs="1" time-avg="68903" mem-peak="71945280" mem-real="75497472" mem-final="67261560" comp-z-value="1.2191080845766" comp-deviation="0.76838028828153"/>
+          <iteration time-net="67805" time-revs="1" time-avg="67805" mem-peak="71880968" mem-real="75497472" mem-final="67262784" comp-z-value="-1.3286282627114" comp-deviation="-0.83740874204419"/>
+          <iteration time-net="68104" time-revs="1" time-avg="68104" mem-peak="71880968" mem-real="75497472" mem-final="67262784" comp-z-value="-0.63484577834064" comp-deviation="-0.40013103706478"/>
+          <iteration time-net="68223" time-revs="1" time-avg="68223" mem-peak="71880968" mem-real="75497472" mem-final="67262784" comp-z-value="-0.35872499024658" comp-deviation="-0.22609743541746"/>
+          <iteration time-net="68853" time-revs="1" time-avg="68853" mem-peak="71880968" mem-real="75497472" mem-final="67262784" comp-z-value="1.103090946722" comp-deviation="0.69525692624484"/>
+          <stats max="68903" mean="68377.6" min="67805" mode="68133.755381604" rstdev="0.63028069291197" stdev="430.97081107657" sum="341888" variance="185735.84"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-6948.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-6948.php" type="string"/>
           </parameter-set>
-          <iteration time-net="36604" time-revs="1" time-avg="36604" mem-peak="62044168" mem-real="65011712" mem-final="61528328" comp-z-value="0.96427330209411" comp-deviation="0.70042421608059"/>
-          <iteration time-net="36040" time-revs="1" time-avg="36040" mem-peak="61800064" mem-real="65011712" mem-final="61218688" comp-z-value="-1.1718230937467" comp-deviation="-0.85118323823777"/>
-          <iteration time-net="36111" time-revs="1" time-avg="36111" mem-peak="61800064" mem-real="65011712" mem-final="61218688" comp-z-value="-0.90291734178805" comp-deviation="-0.65585676792465"/>
-          <iteration time-net="36286" time-revs="1" time-avg="36286" mem-peak="61800064" mem-real="65011712" mem-final="61218688" comp-z-value="-0.24012147428424" comp-deviation="-0.17441828475849"/>
-          <iteration time-net="36706" time-revs="1" time-avg="36706" mem-peak="61800064" mem-real="65011712" mem-final="61218688" comp-z-value="1.3505886077249" comp-deviation="0.9810340748403"/>
-          <stats max="36706" mean="36349.4" min="36040" mode="36180.759295499" rstdev="0.72637520354394" stdev="264.033028237" sum="181747" variance="69713.44"/>
+          <iteration time-net="31346" time-revs="1" time-avg="31346" mem-peak="62281672" mem-real="65011712" mem-final="61719552" comp-z-value="-0.052251106798093" comp-deviation="-0.049742360083665"/>
+          <iteration time-net="31339" time-revs="1" time-avg="31339" mem-peak="62037568" mem-real="65011712" mem-final="61475448" comp-z-value="-0.075697116258777" comp-deviation="-0.072062649864798"/>
+          <iteration time-net="30936" time-revs="1" time-avg="30936" mem-peak="62037568" mem-real="65011712" mem-final="61475448" comp-z-value="-1.4255173752096" comp-deviation="-1.3570736186929"/>
+          <iteration time-net="31314" time-revs="1" time-avg="31314" mem-peak="62037568" mem-real="65011712" mem-final="61475448" comp-z-value="-0.15943286433265" comp-deviation="-0.1517779705117"/>
+          <iteration time-net="31873" time-revs="1" time-avg="31873" mem-peak="62037568" mem-real="65011712" mem-final="61475448" comp-z-value="1.7128984625992" comp-deviation="1.6306565991531"/>
+          <stats max="31873" mean="31361.6" min="30936" mode="31306.399217221" rstdev="0.95198672586741" stdev="298.55826901963" sum="156808" variance="89137.04"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-7140.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-7140.php" type="string"/>
           </parameter-set>
-          <iteration time-net="30071" time-revs="1" time-avg="30071" mem-peak="49906488" mem-real="52428800" mem-final="49564376" comp-z-value="-0.53740411498687" comp-deviation="-0.55425846434689"/>
-          <iteration time-net="30338" time-revs="1" time-avg="30338" mem-peak="49904400" mem-real="52428800" mem-final="49562288" comp-z-value="0.31872296557098" comp-deviation="0.32871892217233"/>
-          <iteration time-net="29725" time-revs="1" time-avg="29725" mem-peak="49904400" mem-real="52428800" mem-final="49562288" comp-z-value="-1.6468422043989" comp-deviation="-1.6984913322707"/>
-          <iteration time-net="30442" time-revs="1" time-avg="30442" mem-peak="49904400" mem-real="52428800" mem-final="49562288" comp-z-value="0.65219568608789" comp-deviation="0.6726501888315"/>
-          <iteration time-net="30617" time-revs="1" time-avg="30617" mem-peak="49904400" mem-real="52428800" mem-final="49562288" comp-z-value="1.2133276677269" comp-deviation="1.2513806856138"/>
-          <stats max="30617" mean="30238.6" min="29725" mode="30381.344422701" rstdev="1.0313625238252" stdev="311.8695881294" sum="151193" variance="97262.64"/>
+          <iteration time-net="25182" time-revs="1" time-avg="25182" mem-peak="50178312" mem-real="52428800" mem-final="49836152" comp-z-value="0.31618947549228" comp-deviation="0.1351996182599"/>
+          <iteration time-net="25049" time-revs="1" time-avg="25049" mem-peak="50176224" mem-real="52428800" mem-final="49834064" comp-z-value="-0.92066935510986" comp-deviation="-0.39366947669795"/>
+          <iteration time-net="25192" time-revs="1" time-avg="25192" mem-peak="50176224" mem-real="52428800" mem-final="49834064" comp-z-value="0.40918638004883" comp-deviation="0.17496421186575"/>
+          <iteration time-net="25308" time-revs="1" time-avg="25308" mem-peak="50176224" mem-real="52428800" mem-final="49834064" comp-z-value="1.4879504729048" comp-deviation="0.63623349769365"/>
+          <iteration time-net="25009" time-revs="1" time-avg="25009" mem-peak="50176224" mem-real="52428800" mem-final="49834064" comp-z-value="-1.2926569733361" comp-deviation="-0.55272785112136"/>
+          <stats max="25308" mean="25148" min="25009" mode="25165.814090019" rstdev="0.4275905073988" stdev="107.53046080065" sum="125740" variance="11562.8"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-7214.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-7214.php" type="string"/>
           </parameter-set>
-          <iteration time-net="2635" time-revs="1" time-avg="2635" mem-peak="66004784" mem-real="69206016" mem-final="65643824" comp-z-value="-1.1230393140573" comp-deviation="-1.5615660490138"/>
-          <iteration time-net="2737" time-revs="1" time-avg="2737" mem-peak="65352408" mem-real="67108864" mem-final="64991448" comp-z-value="1.6173915479963" comp-deviation="2.2489539748954"/>
-          <iteration time-net="2640" time-revs="1" time-avg="2640" mem-peak="65352408" mem-real="67108864" mem-final="64991448" comp-z-value="-0.98870446787816" comp-deviation="-1.3747758517633"/>
-          <iteration time-net="2682" time-revs="1" time-avg="2682" mem-peak="65352408" mem-real="67108864" mem-final="64991448" comp-z-value="0.13970824002626" comp-deviation="0.19426180514046"/>
-          <iteration time-net="2690" time-revs="1" time-avg="2690" mem-peak="65352408" mem-real="67108864" mem-final="64991448" comp-z-value="0.35464399391281" comp-deviation="0.49312612074118"/>
-          <stats max="2737" mean="2676.8" min="2635" mode="2665.5401174168" rstdev="1.3904820868401" stdev="37.220424500535" sum="13384" variance="1385.36"/>
+          <iteration time-net="2416" time-revs="1" time-avg="2416" mem-peak="66236520" mem-real="69206016" mem-final="65875464" comp-z-value="-1.899707216251" comp-deviation="-9.2956900435501"/>
+          <iteration time-net="2671" time-revs="1" time-avg="2671" mem-peak="65584144" mem-real="67108864" mem-final="65223088" comp-z-value="0.056776386915418" comp-deviation="0.27781949241628"/>
+          <iteration time-net="2795" time-revs="1" time-avg="2795" mem-peak="65584144" mem-real="67108864" mem-final="65223088" comp-z-value="1.0081644919846" comp-deviation="4.9331731491215"/>
+          <iteration time-net="2732" time-revs="1" time-avg="2732" mem-peak="65584144" mem-real="67108864" mem-final="65223088" comp-z-value="0.5247979547317" comp-deviation="2.567953146118"/>
+          <iteration time-net="2704" time-revs="1" time-avg="2704" mem-peak="65584144" mem-real="67108864" mem-final="65223088" comp-z-value="0.30996838261931" comp-deviation="1.5167442558943"/>
+          <stats max="2795" mean="2663.6" min="2416" mode="2721.5733855186" rstdev="4.8932224734582" stdev="130.33587380303" sum="13318" variance="16987.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-7581.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-7581.php" type="string"/>
           </parameter-set>
-          <iteration time-net="346100" time-revs="1" time-avg="346100" mem-peak="64208024" mem-real="67108864" mem-final="62898248" comp-z-value="0.80913091905118" comp-deviation="0.30907134841361"/>
-          <iteration time-net="343569" time-revs="1" time-avg="343569" mem-peak="64207616" mem-real="67108864" mem-final="62897840" comp-z-value="-1.1112651388244" comp-deviation="-0.42448039843075"/>
-          <iteration time-net="343806" time-revs="1" time-avg="343806" mem-peak="64207616" mem-real="67108864" mem-final="62897840" comp-z-value="-0.93144140681469" comp-deviation="-0.35579143596449"/>
-          <iteration time-net="344712" time-revs="1" time-avg="344712" mem-peak="64207616" mem-real="67108864" mem-final="62897840" comp-z-value="-0.2440139755878" comp-deviation="-0.093208313625101"/>
-          <iteration time-net="346981" time-revs="1" time-avg="346981" mem-peak="64207616" mem-real="67108864" mem-final="62897840" comp-z-value="1.4775896021758" comp-deviation="0.56440879960677"/>
-          <stats max="346981" mean="345033.6" min="343569" mode="344230.0332681" rstdev="0.3819794067146" stdev="1317.957298246" sum="1725168" variance="1737011.44"/>
+          <iteration time-net="272772" time-revs="1" time-avg="272772" mem-peak="64548232" mem-real="67108864" mem-final="63284392" comp-z-value="0.396351204105" comp-deviation="0.15641867330528"/>
+          <iteration time-net="272971" time-revs="1" time-avg="272971" mem-peak="64547824" mem-real="67108864" mem-final="63283984" comp-z-value="0.58150117973151" comp-deviation="0.22948749017794"/>
+          <iteration time-net="272726" time-revs="1" time-avg="272726" mem-peak="64547824" mem-real="67108864" mem-final="63283984" comp-z-value="0.35355271727676" comp-deviation="0.13952839402818"/>
+          <iteration time-net="270210" time-revs="1" time-avg="270210" mem-peak="64547824" mem-real="67108864" mem-final="63283984" comp-z-value="-1.9873384318504" comp-deviation="-0.78429644643211"/>
+          <iteration time-net="273051" time-revs="1" time-avg="273051" mem-peak="64547824" mem-real="67108864" mem-final="63283984" comp-z-value="0.65593333073715" comp-deviation="0.25886188892071"/>
+          <stats max="273051" mean="272346" min="270210" mode="272873.09001958" rstdev="0.3946466459172" stdev="1074.8043542897" sum="1361730" variance="1155204.4"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-7637.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-7637.php" type="string"/>
           </parameter-set>
-          <iteration time-net="16735" time-revs="1" time-avg="16735" mem-peak="71582088" mem-real="73400320" mem-final="70543928" comp-z-value="-1.702016757273" comp-deviation="-2.4585004196587"/>
-          <iteration time-net="17454" time-revs="1" time-avg="17454" mem-peak="69960064" mem-real="73400320" mem-final="68999048" comp-z-value="1.1992398773389" comp-deviation="1.7322577636855"/>
-          <iteration time-net="17175" time-revs="1" time-avg="17175" mem-peak="69960064" mem-real="73400320" mem-final="68999048" comp-z-value="0.073439319540944" comp-deviation="0.10608038795114"/>
-          <iteration time-net="17342" time-revs="1" time-avg="17342" mem-peak="69960064" mem-real="73400320" mem-final="68999048" comp-z-value="0.74730560324079" comp-deviation="1.079455376294"/>
-          <iteration time-net="17078" time-revs="1" time-avg="17078" mem-peak="69960064" mem-real="73400320" mem-final="68999048" comp-z-value="-0.31796804284759" comp-deviation="-0.45929310827193"/>
-          <stats max="17454" mean="17156.8" min="16735" mode="17247.164383562" rstdev="1.4444631106909" stdev="247.82364697502" sum="85784" variance="61416.56"/>
+          <iteration time-net="15491" time-revs="1" time-avg="15491" mem-peak="71857400" mem-real="75497472" mem-final="70848376" comp-z-value="1.8852221402404" comp-deviation="2.013802913363"/>
+          <iteration time-net="15068" time-revs="1" time-avg="15068" mem-peak="70235376" mem-real="73400320" mem-final="69303496" comp-z-value="-0.72252463975207" comp-deviation="-0.77180412506915"/>
+          <iteration time-net="15210" time-revs="1" time-avg="15210" mem-peak="70235376" mem-real="73400320" mem-final="69303496" comp-z-value="0.15288917291681" comp-deviation="0.16331691383715"/>
+          <iteration time-net="15057" time-revs="1" time-avg="15057" mem-peak="70235376" mem-real="73400320" mem-final="69303496" comp-z-value="-0.79033838580388" comp-deviation="-0.84424307878725"/>
+          <iteration time-net="15100" time-revs="1" time-avg="15100" mem-peak="70235376" mem-real="73400320" mem-final="69303496" comp-z-value="-0.52524828760133" comp-deviation="-0.56107262334379"/>
+          <stats max="15491" mean="15185.2" min="15057" mode="15103.712328767" rstdev="1.0682045740807" stdev="162.2090009833" sum="75926" variance="26311.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-7901.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-7901.php" type="string"/>
           </parameter-set>
-          <iteration time-net="730695" time-revs="1" time-avg="730695" mem-peak="89244960" mem-real="96468992" mem-final="80322232" comp-z-value="-0.050316581054651" comp-deviation="-0.032807303743104"/>
-          <iteration time-net="729987" time-revs="1" time-avg="729987" mem-peak="106636848" mem-real="117440512" mem-final="97714120" comp-z-value="-0.19887429325935" comp-deviation="-0.12966956833907"/>
-          <iteration time-net="727028" time-revs="1" time-avg="727028" mem-peak="106636848" mem-real="117440512" mem-final="97714120" comp-z-value="-0.81975320627304" comp-deviation="-0.53449363746261"/>
-          <iteration time-net="726987" time-revs="1" time-avg="726987" mem-peak="106636848" mem-real="117440512" mem-final="97714120" comp-z-value="-0.82835612463517" comp-deviation="-0.54010289289825"/>
-          <iteration time-net="739977" time-revs="1" time-avg="739977" mem-peak="106636848" mem-real="117440512" mem-final="97714120" comp-z-value="1.8973002052222" comp-deviation="1.237073402443"/>
-          <stats max="739977" mean="730934.8" min="726987" mode="728715.61056752" rstdev="0.65201774555132" stdev="4765.82460441" sum="3654674" variance="22713084.16"/>
+          <iteration time-net="613795" time-revs="1" time-avg="613795" mem-peak="89406616" mem-real="98566144" mem-final="80483864" comp-z-value="-1.5996951640157" comp-deviation="-0.57108107880446"/>
+          <iteration time-net="620373" time-revs="1" time-avg="620373" mem-peak="106798504" mem-real="117440512" mem-final="97875752" comp-z-value="1.3851561404874" comp-deviation="0.49449200123631"/>
+          <iteration time-net="616315" time-revs="1" time-avg="616315" mem-peak="106798504" mem-real="117440512" mem-final="97875752" comp-z-value="-0.4562130589157" comp-deviation="-0.16286518313667"/>
+          <iteration time-net="618525" time-revs="1" time-avg="618525" mem-peak="106798504" mem-real="117440512" mem-final="97875752" comp-z-value="0.54660259674739" comp-deviation="0.19513367774659"/>
+          <iteration time-net="617594" time-revs="1" time-avg="617594" mem-peak="106798504" mem-real="117440512" mem-final="97875752" comp-z-value="0.12414948569656" comp-deviation="0.044320582958214"/>
+          <stats max="620373" mean="617320.4" min="613795" mode="617798.44031312" rstdev="0.35699368957951" stdev="2203.794872487" sum="3086602" variance="4856711.84"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-7903.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-7903.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1649333" time-revs="1" time-avg="1649333" mem-peak="75657096" mem-real="79691776" mem-final="70221432" comp-z-value="0.85796975814686" comp-deviation="0.61968970736014"/>
-          <iteration time-net="1629424" time-revs="1" time-avg="1629424" mem-peak="75296672" mem-real="77594624" mem-final="69861008" comp-z-value="-0.82362664215102" comp-deviation="-0.59488454925379"/>
-          <iteration time-net="1656208" time-revs="1" time-avg="1656208" mem-peak="75296672" mem-real="77594624" mem-final="69861008" comp-z-value="1.4386606643726" comp-deviation="1.0391079611258"/>
-          <iteration time-net="1635951" time-revs="1" time-avg="1635951" mem-peak="75296672" mem-real="77594624" mem-final="69861008" comp-z-value="-0.27232925379679" comp-deviation="-0.19669648491509"/>
-          <iteration time-net="1624960" time-revs="1" time-avg="1624960" mem-peak="75296672" mem-real="77594624" mem-final="69861008" comp-z-value="-1.2006745265716" comp-deviation="-0.86721663431706"/>
-          <stats max="1656208" mean="1639175.2" min="1624960" mode="1632114.630137" rstdev="0.72227453412649" stdev="11839.345039317" sum="8195876" variance="140170090.96"/>
+          <iteration time-net="1357460" time-revs="1" time-avg="1357460" mem-peak="76104464" mem-real="79691776" mem-final="70693048" comp-z-value="-0.44013363636886" comp-deviation="-0.18127467598953"/>
+          <iteration time-net="1369642" time-revs="1" time-avg="1369642" mem-peak="75631448" mem-real="79691776" mem-final="70220032" comp-z-value="1.7348249707403" comp-deviation="0.71450988627904"/>
+          <iteration time-net="1352936" time-revs="1" time-avg="1352936" mem-peak="75631448" mem-real="79691776" mem-final="70220032" comp-z-value="-1.2478427759651" comp-deviation="-0.51394003140761"/>
+          <iteration time-net="1361728" time-revs="1" time-avg="1361728" mem-peak="75631448" mem-real="79691776" mem-final="70220032" comp-z-value="0.32186959258714" comp-deviation="0.13256611466572"/>
+          <iteration time-net="1357860" time-revs="1" time-avg="1357860" mem-peak="75631448" mem-real="79691776" mem-final="70220032" comp-z-value="-0.36871815099341" comp-deviation="-0.15186129354761"/>
+          <stats max="1369642" mean="1359925.2" min="1352936" mode="1357839.9138943" rstdev="0.4118628094073" stdev="5601.0261345578" sum="6799626" variance="31371493.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-8146a.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-8146a.php" type="string"/>
           </parameter-set>
-          <iteration time-net="131110" time-revs="1" time-avg="131110" mem-peak="67888280" mem-real="69206016" mem-final="64213984" comp-z-value="-0.65924077699693" comp-deviation="-0.20004140887611"/>
-          <iteration time-net="131690" time-revs="1" time-avg="131690" mem-peak="67875168" mem-real="69206016" mem-final="64200872" comp-z-value="0.79570462124597" comp-deviation="0.24145028499051"/>
-          <iteration time-net="131441" time-revs="1" time-avg="131441" mem-peak="67875168" mem-real="69206016" mem-final="64200872" comp-z-value="0.171081510621" comp-deviation="0.051913333658118"/>
-          <iteration time-net="130758" time-revs="1" time-avg="130758" mem-peak="67875168" mem-real="69206016" mem-final="64200872" comp-z-value="-1.5422421221374" comp-deviation="-0.4679811954986"/>
-          <iteration time-net="131865" time-revs="1" time-avg="131865" mem-peak="67875168" mem-real="69206016" mem-final="64200872" comp-z-value="1.2346967672675" comp-deviation="0.37465898572613"/>
-          <stats max="131865" mean="131372.8" min="130758" mode="131557.37964775" rstdev="0.30344210470014" stdev="398.64038932351" sum="656864" variance="158914.16"/>
+          <iteration time-net="110785" time-revs="1" time-avg="110785" mem-peak="68124504" mem-real="71303168" mem-final="64591096" comp-z-value="1.5263208634008" comp-deviation="0.47778759312233"/>
+          <iteration time-net="110095" time-revs="1" time-avg="110095" mem-peak="68111392" mem-real="71303168" mem-final="64577984" comp-z-value="-0.47284655449318" comp-deviation="-0.14801620196956"/>
+          <iteration time-net="109807" time-revs="1" time-avg="109807" mem-peak="68111392" mem-real="71303168" mem-final="64577984" comp-z-value="-1.3072816506576" comp-deviation="-0.40922126426878"/>
+          <iteration time-net="110097" time-revs="1" time-avg="110097" mem-peak="68111392" mem-real="71303168" mem-final="64577984" comp-z-value="-0.46705186632537" comp-deviation="-0.14620227792581"/>
+          <iteration time-net="110507" time-revs="1" time-avg="110507" mem-peak="68111392" mem-real="71303168" mem-final="64577984" comp-z-value="0.72085920807541" comp-deviation="0.22565215104183"/>
+          <stats max="110785" mean="110258.2" min="109807" mode="110097.91193738" rstdev="0.31303221005429" stdev="345.14368022608" sum="551291" variance="119124.16"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-8146b.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-8146b.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1068549" time-revs="1" time-avg="1068549" mem-peak="83863488" mem-real="88080384" mem-final="79303840" comp-z-value="-0.6715444137591" comp-deviation="-0.27998714384743"/>
-          <iteration time-net="1074823" time-revs="1" time-avg="1074823" mem-peak="83850232" mem-real="88080384" mem-final="79290584" comp-z-value="0.7327851815761" comp-deviation="0.30552026915797"/>
-          <iteration time-net="1078762" time-revs="1" time-avg="1078762" mem-peak="83850232" mem-real="88080384" mem-final="79290584" comp-z-value="1.6144642182394" comp-deviation="0.67311888245543"/>
-          <iteration time-net="1067931" time-revs="1" time-avg="1067931" mem-peak="83850232" mem-real="88080384" mem-final="79290584" comp-z-value="-0.80987334106499" comp-deviation="-0.33766065057955"/>
-          <iteration time-net="1067681" time-revs="1" time-avg="1067681" mem-peak="83850232" mem-real="88080384" mem-final="79290584" comp-z-value="-0.86583164499132" comp-deviation="-0.36099135718639"/>
-          <stats max="1078762" mean="1071549.2" min="1067681" mode="1068613.4520548" rstdev="0.41693019569643" stdev="4467.6121765435" sum="5357746" variance="19959558.56"/>
+          <iteration time-net="848392" time-revs="1" time-avg="848392" mem-peak="84214776" mem-real="85983232" mem-final="79673688" comp-z-value="-1.889359134052" comp-deviation="-0.36685167791367"/>
+          <iteration time-net="853029" time-revs="1" time-avg="853029" mem-peak="84154568" mem-real="85983232" mem-final="79594896" comp-z-value="0.91522448352884" comp-deviation="0.17770662623054"/>
+          <iteration time-net="852562" time-revs="1" time-avg="852562" mem-peak="84154568" mem-real="85983232" mem-final="79594896" comp-z-value="0.6327701920882" comp-deviation="0.12286325162727"/>
+          <iteration time-net="851370" time-revs="1" time-avg="851370" mem-peak="84154568" mem-real="85983232" mem-final="79594896" comp-z-value="-0.088183802338456" comp-deviation="-0.017122406888991"/>
+          <iteration time-net="852226" time-revs="1" time-avg="852226" mem-peak="84154568" mem-real="85983232" mem-final="79594896" comp-z-value="0.4295482607733" comp-deviation="0.083404206944833"/>
+          <stats max="853029" mean="851515.8" min="848392" mode="852312.12524463" rstdev="0.19416725560635" stdev="1653.3648599145" sum="4257579" variance="2733615.36"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-8147.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-8147.php" type="string"/>
           </parameter-set>
-          <iteration time-net="311801" time-revs="1" time-avg="311801" mem-peak="87205464" mem-real="88080384" mem-final="82503136" comp-z-value="1.848157009901" comp-deviation="2.7978870783009"/>
-          <iteration time-net="302829" time-revs="1" time-avg="302829" mem-peak="93584640" mem-real="98566144" mem-final="88944504" comp-z-value="-0.10575332814949" comp-deviation="-0.16009779944651"/>
-          <iteration time-net="302139" time-revs="1" time-avg="302139" mem-peak="93584640" mem-real="98566144" mem-final="88944504" comp-z-value="-0.25602061897148" comp-deviation="-0.38758437609003"/>
-          <iteration time-net="297841" time-revs="1" time-avg="297841" mem-peak="93584640" mem-real="98566144" mem-final="88944504" comp-z-value="-1.1920333957148" comp-deviation="-1.8045949650956"/>
-          <iteration time-net="301963" time-revs="1" time-avg="301963" mem-peak="93584640" mem-real="98566144" mem-final="88944504" comp-z-value="-0.2943496670652" comp-deviation="-0.44560993766867"/>
-          <stats max="311801" mean="303314.6" min="297841" mode="301611.01956947" rstdev="1.5138795369181" stdev="4591.8176618851" sum="1516573" variance="21084789.44"/>
+          <iteration time-net="243668" time-revs="1" time-avg="243668" mem-peak="87491792" mem-real="90177536" mem-final="82818200" comp-z-value="1.5678971053695" comp-deviation="0.77445642059361"/>
+          <iteration time-net="241410" time-revs="1" time-avg="241410" mem-peak="93936504" mem-real="98566144" mem-final="89259568" comp-z-value="-0.3226890656891" comp-deviation="-0.15939095615549"/>
+          <iteration time-net="240576" time-revs="1" time-avg="240576" mem-peak="93936504" mem-real="98566144" mem-final="89259568" comp-z-value="-1.0209835150527" comp-deviation="-0.50431066926831"/>
+          <iteration time-net="240673" time-revs="1" time-avg="240673" mem-peak="93936504" mem-real="98566144" mem-final="89259568" comp-z-value="-0.9397670143473" comp-deviation="-0.46419410791107"/>
+          <iteration time-net="242650" time-revs="1" time-avg="242650" mem-peak="93936504" mem-real="98566144" mem-final="89259568" comp-z-value="0.71554248971954" comp-deviation="0.35343931274127"/>
+          <stats max="243668" mean="241795.4" min="240576" mode="241078.22309198" rstdev="0.49394594705313" stdev="1194.3385784609" sum="1208977" variance="1426444.64"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-8215.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-8215.php" type="string"/>
           </parameter-set>
-          <iteration time-net="635816" time-revs="1" time-avg="635816" mem-peak="114804544" mem-real="119541760" mem-final="105854696" comp-z-value="1.6084136446127" comp-deviation="0.89598073408151"/>
-          <iteration time-net="628657" time-revs="1" time-avg="628657" mem-peak="114804544" mem-real="119541760" mem-final="105854696" comp-z-value="-0.43094615167196" comp-deviation="-0.24006228162632"/>
-          <iteration time-net="626870" time-revs="1" time-avg="626870" mem-peak="114804544" mem-real="119541760" mem-final="105854696" comp-z-value="-0.94000271766731" comp-deviation="-0.52363664523436"/>
-          <iteration time-net="626906" time-revs="1" time-avg="626906" mem-peak="114804544" mem-real="119541760" mem-final="105854696" comp-z-value="-0.92974752103841" comp-deviation="-0.51792389924113"/>
-          <iteration time-net="632600" time-revs="1" time-avg="632600" mem-peak="114804544" mem-real="119541760" mem-final="105854696" comp-z-value="0.6922827457649" comp-deviation="0.38564209202027"/>
-          <stats max="635816" mean="630169.8" min="626870" mode="628007.94520548" rstdev="0.55705865035561" stdev="3510.4153828286" sum="3150849" variance="12323016.16"/>
+          <iteration time-net="507543" time-revs="1" time-avg="507543" mem-peak="115084080" mem-real="119541760" mem-final="106134208" comp-z-value="-1.1275575620976" comp-deviation="-0.20998366138365"/>
+          <iteration time-net="507554" time-revs="1" time-avg="507554" mem-peak="115084080" mem-real="119541760" mem-final="106134208" comp-z-value="-1.1159441415142" comp-deviation="-0.20782090831697"/>
+          <iteration time-net="509762" time-revs="1" time-avg="509762" mem-peak="115084080" mem-real="119541760" mem-final="106134208" comp-z-value="1.2151860992269" comp-deviation="0.22630261634137"/>
+          <iteration time-net="509561" time-revs="1" time-avg="509561" mem-peak="115084080" mem-real="119541760" mem-final="106134208" comp-z-value="1.0029772322029" comp-deviation="0.18678321939557"/>
+          <iteration time-net="508635" time-revs="1" time-avg="508635" mem-peak="115084080" mem-real="119541760" mem-final="106134208" comp-z-value="0.025338372181969" comp-deviation="0.0047187339636775"/>
+          <stats max="509762" mean="508611" min="507543" mode="509193.13698631" rstdev="0.1862287730952" stdev="947.18002512722" sum="2543055" variance="897150"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-8503.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-8503.php" type="string"/>
           </parameter-set>
-          <iteration time-net="228316" time-revs="1" time-avg="228316" mem-peak="76500064" mem-real="79691776" mem-final="72936664" comp-z-value="0.073890006785553" comp-deviation="0.079075777739202"/>
-          <iteration time-net="226902" time-revs="1" time-avg="226902" mem-peak="74446864" mem-real="77594624" mem-final="70883464" comp-z-value="-0.50527002422762" comp-deviation="-0.54073103890844"/>
-          <iteration time-net="224770" time-revs="1" time-avg="224770" mem-peak="74446864" mem-real="77594624" mem-final="70883464" comp-z-value="-1.378515558966" comp-deviation="-1.4752629576445"/>
-          <iteration time-net="232237" time-revs="1" time-avg="232237" mem-peak="74446864" mem-real="77594624" mem-final="70883464" comp-z-value="1.6798917618086" comp-deviation="1.7977904369156"/>
-          <iteration time-net="228453" time-revs="1" time-avg="228453" mem-peak="74446864" mem-real="77594624" mem-final="70883464" comp-z-value="0.13000381459942" comp-deviation="0.13912778189813"/>
-          <stats max="232237" mean="228135.6" min="224770" mode="227648.66731898" rstdev="1.0701823044718" stdev="2441.4668214006" sum="1140678" variance="5960760.24"/>
+          <iteration time-net="190639" time-revs="1" time-avg="190639" mem-peak="76866392" mem-real="79691776" mem-final="73302944" comp-z-value="-0.43354768129705" comp-deviation="-0.16924815487045"/>
+          <iteration time-net="191725" time-revs="1" time-avg="191725" mem-peak="74747656" mem-real="77594624" mem-final="71184208" comp-z-value="1.0232369161305" comp-deviation="0.39945078135882"/>
+          <iteration time-net="189764" time-revs="1" time-avg="189764" mem-peak="74747656" mem-real="77594624" mem-final="71184208" comp-z-value="-1.6072921773828" comp-deviation="-0.62745401969605"/>
+          <iteration time-net="191771" time-revs="1" time-avg="191771" mem-peak="74747656" mem-real="77594624" mem-final="71184208" comp-z-value="1.0849423410676" comp-deviation="0.42353931825251"/>
+          <iteration time-net="190912" time-revs="1" time-avg="190912" mem-peak="74747656" mem-real="77594624" mem-final="71184208" comp-z-value="-0.067339398518304" comp-deviation="-0.026287925044858"/>
+          <stats max="191771" mean="190962.2" min="189764" mode="191225.06457925" rstdev="0.39037956416721" stdev="745.47740408412" sum="954811" variance="555736.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-9690.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-9690.php" type="string"/>
           </parameter-set>
-          <iteration time-net="344558" time-revs="1" time-avg="344558" mem-peak="68952344" mem-real="73400320" mem-final="64412448" comp-z-value="0.59538273837456" comp-deviation="0.41897829449953"/>
-          <iteration time-net="343294" time-revs="1" time-avg="343294" mem-peak="68982200" mem-real="73400320" mem-final="64442304" comp-z-value="0.071896524333481" comp-deviation="0.050594485201106"/>
-          <iteration time-net="338407" time-revs="1" time-avg="338407" mem-peak="68982200" mem-real="73400320" mem-final="64442304" comp-z-value="-1.952056899732" comp-deviation="-1.3736869040722"/>
-          <iteration time-net="344557" time-revs="1" time-avg="344557" mem-peak="68982200" mem-real="73400320" mem-final="64442304" comp-z-value="0.59496858788877" comp-deviation="0.41868685161243"/>
-          <iteration time-net="344786" time-revs="1" time-avg="344786" mem-peak="68982200" mem-real="73400320" mem-final="64442304" comp-z-value="0.68980904913514" comp-deviation="0.48542727275906"/>
-          <stats max="344786" mean="343120.4" min="338407" mode="344311.63209394" rstdev="0.70371253228364" stdev="2414.5812556218" sum="1715602" variance="5830202.64"/>
+          <iteration time-net="274868" time-revs="1" time-avg="274868" mem-peak="69206752" mem-real="73400320" mem-final="64666808" comp-z-value="-0.38502177555457" comp-deviation="-0.15619437845535"/>
+          <iteration time-net="274338" time-revs="1" time-avg="274338" mem-peak="69236608" mem-real="73400320" mem-final="64696664" comp-z-value="-0.85958349891253" comp-deviation="-0.34871303097008"/>
+          <iteration time-net="274801" time-revs="1" time-avg="274801" mem-peak="69236608" mem-real="73400320" mem-final="64696664" comp-z-value="-0.44501354058284" comp-deviation="-0.18053164207513"/>
+          <iteration time-net="274996" time-revs="1" time-avg="274996" mem-peak="69236608" mem-real="73400320" mem-final="64696664" comp-z-value="-0.27041064236623" comp-deviation="-0.10969930765934"/>
+          <iteration time-net="277487" time-revs="1" time-avg="277487" mem-peak="69236608" mem-real="73400320" mem-final="64696664" comp-z-value="1.9600294574162" comp-deviation="0.79513835915989"/>
+          <stats max="277487" mean="275298" min="274338" mode="274769.36986301" rstdev="0.4056767392711" stdev="1116.8199496786" sum="1376490" variance="1247286.8"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-10147.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-10147.php" type="string"/>
           </parameter-set>
-          <iteration time-net="746" time-revs="1" time-avg="746" mem-peak="50343256" mem-real="52428800" mem-final="50165528" comp-z-value="1.0820821014015" comp-deviation="4.6576879910213"/>
-          <iteration time-net="715" time-revs="1" time-avg="715" mem-peak="50403792" mem-real="52428800" mem-final="50166784" comp-z-value="0.071704235635042" comp-deviation="0.30864197530865"/>
-          <iteration time-net="656" time-revs="1" time-avg="656" mem-peak="50403792" mem-real="52428800" mem-final="50166784" comp-z-value="-1.8512729927592" comp-deviation="-7.9685746352413" reject-count="1"/>
-          <iteration time-net="732" time-revs="1" time-avg="732" mem-peak="50403792" mem-real="52428800" mem-final="50166784" comp-z-value="0.62578242008763" comp-deviation="2.6936026936027"/>
-          <iteration time-net="715" time-revs="1" time-avg="715" mem-peak="50403792" mem-real="52428800" mem-final="50166784" comp-z-value="0.071704235635042" comp-deviation="0.30864197530865"/>
-          <stats max="746" mean="712.8" min="656" mode="725.56947162429" rstdev="4.3043757816423" stdev="30.681590571546" sum="3564" variance="941.36"/>
+          <iteration time-net="633" time-revs="1" time-avg="633" mem-peak="50442480" mem-real="52428800" mem-final="50264728" comp-z-value="-0.54007722317347" comp-deviation="-2.0427112349118"/>
+          <iteration time-net="643" time-revs="1" time-avg="643" mem-peak="50568552" mem-real="52428800" mem-final="50265984" comp-z-value="-0.13092781167842" comp-deviation="-0.49520272361499"/>
+          <iteration time-net="694" time-revs="1" time-avg="694" mem-peak="50568552" mem-real="52428800" mem-final="50265984" comp-z-value="1.9557341869463" comp-deviation="7.3970906839988"/>
+          <iteration time-net="627" time-revs="1" time-avg="627" mem-peak="50568552" mem-real="52428800" mem-final="50265984" comp-z-value="-0.78556687007049" comp-deviation="-2.9712163416899"/>
+          <iteration time-net="634" time-revs="1" time-avg="634" mem-peak="50568552" mem-real="52428800" mem-final="50265984" comp-z-value="-0.49916228202396" comp-deviation="-1.8879603837821"/>
+          <stats max="694" mean="646.2" min="627" mode="634.34246575343" rstdev="3.7822576980916" stdev="24.440949245068" sum="3231" variance="597.36"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-10538.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-10538.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1258939" time-revs="1" time-avg="1258939" mem-peak="74357656" mem-real="77594624" mem-final="72340080" comp-z-value="-1.1592694322316" comp-deviation="-0.19780659189357"/>
-          <iteration time-net="1260174" time-revs="1" time-avg="1260174" mem-peak="76714904" mem-real="81788928" mem-final="74689312" comp-z-value="-0.5854886736527" comp-deviation="-0.099902158986965"/>
-          <iteration time-net="1263603" time-revs="1" time-avg="1263603" mem-peak="76714904" mem-real="81788928" mem-final="74689312" comp-z-value="1.0076240560372" comp-deviation="0.17193128266223"/>
-          <iteration time-net="1264394" time-revs="1" time-avg="1264394" mem-peak="76714904" mem-real="81788928" mem-final="74689312" comp-z-value="1.3751225014104" comp-deviation="0.23463768462913"/>
-          <iteration time-net="1260061" time-revs="1" time-avg="1260061" mem-peak="76714904" mem-real="81788928" mem-final="74689312" comp-z-value="-0.63798845156315" comp-deviation="-0.10886021641081"/>
-          <stats max="1264394" mean="1261434.2" min="1258939" mode="1259985.1643836" rstdev="0.17063038702987" stdev="2152.3900575871" sum="6307171" variance="4632782.96"/>
+          <iteration time-net="1179936" time-revs="1" time-avg="1179936" mem-peak="74722616" mem-real="79691776" mem-final="72672576" comp-z-value="1.9823789377023" comp-deviation="2.875024652111"/>
+          <iteration time-net="1139225" time-revs="1" time-avg="1139225" mem-peak="77071848" mem-real="81788928" mem-final="75021808" comp-z-value="-0.4650403182521" comp-deviation="-0.67444339413229"/>
+          <iteration time-net="1142069" time-revs="1" time-avg="1142069" mem-peak="77071848" mem-real="81788928" mem-final="75021808" comp-z-value="-0.29406784486814" comp-deviation="-0.42648369961445"/>
+          <iteration time-net="1135155" time-revs="1" time-avg="1135155" mem-peak="77071848" mem-real="81788928" mem-final="75021808" comp-z-value="-0.70971611525376" comp-deviation="-1.0292942931082"/>
+          <iteration time-net="1138418" time-revs="1" time-avg="1138418" mem-peak="77071848" mem-real="81788928" mem-final="75021808" comp-z-value="-0.51355465932835" comp-deviation="-0.74480326525602"/>
+          <stats max="1179936" mean="1146960.6" min="1135155" mode="1138835.630137" rstdev="1.45029015262" stdev="16634.256636231" sum="5734803" variance="276698493.84"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-10772.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-10772.php" type="string"/>
           </parameter-set>
-          <iteration time-net="333348" time-revs="1" time-avg="333348" mem-peak="117376784" mem-real="127930368" mem-final="110672912" comp-z-value="0.0036960098357063" comp-deviation="0.0048600223561063"/>
-          <iteration time-net="329950" time-revs="1" time-avg="329950" mem-peak="130377008" mem-real="138416128" mem-final="116377024" comp-z-value="-0.77155346064089" comp-deviation="-1.0145446669055"/>
-          <iteration time-net="341691" time-revs="1" time-avg="341691" mem-peak="130377008" mem-real="138416128" mem-final="116377024" comp-z-value="1.9071410752231" comp-deviation="2.5077715357491"/>
-          <iteration time-net="329768" time-revs="1" time-avg="329768" mem-peak="130377008" mem-real="138416128" mem-final="116377024" comp-z-value="-0.81307653410373" comp-deviation="-1.0691449180666"/>
-          <iteration time-net="331902" time-revs="1" time-avg="331902" mem-peak="130377008" mem-real="138416128" mem-final="116377024" comp-z-value="-0.32620709031413" comp-deviation="-0.42894197313307"/>
-          <stats max="341691" mean="333331.8" min="329768" mode="331237.95890411" rstdev="1.3149376143848" stdev="4383.1052189059" sum="1666659" variance="19211611.36"/>
+          <iteration time-net="255293" time-revs="1" time-avg="255293" mem-peak="117598168" mem-real="130027520" mem-final="110905000" comp-z-value="1.0282364020046" comp-deviation="0.57930223707424"/>
+          <iteration time-net="255581" time-revs="1" time-avg="255581" mem-peak="130598392" mem-real="140513280" mem-final="116543576" comp-z-value="1.2296319976094" comp-deviation="0.69276731071228"/>
+          <iteration time-net="253717" time-revs="1" time-avg="253717" mem-peak="130598392" mem-real="140513280" mem-final="116543576" comp-z-value="-0.07384505172177" comp-deviation="-0.041603860333952"/>
+          <iteration time-net="252464" time-revs="1" time-avg="252464" mem-peak="130598392" mem-real="140513280" mem-final="116543576" comp-z-value="-0.95005575065523" comp-deviation="-0.53525572584947"/>
+          <iteration time-net="252058" time-revs="1" time-avg="252058" mem-peak="130598392" mem-real="140513280" mem-final="116543576" comp-z-value="-1.233967597237" comp-deviation="-0.69520996160311"/>
+          <stats max="255581" mean="253822.6" min="252058" mode="252961.15655577" rstdev="0.56339401711986" stdev="1430.0213424981" sum="1269113" variance="2044961.04"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-10979.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-10979.php" type="string"/>
           </parameter-set>
-          <iteration time-net="808625" time-revs="1" time-avg="808625" mem-peak="70936336" mem-real="73400320" mem-final="69116256" comp-z-value="-1.034854902784" comp-deviation="-0.65077504988809"/>
-          <iteration time-net="809549" time-revs="1" time-avg="809549" mem-peak="71010208" mem-real="73400320" mem-final="69133912" comp-z-value="-0.854329693191" comp-deviation="-0.53725063022026"/>
-          <iteration time-net="822396" time-revs="1" time-avg="822396" mem-peak="71010208" mem-real="73400320" mem-final="69133912" comp-z-value="1.6556349904041" comp-deviation="1.0411565337112"/>
-          <iteration time-net="816895" time-revs="1" time-avg="816895" mem-peak="71010208" mem-real="73400320" mem-final="69133912" comp-z-value="0.58088479779441" comp-deviation="0.36529307852425"/>
-          <iteration time-net="812144" time-revs="1" time-avg="812144" mem-peak="71010208" mem-real="73400320" mem-final="69133912" comp-z-value="-0.34733519222351" comp-deviation="-0.21842393212715"/>
-          <stats max="822396" mean="813921.8" min="808625" mode="811077.36986302" rstdev="0.62885632385499" stdev="5118.3987105344" sum="4069609" variance="26198005.36"/>
+          <iteration time-net="688952" time-revs="1" time-avg="688952" mem-peak="71165624" mem-real="73400320" mem-final="69321152" comp-z-value="-0.29472392952696" comp-deviation="-0.20583076105236"/>
+          <iteration time-net="687747" time-revs="1" time-avg="687747" mem-peak="71239496" mem-real="73400320" mem-final="69404344" comp-z-value="-0.54464816251781" comp-deviation="-0.38037408763089"/>
+          <iteration time-net="685853" time-revs="1" time-avg="685853" mem-peak="71239496" mem-real="73400320" mem-final="69404344" comp-z-value="-0.93747513121877" comp-deviation="-0.65471853621158"/>
+          <iteration time-net="689647" time-revs="1" time-avg="689647" mem-peak="71239496" mem-real="73400320" mem-final="69404344" comp-z-value="-0.15057675780195" comp-deviation="-0.10516054364814"/>
+          <iteration time-net="699666" time-revs="1" time-avg="699666" mem-peak="71239496" mem-real="73400320" mem-final="69404344" comp-z-value="1.9274239810655" comp-deviation="1.346083928543"/>
+          <stats max="699666" mean="690373" min="685853" mode="688150.66144814" rstdev="0.69838496447411" stdev="4821.4612307889" sum="3451865" variance="23246488.4"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-11263.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-11263.php" type="string"/>
           </parameter-set>
-          <iteration time-net="636028" time-revs="1" time-avg="636028" mem-peak="70944112" mem-real="73400320" mem-final="68792216" comp-z-value="-0.37329088720205" comp-deviation="-0.38366263749895"/>
-          <iteration time-net="649951" time-revs="1" time-avg="649951" mem-peak="71218048" mem-real="73400320" mem-final="69062808" comp-z-value="1.7484142983442" comp-deviation="1.7969933479264"/>
-          <iteration time-net="641268" time-revs="1" time-avg="641268" mem-peak="71218048" mem-real="73400320" mem-final="69062808" comp-z-value="0.42522489045094" comp-deviation="0.43703960796746"/>
-          <iteration time-net="632791" time-revs="1" time-avg="632791" mem-peak="71218048" mem-real="73400320" mem-final="69062808" comp-z-value="-0.86657248496211" comp-deviation="-0.89064988341016"/>
-          <iteration time-net="632350" time-revs="1" time-avg="632350" mem-peak="71218048" mem-real="73400320" mem-final="69062808" comp-z-value="-0.933775816631" comp-deviation="-0.95972043498472"/>
-          <stats max="649951" mean="638477.6" min="632350" mode="635036.64970645" rstdev="1.0277846329832" stdev="6562.1746578402" sum="3192388" variance="43062136.24"/>
+          <iteration time-net="538127" time-revs="1" time-avg="538127" mem-peak="71169624" mem-real="73400320" mem-final="69064944" comp-z-value="1.3719706203586" comp-deviation="0.18140096501442"/>
+          <iteration time-net="536401" time-revs="1" time-avg="536401" mem-peak="71443560" mem-real="73400320" mem-final="69335536" comp-z-value="-1.0582646944391" comp-deviation="-0.13992299394995"/>
+          <iteration time-net="537871" time-revs="1" time-avg="537871" mem-peak="71443560" mem-real="73400320" mem-final="69335536" comp-z-value="1.0115185690329" comp-deviation="0.13374225499421"/>
+          <iteration time-net="536838" time-revs="1" time-avg="536838" mem-peak="71443560" mem-real="73400320" mem-final="69335536" comp-z-value="-0.44296177869948" comp-deviation="-0.058568086610765"/>
+          <iteration time-net="536526" time-revs="1" time-avg="536526" mem-peak="71443560" mem-real="73400320" mem-final="69335536" comp-z-value="-0.88226271625272" comp-deviation="-0.11665213944789"/>
+          <stats max="538127" mean="537152.6" min="536401" mode="536657.70450098" rstdev="0.1322192781118" stdev="710.21929007878" sum="2685763" variance="504411.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-11283.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-11283.php" type="string"/>
           </parameter-set>
-          <iteration time-net="935689" time-revs="1" time-avg="935689" mem-peak="70091272" mem-real="73400320" mem-final="67591504" comp-z-value="-1.4612372814234" comp-deviation="-0.84511012394242"/>
-          <iteration time-net="945029" time-revs="1" time-avg="945029" mem-peak="70096856" mem-real="73400320" mem-final="67597088" comp-z-value="0.25010518986119" comp-deviation="0.14464894284406"/>
-          <iteration time-net="948297" time-revs="1" time-avg="948297" mem-peak="70096856" mem-real="73400320" mem-final="67597088" comp-z-value="0.84889182756547" comp-deviation="0.49095864629783"/>
-          <iteration time-net="939173" time-revs="1" time-avg="939173" mem-peak="70096856" mem-real="73400320" mem-final="67597088" comp-z-value="-0.8228735587301" comp-deviation="-0.47591091744519"/>
-          <iteration time-net="950132" time-revs="1" time-avg="950132" mem-peak="70096856" mem-real="73400320" mem-final="67597088" comp-z-value="1.1851138227268" comp-deviation="0.68541345224571"/>
-          <stats max="950132" mean="943664" min="935689" mode="946881.61839531" rstdev="0.57835242413141" stdev="5457.7036196554" sum="4718320" variance="29786528.8"/>
+          <iteration time-net="842917" time-revs="1" time-avg="842917" mem-peak="70480872" mem-real="73400320" mem-final="67915376" comp-z-value="-0.47063110969718" comp-deviation="-0.35662365069229"/>
+          <iteration time-net="848994" time-revs="1" time-avg="848994" mem-peak="70486456" mem-real="73400320" mem-final="67920960" comp-z-value="0.47740165801354" comp-deviation="0.36175407579174"/>
+          <iteration time-net="854733" time-revs="1" time-avg="854733" mem-peak="70486456" mem-real="73400320" mem-final="67920960" comp-z-value="1.3727052706336" comp-deviation="1.0401759570311"/>
+          <iteration time-net="835577" time-revs="1" time-avg="835577" mem-peak="70486456" mem-real="73400320" mem-final="67920960" comp-z-value="-1.6156961936196" comp-deviation="-1.2243038403242"/>
+          <iteration time-net="847448" time-revs="1" time-avg="847448" mem-peak="70486456" mem-real="73400320" mem-final="67920960" comp-z-value="0.23622037466966" comp-deviation="0.17899745819353"/>
+          <stats max="854733" mean="845933.8" min="835577" mode="847610.41682974" rstdev="0.75775621998673" stdev="6410.1159864701" sum="4229669" variance="41089586.96"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-11297.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-11297.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1524981" time-revs="1" time-avg="1524981" mem-peak="79074544" mem-real="81788928" mem-final="69524320" comp-z-value="-1.2328922654271" comp-deviation="-1.3602621663445"/>
-          <iteration time-net="1525362" time-revs="1" time-avg="1525362" mem-peak="79197584" mem-real="81788928" mem-final="69647360" comp-z-value="-1.2105557737283" comp-deviation="-1.335618095294"/>
-          <iteration time-net="1562073" time-revs="1" time-avg="1562073" mem-peak="79197584" mem-real="81788928" mem-final="69647360" comp-z-value="0.94166193429054" comp-deviation="1.0389448767111"/>
-          <iteration time-net="1558685" time-revs="1" time-avg="1558685" mem-peak="79197584" mem-real="81788928" mem-final="69647360" comp-z-value="0.74303717346223" comp-deviation="0.81980022390529"/>
-          <iteration time-net="1558953" time-revs="1" time-avg="1558953" mem-peak="79197584" mem-real="81788928" mem-final="69647360" comp-z-value="0.75874893140261" comp-deviation="0.83713516102216"/>
-          <stats max="1562073" mean="1546010.8" min="1524981" mode="1558661.407045" rstdev="1.1033098385716" stdev="17057.289261779" sum="7730054" variance="290951116.96"/>
+          <iteration time-net="1333623" time-revs="1" time-avg="1333623" mem-peak="79439832" mem-real="81788928" mem-final="69892776" comp-z-value="0.39228012187256" comp-deviation="0.049573798866918"/>
+          <iteration time-net="1331409" time-revs="1" time-avg="1331409" mem-peak="79562872" mem-real="81788928" mem-final="70015816" comp-z-value="-0.92204825256115" comp-deviation="-0.11652243401951"/>
+          <iteration time-net="1335952" time-revs="1" time-avg="1335952" mem-peak="79562872" mem-real="81788928" mem-final="70015816" comp-z-value="1.7748775853125" comp-deviation="0.22429743319053"/>
+          <iteration time-net="1332230" time-revs="1" time-avg="1332230" mem-peak="79562872" mem-real="81788928" mem-final="70015816" comp-z-value="-0.43466632148162" comp-deviation="-0.054930289846175"/>
+          <iteration time-net="1331597" time-revs="1" time-avg="1331597" mem-peak="79562872" mem-real="81788928" mem-final="70015816" comp-z-value="-0.8104431331422" comp-deviation="-0.10241850819175"/>
+          <stats max="1335952" mean="1332962.2" min="1331409" mode="1332075.7808219" rstdev="0.12637346656842" stdev="1684.5105401867" sum="6664811" variance="2837575.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-11913.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-11913.php" type="string"/>
           </parameter-set>
-          <iteration time-net="160583" time-revs="1" time-avg="160583" mem-peak="77623416" mem-real="79691776" mem-final="69795064" comp-z-value="-0.32315507881525" comp-deviation="-0.48313549732094"/>
-          <iteration time-net="165703" time-revs="1" time-avg="165703" mem-peak="77654848" mem-real="79691776" mem-final="69860128" comp-z-value="1.7991563674829" comp-deviation="2.6898426277217"/>
-          <iteration time-net="162058" time-revs="1" time-avg="162058" mem-peak="77654848" mem-real="79691776" mem-final="69860128" comp-z-value="0.28825300385854" comp-deviation="0.43095488049895"/>
-          <iteration time-net="159471" time-revs="1" time-avg="159471" mem-peak="77654848" mem-real="79691776" mem-final="69860128" comp-z-value="-0.78409459605814" comp-deviation="-1.1722666838536"/>
-          <iteration time-net="158998" time-revs="1" time-avg="158998" mem-peak="77654848" mem-real="79691776" mem-final="69860128" comp-z-value="-0.98015969646811" comp-deviation="-1.465395327046"/>
-          <stats max="165703" mean="161362.6" min="158998" mode="160192.04109589" rstdev="1.4950577261302" stdev="2412.4640183845" sum="806813" variance="5819982.64"/>
+          <iteration time-net="132498" time-revs="1" time-avg="132498" mem-peak="77942672" mem-real="79691776" mem-final="70147928" comp-z-value="1.9895079936251" comp-deviation="1.7580992989721"/>
+          <iteration time-net="129739" time-revs="1" time-avg="129739" mem-peak="77910296" mem-real="79691776" mem-final="70081920" comp-z-value="-0.4082958480714" comp-deviation="-0.3608051068745"/>
+          <iteration time-net="129676" time-revs="1" time-avg="129676" mem-peak="77910296" mem-real="79691776" mem-final="70081920" comp-z-value="-0.46304816486259" comp-deviation="-0.40918893346686"/>
+          <iteration time-net="129719" time-revs="1" time-avg="129719" mem-peak="77910296" mem-real="79691776" mem-final="70081920" comp-z-value="-0.42567753594162" comp-deviation="-0.37616505182446"/>
+          <iteration time-net="129412" time-revs="1" time-avg="129412" mem-peak="77910296" mem-real="79691776" mem-final="70081920" comp-z-value="-0.69248644474945" comp-deviation="-0.6119402068063"/>
+          <stats max="132498" mean="130208.8" min="129412" mode="129647.52641879" rstdev="0.88368546625877" stdev="1150.63624139" sum="651044" variance="1323963.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-12159.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-12159.php" type="string"/>
           </parameter-set>
-          <iteration time-net="170659" time-revs="1" time-avg="170659" mem-peak="66838304" mem-real="71303168" mem-final="65131016" comp-z-value="-0.73523644533583" comp-deviation="-2.3981396859748"/>
-          <iteration time-net="171762" time-revs="1" time-avg="171762" mem-peak="70793304" mem-real="75497472" mem-final="69086016" comp-z-value="-0.54183622612248" comp-deviation="-1.7673212004196"/>
-          <iteration time-net="175350" time-revs="1" time-avg="175350" mem-peak="70793304" mem-real="75497472" mem-final="69086016" comp-z-value="0.087284341907891" comp-deviation="0.28469759030769"/>
-          <iteration time-net="170754" time-revs="1" time-avg="170754" mem-peak="70793304" mem-real="75497472" mem-final="69086016" comp-z-value="-0.71857912817784" comp-deviation="-2.343808084771"/>
-          <iteration time-net="185736" time-revs="1" time-avg="185736" mem-peak="70793304" mem-real="75497472" mem-final="69086016" comp-z-value="1.9083674577282" comp-deviation="6.2245713808577"/>
-          <stats max="185736" mean="174852.2" min="170659" mode="172016.22504892" rstdev="3.2617258042471" stdev="5703.1993266937" sum="874261" variance="32526482.56"/>
+          <iteration time-net="138304" time-revs="1" time-avg="138304" mem-peak="67134464" mem-real="71303168" mem-final="65427152" comp-z-value="-1.2707567123807" comp-deviation="-0.34140907263265"/>
+          <iteration time-net="138736" time-revs="1" time-avg="138736" mem-peak="71089464" mem-real="75497472" mem-final="69382152" comp-z-value="-0.11210981548649" comp-deviation="-0.03012009125378"/>
+          <iteration time-net="138454" time-revs="1" time-avg="138454" mem-peak="71089464" mem-real="75497472" mem-final="69382152" comp-z-value="-0.8684487620702" comp-deviation="-0.23332262076498"/>
+          <iteration time-net="139274" time-revs="1" time-avg="139274" mem-peak="71089464" mem-real="75497472" mem-final="69382152" comp-z-value="1.3308346996271" comp-deviation="0.35754998277823"/>
+          <iteration time-net="139121" time-revs="1" time-avg="139121" mem-peak="71089464" mem-real="75497472" mem-final="69382152" comp-z-value="0.92048059031041" comp-deviation="0.24730180187322"/>
+          <stats max="139274" mean="138777.8" min="138304" mode="138577.34637965" rstdev="0.26866596045205" stdev="372.84870926423" sum="693889" variance="139016.16"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-12671.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-12671.php" type="string"/>
           </parameter-set>
-          <iteration time-net="394866" time-revs="1" time-avg="394866" mem-peak="82252072" mem-real="83886080" mem-final="77755992" comp-z-value="0.53329725576275" comp-deviation="0.46678204336854"/>
-          <iteration time-net="389221" time-revs="1" time-avg="389221" mem-peak="86414368" mem-real="88080384" mem-final="81918288" comp-z-value="-1.1076397380129" comp-deviation="-0.96948996950371"/>
-          <iteration time-net="396018" time-revs="1" time-avg="396018" mem-peak="86414368" mem-real="88080384" mem-final="81918288" comp-z-value="0.86817049169358" comp-deviation="0.75988839568543"/>
-          <iteration time-net="396517" time-revs="1" time-avg="396517" mem-peak="86414368" mem-real="88080384" mem-final="81918288" comp-z-value="1.013224089549" comp-deviation="0.88685026183658"/>
-          <iteration time-net="388535" time-revs="1" time-avg="388535" mem-peak="86414368" mem-real="88080384" mem-final="81918288" comp-z-value="-1.3070520989925" comp-deviation="-1.1440307313869"/>
-          <stats max="396517" mean="393031.4" min="388535" mode="395517.29745596" rstdev="0.87527553971925" stdev="3440.1077076161" sum="1965157" variance="11834341.04"/>
+          <iteration time-net="331450" time-revs="1" time-avg="331450" mem-peak="82659912" mem-real="85983232" mem-final="78163784" comp-z-value="0.69512945571691" comp-deviation="0.32253338838032"/>
+          <iteration time-net="329806" time-revs="1" time-avg="329806" mem-peak="86822208" mem-real="90177536" mem-final="82326080" comp-z-value="-0.37731125862114" comp-deviation="-0.17506879864789"/>
+          <iteration time-net="332296" time-revs="1" time-avg="332296" mem-peak="86822208" mem-real="90177536" mem-final="82326080" comp-z-value="1.2470058817084" comp-deviation="0.57859874739848"/>
+          <iteration time-net="330554" time-revs="1" time-avg="330554" mem-peak="86822208" mem-real="90177536" mem-final="82326080" comp-z-value="0.11063621967865" comp-deviation="0.05133414289536"/>
+          <iteration time-net="327816" time-revs="1" time-avg="327816" mem-peak="86822208" mem-real="90177536" mem-final="82326080" comp-z-value="-1.6754602984829" comp-deviation="-0.7773974800263"/>
+          <stats max="332296" mean="330384.4" min="327816" mode="330919.56164383" rstdev="0.46399039161371" stdev="1532.9518713906" sum="1651922" variance="2349941.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-12787.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-12787.php" type="string"/>
           </parameter-set>
-          <iteration time-net="6599" time-revs="1" time-avg="6599" mem-peak="67344056" mem-real="69206016" mem-final="66583664" comp-z-value="-0.55891608390804" comp-deviation="-0.36839085665972"/>
-          <iteration time-net="6630" time-revs="1" time-avg="6630" mem-peak="67348952" mem-real="69206016" mem-final="66588560" comp-z-value="0.15118221941776" comp-deviation="0.099646707129274"/>
-          <iteration time-net="6641" time-revs="1" time-avg="6641" mem-peak="67348952" mem-real="69206016" mem-final="66588560" comp-z-value="0.40315258511401" comp-deviation="0.26572455234472"/>
-          <iteration time-net="6558" time-revs="1" time-avg="6558" mem-peak="67348952" mem-real="69206016" mem-final="66588560" comp-z-value="-1.4980783560486" comp-deviation="-0.98740827973548"/>
-          <iteration time-net="6689" time-revs="1" time-avg="6689" mem-peak="67348952" mem-real="69206016" mem-final="66588560" comp-z-value="1.5026596354249" comp-deviation="0.99042787692122"/>
-          <stats max="6689" mean="6623.4" min="6558" mode="6625.6790606653" rstdev="0.65911657808067" stdev="43.655927432595" sum="33117" variance="1905.84"/>
+          <iteration time-net="6834" time-revs="1" time-avg="6834" mem-peak="67551072" mem-real="71303168" mem-final="66858992" comp-z-value="1.4434393751289" comp-deviation="1.9269776876268"/>
+          <iteration time-net="6780" time-revs="1" time-avg="6780" mem-peak="67551072" mem-real="71303168" mem-final="66858992" comp-z-value="0.84014428026076" comp-deviation="1.1215845364515"/>
+          <iteration time-net="6587" time-revs="1" time-avg="6587" mem-peak="67551072" mem-real="71303168" mem-final="66858992" comp-z-value="-1.3160770773234" comp-deviation="-1.7569502446009"/>
+          <iteration time-net="6655" time-revs="1" time-avg="6655" mem-peak="67551072" mem-real="71303168" mem-final="66858992" comp-z-value="-0.55637214304503" comp-deviation="-0.74275146163943"/>
+          <iteration time-net="6668" time-revs="1" time-avg="6668" mem-peak="67551072" mem-real="71303168" mem-final="66858992" comp-z-value="-0.41113443502122" comp-deviation="-0.54886051783797" reject-count="1"/>
+          <stats max="6834" mean="6704.8" min="6587" mode="6659.5048923679" rstdev="1.3349903853459" stdev="89.508435356675" sum="33524" variance="8011.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-12800.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-12800.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1379283" time-revs="1" time-avg="1379283" mem-peak="72283776" mem-real="75497472" mem-final="68532488" comp-z-value="1.952813911893" comp-deviation="1.9269628479659"/>
-          <iteration time-net="1349284" time-revs="1" time-avg="1349284" mem-peak="72020456" mem-real="75497472" mem-final="68269168" comp-z-value="-0.29380803423628" comp-deviation="-0.28991864660489"/>
-          <iteration time-net="1341178" time-revs="1" time-avg="1341178" mem-peak="72020456" mem-real="75497472" mem-final="68269168" comp-z-value="-0.90086551932991" comp-deviation="-0.88893999381617"/>
-          <iteration time-net="1348479" time-revs="1" time-avg="1348479" mem-peak="72020456" mem-real="75497472" mem-final="68269168" comp-z-value="-0.35409439933625" comp-deviation="-0.34940694965264"/>
-          <iteration time-net="1347812" time-revs="1" time-avg="1347812" mem-peak="72020456" mem-real="75497472" mem-final="68269168" comp-z-value="-0.40404595899052" comp-deviation="-0.39869725789221"/>
-          <stats max="1379283" mean="1353207.2" min="1341178" mode="1346919.8493151" rstdev="0.98676214678233" stdev="13352.936417133" sum="6766036" variance="178300910.96"/>
+          <iteration time-net="1158738" time-revs="1" time-avg="1158738" mem-peak="72511680" mem-real="75497472" mem-final="68760344" comp-z-value="1.9214518048847" comp-deviation="1.3770093196948"/>
+          <iteration time-net="1140664" time-revs="1" time-avg="1140664" mem-peak="72248360" mem-real="75497472" mem-final="68497024" comp-z-value="-0.28503390731708" comp-deviation="-0.20426968077307"/>
+          <iteration time-net="1136749" time-revs="1" time-avg="1136749" mem-peak="72248360" mem-real="75497472" mem-final="68497024" comp-z-value="-0.76297966161994" comp-deviation="-0.54678972541354"/>
+          <iteration time-net="1142393" time-revs="1" time-avg="1142393" mem-peak="72248360" mem-real="75497472" mem-final="68497024" comp-z-value="-0.073956459248199" comp-deviation="-0.053000930534664"/>
+          <iteration time-net="1136450" time-revs="1" time-avg="1136450" mem-peak="72248360" mem-real="75497472" mem-final="68497024" comp-z-value="-0.79948177669952" comp-deviation="-0.57294898297356"/>
+          <stats max="1158738" mean="1142998.8" min="1136450" mode="1139110.6027397" rstdev="0.71665045992524" stdev="8191.30615714" sum="5714994" variance="67097496.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-13218.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-13218.php" type="string"/>
           </parameter-set>
-          <iteration time-net="23235" time-revs="1" time-avg="23235" mem-peak="86148192" mem-real="90177536" mem-final="85589776" comp-z-value="-1.5519567618884" comp-deviation="-1.454745949614"/>
-          <iteration time-net="23596" time-revs="1" time-avg="23596" mem-peak="85823824" mem-real="90177536" mem-final="85265408" comp-z-value="0.08144379508452" comp-deviation="0.07634235304097"/>
-          <iteration time-net="23928" time-revs="1" time-avg="23928" mem-peak="85823824" mem-real="90177536" mem-final="85265408" comp-z-value="1.5836293488657" comp-deviation="1.4844346424633"/>
-          <iteration time-net="23607" time-revs="1" time-avg="23607" mem-peak="85823824" mem-real="90177536" mem-final="85265408" comp-z-value="0.13121500319173" comp-deviation="0.12299601323267"/>
-          <iteration time-net="23524" time-revs="1" time-avg="23524" mem-peak="85823824" mem-real="90177536" mem-final="85265408" comp-z-value="-0.24433138525356" comp-deviation="-0.22902705912291"/>
-          <stats max="23928" mean="23578" min="23235" mode="23574.04109589" rstdev="0.93736242229066" stdev="221.01131192769" sum="117890" variance="48846"/>
+          <iteration time-net="20658" time-revs="1" time-avg="20658" mem-peak="86441248" mem-real="90177536" mem-final="85882784" comp-z-value="0.72517131160033" comp-deviation="0.31758981381662"/>
+          <iteration time-net="20678" time-revs="1" time-avg="20678" mem-peak="86116880" mem-real="90177536" mem-final="85558416" comp-z-value="0.94693623869522" comp-deviation="0.41471208103883"/>
+          <iteration time-net="20449" time-revs="1" time-avg="20449" mem-peak="86116880" mem-real="90177536" mem-final="85558416" comp-z-value="-1.5922721765413" comp-deviation="-0.69733787865543"/>
+          <iteration time-net="20654" time-revs="1" time-avg="20654" mem-peak="86116880" mem-real="90177536" mem-final="85558416" comp-z-value="0.68081832618135" comp-deviation="0.29816536037218"/>
+          <iteration time-net="20524" time-revs="1" time-avg="20524" mem-peak="86116880" mem-real="90177536" mem-final="85558416" comp-z-value="-0.76065369993548" comp-deviation="-0.33312937657216"/>
+          <stats max="20678" mean="20592.6" min="20449" mode="20652.007827789" rstdev="0.43795143124975" stdev="90.185586431536" sum="102963" variance="8133.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-13310.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-13310.php" type="string"/>
           </parameter-set>
-          <iteration time-net="64095" time-revs="1" time-avg="64095" mem-peak="65469752" mem-real="67108864" mem-final="64233392" comp-z-value="-0.42136839990969" comp-deviation="-0.4643289747492"/>
-          <iteration time-net="65376" time-revs="1" time-avg="65376" mem-peak="65461288" mem-real="67108864" mem-final="64224928" comp-z-value="1.3838922030479" comp-deviation="1.5249868000124"/>
-          <iteration time-net="63328" time-revs="1" time-avg="63328" mem-peak="65461288" mem-real="67108864" mem-final="64224928" comp-z-value="-1.5022699475041" comp-deviation="-1.6554337360624"/>
-          <iteration time-net="64229" time-revs="1" time-avg="64229" mem-peak="65461288" mem-real="67108864" mem-final="64224928" comp-z-value="-0.23252771232474" comp-deviation="-0.25623505295524"/>
-          <iteration time-net="64942" time-revs="1" time-avg="64942" mem-peak="65461288" mem-real="67108864" mem-final="64224928" comp-z-value="0.77227385669067" comp-deviation="0.85101096375439"/>
-          <stats max="65376" mean="64394" min="63328" mode="64345.988258317" rstdev="1.1019549041853" stdev="709.59284100109" sum="321970" variance="503522"/>
+          <iteration time-net="53805" time-revs="1" time-avg="53805" mem-peak="65830528" mem-real="67108864" mem-final="64528608" comp-z-value="1.3403726889336" comp-deviation="1.0870545443614"/>
+          <iteration time-net="53466" time-revs="1" time-avg="53466" mem-peak="65822064" mem-real="67108864" mem-final="64520144" comp-z-value="0.55505236133508" comp-deviation="0.45015255587453"/>
+          <iteration time-net="52843" time-revs="1" time-avg="52843" mem-peak="65822064" mem-real="67108864" mem-final="64520144" comp-z-value="-0.88817644130164" comp-deviation="-0.72031924007636"/>
+          <iteration time-net="52623" time-revs="1" time-avg="52623" mem-peak="65822064" mem-real="67108864" mem-final="64520144" comp-z-value="-1.3978238515425" comp-deviation="-1.1336479641682"/>
+          <iteration time-net="53395" time-revs="1" time-avg="53395" mem-peak="65822064" mem-real="67108864" mem-final="64520144" comp-z-value="0.39057524257552" comp-deviation="0.31676010400853"/>
+          <stats max="53805" mean="53226.4" min="52623" mode="53439.528375735" rstdev="0.81100917180455" stdev="431.67098582138" sum="266132" variance="186339.84"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-13352.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-13352.php" type="string"/>
           </parameter-set>
-          <iteration time-net="3306512" time-revs="1" time-avg="3306512" mem-peak="196105912" mem-real="201326592" mem-final="114147328" comp-z-value="0.0067543578786054" comp-deviation="0.0049480568956403"/>
-          <iteration time-net="3298521" time-revs="1" time-avg="3298521" mem-peak="198073232" mem-real="203423744" mem-final="116114648" comp-z-value="-0.32316051869783" comp-deviation="-0.23673851188822"/>
-          <iteration time-net="3346528" time-revs="1" time-avg="3346528" mem-peak="198073232" mem-real="203423744" mem-final="116114648" comp-z-value="1.6588471749331" comp-deviation="1.2152258364545"/>
-          <iteration time-net="3309183" time-revs="1" time-avg="3309183" mem-peak="198073232" mem-real="203423744" mem-final="116114648" comp-z-value="0.11702874598218" comp-deviation="0.085732042031629"/>
-          <iteration time-net="3270998" time-revs="1" time-avg="3270998" mem-peak="198073232" mem-real="203423744" mem-final="116114648" comp-z-value="-1.4594697600961" comp-deviation="-1.0691674234935"/>
-          <stats max="3346528" mean="3306348.4" min="3270998" mode="3303072.3835617" rstdev="0.7325725086782" stdev="24221.399419522" sum="16531742" variance="586676189.84"/>
+          <iteration time-net="2877911" time-revs="1" time-avg="2877911" mem-peak="196547360" mem-real="203423744" mem-final="114576944" comp-z-value="-1.1189447052126" comp-deviation="-1.0451101087712"/>
+          <iteration time-net="2936671" time-revs="1" time-avg="2936671" mem-peak="198514680" mem-real="203423744" mem-final="116544264" comp-z-value="1.0442134088947" comp-deviation="0.97531002583635"/>
+          <iteration time-net="2943779" time-revs="1" time-avg="2943779" mem-peak="198514680" mem-real="203423744" mem-final="116544264" comp-z-value="1.3058833863466" comp-deviation="1.2197134689403"/>
+          <iteration time-net="2900053" time-revs="1" time-avg="2900053" mem-peak="198514680" mem-real="203423744" mem-final="116544264" comp-z-value="-0.30382137365091" comp-deviation="-0.28377344062145"/>
+          <iteration time-net="2883116" time-revs="1" time-avg="2883116" mem-peak="198514680" mem-real="203423744" mem-final="116544264" comp-z-value="-0.92733071637786" comp-deviation="-0.86613994538401"/>
+          <stats max="2943779" mean="2908306" min="2877911" mode="2889898.7181996" rstdev="0.93401407942912" stdev="27163.987512882" sum="14541530" variance="737882217.6"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-13685.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-13685.php" type="string"/>
           </parameter-set>
-          <iteration time-net="16959" time-revs="1" time-avg="16959" mem-peak="68933328" mem-real="71303168" mem-final="65589584" comp-z-value="-0.28490835142058" comp-deviation="-1.0040277858852"/>
-          <iteration time-net="16624" time-revs="1" time-avg="16624" mem-peak="68852872" mem-real="71303168" mem-final="65558120" comp-z-value="-0.83981705912927" comp-deviation="-2.9595470200222"/>
-          <iteration time-net="18005" time-revs="1" time-avg="18005" mem-peak="68852872" mem-real="71303168" mem-final="65558120" comp-z-value="1.4477319717534" comp-deviation="5.1018621213006"/>
-          <iteration time-net="17647" time-revs="1" time-avg="17647" mem-peak="68852872" mem-real="71303168" mem-final="65558120" comp-z-value="0.85472505426174" comp-deviation="3.0120833576557"/>
-          <iteration time-net="16420" time-revs="1" time-avg="16420" mem-peak="68852872" mem-real="71303168" mem-final="65558120" comp-z-value="-1.1777316154653" comp-deviation="-4.1503706730489"/>
-          <stats max="18005" mean="17131" min="16420" mode="16764.295499021" rstdev="3.5240377506628" stdev="603.70290706605" sum="85655" variance="364457.2"/>
+          <iteration time-net="14756" time-revs="1" time-avg="14756" mem-peak="69222864" mem-real="71303168" mem-final="65892152" comp-z-value="1.4953548330151" comp-deviation="2.062554468868"/>
+          <iteration time-net="14518" time-revs="1" time-avg="14518" mem-peak="69207944" mem-real="71303168" mem-final="65926224" comp-z-value="0.30187914469319" comp-deviation="0.41638423549918"/>
+          <iteration time-net="14239" time-revs="1" time-avg="14239" mem-peak="69207944" mem-real="71303168" mem-final="65926224" comp-z-value="-1.097195296659" comp-deviation="-1.5133699456349"/>
+          <iteration time-net="14544" time-revs="1" time-avg="14544" mem-peak="69207944" mem-real="71303168" mem-final="65926224" comp-z-value="0.43225884173676" comp-deviation="0.59621795847225"/>
+          <iteration time-net="14232" time-revs="1" time-avg="14232" mem-peak="69207944" mem-real="71303168" mem-final="65926224" comp-z-value="-1.1322975227861" comp-deviation="-1.5617867172045"/>
+          <stats max="14756" mean="14457.8" min="14232" mode="14490.410958904" rstdev="1.3793077223747" stdev="199.41755188548" sum="72289" variance="39767.36"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-13933.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-13933.php" type="string"/>
           </parameter-set>
-          <iteration time-net="393142" time-revs="1" time-avg="393142" mem-peak="71770200" mem-real="73400320" mem-final="66674712" comp-z-value="-1.8902370839213" comp-deviation="-1.0031581931972"/>
-          <iteration time-net="398147" time-revs="1" time-avg="398147" mem-peak="71817776" mem-real="73400320" mem-final="66722288" comp-z-value="0.48453991417753" comp-deviation="0.25714773505021"/>
-          <iteration time-net="397643" time-revs="1" time-avg="397643" mem-peak="71817776" mem-real="73400320" mem-final="66722288" comp-z-value="0.24540153115219" comp-deviation="0.13023580940851"/>
-          <iteration time-net="399358" time-revs="1" time-avg="399358" mem-peak="71817776" mem-real="73400320" mem-final="66722288" comp-z-value="1.0591363067245" comp-deviation="0.56208888971706"/>
-          <iteration time-net="397339" time-revs="1" time-avg="397339" mem-peak="71817776" mem-real="73400320" mem-final="66722288" comp-z-value="0.10115933186707" comp-deviation="0.053685759021452"/>
-          <stats max="399358" mean="397125.8" min="393142" mode="398032.08219178" rstdev="0.53070495851038" stdev="2107.566312124" sum="1985629" variance="4441835.76"/>
+          <iteration time-net="335268" time-revs="1" time-avg="335268" mem-peak="72134456" mem-real="73400320" mem-final="67038944" comp-z-value="-0.12427376068772" comp-deviation="-0.13778904871941"/>
+          <iteration time-net="332843" time-revs="1" time-avg="332843" mem-peak="72182032" mem-real="73400320" mem-final="67086520" comp-z-value="-0.77573046122324" comp-deviation="-0.86009437328619"/>
+          <iteration time-net="332627" time-revs="1" time-avg="332627" mem-peak="72182032" mem-real="73400320" mem-final="67086520" comp-z-value="-0.83375711991012" comp-deviation="-0.92443167229915"/>
+          <iteration time-net="342848" time-revs="1" time-avg="342848" mem-peak="72182032" mem-real="73400320" mem-final="67086520" comp-z-value="1.9120321321202" comp-deviation="2.1199735740502"/>
+          <iteration time-net="335067" time-revs="1" time-avg="335067" mem-peak="72182032" mem-real="73400320" mem-final="67086520" comp-z-value="-0.17827079029912" comp-deviation="-0.19765847974536"/>
+          <stats max="342848" mean="335730.6" min="332627" mode="333987.13307241" rstdev="1.1087541566048" stdev="3722.4269824941" sum="1678653" variance="13856462.64"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-14207-and.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14207-and.php" type="string"/>
           </parameter-set>
-          <iteration time-net="275075" time-revs="1" time-avg="275075" mem-peak="69262768" mem-real="73400320" mem-final="61246336" comp-z-value="0.98750975911572" comp-deviation="0.65462555710867"/>
-          <iteration time-net="269916" time-revs="1" time-avg="269916" mem-peak="69182944" mem-real="73400320" mem-final="61166512" comp-z-value="-1.8602056390274" comp-deviation="-1.233140373089"/>
-          <iteration time-net="273632" time-revs="1" time-avg="273632" mem-peak="69182944" mem-real="73400320" mem-final="61166512" comp-z-value="0.19098847213753" comp-deviation="0.1266072905308"/>
-          <iteration time-net="273207" time-revs="1" time-avg="273207" mem-peak="69182944" mem-real="73400320" mem-final="61166512" comp-z-value="-0.04360719450539" comp-deviation="-0.028907444947784"/>
-          <iteration time-net="274600" time-revs="1" time-avg="274600" mem-peak="69182944" mem-real="73400320" mem-final="61166512" comp-z-value="0.72531460227952" comp-deviation="0.48081497039731"/>
-          <stats max="275075" mean="273286" min="269916" mode="274095.69863013" rstdev="0.66290540530441" stdev="1811.6276659402" sum="1366430" variance="3281994.8"/>
+          <iteration time-net="222538" time-revs="1" time-avg="222538" mem-peak="69426160" mem-real="73400320" mem-final="61414152" comp-z-value="0.95289258163399" comp-deviation="0.63882303887297"/>
+          <iteration time-net="219382" time-revs="1" time-avg="219382" mem-peak="69411872" mem-real="73400320" mem-final="61399864" comp-z-value="-1.1760391666577" comp-deviation="-0.78842141156104"/>
+          <iteration time-net="219848" time-revs="1" time-avg="219848" mem-peak="69411872" mem-real="73400320" mem-final="61399864" comp-z-value="-0.86169119621921" comp-deviation="-0.5776812614019"/>
+          <iteration time-net="220699" time-revs="1" time-avg="220699" mem-peak="69411872" mem-real="73400320" mem-final="61399864" comp-z-value="-0.28763513861583" comp-deviation="-0.19283175971643"/>
+          <iteration time-net="223160" time-revs="1" time-avg="223160" mem-peak="69411872" mem-real="73400320" mem-final="61399864" comp-z-value="1.3724729198588" comp-deviation="0.92011139380641"/>
+          <stats max="223160" mean="221125.4" min="219382" mode="220173.08806262" rstdev="0.6704040425811" stdev="1482.4336207736" sum="1105627" variance="2197609.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-14207.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14207.php" type="string"/>
           </parameter-set>
-          <iteration time-net="1130562" time-revs="1" time-avg="1130562" mem-peak="74392488" mem-real="77594624" mem-final="68165232" comp-z-value="0.54970773359636" comp-deviation="0.11875443336601"/>
-          <iteration time-net="1126394" time-revs="1" time-avg="1126394" mem-peak="74392760" mem-real="77594624" mem-final="68165504" comp-z-value="-1.1588544093042" comp-deviation="-0.25034957727495"/>
-          <iteration time-net="1131430" time-revs="1" time-avg="1131430" mem-peak="74392760" mem-real="77594624" mem-final="68165504" comp-z-value="0.90552153878773" comp-deviation="0.19562158337473"/>
-          <iteration time-net="1126137" time-revs="1" time-avg="1126137" mem-peak="74392760" mem-real="77594624" mem-final="68165504" comp-z-value="-1.26420481015" comp-deviation="-0.27310862975449"/>
-          <iteration time-net="1131582" time-revs="1" time-avg="1131582" mem-peak="74392760" mem-real="77594624" mem-final="68165504" comp-z-value="0.96782994707009" comp-deviation="0.2090821902887"/>
-          <stats max="1131582" mean="1129221" min="1126137" mode="1131006.5988258" rstdev="0.21603194953995" stdev="2439.4781409146" sum="5646105" variance="5951053.6"/>
+          <iteration time-net="919994" time-revs="1" time-avg="919994" mem-peak="74685160" mem-real="77594624" mem-final="68457856" comp-z-value="-1.8156879230149" comp-deviation="-1.3124669340973"/>
+          <iteration time-net="933457" time-revs="1" time-avg="933457" mem-peak="74685432" mem-real="77594624" mem-final="68458128" comp-z-value="0.18220393878954" comp-deviation="0.13170580797083"/>
+          <iteration time-net="934149" time-revs="1" time-avg="934149" mem-peak="74685432" mem-real="77594624" mem-final="68458128" comp-z-value="0.28489584760397" comp-deviation="0.2059364799987"/>
+          <iteration time-net="940701" time-revs="1" time-avg="940701" mem-peak="74685432" mem-real="77594624" mem-final="68458128" comp-z-value="1.2572042096736" comp-deviation="0.90876792960358"/>
+          <iteration time-net="932845" time-revs="1" time-avg="932845" mem-peak="74685432" mem-real="77594624" mem-final="68458128" comp-z-value="0.091383926947878" comp-deviation="0.066056716524225"/>
+          <stats max="940701" mean="932229.2" min="919994" mode="934460.53424656" rstdev="0.72284830309274" stdev="6738.602953135" sum="4661146" variance="45408769.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-14319.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14319.php" type="string"/>
           </parameter-set>
-          <iteration time-net="64302" time-revs="1" time-avg="64302" mem-peak="83600968" mem-real="88080384" mem-final="82093304" comp-z-value="1.2177049423104" comp-deviation="0.68551708155743"/>
-          <iteration time-net="63905" time-revs="1" time-avg="63905" mem-peak="83604632" mem-real="88080384" mem-final="82096968" comp-z-value="0.11348186762509" comp-deviation="0.063885557166617"/>
-          <iteration time-net="64182" time-revs="1" time-avg="64182" mem-peak="83604632" mem-real="88080384" mem-final="82096968" comp-z-value="0.88393474341305" comp-deviation="0.49761838400857"/>
-          <iteration time-net="63598" time-revs="1" time-avg="63598" mem-peak="83604632" mem-real="88080384" mem-final="82096968" comp-z-value="-0.74041355788719" comp-deviation="-0.41682194406255"/>
-          <iteration time-net="63334" time-revs="1" time-avg="63334" mem-peak="83604632" mem-real="88080384" mem-final="82096968" comp-z-value="-1.4747079954613" comp-deviation="-0.83019907867005"/>
-          <stats max="64302" mean="63864.2" min="63334" mode="64042.477495108" rstdev="0.56295828138531" stdev="359.52880274048" sum="319321" variance="129260.96"/>
+          <iteration time-net="55108" time-revs="1" time-avg="55108" mem-peak="83910704" mem-real="88080384" mem-final="82402992" comp-z-value="-0.82854994657332" comp-deviation="-0.11165569444041"/>
+          <iteration time-net="55297" time-revs="1" time-avg="55297" mem-peak="83914368" mem-real="88080384" mem-final="82406656" comp-z-value="1.7135919349585" comp-deviation="0.23092427713814"/>
+          <iteration time-net="55202" time-revs="1" time-avg="55202" mem-peak="83914368" mem-real="88080384" mem-final="82406656" comp-z-value="0.43579575111976" comp-deviation="0.058727995127754"/>
+          <iteration time-net="55091" time-revs="1" time-avg="55091" mem-peak="83914368" mem-real="88080384" mem-final="82406656" comp-z-value="-1.0572082110497" comp-deviation="-0.14246976595806"/>
+          <iteration time-net="55150" time-revs="1" time-avg="55150" mem-peak="83914368" mem-real="88080384" mem-final="82406656" comp-z-value="-0.26362952845513" comp-deviation="-0.035526811867403"/>
+          <stats max="55297" mean="55169.6" min="55091" mode="55133.328767123" rstdev="0.1347603664718" stdev="74.346755141028" sum="275848" variance="5527.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-14452.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14452.php" type="string"/>
           </parameter-set>
-          <iteration time-net="27611" time-revs="1" time-avg="27611" mem-peak="67720824" mem-real="71303168" mem-final="66249112" comp-z-value="1.7851743570138" comp-deviation="2.2394857477172"/>
-          <iteration time-net="27080" time-revs="1" time-avg="27080" mem-peak="67654584" mem-real="71303168" mem-final="66182872" comp-z-value="0.21783377570704" comp-deviation="0.27327058231073"/>
-          <iteration time-net="26746" time-revs="1" time-avg="26746" mem-peak="67654584" mem-real="71303168" mem-final="66182872" comp-z-value="-0.7680264016121" comp-deviation="-0.96348245958336"/>
-          <iteration time-net="26951" time-revs="1" time-avg="26951" mem-peak="67654584" mem-real="71303168" mem-final="66182872" comp-z-value="-0.16293258020365" comp-deviation="-0.20439750872022"/>
-          <iteration time-net="26643" time-revs="1" time-avg="26643" mem-peak="67654584" mem-real="71303168" mem-final="66182872" comp-z-value="-1.0720491509051" comp-deviation="-1.3448763617243"/>
-          <stats max="27611" mean="27006.2" min="26643" mode="26860.847358122" rstdev="1.2544913268098" stdev="338.79043670092" sum="135031" variance="114778.96"/>
+          <iteration time-net="23118" time-revs="1" time-avg="23118" mem-peak="67962352" mem-real="71303168" mem-final="66490592" comp-z-value="-1.8956445218155" comp-deviation="-3.0862489624469"/>
+          <iteration time-net="23860" time-revs="1" time-avg="23860" mem-peak="67896112" mem-real="71303168" mem-final="66424352" comp-z-value="0.014934444752144" comp-deviation="0.024314376503925"/>
+          <iteration time-net="23953" time-revs="1" time-avg="23953" mem-peak="67896112" mem-real="71303168" mem-final="66424352" comp-z-value="0.25440054164001" comp-deviation="0.41418282734277"/>
+          <iteration time-net="24208" time-revs="1" time-avg="24208" mem-peak="67896112" mem-real="71303168" mem-final="66424352" comp-z-value="0.91100112988092" comp-deviation="1.4831769667396"/>
+          <iteration time-net="24132" time-revs="1" time-avg="24132" mem-peak="67896112" mem-real="71303168" mem-final="66424352" comp-z-value="0.71530840554245" comp-deviation="1.1645747918605"/>
+          <stats max="24208" mean="23854.2" min="23118" mode="24035.22113503" rstdev="1.6280736851923" stdev="388.36395301315" sum="119271" variance="150826.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-14462.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14462.php" type="string"/>
           </parameter-set>
-          <iteration time-net="134289" time-revs="1" time-avg="134289" mem-peak="64292032" mem-real="67108864" mem-final="62745928" comp-z-value="-1.772237086075" comp-deviation="-0.7667376554203"/>
-          <iteration time-net="135914" time-revs="1" time-avg="135914" mem-peak="64283664" mem-real="67108864" mem-final="62737560" comp-z-value="1.0032884197769" comp-deviation="0.43406100500566"/>
-          <iteration time-net="135706" time-revs="1" time-avg="135706" mem-peak="64283664" mem-real="67108864" mem-final="62737560" comp-z-value="0.64802115502781" comp-deviation="0.28035877647114"/>
-          <iteration time-net="135092" time-revs="1" time-avg="135092" mem-peak="64283664" mem-real="67108864" mem-final="62737560" comp-z-value="-0.40070048226023" comp-deviation="-0.17335837891442"/>
-          <iteration time-net="135632" time-revs="1" time-avg="135632" mem-peak="64283664" mem-real="67108864" mem-final="62737560" comp-z-value="0.52162799353056" comp-deviation="0.2256762528579"/>
-          <stats max="135914" mean="135326.6" min="134289" mode="135634.15655577" rstdev="0.43263830863532" stdev="585.47471337369" sum="676633" variance="342780.64"/>
+          <iteration time-net="113204" time-revs="1" time-avg="113204" mem-peak="64614760" mem-real="67108864" mem-final="63111704" comp-z-value="-0.40437456779818" comp-deviation="-0.47422531768876"/>
+          <iteration time-net="113464" time-revs="1" time-avg="113464" mem-peak="64586264" mem-real="67108864" mem-final="63037800" comp-z-value="-0.20945912911163" comp-deviation="-0.24564062618138"/>
+          <iteration time-net="113003" time-revs="1" time-avg="113003" mem-peak="64586264" mem-real="67108864" mem-final="63037800" comp-z-value="-0.55505919539818" comp-deviation="-0.65093886766177"/>
+          <iteration time-net="112684" time-revs="1" time-avg="112684" mem-peak="64586264" mem-real="67108864" mem-final="63037800" comp-z-value="-0.7942054451713" comp-deviation="-0.93139470070351"/>
+          <iteration time-net="116362" time-revs="1" time-avg="116362" mem-peak="64586264" mem-real="67108864" mem-final="63037800" comp-z-value="1.9630983374793" comp-deviation="2.3021995122354"/>
+          <stats max="116362" mean="113743.4" min="112684" mode="113101.46379648" rstdev="1.1727377423138" stdev="1333.9117811909" sum="568717" variance="1779320.64"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="bug-14475.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14475.php" type="string"/>
           </parameter-set>
-          <iteration time-net="55294" time-revs="1" time-avg="55294" mem-peak="66773096" mem-real="69206016" mem-final="62308304" comp-z-value="-0.65714427729841" comp-deviation="-0.31441325150897"/>
-          <iteration time-net="55422" time-revs="1" time-avg="55422" mem-peak="66785584" mem-real="69206016" mem-final="62255344" comp-z-value="-0.17483655084087" comp-deviation="-0.083651232052847"/>
-          <iteration time-net="55643" time-revs="1" time-avg="55643" mem-peak="66785584" mem-real="69206016" mem-final="62255344" comp-z-value="0.65789788312099" comp-deviation="0.31477381716436"/>
-          <iteration time-net="55112" time-revs="1" time-avg="55112" mem-peak="66785584" mem-real="69206016" mem-final="62255344" comp-z-value="-1.3429255758552" comp-deviation="-0.64252799792314"/>
-          <iteration time-net="55871" time-revs="1" time-avg="55871" mem-peak="66785584" mem-real="69206016" mem-final="62255344" comp-z-value="1.5170085208735" comp-deviation="0.72581866432058"/>
-          <stats max="55871" mean="55468.4" min="55112" mode="55379.358121331" rstdev="0.47845391395867" stdev="265.39073081025" sum="277342" variance="70432.24"/>
+          <iteration time-net="47654" time-revs="1" time-avg="47654" mem-peak="67023808" mem-real="69206016" mem-final="62609000" comp-z-value="0.19049424199659" comp-deviation="0.12732857917274"/>
+          <iteration time-net="47397" time-revs="1" time-avg="47397" mem-peak="66970760" mem-real="69206016" mem-final="62556040" comp-z-value="-0.61737737835202" comp-deviation="-0.41266225989318"/>
+          <iteration time-net="47171" time-revs="1" time-avg="47171" mem-peak="66970760" mem-real="69206016" mem-final="62556040" comp-z-value="-1.3278014491644" comp-deviation="-0.88751801720407"/>
+          <iteration time-net="47618" time-revs="1" time-avg="47618" mem-peak="66970760" mem-real="69206016" mem-final="62556040" comp-z-value="0.077329345760991" comp-deviation="0.05168783907012"/>
+          <iteration time-net="48127" time-revs="1" time-avg="48127" mem-peak="66970760" mem-real="69206016" mem-final="62556040" comp-z-value="1.6773552397588" comp-deviation="1.1211638588544"/>
+          <stats max="48127" mean="47593.4" min="47171" mode="47517.105675147" rstdev="0.6684116949583" stdev="318.11985162828" sum="237967" variance="101200.24"/>
+        </variant>
+        <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
+          <parameter-set name="bug-14590.php">
+            <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/bug-14590.php" type="string"/>
+          </parameter-set>
+          <iteration time-net="2736210" time-revs="1" time-avg="2736210" mem-peak="49930336" mem-real="52428800" mem-final="48774360" comp-z-value="-0.18034471812503" comp-deviation="-0.16769518399368"/>
+          <iteration time-net="2765200" time-revs="1" time-avg="2765200" mem-peak="49930336" mem-real="52428800" mem-final="48774360" comp-z-value="0.9571587365646" comp-deviation="0.890022796942"/>
+          <iteration time-net="2713762" time-revs="1" time-avg="2713762" mem-peak="49930336" mem-real="52428800" mem-final="48774360" comp-z-value="-1.0611545681034" comp-deviation="-0.9867242711287"/>
+          <iteration time-net="2775038" time-revs="1" time-avg="2775038" mem-peak="49930336" mem-real="52428800" mem-final="48774360" comp-z-value="1.3431800883147" comp-deviation="1.2489682780198"/>
+          <iteration time-net="2713821" time-revs="1" time-avg="2713821" mem-peak="49930336" mem-real="52428800" mem-final="48774360" comp-z-value="-1.0588395386509" comp-deviation="-0.98457161983945"/>
+          <stats max="2775038" mean="2740806.2" min="2713762" mode="2724194.5088063" rstdev="0.92985913719645" stdev="25485.636883547" sum="13704031" variance="649517687.36"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="conditional-expression-infinite-loop.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/conditional-expression-infinite-loop.php" type="string"/>
           </parameter-set>
-          <iteration time-net="6873" time-revs="1" time-avg="6873" mem-peak="53690528" mem-real="56623104" mem-final="53144768" comp-z-value="-0.70041816407271" comp-deviation="-1.0025062656642"/>
-          <iteration time-net="7071" time-revs="1" time-avg="7071" mem-peak="53682344" mem-real="56623104" mem-final="53136584" comp-z-value="1.2921507509617" comp-deviation="1.8494512142425"/>
-          <iteration time-net="6953" time-revs="1" time-avg="6953" mem-peak="53682344" mem-real="56623104" mem-final="53136584" comp-z-value="0.10466018543615" comp-deviation="0.14979978682338"/>
-          <iteration time-net="7021" time-revs="1" time-avg="7021" mem-peak="53682344" mem-real="56623104" mem-final="53136584" comp-z-value="0.78897678251868" comp-deviation="1.1292599314378"/>
-          <iteration time-net="6795" time-revs="1" time-avg="6795" mem-peak="53682344" mem-real="56623104" mem-final="53136584" comp-z-value="-1.4853695548439" comp-deviation="-2.1260046668395"/>
-          <stats max="7071" mean="6942.6" min="6795" mode="6981.3405088064" rstdev="1.4312967839596" stdev="99.36921052318" sum="34713" variance="9874.24"/>
+          <iteration time-net="5849" time-revs="1" time-avg="5849" mem-peak="53989464" mem-real="56623104" mem-final="53443656" comp-z-value="1.201498338207" comp-deviation="1.9806813822924"/>
+          <iteration time-net="5700" time-revs="1" time-avg="5700" mem-peak="53915744" mem-real="56623104" mem-final="53369936" comp-z-value="-0.37441057370181" comp-deviation="-0.61721937441154"/>
+          <iteration time-net="5604" time-revs="1" time-avg="5604" mem-peak="53915744" mem-real="56623104" mem-final="53369936" comp-z-value="-1.3897612820457" comp-deviation="-2.291034627053"/>
+          <iteration time-net="5685" time-revs="1" time-avg="5685" mem-peak="53915744" mem-real="56623104" mem-final="53369936" comp-z-value="-0.53305912188055" comp-deviation="-0.87875300763678"/>
+          <iteration time-net="5839" time-revs="1" time-avg="5839" mem-peak="53915744" mem-real="56623104" mem-final="53369936" comp-z-value="1.0957326394211" comp-deviation="1.8063256268089"/>
+          <stats max="5849" mean="5735.4" min="5604" mode="5690.3013698631" rstdev="1.6485094646475" stdev="94.548611835394" sum="28677" variance="8939.44"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="finite-types-optional-keys-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/finite-types-optional-keys-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="7148" time-revs="1" time-avg="7148" mem-peak="48504176" mem-real="52428800" mem-final="48192880" comp-z-value="0.96921158107594" comp-deviation="1.2407229052178"/>
-          <iteration time-net="6968" time-revs="1" time-avg="6968" mem-peak="48502152" mem-real="52428800" mem-final="48190856" comp-z-value="-1.0223190649705" comp-deviation="-1.3087077219421"/>
-          <iteration time-net="7159" time-revs="1" time-avg="7159" mem-peak="48502152" mem-real="52428800" mem-final="48190856" comp-z-value="1.0909162316677" comp-deviation="1.3965214435443"/>
-          <iteration time-net="6941" time-revs="1" time-avg="6941" mem-peak="48502152" mem-real="52428800" mem-final="48190856" comp-z-value="-1.3210486618775" comp-deviation="-1.6911223160161"/>
-          <iteration time-net="7086" time-revs="1" time-avg="7086" mem-peak="48502152" mem-real="52428800" mem-final="48190856" comp-z-value="0.28323991410439" comp-deviation="0.36258568919608"/>
-          <stats max="7159" mean="7060.4" min="6941" mode="7121.8845401175" rstdev="1.2801362772002" stdev="90.38274171544" sum="35302" variance="8169.04"/>
+          <iteration time-net="6185" time-revs="1" time-avg="6185" mem-peak="48633280" mem-real="52428800" mem-final="48321936" comp-z-value="1.5344785515414" comp-deviation="0.94003982113132"/>
+          <iteration time-net="6091" time-revs="1" time-avg="6091" mem-peak="48631256" mem-real="52428800" mem-final="48319912" comp-z-value="-0.96970519576572" comp-deviation="-0.59405294252048"/>
+          <iteration time-net="6088" time-revs="1" time-avg="6088" mem-peak="48631256" mem-real="52428800" mem-final="48319912" comp-z-value="-1.0496259536585" comp-deviation="-0.64301334987107"/>
+          <iteration time-net="6155" time-revs="1" time-avg="6155" mem-peak="48631256" mem-real="52428800" mem-final="48319912" comp-z-value="0.73527097261359" comp-deviation="0.45043574762543"/>
+          <iteration time-net="6118" time-revs="1" time-avg="6118" mem-peak="48631256" mem-real="52428800" mem-final="48319912" comp-z-value="-0.2504183747307" comp-deviation="-0.15340927636517"/>
+          <stats max="6185" mean="6127.4" min="6088" mode="6105.084148728" rstdev="0.61261190010577" stdev="37.537181567081" sum="30637" variance="1409.04"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="flatten-types-optional-keys-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/flatten-types-optional-keys-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="2040" time-revs="1" time-avg="2040" mem-peak="48859688" mem-real="52428800" mem-final="48653448" comp-z-value="1.8596401629122" comp-deviation="4.3478260869565"/>
-          <iteration time-net="1956" time-revs="1" time-avg="1956" mem-peak="48857664" mem-real="52428800" mem-final="48651424" comp-z-value="0.021878119563673" comp-deviation="0.051150895140665"/>
-          <iteration time-net="1943" time-revs="1" time-avg="1943" mem-peak="48857664" mem-real="52428800" mem-final="48651424" comp-z-value="-0.26253743476407" comp-deviation="-0.61381074168798"/>
-          <iteration time-net="1905" time-revs="1" time-avg="1905" mem-peak="48857664" mem-real="52428800" mem-final="48651424" comp-z-value="-1.0939059781836" comp-deviation="-2.5575447570332"/>
-          <iteration time-net="1931" time-revs="1" time-avg="1931" mem-peak="48857664" mem-real="52428800" mem-final="48651424" comp-z-value="-0.52507486952814" comp-deviation="-1.227621483376"/>
-          <stats max="2040" mean="1955" min="1905" mode="1935.6457925636" rstdev="2.3379932170038" stdev="45.707767392425" sum="9775" variance="2089.2"/>
+          <iteration time-net="1754" time-revs="1" time-avg="1754" mem-peak="49095936" mem-real="52428800" mem-final="48889672" comp-z-value="1.7862533299882" comp-deviation="3.4564114663206"/>
+          <iteration time-net="1695" time-revs="1" time-avg="1695" mem-peak="49093912" mem-real="52428800" mem-final="48887648" comp-z-value="-0.012192855494803" comp-deviation="-0.023593252329839"/>
+          <iteration time-net="1661" time-revs="1" time-avg="1661" mem-peak="49093912" mem-real="52428800" mem-final="48887648" comp-z-value="-1.0485855725528" comp-deviation="-2.0290197003657"/>
+          <iteration time-net="1668" time-revs="1" time-avg="1668" mem-peak="49093912" mem-real="52428800" mem-final="48887648" comp-z-value="-0.8352106013938" comp-deviation="-1.6161377845936"/>
+          <iteration time-net="1699" time-revs="1" time-avg="1699" mem-peak="49093912" mem-real="52428800" mem-final="48887648" comp-z-value="0.1097356994532" comp-deviation="0.2123392709685"/>
+          <stats max="1754" mean="1695.4" min="1661" mode="1681.7475538161" rstdev="1.9350063108593" stdev="32.806096994309" sum="8477" variance="1076.24"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="hash-key-lookup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/hash-key-lookup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="585689" time-revs="1" time-avg="585689" mem-peak="74330128" mem-real="79691776" mem-final="67727024" comp-z-value="-0.079618258947465" comp-deviation="-0.060848507351642"/>
-          <iteration time-net="591075" time-revs="1" time-avg="591075" mem-peak="74328072" mem-real="79691776" mem-final="67724968" comp-z-value="1.1229166336243" comp-deviation="0.85819260480755"/>
-          <iteration time-net="579030" time-revs="1" time-avg="579030" mem-peak="74328072" mem-real="79691776" mem-final="67724968" comp-z-value="-1.5663764931909" comp-deviation="-1.1971082113747"/>
-          <iteration time-net="590602" time-revs="1" time-avg="590602" mem-peak="74328072" mem-real="79691776" mem-final="67724968" comp-z-value="1.0173096889183" comp-deviation="0.77748216179765"/>
-          <iteration time-net="583832" time-revs="1" time-avg="583832" mem-peak="74328072" mem-real="79691776" mem-final="67724968" comp-z-value="-0.49423157040415" comp-deviation="-0.37771804787886"/>
-          <stats max="591075" mean="586045.6" min="579030" mode="587492.14285716" rstdev="0.76425317704815" stdev="4478.8721169509" sum="2930228" variance="20060295.44"/>
+          <iteration time-net="466931" time-revs="1" time-avg="466931" mem-peak="74613304" mem-real="79691776" mem-final="68010152" comp-z-value="-1.5309758484952" comp-deviation="-0.26958956259937"/>
+          <iteration time-net="467837" time-revs="1" time-avg="467837" mem-peak="74611248" mem-real="79691776" mem-final="68008096" comp-z-value="-0.43205006911265" comp-deviation="-0.076079703848756"/>
+          <iteration time-net="468002" time-revs="1" time-avg="468002" mem-peak="74611248" mem-real="79691776" mem-final="68008096" comp-z-value="-0.23191457949001" comp-deviation="-0.040837842155762"/>
+          <iteration time-net="469050" time-revs="1" time-avg="469050" mem-peak="74611248" mem-real="79691776" mem-final="68008096" comp-z-value="1.0392490152041" comp-deviation="0.18300137635489"/>
+          <iteration time-net="469146" time-revs="1" time-avg="469146" mem-peak="74611248" mem-real="79691776" mem-final="68008096" comp-z-value="1.1556914818936" comp-deviation="0.20350573224899"/>
+          <stats max="469146" mean="468193.2" min="466931" mode="468235.7260274" rstdev="0.17609001661546" stdev="824.44148367243" sum="2340966" variance="679703.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="implode-optional-keys-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/implode-optional-keys-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="2568" time-revs="1" time-avg="2568" mem-peak="62112616" mem-real="65011712" mem-final="61877048" comp-z-value="0.35268005852927" comp-deviation="0.43019163081736"/>
-          <iteration time-net="2526" time-revs="1" time-avg="2526" mem-peak="62112264" mem-real="65011712" mem-final="61876696" comp-z-value="-0.99391652858249" comp-deviation="-1.2123582323035"/>
-          <iteration time-net="2552" time-revs="1" time-avg="2552" mem-peak="62112264" mem-real="65011712" mem-final="61876696" comp-z-value="-0.16030911751331" comp-deviation="-0.19554165037153"/>
-          <iteration time-net="2611" time-revs="1" time-avg="2611" mem-peak="62112264" mem-real="65011712" mem-final="61876696" comp-z-value="1.7313384691437" comp-deviation="2.1118498240125"/>
-          <iteration time-net="2528" time-revs="1" time-avg="2528" mem-peak="62112264" mem-real="65011712" mem-final="61876696" comp-z-value="-0.92979288157717" comp-deviation="-1.1341415721549"/>
-          <stats max="2611" mean="2557" min="2526" mode="2542.6340508806" rstdev="1.2197787212901" stdev="31.189741903389" sum="12785" variance="972.8"/>
+          <iteration time-net="2301" time-revs="1" time-avg="2301" mem-peak="62373920" mem-real="65011712" mem-final="62138328" comp-z-value="-0.44175494836967" comp-deviation="-0.35510133379525"/>
+          <iteration time-net="2298" time-revs="1" time-avg="2298" mem-peak="62373568" mem-real="65011712" mem-final="62137976" comp-z-value="-0.60337261240736" comp-deviation="-0.48501645591546"/>
+          <iteration time-net="2342" time-revs="1" time-avg="2342" mem-peak="62373568" mem-real="65011712" mem-final="62137976" comp-z-value="1.7670197934787" comp-deviation="1.420405335181"/>
+          <iteration time-net="2289" time-revs="1" time-avg="2289" mem-peak="62373568" mem-real="65011712" mem-final="62137976" comp-z-value="-1.0882256045204" comp-deviation="-0.87476182227611"/>
+          <iteration time-net="2316" time-revs="1" time-avg="2316" mem-peak="62373568" mem-real="65011712" mem-final="62137976" comp-z-value="0.36633337181877" comp-deviation="0.29447427680583"/>
+          <stats max="2342" mean="2309.2" min="2289" mode="2300.3052837573" rstdev="0.80384234541293" stdev="18.562327440275" sum="11546" variance="344.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="in-array-intersect-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/in-array-intersect-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="30295" time-revs="1" time-avg="30295" mem-peak="62729992" mem-real="65011712" mem-final="62337720" comp-z-value="0.25762871262045" comp-deviation="0.070688652819623"/>
-          <iteration time-net="30187" time-revs="1" time-avg="30187" mem-peak="62729656" mem-real="65011712" mem-final="62337384" comp-z-value="-1.0425535753705" comp-deviation="-0.28605781935415"/>
-          <iteration time-net="30317" time-revs="1" time-avg="30317" mem-peak="62729656" mem-real="65011712" mem-final="62337384" comp-z-value="0.52248066017416" comp-deviation="0.14335923048465"/>
-          <iteration time-net="30174" time-revs="1" time-avg="30174" mem-peak="62729656" mem-real="65011712" mem-final="62337384" comp-z-value="-1.199056998925" comp-deviation="-0.32899952433803"/>
-          <iteration time-net="30395" time-revs="1" time-avg="30395" mem-peak="62729656" mem-real="65011712" mem-final="62337384" comp-z-value="1.461501201501" comp-deviation="0.40100946038793"/>
-          <stats max="30395" mean="30273.6" min="30174" mode="30295.095890411" rstdev="0.27438188896191" stdev="83.065275536773" sum="151368" variance="6899.84"/>
+          <iteration time-net="25603" time-revs="1" time-avg="25603" mem-peak="62978856" mem-real="65011712" mem-final="62586536" comp-z-value="0.46310373273771" comp-deviation="0.23803744391634"/>
+          <iteration time-net="25418" time-revs="1" time-avg="25418" mem-peak="62978520" mem-real="65011712" mem-final="62586200" comp-z-value="-0.94601124352014" comp-deviation="-0.48625412063174"/>
+          <iteration time-net="25499" time-revs="1" time-avg="25499" mem-peak="62978520" mem-real="65011712" mem-final="62586200" comp-z-value="-0.32904738905049" comp-deviation="-0.16913186804583"/>
+          <iteration time-net="25423" time-revs="1" time-avg="25423" mem-peak="62978520" mem-real="65011712" mem-final="62586200" comp-z-value="-0.90792705497263" comp-deviation="-0.46667867294125"/>
+          <iteration time-net="25768" time-revs="1" time-avg="25768" mem-peak="62978520" mem-real="65011712" mem-final="62586200" comp-z-value="1.7198819548055" comp-deviation="0.88402721770247"/>
+          <stats max="25768" mean="25542.2" min="25418" mode="25473.479452055" rstdev="0.51400458922917" stdev="131.28808019009" sum="127711" variance="17236.56"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="or-chain-falsey-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/or-chain-falsey-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="96338" time-revs="1" time-avg="96338" mem-peak="52504224" mem-real="58720256" mem-final="47702504" comp-z-value="-1.4251045536992" comp-deviation="-1.5613185375922"/>
-          <iteration time-net="98982" time-revs="1" time-avg="98982" mem-peak="52502176" mem-real="58720256" mem-final="47700456" comp-z-value="1.0408486138274" comp-deviation="1.1403347434247"/>
-          <iteration time-net="98473" time-revs="1" time-avg="98473" mem-peak="52502176" mem-real="58720256" mem-final="47700456" comp-z-value="0.56612464927709" comp-deviation="0.62023583266916"/>
-          <iteration time-net="98712" time-revs="1" time-avg="98712" mem-peak="52502176" mem-real="58720256" mem-final="47700456" comp-z-value="0.78903040080464" comp-deviation="0.86444730549936"/>
-          <iteration time-net="96825" time-revs="1" time-avg="96825" mem-peak="52502176" mem-real="58720256" mem-final="47700456" comp-z-value="-0.97089911020996" comp-deviation="-1.063699344001"/>
-          <stats max="98982" mean="97866" min="96338" mode="98614.63405088" rstdev="1.0955817476967" stdev="1072.2020332008" sum="489330" variance="1149617.2"/>
+          <iteration time-net="78905" time-revs="1" time-avg="78905" mem-peak="52657264" mem-real="58720256" mem-final="47855496" comp-z-value="-0.66190233126259" comp-deviation="-0.22432298463374"/>
+          <iteration time-net="79401" time-revs="1" time-avg="79401" mem-peak="52655216" mem-real="58720256" mem-final="47853448" comp-z-value="1.1887377832033" comp-deviation="0.40287092956208"/>
+          <iteration time-net="78878" time-revs="1" time-avg="78878" mem-peak="52655216" mem-real="58720256" mem-final="47853448" comp-z-value="-0.76264282136456" comp-deviation="-0.25846458883392"/>
+          <iteration time-net="78812" time-revs="1" time-avg="78812" mem-peak="52655216" mem-real="58720256" mem-final="47853448" comp-z-value="-1.0088973527249" comp-deviation="-0.34192184354546"/>
+          <iteration time-net="79416" time-revs="1" time-avg="79416" mem-peak="52655216" mem-real="58720256" mem-final="47853448" comp-z-value="1.2447047221489" comp-deviation="0.42183848745107"/>
+          <stats max="79416" mean="79082.4" min="78812" mode="78885.283757338" rstdev="0.3389064731134" stdev="268.01537269343" sum="395412" variance="71832.24"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="phpdoc-inheritance-speedup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/phpdoc-inheritance-speedup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="407526" time-revs="1" time-avg="407526" mem-peak="82463064" mem-real="85983232" mem-final="75967264" comp-z-value="1.3042934928114" comp-deviation="0.97644809571808"/>
-          <iteration time-net="403353" time-revs="1" time-avg="403353" mem-peak="82399720" mem-real="85983232" mem-final="75838384" comp-z-value="-0.076851641552685" comp-deviation="-0.057534319890821"/>
-          <iteration time-net="406346" time-revs="1" time-avg="406346" mem-peak="82399720" mem-real="85983232" mem-final="75838384" comp-z-value="0.91374682169958" comp-deviation="0.68406869231082"/>
-          <iteration time-net="399481" time-revs="1" time-avg="399481" mem-peak="82399720" mem-real="85983232" mem-final="75838384" comp-z-value="-1.3583742776077" comp-deviation="-1.0169352097153"/>
-          <iteration time-net="401220" time-revs="1" time-avg="401220" mem-peak="82399720" mem-real="85983232" mem-final="75838384" comp-z-value="-0.78281439535057" comp-deviation="-0.58604725842276"/>
-          <stats max="407526" mean="403585.2" min="399481" mode="402519.52250489" rstdev="0.74864139175712" stdev="3021.4058582057" sum="2017926" variance="9128893.36"/>
+          <iteration time-net="355149" time-revs="1" time-avg="355149" mem-peak="82629280" mem-real="83886080" mem-final="76133432" comp-z-value="-1.8854589699378" comp-deviation="-0.98527111683576"/>
+          <iteration time-net="360496" time-revs="1" time-avg="360496" mem-peak="82565936" mem-real="85983232" mem-final="76070088" comp-z-value="0.96727139572644" comp-deviation="0.50546025320408"/>
+          <iteration time-net="359692" time-revs="1" time-avg="359692" mem-peak="82565936" mem-real="85983232" mem-final="76070088" comp-z-value="0.5383214772686" comp-deviation="0.28130689215826"/>
+          <iteration time-net="358530" time-revs="1" time-avg="358530" mem-peak="82565936" mem-real="85983232" mem-final="76070088" comp-z-value="-0.081628529258767" comp-deviation="-0.042656050049765"/>
+          <iteration time-net="359548" time-revs="1" time-avg="359548" mem-peak="82565936" mem-real="85983232" mem-final="76070088" comp-z-value="0.46149462620153" comp-deviation="0.24116002152318"/>
+          <stats max="360496" mean="358683" min="355149" mode="359564.72211349" rstdev="0.52256301120584" stdev="1874.3446854834" sum="1793415" variance="3513168"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="phpdoc-intersection-blowup.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/phpdoc-intersection-blowup.php" type="string"/>
           </parameter-set>
-          <iteration time-net="4832" time-revs="1" time-avg="4832" mem-peak="52619992" mem-real="54525952" mem-final="52308064" comp-z-value="-0.48385341035385" comp-deviation="-0.8779847378354"/>
-          <iteration time-net="4776" time-revs="1" time-avg="4776" mem-peak="52607528" mem-real="54525952" mem-final="52295600" comp-z-value="-1.1169326388542" comp-deviation="-2.026749815377"/>
-          <iteration time-net="4953" time-revs="1" time-avg="4953" mem-peak="52607528" mem-real="54525952" mem-final="52295600" comp-z-value="0.88404992265587" comp-deviation="1.6041683761385"/>
-          <iteration time-net="4808" time-revs="1" time-avg="4808" mem-peak="52607528" mem-real="54525952" mem-final="52295600" comp-z-value="-0.75517307971115" comp-deviation="-1.3703126282104"/>
-          <iteration time-net="5005" time-revs="1" time-avg="5005" mem-peak="52607528" mem-real="54525952" mem-final="52295600" comp-z-value="1.4719092062634" comp-deviation="2.6708788052843"/>
-          <stats max="5005" mean="4874.8" min="4776" mode="4816.7808219178" rstdev="1.8145676336007" stdev="88.456543002765" sum="24374" variance="7824.56"/>
+          <iteration time-net="4270" time-revs="1" time-avg="4270" mem-peak="52817128" mem-real="54525952" mem-final="52505176" comp-z-value="0.11870913207322" comp-deviation="0.21121802393804"/>
+          <iteration time-net="4184" time-revs="1" time-avg="4184" mem-peak="52739128" mem-real="54525952" mem-final="52427176" comp-z-value="-1.0156225744043" comp-deviation="-1.8070875381366"/>
+          <iteration time-net="4328" time-revs="1" time-avg="4328" mem-peak="52739128" mem-real="54525952" mem-final="52427176" comp-z-value="0.88372353876734" comp-deviation="1.5724008448721"/>
+          <iteration time-net="4357" time-revs="1" time-avg="4357" mem-peak="52739128" mem-real="54525952" mem-final="52427176" comp-z-value="1.2662307421144" comp-deviation="2.2529922553391"/>
+          <iteration time-net="4166" time-revs="1" time-avg="4166" mem-peak="52739128" mem-real="54525952" mem-final="52427176" comp-z-value="-1.2530408385507" comp-deviation="-2.2295235860127"/>
+          <stats max="4357" mean="4261" min="4166" mode="4305.0450097847" rstdev="1.7792904408378" stdev="75.815565684099" sum="21305" variance="5748"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="process-called-method-infinite-loop.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/process-called-method-infinite-loop.php" type="string"/>
           </parameter-set>
-          <iteration time-net="13900" time-revs="1" time-avg="13900" mem-peak="83359480" mem-real="88080384" mem-final="82727776" comp-z-value="1.6230031624358" comp-deviation="1.9569873543995"/>
-          <iteration time-net="13430" time-revs="1" time-avg="13430" mem-peak="83178536" mem-real="88080384" mem-final="82532400" comp-z-value="-1.2361103545988" comp-deviation="-1.4904791244902"/>
-          <iteration time-net="13639" time-revs="1" time-avg="13639" mem-peak="83178536" mem-real="88080384" mem-final="82532400" comp-z-value="0.035282677444252" comp-deviation="0.042543203356507"/>
-          <iteration time-net="13498" time-revs="1" time-avg="13498" mem-peak="83178536" mem-real="88080384" mem-final="82532400" comp-z-value="-0.82245137766613" comp-deviation="-0.99169674031042"/>
-          <iteration time-net="13699" time-revs="1" time-avg="13699" mem-peak="83178536" mem-real="88080384" mem-final="82532400" comp-z-value="0.40027589238484" comp-deviation="0.48264530704456"/>
-          <stats max="13900" mean="13633.2" min="13430" mode="13583.600782779" rstdev="1.2057816027065" stdev="164.38661746018" sum="68166" variance="27022.96"/>
+          <iteration time-net="11966" time-revs="1" time-avg="11966" mem-peak="83548088" mem-real="88080384" mem-final="82916312" comp-z-value="-0.80366201343473" comp-deviation="-0.41776934471797"/>
+          <iteration time-net="12016" time-revs="1" time-avg="12016" mem-peak="83423464" mem-real="88080384" mem-final="82786472" comp-z-value="-0.0032018406909866" comp-deviation="-0.0016644197000776"/>
+          <iteration time-net="12104" time-revs="1" time-avg="12104" mem-peak="83423464" mem-real="88080384" mem-final="82786472" comp-z-value="1.405608063338" comp-deviation="0.73068024833141"/>
+          <iteration time-net="12063" time-revs="1" time-avg="12063" mem-peak="83423464" mem-real="88080384" mem-final="82786472" comp-z-value="0.74923072168813" comp-deviation="0.38947420981674"/>
+          <iteration time-net="11932" time-revs="1" time-avg="11932" mem-peak="83423464" mem-real="88080384" mem-final="82786472" comp-z-value="-1.3479749309005" comp-deviation="-0.70072069373014"/>
+          <stats max="12104" mean="12016.2" min="11932" mode="12007.397260274" rstdev="0.51983214054437" stdev="62.464069672092" sum="60081" variance="3901.76"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="union-fast-path.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/union-fast-path.php" type="string"/>
           </parameter-set>
-          <iteration time-net="171277" time-revs="1" time-avg="171277" mem-peak="69988896" mem-real="73400320" mem-final="66177024" comp-z-value="0.31189736763081" comp-deviation="0.24288607180063"/>
-          <iteration time-net="170755" time-revs="1" time-avg="170755" mem-peak="69983920" mem-real="73400320" mem-final="66172048" comp-z-value="-0.08041691165421" comp-deviation="-0.062623637789561"/>
-          <iteration time-net="172065" time-revs="1" time-avg="172065" mem-peak="69983920" mem-real="73400320" mem-final="66172048" comp-z-value="0.90412658616836" comp-deviation="0.70407697440039"/>
-          <iteration time-net="168363" time-revs="1" time-avg="168363" mem-peak="69983920" mem-real="73400320" mem-final="66172048" comp-z-value="-1.8781482450829" comp-deviation="-1.4625838395898"/>
-          <iteration time-net="171850" time-revs="1" time-avg="171850" mem-peak="69983920" mem-real="73400320" mem-final="66172048" comp-z-value="0.74254120293794" comp-deviation="0.57824443117838"/>
-          <stats max="172065" mean="170862" min="168363" mode="171492.67514678" rstdev="0.77873716487448" stdev="1330.5658946478" sum="854310" variance="1770405.6"/>
+          <iteration time-net="145626" time-revs="1" time-avg="145626" mem-peak="70361096" mem-real="73400320" mem-final="66549176" comp-z-value="-1.0450230693116" comp-deviation="-0.56645153889643"/>
+          <iteration time-net="146175" time-revs="1" time-avg="146175" mem-peak="70290584" mem-real="73400320" mem-final="66478664" comp-z-value="-0.35346368520835" comp-deviation="-0.19159390286203"/>
+          <iteration time-net="147972" time-revs="1" time-avg="147972" mem-peak="70290584" mem-real="73400320" mem-final="66478664" comp-z-value="1.9101651184958" comp-deviation="1.0353991243763"/>
+          <iteration time-net="146220" time-revs="1" time-avg="146220" mem-peak="70290584" mem-real="73400320" mem-final="66478664" comp-z-value="-0.29677848979005" comp-deviation="-0.16086786712151"/>
+          <iteration time-net="146285" time-revs="1" time-avg="146285" mem-peak="70290584" mem-real="73400320" mem-final="66478664" comp-z-value="-0.21489987418584" comp-deviation="-0.1164858154963"/>
+          <stats max="147972" mean="146455.6" min="145626" mode="146112.64579256" rstdev="0.54204692272445" stdev="793.85807295763" sum="732278" variance="630210.64"/>
         </variant>
         <variant sleep="0" output-time-unit="microseconds" output-time-precision="" output-mode="time" revs="1" warmup="1" retry-threshold="10">
           <parameter-set name="wordpress-user.php">
             <parameter name="0" value="/home/runner/work/phpstan-src/phpstan-src/tests/bench/data/wordpress-user.php" type="string"/>
           </parameter-set>
-          <iteration time-net="839503" time-revs="1" time-avg="839503" mem-peak="88946176" mem-real="94371840" mem-final="85154416" comp-z-value="1.8840867786243" comp-deviation="1.985893317913"/>
-          <iteration time-net="819406" time-revs="1" time-avg="819406" mem-peak="88945680" mem-real="94371840" mem-final="85153920" comp-z-value="-0.43220929955595" comp-deviation="-0.45556370845866"/>
-          <iteration time-net="816015" time-revs="1" time-avg="816015" mem-peak="88945680" mem-real="94371840" mem-final="85153920" comp-z-value="-0.82304176216774" comp-deviation="-0.86751478456089"/>
-          <iteration time-net="816605" time-revs="1" time-avg="816605" mem-peak="88945680" mem-real="94371840" mem-final="85153920" comp-z-value="-0.75504083237094" comp-deviation="-0.79583942776339"/>
-          <iteration time-net="824251" time-revs="1" time-avg="824251" mem-peak="88945680" mem-real="94371840" mem-final="85153920" comp-z-value="0.12620511547034" comp-deviation="0.13302460286993"/>
-          <stats max="839503" mean="823156" min="816015" mode="818864.81604697" rstdev="1.0540349523407" stdev="8676.3519522896" sum="4115780" variance="75279083.2"/>
+          <iteration time-net="684646" time-revs="1" time-avg="684646" mem-peak="89315520" mem-real="94371840" mem-final="85522960" comp-z-value="0.12901941213491" comp-deviation="0.050942762605846"/>
+          <iteration time-net="687202" time-revs="1" time-avg="687202" mem-peak="89315024" mem-real="94371840" mem-final="85522464" comp-z-value="1.0750137248625" comp-deviation="0.42446456759882"/>
+          <iteration time-net="679330" time-revs="1" time-avg="679330" mem-peak="89315024" mem-real="94371840" mem-final="85522464" comp-z-value="-1.8384711068244" comp-deviation="-0.72591244683964"/>
+          <iteration time-net="686103" time-revs="1" time-avg="686103" mem-peak="89315024" mem-real="94371840" mem-final="85522464" comp-z-value="0.66826577897534" comp-deviation="0.26386188227516"/>
+          <iteration time-net="684206" time-revs="1" time-avg="684206" mem-peak="89315024" mem-real="94371840" mem-final="85522464" comp-z-value="-0.033827809148407" comp-deviation="-0.013356765640206"/>
+          <stats max="687202" mean="684297.4" min="679330" mode="685430.4148728" rstdev="0.39484571943777" stdev="2701.9189921239" sum="3421487" variance="7300366.24"/>
         </variant>
       </subject>
     </benchmark>

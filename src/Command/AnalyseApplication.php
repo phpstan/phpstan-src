@@ -129,11 +129,12 @@ final class AnalyseApplication
 			$processedFiles = $intermediateAnalyserResult->getProcessedFiles();
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
-			$analyserResult = $this->analyserResultFinalizer->finalize(
+			$finalizerResult = $this->analyserResultFinalizer->finalize(
 				$this->switchTmpFileInAnalyserResult($resultCacheResult->getAnalyserResult(), $insteadOfFile, $tmpFile),
 				$onlyFiles,
 				$debug,
-			)->getAnalyserResult();
+			);
+			$analyserResult = $finalizerResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
 				$analyserResult->getErrors(),
@@ -172,6 +173,7 @@ final class AnalyseApplication
 			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
+			$warnings = array_merge($finalizerResult->getWarnings(), $ignoredErrorHelperProcessedResult->getWarnings());
 			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
 		}
@@ -180,7 +182,7 @@ final class AnalyseApplication
 			$fileSpecificErrors,
 			$notFileSpecificErrors,
 			$internalErrors,
-			[],
+			$warnings ?? [],
 			$this->mapCollectedData($collectedData),
 			$defaultLevelUsed,
 			$projectConfigFile,

@@ -26,7 +26,7 @@ final class IgnoredErrorHelper
 		#[AutowiredParameter]
 		private array $ignoreErrors,
 		#[AutowiredParameter]
-		private bool $reportUnmatchedIgnoredErrors,
+		private bool|string $reportUnmatchedIgnoredErrors,
 	)
 	{
 	}
@@ -106,10 +106,9 @@ final class IgnoredErrorHelper
 				continue;
 			}
 
-			$reportUnmatched = (bool) ($uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors);
-			if (!$reportUnmatched) {
-				$reportUnmatched = $ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
-			}
+			$existingReportUnmatched = $uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
+			$newReportUnmatched = $ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
+			$reportUnmatched = self::mergeReportUnmatched($existingReportUnmatched, $newReportUnmatched);
 
 			$uniquedExpandedIgnoreErrors[$key] = [
 				'message' => $ignoreError['message'] ?? null,
@@ -157,6 +156,22 @@ final class IgnoredErrorHelper
 		}
 
 		return new IgnoredErrorHelperResult($this->fileHelper, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors);
+	}
+
+	/**
+	 * @return bool|string true > 'warning' > false
+	 */
+	private static function mergeReportUnmatched(bool|string $a, bool|string $b): bool|string
+	{
+		if ($a === true || $b === true) {
+			return true;
+		}
+
+		if ($a === 'warning' || $b === 'warning') {
+			return 'warning';
+		}
+
+		return false;
 	}
 
 }

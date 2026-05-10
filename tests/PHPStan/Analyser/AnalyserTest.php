@@ -43,6 +43,9 @@ use const PHP_OS;
 class AnalyserTest extends PHPStanTestCase
 {
 
+	/** @var list<string> */
+	private array $lastWarnings = [];
+
 	public function testReturnErrorIfIgnoredMessagesDoesNotOccur(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], true, __DIR__ . '/data/empty/empty.php', false);
@@ -736,6 +739,63 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
 	}
 
+	public function testReportUnmatchedIgnoredErrorsWarningGlobal(): void
+	{
+		$result = $this->runAnalyser(['#Unknown error#'], 'warning', __DIR__ . '/data/empty/empty.php', false);
+		$this->assertNoErrors($result);
+		$this->assertSame([
+			'Ignored error pattern #Unknown error# was not matched in reported errors.',
+		], $this->lastWarnings);
+	}
+
+	public function testReportUnmatchedIgnoredErrorsWarningPerError(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail#',
+				'reportUnmatched' => 'warning',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
+		$this->assertNoErrors($result);
+		$this->assertSame([
+			'Ignored error pattern #Fail# was not matched in reported errors.',
+		], $this->lastWarnings);
+	}
+
+	public function testReportUnmatchedIgnoredErrorsWarningPerErrorRaw(): void
+	{
+		$ignoreErrors = [
+			[
+				'rawMessage' => 'Fail.',
+				'reportUnmatched' => 'warning',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
+		$this->assertNoErrors($result);
+		$this->assertSame([
+			'Ignored error "Fail." was not matched in reported errors.',
+		], $this->lastWarnings);
+	}
+
+	public function testReportUnmatchedIgnoredErrorsWarningLine(): void
+	{
+		$result = $this->runAnalyser([], 'warning', [
+			__DIR__ . '/data/ignore-line.php',
+		], true);
+		$this->assertCount(3, $result);
+		foreach ([10, 19, 22] as $i => $line) {
+			$this->assertArrayHasKey($i, $result);
+			$this->assertInstanceOf(Error::class, $result[$i]);
+			$this->assertSame('Fail.', $result[$i]->getMessage());
+			$this->assertSame($line, $result[$i]->getLine());
+		}
+
+		$this->assertSame([
+			'No error to ignore is reported on line 26.',
+		], $this->lastWarnings);
+	}
+
 	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param string|string[] $filePaths
@@ -743,7 +803,7 @@ class AnalyserTest extends PHPStanTestCase
 	 */
 	private function runAnalyser(
 		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors,
+		bool|string $reportUnmatchedIgnoredErrors,
 		$filePaths,
 		bool $onlyFiles,
 	): array
@@ -779,7 +839,8 @@ class AnalyserTest extends PHPStanTestCase
 			new LocalIgnoresProcessor(),
 			$reportUnmatchedIgnoredErrors,
 		);
-		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
+		$finalizerResult = $finalizer->finalize($analyserResult, $onlyFiles, false);
+		$analyserResult = $finalizerResult->getAnalyserResult();
 
 		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
@@ -787,6 +848,8 @@ class AnalyserTest extends PHPStanTestCase
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', 50);
 		}
+
+		$this->lastWarnings = array_merge($finalizerResult->getWarnings(), $ignoredErrorHelperProcessedResult->getWarnings());
 
 		return array_merge(
 			$errors,

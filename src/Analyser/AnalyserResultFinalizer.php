@@ -27,7 +27,7 @@ final class AnalyserResultFinalizer
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
-		private bool $reportUnmatchedIgnoredErrors,
+		private bool|string $reportUnmatchedIgnoredErrors,
 	)
 	{
 	}
@@ -182,11 +182,13 @@ final class AnalyserResultFinalizer
 		array $locallyIgnoredCollectorErrors,
 	): FinalizerResult
 	{
-		if (!$this->reportUnmatchedIgnoredErrors) {
+		if ($this->reportUnmatchedIgnoredErrors === false) {
 			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors);
 		}
 
+		$isWarning = $this->reportUnmatchedIgnoredErrors === 'warning';
 		$errors = $analyserResult->getUnorderedErrors();
+		$warnings = [];
 		foreach ($analyserResult->getUnmatchedLineIgnores() as $file => $data) {
 			foreach ($data as $ignoredFile => $lines) {
 				if ($ignoredFile !== $file) {
@@ -195,24 +197,34 @@ final class AnalyserResultFinalizer
 
 				foreach ($lines as $line => $identifiers) {
 					if ($identifiers === null) {
-						$errors[] = (new Error(
-							sprintf('No error to ignore is reported on line %d.', $line),
-							$file,
-							$line,
-							false,
-							$file,
-						))->withIdentifier('ignore.unmatchedLine');
+						$message = sprintf('No error to ignore is reported on line %d.', $line);
+						if ($isWarning) {
+							$warnings[] = $message;
+						} else {
+							$errors[] = (new Error(
+								$message,
+								$file,
+								$line,
+								false,
+								$file,
+							))->withIdentifier('ignore.unmatchedLine');
+						}
 						continue;
 					}
 
 					foreach ($identifiers as $identifier) {
-						$errors[] = (new Error(
-							sprintf('No error with identifier %s is reported on line %d.', $identifier['name'], $line),
-							$file,
-							$line,
-							false,
-							$file,
-						))->withIdentifier('ignore.unmatchedIdentifier');
+						$message = sprintf('No error with identifier %s is reported on line %d.', $identifier['name'], $line);
+						if ($isWarning) {
+							$warnings[] = $message;
+						} else {
+							$errors[] = (new Error(
+								$message,
+								$file,
+								$line,
+								false,
+								$file,
+							))->withIdentifier('ignore.unmatchedIdentifier');
+						}
 					}
 				}
 			}
@@ -237,6 +249,7 @@ final class AnalyserResultFinalizer
 			),
 			$collectorErrors,
 			$locallyIgnoredCollectorErrors,
+			$warnings,
 		);
 	}
 

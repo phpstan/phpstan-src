@@ -169,9 +169,9 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 				}
 			}
 
-			$reportUnmatched = (bool) $builder->parameters['reportUnmatchedIgnoredErrors'];
+			$reportUnmatched = $builder->parameters['reportUnmatchedIgnoredErrors'];
 
-			if ($reportUnmatched) {
+			if ($reportUnmatched !== false) {
 				foreach ($ignoreErrors as $ignoreError) {
 					if (!is_array($ignoreError)) {
 						continue;

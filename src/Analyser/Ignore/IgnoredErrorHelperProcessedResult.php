@@ -11,11 +11,13 @@ final class IgnoredErrorHelperProcessedResult
 	 * @param list<Error> $notIgnoredErrors
 	 * @param list<array{Error, mixed[]|string}> $ignoredErrors
 	 * @param list<string> $otherIgnoreMessages
+	 * @param list<string> $warnings
 	 */
 	public function __construct(
 		private array $notIgnoredErrors,
 		private array $ignoredErrors,
 		private array $otherIgnoreMessages,
+		private array $warnings = [],
 	)
 	{
 	}
@@ -42,6 +44,14 @@ final class IgnoredErrorHelperProcessedResult
 	public function getOtherIgnoreMessages(): array
 	{
 		return $this->otherIgnoreMessages;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getWarnings(): array
+	{
+		return $this->warnings;
 	}
 
 }

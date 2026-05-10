@@ -28,7 +28,7 @@ final class IgnoredErrorHelperResult
 		private array $otherIgnoreErrors,
 		private array $ignoreErrorsByFile,
 		private array $ignoreErrors,
-		private bool $reportUnmatchedIgnoredErrors,
+		private bool|string $reportUnmatchedIgnoredErrors,
 	)
 	{
 	}
@@ -54,6 +54,7 @@ final class IgnoredErrorHelperResult
 	{
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
 		$stringErrors = [];
+		$warnings = [];
 
 		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors): bool {
 			$shouldBeIgnored = false;
@@ -199,12 +200,13 @@ final class IgnoredErrorHelperResult
 				if ($reportUnmatched === false) {
 					continue;
 				}
+				$isWarning = $reportUnmatched === 'warning';
 				if (
 					isset($unmatchedIgnoredError['count'], $unmatchedIgnoredError['realCount'])
 					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
-						$errors[] = (new Error(sprintf(
+						$message = sprintf(
 							'%s %s is expected to occur %d %s, but occurred only %d %s.',
 							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
@@ -212,7 +214,12 @@ final class IgnoredErrorHelperResult
 							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 							$unmatchedIgnoredError['realCount'],
 							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
-						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
+						);
+						if ($isWarning) {
+							$warnings[] = $message;
+						} else {
+							$errors[] = (new Error($message, $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
+						}
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
 					if (!array_key_exists($unmatchedIgnoredError['realPath'], $analysedFilesKeys)) {
@@ -223,26 +230,36 @@ final class IgnoredErrorHelperResult
 						continue;
 					}
 
-					$errors[] = (new Error(
-						sprintf(
-							'%s %s was not matched in reported errors.',
-							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
-							IgnoredError::stringifyPattern($unmatchedIgnoredError),
-						),
-						$unmatchedIgnoredError['realPath'],
-						canBeIgnored: false,
-					))->withIdentifier('ignore.unmatched');
-				} elseif (!$onlyFiles) {
-					$stringErrors[] = sprintf(
+					$message = sprintf(
 						'%s %s was not matched in reported errors.',
 						IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 						IgnoredError::stringifyPattern($unmatchedIgnoredError),
 					);
+					if ($isWarning) {
+						$warnings[] = $message;
+					} else {
+						$errors[] = (new Error(
+							$message,
+							$unmatchedIgnoredError['realPath'],
+							canBeIgnored: false,
+						))->withIdentifier('ignore.unmatched');
+					}
+				} elseif (!$onlyFiles) {
+					$message = sprintf(
+						'%s %s was not matched in reported errors.',
+						IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
+						IgnoredError::stringifyPattern($unmatchedIgnoredError),
+					);
+					if ($isWarning) {
+						$warnings[] = $message;
+					} else {
+						$stringErrors[] = $message;
+					}
 				}
 			}
 		}
 
-		return new IgnoredErrorHelperProcessedResult($errors, $ignoredErrors, $stringErrors);
+		return new IgnoredErrorHelperProcessedResult($errors, $ignoredErrors, $stringErrors, $warnings);
 	}
 
 }

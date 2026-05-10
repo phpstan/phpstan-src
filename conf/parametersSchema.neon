@@ -136,7 +136,7 @@ parametersSchema:
 				?path: string()
 				?paths: listOf(string())
 				?count: int()
-				?reportUnmatched: bool()
+				?reportUnmatched: anyOf(bool(), 'warning')
 			]),
 		)
 	)
@@ -146,7 +146,7 @@ parametersSchema:
 		resolvedPhpDocBlockCacheCountMax: int(),
 		nameScopeMapMemoryCacheCountMax: int()
 	])
-	reportUnmatchedIgnoredErrors: bool()
+	reportUnmatchedIgnoredErrors: anyOf(bool(), 'warning')
 	reportIgnoresWithoutComments: bool()
 	typeAliases: arrayOf(string())
 	universalObjectCratesClasses: listOf(string())

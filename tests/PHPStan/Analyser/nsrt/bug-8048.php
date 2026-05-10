@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Bug8048;
+namespace Bug8048Nsrt;
+
+use function PHPStan\Testing\assertType;
 
 interface CustomResponseInterface {}
 
@@ -26,6 +28,6 @@ class ApiService
 }
 
 function (): void {
-	(new ApiService())->request(null);
-	(new ApiService())->request(CustomResponse::class);
+	assertType('null', (new ApiService())->request(null));
+	assertType('Bug8048Nsrt\CustomResponse', (new ApiService())->request(CustomResponse::class));
 };

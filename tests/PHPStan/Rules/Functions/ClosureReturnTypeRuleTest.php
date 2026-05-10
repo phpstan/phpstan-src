@@ -176,13 +176,13 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 			$errorsByLine[$line] = $error;
 		}
 
-		// Native array return type violated → non-ignorable
+		// Native array return type violated (return.type) → ignorable
 		$this->assertArrayHasKey(6, $errorsByLine);
-		$this->assertFalse($errorsByLine[6]->canBeIgnored());
+		$this->assertTrue($errorsByLine[6]->canBeIgnored());
 
-		// Native int return type violated → non-ignorable
+		// Native int return type violated (return.type) → ignorable
 		$this->assertArrayHasKey(16, $errorsByLine);
-		$this->assertFalse($errorsByLine[16]->canBeIgnored());
+		$this->assertTrue($errorsByLine[16]->canBeIgnored());
 	}
 
 }

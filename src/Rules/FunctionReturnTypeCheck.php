@@ -107,9 +107,6 @@ final class FunctionReturnTypeCheck
 				->line($returnNode->getStartLine())
 				->identifier('return.type')
 				->acceptsReasonsTip($accepts->reasons);
-			if ($nativeReturnType !== null && $this->isNativeTypeViolated($nativeReturnType, $scope->getNativeType($returnValue), $scope)) {
-				$builder->nonIgnorable();
-			}
 			return [$builder->build()];
 		}
 

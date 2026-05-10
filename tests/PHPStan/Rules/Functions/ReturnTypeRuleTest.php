@@ -477,9 +477,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 			$errorsByLine[$line] = $error;
 		}
 
-		// Native array return type violated → non-ignorable
+		// Native array return type violated (return.type) → ignorable
 		$this->assertArrayHasKey(8, $errorsByLine);
-		$this->assertFalse($errorsByLine[8]->canBeIgnored());
+		$this->assertTrue($errorsByLine[8]->canBeIgnored());
 
 		// PHPDoc-only return type violated → ignorable
 		$this->assertArrayHasKey(17, $errorsByLine);
@@ -489,9 +489,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->assertArrayHasKey(25, $errorsByLine);
 		$this->assertTrue($errorsByLine[25]->canBeIgnored());
 
-		// Native int return type violated → non-ignorable
+		// Native int return type violated (return.type) → ignorable
 		$this->assertArrayHasKey(30, $errorsByLine);
-		$this->assertFalse($errorsByLine[30]->canBeIgnored());
+		$this->assertTrue($errorsByLine[30]->canBeIgnored());
 	}
 
 }

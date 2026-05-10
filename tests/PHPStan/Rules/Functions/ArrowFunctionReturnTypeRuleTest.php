@@ -104,13 +104,13 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 			$errorsByLine[$line] = $error;
 		}
 
-		// Native array return type violated → non-ignorable
+		// Native array return type violated (return.type) → ignorable
 		$this->assertArrayHasKey(5, $errorsByLine);
-		$this->assertFalse($errorsByLine[5]->canBeIgnored());
+		$this->assertTrue($errorsByLine[5]->canBeIgnored());
 
-		// Native int return type violated → non-ignorable
+		// Native int return type violated (return.type) → ignorable
 		$this->assertArrayHasKey(11, $errorsByLine);
-		$this->assertFalse($errorsByLine[11]->canBeIgnored());
+		$this->assertTrue($errorsByLine[11]->canBeIgnored());
 	}
 
 }

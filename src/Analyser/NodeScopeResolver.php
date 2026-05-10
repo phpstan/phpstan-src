@@ -132,6 +132,8 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -2706,6 +2708,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		ExpressionContext $context,
 		?Type $passedToType,
+		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
 		foreach ($expr->params as $param) {
@@ -2715,12 +2718,8 @@ class NodeScopeResolver
 		$byRefUses = [];
 
 		$closureCallArgs = $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME);
-		$callableParameters = $this->createCallableParameters(
-			$scope,
-			$expr,
-			$closureCallArgs,
-			$passedToType,
-		);
+		$callableParameters = $this->createCallableParameters($scope, $expr, $closureCallArgs, $passedToType);
+		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $closureCallArgs, $nativePassedToType);
 
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
@@ -2771,7 +2770,7 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}
 
-		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
+		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
 		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
@@ -2853,7 +2852,7 @@ class NodeScopeResolver
 				break;
 			}
 
-			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
+			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
 			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
 
 			if ($closureScope->equals($prevScope)) {
@@ -2918,6 +2917,7 @@ class NodeScopeResolver
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		?Type $passedToType,
+		?Type $nativePassedToType = null,
 	): ExpressionResult
 	{
 		foreach ($expr->params as $param) {
@@ -2928,12 +2928,9 @@ class NodeScopeResolver
 		}
 
 		$arrowFunctionCallArgs = $expr->getAttribute(ArrowFunctionArgVisitor::ATTRIBUTE_NAME);
-		$arrowFunctionScope = $scope->enterArrowFunction($expr, $this->createCallableParameters(
-			$scope,
-			$expr,
-			$arrowFunctionCallArgs,
-			$passedToType,
-		));
+		$callableParameters = $this->createCallableParameters($scope, $expr, $arrowFunctionCallArgs, $passedToType);
+		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $arrowFunctionCallArgs, $nativePassedToType);
+		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters, $nativeCallableParameters);
 		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
 		if ($arrowFunctionType === null) {
 			throw new ShouldNotHappenException();
@@ -2945,14 +2942,33 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param Node\Arg[]|null $args
 	 * @return ParameterReflection[]|null
 	 */
 	public function createCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
 	{
+		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $passedToType, static fn (Scope $s, Expr $e) => $s->getType($e));
+	}
+
+	/**
+	 * @param Node\Arg[]|null $args
+	 * @return ParameterReflection[]|null
+	 */
+	public function createNativeCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $nativePassedToType): ?array
+	{
+		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $nativePassedToType, static fn (Scope $s, Expr $e) => $s->getNativeType($e));
+	}
+
+	/**
+	 * @param Node\Arg[]|null $args
+	 * @param Closure(Scope, Expr): Type $typeGetter
+	 * @return ParameterReflection[]|null
+	 */
+	private function doCreateCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType, Closure $typeGetter): ?array
+	{
 		$callableParameters = null;
 		if ($args !== null) {
-			$closureType = $scope->getType($closureExpr);
+			$closureType = $typeGetter($scope, $closureExpr);
 
 			if ($closureType->isCallable()->no()) {
 				return null;
@@ -2969,12 +2985,13 @@ class NodeScopeResolver
 
 					if ($callableParameter->isVariadic()) {
 						$argTypes = [];
-						for ($j = $index; $j < count($args); $j++) {
-							$argTypes[] = $scope->getType($args[$j]->value);
+						$argNumber = count($args);
+						for ($j = $index; $j < $argNumber; $j++) {
+							$argTypes[] = $typeGetter($scope, $args[$j]->value);
 						}
 						$type = TypeCombinator::union(...$argTypes);
 					} else {
-						$type = $scope->getType($args[$index]->value);
+						$type = $typeGetter($scope, $args[$index]->value);
 					}
 					$callableParameters[$index] = new NativeParameterReflection(
 						$callableParameter->getName(),
@@ -3393,7 +3410,7 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
+				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null, $parameterNativeType);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -3452,7 +3469,7 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType ?? null);
+				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType ?? null, $parameterNativeType);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());

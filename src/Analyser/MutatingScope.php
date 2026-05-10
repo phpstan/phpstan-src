@@ -1970,10 +1970,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/**
 	 * @api
 	 * @param ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $nativeCallableParameters
 	 */
 	public function enterAnonymousFunction(
 		Expr\Closure $closure,
 		?array $callableParameters,
+		?array $nativeCallableParameters = null,
 	): self
 	{
 		$anonymousFunctionReflection = $this->resolveType('__phpstanClosure', $closure);
@@ -1981,7 +1983,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			throw new ShouldNotHappenException();
 		}
 
-		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters);
+		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
 
 		return $this->scopeFactory->create(
 			$scope->context,
@@ -2005,10 +2007,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	/**
 	 * @param ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $nativeCallableParameters
 	 */
 	public function enterAnonymousFunctionWithoutReflection(
 		Expr\Closure $closure,
 		?array $callableParameters,
+		?array $nativeCallableParameters,
 	): self
 	{
 		$expressionTypes = [];
@@ -2019,13 +2023,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 			$paramExprString = sprintf('$%s', $parameter->var->name);
 			$isNullable = $this->isParameterValueNullable($parameter);
-			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
+			$nativeParameterType = $parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 			if ($callableParameters !== null) {
 				$parameterType = self::intersectButNotNever($parameterType, $this->getCallableParameterType($parameter, $callableParameters, $i));
 			}
-			$holder = ExpressionTypeHolder::createYes($parameter->var, $parameterType);
-			$expressionTypes[$paramExprString] = $holder;
-			$nativeTypes[$paramExprString] = $holder;
+			if ($nativeCallableParameters !== null) {
+				$nativeParameterType = self::intersectButNotNever($nativeParameterType, $this->getCallableParameterType($parameter, $nativeCallableParameters, $i));
+			}
+			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameter->var, $parameterType);
+			$nativeTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameter->var, $nativeParameterType);
 		}
 
 		$nonRefVariableNames = [];
@@ -2181,15 +2187,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/**
 	 * @api
 	 * @param ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $nativeCallableParameters
 	 */
-	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
+	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters = null): self
 	{
 		$anonymousFunctionReflection = $this->resolveType('__phpStanArrowFn', $arrowFunction);
 		if (!$anonymousFunctionReflection instanceof ClosureType) {
 			throw new ShouldNotHappenException();
 		}
 
-		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters);
+		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $nativeCallableParameters);
 
 		return $this->scopeFactory->create(
 			$scope->context,
@@ -2213,21 +2220,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	/**
 	 * @param ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $nativeCallableParameters
 	 */
-	public function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
+	public function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters): self
 	{
 		$arrowFunctionScope = $this;
 		foreach ($arrowFunction->params as $i => $parameter) {
 			$isNullable = $this->isParameterValueNullable($parameter);
-			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
+			$nativeParameterType = $parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 			if ($callableParameters !== null) {
 				$parameterType = self::intersectButNotNever($parameterType, $this->getCallableParameterType($parameter, $callableParameters, $i));
+			}
+			if ($nativeCallableParameters !== null) {
+				$nativeParameterType = self::intersectButNotNever($nativeParameterType, $this->getCallableParameterType($parameter, $nativeCallableParameters, $i));
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-			$arrowFunctionScope = $arrowFunctionScope->assignVariable($parameter->var->name, $parameterType, $parameterType, TrinaryLogic::createYes());
+			$arrowFunctionScope = $arrowFunctionScope->assignVariable($parameter->var->name, $parameterType, $nativeParameterType, TrinaryLogic::createYes());
 		}
 
 		if ($arrowFunction->static) {

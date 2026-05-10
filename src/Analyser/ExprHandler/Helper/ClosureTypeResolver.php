@@ -22,6 +22,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -97,16 +98,20 @@ final class ClosureTypeResolver
 		}
 
 		$callableParameters = null;
+		$nativeCallableParameters = null;
 		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 		$immediatelyInvokedArgs = $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
 		if ($arrayMapArgs !== null) {
 			$callableParameters = [];
+			$nativeCallableParameters = [];
 			foreach ($arrayMapArgs as $funcCallArg) {
 				$callableParameters[] = new DummyParameter('item', $scope->getType($funcCallArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				$nativeCallableParameters[] = new DummyParameter('item', $scope->getNativeType($funcCallArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} elseif ($immediatelyInvokedArgs !== null) {
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
 				$callableParameters[] = new DummyParameter('item', $scope->getType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				$nativeCallableParameters[] = new DummyParameter('item', $scope->getNativeType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} else {
 			$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
@@ -114,12 +119,14 @@ final class ClosureTypeResolver
 				[, $inParameter] = $scope->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
 				if ($inParameter !== null) {
 					$callableParameters = $this->nodeScopeResolver->createCallableParameters($scope, $expr, null, $inParameter->getType());
+					$nativeType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
+					$nativeCallableParameters = $this->nodeScopeResolver->createNativeCallableParameters($scope, $expr, null, $nativeType);
 				}
 			}
 		}
 
 		if ($expr instanceof ArrowFunction) {
-			$arrowScope = $scope->enterArrowFunctionWithoutReflection($expr, $callableParameters);
+			$arrowScope = $scope->enterArrowFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
 
 			if ($expr->expr instanceof Yield_ || $expr->expr instanceof YieldFrom) {
 				$yieldNode = $expr->expr;
@@ -232,7 +239,7 @@ final class ClosureTypeResolver
 
 			self::$resolveClosureTypeDepth++;
 
-			$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters);
+			$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
 			$closureReturnStatements = [];
 			$closureYieldStatements = [];
 			$onlyNeverExecutionEnds = null;

@@ -30,12 +30,12 @@ final class DateFunctionReturnTypeHelper
 		}
 
 		if (count($types) === 0) {
-			$types[] = $formatType->isNonEmptyString()->yes()
+			$type = $formatType->isNonEmptyString()->yes()
 				? new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])
 				: new StringType();
+		} else {
+			$type = TypeCombinator::union(...$types);
 		}
-
-		$type = TypeCombinator::union(...$types);
 
 		if ($type->isNumericString()->no() && $formatType->isNonEmptyString()->yes()) {
 			$type = TypeCombinator::union($type, new IntersectionType([

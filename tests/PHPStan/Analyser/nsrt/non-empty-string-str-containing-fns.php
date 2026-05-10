@@ -11,8 +11,10 @@ class Foo {
 	 * @param numeric-string $numS
 	 * @param literal-string $literalS
 	 * @param non-empty-string&numeric-string $nonEAndNumericS
+	 * @param uppercase-string $upper
+	 * @param lowercase-string $lower
 	 */
-	public function strContains(string $s, string $s2, $nonES, $nonFalsy, $numS, $literalS, $nonEAndNumericS, int $i): void
+	public function strContains(string $s, string $s2, $nonES, $nonFalsy, $numS, $literalS, $nonEAndNumericS, int $i, $upper, $lower): void
 	{
 		if (str_contains($i, 0)) {
 			assertType('int', $i);
@@ -72,6 +74,16 @@ class Foo {
 		if (str_contains($numS, $nonFalsy)) {
 			assertType('non-falsy-string&numeric-string', $numS);
 		}
+
+		if (str_contains($upper, ':')) {
+			assertType('non-falsy-string&uppercase-string', $upper);
+		}
+		assertType('uppercase-string', $upper);
+
+		if (str_contains($lower, ':')) {
+			assertType('lowercase-string&non-falsy-string', $lower);
+		}
+		assertType('lowercase-string', $lower);
 	}
 
 	public function variants(string $s) {

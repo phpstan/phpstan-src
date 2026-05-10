@@ -153,6 +153,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -2181,7 +2182,8 @@ class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
+				$varType = $this->getGlobalVariableType($var->name);
+				$scope = $scope->assignVariable($var->name, $varType, $varType, TrinaryLogic::createYes());
 				$vars[] = $var->name;
 			}
 			$scope = $this->processVarAnnotation($scope, $vars, $stmt);
@@ -4851,6 +4853,18 @@ class NodeScopeResolver
 		}
 
 		return $bodyScope;
+	}
+
+	private function getGlobalVariableType(string $variableName): Type
+	{
+		if ($variableName === 'argc') {
+			return StaticTypeFactory::argc();
+		}
+		if ($variableName === 'argv') {
+			return StaticTypeFactory::argv();
+		}
+
+		return new MixedType();
 	}
 
 }

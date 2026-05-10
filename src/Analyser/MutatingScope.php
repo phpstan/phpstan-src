@@ -661,14 +661,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		if ($hasVariableType->maybe()) {
 			if ($variableName === 'argc') {
-				return IntegerRangeType::fromInterval(1, null);
+				return StaticTypeFactory::argc();
 			}
 			if ($variableName === 'argv') {
-				return new IntersectionType([
-					new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()),
-					new NonEmptyArrayType(),
-					new AccessoryArrayListType(),
-				]);
+				return StaticTypeFactory::argv();
 			}
 			if ($this->canAnyVariableExist()) {
 				return new MixedType();

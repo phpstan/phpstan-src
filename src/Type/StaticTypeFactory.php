@@ -3,6 +3,8 @@
 namespace PHPStan\Type;
 
 use ArrayAccess;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -40,6 +42,20 @@ final class StaticTypeFactory
 		}
 
 		return $truthy;
+	}
+
+	public static function argv(): Type
+	{
+		return new IntersectionType([
+			new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()),
+			new NonEmptyArrayType(),
+			new AccessoryArrayListType(),
+		]);
+	}
+
+	public static function argc(): Type
+	{
+		return IntegerRangeType::fromInterval(1, null);
 	}
 
 	public static function generalOffsetAccessibleType(): Type

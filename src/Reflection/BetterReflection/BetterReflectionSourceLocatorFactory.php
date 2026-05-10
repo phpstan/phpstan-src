@@ -15,7 +15,6 @@ use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
@@ -53,7 +52,6 @@ final class BetterReflectionSourceLocatorFactory
 		private Parser $parser,
 		#[AutowiredParameter(ref: '@php8PhpParser')]
 		private Parser $php8Parser,
-		private PhpVersion $phpVersion,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
@@ -143,7 +141,7 @@ final class BetterReflectionSourceLocatorFactory
 			}
 
 			if (count($composerLocators) > 0) {
-				$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion);
+				$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators));
 			}
 
 			if (extension_loaded('phar')) {

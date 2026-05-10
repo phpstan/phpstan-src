@@ -85,7 +85,7 @@ final class TestCaseSourceLocatorFactory
 				$composerLocators[] = $composerSourceLocator;
 			}
 
-			self::$composerSourceLocatorsCache[$cacheKey] = [new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion)];
+			self::$composerSourceLocatorsCache[$cacheKey] = [new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators))];
 		}
 
 		$locators = self::$composerSourceLocatorsCache[$cacheKey] ?? [];

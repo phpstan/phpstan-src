@@ -11,14 +11,13 @@ use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\Php\PhpVersion;
 use function str_contains;
 use function str_replace;
 
 final class SkipPolyfillSourceLocator implements SourceLocator
 {
 
-	public function __construct(private SourceLocator $sourceLocator, private PhpVersion $phpVersion)
+	public function __construct(private SourceLocator $sourceLocator)
 	{
 	}
 
@@ -34,22 +33,22 @@ final class SkipPolyfillSourceLocator implements SourceLocator
 			$fileName = $reflection->getFileName();
 			if ($fileName !== null) {
 				$normalized = str_replace('\\', '/', $fileName);
-				if (str_contains($normalized, '/symfony/polyfill-php80/') && $this->phpVersion->getVersionId() >= 80000) {
+				if (str_contains($normalized, '/symfony/polyfill-php80/')) {
 					return null;
 				}
-				if (str_contains($normalized, '/symfony/polyfill-php81/') && $this->phpVersion->getVersionId() >= 80100) {
+				if (str_contains($normalized, '/symfony/polyfill-php81/')) {
 					return null;
 				}
-				if (str_contains($normalized, '/symfony/polyfill-php82/') && $this->phpVersion->getVersionId() >= 80200) {
+				if (str_contains($normalized, '/symfony/polyfill-php82/')) {
 					return null;
 				}
-				if (str_contains($normalized, '/symfony/polyfill-php83/') && $this->phpVersion->getVersionId() >= 80300) {
+				if (str_contains($normalized, '/symfony/polyfill-php83/')) {
 					return null;
 				}
-				if (str_contains($normalized, '/symfony/polyfill-php84/') && $this->phpVersion->getVersionId() >= 80400) {
+				if (str_contains($normalized, '/symfony/polyfill-php84/')) {
 					return null;
 				}
-				if (str_contains($normalized, '/symfony/polyfill-php85/') && $this->phpVersion->getVersionId() >= 80500) {
+				if (str_contains($normalized, '/symfony/polyfill-php85/')) {
 					return null;
 				}
 			}

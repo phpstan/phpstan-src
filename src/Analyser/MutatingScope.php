@@ -3340,20 +3340,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						}
 
 						$guardConstantArrays = $conditionalTypeHolder->getType()->getConstantArrays();
-						if (count($guardConstantArrays) !== 1) {
+						if (count($guardConstantArrays) === 0) {
 							continue;
 						}
 
-						$guardKeyCount = count($guardConstantArrays[0]->getKeyTypes());
-						$hasExtraKeys = false;
+						$guardMaxKeyCount = max(array_map(static fn ($a) => count($a->getKeyTypes()), $guardConstantArrays));
 						foreach ($specifiedExpressions[$holderExprString]->getType()->getConstantArrays() as $currentConstantArray) {
-							if (count($currentConstantArray->getKeyTypes()) > $guardKeyCount) {
-								$hasExtraKeys = true;
-								break;
+							if (count($currentConstantArray->getKeyTypes()) > $guardMaxKeyCount) {
+								continue 3;
 							}
-						}
-						if ($hasExtraKeys) {
-							continue 2;
 						}
 					}
 

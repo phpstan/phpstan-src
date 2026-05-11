@@ -100,6 +100,11 @@ class HasPropertyTypeTest extends PHPStanTestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new HasPropertyType('foo'),
+				new MixedType(),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 

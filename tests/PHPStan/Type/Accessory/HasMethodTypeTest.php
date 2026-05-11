@@ -134,6 +134,11 @@ class HasMethodTypeTest extends PHPStanTestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new HasMethodType('foo'),
+				new MixedType(),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 

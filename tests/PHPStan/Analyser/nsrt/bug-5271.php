@@ -18,9 +18,19 @@ class Banner
 	/** @var list<BannerPatternLayer> */
 	private array $patterns = [];
 
-	public function test(): void
-	{
-		$this->patterns = array_filter($this->patterns, fn($v) => $v instanceof BannerPatternLayer);
+	/**
+	 * @param BannerPatternLayer[]             $patterns
+	 *
+	 * @phpstan-param list<BannerPatternLayer> $patterns
+	 * @return $this
+	 */
+	public function setPatterns(array $patterns) : self{
+		$checked = array_filter($patterns, fn($v) => $v instanceof BannerPatternLayer);
+		if(count($checked) !== count($patterns)){
+			throw new \TypeError("Deque must only contain " . BannerPatternLayer::class . " objects");
+		}
+		$this->patterns = $checked;
+		return $this;
 	}
 
 	public function testClosure(): void

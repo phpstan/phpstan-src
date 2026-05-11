@@ -2290,7 +2290,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/**
 	 * @param ParameterReflection[] $callableParameters
 	 */
-	private function getCallableParameterType(Param $parameter, array $callableParameters, int $index): Type
+	private function getCallableParameterType(Node\Param $parameter, array $callableParameters, int $index): Type
 	{
 		if ($parameter->variadic) {
 			return $this->buildVariadicArrayTypeFromCallableParameters($callableParameters, $index);

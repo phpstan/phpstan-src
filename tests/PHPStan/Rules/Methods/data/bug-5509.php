@@ -26,4 +26,26 @@ class Foo
 		// With just mode - should not error
 		$stmt->fetchAll(\PDO::FETCH_ASSOC);
 	}
+
+	public function testIteratorAggregate(\PDOStatement $stmt): void
+	{
+		foreach ($stmt as $row) {
+		}
+
+		$stmt->getIterator();
+	}
+
+	public function acceptTraversable(\Traversable $t): void
+	{
+	}
+
+	public function acceptIteratorAggregate(\IteratorAggregate $i): void
+	{
+	}
+
+	public function testPassToTypehints(\PDOStatement $stmt): void
+	{
+		$this->acceptTraversable($stmt);
+		$this->acceptIteratorAggregate($stmt);
+	}
 }

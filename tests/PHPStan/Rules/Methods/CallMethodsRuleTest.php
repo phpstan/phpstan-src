@@ -4102,4 +4102,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8048.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14596(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14596.php'], [
+			[
+				'Named argument cannot be followed by a positional argument.',
+				11,
+			],
+		]);
+	}
+
 }

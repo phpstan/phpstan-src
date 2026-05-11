@@ -49,3 +49,32 @@ function formulaire_edition_separate_bool(array $data, array $options, bool $tot
 	}
     assertType('0|1|2', $options['multiple']);
 }
+
+/**
+ * @param array<mixed> $data
+ * @param array{
+ *     multiple: 0|1|2
+ *  } $options
+ */
+function multiple_guard_constant_arrays(array $data, array $options, bool $flag1, bool $flag2): void {
+    $instructions = [];
+    if ($flag1) {
+        $instructions[] = "a";
+        $instructions[] = "b";
+    } else {
+        $instructions[] = "c";
+    }
+    // $instructions is array{'a', 'b'}|array{'c'} — guard has 2 constant arrays with key counts 2 and 1
+    if ($options['multiple'] != 1 || $flag2) {
+        $instructions[] = "d";
+    }
+    assertType('0|1|2', $options['multiple']);
+    if (!$flag2) {
+        $instructions[] = "e";
+    }
+    assertType('0|1|2', $options['multiple']);
+    if (!$flag2) {
+        $instructions[] = "f";
+    }
+    assertType('0|1|2', $options['multiple']);
+}

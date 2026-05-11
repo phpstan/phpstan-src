@@ -403,7 +403,7 @@ final class ArgumentsNormalizer
 				continue;
 			}
 			if (!array_key_exists($j, $signatureParameters)) {
-				throw new ShouldNotHappenException('Parameter signatures cannot have holes');
+				return null;
 			}
 
 			$parameter = $signatureParameters[$j];

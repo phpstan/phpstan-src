@@ -323,6 +323,33 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 				[new StringType(), 'three'],
 			],
 		];
+
+		// positional arg after named arg with variadic parameter
+		yield [
+			[
+				['value', false, false, null],
+				['values', true, true, new StringType()],
+			],
+			[
+				[new IntegerType(), null],
+				[new IntegerType(), null],
+				[new IntegerType(), null],
+				[new StringType(), 'd'],
+				[new IntegerType(), null],
+			],
+		];
+
+		// positional arg after named arg without variadic parameter
+		yield [
+			[
+				['one', false, false, null],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), 'd'],
+				[new IntegerType(), null],
+			],
+		];
 	}
 
 	/**

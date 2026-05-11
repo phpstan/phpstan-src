@@ -725,9 +725,7 @@ final class TypeSpecifier
 				$leftNormalized = $leftTypes->normalize($scope);
 				$rightNormalized = $rightTypes->normalize($rightScope);
 				$types = $leftNormalized->intersectWith($rightNormalized);
-				$leftFalseyScope = $scope->filterByFalseyValue($expr->left);
-				$rightFalseyScope = $rightScope->filterByFalseyValue($expr->right);
-				$types = $this->augmentDisjunctionTypes($scope, $leftNormalized, $rightNormalized, $leftFalseyScope, $rightFalseyScope, $types);
+				$types = $this->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
 			}
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
@@ -786,9 +784,7 @@ final class TypeSpecifier
 					$rightNormalized = $rightTypes->normalize($rightScope);
 					$types = $leftNormalized->intersectWith($rightNormalized);
 					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
-					$leftTruthyScopeForAugment = $scope->filterByTruthyValue($expr->left);
-					$rightTruthyScopeForAugment = $rightScope->filterByTruthyValue($expr->right);
-					$types = $this->augmentDisjunctionTypes($scope, $leftNormalized, $rightNormalized, $leftTruthyScopeForAugment, $rightTruthyScopeForAugment, $types);
+					$types = $this->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, true, $types);
 				}
 			} else {
 				$types = $leftTypes->unionWith($rightTypes);
@@ -2077,10 +2073,12 @@ final class TypeSpecifier
 
 	private function augmentDisjunctionTypes(
 		MutatingScope $scope,
+		MutatingScope $rightScope,
 		SpecifiedTypes $leftNormalized,
 		SpecifiedTypes $rightNormalized,
-		MutatingScope $leftFilteredScope,
-		MutatingScope $rightFilteredScope,
+		Expr $leftExpr,
+		Expr $rightExpr,
+		bool $truthy,
 		SpecifiedTypes $types,
 	): SpecifiedTypes
 	{
@@ -2094,14 +2092,30 @@ final class TypeSpecifier
 
 		$existingSureTypes = $types->getSureTypes();
 
+		$viableCandidates = [];
 		foreach ($candidateExprs as $exprString => $targetExpr) {
 			if (isset($existingSureTypes[$exprString])) {
 				continue;
 			}
-
 			if (!$scope->hasExpressionType($targetExpr)->yes()) {
 				continue;
 			}
+			$viableCandidates[$exprString] = $targetExpr;
+		}
+
+		if ($viableCandidates === []) {
+			return $types;
+		}
+
+		if ($truthy) {
+			$leftFilteredScope = $scope->filterByTruthyValue($leftExpr);
+			$rightFilteredScope = $rightScope->filterByTruthyValue($rightExpr);
+		} else {
+			$leftFilteredScope = $scope->filterByFalseyValue($leftExpr);
+			$rightFilteredScope = $rightScope->filterByFalseyValue($rightExpr);
+		}
+
+		foreach ($viableCandidates as $exprString => $targetExpr) {
 			if (!$leftFilteredScope->hasExpressionType($targetExpr)->yes()) {
 				continue;
 			}

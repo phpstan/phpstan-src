@@ -109,6 +109,23 @@ final class AssertRuleHelper
 
 			$isSuperType = $assertedType->isSuperTypeOf($assertedExprType);
 			if (!$isSuperType->maybe()) {
+				if (
+					$parameterName === 'this'
+					&& $reflection instanceof ExtendedMethodReflection
+					&& !$reflection->isStatic()
+				) {
+					$prototypeClass = $reflection->getPrototype()->getDeclaringClass();
+					if ($prototypeClass->getName() !== $reflection->getDeclaringClass()->getName()) {
+						$prototypeThisType = new ObjectType($prototypeClass->getName(), classReflection: $prototypeClass);
+						$prototypeExpr = $assert->getParameter()->getExpr(new TypeExpr($prototypeThisType));
+						$prototypeExprType = $scope->getType($prototypeExpr);
+						$prototypeIsSuperType = $assertedType->isSuperTypeOf($prototypeExprType);
+						if ($prototypeIsSuperType->maybe()) {
+							$isSuperType = $prototypeIsSuperType;
+						}
+					}
+				}
+
 				if ($assert->isNegated() ? $isSuperType->yes() : $isSuperType->no()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Asserted %stype %s for %s with type %s can never happen.',

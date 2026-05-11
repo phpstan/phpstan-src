@@ -22,6 +22,7 @@ use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
+use PHPStan\Type\Traits\MaybeStringTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -44,6 +45,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use MaybeCallableTypeTrait;
 	use MaybeIterableTypeTrait;
 	use MaybeObjectTypeTrait;
+	use MaybeStringTypeTrait;
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
@@ -73,11 +75,6 @@ class HasOffsetType implements CompoundType, AccessoryType
 	}
 
 	public function getObjectClassReflections(): array
-	{
-		return [];
-	}
-
-	public function getConstantStrings(): array
 	{
 		return [];
 	}
@@ -347,46 +344,6 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
-	public function isString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isNumericString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isNonEmptyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isNonFalsyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isLiteralString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isLowercaseString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isClassString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isUppercaseString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
 	public function getClassStringObjectType(): Type
 	{
 		return new ObjectWithoutClassType();
@@ -400,11 +357,6 @@ class HasOffsetType implements CompoundType, AccessoryType
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
-	}
-
-	public function isScalar(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType

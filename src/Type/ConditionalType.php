@@ -113,7 +113,13 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 	public function isResolvable(): bool
 	{
-		return !TypeUtils::containsTemplateType($this->subject) && !TypeUtils::containsTemplateType($this->target);
+		if (!TypeUtils::containsTemplateType($this->subject) && !TypeUtils::containsTemplateType($this->target)) {
+			return true;
+		}
+
+		$isSuperType = $this->target->isSuperTypeOf($this->subject);
+
+		return $isSuperType->yes() || $isSuperType->no();
 	}
 
 	protected function getResult(): Type

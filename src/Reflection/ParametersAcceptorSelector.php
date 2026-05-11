@@ -127,8 +127,8 @@ final class ParametersAcceptorSelector
 						new CallableType($nativeCallbackParameters, new MixedType(), false),
 						new NullType(),
 					]);
-					$parameters[0] = self::createExtendedParameter($parameters[0], $callableType, $nativeCallableType);
-					$parametersAcceptors = [self::createModifiedAcceptor($acceptor, $parameters)];
+					$parameters[0] = self::parameterWithOverriddenType($parameters[0], $callableType, $nativeCallableType);
+					$parametersAcceptors = [self::acceptorWithReplacedParameters($acceptor, $parameters)];
 				}
 			}
 
@@ -279,8 +279,8 @@ final class ParametersAcceptorSelector
 						),
 						new NullType(),
 					]);
-					$parameters[1] = self::createExtendedParameter($parameters[1], $callableType, $nativeCallableType);
-					$parametersAcceptors = [self::createModifiedAcceptor($acceptor, $parameters)];
+					$parameters[1] = self::parameterWithOverriddenType($parameters[1], $callableType, $nativeCallableType);
+					$parametersAcceptors = [self::acceptorWithReplacedParameters($acceptor, $parameters)];
 				}
 			}
 
@@ -334,8 +334,8 @@ final class ParametersAcceptorSelector
 				if (isset($parameters[1])) {
 					$callableType = new CallableType($arrayWalkParameters, new MixedType(), false);
 					$nativeCallableType = new CallableType($nativeArrayWalkParameters, new MixedType(), false);
-					$parameters[1] = self::createExtendedParameter($parameters[1], $callableType, $nativeCallableType);
-					$parametersAcceptors = [self::createModifiedAcceptor($acceptor, $parameters)];
+					$parameters[1] = self::parameterWithOverriddenType($parameters[1], $callableType, $nativeCallableType);
+					$parametersAcceptors = [self::acceptorWithReplacedParameters($acceptor, $parameters)];
 				}
 			}
 
@@ -361,8 +361,8 @@ final class ParametersAcceptorSelector
 						new BooleanType(),
 						false,
 					);
-					$parameters[1] = self::createExtendedParameter($parameters[1], $callableType, $nativeCallableType);
-					$parametersAcceptors = [self::createModifiedAcceptor($acceptor, $parameters)];
+					$parameters[1] = self::parameterWithOverriddenType($parameters[1], $callableType, $nativeCallableType);
+					$parametersAcceptors = [self::acceptorWithReplacedParameters($acceptor, $parameters)];
 				}
 			}
 
@@ -1232,7 +1232,7 @@ final class ParametersAcceptorSelector
 		return null;
 	}
 
-	private static function createExtendedParameter(ParameterReflection $original, Type $type, Type $nativeType): ExtendedDummyParameter
+	private static function parameterWithOverriddenType(ParameterReflection $original, Type $type, Type $nativeType): ExtendedDummyParameter
 	{
 		return new ExtendedDummyParameter(
 			$original->getName(),
@@ -1253,7 +1253,7 @@ final class ParametersAcceptorSelector
 	/**
 	 * @param list<ParameterReflection> $parameters
 	 */
-	private static function createModifiedAcceptor(ParametersAcceptor $acceptor, array $parameters): ParametersAcceptor
+	private static function acceptorWithReplacedParameters(ParametersAcceptor $acceptor, array $parameters): ParametersAcceptor
 	{
 		if ($acceptor instanceof ExtendedParametersAcceptor) {
 			return new ExtendedFunctionVariant(

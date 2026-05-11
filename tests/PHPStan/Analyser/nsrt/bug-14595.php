@@ -26,3 +26,26 @@ function formulaire_edition(array $data, array $options): void {
         $instructions[] = "qux";
     assertType('0|1|2', $options['multiple']);
 }
+
+/**
+ * @param array<mixed> $data
+ * @param array{
+ *     multiple: 0|1|2
+ *  } $options
+ */
+function formulaire_edition_separate_bool(array $data, array $options, bool $total): void {
+    $instructions = [ ];
+    $instructions[] = "foo";
+    if ($options['multiple'] != 1 || $total) {
+        $instructions[] = "bar";
+	}
+    assertType('0|1|2', $options['multiple']);
+    if (!$total) {
+        $instructions[] = "baz";
+	}
+    assertType('0|1|2', $options['multiple']);
+    if (!$total) {
+        $instructions[] = "qux";
+	}
+    assertType('0|1|2', $options['multiple']);
+}

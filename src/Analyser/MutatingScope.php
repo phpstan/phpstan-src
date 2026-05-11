@@ -3338,6 +3338,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						) {
 							continue 2;
 						}
+
+						$guardConstantArrays = $conditionalTypeHolder->getType()->getConstantArrays();
+						if (count($guardConstantArrays) !== 1) {
+							continue;
+						}
+
+						$currentConstantArrays = $specifiedExpressions[$holderExprString]->getType()->getConstantArrays();
+						$hasExtraKeys = false;
+						foreach ($currentConstantArrays as $currentConstantArray) {
+							foreach ($currentConstantArray->getKeyTypes() as $currentKeyType) {
+								if ($guardConstantArrays[0]->hasOffsetValueType($currentKeyType)->no()) {
+									$hasExtraKeys = true;
+									break 2;
+								}
+							}
+						}
+						if ($hasExtraKeys) {
+							continue 2;
+						}
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;

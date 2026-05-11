@@ -1021,4 +1021,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11894.php'], []);
 	}
 
+	public function testBug14596(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-14596.php'], [
+			[
+				'Named argument cannot be followed by a positional argument.',
+				12,
+			],
+		]);
+	}
+
 }

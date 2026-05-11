@@ -122,6 +122,7 @@ use function in_array;
 use function is_array;
 use function is_string;
 use function ltrim;
+use function max;
 use function md5;
 use function sprintf;
 use function str_starts_with;

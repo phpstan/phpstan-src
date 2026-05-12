@@ -2115,7 +2115,7 @@ final class TypeSpecifier
 			$rightFilteredScope = $rightScope->filterByFalseyValue($rightExpr);
 		}
 
-		foreach ($viableCandidates as $exprString => $targetExpr) {
+		foreach ($viableCandidates as $targetExpr) {
 			if (!$leftFilteredScope->hasExpressionType($targetExpr)->yes()) {
 				continue;
 			}

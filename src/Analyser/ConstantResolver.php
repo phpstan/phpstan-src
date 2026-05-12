@@ -414,6 +414,33 @@ final class ConstantResolver
 		return $this->composerPhpVersionFactory->getMaxVersion();
 	}
 
+	public function getExplicitGlobalConstantType(string $constantName): ?Type
+	{
+		if (array_key_exists($constantName, $this->dynamicConstantNames)) {
+			$phpdocTypes = $this->dynamicConstantNames[$constantName];
+			if ($this->container !== null) {
+				$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
+				return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], className: null));
+			}
+		}
+
+		return null;
+	}
+
+	public function getExplicitClassConstantType(string $className, string $constantName): ?Type
+	{
+		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
+		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
+			$phpdocTypes = $this->dynamicConstantNames[$lookupConstantName];
+			if ($this->container !== null) {
+				$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
+				return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], $className));
+			}
+		}
+
+		return null;
+	}
+
 	public function resolveConstantType(string $constantName, Type $constantType): Type
 	{
 		if ($constantType->isConstantValue()->yes()) {

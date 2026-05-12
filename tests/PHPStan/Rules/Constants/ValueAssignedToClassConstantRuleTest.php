@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Constants;
 
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -14,7 +15,9 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new ValueAssignedToClassConstantRule();
+		return new ValueAssignedToClassConstantRule(
+			self::getContainer()->getByType(ConstantResolver::class),
+		);
 	}
 
 	public function testRule(): void

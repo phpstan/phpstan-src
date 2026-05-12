@@ -1,0 +1,7 @@
+includes:
+	- ../../../../conf/bleedingEdge.neon
+
+parameters:
+	dynamicConstantNames:
+		BAR_CONSTANT: 'int|string|null'
+		ValueAssignedToClassConstantDynamicNames\Foo::BAR: 'int|string|null'

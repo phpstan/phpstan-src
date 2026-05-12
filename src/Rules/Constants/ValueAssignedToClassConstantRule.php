@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassReflection;
@@ -22,6 +23,10 @@ use function sprintf;
 #[RegisteredRule(level: 2)]
 final class ValueAssignedToClassConstantRule implements Rule
 {
+
+	public function __construct(private ConstantResolver $constantResolver)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -62,6 +67,22 @@ final class ValueAssignedToClassConstantRule implements Rule
 		$phpDocType = $constantReflection->getPhpDocType();
 		if ($phpDocType === null) {
 			if ($nativeType === null) {
+				$configuredType = $this->constantResolver->getExplicitClassConstantType($classReflection->getName(), $constantName);
+				if ($configuredType !== null) {
+					$accepts = $configuredType->accepts($valueExprType, true);
+					if (!$accepts->yes()) {
+						$verbosity = VerbosityLevel::getRecommendedLevelByType($configuredType, $valueExprType);
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Constant %s::%s (%s) does not accept value %s.',
+								$constantReflection->getDeclaringClass()->getDisplayName(),
+								$constantName,
+								$configuredType->describe(VerbosityLevel::typeOnly()),
+								$valueExprType->describe($verbosity),
+							))->acceptsReasonsTip($accepts->reasons)->identifier('classConstant.value')->build(),
+						];
+					}
+				}
 				return [];
 			}
 

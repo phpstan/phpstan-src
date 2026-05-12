@@ -126,6 +126,22 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 		}
 
 		$offsetTypes = [];
+		$nonConstantArrayWasUnpacked = false;
+		$unsealedKeyTypes = [];
+		$unsealedValueTypes = [];
+		// Only switch to the unsealed-CAT result format when every CAT
+		// input has explicit sealedness — see the matching gate in
+		// `ArrayMergeFunctionDynamicReturnTypeExtension` for the
+		// rationale.
+		$canRebuildAsUnsealedCat = true;
+		foreach ($argTypes as $argType) {
+			foreach ($argType->getConstantArrays() as $constantArray) {
+				if ($constantArray->isUnsealed()->maybe()) {
+					$canRebuildAsUnsealedCat = false;
+					break 2;
+				}
+			}
+		}
 		foreach ($argTypes as $argIndex => $argType) {
 			if (in_array($argIndex, $optionalArgTypes, true)) {
 				continue;
@@ -141,6 +157,17 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 							$argType->getOffsetValueType($keyType),
 						];
 					}
+				}
+			} elseif ($canRebuildAsUnsealedCat) {
+				$nonConstantArrayWasUnpacked = true;
+				$iterableValue = $argType->getIterableValueType();
+				$unsealedKeyTypes[] = $argType->getIterableKeyType();
+				$unsealedValueTypes[] = $iterableValue;
+				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
+					$offsetTypes[$key] = [
+						$hasOffsetValue,
+						TypeCombinator::union($offsetValueType, $iterableValue),
+					];
 				}
 			} else {
 				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
@@ -192,6 +219,30 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 		$keyType = TypeCombinator::union(...$keyTypes);
 		if ($keyType instanceof NeverType) {
 			return new ConstantArrayType([], []);
+		}
+
+		if ($nonConstantArrayWasUnpacked) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetType]) {
+				if ($hasOffsetValue->no()) {
+					continue;
+				}
+				$constKey = is_string($key) ? new ConstantStringType($key) : new ConstantIntegerType($key);
+				$builder->setOffsetValueType($constKey, $offsetType, !$hasOffsetValue->yes());
+			}
+			$builder->makeUnsealed(
+				TypeCombinator::union(...$unsealedKeyTypes),
+				TypeCombinator::union(...$unsealedValueTypes),
+			);
+			$arrayType = $builder->getArray();
+			if ($nonEmpty) {
+				$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			}
+			if ($isList) {
+				$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+			}
+
+			return $arrayType;
 		}
 
 		$arrayType = new ArrayType(

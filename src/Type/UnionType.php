@@ -273,15 +273,6 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOf($this);
 		}
 
-		if ($otherType instanceof LateResolvableType && $otherType instanceof CompoundType && !$otherType instanceof TemplateType) {
-			foreach ($this->types as $innerType) {
-				if ($innerType->isSuperTypeOf($otherType)->yes()) {
-					return IsSuperTypeOfResult::createYes();
-				}
-			}
-			return $otherType->isSubTypeOf($this);
-		}
-
 		$results = [];
 		foreach ($this->types as $innerType) {
 			$result = $innerType->isSuperTypeOf($otherType);
@@ -292,7 +283,10 @@ class UnionType implements CompoundType
 		}
 		$result = IsSuperTypeOfResult::createNo()->or(...$results);
 
-		if ($otherType instanceof TemplateUnionType) {
+		if (
+			$otherType instanceof TemplateUnionType
+			|| ($otherType instanceof LateResolvableType && $otherType instanceof CompoundType && !$otherType instanceof TemplateType)
+		) {
 			return $result->or($otherType->isSubTypeOf($this));
 		}
 

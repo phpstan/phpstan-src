@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c27fdf6b688eb9e02a9806c6cb2d4b39",
+    "content-hash": "c07c2b6cf0aed6457e820e24dda8c116",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1632,12 +1632,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs",
-                "reference": "517b9ad1adaf2c5453c00ec2fbb02d192a4a9b6c"
+                "reference": "fd1db82bb399e2cf3485c721337f45c398da5d12"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/517b9ad1adaf2c5453c00ec2fbb02d192a4a9b6c",
-                "reference": "517b9ad1adaf2c5453c00ec2fbb02d192a4a9b6c",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/fd1db82bb399e2cf3485c721337f45c398da5d12",
+                "reference": "fd1db82bb399e2cf3485c721337f45c398da5d12",
                 "shasum": ""
             },
             "require-dev": {

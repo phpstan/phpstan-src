@@ -2965,7 +2965,15 @@ class NodeScopeResolver
 						continue;
 					}
 
-					$type = $scope->getType($args[$index]->value);
+					if ($callableParameter->isVariadic()) {
+						$argTypes = [];
+						for ($j = $index; $j < count($args); $j++) {
+							$argTypes[] = $scope->getType($args[$j]->value);
+						}
+						$type = TypeCombinator::union(...$argTypes);
+					} else {
+						$type = $scope->getType($args[$index]->value);
+					}
 					$callableParameters[$index] = new NativeParameterReflection(
 						$callableParameter->getName(),
 						$callableParameter->isOptional(),

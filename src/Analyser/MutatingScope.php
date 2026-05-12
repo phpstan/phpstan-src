@@ -2023,7 +2023,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$isNullable = $this->isParameterValueNullable($parameter);
 			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 			if ($callableParameters !== null) {
-				$parameterType = self::intersectButNotNever($parameterType, $this->getCallableParameterType($callableParameters, $i));
+				$parameterType = self::intersectButNotNever($parameterType, $this->getCallableParameterType($parameter, $callableParameters, $i));
 			}
 			$holder = ExpressionTypeHolder::createYes($parameter->var, $parameterType);
 			$expressionTypes[$paramExprString] = $holder;
@@ -2223,7 +2223,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$isNullable = $this->isParameterValueNullable($parameter);
 			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 			if ($callableParameters !== null) {
-				$parameterType = self::intersectButNotNever($parameterType, $this->getCallableParameterType($callableParameters, $i));
+				$parameterType = self::intersectButNotNever($parameterType, $this->getCallableParameterType($parameter, $callableParameters, $i));
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
@@ -2292,8 +2292,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/**
 	 * @param ParameterReflection[] $callableParameters
 	 */
-	private function getCallableParameterType(array $callableParameters, int $index): Type
+	private function getCallableParameterType(Node\Param $parameter, array $callableParameters, int $index): Type
 	{
+		if ($parameter->variadic) {
+			return $this->buildVariadicArrayTypeFromCallableParameters($callableParameters, $index);
+		}
+
 		if (isset($callableParameters[$index])) {
 			return $callableParameters[$index]->getType();
 		}
@@ -2308,6 +2312,40 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return new MixedType();
+	}
+
+	/**
+	 * @param array<ParameterReflection> $callableParameters
+	 */
+	private function buildVariadicArrayTypeFromCallableParameters(array $callableParameters, int $startIndex): Type
+	{
+		$elementTypes = [];
+		$callableParametersCount = count($callableParameters);
+		for ($j = $startIndex; $j < $callableParametersCount; $j++) {
+			$elementTypes[] = $callableParameters[$j]->getType();
+			if ($callableParameters[$j]->isVariadic()) {
+				break;
+			}
+		}
+
+		if ($elementTypes === [] && $callableParametersCount > 0) {
+			$lastParameter = array_last($callableParameters);
+			if ($lastParameter->isVariadic()) {
+				$elementTypes[] = $lastParameter->getType();
+			}
+		}
+
+		if ($elementTypes === []) {
+			return new MixedType();
+		}
+
+		$elementType = TypeCombinator::union(...$elementTypes);
+
+		if (!$this->getPhpVersion()->supportsNamedArguments()->no()) {
+			return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $elementType);
+		}
+
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $elementType), new AccessoryArrayListType()]);
 	}
 
 	public static function intersectButNotNever(Type $nativeType, Type $inferredType): Type

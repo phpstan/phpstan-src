@@ -74,7 +74,7 @@ final class ValueAssignedToDefineRule implements Rule
 				$constantName,
 				$configuredType->describe(VerbosityLevel::typeOnly()),
 				$valueType->describe($verbosity),
-			))->acceptsReasonsTip($accepts->reasons)->identifier('constant.value')->build();
+			))->acceptsReasonsTip($accepts->reasons)->identifier('constant.defineValue')->build();
 		}
 
 		return $errors;

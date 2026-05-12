@@ -39,7 +39,7 @@ class Foo
 	): void
 	{
 		assertType('pure-callable(): mixed', $pureCallable);
-		assertType('array&callable(): mixed', $callableArray);
+		assertType('non-empty-list&callable(): mixed', $callableArray);
 		assertType('resource', $closedResource);
 		assertType('resource', $openResource);
 		assertType('class-string<UnitEnum>', $enumString);

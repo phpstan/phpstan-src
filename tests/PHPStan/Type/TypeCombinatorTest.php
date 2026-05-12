@@ -925,7 +925,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				IntersectionType::class,
-				'array{object, \'foo\'}&callable(): mixed',
+				'list{object, \'foo\'}&callable(): mixed',
 			],
 			[
 				[

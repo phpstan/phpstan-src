@@ -160,7 +160,7 @@ class CallableArray {
 
 	public function doFoo(callable $foo): void {
 		$this->foo = $foo;
-		assertType('array', $this->foo); // could be non-empty-array
+		assertType('array<mixed>', $this->foo); // could be non-empty-array
 	}
 }
 

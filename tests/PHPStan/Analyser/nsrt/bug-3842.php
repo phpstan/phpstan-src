@@ -20,7 +20,7 @@ class ClassB
 
 function testIsArrayOnCallable(callable $value): void {
 	if (is_array($value)) {
-		assertType('array<mixed, mixed>&callable(): mixed', $value);
+		assertType('non-empty-list<mixed>&callable(): mixed', $value);
 		assertType('class-string|object', $value[0]);
 		assertType('non-falsy-string', $value[1]);
 	}
@@ -28,7 +28,7 @@ function testIsArrayOnCallable(callable $value): void {
 
 /** @param callable-array $value */
 function testCallableArrayPhpDoc(array $value): void {
-	assertType('array&callable(): mixed', $value);
+	assertType('non-empty-list&callable(): mixed', $value);
 	assertType('class-string|object', $value[0]);
 	assertType('non-falsy-string', $value[1]);
 }

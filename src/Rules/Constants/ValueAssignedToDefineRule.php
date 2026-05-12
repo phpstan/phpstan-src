@@ -44,32 +44,40 @@ final class ValueAssignedToDefineRule implements Rule
 		}
 
 		$constantNameStrings = $scope->getType($args[0]->value)->getConstantStrings();
-		if (count($constantNameStrings) !== 1 || $constantNameStrings[0]->getValue() === '') {
-			return [];
-		}
-
-		$constantName = $constantNameStrings[0]->getValue();
-		$configuredType = $this->constantResolver->getExplicitGlobalConstantType($constantName);
-		if ($configuredType === null) {
+		if (count($constantNameStrings) === 0) {
 			return [];
 		}
 
 		$valueType = $scope->getType($args[1]->value);
-		$accepts = $configuredType->accepts($valueType, true);
-		if ($accepts->yes()) {
-			return [];
-		}
+		$errors = [];
 
-		$verbosity = VerbosityLevel::getRecommendedLevelByType($configuredType, $valueType);
+		foreach ($constantNameStrings as $constantNameString) {
+			if ($constantNameString->getValue() === '') {
+				continue;
+			}
 
-		return [
-			RuleErrorBuilder::message(sprintf(
+			$constantName = $constantNameString->getValue();
+			$configuredType = $this->constantResolver->getExplicitGlobalConstantType($constantName);
+			if ($configuredType === null) {
+				continue;
+			}
+
+			$accepts = $configuredType->accepts($valueType, true);
+			if ($accepts->yes()) {
+				continue;
+			}
+
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($configuredType, $valueType);
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Constant %s (%s) does not accept value %s.',
 				$constantName,
 				$configuredType->describe(VerbosityLevel::typeOnly()),
 				$valueType->describe($verbosity),
-			))->acceptsReasonsTip($accepts->reasons)->identifier('constant.value')->build(),
-		];
+			))->acceptsReasonsTip($accepts->reasons)->identifier('constant.value')->build();
+		}
+
+		return $errors;
 	}
 
 }

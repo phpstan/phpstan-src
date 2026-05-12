@@ -2082,22 +2082,15 @@ final class TypeSpecifier
 		SpecifiedTypes $types,
 	): SpecifiedTypes
 	{
-		$leftSureTypes = $leftNormalized->getSureTypes();
-		$rightSureTypes = $rightNormalized->getSureTypes();
-		$existingSureTypes = $types->getSureTypes();
-
-		$existingCount = count($existingSureTypes);
-		if ($existingCount >= count($leftSureTypes) && $existingCount >= count($rightSureTypes)) {
-			return $types;
-		}
-
 		$candidateExprs = [];
-		foreach ($leftSureTypes as $exprString => [$exprNode, $type]) {
+		foreach ($leftNormalized->getSureTypes() as $exprString => [$exprNode, $type]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
-		foreach ($rightSureTypes as $exprString => [$exprNode, $type]) {
+		foreach ($rightNormalized->getSureTypes() as $exprString => [$exprNode, $type]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
+
+		$existingSureTypes = $types->getSureTypes();
 
 		$viableCandidates = [];
 		foreach ($candidateExprs as $exprString => $targetExpr) {
@@ -2114,40 +2107,29 @@ final class TypeSpecifier
 			return $types;
 		}
 
-		$leftFilteredScope = $truthy
-			? $scope->filterByTruthyValue($leftExpr)
-			: $scope->filterByFalseyValue($leftExpr);
+		if ($truthy) {
+			$leftFilteredScope = $scope->filterByTruthyValue($leftExpr);
+			$rightFilteredScope = $rightScope->filterByTruthyValue($rightExpr);
+		} else {
+			$leftFilteredScope = $scope->filterByFalseyValue($leftExpr);
+			$rightFilteredScope = $rightScope->filterByFalseyValue($rightExpr);
+		}
 
-		$leftNarrowedCandidates = [];
 		foreach ($viableCandidates as $exprString => $targetExpr) {
 			if (!$leftFilteredScope->hasExpressionType($targetExpr)->yes()) {
+				continue;
+			}
+			if (!$rightFilteredScope->hasExpressionType($targetExpr)->yes()) {
 				continue;
 			}
 
 			$originalType = $scope->getType($targetExpr);
 			$leftType = $leftFilteredScope->getType($targetExpr);
+			$rightType = $rightFilteredScope->getType($targetExpr);
 
 			if ($leftType->equals($originalType) || !$originalType->isSuperTypeOf($leftType)->yes()) {
 				continue;
 			}
-
-			$leftNarrowedCandidates[$exprString] = [$targetExpr, $originalType, $leftType];
-		}
-
-		if ($leftNarrowedCandidates === []) {
-			return $types;
-		}
-
-		$rightFilteredScope = $truthy
-			? $rightScope->filterByTruthyValue($rightExpr)
-			: $rightScope->filterByFalseyValue($rightExpr);
-
-		foreach ($leftNarrowedCandidates as $exprString => [$targetExpr, $originalType, $leftType]) {
-			if (!$rightFilteredScope->hasExpressionType($targetExpr)->yes()) {
-				continue;
-			}
-
-			$rightType = $rightFilteredScope->getType($targetExpr);
 
 			if ($rightType->equals($originalType) || !$originalType->isSuperTypeOf($rightType)->yes()) {
 				continue;

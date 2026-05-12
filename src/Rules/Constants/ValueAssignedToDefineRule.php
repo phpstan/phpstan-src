@@ -70,7 +70,7 @@ final class ValueAssignedToDefineRule implements Rule
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($configuredType, $valueType);
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Constant %s (%s) does not accept value %s.',
+				'Configuration defined type for constant %s (%s) is incompatible with value %s.',
 				$constantName,
 				$configuredType->describe(VerbosityLevel::typeOnly()),
 				$valueType->describe($verbosity),

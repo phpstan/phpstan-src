@@ -31,7 +31,7 @@ class ValueAssignedToClassConstantWithDynamicNamesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/value-assigned-to-class-constant-dynamic-names.php'], [
 			[
-				'Constant ValueAssignedToClassConstantDynamicNames\Foo::BAR (int|string|null) does not accept value false.',
+				'Configuration defined type for constant ValueAssignedToClassConstantDynamicNames\Foo::BAR (int|string|null) is incompatible with value false.',
 				7,
 			],
 		]);

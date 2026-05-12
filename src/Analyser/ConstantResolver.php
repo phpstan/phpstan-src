@@ -444,12 +444,11 @@ final class ConstantResolver
 	public function resolveConstantType(string $constantName, Type $constantType): Type
 	{
 		if ($constantType->isConstantValue()->yes()) {
+			$explicitType = $this->getExplicitGlobalConstantType($constantName);
+			if ($explicitType !== null) {
+				return $explicitType;
+			}
 			if (array_key_exists($constantName, $this->dynamicConstantNames)) {
-				$phpdocTypes = $this->dynamicConstantNames[$constantName];
-				if ($this->container !== null) {
-					$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
-					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], className: null));
-				}
 				return $constantType;
 			}
 			if (in_array($constantName, $this->dynamicConstantNames, true)) {
@@ -465,10 +464,9 @@ final class ConstantResolver
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
 		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
 			if ($constantType->isConstantValue()->yes()) {
-				$phpdocTypes = $this->dynamicConstantNames[$lookupConstantName];
-				if ($this->container !== null) {
-					$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
-					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], $className));
+				$explicitType = $this->getExplicitClassConstantType($className, $constantName);
+				if ($explicitType !== null) {
+					return $explicitType;
 				}
 			}
 

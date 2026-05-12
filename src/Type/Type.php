@@ -22,7 +22,7 @@ use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
 /**
- * Represents a PHPStan type in the type system.
+ * Represents a PHPStan type in the type system
  *
  * This is the central interface of PHPStan's type system. Every type that PHPStan
  * can reason about implements this interface — from simple scalars like StringType

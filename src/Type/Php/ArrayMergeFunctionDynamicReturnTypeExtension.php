@@ -165,10 +165,16 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 				$unsealedKeyTypes[] = $argType->getIterableKeyType();
 				$unsealedValueTypes[] = $iterableValue;
 				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
-					// Existing offsets stay required (the sealed input
-					// contributed them) but their value broadens to
-					// include the unknown shape's iterable value — the
-					// unknown shape might overwrite the offset.
+					if (is_int($key)) {
+						// array_merge renumbers int keys instead of
+						// overwriting them, so a later non-constant
+						// input doesn't broaden a CAT's int-key value.
+						continue;
+					}
+					// Existing string offsets stay required (the sealed
+					// input contributed them) but their value broadens
+					// to include the unknown shape's iterable value —
+					// the unknown shape might overwrite the offset.
 					$offsetTypes[$key] = [
 						$hasOffsetValue,
 						TypeCombinator::union($offsetValueType, $iterableValue),
@@ -234,11 +240,26 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		// result.
 		if ($nonConstantArrayWasUnpacked) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$intKeyValuesFromCats = [];
 			foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetType]) {
-				if (is_int($key) || $hasOffsetValue->no()) {
+				if (is_int($key)) {
+					// array_merge renumbers int keys. We can't track
+					// what they become, so push their values into the
+					// unsealed slot under an `int` key instead of
+					// dropping them.
+					if (!$hasOffsetValue->no()) {
+						$intKeyValuesFromCats[] = $offsetType;
+					}
 					continue;
 				}
-				$builder->setOffsetValueType(new ConstantStringType((string) $key), $offsetType, !$hasOffsetValue->yes());
+				if ($hasOffsetValue->no()) {
+					continue;
+				}
+				$builder->setOffsetValueType(new ConstantStringType($key), $offsetType, !$hasOffsetValue->yes());
+			}
+			if ($intKeyValuesFromCats !== []) {
+				$unsealedKeyTypes[] = new IntegerType();
+				$unsealedValueTypes[] = TypeCombinator::union(...$intKeyValuesFromCats);
 			}
 			$builder->makeUnsealed(
 				TypeCombinator::union(...$unsealedKeyTypes),

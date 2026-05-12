@@ -108,25 +108,25 @@ class Foo
 	{
 		$arr1 = $arr;
 		sort($arr1);
-		assertType('mixed', $arr1);
-		assertNativeType('mixed', $arr1);
+		assertType('list', $arr1);
+		assertNativeType('list', $arr1);
 
 		$arr2 = $arr;
 		rsort($arr2);
-		assertType('mixed', $arr2);
-		assertNativeType('mixed', $arr2);
+		assertType('list', $arr2);
+		assertNativeType('list', $arr2);
 
 		$arr3 = $arr;
 		usort($arr3, fn(int $a, int $b) => $a <=> $b);
-		assertType('mixed', $arr3);
-		assertNativeType('mixed', $arr3);
+		assertType('list', $arr3);
+		assertNativeType('list', $arr3);
 	}
 
 	public function notArray(): void
 	{
 		$arr = 'foo';
 		sort($arr);
-		assertType("'foo'", $arr);
+		assertType('*ERROR*', $arr);
 	}
 }
 
@@ -145,9 +145,18 @@ class Bar
 			return $a['a'] <=> $b['a'];
 		});
 
-		assertType('list<array{a: bool|float|int|string, b: true}>&T (method Sort\Bar::doFoo(), argument)', $array);
+		assertType('list<array{a: bool|float|int|string, b: true}>', $array);
 
 		return $array;
 	}
 
+}
+
+/** @param array<mixed> $arr */
+function withHasOffset(array $arr): void
+{
+	if (array_key_exists('foo', $arr)) {
+		sort($arr);
+		assertType('non-empty-list', $arr);
+	}
 }

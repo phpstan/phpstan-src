@@ -99,11 +99,6 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
-	public function sortArray(): Type
-	{
-		return $this;
-	}
-
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		return new ErrorType();

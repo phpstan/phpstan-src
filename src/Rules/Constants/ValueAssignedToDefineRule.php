@@ -52,11 +52,11 @@ final class ValueAssignedToDefineRule implements Rule
 		$errors = [];
 
 		foreach ($constantNameStrings as $constantNameString) {
-			if ($constantNameString->getValue() === '') {
+			$constantName = $constantNameString->getValue();
+			if ($constantName === '') {
 				continue;
 			}
 
-			$constantName = $constantNameString->getValue();
 			$configuredType = $this->constantResolver->getExplicitGlobalConstantType($constantName);
 			if ($configuredType === null) {
 				continue;

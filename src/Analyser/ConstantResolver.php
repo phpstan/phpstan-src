@@ -444,12 +444,8 @@ final class ConstantResolver
 	public function resolveConstantType(string $constantName, Type $constantType): Type
 	{
 		if ($constantType->isConstantValue()->yes()) {
-			$explicitType = $this->getExplicitGlobalConstantType($constantName);
-			if ($explicitType !== null) {
-				return $explicitType;
-			}
 			if (array_key_exists($constantName, $this->dynamicConstantNames)) {
-				return $constantType;
+				return $this->getExplicitGlobalConstantType($constantName) ?? $constantType;
 			}
 			if (in_array($constantName, $this->dynamicConstantNames, true)) {
 				return $this->generalizeDynamicConstantType($constantType);

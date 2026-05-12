@@ -40,6 +40,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -206,6 +207,26 @@ class IntersectionType implements CompoundType
 
 	public function getConstantArrays(): array
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$zero = new ConstantIntegerType(0);
+			$builder->setOffsetValueType(
+				$zero,
+				$this->getOffsetValueType($zero),
+			);
+			$one = new ConstantIntegerType(1);
+			$builder->setOffsetValueType(
+				$one,
+				$this->getOffsetValueType($one),
+			);
+			$constantArray = $builder->getArray();
+			if (!$constantArray instanceof ConstantArrayType) {
+				throw new ShouldNotHappenException();
+			}
+
+			return [$builder->getArray()];
+		}
+
 		$constantArrays = [];
 		foreach ($this->types as $type) {
 			foreach ($type->getConstantArrays() as $constantArray) {
@@ -764,6 +785,10 @@ class IntersectionType implements CompoundType
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
 		return $this->isIterableAtLeastOnce ??= $this->intersectResults(
 			static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce(),
 			static fn (Type $type): bool => !$type->isIterable()->no(),
@@ -772,6 +797,10 @@ class IntersectionType implements CompoundType
 
 	public function getArraySize(): Type
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return new ConstantIntegerType(2);
+		}
+
 		$arraySize = $this->intersectTypes(static fn (Type $type): Type => $type->getArraySize());
 
 		$knownOffsets = [];
@@ -844,6 +873,9 @@ class IntersectionType implements CompoundType
 
 	public function isConstantArray(): TrinaryLogic
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return TrinaryLogic::createYes();
+		}
 		return $this->isConstantArray ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantArray());
 	}
 
@@ -854,6 +886,10 @@ class IntersectionType implements CompoundType
 
 	public function isList(): TrinaryLogic
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
 		return $this->isList ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
 	}
 
@@ -953,6 +989,13 @@ class IntersectionType implements CompoundType
 
 	private function doHasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
+		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
+			$arrayKeyOffsetType = $offsetType->toArrayKey();
+			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+
+			return $callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->result;
+		}
+
 		if ($this->isList()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
 
@@ -989,14 +1032,6 @@ class IntersectionType implements CompoundType
 						return TrinaryLogic::createYes();
 					}
 				}
-			}
-		}
-
-		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
-			$arrayKeyOffsetType = $offsetType->toArrayKey();
-			$callableArrayOffsetType = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
-			if ($callableArrayOffsetType->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
-				return TrinaryLogic::createYes();
 			}
 		}
 

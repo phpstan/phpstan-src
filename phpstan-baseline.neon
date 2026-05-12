@@ -1428,7 +1428,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 3
+			count: 4
 			path: src/Type/IntersectionType.php
 
 		-
@@ -1447,6 +1447,12 @@ parameters:
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
+			path: src/Type/IntersectionType.php
+
+		-
+			rawMessage: 'Method PHPStan\Type\IntersectionType::getConstantArrays() should return list<PHPStan\Type\Constant\ConstantArrayType> but returns array{PHPStan\Type\Type}.'
+			identifier: return.type
+			count: 1
 			path: src/Type/IntersectionType.php
 
 		-

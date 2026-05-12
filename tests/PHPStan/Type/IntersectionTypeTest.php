@@ -953,4 +953,25 @@ class IntersectionTypeTest extends PHPStanTestCase
 		static::assertSame($expected, $type->describe($verbosityLevel));
 	}
 
+	public function testCallableArray(): void
+	{
+		$callableArray = new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]);
+		$this->assertSame('non-empty-list&callable(): mixed', $callableArray->describe(VerbosityLevel::precise()));
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $callableArray->isConstantArray()->describe());
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $callableArray->isList()->describe());
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $callableArray->hasOffsetValueType(new ConstantIntegerType(0))->describe());
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $callableArray->hasOffsetValueType(new ConstantIntegerType(1))->describe());
+		$this->assertSame(TrinaryLogic::createNo()->describe(), $callableArray->hasOffsetValueType(new ConstantIntegerType(2))->describe());
+		$this->assertSame(TrinaryLogic::createNo()->describe(), $callableArray->hasOffsetValueType(new ConstantIntegerType(-1))->describe());
+		$this->assertSame(TrinaryLogic::createNo()->describe(), $callableArray->hasOffsetValueType(new ConstantStringType('foo'))->describe());
+		$this->assertSame(TrinaryLogic::createMaybe()->describe(), $callableArray->hasOffsetValueType(new IntegerType())->describe());
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $callableArray->isIterableAtLeastOnce()->describe());
+		$this->assertSame('2', $callableArray->getArraySize()->describe(VerbosityLevel::precise()));
+
+		$constantArrays = $callableArray->getConstantArrays();
+		$this->assertCount(1, $constantArrays);
+
+		$this->assertSame('array{class-string|object, non-falsy-string}', $constantArrays[0]->describe(VerbosityLevel::precise()));
+	}
+
 }

@@ -4056,28 +4056,32 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-14549-bis.php'], [
 			[
-				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayInt() expects array<int>, array&callable given.',
+				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayInt() expects array<int>, callable&list given.',
 				33,
 			],
 			[
-				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayStringString() expects array{string, string}, array&callable(): mixed given.',
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayStringString() expects array{string, string}, non-empty-list&callable(): mixed given.',
 				34,
+				'Offset 0 (string) does not accept type class-string|object.',
 			],
 			[
-				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, array&callable(): mixed given.',
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, non-empty-list&callable(): mixed given.',
 				36,
+				'Array does not have offset 2.',
 			],
 			[
-				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayInt() expects array<int>, array&callable given.',
+				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayInt() expects array<int>, callable&list given.',
 				44,
 			],
 			[
-				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayStringString() expects array{string, string}, array&callable(): mixed given.',
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayStringString() expects array{string, string}, non-empty-list&callable(): mixed given.',
 				45,
+				'Offset 0 (string) does not accept type class-string|object.',
 			],
 			[
-				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, array&callable(): mixed given.',
+				'Parameter #1 $param of method Bug14549Bis\Foo::callConstantArrayObjectOrStringStringString() expects array{object|string, string, string}, non-empty-list&callable(): mixed given.',
 				47,
+				'Array does not have offset 2.',
 			],
 			[
 				'Parameter #1 $param of method Bug14549Bis\Foo::callArrayString() expects array<string>, array given.',

@@ -15,6 +15,10 @@ conditionalTags:
 		phpstan.restrictedPropertyUsageExtension: %featureToggles.internalTag%
 	PHPStan\Rules\InternalTag\RestrictedInternalMethodUsageExtension:
 		phpstan.restrictedMethodUsageExtension: %featureToggles.internalTag%
+	PHPStan\Rules\Constants\ValueAssignedToDefineRule:
+		phpstan.rules.rule: %featureToggles.checkDynamicConstantNameValues%
+	PHPStan\Rules\Constants\ValueAssignedToGlobalConstantRule:
+		phpstan.rules.rule: %featureToggles.checkDynamicConstantNameValues%
 
 services:
 	-
@@ -22,3 +26,9 @@ services:
 
 	-
 		class: PHPStan\Rules\InternalTag\RestrictedInternalMethodUsageExtension
+
+	-
+		class: PHPStan\Rules\Constants\ValueAssignedToDefineRule
+
+	-
+		class: PHPStan\Rules\Constants\ValueAssignedToGlobalConstantRule

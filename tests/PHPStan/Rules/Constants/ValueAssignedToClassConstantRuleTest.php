@@ -17,6 +17,7 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 	{
 		return new ValueAssignedToClassConstantRule(
 			self::getContainer()->getByType(ConstantResolver::class),
+			false,
 		);
 	}
 

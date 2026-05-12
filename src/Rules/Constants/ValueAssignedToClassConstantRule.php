@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -24,7 +25,11 @@ use function sprintf;
 final class ValueAssignedToClassConstantRule implements Rule
 {
 
-	public function __construct(private ConstantResolver $constantResolver)
+	public function __construct(
+		private ConstantResolver $constantResolver,
+		#[AutowiredParameter(ref: '%featureToggles.checkDynamicConstantNameValues%')]
+		private bool $checkDynamicConstantNameValues,
+	)
 	{
 	}
 
@@ -67,6 +72,9 @@ final class ValueAssignedToClassConstantRule implements Rule
 		$phpDocType = $constantReflection->getPhpDocType();
 		if ($phpDocType === null) {
 			if ($nativeType === null) {
+				if (!$this->checkDynamicConstantNameValues) {
+					return [];
+				}
 				$configuredType = $this->constantResolver->getExplicitClassConstantType($classReflection->getName(), $constantName);
 				if ($configuredType !== null) {
 					$accepts = $configuredType->accepts($valueExprType, true);

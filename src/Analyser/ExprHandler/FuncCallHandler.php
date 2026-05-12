@@ -463,7 +463,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->sortArray(), $scope->getNativeType($arrayArg)->sortArray()),
+				new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
 				$nodeCallback,
 			)->getScope();
 		}

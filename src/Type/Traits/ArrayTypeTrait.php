@@ -214,23 +214,4 @@ trait ArrayTypeTrait
 			: $arrayType;
 	}
 
-	public function sortArray(): Type
-	{
-		$isIterableAtLeastOnce = $this->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $this;
-		}
-
-		$listType = new IntersectionType([
-			new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->getIterableValueType()),
-			new AccessoryArrayListType(),
-		]);
-
-		if ($isIterableAtLeastOnce->yes()) {
-			$listType = TypeCombinator::intersect($listType, new NonEmptyArrayType());
-		}
-
-		return $listType;
-	}
-
 }

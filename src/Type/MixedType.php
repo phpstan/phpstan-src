@@ -288,11 +288,6 @@ class MixedType implements CompoundType, SubtractableType
 		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType()]);
 	}
 
-	public function sortArray(): Type
-	{
-		return $this;
-	}
-
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		if ($this->isArray()->no()) {

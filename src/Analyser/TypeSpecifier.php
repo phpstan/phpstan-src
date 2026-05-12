@@ -719,7 +719,14 @@ final class TypeSpecifier
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
 			$rightScope = $scope->filterByTruthyValue($expr->left);
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+			if ($context->true()) {
+				$types = $leftTypes->unionWith($rightTypes);
+			} else {
+				$leftNormalized = $leftTypes->normalize($scope);
+				$rightNormalized = $rightTypes->normalize($rightScope);
+				$types = $leftNormalized->intersectWith($rightNormalized);
+				$types = $this->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
+			}
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;
@@ -773,8 +780,11 @@ final class TypeSpecifier
 				) {
 					$types = $leftTypes->normalize($scope);
 				} else {
-					$types = $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+					$leftNormalized = $leftTypes->normalize($scope);
+					$rightNormalized = $rightTypes->normalize($rightScope);
+					$types = $leftNormalized->intersectWith($rightNormalized);
 					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
+					$types = $this->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, true, $types);
 				}
 			} else {
 				$types = $leftTypes->unionWith($rightTypes);
@@ -2056,6 +2066,83 @@ final class TypeSpecifier
 					$this->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope),
 				);
 			}
+		}
+
+		return $types;
+	}
+
+	private function augmentDisjunctionTypes(
+		MutatingScope $scope,
+		MutatingScope $rightScope,
+		SpecifiedTypes $leftNormalized,
+		SpecifiedTypes $rightNormalized,
+		Expr $leftExpr,
+		Expr $rightExpr,
+		bool $truthy,
+		SpecifiedTypes $types,
+	): SpecifiedTypes
+	{
+		$candidateExprs = [];
+		foreach ($leftNormalized->getSureTypes() as $exprString => [$exprNode, $type]) {
+			$candidateExprs[$exprString] = $exprNode;
+		}
+		foreach ($rightNormalized->getSureTypes() as $exprString => [$exprNode, $type]) {
+			$candidateExprs[$exprString] = $exprNode;
+		}
+
+		$existingSureTypes = $types->getSureTypes();
+
+		$viableCandidates = [];
+		foreach ($candidateExprs as $exprString => $targetExpr) {
+			if (isset($existingSureTypes[$exprString])) {
+				continue;
+			}
+			if (!$scope->hasExpressionType($targetExpr)->yes()) {
+				continue;
+			}
+			$viableCandidates[$exprString] = $targetExpr;
+		}
+
+		if ($viableCandidates === []) {
+			return $types;
+		}
+
+		if ($truthy) {
+			$leftFilteredScope = $scope->filterByTruthyValue($leftExpr);
+			$rightFilteredScope = $rightScope->filterByTruthyValue($rightExpr);
+		} else {
+			$leftFilteredScope = $scope->filterByFalseyValue($leftExpr);
+			$rightFilteredScope = $rightScope->filterByFalseyValue($rightExpr);
+		}
+
+		foreach ($viableCandidates as $targetExpr) {
+			if (!$leftFilteredScope->hasExpressionType($targetExpr)->yes()) {
+				continue;
+			}
+			if (!$rightFilteredScope->hasExpressionType($targetExpr)->yes()) {
+				continue;
+			}
+
+			$originalType = $scope->getType($targetExpr);
+			$leftType = $leftFilteredScope->getType($targetExpr);
+			$rightType = $rightFilteredScope->getType($targetExpr);
+
+			if ($leftType->equals($originalType) || !$originalType->isSuperTypeOf($leftType)->yes()) {
+				continue;
+			}
+
+			if ($rightType->equals($originalType) || !$originalType->isSuperTypeOf($rightType)->yes()) {
+				continue;
+			}
+
+			$unionType = TypeCombinator::union($leftType, $rightType);
+			if ($unionType->equals($originalType)) {
+				continue;
+			}
+
+			$types = $types->unionWith(
+				$this->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope),
+			);
 		}
 
 		return $types;

@@ -16,7 +16,7 @@ class Foo
 			}
 		}
 
-		assertType('array{foo?: array}', $data);
+		assertType('array{}|array{foo: array<array<int|string>>}', $data);
 	}
 
 	/**

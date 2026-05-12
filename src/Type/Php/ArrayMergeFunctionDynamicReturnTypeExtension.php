@@ -125,6 +125,24 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		}
 
 		$offsetTypes = [];
+		$nonConstantArrayWasUnpacked = false;
+		$unsealedKeyTypes = [];
+		$unsealedValueTypes = [];
+		// Only switch to the unsealed-CAT result format when every CAT
+		// input has explicit sealedness (`isUnsealed` is `Yes` or `No`,
+		// i.e. bleeding-edge representation). Legacy CATs report
+		// `Maybe` and must keep the original `HasOffsetType`-style
+		// output to avoid changing the shape for non-bleeding-edge
+		// users.
+		$canRebuildAsUnsealedCat = true;
+		foreach ($argTypes as $argType) {
+			foreach ($argType->getConstantArrays() as $constantArray) {
+				if ($constantArray->isUnsealed()->maybe()) {
+					$canRebuildAsUnsealedCat = false;
+					break 2;
+				}
+			}
+		}
 		foreach ($argTypes as $argIndex => $argType) {
 			if (in_array($argIndex, $optionalArgTypes, true)) {
 				continue;
@@ -140,6 +158,21 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 							$argType->getOffsetValueType($keyType),
 						];
 					}
+				}
+			} elseif ($canRebuildAsUnsealedCat) {
+				$nonConstantArrayWasUnpacked = true;
+				$iterableValue = $argType->getIterableValueType();
+				$unsealedKeyTypes[] = $argType->getIterableKeyType();
+				$unsealedValueTypes[] = $iterableValue;
+				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
+					// Existing offsets stay required (the sealed input
+					// contributed them) but their value broadens to
+					// include the unknown shape's iterable value — the
+					// unknown shape might overwrite the offset.
+					$offsetTypes[$key] = [
+						$hasOffsetValue,
+						TypeCombinator::union($offsetValueType, $iterableValue),
+					];
 				}
 			} else {
 				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
@@ -191,6 +224,35 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		$keyType = TypeCombinator::union(...$keyTypes);
 		if ($keyType instanceof NeverType) {
 			return new ConstantArrayType([], []);
+		}
+
+		// Non-constant unpack contributes an unknown shape: rebuild as
+		// an unsealed CAT — explicit keys (from sealed inputs) on the
+		// CAT side, the unknown shape's iterable key/value as the
+		// unsealed slot. More idiomatic than the
+		// `ArrayType ∩ HasOffsetValueType ∩ ...` form for the same
+		// result.
+		if ($nonConstantArrayWasUnpacked) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetType]) {
+				if (is_int($key) || $hasOffsetValue->no()) {
+					continue;
+				}
+				$builder->setOffsetValueType(new ConstantStringType((string) $key), $offsetType, !$hasOffsetValue->yes());
+			}
+			$builder->makeUnsealed(
+				TypeCombinator::union(...$unsealedKeyTypes),
+				TypeCombinator::union(...$unsealedValueTypes),
+			);
+			$arrayType = $builder->getArray();
+			if ($nonEmpty) {
+				$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			}
+			if ($isList) {
+				$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+			}
+
+			return $arrayType;
 		}
 
 		$arrayType = new ArrayType(

@@ -13,12 +13,14 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -346,15 +348,13 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($type->isNull()->yes()) {
-			return new ConstantBooleanType(false);
-		}
-
-		if ($type->isFalse()->yes()) {
-			return new ConstantBooleanType(false);
-		}
-
-		if ($type->isString()->yes() && $type->isNonEmptyString()->no()) {
+		$dominated = TypeCombinator::union(
+			new NullType(),
+			new ConstantBooleanType(false),
+			new ConstantStringType(''),
+			new ConstantArrayType([], []),
+		);
+		if ($dominated->isSuperTypeOf($type)->yes()) {
 			return new ConstantBooleanType(false);
 		}
 

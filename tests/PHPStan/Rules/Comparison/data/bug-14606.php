@@ -28,3 +28,16 @@ function nonFalsyStringLooseCompareNull(string $x): bool {
 function nonFalsyStringLooseCompareEmptyString(string $x): bool {
 	return $x == ''; // always false: non-falsy-string is non-empty
 }
+
+/** @param non-falsy-string $x */
+function nonFalsyStringLooseCompareEmptyArray(string $x): bool {
+	return $x == []; // always false
+}
+
+/**
+ * @param non-falsy-string $x
+ * @param null|false $nullOrFalse
+ */
+function nonFalsyStringLooseCompareNullOrFalse(string $x, $nullOrFalse): bool {
+	return $x == $nullOrFalse; // always false
+}

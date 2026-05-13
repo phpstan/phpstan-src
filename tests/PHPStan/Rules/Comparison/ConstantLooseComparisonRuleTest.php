@@ -266,6 +266,15 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				29,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Loose comparison using == between non-falsy-string and array{} will always evaluate to false.',
+				34,
+			],
+			[
+				'Loose comparison using == between non-falsy-string and false|null will always evaluate to false.',
+				42,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 

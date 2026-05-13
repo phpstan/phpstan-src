@@ -388,6 +388,11 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getDefaultBaseType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('uppercase-string');

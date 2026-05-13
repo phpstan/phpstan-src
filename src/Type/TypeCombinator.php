@@ -1731,6 +1731,19 @@ final class TypeCombinator
 			return $types[0];
 		}
 
+		$accessoryBaseTypes = [];
+		foreach ($types as $type) {
+			if (!$type instanceof AccessoryType) {
+				$accessoryBaseTypes = null;
+				break;
+			}
+			$accessoryBaseTypes[] = $type->getDefaultBaseType();
+		}
+		if ($accessoryBaseTypes !== null) {
+			// Accessory types never stand alone — supply the base type they refine.
+			return self::intersect(self::intersect(...$accessoryBaseTypes), ...$types);
+		}
+
 		return new IntersectionType($types);
 	}
 

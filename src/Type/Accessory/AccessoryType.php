@@ -55,4 +55,14 @@ use PHPStan\Type\Type;
 interface AccessoryType extends Type
 {
 
+	/**
+	 * Returns the base type this accessory refines.
+	 *
+	 * Used when an accessory would otherwise end up in an `IntersectionType`
+	 * without an explicit base type — the returned type provides that base.
+	 * For example `AccessoryNonEmptyStringType` returns `string`, array accessories
+	 * return `array`, and offset accessories return `array|ArrayAccess`.
+	 */
+	public function getDefaultBaseType(): Type;
+
 }

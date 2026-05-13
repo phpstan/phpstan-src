@@ -373,7 +373,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
-			return new IntersectionType([$this, new AccessoryNonFalsyStringType()]);
+			return new IntersectionType([new StringType(), $this, new AccessoryNonFalsyStringType()]);
 		}
 
 		return null;
@@ -390,6 +390,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function getFiniteTypes(): array
 	{
 		return [];
+	}
+
+	public function getDefaultBaseType(): Type
+	{
+		return new StringType();
 	}
 
 	public function toPhpDocNode(): TypeNode

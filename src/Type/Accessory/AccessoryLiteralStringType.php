@@ -383,6 +383,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getDefaultBaseType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('literal-string');

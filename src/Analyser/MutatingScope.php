@@ -65,6 +65,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -3165,10 +3166,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this->specifyExpressionType($expr, $newType, $newType, TrinaryLogic::createYes());
 		}
 
+		$newNativeType = TypeCombinator::intersect($type, $nativeType);
+		if ($newNativeType instanceof AccessoryType) {
+			$newNativeType = $nativeType;
+		}
+
 		return $this->specifyExpressionType(
 			$expr,
 			TypeCombinator::intersect($type, $originalExprType),
-			TypeCombinator::intersect($type, $nativeType),
+			$newNativeType,
 			TrinaryLogic::createYes(),
 		);
 	}

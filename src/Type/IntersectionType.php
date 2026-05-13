@@ -1889,6 +1889,10 @@ class IntersectionType implements CompoundType
 			return $describedTypes[0];
 		}
 
+		if (count($describedTypes) === 0) {
+			throw new ShouldNotHappenException(sprintf('Intersection consists of %s but there should be at least one base type.', implode('&', array_map(static fn (Type $type) => $type->describe(VerbosityLevel::precise()), $this->types))));
+		}
+
 		return new IntersectionTypeNode($describedTypes);
 	}
 

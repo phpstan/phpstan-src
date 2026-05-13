@@ -248,4 +248,34 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13098.php'], []);
 	}
 
+	public function testBug14606(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14606.php'], [
+			[
+				'Loose comparison using == between non-falsy-string and false will always evaluate to false.',
+				19,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between non-falsy-string and null will always evaluate to false.',
+				24,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				"Loose comparison using == between non-falsy-string and '' will always evaluate to false.",
+				29,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between non-falsy-string and array{} will always evaluate to false.',
+				34,
+			],
+			[
+				'Loose comparison using == between non-falsy-string and false|null will always evaluate to false.',
+				42,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

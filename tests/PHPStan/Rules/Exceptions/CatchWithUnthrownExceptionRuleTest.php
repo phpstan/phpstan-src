@@ -797,5 +797,4 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14569.php'], []);
 	}
 
-
 }

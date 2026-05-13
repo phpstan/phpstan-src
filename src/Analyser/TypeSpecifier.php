@@ -1383,11 +1383,14 @@ final class TypeSpecifier
 		if ($context->falsey() && $isConstantArray->yes()) {
 			$remainingSize = TypeCombinator::remove($type->getArraySize(), $sizeType);
 			if (!$remainingSize instanceof NeverType) {
+				$negatedContext = $context->false()
+					? TypeSpecifierContext::createTrue()
+					: TypeSpecifierContext::createTruthy();
 				$result = $this->specifyTypesForCountFuncCall(
 					$countFuncCall,
 					$type,
 					$remainingSize,
-					$context->negate(),
+					$negatedContext,
 					$scope,
 					$rootExpr,
 				);

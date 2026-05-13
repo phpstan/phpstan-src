@@ -9,6 +9,4 @@ use DateMalformedStringException;
 try {
 	DateInterval::createFromDateString('FAIL');
 } catch (DateMalformedIntervalStringException $e) {
-	var_dump($e::class);
-	var_dump($e instanceof DateMalformedStringException);
 }

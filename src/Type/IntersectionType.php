@@ -1873,6 +1873,10 @@ class IntersectionType implements CompoundType
 
 		$describedTypes = array_values($describedTypes);
 
+		if (count($describedTypes) === 0) {
+			return new IdentifierTypeNode('mixed');
+		}
+
 		if (count($describedTypes) === 1) {
 			return $describedTypes[0];
 		}

@@ -11,6 +11,7 @@ on:
       - 'src/**'
       - 'composer.lock'
       - 'apigen/**'
+      - '!apigen/infra/**'
       - '.github/workflows/apiref.yml'
 
 env:
@@ -64,16 +65,14 @@ jobs:
       - apigen
     if: github.repository_owner == 'phpstan'
     runs-on: "ubuntu-latest"
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
-
-      - name: "Install Node"
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "16"
 
       - name: "Download docs"
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -81,26 +80,23 @@ jobs:
           name: docs
           path: docs
 
-      - name: "Sync with S3"
-        uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83 # v0.5.1
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
         with:
-          args: --exclude '.git*/*' --follow-symlinks
-        env:
-          SOURCE_DIR: './docs'
-          DEST_DIR: ${{ github.ref_name }}
-          AWS_REGION: 'eu-west-1'
-          AWS_S3_BUCKET: "web-apiref.phpstan.org"
-          AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ vars.APIREF_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: "Sync with S3"
+        run: |
+          aws s3 sync ./docs "s3://${{ vars.APIREF_BUCKET }}/${{ github.ref_name }}" \
+            --exclude '.git*/*' \
+            --follow-symlinks
 
       - name: "Invalidate CloudFront"
-        uses: chetan/invalidate-cloudfront-action@12d242edc7752fca9140c2034be28792ad22c5a8 # v2.4.1
-        env:
-          DISTRIBUTION: "E37G1C2KWNAPBD"
-          PATHS: '/${{ github.ref_name }}/*'
-          AWS_REGION: 'eu-west-1'
-          AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.APIREF_DISTRIBUTION_ID }}" \
+            --paths "/${{ github.ref_name }}/*"
 
       - uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
         with:

@@ -1,0 +1,96 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "API Reference Infra"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/apiref-infra.yml'
+      - 'apigen/infra/**'
+  push:
+    branches:
+      - "2.2.x"
+    paths:
+      - '.github/workflows/apiref-infra.yml'
+      - 'apigen/infra/**'
+
+concurrency: apiref-infra
+
+jobs:
+  test:
+    name: "Test"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: "Install Node"
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apigen/infra/package-lock.json
+
+      - name: "Install dependencies"
+        working-directory: ./apigen/infra
+        run: "npm ci"
+
+      - name: "TypeScript check"
+        working-directory: ./apigen/infra
+        run: "npm run check"
+
+      - name: "Unit tests"
+        working-directory: ./apigen/infra
+        run: "npm test"
+
+      - name: "CDK synth"
+        working-directory: ./apigen/infra
+        run: "npx cdk synth --all --quiet"
+
+  deploy:
+    name: "Deploy"
+    runs-on: "ubuntu-latest"
+    needs: test
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/2.2.x'"
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: "Install Node"
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apigen/infra/package-lock.json
+
+      - name: "Install dependencies"
+        working-directory: ./apigen/infra
+        run: "npm ci"
+
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+        with:
+          role-to-assume: ${{ vars.APIREF_INFRA_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: "CDK deploy"
+        working-directory: ./apigen/infra
+        run: "npx cdk deploy --all --require-approval never"

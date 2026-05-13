@@ -1,0 +1,7 @@
+node_modules
+*.js
+!functions/*.js
+*.d.ts
+cdk.out
+.cdk.staging
+coverage

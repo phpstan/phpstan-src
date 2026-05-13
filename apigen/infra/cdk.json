@@ -1,0 +1,30 @@
+{
+	"app": "npx ts-node --prefer-ts-exts bin/infra.ts",
+	"watch": {
+		"include": ["**"],
+		"exclude": [
+			"README.md",
+			"cdk*.json",
+			"**/*.d.ts",
+			"**/*.js",
+			"tsconfig.json",
+			"package*.json",
+			"node_modules",
+			"test"
+		]
+	},
+	"context": {
+		"productionAlias": false,
+		"@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+		"@aws-cdk/core:checkSecretUsage": true,
+		"@aws-cdk/core:target-partitions": ["aws"],
+		"@aws-cdk/aws-iam:minimizePolicies": true,
+		"@aws-cdk/core:validateSnapshotRemovalPolicy": true,
+		"@aws-cdk/aws-s3:createDefaultLoggingPolicy": true,
+		"@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": true,
+		"@aws-cdk/aws-iam:standardizedServicePrincipals": true,
+		"@aws-cdk/aws-ec2:restrictDefaultSecurityGroup": true,
+		"@aws-cdk/core:includePrefixInUniqueNameGeneration": true,
+		"@aws-cdk/aws-lambda-nodejs:useLatestRuntimeVersion": true
+	}
+}

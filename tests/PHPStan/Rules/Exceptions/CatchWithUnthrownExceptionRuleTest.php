@@ -792,6 +792,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3.0')]
 	public function testBug14569(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14569.php'], []);

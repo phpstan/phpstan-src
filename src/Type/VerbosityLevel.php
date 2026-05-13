@@ -9,7 +9,12 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
@@ -158,6 +163,11 @@ final class VerbosityLevel
 				|| $type instanceof AccessoryNumericStringType
 				|| $type instanceof NonEmptyArrayType
 				|| $type instanceof AccessoryArrayListType
+				|| $type instanceof HasOffsetType
+				|| $type instanceof HasOffsetValueType
+				|| $type instanceof HasPropertyType
+				|| $type instanceof HasMethodType
+				|| $type instanceof OversizedArrayType
 			) {
 				$moreVerbose = true;
 				return $type;

@@ -4,6 +4,9 @@ namespace PHPStan\Type\Accessory;
 
 use Closure;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -332,7 +335,7 @@ class HasMethodType implements AccessoryType, CompoundType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode(''); // no PHPDoc representation
+		return new GenericTypeNode(new IdentifierTypeNode('hasMethod'), [new ConstTypeNode(new ConstExprStringNode($this->methodName, ConstExprStringNode::SINGLE_QUOTED))]);
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

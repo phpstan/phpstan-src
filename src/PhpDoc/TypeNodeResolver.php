@@ -53,7 +53,12 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -455,6 +460,9 @@ final class TypeNodeResolver
 					new AccessoryArrayListType(),
 				]);
 
+			case 'oversized-array':
+				return new OversizedArrayType();
+
 			case 'empty':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
 				if ($type !== null) {
@@ -821,6 +829,42 @@ final class TypeNodeResolver
 			if (count($genericTypes) === 1) {
 				$type = new NewObjectType($genericTypes[0]);
 				return $type->isResolvable() ? $type->resolve() : $type;
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'hasoffset') {
+			if (count($genericTypes) === 1) {
+				$offsetType = $this->resolveConstantStringOrInteger($genericTypes[0]);
+				if ($offsetType !== null) {
+					return new HasOffsetType($offsetType);
+				}
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'hasoffsetvalue') {
+			if (count($genericTypes) === 2) {
+				$offsetType = $this->resolveConstantStringOrInteger($genericTypes[0]);
+				if ($offsetType !== null) {
+					return new HasOffsetValueType($offsetType, $genericTypes[1]);
+				}
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'hasproperty') {
+			if (count($genericTypes) === 1) {
+				$constantStrings = $genericTypes[0]->getConstantStrings();
+				if (count($constantStrings) === 1) {
+					return new HasPropertyType($constantStrings[0]->getValue());
+				}
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'hasmethod') {
+			if (count($genericTypes) === 1) {
+				$constantStrings = $genericTypes[0]->getConstantStrings();
+				if (count($constantStrings) === 1) {
+					return new HasMethodType($constantStrings[0]->getValue());
+				}
 			}
 
 			return new ErrorType();
@@ -1390,6 +1434,21 @@ final class TypeNodeResolver
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
 		return $this->typeAliasResolverProvider->getTypeAliasResolver();
+	}
+
+	private function resolveConstantStringOrInteger(Type $type): ConstantStringType|ConstantIntegerType|null
+	{
+		$constantStrings = $type->getConstantStrings();
+		if (count($constantStrings) === 1) {
+			return $constantStrings[0];
+		}
+
+		$constantIntegers = TypeUtils::getConstantIntegers($type);
+		if (count($constantIntegers) === 1) {
+			return $constantIntegers[0];
+		}
+
+		return null;
 	}
 
 }

@@ -417,6 +417,10 @@ class IntersectionType implements CompoundType
 			$typeNames[] = 'list' . $innerType;
 		}
 
+		if ($typeNames === []) {
+			return $this->describeItself($level, false);
+		}
+
 		usort($typeNames, static function ($a, $b) {
 			$cmp = strcasecmp($a, $b);
 			if ($cmp !== 0) {
@@ -586,6 +590,10 @@ class IntersectionType implements CompoundType
 
 		foreach ($typesToDescribe as $i => $typeToDescribe) {
 			$describedTypes[$i] = $typeToDescribe->describe($level);
+		}
+
+		if ($describedTypes === [] && $skipAccessoryTypes) {
+			return $this->describeItself($level, false);
 		}
 
 		ksort($describedTypes);
@@ -1872,10 +1880,6 @@ class IntersectionType implements CompoundType
 		ksort($describedTypes);
 
 		$describedTypes = array_values($describedTypes);
-
-		if (count($describedTypes) === 0) {
-			return new IdentifierTypeNode('mixed');
-		}
 
 		if (count($describedTypes) === 1) {
 			return $describedTypes[0];

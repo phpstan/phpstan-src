@@ -506,7 +506,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode(''); // no PHPDoc representation
+		return new IdentifierTypeNode('oversized-array');
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

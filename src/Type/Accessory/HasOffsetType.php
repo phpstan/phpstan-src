@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
@@ -451,7 +452,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode(''); // no PHPDoc representation
+		return new GenericTypeNode(new IdentifierTypeNode('hasOffset'), [$this->offsetType->toPhpDocNode()]);
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

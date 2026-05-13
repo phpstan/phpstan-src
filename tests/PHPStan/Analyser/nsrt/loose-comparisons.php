@@ -561,10 +561,10 @@ class HelloWorld
 		assertType('bool', $nonFalsyString == $true);
 		assertType('false', $nonFalsyString == $false);
 		assertType('bool', $nonFalsyString == $one);
-		assertType('false', $nonFalsyString == $zero);
+		assertType('bool', $nonFalsyString == $zero);
 		assertType('bool', $nonFalsyString == $minusOne);
 		assertType('bool', $nonFalsyString == $oneStr);
-		assertType('false', $nonFalsyString == $zeroStr);
+		assertType('bool', $nonFalsyString == $zeroStr);
 		assertType('bool', $nonFalsyString == $minusOneStr);
 		assertType('bool', $nonFalsyString == $plusOneStr);
 		assertType('false', $nonFalsyString == $null);

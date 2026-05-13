@@ -20,7 +20,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -347,8 +346,15 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		$falseyTypes = StaticTypeFactory::falsey();
-		if ($falseyTypes->isSuperTypeOf($type)->yes()) {
+		if ($type->isNull()->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
+		if ($type->isFalse()->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
+		if ($type->isString()->yes() && $type->isNonEmptyString()->no()) {
 			return new ConstantBooleanType(false);
 		}
 

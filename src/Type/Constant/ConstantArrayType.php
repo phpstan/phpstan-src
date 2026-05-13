@@ -36,6 +36,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
@@ -52,6 +53,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StrictMixedType;
@@ -981,7 +983,17 @@ class ConstantArrayType implements Type
 	/** @return ConstantArrayTypeAndMethod[] */
 	private function doFindTypeAndMethodNames(bool &$hasNonExistentMethod = false): array
 	{
-		if (count($this->keyTypes) !== 2) {
+		$isUnsealed = $this->isUnsealed()->yes();
+
+		// Sealed: must have exactly the two callable slots, no more, no less.
+		// Unsealed: explicit keys may cover 0, 1, both, or neither — but any
+		// explicit key outside {0, 1} immediately disqualifies, because the
+		// callable shape `[classOrObject, method]` has no room for other
+		// keys.
+		if (!$isUnsealed && count($this->keyTypes) !== 2) {
+			return [];
+		}
+		if (count($this->keyTypes) > 2) {
 			return [];
 		}
 
@@ -993,11 +1005,47 @@ class ConstantArrayType implements Type
 				continue;
 			}
 
-			if (!$keyType->isSuperTypeOf(new ConstantIntegerType(1))->yes()) {
+			if ($keyType->isSuperTypeOf(new ConstantIntegerType(1))->yes()) {
+				$method = $this->valueTypes[$i];
 				continue;
 			}
 
-			$method = $this->valueTypes[$i];
+			// Explicit key is something other than 0 or 1 — not callable.
+			return [];
+		}
+
+		// Try to fill missing callable slots from the unsealed extras: an
+		// unsealed array `array{0: object, ...<int, string>}` *might* turn
+		// into a callable if the actual value carries a `1 => 'method'`
+		// extra. Require that the unsealed key range covers the missing
+		// slot and that the unsealed value type can overlap with the
+		// type required for that slot (object|class-string for key 0,
+		// non-falsy-string for key 1) — otherwise no concrete value of
+		// this CAT can ever be callable.
+		if ($isUnsealed && $this->unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+
+			if ($classOrObject === null) {
+				if ($unsealedKey->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
+					return [];
+				}
+				$expected = TypeCombinator::union(new ObjectWithoutClassType(), new ClassStringType());
+				if ($expected->isSuperTypeOf($unsealedValue)->no()) {
+					return [];
+				}
+				$classOrObject = $unsealedValue;
+			}
+
+			if ($method === null) {
+				if ($unsealedKey->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
+					return [];
+				}
+				$expected = TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType());
+				if ($expected->isSuperTypeOf($unsealedValue)->no()) {
+					return [];
+				}
+				$method = $unsealedValue;
+			}
 		}
 
 		if ($classOrObject === null || $method === null) {
@@ -1042,6 +1090,13 @@ class ConstantArrayType implements Type
 			}
 
 			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
+				$has = $has->and(TrinaryLogic::createMaybe());
+			}
+
+			// Unsealed: the actual value may carry extras beyond keys 0/1,
+			// which would void the callable shape. The CAT itself describes
+			// "zero or more extras", so callable-ness is uncertain.
+			if ($isUnsealed) {
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 

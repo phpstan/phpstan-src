@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -23,6 +24,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -1209,6 +1211,174 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			]),
 			TrinaryLogic::createYes(),
 		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ClassStringType(),
+				new StringType(),
+			]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ObjectWithoutClassType(),
+				new StringType(),
+			]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		$never = new NeverType(true);
+		$sealed = [$never, $never];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ObjectWithoutClassType(),
+				new StringType(),
+			], unsealed: $sealed),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ObjectWithoutClassType(),
+				new StringType(),
+			], unsealed: [new IntegerType(), new StringType()]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new GenericClassStringType(new ObjectType(Closure::class)),
+				new ConstantStringType('bind'),
+			], unsealed: [new IntegerType(), new StringType()]),
+			TrinaryLogic::createMaybe(), // extra keys would void the callable-ness
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0)
+			], [
+				new ObjectWithoutClassType(),
+			], unsealed: [new IntegerType(), new StringType()]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0)
+			], [
+				new ObjectWithoutClassType(),
+			], unsealed: $sealed),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0)
+			], [
+				new ObjectWithoutClassType(),
+			], unsealed: [IntegerRangeType::createAllGreaterThanOrEqualTo(2), new StringType()]),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0)
+			], [
+				new ObjectWithoutClassType(),
+			], unsealed: [new StringType(), new StringType()]),
+			TrinaryLogic::createNo(),
+		];
+
+		// Only key 0 explicit, value at key 1 from unsealed can never be
+		// a non-falsy-string (int → not a string at all).
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0)
+			], [
+				new ObjectWithoutClassType(),
+			], unsealed: [new IntegerType(), new IntegerType()]),
+			TrinaryLogic::createNo(),
+		];
+
+		// Only key 1 explicit, value at key 0 from unsealed must be
+		// object|class-string; int can never be that.
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(1)
+			], [
+				new ConstantStringType('bind'),
+			], unsealed: [new IntegerType(), new IntegerType()]),
+			TrinaryLogic::createNo(),
+		];
+
+		// Only key 1 explicit, value at key 0 from unsealed is a plain
+		// string — `string ∩ (object|class-string) = class-string`, so
+		// it could line up.
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(1)
+			], [
+				new ConstantStringType('bind'),
+			], unsealed: [new IntegerType(), new StringType()]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		// Sealed three-element array is never a callable (callable
+		// shape has exactly two slots).
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+			], [
+				new GenericClassStringType(new ObjectType(Closure::class)),
+				new ConstantStringType('bind'),
+				new ConstantStringType('extra'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		// Sealed two-element array with a stray non-callable key
+		// position is never a callable.
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(5),
+			], [
+				new GenericClassStringType(new ObjectType(Closure::class)),
+				new ConstantStringType('bind'),
+			]),
+			TrinaryLogic::createNo(),
+		];
+
+		// Fully open `array{...<mixed, mixed>}`: callable iff actual
+		// extras happen to land on `[0 => object|class-string,
+		// 1 => non-falsy-string]` — uncertain by construction.
+		yield [
+			new ConstantArrayType([], [], unsealed: [new MixedType(), new MixedType()]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		// Empty value, no explicit keys, sealed → empty array → No.
+		// (Already covered by the 'zero items' case above; included here
+		// as a foil for the open-shape variant.)
 	}
 
 	public static function dataValuesArray(): iterable

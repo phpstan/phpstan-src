@@ -83,7 +83,7 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14604.php'], [
 			[
-				'PHPDoc tag @var with type array{latitude: string, longitude: string} is not subtype of type array{from: non-falsy-string, to: non-falsy-string}.',
+				"PHPDoc tag @var with type array{latitude: string, longitude: string} is not subtype of native type hasOffset('from')&hasOffset('to').",
 				16,
 			],
 		]);

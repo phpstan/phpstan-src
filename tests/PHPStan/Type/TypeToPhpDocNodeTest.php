@@ -11,7 +11,12 @@ use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -423,6 +428,38 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			]),
 			'non-empty-array{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
+
+		yield [
+			new IntersectionType([
+				new HasOffsetType(new ConstantStringType('from')),
+				new HasOffsetType(new ConstantStringType('to')),
+			]),
+			"(hasOffset<'from'> & hasOffset<'to'>)",
+		];
+
+		yield [
+			new IntersectionType([
+				new ObjectWithoutClassType(),
+				new HasPropertyType('name'),
+			]),
+			"(object & hasProperty<'name'>)",
+		];
+
+		yield [
+			new IntersectionType([
+				new ObjectWithoutClassType(),
+				new HasMethodType('doFoo'),
+			]),
+			"(object & hasMethod<'doFoo'>)",
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new OversizedArrayType(),
+			]),
+			'(array & oversized-array)',
+		];
 	}
 
 	#[DataProvider('dataToPhpDocNode')]
@@ -456,6 +493,14 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 			]),
 			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetValueType(new ConstantStringType('key'), new IntegerType()),
+			]),
+			"(non-empty-array & hasOffsetValue<'key', int>)",
 		];
 
 		yield [

@@ -562,9 +562,11 @@ class HelloWorld
 		assertType('false', $nonFalsyString == $false);
 		assertType('bool', $nonFalsyString == $one);
 		assertType('bool', $nonFalsyString == $zero); // e.g. '0.0' == 0 is true (non-falsy numeric string compared numerically)
+		assertType('true', '0.0' == 0);
 		assertType('bool', $nonFalsyString == $minusOne);
 		assertType('bool', $nonFalsyString == $oneStr);
 		assertType('bool', $nonFalsyString == $zeroStr); // e.g. '0.0' == '0' is true (numeric strings compared numerically)
+		assertType('true', '0.0' == '0');
 		assertType('bool', $nonFalsyString == $minusOneStr);
 		assertType('bool', $nonFalsyString == $plusOneStr);
 		assertType('false', $nonFalsyString == $null);

@@ -61,3 +61,19 @@ function testWithDifferentKey(): void
 		$result = isset($_SESSION['other']);
 	}
 }
+
+/** @param array<mixed> $a */
+function testWithParam($a): void
+{
+	$value = 0;
+
+	if (isset($a['test'])) {
+		$value = rand(0,3);
+		if ($value == 1) {
+		}
+	}
+
+	if ($value == 0) {
+		$result = isset($a['test']);
+	}
+}

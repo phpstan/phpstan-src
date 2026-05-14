@@ -1604,6 +1604,36 @@ final class TypeSpecifier
 			)->setRootExpr($rootExpr));
 		}
 
+		if (
+			!$context->null()
+			&& ($exprNode instanceof Expr\Cast\Int_ || $exprNode instanceof Expr\Cast\Double)
+		) {
+			$innerExpr = $exprNode->expr;
+			$castTypes = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
+
+			$zeroType = $exprNode instanceof Expr\Cast\Int_
+				? new ConstantIntegerType(0)
+				: new ConstantFloatType(0.0);
+			$isZeroValue = $zeroType->isSuperTypeOf($constantType)->yes();
+
+			if ($isZeroValue && $context->false()) {
+				$producesZero = TypeCombinator::union(new NullType(), new ConstantBooleanType(false));
+				return $castTypes->unionWith(
+					$this->create($innerExpr, $producesZero, $context, $scope)->setRootExpr($rootExpr),
+				);
+			}
+
+			if (!$isZeroValue && $context->true()) {
+				return $castTypes->unionWith(
+					$this->create($innerExpr, new NullType(), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($rootExpr),
+				)->unionWith(
+					$this->create($innerExpr, new ConstantBooleanType(false), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($rootExpr),
+				);
+			}
+
+			return $castTypes;
+		}
+
 		return null;
 	}
 
@@ -1724,6 +1754,32 @@ final class TypeSpecifier
 					$scope,
 				)->setRootExpr($rootExpr);
 			}
+		}
+
+		if ($exprNode instanceof Expr\Cast\String_) {
+			$innerExpr = $exprNode->expr;
+			$castTypes = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
+
+			if ($constantStringValue === '') {
+				$producesEmpty = TypeCombinator::union(
+					new NullType(),
+					new ConstantBooleanType(false),
+					new ConstantStringType(''),
+				);
+				return $castTypes->unionWith(
+					$this->create($innerExpr, $producesEmpty, $context, $scope)->setRootExpr($rootExpr),
+				);
+			}
+
+			if ($context->true()) {
+				return $castTypes->unionWith(
+					$this->create($innerExpr, new NullType(), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($rootExpr),
+				)->unionWith(
+					$this->create($innerExpr, new ConstantBooleanType(false), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($rootExpr),
+				);
+			}
+
+			return $castTypes;
 		}
 
 		return null;
@@ -2858,7 +2914,20 @@ final class TypeSpecifier
 						new ConstantStringType(''),
 					];
 				}
-				return $this->create($exprNode, new UnionType($trueTypes), $context, $scope)->setRootExpr($expr);
+				$types = $this->create($exprNode, new UnionType($trueTypes), $context, $scope)->setRootExpr($expr);
+
+				if ($exprNode instanceof Expr\Cast\String_) {
+					$producesEmpty = TypeCombinator::union(
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantStringType(''),
+					);
+					$types = $types->unionWith(
+						$this->create($exprNode->expr, $producesEmpty, $context, $scope)->setRootExpr($expr),
+					);
+				}
+
+				return $types;
 			}
 
 			if (
@@ -2966,8 +3035,11 @@ final class TypeSpecifier
 		$leftExpr = $expr->left;
 		$rightExpr = $expr->right;
 
-		// Normalize to: fn() === expr
-		if ($rightExpr instanceof FuncCall && !$leftExpr instanceof FuncCall) {
+		// Normalize to: fn()/cast === expr
+		if (
+			($rightExpr instanceof FuncCall || $rightExpr instanceof Expr\Cast)
+			&& !($leftExpr instanceof FuncCall || $leftExpr instanceof Expr\Cast)
+		) {
 			$specifiedTypes = $this->resolveNormalizedIdentical(new Expr\BinaryOp\Identical(
 				$rightExpr,
 				$leftExpr,

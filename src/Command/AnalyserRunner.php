@@ -83,7 +83,7 @@ final class AnalyserRunner
 			if ($mainScript !== null && $schedule->getNumberOfProcesses() > 0) {
 				$loop = new StreamSelectLoop();
 				$result = null;
-				$promise = $this->parallelAnalyser->analyse($loop, $schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, null);
+				$promise = $this->parallelAnalyser->analyse($loop, $schedule, $allAnalysedFiles, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, null);
 				$promise->then(static function (AnalyserResult $tmp) use (&$result): void {
 					$result = $tmp;
 				});

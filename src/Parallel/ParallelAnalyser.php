@@ -27,6 +27,7 @@ use function array_sum;
 use function count;
 use function defined;
 use function escapeshellarg;
+use function fwrite;
 use function ini_get;
 use function max;
 use function memory_get_usage;
@@ -34,6 +35,7 @@ use function parse_url;
 use function sprintf;
 use function str_contains;
 use const PHP_URL_PORT;
+use const STDERR;
 
 #[AutowiredService]
 final class ParallelAnalyser
@@ -52,12 +54,15 @@ final class ParallelAnalyser
 		float $processTimeout,
 		#[AutowiredParameter(ref: '%parallel.buffer%')]
 		private int $decoderBufferSize,
+		private ForkParallelChecker $forkParallelChecker,
+		private WorkerRunner $workerRunner,
 	)
 	{
 		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
 	}
 
 	/**
+	 * @param string[] $allAnalysedFiles
 	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
 	 * @return PromiseInterface<AnalyserResult>
@@ -65,6 +70,7 @@ final class ParallelAnalyser
 	public function analyse(
 		LoopInterface $loop,
 		Schedule $schedule,
+		array $allAnalysedFiles,
 		string $mainScript,
 		?Closure $postFileCallback,
 		?string $projectConfigFile,
@@ -170,6 +176,11 @@ final class ParallelAnalyser
 			$this->processPool->quitAll();
 		};
 
+		$useFork = $this->forkParallelChecker->isSupported();
+		if ($useFork && $input->hasParameterOption(['-v', '-vv', '-vvv', '--verbose'], true)) {
+			fwrite(STDERR, "Note: using pcntl_fork() for parallel workers (experimental).\n");
+		}
+
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {
 				break;
@@ -191,10 +202,17 @@ final class ParallelAnalyser
 			}
 
 			$process = $this->createProcess(
+				$useFork,
 				$loop,
+				$server,
+				$serverPort,
+				$processIdentifier,
+				$allAnalysedFiles,
 				$mainScript,
 				$projectConfigFile,
 				$commandOptions,
+				$tmpFile,
+				$insteadOfFile,
 				$input,
 			);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
@@ -356,16 +374,38 @@ final class ParallelAnalyser
 	}
 
 	/**
+	 * @param string[] $allAnalysedFiles
 	 * @param string[] $commandOptions
 	 */
 	private function createProcess(
+		bool $useFork,
 		LoopInterface $loop,
+		TcpServer $server,
+		int $serverPort,
+		string $processIdentifier,
+		array $allAnalysedFiles,
 		string $mainScript,
 		?string $projectConfigFile,
 		array $commandOptions,
+		?string $tmpFile,
+		?string $insteadOfFile,
 		InputInterface $input,
 	): Process
 	{
+		if ($useFork) {
+			return new ForkedProcess(
+				$loop,
+				$this->processTimeout,
+				$this->workerRunner,
+				$server,
+				$serverPort,
+				$processIdentifier,
+				$allAnalysedFiles,
+				$tmpFile,
+				$insteadOfFile,
+			);
+		}
+
 		return new SpawnedProcess(ProcessHelper::getWorkerCommand(
 			$mainScript,
 			'worker',

@@ -212,6 +212,7 @@ final class FixerWorkerCommand extends Command
 				$loop,
 				$container,
 				$filesToAnalyse,
+				$inceptionFiles,
 				$configuration,
 				$input,
 				function (array $errors, array $locallyIgnoredErrors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
@@ -381,10 +382,11 @@ final class FixerWorkerCommand extends Command
 
 	/**
 	 * @param string[] $files
+	 * @param string[] $allAnalysedFiles
 	 * @param callable(list<Error>, list<Error>, string[]): void $onFileAnalysisHandler
 	 * @return PromiseInterface<AnalyserResult>
 	 */
-	private function runAnalyser(LoopInterface $loop, Container $container, array $files, ?string $configuration, InputInterface $input, callable $onFileAnalysisHandler): PromiseInterface
+	private function runAnalyser(LoopInterface $loop, Container $container, array $files, array $allAnalysedFiles, ?string $configuration, InputInterface $input, callable $onFileAnalysisHandler): PromiseInterface
 	{
 		/** @var ParallelAnalyser $parallelAnalyser */
 		$parallelAnalyser = $container->getByType(ParallelAnalyser::class);
@@ -423,6 +425,7 @@ final class FixerWorkerCommand extends Command
 		return $parallelAnalyser->analyse(
 			$loop,
 			$schedule,
+			$allAnalysedFiles,
 			$mainScript,
 			null,
 			$configuration,

@@ -840,7 +840,7 @@ final class AnalyseCommand extends Command
 		$fixerApplication = $container->getByType(FixerApplication::class);
 
 		return $fixerApplication->run(
-			$inceptionResult->getProjectConfigFile(),
+			$inceptionResult,
 			$input,
 			$output,
 			count($files),

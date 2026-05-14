@@ -59,15 +59,3 @@ npm run diff      # cdk diff --all (needs AWS creds for the target account)
 
 Changes merged to `2.2.x` under `apigen/infra/**` are deployed automatically by
 `.github/workflows/apiref-infra.yml`.
-
-## Cleanup runbook (legacy resources, when stable for ~1 week)
-
-The cutover from the legacy distribution is done; these legacy resources can be
-removed once the new stack has been stable for a sensible cooling-off period:
-
-- Delete CloudFront distribution `E37G1C2KWNAPBD` (disable, wait, delete).
-- Delete CloudFront Functions `apiref-phpstan-org-viewer-request` and `secure-headers-response` (the latter has no remaining users after `E37G1C2KWNAPBD` is gone).
-- Delete the legacy ACM cert `arn:aws:acm:us-east-1:928192134594:certificate/18f4edec-8bec-4f52-a02b-a9738053b817` once unreferenced.
-- Empty and delete S3 bucket `web-apiref.phpstan.org`.
-- Delete the `APIREF_AWS_ACCESS_KEY_ID` and `APIREF_AWS_SECRET_ACCESS_KEY` GitHub secrets.
-- (Optional follow-up) Migrate `update-playground-api.yml` and `update-playground-runner.yml` to OIDC — they're the last workflows in this repo still using `PLAYGROUND_RUNNER_AWS_*` static keys.

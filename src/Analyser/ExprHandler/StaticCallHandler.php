@@ -227,6 +227,18 @@ final class StaticCallHandler implements ExprHandler
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 		) {
 			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass());
+			$scope = $scope->invalidateAllMaybeImpureFunctionReturnValues();
+		} elseif (
+			$methodReflection !== null
+			&& (
+				(
+					!$methodReflection->isStatic()
+					&& $methodReflection->getName() === '__construct'
+				)
+				|| $methodReflection->hasSideEffects()->yes()
+			)
+		) {
+			$scope = $scope->invalidateAllMaybeImpureFunctionReturnValues();
 		} elseif (
 			$expr->class instanceof Name
 			&& $methodReflection !== null

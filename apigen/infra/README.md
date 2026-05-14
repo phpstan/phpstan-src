@@ -19,16 +19,33 @@ Region: `us-east-1` (required for CloudFront + ACM).
 
 ## The `productionAlias` flag
 
-Defined in `cdk.json` under `context`. Default `false`.
+Defined in `cdk.json` under `context`. Currently `true` — the distribution
+carries `apiref.phpstan.org` as its alias and uses the CDK-issued ACM cert.
 
-- `false`: distribution carries no aliases, no ACM cert attached (serves on the CF default `*.cloudfront.net` domain). First deploy succeeds while `apiref.phpstan.org` is still owned by the legacy distribution `E37G1C2KWNAPBD`.
-- `true`: distribution carries `apiref.phpstan.org` as its alias and uses the new ACM cert. Set after the manual cutover.
+It exists for the original cutover (it was `false` for the first deploy so the
+distribution could be created while the legacy `E37G1C2KWNAPBD` still owned the
+alias). It should stay `true`; only set it back to `false` if you ever need to
+detach the alias for a rebuild.
 
 ## Out-of-band resources
 
-The Route 53 record for `apiref.phpstan.org` is **not** managed by CDK. The
-cutover script UPSERTs the record (via raw `change-resource-record-sets`); CDK
-isn't aware of it. Same pattern as apex/www on the main site.
+The Route 53 records for `apiref.phpstan.org` are **not** managed by CDK — they
+were created directly via `change-resource-record-sets` during the cutover, and
+CloudFormation can't UPSERT records that already exist outside its state. If the
+distribution's CloudFront domain ever changes (e.g. a recreate), update the
+`apiref.phpstan.org` A/AAAA alias records by hand. Same pattern as apex/www on
+the main site.
+
+## GitHub repo variables
+
+Set under Settings → Secrets and variables → Actions → Variables in `phpstan/phpstan-src`:
+
+| Variable | Value | Used by |
+|---|---|---|
+| `APIREF_INFRA_DEPLOY_ROLE_ARN` | `InfraDeployRoleArn` output of `PhpstanApirefOidcRoles` | `apiref-infra.yml` |
+| `APIREF_DEPLOY_ROLE_ARN` | `DeployRoleArn` output of `PhpstanApirefWebsite` | `apiref.yml` |
+| `APIREF_BUCKET` | `phpstan-apiref-web` | `apiref.yml` |
+| `APIREF_DISTRIBUTION_ID` | `DistributionId` output of `PhpstanApirefWebsite` | `apiref.yml` |
 
 ## Local development
 
@@ -40,66 +57,13 @@ npm run synth     # cdk synth --all
 npm run diff      # cdk diff --all (needs AWS creds for the target account)
 ```
 
-## One-time bootstrap
+Changes merged to `2.2.x` under `apigen/infra/**` are deployed automatically by
+`.github/workflows/apiref-infra.yml`.
 
-The CDK bootstrap roles for the AWS account already exist (created by the
-phpstan-dist repo's CDK app). You only need to deploy the OIDC roles stack
-once, from a maintainer's laptop with admin AWS credentials:
+## Cleanup runbook (legacy resources, when stable for ~1 week)
 
-```sh
-npx cdk deploy PhpstanApirefOidcRoles
-```
-
-Note the `InfraDeployRoleArn` output and set the corresponding GitHub repo
-variable.
-
-## GitHub repo variables to set (in phpstan/phpstan-src)
-
-After the first deploys, set these under Settings → Secrets and variables → Actions → Variables:
-
-| Variable | Value | Used by |
-|---|---|---|
-| `APIREF_INFRA_DEPLOY_ROLE_ARN` | `InfraDeployRoleArn` output of `PhpstanApirefOidcRoles` | `apiref-infra.yml` |
-| `APIREF_DEPLOY_ROLE_ARN` | `DeployRoleArn` output of `PhpstanApirefWebsite` | `apiref.yml` |
-| `APIREF_BUCKET` | `phpstan-apiref-web` | `apiref.yml` |
-| `APIREF_DISTRIBUTION_ID` | `DistributionId` output of `PhpstanApirefWebsite` | `apiref.yml` |
-
-## Cutover runbook (legacy → new)
-
-This moves `apiref.phpstan.org` from the legacy distribution `E37G1C2KWNAPBD`
-to the new CDK-managed distribution. Expect ~5–10 min of intermittent 403s on
-`apiref.phpstan.org` while CloudFront edges propagate the alias swap.
-
-**Pre-cutover (with `productionAlias: false`):**
-
-1. Merge the PR that adds this `apigen/infra/` directory. `apiref-infra.yml` deploys both stacks.
-2. Copy bucket contents: `aws s3 sync s3://web-apiref.phpstan.org/ s3://phpstan-apiref-web/` (~334 MB / 13.5k objects).
-3. Smoke-test on the new distribution's CF domain (look up `DistributionDomain` output):
-   ```sh
-   D=$(aws cloudfront get-distribution --id <new-id> --query 'Distribution.DomainName' --output text)
-   curl -sI "https://$D/"                                          # 301 to /2.2.x/namespace-PHPStan.html
-   curl -sI "https://$D/2.2.x/namespace-PHPStan.html"              # 200
-   curl -sI "https://$D/1.9.x"                                     # 301 to /1.9.x/namespace-PHPStan.html
-   curl -sI "https://$D/" | grep -iE 'strict-transport|x-content-type|x-frame|referrer-policy|x-xss'
-   ```
-   Verify HSTS, XCTO, XFO=SAMEORIGIN, Referrer-Policy present; no X-XSS-Protection.
-
-**Cutover (with `productionAlias: true`):**
-
-The sequence (do Route 53 first — we learned the hard way on the main site that CloudFront's `AddAlias` does a DNS sanity check):
-
-1. UPSERT Route 53 `apiref.phpstan.org` CNAME → new distribution's CF domain.
-2. Wait for Route 53 INSYNC (~30–60s).
-3. Detach `apiref.phpstan.org` from `E37G1C2KWNAPBD` via `aws cloudfront update-distribution`.
-4. Add `apiref.phpstan.org` to the new distribution (retry every 20s if CloudFront's DNS-check cache is stale).
-5. Wait for new distribution `Deployed`.
-6. Smoke-test against `https://apiref.phpstan.org/`.
-
-Then merge the PR that flips `productionAlias: true` in `cdk.json`. The
-workflow's `cdk deploy` is a no-op for the alias (already attached by the
-script) and just syncs CFN state.
-
-## Cleanup runbook (when stable for ~1 week)
+The cutover from the legacy distribution is done; these legacy resources can be
+removed once the new stack has been stable for a sensible cooling-off period:
 
 - Delete CloudFront distribution `E37G1C2KWNAPBD` (disable, wait, delete).
 - Delete CloudFront Functions `apiref-phpstan-org-viewer-request` and `secure-headers-response` (the latter has no remaining users after `E37G1C2KWNAPBD` is gone).

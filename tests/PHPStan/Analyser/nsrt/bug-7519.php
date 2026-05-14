@@ -41,8 +41,8 @@ function doFoo() {
 
 	$iterator = new FooFilterIterator($generator());
 
-	assertType('array{}|bool|stdClass', $iterator->key());
-	assertType('array{}|bool|stdClass', $iterator->current());
+	assertType('array{}|bool|stdClass|null', $iterator->key());
+	assertType('array{}|bool|stdClass|null', $iterator->current());
 
 	$generator = static function (): Generator {
 		yield true => true;
@@ -51,6 +51,6 @@ function doFoo() {
 
 	$iterator = new FooFilterIterator($generator());
 
-	assertType('bool', $iterator->key());
-	assertType('bool', $iterator->current());
+	assertType('bool|null', $iterator->key());
+	assertType('bool|null', $iterator->current());
 }

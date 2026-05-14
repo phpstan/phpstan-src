@@ -43,6 +43,12 @@ interface Iterator extends Traversable
 	 */
 	public function key();
 
+	/**
+	 * @phpstan-assert-if-true !null $this->current()
+	 * @phpstan-assert-if-true !null $this->key()
+	 */
+	public function valid(): bool;
+
 }
 
 /**

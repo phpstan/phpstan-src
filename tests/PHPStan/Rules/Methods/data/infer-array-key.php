@@ -17,7 +17,7 @@ class Foo implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('(int|string)', $it->key());
+		assertType('int|string|null', $it->key());
 
 		return $it;
 	}
@@ -37,7 +37,7 @@ class Bar implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('int', $it->key());
+		assertType('int|null', $it->key());
 
 		return $it;
 	}
@@ -57,7 +57,7 @@ class Baz implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('string', $it->key());
+		assertType('string|null', $it->key());
 
 		return $it;
 	}
@@ -77,7 +77,7 @@ class Lorem implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('(int|string)', $it->key());
+		assertType('int|string|null', $it->key());
 
 		return $it;
 	}
@@ -97,7 +97,7 @@ class Ipsum implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('int|string', $it->key());
+		assertType('int|string|null', $it->key());
 
 		return $it;
 	}

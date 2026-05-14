@@ -1645,6 +1645,42 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new UnionType([
+						new ConstantIntegerType(0),
+						IntegerRangeType::fromInterval(2, 3),
+					]),
+					new ConstantIntegerType(1),
+				],
+				IntegerRangeType::class,
+				'int<0, 3>',
+			],
+			[
+				[
+					new ConstantIntegerType(1),
+					new UnionType([
+						new ConstantIntegerType(0),
+						IntegerRangeType::fromInterval(2, 3),
+					]),
+				],
+				IntegerRangeType::class,
+				'int<0, 3>',
+			],
+			[
+				[
+					new UnionType([
+						new ConstantIntegerType(0),
+						IntegerRangeType::fromInterval(2, 3),
+					]),
+					new UnionType([
+						new ConstantIntegerType(10),
+						new ConstantIntegerType(1),
+					]),
+				],
+				UnionType::class,
+				'10|int<0, 3>',
+			],
+			[
+				[
 					new MixedType(),
 					new MixedType(),
 				],

@@ -354,8 +354,9 @@ final class TypeCombinator
 					[$a, $b] = $compareResult;
 					if ($a !== null) {
 						$types[$i] = $a;
-						array_splice($scalarTypeItems, $j--, 1);
+						array_splice($scalarTypeItems, $j, 1);
 						$scalarTypeItemsCount--;
+						$j = -1;
 						continue 1;
 					}
 					if ($b !== null) {

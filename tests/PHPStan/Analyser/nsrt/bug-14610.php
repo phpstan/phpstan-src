@@ -18,23 +18,51 @@ function test(): void
 
 	if ($value == 0) {
 		assertType('array<mixed>', $_SESSION);
+		$result = isset($_SESSION['test']); // should not be reported as always exists
 	}
 }
 
-/** @param array<mixed> $a */
-function testWithParam($a): void
+function testWithOtherSuperglobals(): void
 {
 	$value = 0;
 
-	if (isset($a['test'])) {
+	if (isset($_GET['key'])) {
 		$value = rand(0,3);
 		if ($value == 1) {
 		}
 	}
 
-	assertType('int<0, 3>', $value);
+	if ($value == 0) {
+		$result = isset($_GET['key']);
+	}
+}
+
+function testWithStrictComparison(): void
+{
+	$value = 0;
+
+	if (isset($_SESSION['test'])) {
+		$value = rand(0,3);
+		if ($value === 1) {
+		}
+	}
+
+	if ($value === 0) {
+		$result = isset($_SESSION['test']);
+	}
+}
+
+function testWithDifferentKey(): void
+{
+	$value = 0;
+
+	if (isset($_SESSION['test'])) {
+		$value = rand(0,3);
+		if ($value == 1) {
+		}
+	}
 
 	if ($value == 0) {
-		assertType('array<mixed>', $a);
+		$result = isset($_SESSION['other']);
 	}
 }

@@ -578,7 +578,7 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 
-		$this->analyse([__DIR__ . '/data/bug-14610.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14610.php'], []);
 	}
 
 }

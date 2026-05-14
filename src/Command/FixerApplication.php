@@ -28,6 +28,7 @@ use PHPStan\Process\ProcessCanceledException;
 use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
+use PHPStan\Process\SpawnedProcessPromise;
 use PHPStan\ShouldNotHappenException;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
@@ -446,16 +447,7 @@ final class FixerApplication
 			});
 		});
 
-		$process = new ProcessPromise($loop, ProcessHelper::getWorkerCommand(
-			$mainScript,
-			'fixer:worker',
-			$projectConfigFile,
-			[
-				'--server-port',
-				(string) $serverPort,
-			],
-			$input,
-		));
+		$process = $this->createProcessPromise($loop, $mainScript, $projectConfigFile, $input, $serverPort);
 		$this->processInProgress = $process->run();
 
 		$this->processInProgress->then(function () use ($server): void {
@@ -564,6 +556,29 @@ final class FixerApplication
 		}
 
 		return $stubFiles;
+	}
+
+	/**
+	 * @param int<0, 65535> $serverPort
+	 */
+	private function createProcessPromise(
+		LoopInterface $loop,
+		string $mainScript,
+		?string $projectConfigFile,
+		InputInterface $input,
+		int $serverPort,
+	): ProcessPromise
+	{
+		return new SpawnedProcessPromise($loop, ProcessHelper::getWorkerCommand(
+			$mainScript,
+			'fixer:worker',
+			$projectConfigFile,
+			[
+				'--server-port',
+				(string) $serverPort,
+			],
+			$input,
+		));
 	}
 
 }

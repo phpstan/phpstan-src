@@ -574,4 +574,11 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14610(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14610.php'], []);
+	}
+
 }

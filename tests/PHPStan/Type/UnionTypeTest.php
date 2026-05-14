@@ -129,7 +129,7 @@ class UnionTypeTest extends PHPStanTestCase
 		yield [new HasPropertyType('foo')];
 		yield [IntegerRangeType::fromInterval(3, 10)];
 		yield [$integerType];
-		yield [new IntersectionType([new HasMethodType('Foo'), new HasPropertyType('bar')])];
+		yield [new IntersectionType([new ObjectWithoutClassType(), new HasMethodType('Foo'), new HasPropertyType('bar')])];
 		yield [new IterableType($integerType, $stringType)];
 		yield [$mixedType];
 		yield [new NeverType()];

@@ -172,6 +172,7 @@ class HasMethodTypeTest extends PHPStanTestCase
 			[
 				new HasMethodType('foo'),
 				new IntersectionType([
+					new ObjectWithoutClassType(),
 					new HasMethodType('foo'),
 					new HasMethodType('bar'),
 				]),

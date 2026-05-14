@@ -394,6 +394,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getDefaultBaseType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('non-falsy-string');

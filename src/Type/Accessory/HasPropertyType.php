@@ -15,6 +15,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
@@ -306,6 +307,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 	public function getFiniteTypes(): array
 	{
 		return [];
+	}
+
+	public function getDefaultBaseType(): Type
+	{
+		return new ObjectWithoutClassType();
 	}
 
 	public function toPhpDocNode(): TypeNode

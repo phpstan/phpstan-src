@@ -397,6 +397,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getDefaultBaseType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('non-empty-string');

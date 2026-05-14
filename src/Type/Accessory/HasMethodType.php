@@ -22,6 +22,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
@@ -328,6 +329,11 @@ class HasMethodType implements AccessoryType, CompoundType
 	public function getFiniteTypes(): array
 	{
 		return [];
+	}
+
+	public function getDefaultBaseType(): Type
+	{
+		return new ObjectWithoutClassType();
 	}
 
 	public function toPhpDocNode(): TypeNode

@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -535,6 +536,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	public function getFiniteTypes(): array
 	{
 		return [];
+	}
+
+	public function getDefaultBaseType(): Type
+	{
+		return new ArrayType(new MixedType(), new MixedType());
 	}
 
 	public function toPhpDocNode(): TypeNode

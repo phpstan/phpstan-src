@@ -138,6 +138,7 @@ class HasPropertyTypeTest extends PHPStanTestCase
 			[
 				new HasPropertyType('foo'),
 				new IntersectionType([
+					new ObjectWithoutClassType(),
 					new HasPropertyType('foo'),
 					new HasPropertyType('bar'),
 				]),

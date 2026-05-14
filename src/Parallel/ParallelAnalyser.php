@@ -190,13 +190,13 @@ final class ParallelAnalyser
 				$commandOptions[] = escapeshellarg($insteadOfFile);
 			}
 
-			$process = new Process(ProcessHelper::getWorkerCommand(
+			$process = $this->createProcess(
+				$loop,
 				$mainScript,
-				'worker',
 				$projectConfigFile,
 				$commandOptions,
 				$input,
-			), $loop, $this->processTimeout);
+			);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
@@ -353,6 +353,26 @@ final class ParallelAnalyser
 		}
 
 		return $deferred->promise();
+	}
+
+	/**
+	 * @param string[] $commandOptions
+	 */
+	private function createProcess(
+		LoopInterface $loop,
+		string $mainScript,
+		?string $projectConfigFile,
+		array $commandOptions,
+		InputInterface $input,
+	): Process
+	{
+		return new SpawnedProcess(ProcessHelper::getWorkerCommand(
+			$mainScript,
+			'worker',
+			$projectConfigFile,
+			$commandOptions,
+			$input,
+		), $loop, $this->processTimeout);
 	}
 
 }

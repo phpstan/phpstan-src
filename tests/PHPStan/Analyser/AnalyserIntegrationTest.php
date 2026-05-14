@@ -220,6 +220,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14604(): void
 	{
 		// crash

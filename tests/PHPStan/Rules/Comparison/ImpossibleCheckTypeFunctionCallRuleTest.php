@@ -1230,4 +1230,27 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8217.php'], []);
 	}
 
+	public function testBug6211(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-6211.php'], [
+			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				34,
+			],
+			[
+				'Call to function method_exists() with \'Bug6211\\\\Hell\' and \'test\' will always evaluate to true.',
+				39,
+			],
+			[
+				'Call to function method_exists() with Bug6211\Bar and \'realMethod\' will always evaluate to true.',
+				62,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				87,
+			],
+		]);
+	}
+
 }

@@ -211,7 +211,18 @@ final class ImpossibleCheckTypeHelper
 
 						if ($objectType->getObjectClassNames() !== []) {
 							if ($objectType->hasMethod($methodType->getValue())->yes()) {
-								return true;
+								$hasNonNativeMethod = false;
+								foreach ($objectType->getObjectClassReflections() as $classReflection) {
+									if (!$classReflection->hasNativeMethod($methodType->getValue())) {
+										$hasNonNativeMethod = true;
+										break;
+									}
+								}
+								if (!$hasNonNativeMethod) {
+									return true;
+								}
+
+								return null;
 							}
 
 							if ($objectType->hasMethod($methodType->getValue())->no()) {
@@ -230,11 +241,18 @@ final class ImpossibleCheckTypeHelper
 						});
 
 						if ($genericType instanceof TypeWithClassName) {
+							$classReflection = $genericType->getClassReflection();
 							if ($genericType->hasMethod($methodType->getValue())->yes()) {
-								return true;
+								if (
+									$classReflection !== null
+									&& $classReflection->hasNativeMethod($methodType->getValue())
+								) {
+									return true;
+								}
+
+								return null;
 							}
 
-							$classReflection = $genericType->getClassReflection();
 							if (
 								$classReflection !== null
 								&& $classReflection->isFinal()

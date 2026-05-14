@@ -61,6 +61,13 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			);
 		}
 
+		$funcCallSpec = $this->typeSpecifier->create(
+			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
+			new ConstantBooleanType(true),
+			$context,
+			$scope,
+		);
+
 		$objectType = $scope->getType($args[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
@@ -72,7 +79,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 					]),
 					$context,
 					$scope,
-				);
+				)->unionWith($funcCallSpec);
 			}
 
 			return new SpecifiedTypes([], []);
@@ -89,7 +96,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			]),
 			$context,
 			$scope,
-		);
+		)->unionWith($funcCallSpec);
 	}
 
 }

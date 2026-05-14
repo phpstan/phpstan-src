@@ -205,6 +205,10 @@ final class ImpossibleCheckTypeHelper
 					$methodType = $this->treatPhpDocTypesAsCertain ? $scope->getType($methodArg) : $scope->getNativeType($methodArg);
 
 					if ($methodType instanceof ConstantStringType) {
+						if ($scope->hasExpressionType($node)->yes()) {
+							return true;
+						}
+
 						if ($objectType instanceof ConstantStringType) {
 							$objectType = new ObjectType($objectType->getValue());
 						}

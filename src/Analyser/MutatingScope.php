@@ -980,6 +980,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& !$node instanceof Expr\Closure
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
+			&& !$this->expressionTypes[$exprString]->isTrackingOnly()
 		) {
 			return $this->expressionTypes[$exprString]->getType();
 		}
@@ -1308,6 +1309,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return TrinaryLogic::createNo();
 		}
 		return $this->expressionTypes[$exprString]->getCertainty();
+	}
+
+	public function isExpressionTrackingOnly(Expr $node): bool
+	{
+		$exprString = $this->getNodeKey($node);
+		if (!isset($this->expressionTypes[$exprString])) {
+			return false;
+		}
+		return $this->expressionTypes[$exprString]->isTrackingOnly();
 	}
 
 	/**
@@ -4205,12 +4215,35 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$generalizedExpressions = [];
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
+			$invalidatedByGeneralization = false;
 			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
 				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
 					continue;
 				}
 
-				continue 2;
+				$invalidatedByGeneralization = true;
+				break;
+			}
+
+			if ($invalidatedByGeneralization) {
+				$expr = $variableTypeHolder->getExpr();
+				if (
+					$expr instanceof Expr\ArrayDimFetch
+					&& $expr->dim !== null
+					&& $variableTypeHolder->getCertainty()->yes()
+					&& isset($otherVariableTypeHolders[$variableExprString])
+					&& $otherVariableTypeHolders[$variableExprString]->getCertainty()->yes()
+				) {
+					$newVariableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
+						$expr,
+						$variableTypeHolder->getType(),
+						$variableTypeHolder->getCertainty(),
+						true,
+					);
+					continue;
+				}
+
+				continue;
 			}
 			if (!isset($otherVariableTypeHolders[$variableExprString])) {
 				$newVariableTypeHolders[$variableExprString] = $variableTypeHolder;
@@ -4227,6 +4260,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$variableTypeHolder->getExpr(),
 				$generalizedType,
 				$variableTypeHolder->getCertainty(),
+				$variableTypeHolder->isTrackingOnly(),
 			);
 		}
 

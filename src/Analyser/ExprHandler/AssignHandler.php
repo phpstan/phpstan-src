@@ -540,6 +540,7 @@ final class AssignHandler implements ExprHandler
 					$var === $originalVar
 					&& $var->dim !== null
 					&& $scope->hasExpressionType($var)->yes()
+					&& !$scope->isExpressionTrackingOnly($var)
 				) {
 					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
 						$varForSetOffsetValue,
@@ -1408,7 +1409,7 @@ final class AssignHandler implements ExprHandler
 	 *
 	 * @return array{Type, list<array{Expr, Type}>}
 	 */
-	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope): array
+	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, MutatingScope $scope): array
 	{
 		$originalValueToWrite = $valueToWrite;
 
@@ -1426,13 +1427,13 @@ final class AssignHandler implements ExprHandler
 				} else {
 					$has = $offsetValueType->hasOffsetValueType($offsetType);
 					if ($has->yes()) {
-						if ($scope->hasExpressionType($dimFetch)->yes()) {
+						if ($scope->hasExpressionType($dimFetch)->yes() && !$scope->isExpressionTrackingOnly($dimFetch)) {
 							$offsetValueType = $scope->getType($dimFetch);
 						} else {
 							$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 						}
 					} elseif ($has->maybe()) {
-						if ($scope->hasExpressionType($dimFetch)->yes()) {
+						if ($scope->hasExpressionType($dimFetch)->yes() && !$scope->isExpressionTrackingOnly($dimFetch)) {
 							$generalizeOnWrite = false;
 							$offsetValueType = $scope->getType($dimFetch);
 						} else {
@@ -1469,6 +1470,7 @@ final class AssignHandler implements ExprHandler
 				$offsetType !== null
 				&& $arrayDimFetch !== null
 				&& $scope->hasExpressionType($arrayDimFetch)->yes()
+				&& !$scope->isExpressionTrackingOnly($arrayDimFetch)
 				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
 			) {
 				$hasOffsetType = null;

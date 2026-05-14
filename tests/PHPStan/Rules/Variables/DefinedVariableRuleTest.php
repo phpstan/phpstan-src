@@ -1571,4 +1571,23 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug6833(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-6833.php'], [
+			[
+				'Variable $file might not be defined.',
+				65,
+			],
+			[
+				'Variable $file might not be defined.',
+				91,
+			],
+		]);
+	}
+
 }

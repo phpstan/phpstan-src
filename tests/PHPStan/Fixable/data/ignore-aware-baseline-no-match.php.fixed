@@ -1,0 +1,6 @@
+<?php
+
+function () {
+	echo $aa;
+	echo $bb;
+};

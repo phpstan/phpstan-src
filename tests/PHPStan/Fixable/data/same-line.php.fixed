@@ -1,0 +1,6 @@
+<?php
+
+function () {
+	echo $aa + $bb;
+	echo $fooo($barr, $bazz);
+};

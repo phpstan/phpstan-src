@@ -4,16 +4,18 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
-use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\CloningVisitor;
+use PhpParser\NodeVisitorAbstract;
 use PhpParser\Parser;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileReader;
+use PHPStan\Fixable\BatchReplacingNodeVisitor;
+use PHPStan\Fixable\FixIgnorePolicy;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
-use PHPStan\Fixable\ReplacingNodeVisitor;
+use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
@@ -26,8 +28,14 @@ use PHPStan\Rules\TipRuleError;
 use PHPStan\ShouldNotHappenException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use function array_filter;
+use function array_slice;
+use function array_values;
+use function count;
 use function get_class;
 use function hash;
+use function implode;
+use function spl_object_id;
 use function str_contains;
 use function str_repeat;
 
@@ -40,20 +48,20 @@ final class RuleErrorTransformer
 	public function __construct(
 		#[AutowiredParameter(ref: '@currentPhpVersionPhpParser')]
 		private Parser $parser,
+		private DeepNodeCloner $deepNodeCloner,
 	)
 	{
 		$this->differ = new Differ(new UnifiedDiffOutputBuilder('', addLineNumbers: true));
 	}
 
 	/**
-	 * @param Node\Stmt[] $fileNodes
+	 * @return array{Error, PendingFix|null}
 	 */
-	public function transform(
+	public function transformPreserveFixable(
 		RuleError $ruleError,
 		Scope $scope,
-		array $fileNodes,
 		Node $node,
-	): Error
+	): array
 	{
 		$line = $node->getStartLine();
 		$canBeIgnored = true;
@@ -101,56 +109,8 @@ final class RuleErrorTransformer
 			$canBeIgnored = false;
 		}
 
-		$fixedErrorDiff = null;
-		if ($ruleError instanceof FixableNodeRuleError) {
-			if ($ruleError->getOriginalNode() instanceof VirtualNode) {
-				throw new ShouldNotHappenException('Cannot fix virtual node');
-			}
-			$fixingFile = $filePath;
-			if ($traitFilePath !== null) {
-				$fixingFile = $traitFilePath;
-			}
-
-			$oldCode = FileReader::read($fixingFile);
-
-			$this->parser->parse($oldCode);
-			$hash = hash('sha256', $oldCode);
-			$oldTokens = $this->parser->getTokens();
-
-			$indentTraverser = new NodeTraverser();
-			$indentDetector = new PhpPrinterIndentationDetectorVisitor(new TokenStream($oldTokens, PhpPrinter::TAB_WIDTH));
-			$indentTraverser->addVisitor($indentDetector);
-			$indentTraverser->traverse($fileNodes);
-
-			$cloningTraverser = new NodeTraverser();
-			$cloningTraverser->addVisitor(new CloningVisitor());
-
-			/** @var Stmt[] $newStmts */
-			$newStmts = $cloningTraverser->traverse($fileNodes);
-
-			$traverser = new NodeTraverser();
-			$visitor = new ReplacingNodeVisitor($ruleError->getOriginalNode(), $ruleError->getNewNodeCallable());
-			$traverser->addVisitor($visitor);
-
-			/** @var Stmt[] $newStmts */
-			$newStmts = $traverser->traverse($newStmts);
-
-			if ($visitor->isFound()) {
-				if (str_contains($indentDetector->indentCharacter, "\t")) {
-					$indent = "\t";
-				} else {
-					$indent = str_repeat($indentDetector->indentCharacter, $indentDetector->indentSize);
-				}
-				$printer = new PhpPrinter(['indent' => $indent]);
-				$newCode = $printer->printFormatPreserving($newStmts, $fileNodes, $oldTokens);
-
-				if ($oldCode !== $newCode) {
-					$fixedErrorDiff = new FixedErrorDiff($hash, $this->differ->diff($oldCode, $newCode));
-				}
-			}
-		}
-
-		return new Error(
+		$wasFixable = $ruleError instanceof FixableNodeRuleError;
+		$error = new Error(
 			$ruleError->getMessage(),
 			$fileName,
 			$line,
@@ -162,8 +122,216 @@ final class RuleErrorTransformer
 			get_class($node),
 			$identifier,
 			$metadata,
-			$fixedErrorDiff,
+			wasFixable: $wasFixable,
 		);
+
+		$pendingFix = null;
+		if ($wasFixable) {
+			if ($ruleError->getOriginalNode() instanceof VirtualNode) {
+				throw new ShouldNotHappenException('Cannot fix virtual node');
+			}
+
+			if ($scope->isInTrait() && !$scope->isInClass()) {
+				$error = $error->withAppendedTip(
+					'Auto-fix skipped: this trait has no consumer in the analysed code, '
+					. 'so the fix cannot be validated against the contexts it would run in. '
+					. 'Resolve manually.',
+				);
+
+				return [$error, null];
+			}
+
+			$fixingFile = $traitFilePath ?? $filePath;
+
+			$originalNode = $ruleError->getOriginalNode();
+			$clone = $this->deepNodeCloner->cloneNode($originalNode);
+			$newNode = ($ruleError->getNewNodeCallable())($clone);
+			if ($newNode instanceof VirtualNode) {
+				throw new ShouldNotHappenException('Cannot print VirtualNode.');
+			}
+
+			$consumerClass = null;
+			if ($scope->isInTrait() && $scope->isInClass()) {
+				$consumerClass = $scope->getClassReflection()->getName();
+			}
+
+			$pendingFix = new PendingFix(
+				$error,
+				$originalNode,
+				static fn (Node $clonedNode): Node => $newNode,
+				$fixingFile,
+				$consumerClass,
+			);
+		}
+
+		return [$error, $pendingFix];
+	}
+
+	/**
+	 * @param array<string, list<PendingFix>> $pendingFixesByFile
+	 * @param array<string, Node\Stmt[]> $parserNodesByFile
+	 */
+	public function finalizePendingFixes(
+		array $pendingFixesByFile,
+		array $parserNodesByFile,
+		?FixIgnorePolicy $policy = null,
+	): FinalizedPendingFixes
+	{
+		$fixesByFixingFile = [];
+		$skipReasonByErrorId = [];
+
+		foreach ($pendingFixesByFile as $filePath => $pendingFixes) {
+			if ($pendingFixes === []) {
+				continue;
+			}
+
+			$fileNodes = $parserNodesByFile[$filePath] ?? null;
+			if ($fileNodes === null) {
+				continue;
+			}
+
+			if ($policy !== null) {
+				$pendingFixes = array_values(array_filter(
+					$pendingFixes,
+					static fn (PendingFix $fix): bool => !$policy->shouldDrop($fix->error),
+				));
+				if ($pendingFixes === []) {
+					continue;
+				}
+			}
+
+			$batchFixes = [];
+			foreach ($pendingFixes as $pendingFix) {
+				$batchFixes[] = [
+					'node' => $pendingFix->originalNode,
+					'callable' => $pendingFix->newNodeCallable,
+					'consumerClass' => $pendingFix->consumerClass,
+				];
+			}
+			$replacing = new BatchReplacingNodeVisitor($batchFixes);
+
+			$diff = $this->buildDiffFromVisitor($filePath, $fileNodes, $replacing);
+
+			$appliedSet = [];
+			foreach ($replacing->getAppliedOriginalNodes() as $applied) {
+				$appliedSet[spl_object_id($applied)] = true;
+			}
+
+			$conflictClusters = $replacing->getConflictClustersByOriginalNodeId();
+
+			$errorRefs = [];
+			foreach ($pendingFixes as $pendingFix) {
+				$nodeId = spl_object_id($pendingFix->originalNode);
+				if (isset($appliedSet[$nodeId])) {
+					if ($diff !== null) {
+						$errorRefs[] = [
+							'line' => $pendingFix->error->getLine() ?? 0,
+							'identifier' => $pendingFix->error->getIdentifier(),
+						];
+					}
+					continue;
+				}
+
+				if (!isset($conflictClusters[$nodeId])) {
+					continue;
+				}
+
+				$skipReasonByErrorId[spl_object_id($pendingFix->error)]
+					= self::formatConflictReport($conflictClusters[$nodeId]);
+			}
+
+			if ($diff === null || $errorRefs === []) {
+				continue;
+			}
+
+			$fixesByFixingFile[$filePath] = new FileFix($diff, $errorRefs);
+		}
+
+		return new FinalizedPendingFixes($fixesByFixingFile, $skipReasonByErrorId);
+	}
+
+	/**
+	 * @param array<string, list<string|null>> $clusters
+	 */
+	private static function formatConflictReport(array $clusters): string
+	{
+		$groups = [];
+		foreach ($clusters as $consumers) {
+			$names = [];
+			foreach ($consumers as $consumer) {
+				$names[] = $consumer ?? '<file-level>';
+			}
+			$groups[] = self::joinClassList($names);
+		}
+
+		$differs = $groups[0];
+		for ($i = 1; $i < count($groups); $i++) {
+			$differs .= ' differs from fix in ' . $groups[$i];
+		}
+
+		return 'Auto-fix skipped: trait consumers proposed conflicting rewrites. Fix in context of '
+			. $differs . '.';
+	}
+
+	/**
+	 * @param list<string> $names
+	 */
+	private static function joinClassList(array $names): string
+	{
+		$count = count($names);
+		$noun = $count === 1 ? 'class' : 'classes';
+		if ($count <= 1) {
+			return $noun . ' ' . ($names[0] ?? '');
+		}
+		if ($count === 2) {
+			return $noun . ' ' . $names[0] . ' and ' . $names[1];
+		}
+		$last = $names[$count - 1];
+		$head = array_slice($names, 0, $count - 1);
+
+		return $noun . ' ' . implode(', ', $head) . ', and ' . $last;
+	}
+
+	/**
+	 * @param Node\Stmt[] $fileNodes
+	 */
+	private function buildDiffFromVisitor(
+		string $filePath,
+		array $fileNodes,
+		NodeVisitorAbstract $replacingVisitor,
+	): ?FixedErrorDiff
+	{
+		$oldCode = FileReader::read($filePath);
+		$this->parser->parse($oldCode);
+		$hash = hash('sha256', $oldCode);
+		$oldTokens = $this->parser->getTokens();
+
+		$indentTraverser = new NodeTraverser();
+		$indentDetector = new PhpPrinterIndentationDetectorVisitor(new TokenStream($oldTokens, PhpPrinter::TAB_WIDTH));
+		$indentTraverser->addVisitor($indentDetector);
+		$indentTraverser->traverse($fileNodes);
+
+		$cloningTraverser = new NodeTraverser();
+		$cloningTraverser->addVisitor(new CloningVisitor());
+		$newStmts = $cloningTraverser->traverse($fileNodes);
+
+		$traverser = new NodeTraverser();
+		$traverser->addVisitor($replacingVisitor);
+		$newStmts = $traverser->traverse($newStmts);
+
+		if (str_contains($indentDetector->indentCharacter, "\t")) {
+			$indent = "\t";
+		} else {
+			$indent = str_repeat($indentDetector->indentCharacter, $indentDetector->indentSize);
+		}
+		$printer = new PhpPrinter(['indent' => $indent]);
+		$newCode = $printer->printFormatPreserving($newStmts, $fileNodes, $oldTokens);
+
+		if ($oldCode === $newCode) {
+			return null;
+		}
+
+		return new FixedErrorDiff($hash, $this->differ->diff($oldCode, $newCode));
 	}
 
 }

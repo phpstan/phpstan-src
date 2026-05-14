@@ -29,6 +29,8 @@ final class AnalyserResult
 	 * @param array<string, array<string>>|null $usedTraitDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param list<string> $processedFiles
+	 * @param array<string, FileFix> $fixesByFixingFile
+	 * @param array<string, array<string, FileFix>> $perAnalysedFileFixes
 	 */
 	public function __construct(
 		private array $unorderedErrors,
@@ -45,6 +47,8 @@ final class AnalyserResult
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
 		private array $processedFiles,
+		private array $fixesByFixingFile = [],
+		private array $perAnalysedFileFixes = [],
 	)
 	{
 	}
@@ -177,6 +181,22 @@ final class AnalyserResult
 	public function getProcessedFiles(): array
 	{
 		return $this->processedFiles;
+	}
+
+	/**
+	 * @return array<string, FileFix>
+	 */
+	public function getFixesByFixingFile(): array
+	{
+		return $this->fixesByFixingFile;
+	}
+
+	/**
+	 * @return array<string, array<string, FileFix>>
+	 */
+	public function getPerAnalysedFileFixes(): array
+	{
+		return $this->perAnalysedFileFixes;
 	}
 
 }

@@ -4,11 +4,13 @@ namespace PHPStan\Testing;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
+use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Analyser\IgnoreErrorExtensionProvider;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
@@ -23,6 +25,7 @@ use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Fixable\Patcher;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -140,6 +143,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
+				self::getContainer()->getByType(FixIgnorePolicyFactory::class),
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
@@ -257,13 +261,14 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	public function fix(string $file, string $expectedFile): void
 	{
-		[$errors] = $this->gatherAnalyserErrorsWithDelayedErrors([$file]);
+		[, , $analyserResult] = $this->gatherAnalyserErrorsWithDelayedErrors([$file]);
+		$normalizedFile = $this->getFileHelper()->normalizePath($file);
 		$diffs = [];
-		foreach ($errors as $error) {
-			if ($error->getFixedErrorDiff() === null) {
+		foreach ($analyserResult->getFixesByFixingFile() as $fixingFile => $fileFix) {
+			if ($fixingFile !== $normalizedFile) {
 				continue;
 			}
-			$diffs[] = $error->getFixedErrorDiff();
+			$diffs[] = $fileFix->diff;
 		}
 
 		$patcher = self::getContainer()->getByType(Patcher::class);
@@ -290,7 +295,17 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	/**
 	 * @param string[] $files
-	 * @return array{list<Error>, list<IdentifierRuleError>}
+	 * @return array{list<Error>, array<string, FileFix>}
+	 */
+	public function gatherAnalyserErrorsAndFixes(array $files): array
+	{
+		[$errors, , $analyserResult] = $this->gatherAnalyserErrorsWithDelayedErrors($files);
+		return [$errors, $analyserResult->getFixesByFixingFile()];
+	}
+
+	/**
+	 * @param string[] $files
+	 * @return array{list<Error>, list<IdentifierRuleError>, AnalyserResult}
 	 */
 	private function gatherAnalyserErrorsWithDelayedErrors(array $files): array
 	{
@@ -329,9 +344,12 @@ abstract class RuleTestCase extends PHPStanTestCase
 			true,
 		);
 
+		$finalizedResult = $finalizer->finalize($analyserResult, false, true)->getAnalyserResult();
+
 		return [
-			$finalizer->finalize($analyserResult, false, true)->getAnalyserResult()->getUnorderedErrors(),
+			$finalizedResult->getUnorderedErrors(),
 			array_merge($classRule->getDelayedErrors(), $traitRule->getDelayedErrors()),
+			$finalizedResult,
 		];
 	}
 

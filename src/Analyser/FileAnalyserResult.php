@@ -25,6 +25,7 @@ final class FileAnalyserResult
 	 * @param LinesToIgnore $linesToIgnore
 	 * @param LinesToIgnore $unmatchedLineIgnores
 	 * @param list<string> $processedFiles
+	 * @param array<string, FileFix> $fixesByFixingFile
 	 */
 	public function __construct(
 		private array $errors,
@@ -38,6 +39,7 @@ final class FileAnalyserResult
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
 		private array $processedFiles,
+		private array $fixesByFixingFile = [],
 	)
 	{
 	}
@@ -128,6 +130,14 @@ final class FileAnalyserResult
 	public function getProcessedFiles(): array
 	{
 		return $this->processedFiles;
+	}
+
+	/**
+	 * @return array<string, FileFix>
+	 */
+	public function getFixesByFixingFile(): array
+	{
+		return $this->fixesByFixingFile;
 	}
 
 }

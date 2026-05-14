@@ -11,12 +11,14 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Rules\Registry as RuleRegistry;
 use function array_keys;
 use function get_class;
+use function spl_object_id;
 use function sprintf;
 
 /**
@@ -45,6 +47,12 @@ final class FileAnalyserCallback
 	/** @var list<Error> */
 	private array $temporaryFileErrors = [];
 
+	/** @var array<string, list<PendingFix>> */
+	private array $pendingFixesByFile = [];
+
+	/** @var array<string, FileFix> */
+	private array $fixesByFixingFile = [];
+
 	/** @var LinesToIgnore */
 	private array $linesToIgnore;
 
@@ -69,6 +77,7 @@ final class FileAnalyserCallback
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
+		private FixIgnorePolicyFactory $fixIgnorePolicyFactory,
 		private array $processedFiles,
 	)
 	{
@@ -77,8 +86,6 @@ final class FileAnalyserCallback
 
 	public function __invoke(Node $node, Scope $scope): void
 	{
-		$parserNodes = $this->parserNodes;
-
 		/** @var Scope&NodeCallbackInvoker $scope */
 		if ($node instanceof Node\Stmt\Trait_) {
 			foreach (array_keys($this->linesToIgnore[$this->file] ?? []) as $lineToIgnore) {
@@ -98,14 +105,6 @@ final class FileAnalyserCallback
 			$traitFileName = $node->getTraitReflection()->getFileName();
 			if ($traitFileName !== null) {
 				$this->processedFiles[] = $traitFileName;
-			}
-		}
-
-		if ($scope->isInTrait()) {
-			$traitReflection = $scope->getTraitReflection();
-			if ($traitReflection->getFileName() !== null) {
-				$traitFilePath = $traitReflection->getFileName();
-				$parserNodes = $this->parser->parseFile($traitFilePath);
 			}
 		}
 
@@ -149,7 +148,7 @@ final class FileAnalyserCallback
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $parserNodes, $node);
+				[$error, $pendingFix] = $this->ruleErrorTransformer->transformPreserveFixable($ruleError, $scope, $node);
 
 				if ($error->canBeIgnored()) {
 					foreach ($this->ignoreErrorExtensions as $ignoreErrorExtension) {
@@ -160,6 +159,11 @@ final class FileAnalyserCallback
 				}
 
 				$this->temporaryFileErrors[] = $error;
+				if ($pendingFix === null) {
+					continue;
+				}
+
+				$this->pendingFixesByFile[$pendingFix->fixingFilePath][] = $pendingFix;
 			}
 		}
 
@@ -305,7 +309,52 @@ final class FileAnalyserCallback
 	 */
 	public function getTemporaryFileErrors(): array
 	{
-		return $this->temporaryFileErrors;
+		if ($this->pendingFixesByFile === []) {
+			return $this->temporaryFileErrors;
+		}
+
+		$parserNodesByFile = [$this->file => $this->parserNodes];
+		foreach (array_keys($this->pendingFixesByFile) as $fixingFilePath) {
+			if (isset($parserNodesByFile[$fixingFilePath])) {
+				continue;
+			}
+			$parserNodesByFile[$fixingFilePath] = $this->parser->parseFile($fixingFilePath);
+		}
+
+		$errorsByFixingFile = [];
+		foreach ($this->pendingFixesByFile as $fixingFilePath => $pendingFixes) {
+			$errorsByFixingFile[$fixingFilePath] = [];
+			foreach ($pendingFixes as $pendingFix) {
+				$errorsByFixingFile[$fixingFilePath][] = $pendingFix->error;
+			}
+		}
+		$policy = $this->fixIgnorePolicyFactory->buildForFiles(
+			$errorsByFixingFile,
+			$this->linesToIgnore,
+		);
+
+		$result = $this->ruleErrorTransformer->finalizePendingFixes(
+			$this->pendingFixesByFile,
+			$parserNodesByFile,
+			$policy,
+		);
+		$this->fixesByFixingFile = $result->fixesByFixingFile;
+
+		if ($result->skipReasonByErrorId === []) {
+			return $this->temporaryFileErrors;
+		}
+
+		$finalErrors = [];
+		foreach ($this->temporaryFileErrors as $error) {
+			$id = spl_object_id($error);
+			$skipReason = $result->skipReasonByErrorId[$id] ?? null;
+			if ($skipReason !== null) {
+				$error = $error->withAppendedTip($skipReason);
+			}
+			$finalErrors[] = $error;
+		}
+
+		return $finalErrors;
 	}
 
 	/**
@@ -314,6 +363,14 @@ final class FileAnalyserCallback
 	public function getProcessedFiles(): array
 	{
 		return $this->processedFiles;
+	}
+
+	/**
+	 * @return array<string, FileFix>
+	 */
+	public function getFixesByFixingFile(): array
+	{
+		return $this->fixesByFixingFile;
 	}
 
 }

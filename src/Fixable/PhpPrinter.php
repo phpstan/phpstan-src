@@ -15,6 +15,12 @@ final class PhpPrinter extends Standard
 	public const TAB_WIDTH = 4;
 	public const FUNC_ARGS_TRAILING_COMMA_ATTRIBUTE = 'trailing_comma';
 
+	public function printSingleNode(Node $node): string
+	{
+		$this->resetState();
+		return $this->p($node);
+	}
+
 	/**
 	 * @param Node[] $nodes
 	 */

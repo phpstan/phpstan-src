@@ -12,6 +12,7 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Fixable\FixIgnorePolicyFactory;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
@@ -62,6 +63,7 @@ final class FileAnalyser
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
 		private bool $reportIgnoresWithoutComments,
+		private FixIgnorePolicyFactory $fixIgnorePolicyFactory,
 	)
 	{
 	}
@@ -95,6 +97,7 @@ final class FileAnalyser
 		$exportedNodes = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
+		$fixesByFixingFile = [];
 		if (is_file($file)) {
 			try {
 				$this->collectErrors($analysedFiles);
@@ -112,6 +115,7 @@ final class FileAnalyser
 					$this->parser,
 					$this->dependencyResolver,
 					$this->ruleErrorTransformer,
+					$this->fixIgnorePolicyFactory,
 					$processedFiles,
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
@@ -129,6 +133,7 @@ final class FileAnalyser
 				$linesToIgnore = $nodeCallback->getLinesToIgnore();
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();
 				$temporaryFileErrors = $nodeCallback->getTemporaryFileErrors();
+				$fixesByFixingFile = $nodeCallback->getFixesByFixingFile();
 				$processedFiles = $nodeCallback->getProcessedFiles();
 
 				if ($this->reportIgnoresWithoutComments) {
@@ -247,6 +252,7 @@ final class FileAnalyser
 			$linesToIgnore,
 			$unmatchedLineIgnores,
 			$processedFiles,
+			$fixesByFixingFile,
 		);
 	}
 

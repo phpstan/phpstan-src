@@ -1,0 +1,11 @@
+<?php
+
+trait TraitSingleConsumer {
+	public function f(): void {
+		echo $aa;
+	}
+}
+
+class TraitSingleConsumerUser {
+	use TraitSingleConsumer;
+}

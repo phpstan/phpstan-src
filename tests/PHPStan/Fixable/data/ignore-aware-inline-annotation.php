@@ -1,0 +1,6 @@
+<?php
+
+function () {
+	echo $a; // @phpstan-ignore-line
+	echo $b;
+};

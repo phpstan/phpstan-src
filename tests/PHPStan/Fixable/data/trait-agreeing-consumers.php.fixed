@@ -1,0 +1,15 @@
+<?php
+
+trait TraitAgreeingConsumers {
+	public function f(): void {
+		echo $aa;
+	}
+}
+
+class TraitAgreeingConsumerOne {
+	use TraitAgreeingConsumers;
+}
+
+class TraitAgreeingConsumerTwo {
+	use TraitAgreeingConsumers;
+}

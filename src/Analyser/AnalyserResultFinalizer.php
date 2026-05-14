@@ -93,7 +93,7 @@ final class AnalyserResultFinalizer
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $node);
+				[$error] = $this->ruleErrorTransformer->transformPreserveFixable($ruleError, $scope, $node);
 
 				if ($error->canBeIgnored()) {
 					foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
@@ -149,6 +149,8 @@ final class AnalyserResultFinalizer
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
+			fixesByFixingFile: $analyserResult->getFixesByFixingFile(),
+			perAnalysedFileFixes: $analyserResult->getPerAnalysedFileFixes(),
 		), $collectorErrors, $locallyIgnoredCollectorErrors);
 	}
 
@@ -169,6 +171,8 @@ final class AnalyserResultFinalizer
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
+			fixesByFixingFile: $analyserResult->getFixesByFixingFile(),
+			perAnalysedFileFixes: $analyserResult->getPerAnalysedFileFixes(),
 		);
 	}
 
@@ -234,6 +238,8 @@ final class AnalyserResultFinalizer
 				reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 				peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 				processedFiles: $analyserResult->getProcessedFiles(),
+				fixesByFixingFile: $analyserResult->getFixesByFixingFile(),
+				perAnalysedFileFixes: $analyserResult->getPerAnalysedFileFixes(),
 			),
 			$collectorErrors,
 			$locallyIgnoredCollectorErrors,

@@ -8,7 +8,9 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileFix;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Analyser\ResultCache\FileFixAggregator;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -94,12 +96,14 @@ final class ParallelAnalyser
 		$exportedNodes = [];
 		/** @var list<string> $allProcessedFiles */
 		$allProcessedFiles = [];
+		/** @var array<string, array<string, FileFix>> $perAnalysedFileFixes */
+		$perAnalysedFileFixes = [];
 
 		/** @var Deferred<AnalyserResult> $deferred */
 		$deferred = new Deferred();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, &$perAnalysedFileFixes): void {
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
 				$internalErrors[] = new InternalError(
 					'Some parallel worker jobs have not finished.',
@@ -124,8 +128,10 @@ final class ParallelAnalyser
 				usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
 				exportedNodes: $exportedNodes,
 				reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
-				peakMemoryUsageBytes: array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
+				peakMemoryUsageBytes: array_sum($peakMemoryUsages),
 				processedFiles: $allProcessedFiles,
+				fixesByFixingFile: FileFixAggregator::aggregate($perAnalysedFileFixes),
+				perAnalysedFileFixes: $perAnalysedFileFixes,
 			));
 		});
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
@@ -197,7 +203,7 @@ final class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles, &$perAnalysedFileFixes): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					$fileErrors[] = Error::decode($jsonError);
@@ -286,6 +292,14 @@ final class ParallelAnalyser
 
 				foreach ($json['processedFiles'] as $processedFile) {
 					$allProcessedFiles[] = $processedFile;
+				}
+
+				foreach ($json['perAnalysedFileFixes'] as $analysedFile => $fixesByFixingFile) {
+					$decoded = [];
+					foreach ($fixesByFixingFile as $fixingFile => $jsonFileFix) {
+						$decoded[$fixingFile] = FileFix::decode($jsonFileFix);
+					}
+					$perAnalysedFileFixes[$analysedFile] = $decoded;
 				}
 
 				if ($postFileCallback !== null) {

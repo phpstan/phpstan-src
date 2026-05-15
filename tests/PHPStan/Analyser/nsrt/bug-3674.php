@@ -173,3 +173,27 @@ function testNoRewindIterator(\NoRewindIterator $it): void
 		assertType('int', $it->key());
 	}
 }
+
+/** @param Iterator<int, string> $it */
+function testNextResetsNarrowing(Iterator $it): void
+{
+	if ($it->valid()) {
+		assertType('string', $it->current());
+		assertType('int', $it->key());
+		$it->next();
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
+	}
+}
+
+/** @param Iterator<int, string> $it */
+function testRewindResetsNarrowing(Iterator $it): void
+{
+	if (!$it->valid()) {
+		assertType('null', $it->current());
+		assertType('null', $it->key());
+		$it->rewind();
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
+	}
+}

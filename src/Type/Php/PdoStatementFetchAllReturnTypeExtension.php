@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PDO;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -52,7 +53,11 @@ final class PdoStatementFetchAllReturnTypeExtension implements DynamicMethodRetu
 
 		foreach ($constantIntegers as $constantInteger) {
 			$mode = $constantInteger->getValue();
-			if ($mode === 0 || ($mode & 0xFFFF) === \PDO::FETCH_KEY_PAIR || ($mode & \PDO::FETCH_GROUP) !== 0) {
+			if (
+				($mode & 0xFFFF) === PDO::FETCH_KEY_PAIR
+				|| ($mode & PDO::FETCH_GROUP) !== 0
+				|| ($mode & PDO::FETCH_UNIQUE) !== 0
+			) {
 				return null;
 			}
 		}

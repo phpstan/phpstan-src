@@ -25,6 +25,7 @@ use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Internal\HttpClientFactory;
 use PHPStan\Parallel\ForkParallelChecker;
+use PHPStan\Parallel\PharAutoloaderLock;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Process\ForkedProcessPromise;
 use PHPStan\Process\ProcessCanceledException;
@@ -100,6 +101,7 @@ final class FixerApplication
 		private HttpClientFactory $httpClientFactory,
 		private ForkParallelChecker $forkParallelChecker,
 		private FixerWorkerRunner $fixerWorkerRunner,
+		private PharAutoloaderLock $pharAutoloaderLock,
 	)
 	{
 	}
@@ -457,8 +459,13 @@ final class FixerApplication
 			});
 		});
 
+		$useFork = $this->forkParallelChecker->isSupported();
+		if ($useFork) {
+			$this->pharAutoloaderLock->install();
+		}
+
 		$process = $this->createProcessPromise(
-			$this->forkParallelChecker->isSupported(),
+			$useFork,
 			$loop,
 			$server,
 			$mainScript,

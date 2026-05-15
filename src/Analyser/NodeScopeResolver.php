@@ -4055,10 +4055,10 @@ class NodeScopeResolver
 				}
 				return InternalThrowPoint::createExplicit($scope, $throwType, $iteratee, true);
 			}
-		}
 
-		if (!$this->implicitThrows) {
-			return null;
+			if (!$this->implicitThrows) {
+				return null;
+			}
 		}
 
 		return InternalThrowPoint::createImplicit($scope, $iteratee);

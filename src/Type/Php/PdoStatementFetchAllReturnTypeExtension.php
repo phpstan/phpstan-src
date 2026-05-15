@@ -22,10 +22,6 @@ use function count;
 final class PdoStatementFetchAllReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
-	private const FETCH_KEY_PAIR = 12;
-
-	private const FETCH_GROUP = 0x10000;
-
 	public function getClass(): string
 	{
 		return 'PDOStatement';
@@ -56,7 +52,7 @@ final class PdoStatementFetchAllReturnTypeExtension implements DynamicMethodRetu
 
 		foreach ($constantIntegers as $constantInteger) {
 			$mode = $constantInteger->getValue();
-			if ($mode === 0 || ($mode & 0xFFFF) === self::FETCH_KEY_PAIR || ($mode & self::FETCH_GROUP) !== 0) {
+			if ($mode === 0 || ($mode & 0xFFFF) === \PDO::FETCH_KEY_PAIR || ($mode & \PDO::FETCH_GROUP) !== 0) {
 				return null;
 			}
 		}

@@ -11,6 +11,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -26,6 +27,10 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 {
 
 	private TypeSpecifier $typeSpecifier;
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
+	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
 	{
@@ -61,16 +66,18 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			);
 		}
 
-		$funcCallSpec = $this->typeSpecifier->create(
-			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
-			new ConstantBooleanType(true),
-			$context,
-			$scope,
-		);
-
 		$objectType = $scope->getType($args[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
+				foreach ($objectType->getConstantStrings() as $constantString) {
+					if ($this->reflectionProvider->hasClass($constantString->getValue())) {
+						$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
+						if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
+							return new SpecifiedTypes([], []);
+						}
+					}
+				}
+
 				return $this->typeSpecifier->create(
 					$args[0]->value,
 					new IntersectionType([
@@ -79,10 +86,16 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 					]),
 					$context,
 					$scope,
-				)->unionWith($funcCallSpec);
+				);
 			}
 
 			return new SpecifiedTypes([], []);
+		}
+
+		foreach ($objectType->getObjectClassReflections() as $classReflection) {
+			if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
+				return new SpecifiedTypes([], []);
+			}
 		}
 
 		return $this->typeSpecifier->create(
@@ -96,7 +109,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			]),
 			$context,
 			$scope,
-		)->unionWith($funcCallSpec);
+		);
 	}
 
 }

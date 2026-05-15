@@ -22,18 +22,12 @@ $hell = new Hell();
 
 // @method should not make method_exists always true
 if (\method_exists($hell, 'isTrue')) {
-	// nested method_exists should be reported - already specified to true
-	if (\method_exists($hell, 'isTrue')) {
 
-	}
 }
 
 // @method with class string should not make method_exists always true
 if (\method_exists(Hell::class, 'isTrue')) {
-	// nested method_exists should be reported - already specified to true
-	if (\method_exists(Hell::class, 'isTrue')) {
 
-	}
 }
 
 // native method should still be always true

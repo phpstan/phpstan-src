@@ -205,28 +205,18 @@ final class ImpossibleCheckTypeHelper
 					$methodType = $this->treatPhpDocTypesAsCertain ? $scope->getType($methodArg) : $scope->getNativeType($methodArg);
 
 					if ($methodType instanceof ConstantStringType) {
-						if ($scope->hasExpressionType($node)->yes()) {
-							return true;
-						}
-
 						if ($objectType instanceof ConstantStringType) {
 							$objectType = new ObjectType($objectType->getValue());
 						}
 
 						if ($objectType->getObjectClassNames() !== []) {
 							if ($objectType->hasMethod($methodType->getValue())->yes()) {
-								$hasNonNativeMethod = false;
 								foreach ($objectType->getObjectClassReflections() as $classReflection) {
 									if (!$classReflection->hasNativeMethod($methodType->getValue())) {
-										$hasNonNativeMethod = true;
-										break;
+										return null;
 									}
 								}
-								if (!$hasNonNativeMethod) {
-									return true;
-								}
-
-								return null;
+								return true;
 							}
 
 							if ($objectType->hasMethod($methodType->getValue())->no()) {
@@ -245,8 +235,8 @@ final class ImpossibleCheckTypeHelper
 						});
 
 						if ($genericType instanceof TypeWithClassName) {
-							$classReflection = $genericType->getClassReflection();
 							if ($genericType->hasMethod($methodType->getValue())->yes()) {
+								$classReflection = $genericType->getClassReflection();
 								if (
 									$classReflection !== null
 									&& $classReflection->hasNativeMethod($methodType->getValue())
@@ -257,6 +247,7 @@ final class ImpossibleCheckTypeHelper
 								return null;
 							}
 
+							$classReflection = $genericType->getClassReflection();
 							if (
 								$classReflection !== null
 								&& $classReflection->isFinal()

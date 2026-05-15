@@ -122,3 +122,18 @@ if (\property_exists($baz, 'realProp')) {
 
 	}
 }
+
+/**
+ * @param class-string<Foo> $classString
+ */
+function testGenericClassString(string $classString): void {
+	// @method via generic class-string should not make method_exists always true
+	if (\method_exists($classString, 'isTrue')) {
+
+	}
+
+	// native method via generic class-string should still be always true
+	if (\method_exists($classString, 'test')) {
+
+	}
+}

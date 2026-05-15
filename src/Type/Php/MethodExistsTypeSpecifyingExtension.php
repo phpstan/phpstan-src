@@ -84,6 +84,12 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 					}
 				}
 
+				foreach ($objectType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
+					if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
+						return $funcCallSpec;
+					}
+				}
+
 				return $this->typeSpecifier->create(
 					$args[0]->value,
 					new IntersectionType([

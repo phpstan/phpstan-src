@@ -1278,6 +1278,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
 				121,
 			],
+			[
+				'Call to function method_exists() with class-string<Bug6211\Foo> and \'test\' will always evaluate to true.',
+				136,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 

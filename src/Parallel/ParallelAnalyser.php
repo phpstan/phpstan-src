@@ -52,12 +52,15 @@ final class ParallelAnalyser
 		float $processTimeout,
 		#[AutowiredParameter(ref: '%parallel.buffer%')]
 		private int $decoderBufferSize,
+		private ForkParallelChecker $forkParallelChecker,
+		private WorkerRunner $workerRunner,
 	)
 	{
 		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
 	}
 
 	/**
+	 * @param string[] $allAnalysedFiles
 	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
 	 * @return PromiseInterface<AnalyserResult>
@@ -65,6 +68,7 @@ final class ParallelAnalyser
 	public function analyse(
 		LoopInterface $loop,
 		Schedule $schedule,
+		array $allAnalysedFiles,
 		string $mainScript,
 		?Closure $postFileCallback,
 		?string $projectConfigFile,
@@ -170,6 +174,8 @@ final class ParallelAnalyser
 			$this->processPool->quitAll();
 		};
 
+		$useFork = $this->forkParallelChecker->isSupported();
+
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {
 				break;
@@ -190,13 +196,20 @@ final class ParallelAnalyser
 				$commandOptions[] = escapeshellarg($insteadOfFile);
 			}
 
-			$process = new Process(ProcessHelper::getWorkerCommand(
+			$process = $this->createProcess(
+				$useFork,
+				$loop,
+				$server,
+				$serverPort,
+				$processIdentifier,
+				$allAnalysedFiles,
 				$mainScript,
-				'worker',
 				$projectConfigFile,
 				$commandOptions,
+				$tmpFile,
+				$insteadOfFile,
 				$input,
-			), $loop, $this->processTimeout);
+			);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
@@ -353,6 +366,48 @@ final class ParallelAnalyser
 		}
 
 		return $deferred->promise();
+	}
+
+	/**
+	 * @param string[] $allAnalysedFiles
+	 * @param string[] $commandOptions
+	 */
+	private function createProcess(
+		bool $useFork,
+		LoopInterface $loop,
+		TcpServer $server,
+		int $serverPort,
+		string $processIdentifier,
+		array $allAnalysedFiles,
+		string $mainScript,
+		?string $projectConfigFile,
+		array $commandOptions,
+		?string $tmpFile,
+		?string $insteadOfFile,
+		InputInterface $input,
+	): Process
+	{
+		if ($useFork) {
+			return new ForkedProcess(
+				$loop,
+				$this->processTimeout,
+				$this->workerRunner,
+				$server,
+				$serverPort,
+				$processIdentifier,
+				$allAnalysedFiles,
+				$tmpFile,
+				$insteadOfFile,
+			);
+		}
+
+		return new SpawnedProcess(ProcessHelper::getWorkerCommand(
+			$mainScript,
+			'worker',
+			$projectConfigFile,
+			$commandOptions,
+			$input,
+		), $loop, $this->processTimeout);
 	}
 
 }

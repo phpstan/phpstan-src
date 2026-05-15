@@ -64,6 +64,10 @@
 		"phpstan/phpstan": "2.1.x",
 		"symfony/polyfill-php73": "*"
 	},
+	"suggest": {
+		"ext-pcntl": "Enables forking parallel analysis workers from the already-booted process (experimental, skips the per-worker re-boot)",
+		"ext-posix": "Used together with ext-pcntl for forked parallel analysis workers"
+	},
 	"require-dev": {
 		"cweagans/composer-patches": "^1.7.3",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",

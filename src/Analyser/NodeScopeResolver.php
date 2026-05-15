@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use ArrayAccess;
 use Closure;
+use IteratorAggregate;
 use Override;
 use PhpParser\Comment\Doc;
 use PhpParser\Modifiers;
@@ -1437,8 +1438,9 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $finalScopeResult->getImpurePoints());
 			}
-			if (!(new ObjectType(Traversable::class))->isSuperTypeOf($scope->getType($stmt->expr))->no()) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $stmt->expr);
+			$traversableThrowPoint = $this->getTraversableForeachThrowPoint($scope, $stmt->expr);
+			if ($traversableThrowPoint !== null) {
+				$throwPoints[] = $traversableThrowPoint;
 			}
 			if ($context->isTopLevel() && $stmt->byRef) {
 				$finalScope = $finalScope->assignExpression(new ForeachValueByRefExpr($stmt->valueVar), new MixedType(), new MixedType());
@@ -4029,6 +4031,37 @@ class NodeScopeResolver
 		}
 
 		return ['bodyScope' => $bodyScope, 'endScope' => $endScope];
+	}
+
+	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee): ?InternalThrowPoint
+	{
+		$exprType = $scope->getType($iteratee);
+		$traversableType = new ObjectType(Traversable::class);
+
+		if ($traversableType->isSuperTypeOf($exprType)->no()) {
+			return null;
+		}
+
+		$traversablePart = TypeCombinator::intersect($exprType, $traversableType);
+		$iteratorAggregateType = new ObjectType(IteratorAggregate::class);
+
+		if ($iteratorAggregateType->isSuperTypeOf($traversablePart)->yes()
+			&& $traversablePart->hasMethod('getIterator')->yes()) {
+			$method = $traversablePart->getMethod('getIterator', $scope);
+			$throwType = $method->getThrowType();
+			if ($throwType !== null) {
+				if ($throwType->isVoid()->yes()) {
+					return null;
+				}
+				return InternalThrowPoint::createExplicit($scope, $throwType, $iteratee, true);
+			}
+
+			if (!$this->implicitThrows) {
+				return null;
+			}
+		}
+
+		return InternalThrowPoint::createImplicit($scope, $iteratee);
 	}
 
 	/**

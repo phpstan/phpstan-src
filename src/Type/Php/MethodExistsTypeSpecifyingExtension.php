@@ -58,28 +58,17 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$args = $node->getArgs();
 		$methodNameType = $scope->getType($args[1]->value);
 		if (!$methodNameType instanceof ConstantStringType) {
-			return $this->typeSpecifier->create(
-				new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
-				new ConstantBooleanType(true),
-				$context,
-				$scope,
-			);
+			return $this->createFuncCallSpec($node, $context, $scope);
 		}
 
 		$objectType = $scope->getType($args[0]->value);
-		$funcCallSpec = $this->typeSpecifier->create(
-			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
-			new ConstantBooleanType(true),
-			$context,
-			$scope,
-		);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
 				foreach ($objectType->getConstantStrings() as $constantString) {
 					if ($this->reflectionProvider->hasClass($constantString->getValue())) {
 						$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
 						if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
-							return $funcCallSpec;
+							return $this->createFuncCallSpec($node, $context, $scope);
 						}
 					}
 				}
@@ -106,7 +95,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 
 		foreach ($objectType->getObjectClassReflections() as $classReflection) {
 			if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
-				return $funcCallSpec;
+				return $this->createFuncCallSpec($node, $context, $scope);
 			}
 		}
 
@@ -119,6 +108,16 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 				]),
 				new ClassStringType(),
 			]),
+			$context,
+			$scope,
+		);
+	}
+
+	private function createFuncCallSpec(FuncCall $node, TypeSpecifierContext $context, Scope $scope): SpecifiedTypes
+	{
+		return $this->typeSpecifier->create(
+			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
+			new ConstantBooleanType(true),
 			$context,
 			$scope,
 		);

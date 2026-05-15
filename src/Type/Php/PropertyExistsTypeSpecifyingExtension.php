@@ -58,12 +58,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		$args = $node->getArgs();
 		$propertyNameType = $scope->getType($args[1]->value);
 		if (!$propertyNameType instanceof ConstantStringType) {
-			return $this->typeSpecifier->create(
-				new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
-				new ConstantBooleanType(true),
-				$context,
-				$scope,
-			);
+			return $this->createFuncCallSpec($node, $context, $scope);
 		}
 
 		if ($propertyNameType->getValue() === '') {
@@ -85,12 +80,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
 		if ($propertyReflection !== null) {
 			if (!$propertyReflection->isNative()) {
-				return $this->typeSpecifier->create(
-					new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
-					new ConstantBooleanType(true),
-					$context,
-					$scope,
-				);
+				return $this->createFuncCallSpec($node, $context, $scope);
 			}
 		}
 
@@ -100,6 +90,16 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 				new ObjectWithoutClassType(),
 				new HasPropertyType($propertyNameType->getValue()),
 			]),
+			$context,
+			$scope,
+		);
+	}
+
+	private function createFuncCallSpec(FuncCall $node, TypeSpecifierContext $context, Scope $scope): SpecifiedTypes
+	{
+		return $this->typeSpecifier->create(
+			new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
+			new ConstantBooleanType(true),
 			$context,
 			$scope,
 		);

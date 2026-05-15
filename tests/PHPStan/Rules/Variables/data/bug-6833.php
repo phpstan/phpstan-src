@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bug6833;
 
+use PHPStan\TrinaryLogic;
+use function PHPStan\Testing\assertVariableCertainty;
+
 class File
 {
 	public function __construct(private int $id) {}
@@ -37,6 +40,7 @@ function testThrowsVoidOnGetIterator(FileCollection $files): void
 			echo $file->getId();
 		}
 	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $file);
 		echo 'Invalid file:' . $file->getId();
 	}
 }
@@ -62,6 +66,7 @@ function testWithoutThrowsVoid(FileCollectionWithoutThrowsVoid $files): void
 			echo $file->getId();
 		}
 	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $file);
 		echo $file->getId(); // error - getIterator() could throw
 	}
 }
@@ -88,6 +93,7 @@ function testExplicitThrowsMatchingCatch(FileCollectionExplicitThrows $files): v
 			echo $file->getId();
 		}
 	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $file);
 		echo $file->getId(); // error - getIterator() can throw RuntimeException
 	}
 }
@@ -113,6 +119,20 @@ function testArrayForeach(array $files): void
 			echo $file->getId();
 		}
 	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $file);
 		echo $file->getId(); // no error - arrays don't call getIterator()
 	}
 }
+
+function testThrowsVoidFinallyScope(FileCollection $files): void
+{
+	try {
+		foreach ($files as $file) {
+			doSomething();
+		}
+	} finally {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $file);
+	}
+}
+
+function doSomething(): void {}

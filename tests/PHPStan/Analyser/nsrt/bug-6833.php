@@ -175,3 +175,34 @@ function testArrayOrNoAnnotation(array|FileCollectionWithoutThrowsVoid $files): 
 }
 
 function doSomething(): void {}
+
+/**
+ * @implements \IteratorAggregate<int, File>
+ */
+class MaybeThrowingCollection implements \IteratorAggregate
+{
+	/** @var File[] */
+	private array $files = [];
+
+	public function add(File $file): void
+	{
+		$this->files[] = $file;
+	}
+
+	public function getIterator(): \Iterator
+	{
+		return new \ArrayIterator($this->files);
+	}
+}
+
+function testUnionThrowsMatchingCatch(FileCollectionExplicitThrows|MaybeThrowingCollection $files): void
+{
+	try {
+		foreach ($files as $file) {
+			echo $file->getId();
+		}
+	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $file);
+		echo $file->getId(); // error - getIterator() can throw RuntimeException
+	}
+}

@@ -65,9 +65,10 @@ final class PharForkPreparation
 		}
 
 		$phar = new Phar($pharPath);
+		$alias = $phar->getAlias();
 		$phar->extractTo($extractDir, null, true);
 
-		PharRedirectStreamWrapper::configure($pharPath, $extractDir);
+		PharRedirectStreamWrapper::configure($pharPath, $alias, $extractDir);
 		stream_wrapper_unregister('phar');
 		stream_wrapper_register('phar', PharRedirectStreamWrapper::class);
 

@@ -5,7 +5,9 @@ namespace PHPStan\Parallel;
 use AllowDynamicProperties;
 use FilesystemIterator;
 use Throwable;
+use function basename;
 use function fclose;
+use function in_array;
 use function feof;
 use function fopen;
 use function fread;
@@ -45,7 +47,14 @@ use const STREAM_USE_PATH;
 final class PharRedirectStreamWrapper
 {
 
-	private static ?string $pharPath = null;
+	/**
+	 * Path prefixes (right after "phar://") that identify our running phar:
+	 * its absolute path, its explicit alias and its basename — all three are
+	 * valid ways to address the same archive.
+	 *
+	 * @var list<string>
+	 */
+	private static array $prefixes = [];
 
 	private static ?string $extractDir = null;
 
@@ -54,28 +63,44 @@ final class PharRedirectStreamWrapper
 
 	private ?FilesystemIterator $dirIterator = null;
 
-	public static function configure(string $pharPath, string $extractDir): void
+	public static function configure(string $pharPath, string $alias, string $extractDir): void
 	{
-		self::$pharPath = $pharPath;
+		$candidates = [$pharPath, $alias, basename($pharPath)];
+		$prefixes = [];
+		foreach ($candidates as $candidate) {
+			if ($candidate === '' || in_array($candidate, $prefixes, true)) {
+				continue;
+			}
+			$prefixes[] = $candidate;
+		}
+		self::$prefixes = $prefixes;
 		self::$extractDir = $extractDir;
 	}
 
 	private function translate(string $pharUrl): ?string
 	{
-		if (self::$pharPath === null || self::$extractDir === null) {
+		if (self::$extractDir === null || self::$prefixes === []) {
 			return null;
 		}
 		if (strncmp($pharUrl, 'phar://', 7) !== 0) {
 			return null;
 		}
 		$afterScheme = substr($pharUrl, 7);
-		$pharPathLen = strlen(self::$pharPath);
-		if (strncmp($afterScheme, self::$pharPath, $pharPathLen) !== 0) {
-			return null;
-		}
-		$internal = substr($afterScheme, $pharPathLen);
+		foreach (self::$prefixes as $prefix) {
+			$prefixLen = strlen($prefix);
+			if (strncmp($afterScheme, $prefix, $prefixLen) !== 0) {
+				continue;
+			}
+			$internal = substr($afterScheme, $prefixLen);
+			if ($internal !== '' && $internal[0] !== '/') {
+				// "/abs/foo.phar" must not match "phar:///abs/foo.phar.bak/x"
+				continue;
+			}
 
-		return self::$extractDir . $internal;
+			return self::$extractDir . $internal;
+		}
+
+		return null;
 	}
 
 	public function stream_open(string $path, string $mode, int $options, ?string &$opened_path): bool

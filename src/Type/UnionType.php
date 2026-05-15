@@ -268,7 +268,6 @@ class UnionType implements CompoundType
 			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
 			|| ($otherType instanceof IterableType && !$otherType instanceof TemplateIterableType)
 			|| $otherType instanceof NeverType
-			|| ($otherType instanceof LateResolvableType && $otherType instanceof CompoundType && !$otherType instanceof TemplateType)
 			|| $otherType instanceof IntegerRangeType
 		) {
 			return $otherType->isSubTypeOf($this);
@@ -284,7 +283,10 @@ class UnionType implements CompoundType
 		}
 		$result = IsSuperTypeOfResult::createNo()->or(...$results);
 
-		if ($otherType instanceof TemplateUnionType) {
+		if (
+			$otherType instanceof TemplateUnionType
+			|| ($otherType instanceof LateResolvableType && $otherType instanceof CompoundType && !$otherType instanceof TemplateType)
+		) {
 			return $result->or($otherType->isSubTypeOf($this));
 		}
 

@@ -6,11 +6,15 @@ use Iterator;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function in_array;
 
 #[AutowiredService]
@@ -29,13 +33,27 @@ final class IteratorCurrentReturnTypeExtension implements DynamicMethodReturnTyp
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		$returnType = ParametersAcceptorSelector::selectFromArgs(
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$methodCall->getArgs(),
 			$methodReflection->getVariants(),
-		)->getReturnType();
+		);
 
-		return TypeCombinator::addNull($returnType);
+		$returnType = $parametersAcceptor->getReturnType();
+
+		if ($parametersAcceptor instanceof ExtendedParametersAcceptor) {
+			$nativeReturnType = $parametersAcceptor->getNativeReturnType();
+			if ($nativeReturnType->isSuperTypeOf(new NullType())->no()) {
+				return $returnType;
+			}
+		}
+
+		$result = TypeCombinator::addNull($returnType);
+		if ($returnType instanceof BenevolentUnionType && !($result instanceof BenevolentUnionType)) {
+			$result = TypeUtils::toBenevolentUnion($result);
+		}
+
+		return $result;
 	}
 
 }

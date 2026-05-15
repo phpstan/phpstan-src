@@ -17,7 +17,7 @@ class Foo implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('int|string|null', $it->key());
+		assertType('(int|string|null)', $it->key());
 
 		return $it;
 	}
@@ -77,7 +77,7 @@ class Lorem implements \IteratorAggregate
 	public function getIterator()
 	{
 		$it = new \ArrayIterator($this->items);
-		assertType('int|string|null', $it->key());
+		assertType('(int|string|null)', $it->key());
 
 		return $it;
 	}

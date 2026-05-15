@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 declare(strict_types = 1);
 
@@ -145,7 +145,7 @@ class CustomIterator implements Iterator
 function testCustomIterator(CustomIterator $it): void
 {
 	assertType('string|null', $it->current());
-	assertType('int|null', $it->key());
+	assertType('int', $it->key());
 	if ($it->valid()) {
 		assertType('string', $it->current());
 		assertType('int', $it->key());
@@ -196,4 +196,22 @@ function testRewindResetsNarrowing(Iterator $it): void
 		assertType('string|null', $it->current());
 		assertType('int|null', $it->key());
 	}
+}
+
+/**
+ * @implements Iterator<int, string>
+ */
+class NonNullIterator implements Iterator
+{
+	public function current(): string { return 'hello'; }
+	public function key(): int { return 0; }
+	public function next(): void {}
+	public function rewind(): void {}
+	public function valid(): bool { return false; }
+}
+
+function testNonNullOverride(NonNullIterator $it): void
+{
+	assertType('string', $it->current());
+	assertType('int', $it->key());
 }

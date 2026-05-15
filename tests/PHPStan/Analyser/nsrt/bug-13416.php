@@ -90,3 +90,58 @@ function testPureFunctionStaysNarrowed(): void
 	// Pure expressions stay narrowed
 	assertType('1', count($arr));
 }
+
+function testImpureArrowFunctionIIFE(): void
+{
+	assert(count((fn() => MyRecord::find())()) === 1);
+	assertType('int<0, max>', count((fn() => MyRecord::find())()));
+}
+
+function testImpureClosureIIFE(): void
+{
+	assert(count((function() { return MyRecord::find(); })()) === 1);
+	assertType('int<0, max>', count((function() { return MyRecord::find(); })()));
+}
+
+function testStrlenOfImpureArrowFunctionIIFE(): void
+{
+	$record = new MyRecord();
+	assert(strlen((fn() => $record->getName())()) === 3);
+	assertType('int<1, max>', strlen((fn() => $record->getName())()));
+}
+
+function testImpureClosureViaVariable(): void
+{
+	$fn = function(): array { return MyRecord::find(); };
+	assert(count($fn()) === 1);
+	assertType('int<0, max>', count($fn()));
+}
+
+function testImpureClosureWithEchoIIFE(): void
+{
+	assert(strlen((function() { echo 'side-effect'; return MyRecord::find()[0]->getName(); })()) === 5);
+	assertType('int<1, max>', strlen((function() { echo 'side-effect'; return MyRecord::find()[0]->getName(); })()));
+}
+
+function testPureClosureIIFEStaysNarrowed(): void
+{
+	/** @var list<int> $arr */
+	$arr = [1, 2, 3];
+	assert(count((fn() => $arr)()) === 3);
+	assertType('3', count((fn() => $arr)()));
+}
+
+/**
+ * @param string|null $val
+ * @phpstan-impure
+ */
+function impureFunction(?string $val): ?string
+{
+	return $val;
+}
+
+function testPureOfImpureNotNarrowedByCoalesce(): void
+{
+	$a = strlen(impureFunction('hello') ?? '') > 0;
+	assertType('bool', strlen(impureFunction('hello') ?? '') > 0);
+}

@@ -54,6 +54,7 @@ final class ParallelAnalyser
 		private int $decoderBufferSize,
 		private ForkParallelChecker $forkParallelChecker,
 		private WorkerRunner $workerRunner,
+		private PharForkPreparation $pharForkPreparation,
 	)
 	{
 		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
@@ -175,6 +176,9 @@ final class ParallelAnalyser
 		};
 
 		$useFork = $this->forkParallelChecker->isSupported();
+		if ($useFork) {
+			$this->pharForkPreparation->prepare();
+		}
 
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {

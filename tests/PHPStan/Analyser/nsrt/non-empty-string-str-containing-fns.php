@@ -86,6 +86,21 @@ class Foo {
 		assertType('lowercase-string', $lower);
 	}
 
+	/**
+	 * @param non-empty-string $nonEmpty
+	 */
+	public function strContainsWithNonEmptyNeedleNarrowsTwice(string $s, string $nonEmpty): void
+	{
+		if (str_contains($s, $nonEmpty)) {
+			assertType('non-empty-string', $s);
+		}
+		assertType('string', $s);
+
+		if (str_contains($s, $nonEmpty)) {
+			assertType('non-empty-string', $s);
+		}
+	}
+
 	public function variants(string $s) {
 		if (fnmatch("*gr[ae]y", $s)) {
 			assertType('non-falsy-string', $s);

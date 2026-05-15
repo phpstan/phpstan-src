@@ -57,6 +57,19 @@ final class PharAutoloaderLock
 
 	private bool $installed = false;
 
+	/**
+	 * Re-entrancy depth for the lock-protected autoload section, per process.
+	 *
+	 * PHP class declarations can trigger nested autoloads (declaring `class
+	 * Foo extends Bar` autoloads Bar mid-declaration), so the wrapper can be
+	 * called recursively in a single process. `flock` is per-OFD on BSD/macOS,
+	 * so two `fopen` + `LOCK_EX` calls from the same process on the same file
+	 * self-deadlock. The race we actually care about is cross-process — only
+	 * the outermost call needs to take the lock; nested ones are already
+	 * inside the critical section.
+	 */
+	private static int $depth = 0;
+
 	public function install(): void
 	{
 		if ($this->installed) {
@@ -79,15 +92,25 @@ final class PharAutoloaderLock
 		foreach (spl_autoload_functions() as $callback) {
 			spl_autoload_unregister($callback);
 			spl_autoload_register(static function (string $class) use ($callback, $lockPath): void {
+				if (self::$depth > 0) {
+					// Already inside this process's locked autoload — nested
+					// reads from libphar are sequential within a single
+					// process, so they don't need (and would deadlock on) a
+					// second flock.
+					$callback($class);
+					return;
+				}
 				$fh = fopen($lockPath, 'r');
 				if ($fh === false) {
 					$callback($class);
 					return;
 				}
 				flock($fh, LOCK_EX);
+				self::$depth++;
 				try {
 					$callback($class);
 				} finally {
+					self::$depth--;
 					flock($fh, LOCK_UN);
 					fclose($fh);
 				}

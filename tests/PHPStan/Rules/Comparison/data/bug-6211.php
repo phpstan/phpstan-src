@@ -90,35 +90,35 @@ if (\property_exists($baz, 'realProp')) {
 
 // Nested method_exists with @method should report the inner as always-true
 if (\method_exists($hell, 'isTrue')) {
-	if (\method_exists($hell, 'isTrue')) { // should be reported
+	if (\method_exists($hell, 'isTrue')) { // if condition always true
 
 	}
 }
 
 // Nested method_exists with @method via class-string
 if (\method_exists(Hell::class, 'isTrue')) {
-	if (\method_exists(Hell::class, 'isTrue')) { // should be reported
+	if (\method_exists(Hell::class, 'isTrue')) { // if condition always true
 
 	}
 }
 
 // Nested method_exists with native method (already always-true, inner is also)
 if (\method_exists($hell, 'test')) {
-	if (\method_exists($hell, 'test')) { // should be reported
+	if (\method_exists($hell, 'test')) {
 
 	}
 }
 
 // Nested property_exists with @property should report the inner as always-true
 if (\property_exists($baz, 'magicProp')) {
-	if (\property_exists($baz, 'magicProp')) { // should be reported
+	if (\property_exists($baz, 'magicProp')) { // if condition always true
 
 	}
 }
 
 // Nested property_exists with native property (already always-true, inner is also)
 if (\property_exists($baz, 'realProp')) {
-	if (\property_exists($baz, 'realProp')) { // should be reported
+	if (\property_exists($baz, 'realProp')) {
 
 	}
 }

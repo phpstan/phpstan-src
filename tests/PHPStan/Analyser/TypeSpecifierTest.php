@@ -26,6 +26,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
@@ -1352,6 +1353,22 @@ class TypeSpecifierTest extends PHPStanTestCase
 	private static function createInstanceOf(string $className, string $variableName = 'foo'): Expr\Instanceof_
 	{
 		return new Expr\Instanceof_(new Variable($variableName), new Name($className));
+	}
+
+	public function testUnknownFunctionSubExpressionDoesNotPreventNarrowing(): void
+	{
+		$fauxFuncCall = new FuncCall(new Name('FAUX_FUNCTION'), [new Arg(new Variable('foo'))]);
+		$countCall = new FuncCall(new Name('count'), [new Arg($fauxFuncCall)]);
+
+		$specifiedTypes = $this->typeSpecifier->create(
+			$countCall,
+			new ConstantIntegerType(1),
+			TypeSpecifierContext::createTrue(),
+			$this->scope,
+		);
+
+		$result = $this->toReadableResult($specifiedTypes);
+		$this->assertSame(['count(FAUX_FUNCTION($foo))' => '1'], $result);
 	}
 
 	/**

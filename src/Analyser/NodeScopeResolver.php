@@ -4036,29 +4036,49 @@ class NodeScopeResolver
 	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee): ?InternalThrowPoint
 	{
 		$exprType = $scope->getType($iteratee);
+		$traversableType = new ObjectType(Traversable::class);
 
-		if ((new ObjectType(Traversable::class))->isSuperTypeOf($exprType)->no()) {
+		if ($traversableType->isSuperTypeOf($exprType)->no()) {
 			return null;
 		}
 
 		$iteratorAggregateType = new ObjectType(IteratorAggregate::class);
-		if ($iteratorAggregateType->isSuperTypeOf($exprType)->yes() && $exprType->hasMethod('getIterator')->yes()) {
-			$method = $exprType->getMethod('getIterator', $scope);
-			$throwType = $method->getThrowType();
-			if ($throwType !== null) {
-				if ($throwType->isVoid()->yes()) {
-					return null;
-				}
+		$innerTypes = $exprType instanceof UnionType ? $exprType->getTypes() : [$exprType];
+		$needsImplicitThrowPoint = false;
+		$explicitThrowTypes = [];
 
-				return InternalThrowPoint::createExplicit($scope, $throwType, $iteratee, true);
+		foreach ($innerTypes as $innerType) {
+			if ($traversableType->isSuperTypeOf($innerType)->no()) {
+				continue;
 			}
+
+			if ($iteratorAggregateType->isSuperTypeOf($innerType)->yes() && $innerType->hasMethod('getIterator')->yes()) {
+				$method = $innerType->getMethod('getIterator', $scope);
+				$throwType = $method->getThrowType();
+				if ($throwType !== null) {
+					if (!$throwType->isVoid()->yes()) {
+						$explicitThrowTypes[] = $throwType;
+					}
+					continue;
+				}
+			}
+
+			$needsImplicitThrowPoint = true;
 		}
 
-		if (!$this->implicitThrows) {
-			return null;
+		if ($needsImplicitThrowPoint) {
+			if (!$this->implicitThrows) {
+				return null;
+			}
+
+			return InternalThrowPoint::createImplicit($scope, $iteratee);
 		}
 
-		return InternalThrowPoint::createImplicit($scope, $iteratee);
+		if ($explicitThrowTypes !== []) {
+			return InternalThrowPoint::createExplicit($scope, TypeCombinator::union(...$explicitThrowTypes), $iteratee, true);
+		}
+
+		return null;
 	}
 
 	/**

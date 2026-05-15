@@ -135,4 +135,43 @@ function testThrowsVoidFinallyScope(FileCollection $files): void
 	}
 }
 
+/** @param File[]|FileCollection $files */
+function testArrayOrThrowsVoid(array|FileCollection $files): void
+{
+	try {
+		foreach ($files as $file) {
+			echo $file->getId();
+		}
+	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $file);
+		echo $file->getId(); // no error - array doesn't throw, getIterator() has @throws void
+	}
+}
+
+/** @param File[]|FileCollectionExplicitThrows $files */
+function testArrayOrExplicitThrows(array|FileCollectionExplicitThrows $files): void
+{
+	try {
+		foreach ($files as $file) {
+			echo $file->getId();
+		}
+	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $file);
+		echo $file->getId(); // error - getIterator() can throw RuntimeException
+	}
+}
+
+/** @param File[]|FileCollectionWithoutThrowsVoid $files */
+function testArrayOrNoAnnotation(array|FileCollectionWithoutThrowsVoid $files): void
+{
+	try {
+		foreach ($files as $file) {
+			echo $file->getId();
+		}
+	} catch (\Throwable) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $file);
+		echo $file->getId(); // error - getIterator() could throw
+	}
+}
+
 function doSomething(): void {}

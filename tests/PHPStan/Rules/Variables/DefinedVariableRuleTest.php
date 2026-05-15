@@ -1599,6 +1599,22 @@ class DefinedVariableRuleTest extends RuleTestCase
 				'Variable $file might not be defined.',
 				134,
 			],
+			[
+				'Variable $file might not be defined.',
+				159,
+			],
+			[
+				'Variable $file might not be defined.',
+				160,
+			],
+			[
+				'Variable $file might not be defined.',
+				172,
+			],
+			[
+				'Variable $file might not be defined.',
+				173,
+			],
 		]);
 	}
 

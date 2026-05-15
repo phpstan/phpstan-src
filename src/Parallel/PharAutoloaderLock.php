@@ -2,7 +2,6 @@
 
 namespace PHPStan\Parallel;
 
-use Composer\Autoload\ClassLoader;
 use Phar;
 use PHPStan\DependencyInjection\AutowiredService;
 use function fclose;
@@ -10,7 +9,9 @@ use function flock;
 use function fopen;
 use function getmypid;
 use function register_shutdown_function;
+use function spl_autoload_functions;
 use function spl_autoload_register;
+use function spl_autoload_unregister;
 use function sys_get_temp_dir;
 use function touch;
 use function uniqid;
@@ -70,17 +71,22 @@ final class PharAutoloaderLock
 		$lockPath = sys_get_temp_dir() . '/phpstan-fork-phar-lock-' . getmypid() . '-' . uniqid();
 		touch($lockPath);
 
-		foreach (ClassLoader::getRegisteredLoaders() as $loader) {
-			$loader->unregister();
-			spl_autoload_register(static function (string $class) use ($loader, $lockPath): void {
+		// Wrap every registered autoloader callable. Using spl_autoload_*
+		// rather than Composer\Autoload\ClassLoader::getRegisteredLoaders()
+		// keeps this file free of any reference to Composer's namespace —
+		// php-scoper would otherwise rewrite that reference to the prefixed
+		// form, which does not exist at runtime inside the built phar.
+		foreach (spl_autoload_functions() as $callback) {
+			spl_autoload_unregister($callback);
+			spl_autoload_register(static function (string $class) use ($callback, $lockPath): void {
 				$fh = fopen($lockPath, 'r');
 				if ($fh === false) {
-					$loader->loadClass($class);
+					$callback($class);
 					return;
 				}
 				flock($fh, LOCK_EX);
 				try {
-					$loader->loadClass($class);
+					$callback($class);
 				} finally {
 					flock($fh, LOCK_UN);
 					fclose($fh);

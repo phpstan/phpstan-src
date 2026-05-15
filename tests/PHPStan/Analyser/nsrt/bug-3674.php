@@ -23,8 +23,8 @@ function testGeneratorAfterValid(): void
 {
 	$it = gen();
 	if ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 	}
 }
 
@@ -47,8 +47,8 @@ function testIteratorCurrent(Iterator $it): void
 function testIteratorAfterValid(Iterator $it): void
 {
 	if ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 	}
 }
 
@@ -72,8 +72,8 @@ function testArrayIteratorCurrent(ArrayIterator $it): void
 function testArrayIteratorAfterValid(ArrayIterator $it): void
 {
 	if ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 	}
 }
 
@@ -82,8 +82,8 @@ function testGeneratorWhileLoop(): void
 	$it = gen();
 	$it->rewind();
 	while ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 		$it->next();
 	}
 }
@@ -108,8 +108,8 @@ function testOriginalIssue(): void
 function testNegatedValid(Iterator $it): void
 {
 	if (!$it->valid()) {
-		assertType('null', $it->current());
-		assertType('null', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 	}
 }
 
@@ -118,13 +118,13 @@ function testWhileLoopWithValid(): void
 	$it = gen();
 	while ($it->valid()) {
 		$v = $it->current();
-		assertType('string', $v);
+		assertType('string|null', $v);
 		$k = $it->key();
-		assertType('int', $k);
+		assertType('int|null', $k);
 		$it->next();
 	}
-	assertType('null', $it->current());
-	assertType('null', $it->key());
+	assertType('string|null', $it->current());
+	assertType('int|null', $it->key());
 }
 
 /**
@@ -147,7 +147,7 @@ function testCustomIterator(CustomIterator $it): void
 	assertType('string|null', $it->current());
 	assertType('int', $it->key());
 	if ($it->valid()) {
-		assertType('string', $it->current());
+		assertType('string|null', $it->current());
 		assertType('int', $it->key());
 	}
 }
@@ -158,8 +158,8 @@ function testIteratorIterator(\IteratorIterator $it): void
 	assertType('string|null', $it->current());
 	assertType('int|null', $it->key());
 	if ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 	}
 }
 
@@ -169,8 +169,8 @@ function testNoRewindIterator(\NoRewindIterator $it): void
 	assertType('string|null', $it->current());
 	assertType('int|null', $it->key());
 	if ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 	}
 }
 
@@ -178,8 +178,8 @@ function testNoRewindIterator(\NoRewindIterator $it): void
 function testNextResetsNarrowing(Iterator $it): void
 {
 	if ($it->valid()) {
-		assertType('string', $it->current());
-		assertType('int', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 		$it->next();
 		assertType('string|null', $it->current());
 		assertType('int|null', $it->key());
@@ -190,8 +190,8 @@ function testNextResetsNarrowing(Iterator $it): void
 function testRewindResetsNarrowing(Iterator $it): void
 {
 	if (!$it->valid()) {
-		assertType('null', $it->current());
-		assertType('null', $it->key());
+		assertType('string|null', $it->current());
+		assertType('int|null', $it->key());
 		$it->rewind();
 		assertType('string|null', $it->current());
 		assertType('int|null', $it->key());

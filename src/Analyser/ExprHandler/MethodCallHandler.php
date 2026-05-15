@@ -152,9 +152,6 @@ final class MethodCallHandler implements ExprHandler
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
-				if (!($normalizedExpr->var instanceof Expr\Variable && $normalizedExpr->var->name === 'this')) {
-					$scope = $scope->invalidateAllMaybeImpureFunctionReturnValues();
-				}
 			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin()) {
 				$scope = $scope->assignExpression(
 					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),

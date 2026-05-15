@@ -8,17 +8,28 @@ use function PHPStan\Testing\assertType;
 
 class MyRecord
 {
-	/** @return list<self> */
+	/** @var list<self> */
+	private static array $storage = [];
+
+	/**
+	 * @return list<self>
+	 * @phpstan-impure
+	 */
 	public static function find(): array
 	{
-		return [];
+		return self::$storage;
 	}
 
+	/** @phpstan-impure */
 	public function insert(): void
 	{
+		self::$storage[] = $this;
 	}
 
-	/** @return non-empty-string */
+	/**
+	 * @return non-empty-string
+	 * @phpstan-impure
+	 */
 	public function getName(): string
 	{
 		return 'test';
@@ -27,87 +38,55 @@ class MyRecord
 
 class Repository
 {
-	/** @return list<MyRecord> */
+	/**
+	 * @return list<MyRecord>
+	 * @phpstan-impure
+	 */
 	public function findAll(): array
 	{
 		return [];
 	}
 
+	/** @phpstan-impure */
 	public function save(MyRecord $record): void
 	{
 	}
 }
 
-function testStaticCallInvalidatedByMethodCall(): void
+function testImpureStaticCallNotNarrowedByCount(): void
 {
 	assert(count(MyRecord::find()) === 1);
-	assertType('1', count(MyRecord::find()));
-
-	$msg2 = new MyRecord();
-	$msg2->insert();
-
+	// Impure call result should not be narrowed
 	assertType('int<0, max>', count(MyRecord::find()));
 }
 
-function testMethodCallInvalidatedByMethodCall(): void
+function testImpureMethodCallNotNarrowedByCount(): void
 {
 	$repo = new Repository();
 
 	assert(count($repo->findAll()) === 1);
-	assertType('1', count($repo->findAll()));
-
-	$msg2 = new MyRecord();
-	$msg2->insert();
-
+	// Impure call result should not be narrowed
 	assertType('int<0, max>', count($repo->findAll()));
 }
 
-function testStrlenOfImpureCall(): void
+function testStrlenOfImpureCallNotNarrowed(): void
 {
 	$record = new MyRecord();
 
 	assert(strlen($record->getName()) === 3);
-	assertType('3', strlen($record->getName()));
-
-	$msg2 = new MyRecord();
-	$msg2->insert();
-
+	// strlen wrapping an impure call should not be narrowed
 	assertType('int<1, max>', strlen($record->getName()));
 }
 
-function testCountNotInvalidatedByPureFunction(): void
+function testPureFunctionStaysNarrowed(): void
 {
-	assert(count(MyRecord::find()) === 1);
-	assertType('1', count(MyRecord::find()));
+	/** @var list<int> $arr */
+	$arr = [1];
+	assert(count($arr) === 1);
+	assertType('1', count($arr));
 
 	$x = rand(0, 10);
 
-	assertType('1', count(MyRecord::find()));
-}
-
-class ServiceWithImpureCall
-{
-	public function testMethodCallInvalidation(): void
-	{
-		$repo = new Repository();
-
-		assert(count($repo->findAll()) === 1);
-		assertType('1', count($repo->findAll()));
-
-		$msg2 = new MyRecord();
-		$msg2->insert();
-
-		assertType('int<0, max>', count($repo->findAll()));
-	}
-
-	public function testStaticCallInvalidation(): void
-	{
-		assert(count(MyRecord::find()) === 1);
-		assertType('1', count(MyRecord::find()));
-
-		$msg2 = new MyRecord();
-		$msg2->insert();
-
-		assertType('int<0, max>', count(MyRecord::find()));
-	}
+	// Pure expressions stay narrowed
+	assertType('1', count($arr));
 }

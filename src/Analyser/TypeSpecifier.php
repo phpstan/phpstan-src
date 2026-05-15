@@ -18,7 +18,9 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\BooleanAndHandler;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -2626,6 +2628,14 @@ final class TypeSpecifier
 			}
 		}
 
+		if (!($expr instanceof AlwaysRememberedExpr) && $this->expressionContainsNonPureCall($expr, $scope)) {
+			if (isset($containsNull) && !$containsNull) {
+				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
+			}
+
+			return new SpecifiedTypes([], []);
+		}
+
 		$sureTypes = [];
 		$sureNotTypes = [];
 		if ($context->false()) {
@@ -2652,6 +2662,78 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function expressionContainsNonPureCall(Expr $expr, Scope $scope): bool
+	{
+		$nodeFinder = new NodeFinder();
+		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($scope): bool {
+			if (!$node instanceof Expr) {
+				return false;
+			}
+
+			if ($node instanceof FuncCall) {
+				if ($node->name instanceof Name) {
+					if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+						return true;
+					}
+					$hasSideEffects = $this->reflectionProvider->getFunction($node->name, $scope)->hasSideEffects();
+					return $hasSideEffects->yes()
+						|| (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no());
+				}
+
+				$nameType = $scope->getType($node->name);
+				if ($nameType->isCallable()->yes()) {
+					$isPure = null;
+					foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
+						$variantIsPure = $variant->isPure();
+						$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
+					}
+					if ($isPure !== null) {
+						return $isPure->no()
+							|| (!$this->rememberPossiblyImpureFunctionValues && !$isPure->yes());
+					}
+				}
+
+				return false;
+			}
+
+			if ($node instanceof MethodCall) {
+				if ($node->name instanceof Identifier) {
+					$calledOnType = $scope->getType($node->var);
+					$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->name);
+					if ($methodReflection === null) {
+						return true;
+					}
+					$hasSideEffects = $methodReflection->hasSideEffects();
+					return $hasSideEffects->yes()
+						|| (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no());
+				}
+				return true;
+			}
+
+			if ($node instanceof StaticCall) {
+				if ($node->name instanceof Identifier) {
+					if ($node->class instanceof Name) {
+						$calledOnType = $scope->resolveTypeByName($node->class);
+					} else {
+						$calledOnType = $scope->getType($node->class);
+					}
+					$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->name);
+					if ($methodReflection === null) {
+						return true;
+					}
+					$hasSideEffects = $methodReflection->hasSideEffects();
+					return $hasSideEffects->yes()
+						|| (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no());
+				}
+				return true;
+			}
+
+			return false;
+		});
+
+		return $found !== null;
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

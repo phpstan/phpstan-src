@@ -19,6 +19,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\NodeTypePrinter;
+use PHPStan\Parser\UseAliasVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -849,6 +850,10 @@ final class FunctionDefinitionCheck
 		if ($typeNode instanceof Name) {
 			$originalName = $typeNode->getAttribute('originalName');
 			if (!$originalName instanceof Name) {
+				return [];
+			}
+
+			if ($typeNode->getAttribute(UseAliasVisitor::ATTRIBUTE_NAME) === true) {
 				return [];
 			}
 

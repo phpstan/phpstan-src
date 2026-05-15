@@ -4042,43 +4042,26 @@ class NodeScopeResolver
 			return null;
 		}
 
+		$traversablePart = TypeCombinator::intersect($exprType, $traversableType);
 		$iteratorAggregateType = new ObjectType(IteratorAggregate::class);
-		$innerTypes = $exprType instanceof UnionType ? $exprType->getTypes() : [$exprType];
-		$needsImplicitThrowPoint = false;
-		$explicitThrowTypes = [];
 
-		foreach ($innerTypes as $innerType) {
-			if ($traversableType->isSuperTypeOf($innerType)->no()) {
-				continue;
-			}
-
-			if ($iteratorAggregateType->isSuperTypeOf($innerType)->yes() && $innerType->hasMethod('getIterator')->yes()) {
-				$method = $innerType->getMethod('getIterator', $scope);
-				$throwType = $method->getThrowType();
-				if ($throwType !== null) {
-					if (!$throwType->isVoid()->yes()) {
-						$explicitThrowTypes[] = $throwType;
-					}
-					continue;
+		if ($iteratorAggregateType->isSuperTypeOf($traversablePart)->yes()
+			&& $traversablePart->hasMethod('getIterator')->yes()) {
+			$method = $traversablePart->getMethod('getIterator', $scope);
+			$throwType = $method->getThrowType();
+			if ($throwType !== null) {
+				if ($throwType->isVoid()->yes()) {
+					return null;
 				}
+				return InternalThrowPoint::createExplicit($scope, $throwType, $iteratee, true);
 			}
-
-			$needsImplicitThrowPoint = true;
 		}
 
-		if ($needsImplicitThrowPoint) {
-			if (!$this->implicitThrows) {
-				return null;
-			}
-
-			return InternalThrowPoint::createImplicit($scope, $iteratee);
+		if (!$this->implicitThrows) {
+			return null;
 		}
 
-		if ($explicitThrowTypes !== []) {
-			return InternalThrowPoint::createExplicit($scope, TypeCombinator::union(...$explicitThrowTypes), $iteratee, true);
-		}
-
-		return null;
+		return InternalThrowPoint::createImplicit($scope, $iteratee);
 	}
 
 	/**

@@ -67,13 +67,19 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		}
 
 		$objectType = $scope->getType($args[0]->value);
+		$funcCallSpec = $this->typeSpecifier->create(
+			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
+			new ConstantBooleanType(true),
+			$context,
+			$scope,
+		);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
 				foreach ($objectType->getConstantStrings() as $constantString) {
 					if ($this->reflectionProvider->hasClass($constantString->getValue())) {
 						$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
 						if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
-							return new SpecifiedTypes([], []);
+							return $funcCallSpec;
 						}
 					}
 				}
@@ -94,7 +100,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 
 		foreach ($objectType->getObjectClassReflections() as $classReflection) {
 			if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
-				return new SpecifiedTypes([], []);
+				return $funcCallSpec;
 			}
 		}
 

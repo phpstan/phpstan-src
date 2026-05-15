@@ -85,7 +85,12 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
 		if ($propertyReflection !== null) {
 			if (!$propertyReflection->isNative()) {
-				return new SpecifiedTypes([], []);
+				return $this->typeSpecifier->create(
+					new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
+					new ConstantBooleanType(true),
+					$context,
+					$scope,
+				);
 			}
 		}
 

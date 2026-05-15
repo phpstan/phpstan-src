@@ -1251,24 +1251,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				87,
 			],
 			[
-				'Call to function method_exists() with Bug6211\Hell and \'isTrue\' will always evaluate to true.',
-				93,
-			],
-			[
-				'Call to function method_exists() with \'Bug6211\\\\Hell\' and \'isTrue\' will always evaluate to true.',
-				100,
-			],
-			[
 				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
 				106,
 			],
 			[
 				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
 				107,
-			],
-			[
-				'Call to function property_exists() with Bug6211\Baz and \'magicProp\' will always evaluate to true.',
-				114,
 			],
 			[
 				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',

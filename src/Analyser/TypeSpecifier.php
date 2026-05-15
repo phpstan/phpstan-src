@@ -2538,6 +2538,14 @@ final class TypeSpecifier
 			}
 		}
 
+		if (
+			$expr instanceof FuncCall
+			&& $expr->name instanceof Name
+			&& !$this->reflectionProvider->hasFunction($expr->name, $scope)
+		) {
+			return new SpecifiedTypes([], []);
+		}
+
 		if (!($expr instanceof AlwaysRememberedExpr) && $this->expressionContainsNonPureCall($expr, $scope)) {
 			if (isset($containsNull) && !$containsNull) {
 				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
@@ -2581,7 +2589,7 @@ final class TypeSpecifier
 			if ($node instanceof FuncCall) {
 				if ($node->name instanceof Name) {
 					if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
-						return true;
+						return false;
 					}
 					$hasSideEffects = $this->reflectionProvider->getFunction($node->name, $scope)->hasSideEffects();
 					return $hasSideEffects->yes()

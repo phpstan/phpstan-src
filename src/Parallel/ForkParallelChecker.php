@@ -2,10 +2,13 @@
 
 namespace PHPStan\Parallel;
 
+use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Diagnose\DiagnoseExtension;
 use function function_exists;
 use function getenv;
 use function opcache_get_status;
+use function sprintf;
 
 /**
  * Decides whether parallel analysis should fork workers via pcntl_fork()
@@ -17,10 +20,33 @@ use function opcache_get_status;
  * doing so corrupts analysis results.
  */
 #[AutowiredService]
-final class ForkParallelChecker
+final class ForkParallelChecker implements DiagnoseExtension
 {
 
 	public function isSupported(): bool
+	{
+		return $this->getDisabledReason() === null;
+	}
+
+	public function print(Output $output): void
+	{
+		$output->writeLineFormatted('<info>Parallel worker creation:</info>');
+
+		$reason = $this->getDisabledReason();
+		if ($reason === null) {
+			$output->writeLineFormatted('Mechanism:                 fork (pcntl_fork — experimental)');
+			$output->writeLineFormatted('');
+			return;
+		}
+
+		$output->writeLineFormatted('Mechanism:                 spawn (react/child-process)');
+		if (getenv('PHPSTAN_PARALLEL_FORK') === '1') {
+			$output->writeLineFormatted(sprintf('Reason fork not used:      %s', $reason));
+		}
+		$output->writeLineFormatted('');
+	}
+
+	private function getDisabledReason(): ?string
 	{
 		if (
 			!function_exists('pcntl_fork')
@@ -29,21 +55,18 @@ final class ForkParallelChecker
 			|| !function_exists('pcntl_wexitstatus')
 			|| !function_exists('posix_kill')
 		) {
-			return false;
+			return 'pcntl/posix functions are not available';
 		}
 
 		if (getenv('PHPSTAN_PARALLEL_FORK') !== '1') {
-			return false;
+			return 'PHPSTAN_PARALLEL_FORK environment variable is not set to "1"';
 		}
 
-		// OPcache's shared memory and the JIT buffer are not safe to populate
-		// concurrently from multiple forked children — doing so corrupts
-		// analysis results. Forked workers require OPcache and JIT to be off.
 		if ($this->isOpcacheOrJitEnabled()) {
-			return false;
+			return 'OPcache or JIT is enabled (forked workers require both to be off — their shared memory corrupts under concurrent population)';
 		}
 
-		return true;
+		return null;
 	}
 
 	private function isOpcacheOrJitEnabled(): bool

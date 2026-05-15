@@ -27,7 +27,6 @@ use function array_sum;
 use function count;
 use function defined;
 use function escapeshellarg;
-use function fwrite;
 use function ini_get;
 use function max;
 use function memory_get_usage;
@@ -35,7 +34,6 @@ use function parse_url;
 use function sprintf;
 use function str_contains;
 use const PHP_URL_PORT;
-use const STDERR;
 
 #[AutowiredService]
 final class ParallelAnalyser
@@ -177,9 +175,6 @@ final class ParallelAnalyser
 		};
 
 		$useFork = $this->forkParallelChecker->isSupported();
-		if ($useFork && $input->hasParameterOption(['-v', '-vv', '-vvv', '--verbose'], true)) {
-			fwrite(STDERR, "Note: using pcntl_fork() for parallel workers (experimental).\n");
-		}
 
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {

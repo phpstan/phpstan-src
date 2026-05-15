@@ -113,9 +113,6 @@ final class FixerApplication
 	): int
 	{
 		$projectConfigFile = $inceptionResult->getProjectConfigFile();
-		if ($this->forkParallelChecker->isSupported() && $output->isVerbose()) {
-			$output->writeln('Note: using pcntl_fork() for the PHPStan Pro worker (experimental).');
-		}
 
 		$loop = new StreamSelectLoop();
 		$server = new TcpServer('127.0.0.1:0', $loop);

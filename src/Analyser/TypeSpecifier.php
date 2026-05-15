@@ -2538,15 +2538,12 @@ final class TypeSpecifier
 			}
 		}
 
-		if (!($expr instanceof AlwaysRememberedExpr)) {
-			$containsNonPureCall = $this->expressionContainsNonPureCall($expr, $scope);
-			if ($containsNonPureCall->yes() || (!$this->rememberPossiblyImpureFunctionValues && !$containsNonPureCall->no())) {
-				if (isset($containsNull) && !$containsNull) {
-					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
-				}
-
-				return new SpecifiedTypes([], []);
+		if (!($expr instanceof AlwaysRememberedExpr) && $this->expressionContainsNonPureCall($expr, $scope)) {
+			if (isset($containsNull) && !$containsNull) {
+				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
 			}
+
+			return new SpecifiedTypes([], []);
 		}
 
 		$sureTypes = [];
@@ -2577,76 +2574,76 @@ final class TypeSpecifier
 		return $types;
 	}
 
-	private function expressionContainsNonPureCall(Expr $expr, Scope $scope): TrinaryLogic
+	private function expressionContainsNonPureCall(Expr $expr, Scope $scope): bool
 	{
 		$nodeFinder = new NodeFinder();
-		$callNodes = $nodeFinder->find([$expr], static fn (Node $node): bool => $node instanceof FuncCall || $node instanceof MethodCall || $node instanceof StaticCall);
-
-		$result = TrinaryLogic::createNo();
-		foreach ($callNodes as $callNode) {
-			$result = $result->or($this->callNodeHasSideEffects($callNode, $scope));
-			if ($result->yes()) {
-				return $result;
-			}
-		}
-
-		return $result;
-	}
-
-	private function callNodeHasSideEffects(Node $node, Scope $scope): TrinaryLogic
-	{
-		if ($node instanceof FuncCall) {
-			if ($node->name instanceof Name) {
-				if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
-					return TrinaryLogic::createYes();
-				}
-				return $this->reflectionProvider->getFunction($node->name, $scope)->hasSideEffects();
+		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($scope): bool {
+			if (!$node instanceof Expr) {
+				return false;
 			}
 
-			$nameType = $scope->getType($node->name);
-			if ($nameType->isCallable()->yes()) {
-				$isPure = null;
-				foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
-					$variantIsPure = $variant->isPure();
-					$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
+			if ($node instanceof FuncCall) {
+				if ($node->name instanceof Name) {
+					if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+						return true;
+					}
+					$hasSideEffects = $this->reflectionProvider->getFunction($node->name, $scope)->hasSideEffects();
+					return $hasSideEffects->yes()
+						|| (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no());
 				}
-				if ($isPure !== null) {
-					return $isPure->negate();
+
+				$nameType = $scope->getType($node->name);
+				if ($nameType->isCallable()->yes()) {
+					$isPure = null;
+					foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
+						$variantIsPure = $variant->isPure();
+						$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
+					}
+					if ($isPure !== null) {
+						return $isPure->no()
+							|| (!$this->rememberPossiblyImpureFunctionValues && !$isPure->yes());
+					}
 				}
+
+				return false;
 			}
 
-			return TrinaryLogic::createNo();
-		}
-
-		if ($node instanceof MethodCall) {
-			if ($node->name instanceof Identifier) {
-				$calledOnType = $scope->getType($node->var);
-				$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->name);
-				if ($methodReflection === null) {
-					return TrinaryLogic::createMaybe();
+			if ($node instanceof MethodCall) {
+				if ($node->name instanceof Identifier) {
+					$calledOnType = $scope->getType($node->var);
+					$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->name);
+					if ($methodReflection === null) {
+						return true;
+					}
+					$hasSideEffects = $methodReflection->hasSideEffects();
+					return $hasSideEffects->yes()
+						|| (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no());
 				}
-				return $methodReflection->hasSideEffects();
+				return true;
 			}
-			return TrinaryLogic::createMaybe();
-		}
 
-		if ($node instanceof StaticCall) {
-			if ($node->name instanceof Identifier) {
-				if ($node->class instanceof Name) {
-					$calledOnType = $scope->resolveTypeByName($node->class);
-				} else {
-					$calledOnType = $scope->getType($node->class);
+			if ($node instanceof StaticCall) {
+				if ($node->name instanceof Identifier) {
+					if ($node->class instanceof Name) {
+						$calledOnType = $scope->resolveTypeByName($node->class);
+					} else {
+						$calledOnType = $scope->getType($node->class);
+					}
+					$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->name);
+					if ($methodReflection === null) {
+						return true;
+					}
+					$hasSideEffects = $methodReflection->hasSideEffects();
+					return $hasSideEffects->yes()
+						|| (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no());
 				}
-				$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->name);
-				if ($methodReflection === null) {
-					return TrinaryLogic::createMaybe();
-				}
-				return $methodReflection->hasSideEffects();
+				return true;
 			}
-			return TrinaryLogic::createMaybe();
-		}
 
-		return TrinaryLogic::createNo();
+			return false;
+		});
+
+		return $found !== null;
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

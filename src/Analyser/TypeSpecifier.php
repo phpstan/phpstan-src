@@ -2578,10 +2578,6 @@ final class TypeSpecifier
 	{
 		$nodeFinder = new NodeFinder();
 		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($scope): bool {
-			if (!$node instanceof Expr) {
-				return false;
-			}
-
 			if ($node instanceof FuncCall) {
 				if ($node->name instanceof Name) {
 					if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {

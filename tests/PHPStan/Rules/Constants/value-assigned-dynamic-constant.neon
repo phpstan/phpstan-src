@@ -5,3 +5,5 @@ parameters:
 	dynamicConstantNames:
 		BAR_CONSTANT: 'int|string|null'
 		ValueAssignedToClassConstantDynamicNames\Foo::BAR: 'int|string|null'
+		ValueAssignedToClassConstantDynamicNames\Bar::DYNAMIC: 'int'
+		ValueAssignedToClassConstantDynamicNames\Foo::MAYBE_BAR: 'positive-int'

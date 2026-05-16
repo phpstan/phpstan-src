@@ -184,6 +184,17 @@ final class NewHandler implements ExprHandler
 				);
 			}
 
+			if ($classReflection !== null && $constructorReflection === null && !$classReflection->isFinal() && $this->implicitThrows) {
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'new',
+					sprintf('instantiation of class %s', $classReflection->getDisplayName()),
+					false,
+				);
+			}
+
 			if ($parametersAcceptor !== null) {
 				$normalizedExpr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
 			}

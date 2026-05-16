@@ -225,4 +225,9 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14557-function.php'], []);
 	}
 
+	public function testBug6574(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6574.php'], []);
+	}
+
 }

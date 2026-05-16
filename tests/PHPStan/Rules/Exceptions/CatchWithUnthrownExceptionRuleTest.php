@@ -273,10 +273,6 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - ArgumentCountError is never thrown in the try block.',
 				65,
 			],
-			[
-				'Dead catch - Throwable is never thrown in the try block.',
-				119,
-			],
 		]);
 	}
 
@@ -796,6 +792,16 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	public function testBug14569(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14569.php'], []);
+	}
+
+	public function testBug6574(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6574.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				83,
+			],
+		]);
 	}
 
 }

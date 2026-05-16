@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -22,6 +24,14 @@ use function sprintf;
 #[RegisteredRule(level: 2)]
 final class ValueAssignedToClassConstantRule implements Rule
 {
+
+	public function __construct(
+		private ConstantResolver $constantResolver,
+		#[AutowiredParameter(ref: '%featureToggles.checkDynamicConstantNameValues%')]
+		private bool $checkDynamicConstantNameValues,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -62,6 +72,25 @@ final class ValueAssignedToClassConstantRule implements Rule
 		$phpDocType = $constantReflection->getPhpDocType();
 		if ($phpDocType === null) {
 			if ($nativeType === null) {
+				if (!$this->checkDynamicConstantNameValues) {
+					return [];
+				}
+				$configuredType = $this->constantResolver->getConfiguredClassConstantType($classReflection->getName(), $constantName);
+				if ($configuredType !== null) {
+					$accepts = $configuredType->accepts($valueExprType, true);
+					if (!$accepts->yes()) {
+						$verbosity = VerbosityLevel::getRecommendedLevelByType($configuredType, $valueExprType);
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Configuration defined type for constant %s::%s (%s) does not accept value %s.',
+								$constantReflection->getDeclaringClass()->getDisplayName(),
+								$constantName,
+								$configuredType->describe(VerbosityLevel::typeOnly()),
+								$valueExprType->describe($verbosity),
+							))->acceptsReasonsTip($accepts->reasons)->identifier('classConstant.value')->build(),
+						];
+					}
+				}
 				return [];
 			}
 

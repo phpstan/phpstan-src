@@ -18,3 +18,4 @@ parameters:
 		curlSetOptArrayTypes: true
 		checkDateIntervalConstructor: true
 		reportMethodPurityOverride: true
+		checkDynamicConstantNameValues: true

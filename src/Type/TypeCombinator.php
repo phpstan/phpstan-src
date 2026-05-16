@@ -64,8 +64,20 @@ final class TypeCombinator
 	public static function remove(Type $fromType, Type $typeToRemove): Type
 	{
 		if ($typeToRemove instanceof UnionType) {
-			foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
-				$fromType = self::remove($fromType, $unionTypeToRemove);
+			$typesToRemove = $typeToRemove->getTypes();
+			$changed = true;
+			while ($changed && count($typesToRemove) > 0) {
+				$changed = false;
+				foreach ($typesToRemove as $key => $unionTypeToRemove) {
+					$newFromType = self::remove($fromType, $unionTypeToRemove);
+					if ($newFromType === $fromType) {
+						continue;
+					}
+
+					$fromType = $newFromType;
+					unset($typesToRemove[$key]);
+					$changed = true;
+				}
 			}
 			return $fromType;
 		}

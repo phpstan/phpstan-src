@@ -15,12 +15,16 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -34,6 +38,7 @@ final class BooleanAndHandler implements ExprHandler
 
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
@@ -99,15 +104,42 @@ final class BooleanAndHandler implements ExprHandler
 
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftTruthyScope), $scope, $storage, $context);
 
+		$leftTruthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
+
 		return new ExpressionResult(
 			$leftMergedWithRightScope,
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 			impurePoints: array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-			truthyScopeCallback: static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr->right),
+			truthyScopeCallback: static fn (): MutatingScope => self::computeTruthyScope($rightResult->getScope(), $expr->right, $leftTruthySpecifiedTypes, $leftTruthyScope),
 			falseyScopeCallback: static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
 		);
+	}
+
+	private static function computeTruthyScope(
+		MutatingScope $rightScope,
+		Expr $rightExpr,
+		SpecifiedTypes $leftTruthySpecifiedTypes,
+		MutatingScope $leftTruthyScope,
+	): MutatingScope
+	{
+		$scope = $rightScope->filterByTruthyValue($rightExpr);
+
+		foreach ($leftTruthySpecifiedTypes->getSureNotTypes() as [$exprNode, $sureNotType]) {
+			if (!$leftTruthyScope->getType($exprNode)->equals($rightScope->getType($exprNode))) {
+				continue;
+			}
+
+			$exprType = $scope->getType($exprNode);
+			if (TypeCombinator::remove($exprType, $sureNotType) === $exprType) {
+				continue;
+			}
+
+			$scope = $scope->removeTypeFromExpression($exprNode, $sureNotType);
+		}
+
+		return $scope;
 	}
 
 }

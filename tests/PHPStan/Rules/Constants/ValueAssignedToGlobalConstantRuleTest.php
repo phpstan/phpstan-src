@@ -30,7 +30,7 @@ class ValueAssignedToGlobalConstantRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/value-assigned-to-global-constant.php'], [
 			[
-				'Configuration defined type for constant BAR_CONSTANT (int|string|null) is incompatible with value false.',
+				'Configuration defined type for constant BAR_CONSTANT (int|string|null) does not accept value false.',
 				3,
 			],
 		]);

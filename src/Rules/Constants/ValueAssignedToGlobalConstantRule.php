@@ -50,7 +50,7 @@ final class ValueAssignedToGlobalConstantRule implements Rule
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($configuredType, $valueType);
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Configuration defined type for constant %s (%s) is incompatible with value %s.',
+				'Configuration defined type for constant %s (%s) does not accept value %s.',
 				$constantName,
 				$configuredType->describe(VerbosityLevel::typeOnly()),
 				$valueType->describe($verbosity),

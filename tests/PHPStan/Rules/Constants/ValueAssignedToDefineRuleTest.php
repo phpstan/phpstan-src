@@ -30,11 +30,11 @@ class ValueAssignedToDefineRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/value-assigned-to-define.php'], [
 			[
-				'Configuration defined type for constant BAR_CONSTANT (int|string|null) is incompatible with value false.',
+				'Configuration defined type for constant BAR_CONSTANT (int|string|null) does not accept value false.',
 				5,
 			],
 			[
-				'Configuration defined type for constant BAR_CONSTANT (int|string|null) is incompatible with value int|false.',
+				'Configuration defined type for constant BAR_CONSTANT (int|string|null) does not accept value int|false.',
 				6,
 			],
 		]);

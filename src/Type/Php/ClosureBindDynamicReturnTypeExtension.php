@@ -9,7 +9,9 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
 final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
@@ -32,7 +34,7 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 			return null;
 		}
 
-		return $closureType;
+		return TypeCombinator::union($closureType, new NullType());
 	}
 
 }

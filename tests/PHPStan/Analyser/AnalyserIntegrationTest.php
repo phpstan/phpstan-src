@@ -473,13 +473,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4734.php');
-		$this->assertCount(5, $errors); // could be 3
+		$this->assertCount(9, $errors); // could be 3
 
 		$this->assertSame('Static property Bug4734\Foo::$httpMethodParameterOverride (bool) is never assigned false so the property type can be changed to true.', $errors[0]->getMessage()); // should not error
 		$this->assertSame('Property Bug4734\Foo::$httpMethodParameterOverride2 (bool) is never assigned false so the property type can be changed to true.', $errors[1]->getMessage()); // should not error
 		$this->assertSame('Unsafe access to private property Bug4734\Foo::$httpMethodParameterOverride through static::.', $errors[2]->getMessage());
-		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[3]->getMessage());
-		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[4]->getMessage());
+		$this->assertSame('Trying to invoke (Closure(): void)|null but it might not be a callable.', $errors[3]->getMessage());
+		$this->assertSame('Trying to invoke (Closure(): void)|null but it might not be a callable.', $errors[4]->getMessage());
+		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[5]->getMessage());
+		$this->assertSame('Trying to invoke (Closure(): void)|null but it might not be a callable.', $errors[6]->getMessage());
+		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[7]->getMessage());
+		$this->assertSame('Trying to invoke (Closure(): void)|null but it might not be a callable.', $errors[8]->getMessage());
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

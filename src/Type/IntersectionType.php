@@ -43,6 +43,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -669,6 +670,10 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
+			if ($type instanceof ObjectType && !$type instanceof GenericObjectType && $this->hasGenericAncestorWithPropertyInIntersection($type, $propertyName, false)) {
+				continue;
+			}
+
 			$propertyPrototypes[] = $type->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->withFechedOnType($this);
 		}
 
@@ -699,6 +704,10 @@ class IntersectionType implements CompoundType
 		$propertyPrototypes = [];
 		foreach ($this->types as $type) {
 			if (!$type->hasStaticProperty($propertyName)->yes()) {
+				continue;
+			}
+
+			if ($type instanceof ObjectType && !$type instanceof GenericObjectType && $this->hasGenericAncestorWithPropertyInIntersection($type, $propertyName, true)) {
 				continue;
 			}
 
@@ -740,6 +749,10 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
+			if ($type instanceof ObjectType && !$type instanceof GenericObjectType && $this->hasGenericAncestorWithMethodInIntersection($type, $methodName)) {
+				continue;
+			}
+
 			$methodPrototypes[] = $type->getUnresolvedMethodPrototype($methodName, $scope)->withCalledOnType($this);
 		}
 
@@ -753,6 +766,62 @@ class IntersectionType implements CompoundType
 		}
 
 		return new IntersectionTypeUnresolvedMethodPrototypeReflection($methodName, $methodPrototypes);
+	}
+
+	private function hasGenericAncestorWithMethodInIntersection(ObjectType $type, string $methodName): bool
+	{
+		$nakedReflection = $type->getNakedClassReflection();
+		if ($nakedReflection === null || !$nakedReflection->isGeneric()) {
+			return false;
+		}
+
+		foreach ($this->types as $otherType) {
+			if ($otherType === $type) {
+				continue;
+			}
+			if (!$otherType instanceof GenericObjectType) {
+				continue;
+			}
+			if ($type->getAncestorWithClassName($otherType->getClassName()) === null) {
+				continue;
+			}
+			if ($otherType->hasMethod($methodName)->yes()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function hasGenericAncestorWithPropertyInIntersection(ObjectType $type, string $propertyName, bool $static): bool
+	{
+		$nakedReflection = $type->getNakedClassReflection();
+		if ($nakedReflection === null || !$nakedReflection->isGeneric()) {
+			return false;
+		}
+
+		foreach ($this->types as $otherType) {
+			if ($otherType === $type) {
+				continue;
+			}
+			if (!$otherType instanceof GenericObjectType) {
+				continue;
+			}
+			if ($type->getAncestorWithClassName($otherType->getClassName()) === null) {
+				continue;
+			}
+			if ($static) {
+				if ($otherType->hasStaticProperty($propertyName)->yes()) {
+					return true;
+				}
+			} else {
+				if ($otherType->hasInstanceProperty($propertyName)->yes()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public function canAccessConstants(): TrinaryLogic

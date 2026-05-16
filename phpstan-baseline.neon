@@ -1438,7 +1438,19 @@ parameters:
 			path: src/Type/IntersectionType.php
 
 		-
+			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 5
+			path: src/Type/IntersectionType.php
+
+		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 3
+			path: src/Type/IntersectionType.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/IntersectionType.php

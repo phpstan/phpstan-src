@@ -265,6 +265,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
+		$scopeBeforeArgs = $scope;
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallbackForArgs, $context);
 		$scope = $argsResult->getScope();
 		$hasYield = $argsResult->hasYield();
@@ -395,8 +396,8 @@ final class FuncCallHandler implements ExprHandler
 				$stmt,
 				$arrayArg,
 				new NativeTypeExpr(
-					$this->getArrayFunctionAppendingType($functionReflection, $scope, $normalizedExpr),
-					$this->getArrayFunctionAppendingType($functionReflection, $scope->doNotTreatPhpDocTypesAsCertain(), $normalizedExpr),
+					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs, $normalizedExpr),
+					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs->doNotTreatPhpDocTypesAsCertain(), $normalizedExpr),
 				),
 				$nodeCallback,
 			)->getScope();

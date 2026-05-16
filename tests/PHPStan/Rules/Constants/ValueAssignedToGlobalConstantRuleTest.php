@@ -28,10 +28,14 @@ class ValueAssignedToGlobalConstantRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/value-assigned-to-global-constant.php'], [
+		$this->analyse([__DIR__ . '/data/dynamic-int-constant-definition.php', __DIR__ . '/data/value-assigned-to-global-constant.php'], [
 			[
 				'Configuration defined type for constant BAR_CONSTANT (int|string|null) does not accept value false.',
 				3,
+			],
+			[
+				'Configuration defined type for constant MAYBE_CONSTANT (int<1, max>) does not accept value int.',
+				5,
 			],
 		]);
 	}

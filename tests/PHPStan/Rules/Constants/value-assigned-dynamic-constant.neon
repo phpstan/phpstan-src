@@ -4,6 +4,8 @@ includes:
 parameters:
 	dynamicConstantNames:
 		BAR_CONSTANT: 'int|string|null'
+		DYNAMIC_INT_CONSTANT: 'int'
+		MAYBE_CONSTANT: 'positive-int'
 		ValueAssignedToClassConstantDynamicNames\Foo::BAR: 'int|string|null'
 		ValueAssignedToClassConstantDynamicNames\Bar::DYNAMIC: 'int'
 		ValueAssignedToClassConstantDynamicNames\Foo::MAYBE_BAR: 'positive-int'

@@ -179,4 +179,9 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
+	public function testBug14617(): void
+	{
+		$this->analyse([__DIR__ . '/../Classes/data/bug-14617.php'], []);
+	}
+
 }

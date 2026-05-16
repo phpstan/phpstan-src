@@ -45,6 +45,9 @@ final class ConstantResolver
 	/** @var array<string, true> */
 	private array $currentlyResolving = [];
 
+	/** @var array<string, Type|null> */
+	private array $configuredTypesCache = [];
+
 	/**
 	 * @param string[] $dynamicConstantNames
 	 * @param int|array{min: int, max: int}|null $phpVersion
@@ -416,29 +419,43 @@ final class ConstantResolver
 
 	public function getConfiguredGlobalConstantType(string $constantName): ?Type
 	{
+		if (array_key_exists($constantName, $this->configuredTypesCache)) {
+			return $this->configuredTypesCache[$constantName];
+		}
+
+		$result = null;
 		if (array_key_exists($constantName, $this->dynamicConstantNames)) {
 			$phpdocTypes = $this->dynamicConstantNames[$constantName];
 			if ($this->container !== null) {
 				$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
-				return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], className: null));
+				$result = $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], className: null));
 			}
 		}
 
-		return null;
+		$this->configuredTypesCache[$constantName] = $result;
+
+		return $result;
 	}
 
 	public function getConfiguredClassConstantType(string $className, string $constantName): ?Type
 	{
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
+		if (array_key_exists($lookupConstantName, $this->configuredTypesCache)) {
+			return $this->configuredTypesCache[$lookupConstantName];
+		}
+
+		$result = null;
 		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
 			$phpdocTypes = $this->dynamicConstantNames[$lookupConstantName];
 			if ($this->container !== null) {
 				$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
-				return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], $className));
+				$result = $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], $className));
 			}
 		}
 
-		return null;
+		$this->configuredTypesCache[$lookupConstantName] = $result;
+
+		return $result;
 	}
 
 	public function resolveConstantType(string $constantName, Type $constantType): Type

@@ -414,7 +414,7 @@ final class ConstantResolver
 		return $this->composerPhpVersionFactory->getMaxVersion();
 	}
 
-	public function getExplicitGlobalConstantType(string $constantName): ?Type
+	public function getConfiguredGlobalConstantType(string $constantName): ?Type
 	{
 		if (array_key_exists($constantName, $this->dynamicConstantNames)) {
 			$phpdocTypes = $this->dynamicConstantNames[$constantName];
@@ -427,7 +427,7 @@ final class ConstantResolver
 		return null;
 	}
 
-	public function getExplicitClassConstantType(string $className, string $constantName): ?Type
+	public function getConfiguredClassConstantType(string $className, string $constantName): ?Type
 	{
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
 		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
@@ -445,7 +445,7 @@ final class ConstantResolver
 	{
 		if ($constantType->isConstantValue()->yes()) {
 			if (array_key_exists($constantName, $this->dynamicConstantNames)) {
-				return $this->getExplicitGlobalConstantType($constantName) ?? $constantType;
+				return $this->getConfiguredGlobalConstantType($constantName) ?? $constantType;
 			}
 			if (in_array($constantName, $this->dynamicConstantNames, true)) {
 				return $this->generalizeDynamicConstantType($constantType);
@@ -460,7 +460,7 @@ final class ConstantResolver
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
 		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
 			if ($constantType->isConstantValue()->yes()) {
-				$explicitType = $this->getExplicitClassConstantType($className, $constantName);
+				$explicitType = $this->getConfiguredClassConstantType($className, $constantName);
 				if ($explicitType !== null) {
 					return $explicitType;
 				}

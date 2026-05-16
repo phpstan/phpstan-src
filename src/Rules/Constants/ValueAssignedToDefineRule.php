@@ -57,7 +57,7 @@ final class ValueAssignedToDefineRule implements Rule
 				continue;
 			}
 
-			$configuredType = $this->constantResolver->getExplicitGlobalConstantType($constantName);
+			$configuredType = $this->constantResolver->getConfiguredGlobalConstantType($constantName);
 			if ($configuredType === null) {
 				continue;
 			}

@@ -36,7 +36,7 @@ final class ValueAssignedToGlobalConstantRule implements Rule
 				$constantName = $const->name->toString();
 			}
 
-			$configuredType = $this->constantResolver->getExplicitGlobalConstantType($constantName);
+			$configuredType = $this->constantResolver->getConfiguredGlobalConstantType($constantName);
 			if ($configuredType === null) {
 				continue;
 			}

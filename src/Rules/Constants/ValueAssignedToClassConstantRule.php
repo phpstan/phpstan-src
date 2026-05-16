@@ -75,7 +75,7 @@ final class ValueAssignedToClassConstantRule implements Rule
 				if (!$this->checkDynamicConstantNameValues) {
 					return [];
 				}
-				$configuredType = $this->constantResolver->getExplicitClassConstantType($classReflection->getName(), $constantName);
+				$configuredType = $this->constantResolver->getConfiguredClassConstantType($classReflection->getName(), $constantName);
 				if ($configuredType !== null) {
 					$accepts = $configuredType->accepts($valueExprType, true);
 					if (!$accepts->yes()) {

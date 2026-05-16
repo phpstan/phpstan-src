@@ -35,6 +35,10 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 			return null;
 		}
 
+		if ($closureType->isStaticClosure()->no()) {
+			return $closureType;
+		}
+
 		if (isset($args[1]) && $scope->getType($args[1]->value)->isNull()->yes()) {
 			return $closureType;
 		}

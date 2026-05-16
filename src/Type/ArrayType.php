@@ -57,6 +57,8 @@ class ArrayType implements Type
 
 	private Type $keyType;
 
+	private ?TrinaryLogic $isList = null;
+
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
 	{
@@ -262,15 +264,19 @@ class ArrayType implements Type
 
 	public function isList(): TrinaryLogic
 	{
-		if (IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($this->getKeyType())->no()) {
-			return TrinaryLogic::createNo();
+		if ($this->isList === null) {
+			if (IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($this->getKeyType())->no()) {
+				return $this->isList = TrinaryLogic::createNo();
+			}
+
+			if ($this->getKeyType()->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
+				return $this->isList = TrinaryLogic::createNo();
+			}
+
+			return $this->isList = TrinaryLogic::createMaybe();
 		}
 
-		if ($this->getKeyType()->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
-			return TrinaryLogic::createNo();
-		}
-
-		return TrinaryLogic::createMaybe();
+		return $this->isList;
 	}
 
 	public function isConstantValue(): TrinaryLogic

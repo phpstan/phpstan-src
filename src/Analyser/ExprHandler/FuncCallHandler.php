@@ -435,9 +435,22 @@ final class FuncCallHandler implements ExprHandler
 			$arrayArgType = $scope->getType($arrayArg);
 			$arrayArgNativeType = $scope->getNativeType($arrayArg);
 
-			$offsetType = $scope->getType($normalizedExpr->getArgs()[1]->value);
-			$lengthType = isset($normalizedExpr->getArgs()[2]) ? $scope->getType($normalizedExpr->getArgs()[2]->value) : new NullType();
-			$replacementType = isset($normalizedExpr->getArgs()[3]) ? $scope->getType($normalizedExpr->getArgs()[3]->value) : new ConstantArrayType([], []);
+			$offsetType = $scopeBeforeArgs->getType($normalizedExpr->getArgs()[1]->value);
+
+			if (isset($normalizedExpr->getArgs()[2])) {
+				$lengthType = $scopeBeforeArgs->getType($normalizedExpr->getArgs()[2]->value);
+			} else {
+				$lengthType = new NullType();
+			}
+
+			if (isset($normalizedExpr->getArgs()[3])) {
+				$replacementArg = $normalizedExpr->getArgs()[3]->value;
+				$replacementType = $scopeBeforeArgs->getType($replacementArg);
+				$replacementNativeType = $scopeBeforeArgs->getNativeType($replacementArg);
+			} else {
+				$replacementType = new ConstantArrayType([], []);
+				$replacementNativeType = new ConstantArrayType([], []);
+			}
 
 			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
@@ -446,7 +459,7 @@ final class FuncCallHandler implements ExprHandler
 				$arrayArg,
 				new NativeTypeExpr(
 					$arrayArgType->spliceArray($offsetType, $lengthType, $replacementType),
-					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
+					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementNativeType),
 				),
 				$nodeCallback,
 			)->getScope();

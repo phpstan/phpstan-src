@@ -18,7 +18,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function is_numeric;
-use function str_contains;
 use function strtolower;
 use function strtoupper;
 
@@ -40,23 +39,20 @@ final class DateIntervalFormatReturnTypeHelper
 		$daysIsInt = $intervalType->hasInstanceProperty('days')->yes()
 			&& (new IntegerType())->isSuperTypeOf($intervalType->getInstanceProperty('days', $scope)->getReadableType())->yes();
 
-		$dateInterval = new DateInterval('P0D');
-		$diffDateInterval = $daysIsInt
+		$dateInterval = $daysIsInt
 			? (new DateTime('2000-01-01'))->diff(new DateTime('2000-01-01'))
-			: null;
+			: new DateInterval('P0D');
 
 		$possibleReturnTypes = [];
 		foreach ($constantStrings as $string) {
 			$formatString = $string->getValue();
-
-			$useDiffInterval = $diffDateInterval !== null && str_contains($formatString, '%a');
-			$value = ($useDiffInterval ? $diffDateInterval : $dateInterval)->format($formatString);
+			$value = $dateInterval->format($formatString);
 
 			$accessories = [];
 			if (is_numeric($value)) {
 				$accessories[] = new AccessoryNumericStringType();
 			}
-			if ($value !== '0' && $value !== '' && !($formatString === '%a' && !$useDiffInterval)) {
+			if ($value !== '0' && $value !== '' && !($formatString === '%a' && !$daysIsInt)) {
 				$accessories[] = new AccessoryNonFalsyStringType();
 			} elseif ($value !== '') {
 				$accessories[] = new AccessoryNonEmptyStringType();

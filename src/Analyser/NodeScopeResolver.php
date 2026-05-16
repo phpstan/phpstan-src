@@ -1502,9 +1502,10 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($scope);
 			$bodyScopeMaybeRan = $bodyScope;
 			$storage = $originalStorage;
-			$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			$condResult = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$bodyScope = $condResult->getTruthyScope();
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
-			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
+			$finalScope = $this->getWhileLoopExitScope($stmt->cond, $condResult, $finalScopeResult->getScope());
 
 			$alwaysIterates = false;
 			$neverIterates = false;
@@ -1727,9 +1728,11 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($initScope);
 
 			$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
+			$lastCondResult = null;
 			if ($lastCondExpr !== null) {
 				$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
-				$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+				$lastCondResult = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$bodyScope = $lastCondResult->getTruthyScope();
 				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
 			}
 
@@ -1746,7 +1749,7 @@ class NodeScopeResolver
 			$finalScope = $finalScope->generalizeWith($loopScope);
 
 			if ($lastCondExpr !== null) {
-				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
+				$finalScope = $this->getWhileLoopExitScope($lastCondExpr, $lastCondResult, $finalScope);
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
@@ -4817,6 +4820,31 @@ class NodeScopeResolver
 			$isPassedUnreachableStatement = true;
 		}
 		return $stmts;
+	}
+
+	private function conditionHasDirectIncDec(Expr $cond): bool
+	{
+		if (!$cond instanceof BinaryOp\Smaller && !$cond instanceof BinaryOp\SmallerOrEqual && !$cond instanceof BinaryOp\Greater && !$cond instanceof BinaryOp\GreaterOrEqual) {
+			return false;
+		}
+
+		return $cond->left instanceof Expr\PreInc
+			|| $cond->left instanceof Expr\PreDec
+			|| $cond->left instanceof Expr\PostInc
+			|| $cond->left instanceof Expr\PostDec
+			|| $cond->right instanceof Expr\PreInc
+			|| $cond->right instanceof Expr\PreDec
+			|| $cond->right instanceof Expr\PostInc
+			|| $cond->right instanceof Expr\PostDec;
+	}
+
+	private function getWhileLoopExitScope(Expr $cond, ExpressionResult $condResult, MutatingScope $bodyOutputScope): MutatingScope
+	{
+		if ($this->conditionHasDirectIncDec($cond)) {
+			return $condResult->getFalseyScope();
+		}
+
+		return $bodyOutputScope->filterByFalseyValue($cond);
 	}
 
 	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope

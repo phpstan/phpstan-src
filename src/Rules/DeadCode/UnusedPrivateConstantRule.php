@@ -6,16 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassConstantsNode;
-use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
-use PHPStan\PhpDocParser\Ast\Node as PhpDocNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use function array_keys;
-use function get_object_vars;
-use function is_array;
 use function preg_match;
 use function preg_quote;
 use function sprintf;
@@ -105,7 +101,7 @@ final class UnusedPrivateConstantRule implements Rule
 		}
 
 		if ($constants !== []) {
-			$this->removePhpDocReferencedConstants($classReflection, $constants);
+			$this->removePhpDocReferencedConstants($node, $classReflection, $constants);
 		}
 
 		$errors = [];
@@ -123,95 +119,29 @@ final class UnusedPrivateConstantRule implements Rule
 	/**
 	 * @param array<string, Node\Const_> $constants
 	 */
-	private function removePhpDocReferencedConstants(ClassReflection $classReflection, array &$constants): void
+	private function removePhpDocReferencedConstants(ClassConstantsNode $node, ClassReflection $classReflection, array &$constants): void
 	{
 		$className = $classReflection->getName();
 
-		$phpDocBlocks = [];
-
-		$resolvedPhpDoc = $classReflection->getResolvedPhpDoc();
-		if ($resolvedPhpDoc !== null) {
-			$phpDocBlocks[] = $resolvedPhpDoc;
-		}
-
-		foreach ($classReflection->getNativeReflection()->getMethods() as $method) {
-			if ($method->getDeclaringClass()->getName() !== $className) {
-				continue;
-			}
-			if (!$classReflection->hasNativeMethod($method->getName())) {
-				continue;
-			}
-			$methodReflection = $classReflection->getNativeMethod($method->getName());
-			$methodPhpDoc = $methodReflection->getResolvedPhpDoc();
-			if ($methodPhpDoc === null) {
+		foreach ($node->getPhpDocFetches() as $phpDocFetch) {
+			if (!$this->isSameClass($phpDocFetch->getClassName(), $className)) {
 				continue;
 			}
 
-			$phpDocBlocks[] = $methodPhpDoc;
-		}
-
-		foreach ($classReflection->getNativeReflection()->getProperties() as $property) {
-			if ($property->getDeclaringClass()->getName() !== $className) {
-				continue;
-			}
-			if (!$classReflection->hasNativeProperty($property->getName())) {
-				continue;
-			}
-			$propertyReflection = $classReflection->getNativeProperty($property->getName());
-			$propertyPhpDoc = $propertyReflection->getResolvedPhpDoc();
-			if ($propertyPhpDoc === null) {
-				continue;
-			}
-
-			$phpDocBlocks[] = $propertyPhpDoc;
-		}
-
-		foreach ($phpDocBlocks as $phpDocBlock) {
-			foreach ($phpDocBlock->getPhpDocNodes() as $phpDocNode) {
-				$this->findConstFetchReferences($phpDocNode, $className, $constants);
-			}
-			if ($constants === []) {
-				return;
-			}
-		}
-	}
-
-	/**
-	 * @param array<string, Node\Const_> $constants
-	 */
-	private function findConstFetchReferences(PhpDocNode $phpDocNode, string $className, array &$constants): void
-	{
-		if ($phpDocNode instanceof ConstFetchNode) {
-			if ($phpDocNode->className !== '' && $this->isSameClass($phpDocNode->className, $className)) {
-				$name = $phpDocNode->name;
-				if (str_contains($name, '*')) {
-					$pattern = '{^' . str_replace('\\*', '.*', preg_quote($name, '{')) . '$}D';
-					foreach (array_keys($constants) as $constantName) {
-						if (preg_match($pattern, $constantName) !== 1) {
-							continue;
-						}
-
-						unset($constants[$constantName]);
-					}
-				} else {
-					unset($constants[$name]);
-				}
-			}
-			return;
-		}
-
-		foreach (get_object_vars($phpDocNode) as $prop) {
-			if ($prop instanceof PhpDocNode) {
-				$this->findConstFetchReferences($prop, $className, $constants);
-			} elseif (is_array($prop)) {
-				foreach ($prop as $item) {
-					if (!($item instanceof PhpDocNode)) {
+			$name = $phpDocFetch->getConstantName();
+			if (str_contains($name, '*')) {
+				$pattern = '{^' . str_replace('\\*', '.*', preg_quote($name, '{')) . '$}D';
+				foreach (array_keys($constants) as $constantName) {
+					if (preg_match($pattern, $constantName) !== 1) {
 						continue;
 					}
 
-					$this->findConstFetchReferences($item, $className, $constants);
+					unset($constants[$constantName]);
 				}
+			} else {
+				unset($constants[$name]);
 			}
+
 			if ($constants === []) {
 				return;
 			}

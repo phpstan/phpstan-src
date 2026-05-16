@@ -273,6 +273,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - ArgumentCountError is never thrown in the try block.',
 				65,
 			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				119,
+			],
 		]);
 	}
 

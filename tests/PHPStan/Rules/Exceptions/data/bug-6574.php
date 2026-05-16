@@ -26,6 +26,20 @@ class NonFinalClass
 {
 }
 
+interface ThrowsVoidInterface
+{
+	/** @throws void */
+	public function __construct();
+}
+
+abstract class AbstractThrowsVoid
+{
+	/** @throws void */
+	public function __construct()
+	{
+	}
+}
+
 final class FinalClass
 {
 }
@@ -86,6 +100,24 @@ function nonFinalClassWithoutConstructor(string $class): void
 	try {
 		new $class();
 	} catch (\Exception $e) {
+	}
+}
+
+/** @param class-string<ThrowsVoidInterface> $class */
+function interfaceWithThrowsVoidConstructor(string $class): void
+{
+	try {
+		new $class();
+	} catch (\Exception $e) { // dead catch - constructor is @throws void
+	}
+}
+
+/** @param class-string<AbstractThrowsVoid> $class */
+function abstractClassWithThrowsVoidConstructor(string $class): void
+{
+	try {
+		new $class();
+	} catch (\Exception $e) { // dead catch - constructor is @throws void
 	}
 }
 

@@ -52,7 +52,7 @@ final class DateIntervalFormatReturnTypeHelper
 			if (is_numeric($value)) {
 				$accessories[] = new AccessoryNumericStringType();
 			}
-			if ($value !== '0' && $value !== '' && !($formatString === '%a' && !$daysIsInt)) {
+			if ($value !== '0' && $value !== '' && ($formatString !== '%a' || $daysIsInt)) {
 				$accessories[] = new AccessoryNonFalsyStringType();
 			} elseif ($value !== '') {
 				$accessories[] = new AccessoryNonEmptyStringType();

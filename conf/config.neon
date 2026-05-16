@@ -45,6 +45,7 @@ parameters:
 		curlSetOptArrayTypes: false
 		checkDateIntervalConstructor: false
 		reportMethodPurityOverride: false
+		reportInvalidInheritDocTag: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

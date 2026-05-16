@@ -15,6 +15,8 @@ conditionalTags:
 		phpstan.restrictedPropertyUsageExtension: %featureToggles.internalTag%
 	PHPStan\Rules\InternalTag\RestrictedInternalMethodUsageExtension:
 		phpstan.restrictedMethodUsageExtension: %featureToggles.internalTag%
+	PHPStan\Rules\PhpDoc\InvalidInheritDocTagRule:
+		phpstan.rules.rule: %featureToggles.reportInvalidInheritDocTag%
 
 services:
 	-
@@ -22,3 +24,6 @@ services:
 
 	-
 		class: PHPStan\Rules\InternalTag\RestrictedInternalMethodUsageExtension
+
+	-
+		class: PHPStan\Rules\PhpDoc\InvalidInheritDocTagRule

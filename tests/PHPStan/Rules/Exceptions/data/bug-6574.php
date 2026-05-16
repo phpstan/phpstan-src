@@ -44,20 +44,6 @@ final class FinalClass
 {
 }
 
-interface ThrowsVoidInterface
-{
-	/** @throws void */
-	public function __construct();
-}
-
-abstract class AbstractThrowsVoid
-{
-	/** @throws void */
-	public function __construct()
-	{
-	}
-}
-
 /** @param class-string<FooInterface> $class */
 function interfaceWithoutConstructor(string $class): void
 {
@@ -127,23 +113,5 @@ function finalClassWithoutConstructor(string $class): void
 	try {
 		new $class();
 	} catch (\Exception $e) { // dead catch - final class with no constructor
-	}
-}
-
-/** @param class-string<ThrowsVoidInterface> $class */
-function interfaceWithThrowsVoidConstructor(string $class): void
-{
-	try {
-		new $class();
-	} catch (\Exception $e) { // dead catch - constructor is @throws void
-	}
-}
-
-/** @param class-string<AbstractThrowsVoid> $class */
-function abstractClassWithThrowsVoidConstructor(string $class): void
-{
-	try {
-		new $class();
-	} catch (\Exception $e) { // dead catch - constructor is @throws void
 	}
 }

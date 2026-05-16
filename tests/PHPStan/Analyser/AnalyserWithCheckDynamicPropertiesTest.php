@@ -12,9 +12,7 @@ class AnalyserWithCheckDynamicPropertiesTest extends PHPStanTestCase
 	public function testBug13529(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13529.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Access to an undefined property object::$bar.', $errors[0]->getMessage());
-		$this->assertSame(8, $errors[0]->getLine());
+		$this->assertCount(0, $errors);
 	}
 
 	/**

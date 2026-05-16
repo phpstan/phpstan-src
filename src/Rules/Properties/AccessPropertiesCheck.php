@@ -140,12 +140,12 @@ final class AccessPropertiesCheck
 					return [];
 				}
 
-				$maybePropertyReflection = $this->pickProperty($scope, $type, $name);
-				if ($maybePropertyReflection !== null && $maybePropertyReflection->isDummy()->no()) {
+				if ($type->getObjectClassNames() === []) {
 					return [];
 				}
 
-				if ($type->getObjectClassNames() === []) {
+				$maybePropertyReflection = $this->pickProperty($scope, $type, $name);
+				if ($maybePropertyReflection !== null && $maybePropertyReflection->isDummy()->no()) {
 					return [];
 				}
 			}

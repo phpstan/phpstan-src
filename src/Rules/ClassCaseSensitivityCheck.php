@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Parser\UseAliasVisitor;
 use PHPStan\Reflection\ReflectionProvider;
 use function sprintf;
 use function strtolower;
@@ -39,6 +40,9 @@ final class ClassCaseSensitivityCheck
 			$realClassName = $classReflection->getName();
 			if (strtolower($realClassName) !== strtolower($className)) {
 				continue; // skip class alias
+			}
+			if ($pair->getNode()->getAttribute(UseAliasVisitor::ATTRIBUTE_NAME) === true) {
+				continue;
 			}
 			if ($realClassName === $className) {
 				continue;

@@ -750,6 +750,8 @@ final class TypeSpecifier
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, $scope),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, $rightScope),
 					$this->processBooleanSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, $scope),
+					$this->processBooleanTruthyConditionalTypes($scope, $expr->left, $leftTypesForHolders, $rightTypesForHolders, $rightScope),
+					$this->processBooleanTruthyConditionalTypes($scope, $expr->right, $rightTypesForHolders, $leftTypesForHolders, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -1115,6 +1117,7 @@ final class TypeSpecifier
 							}
 						}
 					}
+
 				}
 
 				return new SpecifiedTypes();
@@ -2209,6 +2212,81 @@ final class TypeSpecifier
 		}
 
 		return [];
+	}
+
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processBooleanTruthyConditionalTypes(Scope $scope, Expr $leftExpr, SpecifiedTypes $leftFalseyTypes, SpecifiedTypes $rightFalseyTypes, Scope $rightScope): array
+	{
+		if ($leftFalseyTypes->getSureTypes() !== [] || $leftFalseyTypes->getSureNotTypes() !== []) {
+			return [];
+		}
+
+		$leftTruthyTypes = $this->specifyTypesInCondition($scope, $leftExpr, TypeSpecifierContext::createTrue());
+
+		$conditionExpressionTypes = [];
+		foreach ($leftTruthyTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+			if (!$this->isTrackableExpression($expr)) {
+				continue;
+			}
+
+			$scopeType = $scope->getType($expr);
+			$conditionType = TypeCombinator::remove($scopeType, $type);
+			if ($scopeType->equals($conditionType)) {
+				continue;
+			}
+
+			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
+				$expr,
+				$conditionType,
+			);
+		}
+
+		foreach ($leftTruthyTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if (!$this->isTrackableExpression($expr)) {
+				continue;
+			}
+
+			if (isset($conditionExpressionTypes[$exprString])) {
+				continue;
+			}
+
+			$scopeType = $scope->getType($expr);
+			$conditionType = TypeCombinator::intersect($scopeType, $type);
+			if ($scopeType->equals($conditionType)) {
+				continue;
+			}
+
+			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
+				$expr,
+				$conditionType,
+			);
+		}
+
+		if ($conditionExpressionTypes === []) {
+			return [];
+		}
+
+		$holders = [];
+		foreach ($rightFalseyTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if (!$this->isTrackableExpression($expr)) {
+				continue;
+			}
+
+			if (!isset($holders[$exprString])) {
+				$holders[$exprString] = [];
+			}
+
+			$targetScope = $expr instanceof Expr\Variable ? $scope : $rightScope;
+			$holder = new ConditionalExpressionHolder(
+				$conditionExpressionTypes,
+				ExpressionTypeHolder::createYes($expr, TypeCombinator::intersect($targetScope->getType($expr), $type)),
+			);
+			$holders[$exprString][$holder->getKey()] = $holder;
+		}
+
+		return $holders;
 	}
 
 	private function isTrackableExpression(Expr $expr): bool

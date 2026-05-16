@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\Node\Constant\PhpDocClassConstantReference;
 use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
@@ -25,6 +26,8 @@ use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\PhpDoc\Tag\TypedTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
+use PHPStan\PhpDocParser\Ast\Node as PhpDocAstNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -38,7 +41,11 @@ use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function get_object_vars;
+use function in_array;
+use function is_array;
 use function is_bool;
+use function strtolower;
 use function substr;
 
 /**
@@ -153,6 +160,9 @@ final class ResolvedPhpDocBlock
 
 	private ?bool $acceptsNamedArguments = null;
 
+	/** @var PhpDocClassConstantReference[]|false */
+	private array|false $classConstantReferences = false;
+
 	private function __construct()
 	{
 	}
@@ -244,6 +254,7 @@ final class ResolvedPhpDocBlock
 		$self->isAllowedPrivateMutation = false;
 		$self->hasConsistentConstructor = false;
 		$self->acceptsNamedArguments = true;
+		$self->classConstantReferences = [];
 
 		return $self;
 	}
@@ -300,6 +311,7 @@ final class ResolvedPhpDocBlock
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
+		$result->classConstantReferences = $this->getClassConstantReferences();
 
 		return $result;
 	}
@@ -1146,6 +1158,65 @@ final class ResolvedPhpDocBlock
 			$positionVariance,
 		);
 		return $tag->withType($type);
+	}
+
+	/**
+	 * @return PhpDocClassConstantReference[]
+	 */
+	public function getClassConstantReferences(): array
+	{
+		if ($this->classConstantReferences !== false) {
+			return $this->classConstantReferences;
+		}
+
+		$nameScope = $this->nameScope;
+		if ($nameScope === null) {
+			$this->classConstantReferences = [];
+			return $this->classConstantReferences;
+		}
+
+		$result = [];
+		foreach ($this->phpDocNodes as $phpDocNode) {
+			$this->collectConstFetchNodes($phpDocNode, $nameScope, $result);
+		}
+
+		$this->classConstantReferences = $result;
+
+		return $result;
+	}
+
+	/**
+	 * @param PhpDocClassConstantReference[] $result
+	 */
+	private function collectConstFetchNodes(PhpDocAstNode $node, NameScope $nameScope, array &$result): void
+	{
+		if ($node instanceof ConstFetchNode) {
+			if ($node->className !== '') {
+				if (in_array(strtolower($node->className), ['self', 'static'], true)) {
+					$className = $nameScope->getClassName();
+				} else {
+					$className = $nameScope->resolveStringName($node->className);
+				}
+
+				if ($className !== null) {
+					$result[] = new PhpDocClassConstantReference($className, $node->name);
+				}
+			}
+			return;
+		}
+
+		foreach (get_object_vars($node) as $prop) {
+			if ($prop instanceof PhpDocAstNode) {
+				$this->collectConstFetchNodes($prop, $nameScope, $result);
+			} elseif (is_array($prop)) {
+				foreach ($prop as $item) {
+					if (!($item instanceof PhpDocAstNode)) {
+						continue;
+					}
+					$this->collectConstFetchNodes($item, $nameScope, $result);
+				}
+			}
+		}
 	}
 
 }

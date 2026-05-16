@@ -17,7 +17,6 @@ use function preg_quote;
 use function sprintf;
 use function str_contains;
 use function str_replace;
-use function strtolower;
 
 /**
  * @implements Rule<ClassConstantsNode>
@@ -124,7 +123,7 @@ final class UnusedPrivateConstantRule implements Rule
 		$className = $classReflection->getName();
 
 		foreach ($node->getPhpDocFetches() as $phpDocFetch) {
-			if (!$this->isSameClass($phpDocFetch->getClassName(), $className)) {
+			if ($phpDocFetch->getClassName() !== $className) {
 				continue;
 			}
 
@@ -146,12 +145,6 @@ final class UnusedPrivateConstantRule implements Rule
 				return;
 			}
 		}
-	}
-
-	private function isSameClass(string $fetchedClassName, string $className): bool
-	{
-		$lower = strtolower($fetchedClassName);
-		return $lower === 'self' || $lower === 'static' || strtolower($className) === strtolower($fetchedClassName);
 	}
 
 }

@@ -1061,6 +1061,8 @@ final class AssignHandler implements ExprHandler
 		return $scope;
 	}
 
+	private const ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT = 5;
+
 	/**
 	 * @param non-empty-list<ArrayDimFetch> $dimFetchStack
 	 * @param non-empty-list<array{Type|null, ArrayDimFetch}> $offsetTypes
@@ -1073,28 +1075,34 @@ final class AssignHandler implements ExprHandler
 
 		$offsetValueTypeStack = [$offsetValueType];
 		$generalizeOnWrite = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
+		$dimDepth = 0;
 		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
+			$dimDepth++;
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);
 				$generalizeOnWrite = false;
 			} else {
-				$has = $offsetValueType->hasOffsetValueType($offsetType);
-				if ($has->yes()) {
-					if ($scope->hasExpressionType($dimFetch)->yes()) {
-						$offsetValueType = $scope->getType($dimFetch);
-					} else {
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-					}
-				} elseif ($has->maybe()) {
-					if ($scope->hasExpressionType($dimFetch)->yes()) {
-						$generalizeOnWrite = false;
-						$offsetValueType = $scope->getType($dimFetch);
-					} else {
-						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
-					}
+				if ($dimDepth > self::ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT && $offsetValueType->isOversizedArray()->yes()) {
+					$offsetValueType = new MixedType();
 				} else {
-					$generalizeOnWrite = false;
-					$offsetValueType = new ConstantArrayType([], []);
+					$has = $offsetValueType->hasOffsetValueType($offsetType);
+					if ($has->yes()) {
+						if ($scope->hasExpressionType($dimFetch)->yes()) {
+							$offsetValueType = $scope->getType($dimFetch);
+						} else {
+							$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+						}
+					} elseif ($has->maybe()) {
+						if ($scope->hasExpressionType($dimFetch)->yes()) {
+							$generalizeOnWrite = false;
+							$offsetValueType = $scope->getType($dimFetch);
+						} else {
+							$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
+						}
+					} else {
+						$generalizeOnWrite = false;
+						$offsetValueType = new ConstantArrayType([], []);
+					}
 				}
 			}
 

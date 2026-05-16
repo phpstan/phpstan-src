@@ -73,6 +73,11 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14617(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-closure.php'], []);
+	}
+
 	public function testValidTypehintPhp71(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-7.1-typehints.php'], [

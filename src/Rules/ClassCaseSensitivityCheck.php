@@ -39,7 +39,7 @@ final class ClassCaseSensitivityCheck
 			}
 			$realClassName = $classReflection->getName();
 			if (strtolower($realClassName) !== strtolower($className)) {
-				continue; // skip class alias
+				continue; // skip class_alias() where the alias is a completely different name
 			}
 			if ($pair->getNode()->getAttribute(UseAliasVisitor::ATTRIBUTE_NAME) === true) {
 				continue;

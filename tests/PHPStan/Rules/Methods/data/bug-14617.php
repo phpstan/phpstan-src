@@ -16,4 +16,12 @@ class Foo {
 	public function bar(myclass $a): myclass {
 		return $a;
 	}
+
+	public function nullable(?myclass $a): ?myclass {
+		return $a;
+	}
+
+	public function union(myclass|string $a): myclass|int {
+		return $a;
+	}
 }

@@ -100,4 +100,15 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6415(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6415.php'], [
+			[
+				'Constant Bug6415\MixedUsage::ACTUALLY_UNUSED is unused.',
+				141,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+		]);
+	}
+
 }

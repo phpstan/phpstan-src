@@ -1200,8 +1200,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9039.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Constant Bug9039\Test::RULES is unused.', $errors[0]->getMessage());
+		$this->assertNoErrors($errors);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

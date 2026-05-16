@@ -668,4 +668,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14617.php'], []);
 	}
 
+	public function testBug14617GroupUse(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-group-use.php'], []);
+	}
+
 }

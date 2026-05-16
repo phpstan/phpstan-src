@@ -78,6 +78,11 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14617-closure.php'], []);
 	}
 
+	public function testBug14617GroupUse(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-group-use.php'], []);
+	}
+
 	public function testClassAliasCaseSensitivity(): void
 	{
 		$this->analyse([__DIR__ . '/data/class-alias-case-sensitivity.php'], []);

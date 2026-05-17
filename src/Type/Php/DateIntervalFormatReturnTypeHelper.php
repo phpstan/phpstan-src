@@ -11,7 +11,6 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -37,7 +36,7 @@ final class DateIntervalFormatReturnTypeHelper
 		}
 
 		$daysIsInt = $intervalType->hasInstanceProperty('days')->yes()
-			&& (new IntegerType())->isSuperTypeOf($intervalType->getInstanceProperty('days', $scope)->getReadableType())->yes();
+			&& $intervalType->getInstanceProperty('days', $scope)->getReadableType()->isInteger()->yes();
 
 		$dateInterval = $daysIsInt
 			? (new DateTime('2000-01-01'))->diff(new DateTime('2000-01-01'))

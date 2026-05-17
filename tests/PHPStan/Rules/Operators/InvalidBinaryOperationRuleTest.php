@@ -853,4 +853,9 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug1452(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1452.php'], []);
+	}
+
 }

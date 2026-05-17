@@ -69,6 +69,11 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14617UseFunctionAlias(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-use-function-alias.php'], []);
+	}
+
 	public function testMatchExprAnalysis(): void
 	{
 		$this->analyse([__DIR__ . '/data/match-expr-analysis.php'], [

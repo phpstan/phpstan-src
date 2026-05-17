@@ -60,4 +60,9 @@ class ExistingNamesInGroupUseRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14617UseFunctionGroupAlias(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-use-function-group-alias.php'], []);
+	}
+
 }

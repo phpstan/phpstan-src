@@ -61,7 +61,7 @@ class ArrayType implements Type
 	private Type $keyType;
 
 	private ?Type $cachedIterableKeyType = null;
-	
+
 	private ?TrinaryLogic $isList = null;
 
 	/** @api */

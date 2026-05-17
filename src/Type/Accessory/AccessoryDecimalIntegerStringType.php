@@ -456,6 +456,11 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getDefaultBaseType(): Type
+	{
+		return new StringType();
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode($this->inverse ? 'non-decimal-int-string' : 'decimal-int-string');

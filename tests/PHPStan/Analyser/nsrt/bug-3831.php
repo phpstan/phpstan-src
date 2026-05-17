@@ -52,7 +52,9 @@ class Template
 		$content = '';
 		$this->footer = [];
 
+		assertType('array{}', $this->footer);
 		$this->{'compileSection'}();
+		assertType('array<string>', $this->footer);
 
 		if (count($this->footer) > 0) {
 			$content = str_replace('some', 'thing', $content);
@@ -76,8 +78,10 @@ class TemplateDynamicVar
 		$content = '';
 		$this->footer = [];
 
+		assertType('array{}', $this->footer);
 		$method = 'compileSection';
 		$this->{$method}();
+		assertType('array<string>', $this->footer);
 
 		if (count($this->footer) > 0) {
 			$content = str_replace('some', 'thing', $content);

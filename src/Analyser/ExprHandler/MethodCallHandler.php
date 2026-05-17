@@ -176,6 +176,8 @@ final class MethodCallHandler implements ExprHandler
 			}
 
 		} else {
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
+			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 		$hasYield = $hasYield || $argsResult->hasYield();

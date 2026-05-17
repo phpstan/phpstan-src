@@ -11,7 +11,6 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -27,10 +26,6 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 {
 
 	private TypeSpecifier $typeSpecifier;
-
-	public function __construct(private ReflectionProvider $reflectionProvider)
-	{
-	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
 	{
@@ -64,17 +59,6 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$objectType = $scope->getType($args[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
-				foreach ($objectType->getConstantStrings() as $constantString) {
-					if (!$this->reflectionProvider->hasClass($constantString->getValue())) {
-						continue;
-					}
-
-					$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
-					if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
-						return $this->createFuncCallSpec($node, $context, $scope);
-					}
-				}
-
 				foreach ($objectType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
 					if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
 						return $this->createFuncCallSpec($node, $context, $scope);

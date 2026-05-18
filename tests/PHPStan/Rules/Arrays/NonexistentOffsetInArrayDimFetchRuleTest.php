@@ -1333,7 +1333,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-find-key-existing.php'], [
 			[
-				'Offset null does not exist on array{}.',
+				'Offset null does not exist on list<string>.',
 				22,
 			],
 			[

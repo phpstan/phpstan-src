@@ -527,7 +527,7 @@ class ArrayType implements Type
 			return $this;
 		}
 
-		return new self($otherArraysType->getIterableKeyType(), $this->getIterableValueType());
+		return $this->withTypes($otherArraysType->getIterableKeyType(), $this->getIterableValueType());
 	}
 
 	public function popArray(): Type
@@ -567,7 +567,7 @@ class ArrayType implements Type
 		}
 
 		if ($preserveKeys->no() && $this->keyType->isInteger()->yes()) {
-			return new IntersectionType([new self(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->itemType), new AccessoryArrayListType()]);
+			return new IntersectionType([$this->withTypes(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->itemType), new AccessoryArrayListType()]);
 		}
 
 		return $this;
@@ -595,7 +595,7 @@ class ArrayType implements Type
 			return $type;
 		});
 
-		$arrayType = new self(
+		$arrayType = $this->withTypes(
 			TypeCombinator::union($keyType, $replacementArrayType->getKeysArray()->getIterableKeyType()),
 			TypeCombinator::union($this->getIterableValueType(), $replacementArrayType->getIterableValueType()),
 		);
@@ -625,12 +625,12 @@ class ArrayType implements Type
 
 	public function mapValueType(callable $cb): Type
 	{
-		return new ArrayType($this->keyType, $cb($this->getItemType()));
+		return $this->withTypes($this->keyType, $cb($this->getItemType()));
 	}
 
 	public function mapKeyType(callable $cb): Type
 	{
-		return new ArrayType($cb($this->keyType), $this->getItemType());
+		return $this->withTypes($cb($this->keyType), $this->getItemType());
 	}
 
 	public function makeAllArrayKeysOptional(): Type
@@ -681,7 +681,7 @@ class ArrayType implements Type
 			return $type;
 		});
 
-		return new ArrayType($newKeyType, $this->getItemType());
+		return $this->withTypes($newKeyType, $this->getItemType());
 	}
 
 	public function filterArrayRemovingFalsey(): Type
@@ -692,7 +692,7 @@ class ArrayType implements Type
 			return new ConstantArrayType([], []);
 		}
 
-		return new ArrayType($this->keyType, $valueType);
+		return $this->withTypes($this->keyType, $valueType);
 	}
 
 	private static function foldConstantStringKeyCase(ConstantStringType $type, ?int $case): Type

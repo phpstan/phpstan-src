@@ -84,6 +84,7 @@ final class NewHandler implements ExprHandler
 		$parametersAcceptor = null;
 		$constructorReflection = null;
 		$classReflection = null;
+		$isDynamic = false;
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -153,6 +154,7 @@ final class NewHandler implements ExprHandler
 				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
 			}
 		} else {
+			$isDynamic = true;
 			$objectClasses = $scope->getType($expr)->getObjectClassNames();
 			if (count($objectClasses) === 1) {
 				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
@@ -172,7 +174,7 @@ final class NewHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
 
 			if ($className !== null) {
-				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, true);
+				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, $isDynamic);
 				$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 			} else {
 				$impurePoints[] = new ImpurePoint(
@@ -202,9 +204,7 @@ final class NewHandler implements ExprHandler
 			if ($constructorThrowPoint !== null) {
 				$throwPoints[] = $constructorThrowPoint;
 			}
-		} elseif ($classReflection === null) {
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-		} elseif (!$expr->class instanceof Name && !$expr->class instanceof Node\Stmt\Class_ && $constructorReflection === null && !$classReflection->isFinal() && $this->implicitThrows) {
+		} elseif ($classReflection === null || ($isDynamic && $constructorReflection === null && !$classReflection->isFinal())) {
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 

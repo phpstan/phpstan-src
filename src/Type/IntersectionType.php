@@ -1151,13 +1151,11 @@ class IntersectionType implements CompoundType
 
 	public function getValuesArray(): Type
 	{
-		$isList = $this->isList()->yes();
-		return $this->intersectTypes(static function (Type $type) use ($isList): Type {
-			if ($isList && $type instanceof TemplateType) {
-				return $type;
-			}
-			return $type->getValuesArray();
-		});
+		$cb = static fn (Type $type): Type => $type->getValuesArray();
+		if ($this->isList()->yes()) {
+			return $this->intersectTypesPreserveTemplateType($cb);
+		}
+		return $this->intersectTypes($cb);
 	}
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -1202,13 +1200,11 @@ class IntersectionType implements CompoundType
 
 	public function shuffleArray(): Type
 	{
-		$isList = $this->isList()->yes();
-		return $this->intersectTypes(static function (Type $type) use ($isList): Type {
-			if ($isList && $type instanceof TemplateType) {
-				return $type;
-			}
-			return $type->shuffleArray();
-		});
+		$cb = static fn (Type $type): Type => $type->shuffleArray();
+		if ($this->isList()->yes()) {
+			return $this->intersectTypesPreserveTemplateType($cb);
+		}
+		return $this->intersectTypes($cb);
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type

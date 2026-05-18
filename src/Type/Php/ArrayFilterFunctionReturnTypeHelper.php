@@ -60,8 +60,8 @@ final class ArrayFilterFunctionReturnTypeHelper
 			return new ArrayType(new MixedType(), new MixedType());
 		}
 
-		$originalArrayArgType = $scope->getType($arrayArg);
-		$arrayArgType = TypeUtils::toBenevolentUnion($originalArrayArgType);
+		$arrayArgType = $scope->getType($arrayArg);
+		$arrayArgType = TypeUtils::toBenevolentUnion($arrayArgType);
 		$keyType = $arrayArgType->getIterableKeyType();
 		$itemType = $arrayArgType->getIterableValueType();
 
@@ -81,9 +81,6 @@ final class ArrayFilterFunctionReturnTypeHelper
 		}
 
 		if ($callbackArg === null || $scope->getType($callbackArg)->isNull()->yes()) {
-			if ($originalArrayArgType->isArray()->yes()) {
-				return $originalArrayArgType->filterArrayRemovingFalsey();
-			}
 			return TypeCombinator::union(
 				...array_map([$this, 'removeFalsey'], $arrayArgType->getArrays()),
 			);

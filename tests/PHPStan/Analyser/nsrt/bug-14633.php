@@ -137,26 +137,6 @@ class IntersectionTemplatePreservation
 		assertType('list<int>', $items);
 	}
 
-	/**
-	 * @template T
-	 * @param T&list<int> $items
-	 */
-	public function arrayFilterOnList(array $items): void
-	{
-		$filtered = array_filter($items);
-		assertType('array<int<0, max>, int<min, -1>|int<1, max>>&T (method Bug14633\IntersectionTemplatePreservation::arrayFilterOnList(), argument)', $filtered);
-	}
-
-	/**
-	 * @template T
-	 * @param T&array<string, int|false> $items
-	 */
-	public function arrayFilterOnArray(array $items): void
-	{
-		$filtered = array_filter($items);
-		assertType('array<string, int<min, -1>|int<1, max>>&T (method Bug14633\IntersectionTemplatePreservation::arrayFilterOnArray(), argument)', $filtered);
-	}
-
 }
 
 /**

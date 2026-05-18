@@ -972,7 +972,27 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
 		) {
-			return $this->expressionTypes[$exprString]->getType();
+			$type = $this->expressionTypes[$exprString]->getType();
+
+			if (
+				$node instanceof FuncCall
+				&& $node->name instanceof Name
+				&& !$node->isFirstClassCallable()
+				&& count($node->getArgs()) >= 1
+			) {
+				$funcName = $node->name->toLowerString();
+				if (in_array($funcName, ['count', 'sizeof'], true)) {
+					$argType = $this->getType($node->getArgs()[0]->value);
+					$type = TypeCombinator::intersect($type, $argType->getArraySize());
+				} elseif (
+					in_array($funcName, ['strlen', 'mb_strlen'], true)
+					&& $this->getType($node->getArgs()[0]->value)->isNonEmptyString()->yes()
+				) {
+					$type = TypeCombinator::intersect($type, IntegerRangeType::fromInterval(1, null));
+				}
+			}
+
+			return $type;
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */

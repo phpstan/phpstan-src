@@ -37,6 +37,10 @@ class ValueAssignedToGlobalConstantRuleTest extends RuleTestCase
 				'Configuration defined type for constant MAYBE_CONSTANT (int<1, max>) does not accept value int.',
 				5,
 			],
+			[
+				"Configuration defined type for constant A_NON_EMPTY_STRING (non-empty-string) does not accept value ''.",
+				6,
+			],
 		]);
 	}
 

@@ -85,7 +85,7 @@ final class ValueAssignedToClassConstantRule implements Rule
 								'Configuration defined type for constant %s::%s (%s) does not accept value %s.',
 								$constantReflection->getDeclaringClass()->getDisplayName(),
 								$constantName,
-								$configuredType->describe(VerbosityLevel::typeOnly()),
+								$configuredType->describe(VerbosityLevel::precise()),
 								$valueExprType->describe($verbosity),
 							))->acceptsReasonsTip($accepts->reasons)->identifier('classConstant.value')->build(),
 						];

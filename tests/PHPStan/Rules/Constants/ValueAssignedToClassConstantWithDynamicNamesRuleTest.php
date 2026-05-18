@@ -38,6 +38,10 @@ class ValueAssignedToClassConstantWithDynamicNamesRuleTest extends RuleTestCase
 				'Configuration defined type for constant ValueAssignedToClassConstantDynamicNames\Foo::MAYBE_BAR (int<1, max>) does not accept value int.',
 				14,
 			],
+			[
+				"Configuration defined type for constant ValueAssignedToClassConstantDynamicNames\Foo::A_NON_EMPTY_STRING (non-empty-string) does not accept value ''.",
+				15,
+			],
 		]);
 	}
 

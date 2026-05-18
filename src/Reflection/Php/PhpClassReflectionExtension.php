@@ -1317,7 +1317,7 @@ final class PhpClassReflectionExtension
 		if ($resolved !== null) {
 			return [$resolved, $declaringClass];
 		}
-		if (!$this->stubPhpDocProvider->isKnownClass($declaringClassName) && !$declaringClass->isBuiltin()) {
+		if (!$declaringClass->isBuiltin() && !$this->stubPhpDocProvider->isKnownClass($declaringClassName)) {
 			return null;
 		}
 

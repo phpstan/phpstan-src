@@ -523,7 +523,7 @@ class ArrayType implements Type
 
 	public function shuffleArray(): Type
 	{
-		return new IntersectionType([new self(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->itemType), new AccessoryArrayListType()]);
+		return new IntersectionType([$this->withTypes(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->itemType), new AccessoryArrayListType()]);
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type

@@ -93,7 +93,7 @@ final class NewHandler implements ExprHandler
 		if ($expr->class instanceof Name) {
 			$className = $scope->resolveName($expr->class);
 
-			[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
+			[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, false);
 			$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 
 			if ($parametersAcceptor !== null) {
@@ -220,7 +220,7 @@ final class NewHandler implements ExprHandler
 	/**
 	 * @return array{?MethodReflection, ?ClassReflection, ?ParametersAcceptor, ImpurePoint[]}
 	 */
-	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope, bool $isDynamic = false): array
+	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope, bool $isDynamic): array
 	{
 		$constructorReflection = null;
 		$parametersAcceptor = null;

@@ -42,7 +42,7 @@ class ValueAssignedToDefineRuleTest extends RuleTestCase
 				12,
 			],
 			[
-				"Configuration defined type for constant A_NON_EMPTY_STRING (non-empty-string) does not accept value string.",
+				'Configuration defined type for constant A_NON_EMPTY_STRING (non-empty-string) does not accept value string.',
 				14,
 			],
 		]);

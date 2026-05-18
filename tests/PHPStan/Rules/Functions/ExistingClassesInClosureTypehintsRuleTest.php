@@ -73,6 +73,21 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14617(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-closure.php'], []);
+	}
+
+	public function testBug14617GroupUse(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14617-group-use.php'], []);
+	}
+
+	public function testClassAliasCaseSensitivity(): void
+	{
+		$this->analyse([__DIR__ . '/data/class-alias-case-sensitivity.php'], []);
+	}
+
 	public function testValidTypehintPhp71(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-7.1-typehints.php'], [

@@ -1272,4 +1272,26 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13537.php'], $errors);
 	}
 
+	public function testBug12390(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/bug-12390.php'], []);
+	}
+
+	public function testBug13539(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/bug-13539.php'], [
+			[
+				'Access to an undefined property object::$baz.',
+				29,
+				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
+			],
+		]);
+	}
+
 }

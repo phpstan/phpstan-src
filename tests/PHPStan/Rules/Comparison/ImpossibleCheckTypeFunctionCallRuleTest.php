@@ -1230,4 +1230,48 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8217.php'], []);
 	}
 
+	public function testBug6211(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-6211.php'], [
+			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				34,
+			],
+			[
+				'Call to function method_exists() with \'Bug6211\\\\Hell\' and \'test\' will always evaluate to true.',
+				39,
+			],
+			[
+				'Call to function method_exists() with Bug6211\Bar and \'realMethod\' will always evaluate to true.',
+				62,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				87,
+			],
+			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				106,
+			],
+			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				107,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				120,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				121,
+			],
+			[
+				'Call to function method_exists() with class-string<Bug6211\Foo> and \'test\' will always evaluate to true.',
+				136,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

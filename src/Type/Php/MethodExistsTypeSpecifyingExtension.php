@@ -53,17 +53,18 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$args = $node->getArgs();
 		$methodNameType = $scope->getType($args[1]->value);
 		if (!$methodNameType instanceof ConstantStringType) {
-			return $this->typeSpecifier->create(
-				new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
-				new ConstantBooleanType(true),
-				$context,
-				$scope,
-			);
+			return $this->createFuncCallSpec($node, $context, $scope);
 		}
 
 		$objectType = $scope->getType($args[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
+				foreach ($objectType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
+					if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
+						return $this->createFuncCallSpec($node, $context, $scope);
+					}
+				}
+
 				return $this->typeSpecifier->create(
 					$args[0]->value,
 					new IntersectionType([
@@ -78,6 +79,12 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			return new SpecifiedTypes([], []);
 		}
 
+		foreach ($objectType->getObjectClassReflections() as $classReflection) {
+			if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
+				return $this->createFuncCallSpec($node, $context, $scope);
+			}
+		}
+
 		return $this->typeSpecifier->create(
 			$args[0]->value,
 			new UnionType([
@@ -87,6 +94,16 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 				]),
 				new ClassStringType(),
 			]),
+			$context,
+			$scope,
+		);
+	}
+
+	private function createFuncCallSpec(FuncCall $node, TypeSpecifierContext $context, Scope $scope): SpecifiedTypes
+	{
+		return $this->typeSpecifier->create(
+			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
+			new ConstantBooleanType(true),
 			$context,
 			$scope,
 		);

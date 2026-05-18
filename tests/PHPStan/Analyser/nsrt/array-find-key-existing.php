@@ -17,7 +17,7 @@ function arrayFindKeyNotNull(array $list, string $s): void
 		assertType('int<0, max>', $key);
 		assertType('string', $list[$key]);
 	} else {
-		assertType('array{}', $list);
+		assertType('list<string>', $list);
 		assertType('null', $key);
 		assertType('*ERROR*', $list[$key]);
 	}

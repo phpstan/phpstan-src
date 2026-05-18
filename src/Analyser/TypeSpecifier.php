@@ -3139,14 +3139,23 @@ final class TypeSpecifier
 			$unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
 			&& !$unwrappedLeftExpr->isFirstClassCallable()
-			&& in_array($unwrappedLeftExpr->name->toLowerString(), ['array_key_first', 'array_key_last', 'array_find_key'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 			&& $rightType->isNull()->yes()
 		) {
-			$args = $unwrappedLeftExpr->getArgs();
-			$argType = $scope->getType($args[0]->value);
-			if ($argType->isArray()->yes()) {
-				return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
+			$funcName = $unwrappedLeftExpr->name->toLowerString();
+			$bothDirections = in_array($funcName, ['array_key_first', 'array_key_last'], true);
+			$notNullOnly = $funcName === 'array_find_key';
+			if ($bothDirections || $notNullOnly) {
+				$args = $unwrappedLeftExpr->getArgs();
+				$argType = $scope->getType($args[0]->value);
+				if ($argType->isArray()->yes()) {
+					if ($bothDirections) {
+						return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
+					}
+					if ($context->falsey()) {
+						return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
+					}
+				}
 			}
 		}
 

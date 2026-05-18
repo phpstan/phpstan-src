@@ -1151,7 +1151,13 @@ class IntersectionType implements CompoundType
 
 	public function getValuesArray(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getValuesArray());
+		$isList = $this->isList()->yes();
+		return $this->intersectTypes(static function (Type $type) use ($isList): Type {
+			if ($isList && $type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->getValuesArray();
+		});
 	}
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -1171,17 +1177,32 @@ class IntersectionType implements CompoundType
 
 	public function intersectKeyArray(Type $otherArraysType): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->intersectKeyArray($otherArraysType));
+		return $this->intersectTypes(static function (Type $type) use ($otherArraysType): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->intersectKeyArray($otherArraysType);
+		});
 	}
 
 	public function popArray(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->popArray());
+		return $this->intersectTypes(static function (Type $type): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->popArray();
+		});
 	}
 
 	public function reverseArray(TrinaryLogic $preserveKeys): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->reverseArray($preserveKeys));
+		return $this->intersectTypes(static function (Type $type) use ($preserveKeys): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->reverseArray($preserveKeys);
+		});
 	}
 
 	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
@@ -1191,7 +1212,12 @@ class IntersectionType implements CompoundType
 
 	public function shiftArray(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->shiftArray());
+		return $this->intersectTypes(static function (Type $type): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->shiftArray();
+		});
 	}
 
 	public function shuffleArray(): Type
@@ -1207,7 +1233,12 @@ class IntersectionType implements CompoundType
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
-		$result = $this->intersectTypes(static fn (Type $type): Type => $type->sliceArray($offsetType, $lengthType, $preserveKeys));
+		$result = $this->intersectTypes(static function (Type $type) use ($offsetType, $lengthType, $preserveKeys): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->sliceArray($offsetType, $lengthType, $preserveKeys);
+		});
 
 		if (
 			$this->isList()->yes()
@@ -1223,7 +1254,12 @@ class IntersectionType implements CompoundType
 
 	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
+		return $this->intersectTypes(static function (Type $type) use ($offsetType, $lengthType, $replacementType): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->spliceArray($offsetType, $lengthType, $replacementType);
+		});
 	}
 
 	public function makeListMaybe(): Type
@@ -1233,12 +1269,22 @@ class IntersectionType implements CompoundType
 
 	public function mapValueType(callable $cb): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->mapValueType($cb));
+		return $this->intersectTypes(static function (Type $type) use ($cb): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->mapValueType($cb);
+		});
 	}
 
 	public function mapKeyType(callable $cb): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->mapKeyType($cb));
+		return $this->intersectTypes(static function (Type $type) use ($cb): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->mapKeyType($cb);
+		});
 	}
 
 	public function makeAllArrayKeysOptional(): Type
@@ -1248,12 +1294,22 @@ class IntersectionType implements CompoundType
 
 	public function changeKeyCaseArray(?int $case): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->changeKeyCaseArray($case));
+		return $this->intersectTypes(static function (Type $type) use ($case): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->changeKeyCaseArray($case);
+		});
 	}
 
 	public function filterArrayRemovingFalsey(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->filterArrayRemovingFalsey());
+		return $this->intersectTypes(static function (Type $type): Type {
+			if ($type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->filterArrayRemovingFalsey();
+		});
 	}
 
 	public function getEnumCases(): array

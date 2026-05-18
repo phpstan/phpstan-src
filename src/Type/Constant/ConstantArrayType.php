@@ -332,6 +332,10 @@ class ConstantArrayType implements Type
 
 	public function isConstantValue(): TrinaryLogic
 	{
+		if ($this->isUnsealed()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createYes();
 	}
 

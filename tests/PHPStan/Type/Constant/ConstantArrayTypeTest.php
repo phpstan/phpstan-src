@@ -1272,7 +1272,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(0)
+				new ConstantIntegerType(0),
 			], [
 				new ObjectWithoutClassType(),
 			], unsealed: [new IntegerType(), new StringType()]),
@@ -1281,7 +1281,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(0)
+				new ConstantIntegerType(0),
 			], [
 				new ObjectWithoutClassType(),
 			], unsealed: $sealed),
@@ -1290,7 +1290,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(0)
+				new ConstantIntegerType(0),
 			], [
 				new ObjectWithoutClassType(),
 			], unsealed: [IntegerRangeType::createAllGreaterThanOrEqualTo(2), new StringType()]),
@@ -1299,7 +1299,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(0)
+				new ConstantIntegerType(0),
 			], [
 				new ObjectWithoutClassType(),
 			], unsealed: [new StringType(), new StringType()]),
@@ -1310,7 +1310,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		// a non-falsy-string (int → not a string at all).
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(0)
+				new ConstantIntegerType(0),
 			], [
 				new ObjectWithoutClassType(),
 			], unsealed: [new IntegerType(), new IntegerType()]),
@@ -1321,7 +1321,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		// object|class-string; int can never be that.
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(1)
+				new ConstantIntegerType(1),
 			], [
 				new ConstantStringType('bind'),
 			], unsealed: [new IntegerType(), new IntegerType()]),
@@ -1333,7 +1333,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		// it could line up.
 		yield [
 			new ConstantArrayType([
-				new ConstantIntegerType(1)
+				new ConstantIntegerType(1),
 			], [
 				new ConstantStringType('bind'),
 			], unsealed: [new IntegerType(), new StringType()]),

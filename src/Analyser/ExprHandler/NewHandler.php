@@ -172,7 +172,7 @@ final class NewHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
 
 			if ($className !== null) {
-				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
+				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, true);
 				$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 			} else {
 				$impurePoints[] = new ImpurePoint(
@@ -180,17 +180,6 @@ final class NewHandler implements ExprHandler
 					$expr,
 					'new',
 					'instantiation of unknown class',
-					false,
-				);
-			}
-
-			if ($classReflection !== null && $constructorReflection === null && !$classReflection->isFinal() && $this->implicitThrows) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'new',
-					sprintf('instantiation of class %s', $classReflection->getDisplayName()),
 					false,
 				);
 			}
@@ -215,6 +204,8 @@ final class NewHandler implements ExprHandler
 			}
 		} elseif ($classReflection === null) {
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+		} elseif (!$expr->class instanceof Name && !$expr->class instanceof Node\Stmt\Class_ && $constructorReflection === null && !$classReflection->isFinal() && $this->implicitThrows) {
+			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 
 		return new ExpressionResult(
@@ -229,7 +220,7 @@ final class NewHandler implements ExprHandler
 	/**
 	 * @return array{?MethodReflection, ?ClassReflection, ?ParametersAcceptor, ImpurePoint[]}
 	 */
-	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope): array
+	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope, bool $isDynamic = false): array
 	{
 		$constructorReflection = null;
 		$parametersAcceptor = null;
@@ -266,6 +257,14 @@ final class NewHandler implements ExprHandler
 				$expr,
 				'new',
 				'instantiation of unknown class',
+				false,
+			);
+		} elseif ($isDynamic && !$classReflection->isFinal()) {
+			$impurePoints[] = new ImpurePoint(
+				$scope,
+				$expr,
+				'new',
+				sprintf('instantiation of class %s', $classReflection->getDisplayName()),
 				false,
 			);
 		}

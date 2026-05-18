@@ -41,12 +41,6 @@ interface DateTimeInterface {
 	{}
 }
 
-class DateTimeImmutable implements DateTimeInterface {
-}
-
-class DateTime implements DateTimeInterface {
-}
-
 /** @return \DateInterval&object{days:int} */
 function date_diff(\DateTimeInterface $baseObject, \DateTimeInterface $targetObject, bool $absolute = false): \DateInterval
 {}

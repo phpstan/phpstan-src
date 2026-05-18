@@ -1322,7 +1322,8 @@ final class PhpClassReflectionExtension
 		if ($resolved !== null) {
 			return [$resolved, $declaringClass];
 		}
-		if (!$this->stubPhpDocProvider->isKnownClass($declaringClassName)) {
+		$isKnownClass = $this->stubPhpDocProvider->isKnownClass($declaringClassName);
+		if (!$isKnownClass && !$declaringClass->isBuiltin()) {
 			return null;
 		}
 
@@ -1337,6 +1338,10 @@ final class PhpClassReflectionExtension
 
 			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $ancestor->getName(), $methodName, $positionalParameterNames);
 			if ($resolved === null) {
+				continue;
+			}
+
+			if (!$isKnownClass && $ancestor->isGeneric()) {
 				continue;
 			}
 

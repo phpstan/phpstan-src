@@ -121,7 +121,7 @@ jobs:
       - name: "Reflection golden test"
         run: |
           set +e
-          make tests-golden-reflection || true
+          make tests-golden-reflection
           exit_code="$?"
 
           if [[ "$exit_code" != "0" ]]; then
@@ -129,4 +129,4 @@ jobs:
             exit 0
           fi
 
-          exit $exit_code
+          exit 0

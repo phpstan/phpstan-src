@@ -102,6 +102,42 @@ class IntersectionTemplatePreservation
 	}
 
 	/**
+	 * array_values() on a non-list must NOT preserve T — keys change from string to int.
+	 *
+	 * @template T
+	 * @param T&array<string, int> $items
+	 */
+	public function arrayValuesOnNonList(array $items): void
+	{
+		$values = array_values($items);
+		assertType('list<int>', $values);
+	}
+
+	/**
+	 * shuffle() on a list preserves T — keys are already sequential integers.
+	 *
+	 * @template T
+	 * @param T&list<int> $items
+	 */
+	public function shuffleOnList(array $items): void
+	{
+		shuffle($items);
+		assertType('list<int>&T (method Bug14633\IntersectionTemplatePreservation::shuffleOnList(), argument)', $items);
+	}
+
+	/**
+	 * shuffle() on a non-list must NOT preserve T — keys change from string to int.
+	 *
+	 * @template T
+	 * @param T&array<string, int> $items
+	 */
+	public function shuffleOnNonList(array $items): void
+	{
+		shuffle($items);
+		assertType('list<int>', $items);
+	}
+
+	/**
 	 * @template T
 	 * @param T&list<int> $items
 	 */

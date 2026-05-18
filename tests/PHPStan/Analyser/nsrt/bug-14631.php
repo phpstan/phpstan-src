@@ -176,3 +176,52 @@ class Foo
 	}
 
 }
+
+/**
+ * Cases where T is bounded by a plain array (TemplateArrayType),
+ * so T is directly the subject of shuffleArray() in ArrayType.
+ * These verify the $this->withTypes() fix rather than the IntersectionType fix.
+ */
+class Bar
+{
+
+	/**
+	 * @template T of array<int>
+	 * @param T $items
+	 * @return T
+	 */
+	public function shuffleTemplateArray(array $items): array
+	{
+		assertType('T of array<int> (method Bug14631\Bar::shuffleTemplateArray(), argument)', $items);
+		shuffle($items);
+		// T preserved with updated key bound; without $this->withTypes() fix, T was dropped → list<int>
+		assertType('T of array<int<0, max>, int> (method Bug14631\Bar::shuffleTemplateArray(), argument)&list', $items);
+		return $items;
+	}
+
+	/**
+	 * @template T of array<int>
+	 * @param T $items
+	 * @return T
+	 */
+	public function sortTemplateArray(array $items): array
+	{
+		sort($items);
+		assertType('T of array<int<0, max>, int> (method Bug14631\Bar::sortTemplateArray(), argument)&list', $items);
+		return $items;
+	}
+
+	/**
+	 * @template T of array<int>
+	 * @param T $items
+	 * @return T
+	 */
+	public function usortTemplateArray(array $items): array
+	{
+		usort($items, static fn (int $a, int $b) => $a <=> $b);
+		assertType('T of array<int<0, max>, int> (method Bug14631\Bar::usortTemplateArray(), argument)&list', $items);
+		return $items;
+	}
+
+}
+

@@ -53,7 +53,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_keys;
@@ -1337,7 +1336,7 @@ final class PhpClassReflectionExtension
 				continue;
 			}
 
-			if (!$isKnownClass && $this->stubPhpDocContainsTemplateTypes($resolved)) {
+			if (!$isKnownClass && $ancestor->isGeneric()) {
 				continue;
 			}
 
@@ -1345,20 +1344,6 @@ final class PhpClassReflectionExtension
 		}
 
 		return null;
-	}
-
-	private function stubPhpDocContainsTemplateTypes(ResolvedPhpDocBlock $phpDoc): bool
-	{
-		$returnTag = $phpDoc->getReturnTag();
-		if ($returnTag !== null && TypeUtils::containsTemplateType($returnTag->getType())) {
-			return true;
-		}
-		foreach ($phpDoc->getParamTags() as $paramTag) {
-			if (TypeUtils::containsTemplateType($paramTag->getType())) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 }

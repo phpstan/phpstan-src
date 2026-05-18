@@ -1203,7 +1203,13 @@ class IntersectionType implements CompoundType
 
 	public function shuffleArray(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->shuffleArray());
+		$isList = $this->isList()->yes();
+		return $this->intersectTypes(static function (Type $type) use ($isList): Type {
+			if ($isList && $type instanceof TemplateType) {
+				return $type;
+			}
+			return $type->shuffleArray();
+		});
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type

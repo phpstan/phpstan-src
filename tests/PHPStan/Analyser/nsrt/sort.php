@@ -145,7 +145,7 @@ class Bar
 			return $a['a'] <=> $b['a'];
 		});
 
-		assertType('list<array{a: bool|float|int|string, b: true}>', $array);
+		assertType('list<array{a: bool|float|int|string, b: true}>&T (method Sort\Bar::doFoo(), argument)', $array);
 
 		return $array;
 	}

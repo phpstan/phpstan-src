@@ -1153,7 +1153,7 @@ class IntersectionType implements CompoundType
 	{
 		$cb = static fn (Type $type): Type => $type->getValuesArray();
 		if ($this->isList()->yes()) {
-			return $this->intersectTypesPreserveTemplateType($cb);
+			return $this;
 		}
 		return $this->intersectTypes($cb);
 	}

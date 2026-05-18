@@ -404,6 +404,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return Assertions::createEmpty();
 	}
 
+	public function isStaticClosure(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

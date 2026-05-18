@@ -108,4 +108,9 @@ final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, Cal
 		return Assertions::createEmpty();
 	}
 
+	public function isStaticClosure(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 }

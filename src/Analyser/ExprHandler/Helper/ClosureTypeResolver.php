@@ -227,6 +227,7 @@ final class ClosureTypeResolver
 					usedVariables: $cachedClosureData['usedVariables'],
 					acceptsNamedArguments: TrinaryLogic::createYes(),
 					mustUseReturnValue: $mustUseReturnValue,
+					isStatic: TrinaryLogic::createFromBoolean($expr->static),
 				);
 			}
 			if (self::$resolveClosureTypeDepth >= 2) {
@@ -234,6 +235,7 @@ final class ClosureTypeResolver
 					$parameters,
 					$scope->getFunctionType($expr->returnType, false, false),
 					$isVariadic,
+					isStatic: TrinaryLogic::createFromBoolean($expr->static),
 				);
 			}
 
@@ -453,6 +455,7 @@ final class ClosureTypeResolver
 			usedVariables: $usedVariables,
 			acceptsNamedArguments: TrinaryLogic::createYes(),
 			mustUseReturnValue: $mustUseReturnValue,
+			isStatic: TrinaryLogic::createFromBoolean($expr->static),
 		);
 	}
 

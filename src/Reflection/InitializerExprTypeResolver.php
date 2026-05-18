@@ -263,6 +263,7 @@ final class InitializerExprTypeResolver
 				TemplateTypeMap::createEmpty(),
 				TemplateTypeVarianceMap::createEmpty(),
 				acceptsNamedArguments: TrinaryLogic::createYes(),
+				isStatic: TrinaryLogic::createYes(),
 			);
 		}
 		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {

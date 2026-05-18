@@ -98,4 +98,9 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return Assertions::createEmpty();
 	}
 
+	public function isStaticClosure(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

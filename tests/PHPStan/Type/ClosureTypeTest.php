@@ -89,6 +89,41 @@ class ClosureTypeTest extends PHPStanTestCase
 				new ObjectWithoutClassType(new ObjectType(Closure::class)),
 				TrinaryLogic::createNo(),
 			],
+			'static closure is supertype of static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			'static closure is not supertype of non-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				TrinaryLogic::createNo(),
+			],
+			'non-static closure is not supertype of static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				TrinaryLogic::createNo(),
+			],
+			'non-static closure is supertype of non-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			'maybe-static closure is supertype of static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			'maybe-static closure is supertype of non-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			'static closure is maybe supertype of maybe-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 
@@ -105,6 +140,123 @@ class ClosureTypeTest extends PHPStanTestCase
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
+	}
+
+	public static function dataEquals(): array
+	{
+		return [
+			'static equals static' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				true,
+			],
+			'static does not equal non-static' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				false,
+			],
+			'static does not equal maybe-static' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				false,
+			],
+			'maybe-static equals maybe-static' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				true,
+			],
+		];
+	}
+
+	#[DataProvider('dataEquals')]
+	public function testEquals(
+		ClosureType $type,
+		ClosureType $otherType,
+		bool $expectedResult,
+	): void
+	{
+		$this->assertSame($expectedResult, $type->equals($otherType));
+	}
+
+	public static function dataDescribe(): array
+	{
+		return [
+			'static closure at typeOnly' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::typeOnly(),
+				'Closure',
+			],
+			'static closure at value' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::value(),
+				'Closure(): mixed',
+			],
+			'static closure at precise' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::precise(),
+				'static Closure(): mixed',
+			],
+			'static closure at cache' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::cache(),
+				'static Closure(): mixed',
+			],
+			'non-static closure at precise' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				VerbosityLevel::precise(),
+				'Closure(): mixed',
+			],
+			'non-static closure at cache' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				VerbosityLevel::cache(),
+				'non-static Closure(): mixed',
+			],
+			'maybe-static closure at precise' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				VerbosityLevel::precise(),
+				'Closure(): mixed',
+			],
+			'maybe-static closure at cache' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				VerbosityLevel::cache(),
+				'Closure(): mixed',
+			],
+			'static common closure at precise' => [
+				new ClosureType(isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::precise(),
+				'static Closure',
+			],
+			'static common closure at cache' => [
+				new ClosureType(isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::cache(),
+				'static Closure',
+			],
+		];
+	}
+
+	#[DataProvider('dataDescribe')]
+	public function testDescribe(
+		ClosureType $type,
+		VerbosityLevel $level,
+		string $expectedDescription,
+	): void
+	{
+		$this->assertSame($expectedDescription, $type->describe($level));
+	}
+
+	public function testIsStaticClosure(): void
+	{
+		$staticClosure = new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes());
+		$this->assertTrue($staticClosure->isStaticClosure()->yes());
+
+		$nonStaticClosure = new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo());
+		$this->assertTrue($nonStaticClosure->isStaticClosure()->no());
+
+		$maybeClosure = new ClosureType([], new MixedType(), false);
+		$this->assertTrue($maybeClosure->isStaticClosure()->maybe());
+
+		$defaultClosure = new ClosureType();
+		$this->assertTrue($defaultClosure->isStaticClosure()->maybe());
 	}
 
 }

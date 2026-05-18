@@ -113,6 +113,13 @@ final class CallableTypeHelper
 			$result = $result->and(new IsSuperTypeOfResult($theirs->isPure()->negate(), []));
 		}
 
+		$ourStatic = $ours->isStaticClosure();
+		if ($ourStatic->yes()) {
+			$result = $result->and(new IsSuperTypeOfResult($theirs->isStaticClosure(), []));
+		} elseif ($ourStatic->no()) {
+			$result = $result->and(new IsSuperTypeOfResult($theirs->isStaticClosure()->negate(), []));
+		}
+
 		return $result->and($isReturnTypeSuperType);
 	}
 

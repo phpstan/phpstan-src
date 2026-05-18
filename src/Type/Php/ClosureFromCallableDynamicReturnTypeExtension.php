@@ -56,6 +56,7 @@ final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStat
 				usedVariables: $variant->getUsedVariables(),
 				acceptsNamedArguments: $variant->acceptsNamedArguments(),
 				mustUseReturnValue: $variant->mustUseReturnValue(),
+				isStatic: $variant->isStaticClosure(),
 			);
 		}
 

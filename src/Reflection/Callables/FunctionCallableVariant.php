@@ -179,4 +179,9 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 		return $this->function->getAsserts();
 	}
 
+	public function isStaticClosure(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

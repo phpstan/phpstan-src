@@ -11,7 +11,7 @@ class Test
 	/**
 	 * @param array{string[], string} $data
 	 */
-	public function test(mixed $data): string
+	public function test($data): string
 	{
 		$data = array_map(static fn ($value) => $value, $data);
 

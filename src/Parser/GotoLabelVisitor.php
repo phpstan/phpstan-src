@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Goto_;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_intersect_key;
+use function array_pop;
 use function count;
 use function is_array;
 use function spl_object_id;
@@ -20,6 +21,11 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 
 	public const NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE = 'nestedBackwardGotoLabels';
 
+	public const GOTO_LABEL_UNDEFINED_ATTRIBUTE = 'gotoLabelUndefined';
+
+	/** @var array<int, array{labels: array<string, Node\Stmt\Label>, gotos: list<Goto_>}> */
+	private array $scopeStack = [];
+
 	/** @var array<int, array{labels: array<string, true>, gotos: array<string, true>}> */
 	private array $subtreeData = [];
 
@@ -28,14 +34,17 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function beforeTraverse(array $nodes): ?array
 	{
+		$this->scopeStack = [];
 		$this->subtreeData = [];
 		$this->hasGotoOrLabel = false;
+		$this->pushScope();
 		return null;
 	}
 
 	#[Override]
 	public function afterTraverse(array $nodes): ?array
 	{
+		$this->popScope();
 		$this->subtreeData = [];
 		return null;
 	}
@@ -43,8 +52,22 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Stmt\Label || $node instanceof Goto_) {
+		if ($node instanceof Node\Stmt\Label) {
 			$this->hasGotoOrLabel = true;
+			$scopeIndex = count($this->scopeStack) - 1;
+			$this->scopeStack[$scopeIndex]['labels'][$node->name->toString()] = $node;
+			return null;
+		}
+
+		if ($node instanceof Goto_) {
+			$this->hasGotoOrLabel = true;
+			$scopeIndex = count($this->scopeStack) - 1;
+			$this->scopeStack[$scopeIndex]['gotos'][] = $node;
+			return null;
+		}
+
+		if ($this->isScopeBoundary($node)) {
+			$this->pushScope();
 		}
 
 		return null;
@@ -54,6 +77,9 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 	public function leaveNode(Node $node): ?Node
 	{
 		if (!$this->hasGotoOrLabel) {
+			if ($this->isScopeBoundary($node)) {
+				$this->popScope();
+			}
 			return null;
 		}
 
@@ -113,6 +139,10 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 
 		if ($labels !== [] || $gotos !== []) {
 			$this->subtreeData[$id] = ['labels' => $labels, 'gotos' => $gotos];
+		}
+
+		if ($this->isScopeBoundary($node)) {
+			$this->popScope();
 		}
 
 		return null;
@@ -217,6 +247,27 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 		}
 
 		return $node instanceof Node\PropertyHook && is_array($node->body);
+	}
+
+	private function pushScope(): void
+	{
+		$this->scopeStack[] = ['labels' => [], 'gotos' => []];
+	}
+
+	private function popScope(): void
+	{
+		$frame = array_pop($this->scopeStack);
+		if ($frame === null) {
+			return;
+		}
+
+		foreach ($frame['gotos'] as $goto) {
+			if (isset($frame['labels'][$goto->name->toString()])) {
+				continue;
+			}
+
+			$goto->setAttribute(self::GOTO_LABEL_UNDEFINED_ATTRIBUTE, true);
+		}
 	}
 
 }

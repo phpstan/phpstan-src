@@ -976,6 +976,26 @@ final class TypeSpecifier
 					}
 				}
 
+				// narrow $str after $len = strlen($str) or $len = mb_strlen($str)
+				if (
+					$expr->var instanceof Expr\Variable
+					&& is_string($expr->var->name)
+					&& $expr->expr instanceof FuncCall
+					&& $expr->expr->name instanceof Name
+					&& !$expr->expr->isFirstClassCallable()
+					&& in_array($expr->expr->name->toLowerString(), ['strlen', 'mb_strlen'], true)
+					&& count($expr->expr->getArgs()) >= 1
+				) {
+					$strArg = $expr->expr->getArgs()[0]->value;
+					$strArgType = $scope->getType($strArg);
+
+					if ($strArgType->isString()->yes()) {
+						$specifiedTypes = $specifiedTypes->unionWith(
+							$this->createStrlenConditionalExpressionHolders($expr->var, $strArg),
+						);
+					}
+				}
+
 				return $specifiedTypes;
 			}
 
@@ -2483,6 +2503,33 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function createStrlenConditionalExpressionHolders(
+		Expr\Variable $lenVar,
+		Expr $strArg,
+	): SpecifiedTypes
+	{
+		$varExprString = $this->exprPrinter->printExpr($lenVar);
+		$strExprString = $this->exprPrinter->printExpr($strArg);
+
+		$holders = [];
+
+		$nonEmptyHolder = new ConditionalExpressionHolder(
+			[$varExprString => ExpressionTypeHolder::createYes($lenVar, IntegerRangeType::createAllGreaterThanOrEqualTo(1))],
+			ExpressionTypeHolder::createYes($strArg, new AccessoryNonEmptyStringType()),
+		);
+		$holders[$nonEmptyHolder->getKey()] = $nonEmptyHolder;
+
+		$nonFalsyHolder = new ConditionalExpressionHolder(
+			[$varExprString => ExpressionTypeHolder::createYes($lenVar, IntegerRangeType::createAllGreaterThanOrEqualTo(2))],
+			ExpressionTypeHolder::createYes($strArg, new AccessoryNonFalsyStringType()),
+		);
+		$holders[$nonFalsyHolder->getKey()] = $nonFalsyHolder;
+
+		return (new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
+			$strExprString => $holders,
+		]);
 	}
 
 	private function createArrayDimFetchConditionalExpressionHolder(

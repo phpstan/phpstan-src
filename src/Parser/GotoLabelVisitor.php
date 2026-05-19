@@ -23,6 +23,8 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 
 	public const GOTO_LABEL_UNDEFINED_ATTRIBUTE = 'gotoLabelUndefined';
 
+	public const LABEL_IS_USED_ATTRIBUTE = 'labelIsUsed';
+
 	/** @var array<int, array{labels: array<string, Node\Stmt\Label>, gotos: list<Goto_>}> */
 	private array $scopeStack = [];
 
@@ -261,12 +263,18 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 			return;
 		}
 
+		$usedLabelNames = [];
 		foreach ($frame['gotos'] as $goto) {
-			if (isset($frame['labels'][$goto->name->toString()])) {
-				continue;
+			$gotoName = $goto->name->toString();
+			if (!isset($frame['labels'][$gotoName])) {
+				$goto->setAttribute(self::GOTO_LABEL_UNDEFINED_ATTRIBUTE, true);
+			} else {
+				$usedLabelNames[$gotoName] = true;
 			}
+		}
 
-			$goto->setAttribute(self::GOTO_LABEL_UNDEFINED_ATTRIBUTE, true);
+		foreach ($frame['labels'] as $name => $label) {
+			$label->setAttribute(self::LABEL_IS_USED_ATTRIBUTE, isset($usedLabelNames[$name]));
 		}
 	}
 

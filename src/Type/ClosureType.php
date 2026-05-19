@@ -280,15 +280,17 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	{
 		return $level->handle(
 			static fn (): string => 'Closure',
-			fn (): string => $this->describeWithPrefix(''),
-			fn (): string => $this->describeWithPrefix($this->isStatic->yes() ? 'static-' : ''),
+			fn (): string => $this->describeBody(showPure: true, showStatic: false),
+			fn (): string => $this->describeBody(showPure: true, showStatic: true),
 		);
 	}
 
-	private function describeWithPrefix(string $prefix): string
+	private function describeBody(bool $showPure, bool $showStatic): string
 	{
+		$prefix = $showStatic && $this->isStatic->yes() ? 'static-' : '';
+
 		if ($this->isCommonCallable) {
-			$name = $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
+			$name = $showPure && $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
 			return $prefix . $name;
 		}
 

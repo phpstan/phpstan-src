@@ -281,6 +281,30 @@ class UnpackingMakesUnsealed
 
 }
 
+class FlipArray
+{
+
+	/**
+	 * @param array{a: 'foo', b: 'bar', ...<int, string>} $arr
+	 */
+	public function flipPreservesUnsealed(array $arr): void
+	{
+		// `array_flip` swaps keys and values pair-by-pair, so the
+		// unsealed `<int, string>` becomes `<string, int>` — the value
+		// type passes through `toArrayKey()` to land in the new key slot.
+		assertType("array{foo: 'a', bar: 'b', ...<string, int>}", array_flip($arr));
+	}
+
+	/**
+	 * @param array{a: 1, b: 2} $sealed
+	 */
+	public function flipSealedStaysSealed(array $sealed): void
+	{
+		assertType("array{1: 'a', 2: 'b'}", array_flip($sealed));
+	}
+
+}
+
 class CountNarrowing
 {
 

@@ -105,6 +105,22 @@ function nonStringInput($mixed): void
 	}
 }
 
+/** @param float|string $mixedFloat */
+function nonStringInputFloat($mixedFloat): void
+{
+	if (strlen($mixedFloat)) {
+		assertType('float|string', $mixedFloat);
+	}
+}
+
+/** @param bool|string $mixedBool */
+function nonStringInputBool($mixedBool): void
+{
+	if (strlen($mixedBool)) {
+		assertType('bool|string', $mixedBool);
+	}
+}
+
 function looseComparisonTrue(string $s): void
 {
 	if (strlen($s) == true) {

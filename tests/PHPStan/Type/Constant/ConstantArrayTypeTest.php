@@ -13,6 +13,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -1856,6 +1857,135 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			$expectedDescriptions,
 			$actual,
 			sprintf('%s -> getFiniteTypes()', $type->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public static function dataGeneralize(): iterable
+	{
+		$never = new NeverType(true);
+		$sealedMarker = [$never, $never];
+
+		yield 'sealed empty (legacy null unsealed)' => [
+			new ConstantArrayType([], []),
+			GeneralizePrecision::lessSpecific(),
+			'array{}',
+		];
+
+		yield 'sealed empty (bleeding-edge NeverType marker)' => [
+			new ConstantArrayType([], [], unsealed: $sealedMarker),
+			GeneralizePrecision::lessSpecific(),
+			'array{}',
+		];
+
+		yield 'sealed single explicit key' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantIntegerType(1)],
+				unsealed: $sealedMarker,
+			),
+			GeneralizePrecision::lessSpecific(),
+			'non-empty-array<string, int>',
+		];
+
+		yield 'sealed two explicit keys, lessSpecific' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a'), new ConstantStringType('b')],
+				[new ConstantIntegerType(1), new ConstantStringType('x')],
+				unsealed: $sealedMarker,
+			),
+			GeneralizePrecision::lessSpecific(),
+			'non-empty-array<string, int|string>',
+		];
+
+		yield 'sealed two explicit keys, moreSpecific' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a'), new ConstantStringType('b')],
+				[new ConstantIntegerType(1), new ConstantStringType('x')],
+				unsealed: $sealedMarker,
+			),
+			GeneralizePrecision::moreSpecific(),
+			"non-empty-array<literal-string&lowercase-string&non-falsy-string, int|(literal-string&lowercase-string&non-falsy-string)>&hasOffsetValue('a', int)&hasOffsetValue('b', literal-string&lowercase-string&non-falsy-string)",
+		];
+
+		yield 'sealed list, lessSpecific' => [
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[new ConstantIntegerType(1), new ConstantIntegerType(2)],
+				unsealed: $sealedMarker,
+				isList: TrinaryLogic::createYes(),
+			),
+			GeneralizePrecision::lessSpecific(),
+			'non-empty-list<int>',
+		];
+
+		yield 'sealed only-optional keys' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantIntegerType(1)],
+				optionalKeys: [0],
+				unsealed: $sealedMarker,
+			),
+			GeneralizePrecision::lessSpecific(),
+			'array<string, int>',
+		];
+
+		yield 'unsealed only, lessSpecific' => [
+			new ConstantArrayType([], [], unsealed: [new IntegerType(), new ConstantStringType('foo')]),
+			GeneralizePrecision::lessSpecific(),
+			"array{...<int, 'foo'>}",
+		];
+
+		yield 'unsealed with explicit key, lessSpecific' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantIntegerType(1)],
+				unsealed: [new IntegerType(), new StringType()],
+			),
+			GeneralizePrecision::lessSpecific(),
+			'non-empty-array<int|string, int|string>',
+		];
+
+		yield 'unsealed with explicit key, moreSpecific' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantIntegerType(1)],
+				unsealed: [new IntegerType(), new StringType()],
+			),
+			GeneralizePrecision::moreSpecific(),
+			"non-empty-array<int|(literal-string&lowercase-string&non-falsy-string), int|string>&hasOffsetValue('a', int)",
+		];
+
+		yield 'unsealed with optional explicit key' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantIntegerType(1)],
+				optionalKeys: [0],
+				unsealed: [new IntegerType(), new StringType()],
+			),
+			GeneralizePrecision::lessSpecific(),
+			'array<int|string, int|string>',
+		];
+
+		yield 'templateArgument routes through traverse' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantIntegerType(1)],
+				unsealed: [new IntegerType(), new ConstantStringType('foo')],
+			),
+			GeneralizePrecision::templateArgument(),
+			// `traverse` recurses into both explicit and unsealed values
+			// (see commit history c. unsealed-aware traverse): `1` →
+			// `int`, `'foo'` → `string`.
+			'array{a: int, ...<int, string>}',
+		];
+	}
+
+	#[DataProvider('dataGeneralize')]
+	public function testGeneralize(ConstantArrayType $type, GeneralizePrecision $precision, string $expectedDescription): void
+	{
+		$this->assertSame(
+			$expectedDescription,
+			$type->generalize($precision)->describe(VerbosityLevel::precise()),
 		);
 	}
 

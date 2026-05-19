@@ -461,3 +461,8 @@ function proc_open($command, array $descriptor_spec, &$pipes, ?string $cwd = nul
  * @param-out list<int>    $weights
  */
 function getmxrr(string $hostname, &$hosts, &$weights = null): bool {}
+
+/**
+ * @return ($path is non-empty-string ? non-empty-string : string)
+ */
+function dirname(string $path, int $levels = 1): string {}

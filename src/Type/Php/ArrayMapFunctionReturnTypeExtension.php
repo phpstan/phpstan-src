@@ -164,11 +164,11 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		return $mappedArrayType;
 	}
 
-	private static int $cloneCounter = 0;
-
 	private static function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type
 	{
 		if ($callback instanceof Node\Expr\Closure || $callback instanceof Node\Expr\ArrowFunction) {
+			static $cloneCounter = 0;
+
 			$clone = clone $callback;
 			$wrappedType = new ConstantArrayType(
 				[new ConstantIntegerType(0)],
@@ -178,7 +178,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$clone->setAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME, [new Node\Arg(new TypeExpr($wrappedType))]);
 			$clone->setAttribute('phpstanCachedTypes', []);
 			$clone->setAttribute(ExprPrinter::ATTRIBUTE_CACHE_KEY, null);
-			$clone->setAttribute('startFilePos', -(++self::$cloneCounter));
+			$clone->setAttribute('startFilePos', -(++$cloneCounter));
 
 			$closureType = $scope->getType($clone);
 			if ($closureType->isCallable()->yes()) {

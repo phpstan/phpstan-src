@@ -419,4 +419,19 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14582.php'], []);
 	}
 
+	public function testBug11731(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11731.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				9,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				19,
+			],
+		]);
+	}
+
 }

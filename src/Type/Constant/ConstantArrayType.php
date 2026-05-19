@@ -1731,6 +1731,19 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $isOptional);
 		}
 
+		// When the requested length runs past the explicit keys, the
+		// missing trailing slots could be filled by the source's
+		// unsealed extras (or be absent). Carry the unsealed slot
+		// through so the result still describes those potential extras.
+		if (
+			$this->isUnsealed()->yes()
+			&& $this->unsealed !== null
+			&& $nonOptionalElementsCount < $length
+		) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedKey, $unsealedValue);
+		}
+
 		return $builder->getArray();
 	}
 

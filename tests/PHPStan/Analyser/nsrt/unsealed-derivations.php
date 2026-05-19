@@ -450,6 +450,32 @@ class ArrayKeysValues
 
 }
 
+class SliceArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function sliceWithinExplicit(array $arr): void
+	{
+		// Slice fits entirely within the explicit keys — the unsealed
+		// slot doesn't come into play and the result is sealed.
+		assertType("array{a: 1}", array_slice($arr, 0, 1));
+	}
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function sliceBeyondExplicit(array $arr): void
+	{
+		// Slice extends past the explicit keys: the trailing positions
+		// could be filled by unsealed extras (or be absent), so the
+		// result is unsealed and carries the source's extras slot.
+		assertType('array{a: 1, b: 2, ...<int, string>}', array_slice($arr, 0, 5));
+	}
+
+}
+
 class CountNarrowing
 {
 

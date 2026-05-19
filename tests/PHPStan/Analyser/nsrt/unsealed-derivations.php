@@ -496,6 +496,24 @@ class ChunkArray
 
 }
 
+class ShuffleArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function shufflePreservesUnsealedValues(array $arr): void
+	{
+		// `shuffle` reorders + reindexes. Through `getValuesArray()`
+		// the source's unsealed value type contributes to the result's
+		// value union — the final degraded list type includes `string`
+		// alongside the explicit values `1` and `2`.
+		shuffle($arr);
+		assertType('non-empty-list<1|2|string>', $arr);
+	}
+
+}
+
 class CountNarrowing
 {
 

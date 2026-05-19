@@ -473,8 +473,21 @@ final class ConstantArrayTypeBuilder
 			$itemTypes = $this->valueTypes;
 		}
 
+		$keyTypesForArray = $this->keyTypes;
+		// Real unsealed extras describe additional key/value pairs that
+		// belong in the degraded `ArrayType`'s key/value unions too —
+		// otherwise the degraded type silently drops them.
+		if ($this->unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$isExplicitNever = $unsealedKey instanceof NeverType && $unsealedKey->isExplicit();
+			if (!$isExplicitNever) {
+				$keyTypesForArray[] = $unsealedKey;
+				$itemTypes[] = $unsealedValue;
+			}
+		}
+
 		$array = new ArrayType(
-			TypeCombinator::union(...$this->keyTypes),
+			TypeCombinator::union(...$keyTypesForArray),
 			TypeCombinator::union(...$itemTypes),
 		);
 

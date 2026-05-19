@@ -12,6 +12,8 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PHPStan\Rules\Exceptions\TooWidePropertyHookThrowTypeRule:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
+	PHPStan\Rules\Keywords\UnusedLabelRule:
+		phpstan.rules.rule: %featureToggles.unusedLabel%
 
 parameters:
 	checkAdvancedIsset: true
@@ -30,3 +32,6 @@ services:
 		class: PHPStan\Rules\Exceptions\TooWidePropertyHookThrowTypeRule
 		arguments:
 			checkProtectedAndPublicMethods: %checkTooWideThrowTypesInProtectedAndPublicMethods%
+
+	-
+		class: PHPStan\Rules\Keywords\UnusedLabelRule

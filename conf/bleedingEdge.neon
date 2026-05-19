@@ -19,3 +19,4 @@ parameters:
 		checkDateIntervalConstructor: true
 		reportMethodPurityOverride: true
 		checkDynamicConstantNameValues: true
+		unusedLabel: true

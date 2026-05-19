@@ -105,19 +105,19 @@ function nonStringInput($intOrString): void
 	}
 }
 
-/** @param float|string $mixedFloat */
-function nonStringInputFloat($mixedFloat): void
+/** @param float|string $floatOrString */
+function nonStringInputFloat($floatOrString): void
 {
-	if (strlen($mixedFloat)) {
-		assertType('float|string', $mixedFloat);
+	if (strlen($floatOrString)) {
+		assertType('float|string', $floatOrString);
 	}
 }
 
-/** @param bool|string $mixedBool */
-function nonStringInputBool($mixedBool): void
+/** @param bool|string $boolOrString */
+function nonStringInputBool($boolOrString): void
 {
-	if (strlen($mixedBool)) {
-		assertType('bool|string', $mixedBool);
+	if (strlen($boolOrString)) {
+		assertType('bool|string', $boolOrString);
 	}
 }
 

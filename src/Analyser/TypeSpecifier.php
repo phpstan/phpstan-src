@@ -577,27 +577,6 @@ final class TypeSpecifier
 				}
 			}
 
-			if (
-				!$context->null()
-				&& in_array(strtolower((string) $expr->name), ['strlen', 'mb_strlen'], true)
-				&& count($expr->getArgs()) === 1
-			) {
-				$argType = $scope->getType($expr->getArgs()[0]->value);
-				if ($argType->isString()->yes()) {
-					$result = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-					if ($context->truthy()) {
-						return $result->unionWith(
-							$this->create($expr->getArgs()[0]->value, new AccessoryNonEmptyStringType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
-						);
-					}
-					if ($context->falsey()) {
-						return $result->unionWith(
-							$this->create($expr->getArgs()[0]->value, new AccessoryNonEmptyStringType(), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($expr),
-						);
-					}
-				}
-			}
-
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		} elseif ($expr instanceof FuncCall) {
 			$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $scope);

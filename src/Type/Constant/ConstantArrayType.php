@@ -1967,6 +1967,16 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$unsealedKeyType = $this->unsealed[0];
+			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			}
+			$keyTypes[] = $unsealedKeyType;
+		}
+
 		return TypeCombinator::union(...$keyTypes);
 	}
 
@@ -1978,6 +1988,16 @@ class ConstantArrayType implements Type
 			if (!$this->isOptionalKey($i)) {
 				break;
 			}
+		}
+
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$unsealedKeyType = $this->unsealed[0];
+			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			}
+			$keyTypes[] = $unsealedKeyType;
 		}
 
 		return TypeCombinator::union(...$keyTypes);
@@ -1993,6 +2013,10 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$valueTypes[] = $this->unsealed[1];
+		}
+
 		return TypeCombinator::union(...$valueTypes);
 	}
 
@@ -2004,6 +2028,10 @@ class ConstantArrayType implements Type
 			if (!$this->isOptionalKey($i)) {
 				break;
 			}
+		}
+
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$valueTypes[] = $this->unsealed[1];
 		}
 
 		return TypeCombinator::union(...$valueTypes);

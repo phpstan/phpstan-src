@@ -280,8 +280,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	{
 		return $level->handle(
 			static fn (): string => 'Closure',
-			fn (): string => $this->describeBody(showPure: true, showStatic: false),
-			fn (): string => $this->describeBody(showPure: true, showStatic: true),
+			fn (): string => $this->describeBody(true, false),
+			fn (): string => $this->describeBody(true, true),
 		);
 	}
 

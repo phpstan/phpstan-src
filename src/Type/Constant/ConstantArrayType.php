@@ -1436,6 +1436,15 @@ class ConstantArrayType implements Type
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
+		// With real unsealed extras, we can't precisely enumerate the
+		// chunks — the source has an unknown number of extras that
+		// could form additional partial or full chunks. Fall back to
+		// the general `list<chunk<sourceValues>>` shape produced by
+		// the trait, which is correct (just less precise).
+		if ($this->isUnsealed()->yes()) {
+			return $this->traitChunkArray($lengthType, $preserveKeys);
+		}
+
 		$biggerOne = IntegerRangeType::fromInterval(1, null);
 		$finiteTypes = $lengthType->getFiniteTypes();
 		if ($biggerOne->isSuperTypeOf($lengthType)->yes() && count($finiteTypes) < self::CHUNK_FINITE_TYPES_LIMIT) {

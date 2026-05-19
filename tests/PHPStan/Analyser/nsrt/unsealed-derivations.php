@@ -476,6 +476,26 @@ class SliceArray
 
 }
 
+class ChunkArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, c: 3, d: 4, ...<int, string>} $arr
+	 */
+	public function chunkPreservingKeys(array $arr): void
+	{
+		// With real unsealed extras the precise chunk count is unknown,
+		// so the type falls back to a general "non-empty list of chunks
+		// shaped like the source". Each chunk is described by the
+		// source's own shape (preserveKeys=true).
+		assertType(
+			'non-empty-list<array{a: 1, b: 2, c: 3, d: 4, ...<int, string>}>',
+			array_chunk($arr, 2, true),
+		);
+	}
+
+}
+
 class CountNarrowing
 {
 

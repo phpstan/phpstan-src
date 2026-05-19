@@ -411,6 +411,45 @@ class ShiftArray
 
 }
 
+class ArrayKeysValues
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function keysFromUnsealed(array $arr): void
+	{
+		// `array_keys` returns a list of the source's keys. Explicit
+		// keys land in the result's value slots; the source's unsealed
+		// *key* type fills the new unsealed value slot. The result is
+		// list-shaped, so its unsealed key range is `int<0, max>` (the
+		// describe collapses that to the `<value>` short form).
+		assertType("array{'a', 'b', ...<int>}", array_keys($arr));
+	}
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function valuesFromUnsealed(array $arr): void
+	{
+		// `array_values` returns a list of the source's values. The
+		// source's unsealed *value* type fills the new unsealed value
+		// slot.
+		assertType('array{1, 2, ...<string>}', array_values($arr));
+	}
+
+	/**
+	 * @param array{a: 1, b: 2, ...<string, string>} $arr
+	 */
+	public function keysFromUnsealedWithStringKeys(array $arr): void
+	{
+		// Source's unsealed key type is `string`, so the result's
+		// unsealed values are strings.
+		assertType("array{'a', 'b', ...<string>}", array_keys($arr));
+	}
+
+}
+
 class CountNarrowing
 {
 

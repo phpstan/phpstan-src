@@ -2278,7 +2278,7 @@ class ConstantArrayType implements Type
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
-		$keysArray = $this->getKeysOrValuesArray($this->keyTypes);
+		$keysArray = $this->getKeysOrValuesArray($this->keyTypes, $this->unsealed[0] ?? null);
 
 		return new IntersectionType([
 			new ArrayType(
@@ -2291,21 +2291,33 @@ class ConstantArrayType implements Type
 
 	public function getKeysArray(): self
 	{
-		return $this->getKeysOrValuesArray($this->keyTypes);
+		return $this->getKeysOrValuesArray($this->keyTypes, $this->unsealed[0] ?? null);
 	}
 
 	public function getValuesArray(): self
 	{
-		return $this->getKeysOrValuesArray($this->valueTypes);
+		return $this->getKeysOrValuesArray($this->valueTypes, $this->unsealed[1] ?? null);
 	}
 
 	/**
 	 * @param array<int, Type> $types
 	 */
-	private function getKeysOrValuesArray(array $types): self
+	private function getKeysOrValuesArray(array $types, ?Type $unsealedSourceType): self
 	{
 		$count = count($types);
 		$autoIndexes = range($count - count($this->optionalKeys), $count);
+
+		// The result is always a list — the source's keys/values are
+		// numbered sequentially. The new unsealed slot (if the source
+		// has real extras) describes "zero or more extras at int
+		// positions >= 0 whose values are the source's unsealed
+		// key/value type". `int<0, max>` is the conventional unsealed
+		// key for list-shaped extras; it also enables the short-form
+		// `<value>` describe.
+		$resultUnsealed = null;
+		if ($this->isUnsealed()->yes() && $unsealedSourceType !== null) {
+			$resultUnsealed = [IntegerRangeType::createAllGreaterThanOrEqualTo(0), $unsealedSourceType];
+		}
 
 		if ($this->isList->yes()) {
 			// Optimized version for lists: Assume that if a later key exists, then earlier keys also exist.
@@ -2313,7 +2325,7 @@ class ConstantArrayType implements Type
 				static fn (int $i): ConstantIntegerType => new ConstantIntegerType($i),
 				array_keys($types),
 			);
-			return $this->recreate($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $this->unsealed); // todo unsealed
+			return $this->recreate($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $resultUnsealed);
 		}
 
 		$keyTypes = [];
@@ -2342,7 +2354,7 @@ class ConstantArrayType implements Type
 			$maxIndex++;
 		}
 
-		return $this->recreate($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes(), $this->unsealed); // todo unsealed
+		return $this->recreate($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes(), $resultUnsealed);
 	}
 
 	public function describe(VerbosityLevel $level): string

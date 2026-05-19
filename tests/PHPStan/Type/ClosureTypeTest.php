@@ -194,12 +194,12 @@ class ClosureTypeTest extends PHPStanTestCase
 			'static closure at precise' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::precise(),
-				'static Closure(): mixed',
+				'static-Closure(): mixed',
 			],
 			'static closure at cache' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::cache(),
-				'static Closure(): mixed',
+				'static-Closure(): mixed',
 			],
 			'non-static closure at precise' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
@@ -209,7 +209,7 @@ class ClosureTypeTest extends PHPStanTestCase
 			'non-static closure at cache' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
 				VerbosityLevel::cache(),
-				'non-static Closure(): mixed',
+				'Closure(): mixed',
 			],
 			'maybe-static closure at precise' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
@@ -224,12 +224,12 @@ class ClosureTypeTest extends PHPStanTestCase
 			'static common closure at precise' => [
 				new ClosureType(isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::precise(),
-				'static Closure',
+				'static-Closure',
 			],
 			'static common closure at cache' => [
 				new ClosureType(isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::cache(),
-				'static Closure',
+				'static-Closure',
 			],
 		];
 	}

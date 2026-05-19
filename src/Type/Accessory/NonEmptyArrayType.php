@@ -248,6 +248,13 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		// The accessory only asserts "this array is non-empty" — truncating
+		// to a positive size leaves that property in place.
+		return $this;
+	}
+
 	public function makeListMaybe(): Type
 	{
 		// Non-emptiness is independent of list-ness; weaken-list keeps it.

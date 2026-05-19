@@ -109,6 +109,11 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return $this;

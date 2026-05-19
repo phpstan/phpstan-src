@@ -1235,6 +1235,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypesPreserveTemplateType(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return $this->intersectTypesPreserveTemplateType(static fn (Type $type): Type => $type->truncateListToSize($sizeType));
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->makeListMaybe());

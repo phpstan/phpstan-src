@@ -284,6 +284,23 @@ interface Type
 	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type;
 
 	/**
+	 * Narrows a list-shaped array type to "size lies in $sizeType" — the
+	 * type-system equivalent of `count($list) === N` / `count($list) >= N`
+	 * / `count($list) in [N, M]`. Used by `TypeSpecifier` when specifying
+	 * types for `count()` comparisons; the call site is responsible for
+	 * gating on outer list-ness, so each implementation may assume it's
+	 * narrowing a list shape.
+	 *
+	 * `$sizeType` is expected to be a `ConstantIntegerType` (exact size) or
+	 * an `IntegerRangeType` (a min/max bound). Concrete implementations
+	 * (`ConstantArrayType`, `ArrayType`) rebuild the array with a required
+	 * prefix `[0, min)` and an optional middle `[min, max)` (when `max` is
+	 * set), or extend with `HasOffsetValueType` accessories when the upper
+	 * bound is unbounded. Non-array types return `ErrorType`.
+	 */
+	public function truncateListToSize(Type $sizeType): Type;
+
+	/**
 	 * Downgrades the list-ness of the array from `Yes` to `Maybe` (e.g. for
 	 * `asort`/`uksort`/etc. which preserve keys but break list ordering).
 	 * Other shape information (keys, values, accessories like NonEmpty) is

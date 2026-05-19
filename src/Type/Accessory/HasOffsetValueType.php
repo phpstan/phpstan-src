@@ -314,6 +314,13 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		// `HasOffsetValueType` is metadata about a specific key — independent
+		// of the array's overall size constraint.
+		return $this;
+	}
+
 	public function makeListMaybe(): Type
 	{
 		// Knowing a specific offset/value is independent of list-ness.

@@ -3247,6 +3247,15 @@ class ConstantArrayType implements Type
 			return true;
 		}
 
+		if ($this->unsealed !== null) {
+			if ($this->unsealed[0]->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+			if ($this->unsealed[1]->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+		}
+
 		return false;
 	}
 

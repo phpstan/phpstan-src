@@ -55,6 +55,8 @@ class ArrayType implements Type
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	private const TRUNCATE_ACCESSORIES_LIMIT = 8;
+
 	private Type $keyType;
 
 	private ?TrinaryLogic $isList = null;
@@ -587,6 +589,74 @@ class ArrayType implements Type
 		// `ArrayType` doesn't carry list-ness on its own — that's an
 		// `AccessoryArrayListType` in an enclosing `IntersectionType`.
 		return $this;
+	}
+
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		[$min, $max] = ConstantArrayType::extractTruncateListBounds($sizeType);
+
+		// `isList()` is deliberately NOT checked here — see the matching
+		// note on `ConstantArrayType::truncateListToSize`. The call site
+		// has already established outer list-ness.
+		if (
+			$min === null
+			|| $min >= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+			|| !$this->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, ($max ?? $min) - 1))->yes()
+		) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
+		if ($max !== null) {
+			// Bounded range — `ArrayType` doesn't carry per-offset types, so
+			// rebuild via the same CAT builder logic as `ConstantArrayType`.
+			// The values come from `$this->getOffsetValueType()` (which on a
+			// general `ArrayType` collapses to the iterable value type).
+			if ($max - $min > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				return TypeCombinator::intersect($this, new NonEmptyArrayType());
+			}
+
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			for ($i = 0; $i < $min; $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$builder->setOffsetValueType($offsetType, $this->getOffsetValueType($offsetType), false);
+			}
+			for ($i = $min; $i < $max; $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$builder->setOffsetValueType($offsetType, $this->getOffsetValueType($offsetType), true);
+			}
+
+			$builtArray = $builder->getArray();
+			if (!$builder->isList()) {
+				$constantArrays = $builtArray->getConstantArrays();
+				if (count($constantArrays) === 1) {
+					$builtArray = $constantArrays[0]->makeList();
+				}
+			}
+
+			return $builtArray;
+		}
+
+		// Unbounded max on a general `ArrayType` list: we can't enumerate the
+		// trailing entries, so anchor the lower bound with
+		// `HasOffsetValueType` accessories (skipping offset 0 — already
+		// implied by `NonEmptyArrayType`).
+		$intersection = [$this, new NonEmptyArrayType()];
+		$zero = new ConstantIntegerType(0);
+		$added = 0;
+		for ($i = 0; $i < $min; $i++) {
+			$offsetType = new ConstantIntegerType($i);
+			if ($zero->isSuperTypeOf($offsetType)->yes()) {
+				continue;
+			}
+			if ($added > self::TRUNCATE_ACCESSORIES_LIMIT) {
+				break;
+			}
+
+			$intersection[] = new HasOffsetValueType($offsetType, $this->getOffsetValueType($offsetType));
+			$added++;
+		}
+
+		return TypeCombinator::intersect(...$intersection);
 	}
 
 	public function mapValueType(callable $cb): Type

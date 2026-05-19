@@ -1292,6 +1292,99 @@ class ConstantArrayType implements Type
 		return TypeCombinator::union(...$types);
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		[$min, $max] = self::extractTruncateListBounds($sizeType);
+
+		// `getMin() === null` ↔ unbounded below; the narrowing has no anchor
+		// to start from. Also bail out when the required prefix would exceed
+		// the array-shape limit — we can't enumerate that many keys.
+		// `isList()` is intentionally NOT checked here: the call site
+		// (`TypeSpecifier`) only invokes this when the *outer* aggregate is
+		// already a list, but a CAT inside a `non-empty-list` intersection
+		// may have its own `isList()` weakened to `Maybe`.
+		if (
+			$min === null
+			|| $min >= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+			|| !$this->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, ($max ?? $min) - 1))->yes()
+		) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
+		// Required prefix `[0, $min)`: every value definitely present.
+		$builderData = [];
+		for ($i = 0; $i < $min; $i++) {
+			$offsetType = new ConstantIntegerType($i);
+			$builderData[] = [$offsetType, $this->getOffsetValueType($offsetType), false];
+		}
+
+		if ($max !== null) {
+			// Optional middle `[$min, $max)`.
+			if ($max - $min > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				return TypeCombinator::intersect($this, new NonEmptyArrayType());
+			}
+			for ($i = $min; $i < $max; $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$builderData[] = [$offsetType, $this->getOffsetValueType($offsetType), true];
+			}
+		} else {
+			// Unbounded max: probe explicit keys from `$min` onward until
+			// `hasOffsetValueType` answers `no`. Each probe contributes one
+			// optional (or required, when `hasOffsetValueType` is `yes`) slot.
+			for ($i = $min;; $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$hasOffset = $this->hasOffsetValueType($offsetType);
+				if ($hasOffset->no()) {
+					break;
+				}
+				$builderData[] = [$offsetType, $this->getOffsetValueType($offsetType), !$hasOffset->yes()];
+			}
+		}
+
+		if (count($builderData) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($builderData as [$offsetType, $valueType, $optional]) {
+			$builder->setOffsetValueType($offsetType, $valueType, $optional);
+		}
+
+		$builtArray = $builder->getArray();
+		// `setOffsetValueType` on a brand-new builder produces a list when
+		// the resulting offsets are sequential ints — but it may not preserve
+		// list-ness in every shape. Reattach it for the single-CAT case.
+		if (!$builder->isList()) {
+			$constantArrays = $builtArray->getConstantArrays();
+			if (count($constantArrays) === 1) {
+				$builtArray = $constantArrays[0]->makeList();
+			}
+		}
+
+		return $builtArray;
+	}
+
+	/**
+	 * Extracts (min, max) bounds from a size type for `truncateListToSize`.
+	 * `ConstantIntegerType(N)` → `[N, N]`. `IntegerRangeType` →
+	 * `[$min, $max]`. Anything else returns `[null, null]` and the caller
+	 * falls back to the non-precise path.
+	 *
+	 * @return array{?int, ?int}
+	 */
+	public static function extractTruncateListBounds(Type $sizeType): array
+	{
+		if ($sizeType instanceof ConstantIntegerType) {
+			return [$sizeType->getValue(), $sizeType->getValue()];
+		}
+
+		if ($sizeType instanceof IntegerRangeType) {
+			return [$sizeType->getMin(), $sizeType->getMax()];
+		}
+
+		return [null, null];
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		$keysCount = count($this->keyTypes);

@@ -225,6 +225,12 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		// Having a specific offset is independent of the array's size bound.
+		return $this;
+	}
+
 	public function makeListMaybe(): Type
 	{
 		// Having an offset doesn't conflict with list-being-maybe.

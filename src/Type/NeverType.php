@@ -385,6 +385,11 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return new NeverType();
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return new NeverType();

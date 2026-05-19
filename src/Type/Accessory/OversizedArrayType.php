@@ -225,6 +225,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return $this;
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return $this;

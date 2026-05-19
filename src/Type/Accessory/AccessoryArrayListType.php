@@ -261,6 +261,13 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		// List-ness survives a count narrowing — the resulting array is
+		// still a list, just of a constrained size.
+		return $this;
+	}
+
 	public function makeListMaybe(): Type
 	{
 		// This accessory is the list assertion itself; weakening the

@@ -257,4 +257,15 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12852(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12852.php'], [
+			[
+				'Negated boolean expression is always true.',
+				10,
+			],
+		]);
+	}
+
 }

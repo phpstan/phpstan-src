@@ -42,6 +42,9 @@ lint:
 		--exclude tests/PHPStan/Levels/data/namedArguments.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break-property-hook.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/goto-undefined-label.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/goto-undefined-label-property-hook.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/unused-label-property-hook.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/bug-13790-break.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/bug-13790-continue.php \
 		--exclude tests/PHPStan/Rules/Properties/data/invalid-callable-property-type.php \

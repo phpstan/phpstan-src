@@ -48,6 +48,7 @@ parametersSchema:
 		checkDateIntervalConstructor: bool()
 		reportMethodPurityOverride: bool()
 		checkDynamicConstantNameValues: bool()
+		unusedLabel: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

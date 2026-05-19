@@ -46,6 +46,7 @@ parameters:
 		checkDateIntervalConstructor: false
 		reportMethodPurityOverride: false
 		checkDynamicConstantNameValues: false
+		unusedLabel: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

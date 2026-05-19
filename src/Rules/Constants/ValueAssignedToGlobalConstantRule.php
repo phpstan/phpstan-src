@@ -52,7 +52,7 @@ final class ValueAssignedToGlobalConstantRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Configuration defined type for constant %s (%s) does not accept value %s.',
 				$constantName,
-				$configuredType->describe(VerbosityLevel::typeOnly()),
+				$configuredType->describe(VerbosityLevel::value()),
 				$valueType->describe($verbosity),
 			))->acceptsReasonsTip($accepts->reasons)->identifier('constant.value')->build();
 		}

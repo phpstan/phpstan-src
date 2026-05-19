@@ -3303,6 +3303,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$conditions = [];
+		$originallySpecifiedExprStrings = $specifiedExpressions;
 		$prevSpecifiedCount = -1;
 		while (count($specifiedExpressions) !== $prevSpecifiedCount) {
 			$prevSpecifiedCount = count($specifiedExpressions);
@@ -3313,6 +3314,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 				// Pass 1: Prefer exact matches
 				foreach ($conditionalExpressions as $conditionalExpression) {
+					if (
+						$conditionalExpression->getTypeHolder()->getCertainty()->no()
+						&& array_key_exists($conditionalExprString, $originallySpecifiedExprStrings)
+					) {
+						continue;
+					}
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (
 							!array_key_exists($holderExprString, $specifiedExpressions)

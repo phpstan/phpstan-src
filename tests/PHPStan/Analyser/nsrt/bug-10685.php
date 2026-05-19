@@ -19,7 +19,7 @@ class Foo
 
 	public function doFoo(): void
 	{
-		assertType('array{1|2|3, 1|2|3, 1|2|3}', array_map(fn($i) => $i, [1, 2, 3]));
+		assertType('array{1, 2, 3}', array_map(fn($i) => $i, [1, 2, 3]));
 		assertType('array{1, 2, 3}', array_map($this->identity(...), [1, 2, 3]));
 	}
 

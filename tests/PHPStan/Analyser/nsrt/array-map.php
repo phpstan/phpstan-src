@@ -95,8 +95,8 @@ class Foo
 
 		assertType("array{'0', '1'}", array_map('strval', $a));
 		assertType("array{'0', '1'}", array_map(strval(...), $a));
-		assertType("array{'0'|'1', '0'|'1'}", array_map(fn ($v) => strval($v), $a));
-		assertType("array{'0'|'1', '0'|'1'}", array_map(fn ($v) => (string)$v, $a));
+		assertType("array{'0', '1'}", array_map(fn ($v) => strval($v), $a));
+		assertType("array{'0', '1'}", array_map(fn ($v) => (string)$v, $a));
 	}
 
 	public function doFizzBuzz(): void

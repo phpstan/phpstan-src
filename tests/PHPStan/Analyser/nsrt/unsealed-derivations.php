@@ -305,6 +305,24 @@ class FlipArray
 
 }
 
+class FillKeysArray
+{
+
+	/**
+	 * @param array{a: 'foo', b: 'bar', ...<int, string>} $arr
+	 */
+	public function fillKeysPreservesUnsealed(array $arr): void
+	{
+		// `array_fill_keys` uses the source's *values* as the result's
+		// keys (with `toArrayKey()` applied). Explicit `'foo'`, `'bar'`
+		// become keys; the unsealed `<int, string>` contributes string
+		// values that become the result's unsealed key range — the new
+		// unsealed entry is `<string, int>` with the fill value `42`.
+		assertType('array{foo: 42, bar: 42, ...<string, 42>}', array_fill_keys($arr, 42));
+	}
+
+}
+
 class CountNarrowing
 {
 

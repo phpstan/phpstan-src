@@ -1480,6 +1480,11 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedValue->toArrayKey(), $valueType);
+		}
+
 		return $builder->getArray();
 	}
 

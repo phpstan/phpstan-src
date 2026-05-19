@@ -97,11 +97,11 @@ function ternary(string $s): void
 	assertType("'empty'|'non-empty'", $result);
 }
 
-/** @param int|string $mixed */
-function nonStringInput($mixed): void
+/** @param int|string $intOrString */
+function nonStringInput($intOrString): void
 {
-	if (strlen($mixed)) {
-		assertType('int|string', $mixed);
+	if (strlen($intOrString)) {
+		assertType('int|string', $intOrString);
 	}
 }
 

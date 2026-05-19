@@ -356,8 +356,8 @@ class Foo
 		assertType('int|string', $stringOrNull ?? $integer);
 		assertType('\'Foo\'', \Foo::class);
 		assertType('106', $line);
-		assertType('literal-string&non-falsy-string', $dir);
-		assertType('literal-string&non-falsy-string', $file);
+		assertType("'nsrt'", substr($dir, -4));
+		assertType("'binary.php'", substr($file, -10));
 		assertType('\'BinaryOperations\\\\NestedNamespace\'', $namespace);
 		assertType('\'BinaryOperations\\\\NestedNamespace\\\\Foo\'', $class);
 		assertType('\'BinaryOperations\\\\NestedNamespace\\\\Foo::doFoo\'', $method);

@@ -466,8 +466,8 @@ function (): void {
 
 class MagicConstUser {
 	function doFoo(): void {
-		assertType('literal-string&non-falsy-string', __DIR__);
-		assertType('literal-string&non-falsy-string', __FILE__);
+		assertType("'data'", substr(__DIR__, -4));
+		assertType("'fnsr.php'", substr(__FILE__, -8));
 		assertType('471', __LINE__);
 		assertType("'FiberNodeScopeResolverTest'", __NAMESPACE__);
 		assertType("'FiberNodeScopeResolverTest\\\\MagicConstUser'", __CLASS__);

@@ -192,7 +192,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 			],
 			[
 				'const_with_dir_const',
-				'literal-string&non-falsy-string',
+				"'" . __DIR__ . "/data'",
 			],
 			[
 				'OPTIMIZED_SFSL_OBJECT_CONSTANT',

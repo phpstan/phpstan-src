@@ -31,11 +31,4 @@ class PathConstantsTest extends TypeInferenceTestCase
 		$this->assertFileAsserts($assertType, $file, ...$args);
 	}
 
-	public static function getAdditionalConfigFiles(): array
-	{
-		return [
-			__DIR__ . '/usePathConstantsAsConstantString.neon',
-		];
-	}
-
 }

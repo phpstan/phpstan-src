@@ -30,7 +30,6 @@ use PhpParser\Node\Scalar\MagicConst\Line;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
@@ -70,7 +69,6 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -141,8 +139,6 @@ final class InitializerExprTypeResolver
 		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
 		private UnaryOperatorTypeSpecifyingExtensionRegistryProvider $unaryOperatorTypeSpecifyingExtensionRegistryProvider,
 		private OversizedArrayBuilder $oversizedArrayBuilder,
-		#[AutowiredParameter]
-		private bool $usePathConstantsAsConstantString,
 	)
 	{
 	}
@@ -185,16 +181,14 @@ final class InitializerExprTypeResolver
 			if ($file === null) {
 				return new StringType();
 			}
-			$stringType = new ConstantStringType($file);
-			return $this->usePathConstantsAsConstantString ? $stringType : $stringType->generalize(GeneralizePrecision::moreSpecific());
+			return new ConstantStringType($file);
 		}
 		if ($expr instanceof Dir) {
 			$file = $context->getFile();
 			if ($file === null) {
 				return new StringType();
 			}
-			$stringType = new ConstantStringType(dirname($file));
-			return $this->usePathConstantsAsConstantString ? $stringType : $stringType->generalize(GeneralizePrecision::moreSpecific());
+			return new ConstantStringType(dirname($file));
 		}
 		if ($expr instanceof Line) {
 			return new ConstantIntegerType($expr->getStartLine());

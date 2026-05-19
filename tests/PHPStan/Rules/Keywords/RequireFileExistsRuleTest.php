@@ -24,13 +24,6 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		return new RequireFileExistsRule($this->currentWorkingDirectory);
 	}
 
-	public static function getAdditionalConfigFiles(): array
-	{
-		return [
-			__DIR__ . '/../../Analyser/usePathConstantsAsConstantString.neon',
-		];
-	}
-
 	public function testBasicCase(): void
 	{
 		$this->analyse([__DIR__ . '/data/require-file-simple-case.php'], [

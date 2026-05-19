@@ -144,24 +144,28 @@ class ConstantArrayType implements Type
 	{
 		assert(count($keyTypes) === count($valueTypes));
 
-		$keyTypesCount = count($this->keyTypes);
-		if ($keyTypesCount === 0) {
-			if ($unsealed === null) {
-				$isList = TrinaryLogic::createYes();
-			} else {
-				[$unsealedKeyType] = $unsealed;
-				if ($unsealedKeyType instanceof NeverType && $unsealedKeyType->isExplicit()) {
-					$isList = TrinaryLogic::createYes();
-				} elseif ($unsealedKeyType->isInteger()->yes()) {
-					$isList = TrinaryLogic::createMaybe();
-				} else {
-					$isList = TrinaryLogic::createNo();
-				}
-			}
-		}
-
+		// Fill in `$isList` from the shape when the caller didn't pass one.
+		// For empty CATs the answer derives from the unsealed key type
+		// (no explicit keys to inspect); for non-empty ones the default
+		// is `No` and the caller is expected to assert list-ness via
+		// `makeList()` if appropriate.
 		if ($isList === null) {
-			$isList = TrinaryLogic::createNo();
+			if (count($this->keyTypes) === 0) {
+				if ($unsealed === null) {
+					$isList = TrinaryLogic::createYes();
+				} else {
+					[$unsealedKeyType] = $unsealed;
+					if ($unsealedKeyType instanceof NeverType && $unsealedKeyType->isExplicit()) {
+						$isList = TrinaryLogic::createYes();
+					} elseif ($unsealedKeyType->isInteger()->yes()) {
+						$isList = TrinaryLogic::createMaybe();
+					} else {
+						$isList = TrinaryLogic::createNo();
+					}
+				}
+			} else {
+				$isList = TrinaryLogic::createNo();
+			}
 		}
 		$this->isList = $isList;
 
@@ -3052,8 +3056,6 @@ class ConstantArrayType implements Type
 		if ($this->isList->no()) {
 			return new NeverType();
 		}
-
-		// todo can't be a list if keyTypes are not subsequent integers, or if unsealed type is not int keys
 
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);
 	}

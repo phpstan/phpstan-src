@@ -356,6 +356,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->spliceArray($offsetType, $lengthType, $replacementType);
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return $this->resolve()->truncateListToSize($sizeType);
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return $this->resolve()->makeListMaybe();

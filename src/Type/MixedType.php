@@ -306,6 +306,15 @@ class MixedType implements CompoundType, SubtractableType
 		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return $this;
+	}
+
 	public function makeListMaybe(): Type
 	{
 		// `mixed` doesn't track list-ness; nothing to weaken.

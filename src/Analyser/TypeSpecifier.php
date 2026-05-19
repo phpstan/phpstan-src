@@ -49,7 +49,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -99,8 +98,6 @@ use const COUNT_NORMAL;
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
 final class TypeSpecifier
 {
-
-	private const MAX_ACCESSORIES_LIMIT = 8;
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
@@ -1432,100 +1429,15 @@ final class TypeSpecifier
 				continue;
 			}
 
-			if (
-				$sizeType instanceof ConstantIntegerType
-				&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-				&& $isList->yes()
-				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
-			) {
-				// turn optional offsets non-optional
-				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-				for ($i = 0; $i < $sizeType->getValue(); $i++) {
-					$offsetType = new ConstantIntegerType($i);
-					$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType));
-				}
-				$resultTypes[] = $valueTypesBuilder->getArray();
-				continue;
-			}
-
-			if (
-				$sizeType instanceof IntegerRangeType
-				&& $sizeType->getMin() !== null
-				&& $sizeType->getMin() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-				&& $isList->yes()
-				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, ($sizeType->getMax() ?? $sizeType->getMin()) - 1))->yes()
-			) {
-				$builderData = [];
-				// turn optional offsets non-optional
-				for ($i = 0; $i < $sizeType->getMin(); $i++) {
-					$offsetType = new ConstantIntegerType($i);
-					$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), false];
-				}
-				if ($sizeType->getMax() !== null) {
-					if ($sizeType->getMax() - $sizeType->getMin() > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-						$resultTypes[] = $arrayType;
-						continue;
-					}
-					for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
-						$offsetType = new ConstantIntegerType($i);
-						$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), true];
-					}
-				} elseif ($arrayType->isConstantArray()->yes()) {
-					for ($i = $sizeType->getMin();; $i++) {
-						$offsetType = new ConstantIntegerType($i);
-						$hasOffset = $arrayType->hasOffsetValueType($offsetType);
-						if ($hasOffset->no()) {
-							break;
-						}
-						$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), !$hasOffset->yes()];
-					}
-				} else {
-					$intersection = [];
-					$intersection[] = $arrayType;
-					$intersection[] = new NonEmptyArrayType();
-
-					$zero = new ConstantIntegerType(0);
-					$i = 0;
-					foreach ($builderData as [$offsetType, $valueType]) {
-						// non-empty-list already implies the offset 0
-						if ($zero->isSuperTypeOf($offsetType)->yes()) {
-							continue;
-						}
-
-						if ($i > self::MAX_ACCESSORIES_LIMIT) {
-							break;
-						}
-
-						$intersection[] = new HasOffsetValueType($offsetType, $valueType);
-						$i++;
-					}
-
-					$resultTypes[] = TypeCombinator::intersect(...$intersection);
-					continue;
-				}
-
-				if (count($builderData) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-					$resultTypes[] = $arrayType;
-					continue;
-				}
-
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($builderData as [$offsetType, $valueType, $optional]) {
-					$builder->setOffsetValueType($offsetType, $valueType, $optional);
-				}
-
-				$builtArray = $builder->getArray();
-				if ($isList->yes() && !$builder->isList()) {
-					$constantArrays = $builtArray->getConstantArrays();
-					if (count($constantArrays) === 1) {
-						$builtArray = $constantArrays[0]->makeList();
-					}
-				}
-				$resultTypes[] = $builtArray;
-				continue;
-			}
-
-			$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			// `truncateListToSize` rebuilds the inner array as a list shape
+			// — that's only sound when the *outer* type is definitely a
+			// list. The inner array alone may have `isList()` answer `Maybe`
+			// (e.g. `ArrayType<int<0, max>, T>` inside a
+			// `non-empty-list<T>` intersection), so the gate has to live
+			// here, not on the per-array method.
+			$resultTypes[] = $isList->yes()
+				? $arrayType->truncateListToSize($sizeType)
+				: TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 
 		if ($context->truthy() && $isConstantArray->yes() && $isList->yes()) {

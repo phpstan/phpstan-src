@@ -907,6 +907,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->truncateListToSize($sizeType));
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->makeListMaybe());

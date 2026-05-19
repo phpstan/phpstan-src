@@ -560,6 +560,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->spliceArray($offsetType, $lengthType, $replacementType);
 	}
 
+	public function truncateListToSize(Type $sizeType): Type
+	{
+		return $this->getStaticObjectType()->truncateListToSize($sizeType);
+	}
+
 	public function makeListMaybe(): Type
 	{
 		return $this->getStaticObjectType()->makeListMaybe();

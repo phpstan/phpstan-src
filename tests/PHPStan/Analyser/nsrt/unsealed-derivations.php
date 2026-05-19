@@ -514,6 +514,23 @@ class ShuffleArray
 
 }
 
+class SpliceArray
+{
+
+	/**
+	 * @param list{int, int, int, ...<float>} $arr
+	 */
+	public function splicePreservesUnsealed(array $arr): void
+	{
+		array_splice($arr, 1, 1);
+		// `array_splice` removes a slice from an explicit position;
+		// the unsealed extras at the tail are unaffected and survive
+		// on the result.
+		assertType('array{int, int, ...<float>}', $arr);
+	}
+
+}
+
 class CountNarrowing
 {
 

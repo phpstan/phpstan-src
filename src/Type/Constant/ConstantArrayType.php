@@ -1857,6 +1857,16 @@ class ConstantArrayType implements Type
 				);
 			}
 
+			// `array_splice` removes a slice at an explicit offset and
+			// inserts a replacement there. Real unsealed extras live at
+			// positions past the explicit keys, so they're unaffected
+			// by the operation (re-indexing of int keys keeps the
+			// `<int, V>` range intact). Carry the slot through.
+			if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+				[$unsealedKey, $unsealedValue] = $this->unsealed;
+				$builder->makeUnsealed($unsealedKey, $unsealedValue);
+			}
+
 			$builtType = $builder->getArray();
 			if ($allKeysInteger && !$builtType->isList()->yes()) {
 				$builtType = TypeCombinator::intersect($builtType, new AccessoryArrayListType());

@@ -1553,6 +1553,14 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $this->isOptionalKey($i));
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			// `array_reverse` only permutes positions; the unsealed slot
+			// is "zero or more extras at unspecified positions" both
+			// before and after.
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedKey, $unsealedValue);
+		}
+
 		return $builder->getArray();
 	}
 

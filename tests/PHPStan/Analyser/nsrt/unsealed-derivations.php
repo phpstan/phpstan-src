@@ -358,6 +358,22 @@ class IntersectKeyArray
 
 }
 
+class ReverseArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function reversePreservesUnsealed(array $arr): void
+	{
+		// `array_reverse` only changes element order; the unsealed slot
+		// describes "zero or more extras at unspecified positions" — the
+		// reversed value has the same property.
+		assertType('array{b: 2, a: 1, ...<int, string>}', array_reverse($arr));
+	}
+
+}
+
 class CountNarrowing
 {
 

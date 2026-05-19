@@ -9,9 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
 final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
@@ -32,14 +30,6 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 		$closureType = $scope->getType($methodCall->getArgs()[0]->value);
 		if (!($closureType instanceof ClosureType)) {
 			return null;
-		}
-
-		if ($closureType->isStaticClosure()->yes()) {
-			return new NullType();
-		}
-
-		if ($closureType->isStaticClosure()->maybe()) {
-			return TypeCombinator::union($closureType, new NullType());
 		}
 
 		return $closureType;

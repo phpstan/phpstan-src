@@ -14,6 +14,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\ExprUsedAsStringNode;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -50,6 +51,8 @@ final class PrintHandler implements ExprHandler
 		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
 		$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
+
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($expr->expr, $expr), $scope, $storage);
 
 		$scope = $exprResult->getScope();
 

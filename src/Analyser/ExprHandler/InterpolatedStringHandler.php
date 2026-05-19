@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\ExprUsedAsStringNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
@@ -60,6 +61,8 @@ final class InterpolatedStringHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $partResult->isAlwaysTerminating();
 			$scope = $partResult->getScope();
 		}
+
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($expr, $expr), $scope, $storage);
 
 		return new ExpressionResult(
 			$scope,

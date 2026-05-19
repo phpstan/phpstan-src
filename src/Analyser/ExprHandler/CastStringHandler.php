@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\ExprUsedAsStringNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -45,6 +46,8 @@ final class CastStringHandler implements ExprHandler
 		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
 		$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
+
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($expr->expr, $expr), $scope, $storage);
 
 		$scope = $exprResult->getScope();
 

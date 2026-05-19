@@ -18,6 +18,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\ExprUsedAsStringNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -99,6 +100,8 @@ final class AssignOpHandler implements ExprHandler
 			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
 			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
+
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($expr->expr, $expr), $scope, $storage);
 		}
 
 		return new ExpressionResult(

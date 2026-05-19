@@ -85,6 +85,7 @@ use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Node\ExprUsedAsStringNode;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -996,6 +997,7 @@ class NodeScopeResolver
 				$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope);
 				$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
+				$this->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($echoExpr, $stmt), $scope, $storage);
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
@@ -2402,6 +2404,7 @@ class NodeScopeResolver
 			$impurePoints = [
 				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
+			$this->callNodeCallback($nodeCallback, new ExprUsedAsStringNode(new TypeExpr(new ConstantStringType($stmt->value)), $stmt), $scope, $storage);
 		} elseif ($stmt instanceof Node\Stmt\Block) {
 			$result = $this->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 			if ($this->polluteScopeWithBlock) {

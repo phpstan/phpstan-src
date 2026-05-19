@@ -2250,7 +2250,8 @@ class ConstantArrayType implements Type
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{
-		if (count($this->keyTypes) === 0) {
+		// No explicit keys and no real extras — actually empty, return as-is.
+		if (count($this->keyTypes) === 0 && !$this->isUnsealed()->yes()) {
 			return $this;
 		}
 
@@ -2275,7 +2276,14 @@ class ConstantArrayType implements Type
 
 				$accessoryTypes[] = new HasOffsetValueType($keyType, $this->valueTypes[$i]->generalize($precision));
 			}
-		} elseif ($keyTypesCount > $optionalKeysCount) {
+		} elseif ($this->isIterableAtLeastOnce()->yes()) {
+			// Previously gated on `keyTypesCount > optionalKeysCount`,
+			// which mishandles "no explicit keys + real unsealed
+			// extras" (`isIterableAtLeastOnce()` answers `Maybe` —
+			// extras might be empty — and correctly skips
+			// `NonEmptyArrayType`). The new gate also covers the
+			// usual sealed-with-required-keys case, so behaviour for
+			// existing CAT shapes is unchanged.
 			$accessoryTypes[] = new NonEmptyArrayType();
 		}
 

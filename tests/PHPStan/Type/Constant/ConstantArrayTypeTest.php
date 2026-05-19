@@ -1932,7 +1932,17 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		yield 'unsealed only, lessSpecific' => [
 			new ConstantArrayType([], [], unsealed: [new IntegerType(), new ConstantStringType('foo')]),
 			GeneralizePrecision::lessSpecific(),
-			"array{...<int, 'foo'>}",
+			// No explicit keys but real unsealed extras — generalize
+			// has to broaden the unsealed value (`'foo'` → `string`)
+			// and degrade to a plain `ArrayType`. The size is uncertain
+			// (zero-or-more extras), so no `NonEmptyArrayType`.
+			'array<int, string>',
+		];
+
+		yield 'unsealed only with non-falsy-string key, moreSpecific' => [
+			new ConstantArrayType([], [], unsealed: [new IntegerType(), new ConstantStringType('foo')]),
+			GeneralizePrecision::moreSpecific(),
+			'array<int, literal-string&lowercase-string&non-falsy-string>',
 		];
 
 		yield 'unsealed with explicit key, lessSpecific' => [

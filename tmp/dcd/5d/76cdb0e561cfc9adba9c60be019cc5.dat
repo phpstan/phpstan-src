@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\SprintfFunctionDynamicReturnTypeExtension","m":"getConstantType","a":1,"t":1,"f":"_","l":326,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\InitializerExprTypeResolver","m":"CALCULATE_SCALARS_LIMIT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\SprintfFunctionDynamicReturnTypeExtension","m":"getConstantType","a":1,"t":1,"f":"_","l":349,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\InitializerExprTypeResolver","m":"CALCULATE_SCALARS_LIMIT","d":false,"e":-1}}

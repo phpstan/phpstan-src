@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\Virtual\\NativeTypeExprHandler","m":"processExpr","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ExpressionResult","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\Virtual\\NativeTypeExprHandler","m":"resolveType","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Expr\\NativeTypeExpr","m":"getNativeType","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\Virtual\\NativeTypeExprHandler","m":"resolveType","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Expr\\NativeTypeExpr","m":"getPhpDocType","d":false,"e":null}}

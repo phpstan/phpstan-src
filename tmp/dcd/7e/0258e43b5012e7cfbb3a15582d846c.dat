@@ -1,0 +1,7 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":10,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LexerFactory","m":"create","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"getVersionId","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LexerFactory","m":"create","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PhpParser\\Lexer","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LexerFactory","m":"create","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PhpParser\\Lexer\\Emulative","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LexerFactory","m":"create","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"getVersionString","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LexerFactory","m":"create","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PhpParser\\PhpVersion","m":"fromString","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LexerFactory","m":"createEmulative","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PhpParser\\Lexer\\Emulative","m":"__construct","d":false,"e":null}}

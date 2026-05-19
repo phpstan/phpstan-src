@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Fixable\\Patcher","m":"__construct","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\Fixable\\Patcher","m":"differ","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Fixable\\Patcher","m":"applyDiffs","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\FixedErrorDiff","m":"originalHash","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Fixable\\Patcher","m":"applyDiffs","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\FixedErrorDiff","m":"diff","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Fixable\\Patcher","m":"applyDiffs","a":1,"t":1,"f":"_","l":84,"p":null,"n":null},"m":{"c":"PHPStan\\Fixable\\Patcher","m":"differ","d":false,"e":null}}

@@ -1,0 +1,8 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"returnType","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"isStatic","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"parameters","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"templateTags","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"getReturnType","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"returnType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"isStatic","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"isStatic","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"getParameters","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"parameters","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"getTemplateTags","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\MethodTag","m":"templateTags","d":false,"e":null}}

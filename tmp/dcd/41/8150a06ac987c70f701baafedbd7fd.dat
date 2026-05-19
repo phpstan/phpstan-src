@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError5","m":"getMessage","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError5","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError5","m":"getFile","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError5","m":"file","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError5","m":"getFileDescription","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError5","m":"fileDescription","d":false,"e":null}}

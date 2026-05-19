@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceTest","m":"testIsValidVariance","a":1,"t":1,"f":"_","l":92,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"result","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceTest","m":"testIsValidVariance","a":1,"t":1,"f":"_","l":97,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"result","d":false,"e":null}}

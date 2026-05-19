@@ -1,0 +1,7 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Parser\\TokenIterator","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Lexer\\Lexer","m":"tokenize","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Parser\\TypeParser","m":"parse","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Parser\\TokenIterator","m":"consumeTokenType","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeNodeResolver","m":"resolve","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\NameScope","m":"__construct","d":false,"e":null}}

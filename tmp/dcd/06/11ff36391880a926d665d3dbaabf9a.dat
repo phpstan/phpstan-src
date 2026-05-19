@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"invalid","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"invalid","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"invalid","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\NameScope","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"invalid","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\CircularTypeAliasErrorType","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"resolve","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeNodeResolver","m":"resolve","d":false,"e":null}}

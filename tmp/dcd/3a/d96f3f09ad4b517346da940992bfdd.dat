@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\BooleanOrHandler","m":"resolveType","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ExprHandler\\BooleanOrHandler","m":"BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH","d":false,"e":-1}}

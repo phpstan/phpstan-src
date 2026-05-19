@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\CommandHelper","m":"begin","a":1,"t":1,"f":"_","l":235,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\CommandHelper","m":"DEFAULT_LEVEL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\CommandHelper","m":"begin","a":1,"t":1,"f":"_","l":304,"p":null,"n":null},"m":{"c":null,"m":"EXTENSIONS","d":true,"e":0}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\CommandHelper","m":"begin","a":1,"t":1,"f":"_","l":337,"p":null,"n":null},"m":{"c":"PHPStan\\Internal\\ComposerHelper","m":"UNKNOWN_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\CommandHelper","m":"begin","a":1,"t":1,"f":"_","l":389,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\CommandHelper","m":"DEFAULT_LEVEL","d":false,"e":-1}}

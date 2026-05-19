@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\MethodThrowTypeCovarianceRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Exceptions\\MethodThrowTypeCovarianceRuleTest","m":"implicitThrows","d":true,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\MethodThrowTypeCovarianceRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":67,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Exceptions\\MethodThrowTypeCovarianceRuleTest","m":"implicitThrows","d":true,"e":null}}

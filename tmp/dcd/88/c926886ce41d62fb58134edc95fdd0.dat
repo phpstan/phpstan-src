@@ -1,0 +1,5 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\AssertRuleHelper","m":"check","a":1,"t":1,"f":"_","l":96,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"NULL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\AssertRuleHelper","m":"check","a":1,"t":1,"f":"_","l":97,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"IF_TRUE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\AssertRuleHelper","m":"check","a":1,"t":1,"f":"_","l":98,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"IF_FALSE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\AssertRuleHelper","m":"check","a":1,"t":1,"f":"_","l":157,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\ClassNameUsageLocation","m":"PHPDOC_TAG_ASSERT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\AssertRuleHelper","m":"check","a":1,"t":1,"f":"_","l":186,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\MissingTypehintCheck","m":"MISSING_ITERABLE_VALUE_TYPE_TIP","d":false,"e":-1}}

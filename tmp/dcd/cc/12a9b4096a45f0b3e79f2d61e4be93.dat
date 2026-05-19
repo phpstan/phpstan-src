@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":10,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ConstantResolverFactory","m":"create","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\Container","m":"getByType","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ConstantResolverFactory","m":"create","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\Container","m":"getParameter","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ConstantResolverFactory","m":"create","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\Container","m":"getParameter","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ConstantResolverFactory","m":"create","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ConstantResolver","m":"__construct","d":false,"e":null}}

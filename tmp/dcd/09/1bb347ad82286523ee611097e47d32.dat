@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PipeHandler","m":"processExpr","a":1,"t":1,"f":"_","l":60,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"ATTRIBUTE_CACHE_KEY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PipeHandler","m":"processExpr","a":1,"t":1,"f":"_","l":61,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\ReversePipeTransformerVisitor","m":"ARG_ATTRIBUTES_NAME","d":false,"e":-1}}

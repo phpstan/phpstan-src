@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":11,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredParameter","m":"__construct","d":false,"e":null}}

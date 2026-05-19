@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Cache\\CacheItem","m":"__construct","a":1,"t":1,"f":"_","l":11,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\CacheItem","m":"variableKey","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Cache\\CacheItem","m":"__construct","a":1,"t":1,"f":"_","l":11,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\CacheItem","m":"data","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\CacheItem","m":"isVariableKeyValid","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\CacheItem","m":"variableKey","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\CacheItem","m":"getData","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\CacheItem","m":"data","d":false,"e":null}}

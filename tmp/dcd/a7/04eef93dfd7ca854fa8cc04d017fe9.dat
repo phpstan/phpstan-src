@@ -1,0 +1,1 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Accessory\\AccessoryArrayListType","m":"hasOffsetValueType","a":1,"t":1,"f":"_","l":147,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"result","d":false,"e":null}}

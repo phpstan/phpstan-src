@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\CallToFunctionStatementWithoutSideEffectsRule","m":"processNode","a":1,"t":1,"f":"_","l":69,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\CallToFunctionStatementWithoutSideEffectsRule","m":"PHPSTAN_TESTING_FUNCTIONS","d":false,"e":-1}}

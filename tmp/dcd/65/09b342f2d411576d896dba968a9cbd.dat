@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ClosureTypeFactory","m":"fromClosureObject","a":1,"t":1,"f":"_","l":75,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ClosureTypeFactory","m":"initializerExprTypeResolver","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ClosureTypeFactory","m":"fromClosureObject","a":1,"t":1,"f":"_","l":127,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ClosureTypeFactory","m":"reflectionProviderProvider","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ClosureTypeFactory","m":"fromClosureObject","a":1,"t":1,"f":"_","l":133,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ClosureTypeFactory","m":"reflectionProviderProvider","d":false,"e":null}}

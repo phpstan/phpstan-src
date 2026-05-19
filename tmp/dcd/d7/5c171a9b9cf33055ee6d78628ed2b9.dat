@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\IterableInForeachRule","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Arrays\\IterableInForeachRule","m":"ruleLevelHelper","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\IterableInForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Arrays\\IterableInForeachRule","m":"ruleLevelHelper","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\IterableInForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Foreach_","m":"expr","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\IterableInForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Foreach_","m":"expr","d":true,"e":null}}

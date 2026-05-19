@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"__construct","a":1,"t":1,"f":"_","l":13,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"readableType","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"__construct","a":1,"t":1,"f":"_","l":13,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"writableType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"getReadableType","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"readableType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"getWritableType","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"writableType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"isReadable","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"readableType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"isWritable","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\PropertyTag","m":"writableType","d":false,"e":null}}

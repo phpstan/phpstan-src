@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"__construct","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"propertyFetch","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"__construct","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"assignedExpr","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"__construct","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"assignOp","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"getPropertyFetch","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"propertyFetch","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"getAssignedExpr","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"assignedExpr","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"isAssignOp","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\PropertyAssignNode","m":"assignOp","d":false,"e":null}}

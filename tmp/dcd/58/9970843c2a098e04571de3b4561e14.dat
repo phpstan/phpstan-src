@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"body","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"conditions","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"line","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"getBody","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"body","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"getConditions","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"conditions","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"getLine","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\MatchExpressionArm","m":"line","d":false,"e":null}}

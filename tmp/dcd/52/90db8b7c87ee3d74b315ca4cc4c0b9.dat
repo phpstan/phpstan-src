@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Operators\\InvalidComparisonOperationRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Operators\\InvalidComparisonOperationRuleTest","m":"checkUnion","d":true,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Operators\\InvalidComparisonOperationRuleTest","m":"testBug3364","a":1,"t":1,"f":"_","l":184,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Operators\\InvalidComparisonOperationRuleTest","m":"checkUnion","d":true,"e":null}}

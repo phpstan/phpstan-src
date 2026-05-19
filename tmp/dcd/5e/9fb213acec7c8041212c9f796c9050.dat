@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\PrintfHelper","m":"getPrintfPlaceholdersCount","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\PrintfHelper","m":"PRINTF_SPECIFIER_PATTERN","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\PrintfHelper","m":"getPrintfPlaceholders","a":1,"t":1,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\PrintfHelper","m":"PRINTF_SPECIFIER_PATTERN","d":false,"e":-1}}

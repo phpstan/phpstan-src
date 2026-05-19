@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Comparison\\StrictComparisonOfDifferentTypesRule","m":"processNode","a":1,"t":1,"f":"_","l":129,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Comparison\\StrictComparisonOfDifferentTypesRule","m":"processNode","a":1,"t":1,"f":"_","l":147,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"ATTRIBUTE_IS_MATCH_NAME","d":false,"e":-1}}

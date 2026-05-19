@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\Symfony\\SymfonyOutput","m":"writeFormatted","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Output\\OutputInterface","m":"OUTPUT_NORMAL","d":false,"e":0}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\Symfony\\SymfonyOutput","m":"writeLineFormatted","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Output\\OutputInterface","m":"OUTPUT_NORMAL","d":false,"e":0}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\Symfony\\SymfonyOutput","m":"writeRaw","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Output\\OutputInterface","m":"OUTPUT_RAW","d":false,"e":0}}

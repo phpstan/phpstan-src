@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"dataRule","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeArgRule","m":"ERROR_MESSAGE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"testEnumCaseAttribute","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeArgRule","m":"ERROR_MESSAGE","d":false,"e":-1}}

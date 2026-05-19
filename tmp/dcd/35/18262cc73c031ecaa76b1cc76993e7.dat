@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"getMessage","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"getFile","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"file","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"getFileDescription","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"fileDescription","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"getTip","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError13","m":"tip","d":false,"e":null}}

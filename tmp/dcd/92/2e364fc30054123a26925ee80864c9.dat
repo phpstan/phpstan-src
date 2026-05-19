@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Properties\\NullsafePropertyFetchRule","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\NullsafePropertyFetch","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Properties\\NullsafePropertyFetchRule","m":"processNode","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\NullsafePropertyFetch","m":"name","d":true,"e":null}}

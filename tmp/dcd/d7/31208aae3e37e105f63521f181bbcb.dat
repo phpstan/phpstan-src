@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printExpr","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"ATTRIBUTE_CACHE_KEY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printExpr","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"ATTRIBUTE_CACHE_KEY","d":false,"e":-1}}

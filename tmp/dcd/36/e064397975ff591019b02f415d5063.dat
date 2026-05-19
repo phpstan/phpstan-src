@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\FunctionVariant","m":"__construct","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"createEmpty","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\FunctionVariant","m":"getResolvedTemplateTypeMap","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Generic\\TemplateTypeMap","m":"createEmpty","d":false,"e":null}}

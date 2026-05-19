@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Internal\\ComposerHelper","m":"getComposerConfig","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"Nette\\Utils\\Json","m":"FORCE_ARRAY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Internal\\ComposerHelper","m":"getPhpStanVersion","a":1,"t":1,"f":"_","l":106,"p":null,"n":null},"m":{"c":"PHPStan\\Internal\\ComposerHelper","m":"UNKNOWN_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Internal\\ComposerHelper","m":"getBetterReflectionVersion","a":1,"t":1,"f":"_","l":121,"p":null,"n":null},"m":{"c":"PHPStan\\Internal\\ComposerHelper","m":"UNKNOWN_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Internal\\ComposerHelper","m":"getPhpDocParserVersion","a":1,"t":1,"f":"_","l":136,"p":null,"n":null},"m":{"c":"PHPStan\\Internal\\ComposerHelper","m":"UNKNOWN_VERSION","d":false,"e":-1}}

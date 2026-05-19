@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":39,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}

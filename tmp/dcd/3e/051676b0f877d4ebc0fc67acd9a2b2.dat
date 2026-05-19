@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"create","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"lessSpecific","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"create","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"moreSpecific","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"create","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"templateArgument","a":1,"t":1,"f":"_","l":60,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"create","d":false,"e":null}}

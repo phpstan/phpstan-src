@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"__construct","a":1,"t":1,"f":"_","l":13,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"statement","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"__construct","a":1,"t":1,"f":"_","l":13,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"result","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"getStatement","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"statement","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"getResult","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"result","d":false,"e":null}}

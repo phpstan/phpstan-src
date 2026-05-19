@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Comparison\\MatchEnumPartialArmRegressionTest","m":"getRule","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Comparison\\MatchCallbackScopeRegressionRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPUnit\\Framework\\Attributes\\RequiresPhp","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Comparison\\MatchEnumPartialArmRegressionTest","m":"testEnumPartialArmConsumption","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Comparison\\MatchEnumPartialArmRegressionTest","m":"analyse","d":true,"e":null}}

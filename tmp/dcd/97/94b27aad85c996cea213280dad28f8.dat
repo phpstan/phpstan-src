@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"originalStatement","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"nextStatements","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"getOriginalStatement","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"originalStatement","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"getNextStatements","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\UnreachableStatementNode","m":"nextStatements","d":false,"e":null}}

@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\UnusedLabelRule","m":"processNode","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Label","m":"getAttribute","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\UnusedLabelRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"build","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\UnusedLabelRule","m":"processNode","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Identifier","m":"toString","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\UnusedLabelRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"identifier","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\UnusedLabelRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"message","d":false,"e":null}}

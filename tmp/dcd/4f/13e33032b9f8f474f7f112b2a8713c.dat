@@ -1,0 +1,5 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"getMessage","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"getLine","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"line","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"getTip","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"tip","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"getIdentifier","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"identifier","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"getMetadata","a":1,"t":1,"f":"_","l":53,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError59","m":"metadata","d":false,"e":null}}

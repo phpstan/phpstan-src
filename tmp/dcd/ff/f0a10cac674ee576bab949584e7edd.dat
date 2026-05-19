@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\StubValidator","m":"validate","a":1,"t":1,"f":"_","l":64,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\StubValidator","m":"SERVICE_RULE_TAG","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\StubValidator","m":"validate","a":1,"t":1,"f":"_","l":90,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\InternalError","m":"STACK_TRACE_METADATA_KEY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\StubValidator","m":"validate","a":1,"t":1,"f":"_","l":91,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\InternalError","m":"STACK_TRACE_AS_STRING_METADATA_KEY","d":false,"e":-1}}

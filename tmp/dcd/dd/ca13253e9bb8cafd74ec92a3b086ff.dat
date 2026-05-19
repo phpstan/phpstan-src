@@ -1,0 +1,11 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"typeOnly","a":1,"t":1,"f":"_","l":77,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"TYPE_ONLY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"value","a":1,"t":1,"f":"_","l":83,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"VALUE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"precise","a":1,"t":1,"f":"_","l":89,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"PRECISE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"cache","a":1,"t":1,"f":"_","l":99,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"CACHE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"isTypeOnly","a":1,"t":1,"f":"_","l":104,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"TYPE_ONLY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"isValue","a":1,"t":1,"f":"_","l":109,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"VALUE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"isPrecise","a":1,"t":1,"f":"_","l":114,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"PRECISE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"isCache","a":1,"t":1,"f":"_","l":119,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"CACHE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"handle","a":1,"t":1,"f":"_","l":253,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"TYPE_ONLY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"handle","a":1,"t":1,"f":"_","l":257,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"VALUE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\VerbosityLevel","m":"handle","a":1,"t":1,"f":"_","l":261,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\VerbosityLevel","m":"PRECISE","d":false,"e":-1}}

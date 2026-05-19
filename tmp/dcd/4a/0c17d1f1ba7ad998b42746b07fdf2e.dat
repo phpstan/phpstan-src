@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printer","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printExpr","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Variable","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printExpr","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Variable","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printExpr","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Printer\\ExprPrinter","m":"printer","d":false,"e":null}}

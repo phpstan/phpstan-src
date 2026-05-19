@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClasse2f22c8d432ea65b90f782069ad20c0b","m":"processNode","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Name","m":"toString","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClasse2f22c8d432ea65b90f782069ad20c0b","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"build","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClasse2f22c8d432ea65b90f782069ad20c0b","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"nonIgnorable","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClasse2f22c8d432ea65b90f782069ad20c0b","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"identifier","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClasse2f22c8d432ea65b90f782069ad20c0b","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"message","d":false,"e":null}}

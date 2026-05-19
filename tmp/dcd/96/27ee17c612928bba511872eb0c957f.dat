@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileFinderResult","m":"__construct","a":1,"t":1,"f":"_","l":11,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinderResult","m":"files","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileFinderResult","m":"__construct","a":1,"t":1,"f":"_","l":11,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinderResult","m":"onlyFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinderResult","m":"getFiles","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinderResult","m":"files","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinderResult","m":"isOnlyFiles","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinderResult","m":"onlyFiles","d":false,"e":null}}

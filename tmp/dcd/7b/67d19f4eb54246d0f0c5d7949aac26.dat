@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError81","m":"getMessage","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError81","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError81","m":"getIdentifier","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError81","m":"identifier","d":false,"e":null}}

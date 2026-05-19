@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClassadd9fbd182834705d46a7640eb7d2931","m":"isAlwaysWritten","a":1,"t":1,"f":"_","l":71,"p":null,"n":null},"m":{"c":"AnonymousClassadd9fbd182834705d46a7640eb7d2931","m":"isInitialized","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClassadd9fbd182834705d46a7640eb7d2931","m":"isInitialized","a":1,"t":1,"f":"_","l":76,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PropertyReflection","m":"isPublic","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClassadd9fbd182834705d46a7640eb7d2931","m":"isInitialized","a":1,"t":1,"f":"_","l":77,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PropertyReflection","m":"getDocComment","d":true,"e":null}}

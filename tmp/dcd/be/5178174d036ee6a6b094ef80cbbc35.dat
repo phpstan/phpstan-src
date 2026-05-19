@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\ArrayChangeKeyCaseFunctionReturnTypeExtension","m":"getTypeFromFunctionCall","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\ArrayChangeKeyCaseFunctionReturnTypeExtension","m":"getTypeFromFunctionCall","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}

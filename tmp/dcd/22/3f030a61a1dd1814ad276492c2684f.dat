@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule","m":"attributesCheck","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule","m":"attributesCheck","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\EnumCase","m":"attrGroups","d":true,"e":null}}

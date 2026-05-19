@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\ParamOutTag","m":"__construct","a":1,"t":1,"f":"_","l":13,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\ParamOutTag","m":"type","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\Tag\\ParamOutTag","m":"getType","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\ParamOutTag","m":"type","d":false,"e":null}}

@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\StaticCallHandler","m":"processExpr","a":1,"t":1,"f":"_","l":258,"p":null,"n":null},"m":{"c":"ReflectionProperty","m":"IS_PUBLIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\StaticCallHandler","m":"processExpr","a":1,"t":1,"f":"_","l":258,"p":null,"n":null},"m":{"c":"ReflectionProperty","m":"IS_PROTECTED","d":false,"e":-1}}

@@ -1,0 +1,9 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\RegisteredRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Scope","m":"getType","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\TrinaryLogic","m":"no","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Type","m":"isIterable","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\TrinaryLogic","m":"no","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Type","m":"isIterableAtLeastOnce","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"build","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"identifier","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Arrays\\DeadForeachRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"message","d":false,"e":null}}

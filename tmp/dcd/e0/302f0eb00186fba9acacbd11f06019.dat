@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Properties\\AccessPrivatePropertyThroughStaticRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Properties\\AccessPrivatePropertyThroughStaticRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Properties\\AccessPrivatePropertyThroughStaticRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Properties\\AccessPrivatePropertyThroughStaticRuleTest","m":"analyse","d":true,"e":null}}

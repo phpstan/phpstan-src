@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinder","m":"fileExcluder","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinder","m":"fileHelper","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinder","m":"fileExtensions","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinder","m":"fileExtensions","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinder","m":"fileExcluder","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinder","m":"fileHelper","d":false,"e":null}}

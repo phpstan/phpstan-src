@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":null,"l":null,"p":"ShipMonk\\PHPStan\\DeadCode\\Provider\\PhpUnitUsageProvider","n":"Data provider method, used by testIsSuperTypeOf"},"m":{"c":"PHPStan\\Type\\ClosureTypeTest","m":"dataIsSuperTypeOf","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":null,"l":null,"p":"ShipMonk\\PHPStan\\DeadCode\\Provider\\PhpUnitUsageProvider","n":"Test method"},"m":{"c":"PHPStan\\Type\\ClosureTypeTest","m":"testIsSuperTypeOf","d":false,"e":null}}

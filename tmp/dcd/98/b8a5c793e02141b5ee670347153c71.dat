@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\NoPhpCodeRule","m":"processNode","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\FileNode","m":"getNodes","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\NoPhpCodeRule","m":"processNode","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\FileNode","m":"getNodes","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\NoPhpCodeRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"build","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\NoPhpCodeRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"identifier","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\NoPhpCodeRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"message","d":false,"e":null}}

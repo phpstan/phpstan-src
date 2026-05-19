@@ -1,0 +1,10 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"scope","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"node","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"identifier","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"description","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"certain","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"getScope","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"scope","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"getNode","a":1,"t":1,"f":"_","l":39,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"node","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"getIdentifier","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"identifier","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"getDescription","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"description","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"isCertain","a":1,"t":1,"f":"_","l":57,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ImpurePoint","m":"certain","d":false,"e":null}}

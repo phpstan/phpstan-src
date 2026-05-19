@@ -1,0 +1,10 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PHPStan\\File\\PathNotFoundException","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Finder\\Finder","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Finder\\Finder","m":"followLinks","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Finder\\Finder","m":"files","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Finder\\Finder","m":"name","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Finder\\Finder","m":"in","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Finder\\SplFileInfo","m":"getPathname","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileExcluder","m":"isExcludedFromAnalysing","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileFinder","m":"findFiles","a":1,"t":1,"f":"_","l":55,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileFinderResult","m":"__construct","d":false,"e":null}}

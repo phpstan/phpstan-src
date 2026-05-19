@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PreIncHandler","m":"resolveType","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PreInc","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PreIncHandler","m":"resolveType","a":1,"t":1,"f":"_","l":91,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PreInc","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PreIncHandler","m":"processExpr","a":1,"t":1,"f":"_","l":96,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PreInc","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PreIncHandler","m":"processExpr","a":1,"t":1,"f":"_","l":102,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PreInc","m":"var","d":true,"e":null}}

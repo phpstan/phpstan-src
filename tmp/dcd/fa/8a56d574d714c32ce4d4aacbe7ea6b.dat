@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClass483bea8758be0a5f08b56f4bcd8b9811","m":"processNode","a":1,"t":1,"f":"_","l":68,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"build","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClass483bea8758be0a5f08b56f4bcd8b9811","m":"processNode","a":1,"t":1,"f":"_","l":68,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"identifier","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"AnonymousClass483bea8758be0a5f08b56f4bcd8b9811","m":"processNode","a":1,"t":1,"f":"_","l":68,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"message","d":false,"e":null}}

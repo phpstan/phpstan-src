@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Testing\\DelayedRule","m":"__construct","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\DelayedRule","m":"registry","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Testing\\DelayedRule","m":"getDelayedErrors","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\DelayedRule","m":"errors","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Testing\\DelayedRule","m":"processNode","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\DelayedRule","m":"registry","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Testing\\DelayedRule","m":"processNode","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\DelayedRule","m":"errors","d":false,"e":null}}

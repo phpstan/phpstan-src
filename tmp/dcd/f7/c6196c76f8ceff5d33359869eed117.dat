@@ -1,0 +1,7 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"newFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"changedFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"deletedFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"getChangedFiles","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"changedFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"hasAnyChanges","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"newFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"hasAnyChanges","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"changedFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileMonitorResult","m":"hasAnyChanges","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileMonitorResult","m":"deletedFiles","d":false,"e":null}}

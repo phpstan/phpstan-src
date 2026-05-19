@@ -1,0 +1,5 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\BisectCommand","m":"execute","a":1,"t":1,"f":"_","l":161,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\Bisect\\BinarySearchStep","m":"item","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\BisectCommand","m":"execute","a":1,"t":1,"f":"_","l":171,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\Bisect\\BinarySearchStep","m":"stepsRemaining","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\BisectCommand","m":"execute","a":1,"t":1,"f":"_","l":172,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\Bisect\\BinarySearchStep","m":"stepsRemaining","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\BisectCommand","m":"execute","a":1,"t":1,"f":"_","l":202,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\Bisect\\BinarySearchStep","m":"ifGood","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\BisectCommand","m":"execute","a":1,"t":1,"f":"_","l":202,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\Bisect\\BinarySearchStep","m":"ifBad","d":false,"e":null}}

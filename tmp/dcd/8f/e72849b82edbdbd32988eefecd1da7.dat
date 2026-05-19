@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PassedByReference","m":"create","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PassedByReference","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PassedByReference","m":"createNo","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PassedByReference","m":"create","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PassedByReference","m":"createCreatesNewVariable","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PassedByReference","m":"create","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PassedByReference","m":"createReadsArgument","a":1,"t":1,"f":"_","l":61,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PassedByReference","m":"create","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PassedByReference","m":"yes","a":1,"t":1,"f":"_","l":71,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PassedByReference","m":"no","d":false,"e":null}}

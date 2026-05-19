@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Testing\\RuleTestCase","m":"getAnalyser","a":1,"t":1,"f":"_","l":126,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\RuleTestCase","m":"analyser","d":true,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Testing\\RuleTestCase","m":"getAnalyser","a":1,"t":1,"f":"_","l":144,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\RuleTestCase","m":"analyser","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Testing\\RuleTestCase","m":"getAnalyser","a":1,"t":1,"f":"_","l":153,"p":null,"n":null},"m":{"c":"PHPStan\\Testing\\RuleTestCase","m":"analyser","d":true,"e":null}}

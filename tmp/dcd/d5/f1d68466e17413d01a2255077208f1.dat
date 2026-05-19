@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\ExpressionTypeResolverExtensionRegistry","m":"__construct","a":1,"t":1,"f":"_","l":11,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ExpressionTypeResolverExtensionRegistry","m":"extensions","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ExpressionTypeResolverExtensionRegistry","m":"getExtensions","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ExpressionTypeResolverExtensionRegistry","m":"extensions","d":false,"e":null}}

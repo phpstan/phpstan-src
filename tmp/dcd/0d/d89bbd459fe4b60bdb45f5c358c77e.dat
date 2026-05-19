@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ParserNodeTypeToPHPStanType","m":"resolve","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\NullableType","m":"type","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ParserNodeTypeToPHPStanType","m":"resolve","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\UnionType","m":"types","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ParserNodeTypeToPHPStanType","m":"resolve","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\IntersectionType","m":"types","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ParserNodeTypeToPHPStanType","m":"resolve","a":1,"t":1,"f":"_","l":68,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Identifier","m":"name","d":true,"e":null}}

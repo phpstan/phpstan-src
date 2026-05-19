@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\InClassNode","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\InClassNode","m":"originalNode","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\InClassNode","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\InClassNode","m":"classReflection","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\InClassNode","m":"getOriginalNode","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\InClassNode","m":"originalNode","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\InClassNode","m":"getClassReflection","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\InClassNode","m":"classReflection","d":false,"e":null}}

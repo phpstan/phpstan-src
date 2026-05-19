@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\FileCacheStorage","m":"clearUnusedFiles","a":1,"t":1,"f":"_","l":128,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\FileCacheStorage","m":"CACHED_CLEARED_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\FileCacheStorage","m":"clearUnusedFiles","a":1,"t":1,"f":"_","l":137,"p":null,"n":null},"m":{"c":"RecursiveDirectoryIterator","m":"SKIP_DOTS","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\FileCacheStorage","m":"clearUnusedFiles","a":1,"t":1,"f":"_","l":181,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\FileCacheStorage","m":"CACHED_CLEARED_VERSION","d":false,"e":-1}}

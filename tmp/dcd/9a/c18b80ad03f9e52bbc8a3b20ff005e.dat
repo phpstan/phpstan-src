@@ -1,0 +1,7 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"invalid","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"resolvedType","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"typeNode","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"nameScope","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"resolve","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"resolvedType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"resolve","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"resolvedType","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"resolve","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"typeNode","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeAlias","m":"resolve","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeAlias","m":"nameScope","d":false,"e":null}}

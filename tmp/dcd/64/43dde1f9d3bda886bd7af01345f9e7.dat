@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Operators\\BacktickRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Operators\\BacktickRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Operators\\BacktickRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Operators\\BacktickRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Operators\\BacktickRuleTest","m":"analyse","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPUnit\\Framework\\Attributes\\RequiresPhp","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Operators\\BacktickRuleTest","m":"testFix","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Operators\\BacktickRuleTest","m":"fix","d":true,"e":null}}

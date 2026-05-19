@@ -1,0 +1,1 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parser\\TraitCollectingVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\TraitCollectingVisitor","m":"traits","d":false,"e":null}}

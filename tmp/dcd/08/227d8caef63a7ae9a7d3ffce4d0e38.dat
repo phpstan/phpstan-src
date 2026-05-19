@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeRuleTest","m":"dataRule","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeRuleTest","m":"testRule","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPUnit\\Framework\\Attributes\\DataProvider","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeRuleTest","m":"analyse","d":true,"e":null}}

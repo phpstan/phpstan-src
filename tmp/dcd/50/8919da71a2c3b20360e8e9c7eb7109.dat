@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Command\\WorkerCommand","m":"__construct","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\WorkerCommand","m":"composerAutoloaderProjectPaths","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\WorkerCommand","m":"execute","a":1,"t":1,"f":"_","l":90,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\WorkerCommand","m":"composerAutoloaderProjectPaths","d":false,"e":null}}

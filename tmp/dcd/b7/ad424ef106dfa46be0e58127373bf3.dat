@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\RegexArrayShapeMatcher","m":"matchPatternType","a":1,"t":1,"f":"_","l":82,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Php\\RegexArrayShapeMatcher","m":"PREG_UNMATCHED_AS_NULL_ON_72_73","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\RegexArrayShapeMatcher","m":"containsUnmatchedAsNull","a":1,"t":1,"f":"_","l":445,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Php\\RegexArrayShapeMatcher","m":"PREG_UNMATCHED_AS_NULL_ON_72_73","d":false,"e":-1}}

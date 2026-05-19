@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\PhpStanNamespaceIn3rdPartyPackageRule","m":"findComposerJsonContents","a":1,"t":1,"f":"_","l":83,"p":null,"n":null},"m":{"c":"Nette\\Utils\\Json","m":"FORCE_ARRAY","d":false,"e":-1}}

@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\ConditionalTagsExtension","m":"getConfigSchema","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\ValidateServiceTagsExtension","m":"INTERFACE_TAG_MAPPING","d":false,"e":-1}}

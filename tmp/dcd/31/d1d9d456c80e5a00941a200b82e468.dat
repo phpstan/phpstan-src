@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ConstantResolver","m":"resolvePredefinedConstant","a":1,"t":1,"f":"_","l":156,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ConstantResolver","m":"PHP_MIN_ANALYZABLE_VERSION_ID","d":false,"e":-1}}

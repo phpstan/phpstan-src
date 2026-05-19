@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\ClosureBindDynamicReturnTypeExtension","m":"isStaticMethodSupported","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\MethodReflection","m":"getName","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\ClosureBindDynamicReturnTypeExtension","m":"getTypeFromStaticMethodCall","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Scope","m":"getType","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\ClosureBindDynamicReturnTypeExtension","m":"getTypeFromStaticMethodCall","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\StaticCall","m":"getArgs","d":true,"e":null}}

@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":16,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PhpParser\\Node","m":"getStartLine","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PhpParser\\Node","m":"setAttribute","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PhpParser\\Node","m":"getEndLine","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PhpParser\\Node","m":"setAttribute","d":true,"e":null}}

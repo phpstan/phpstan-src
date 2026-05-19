@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\YieldHandler","m":"processExpr","a":1,"t":1,"f":"_","l":66,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Yield_","m":"key","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\YieldHandler","m":"processExpr","a":1,"t":1,"f":"_","l":67,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Yield_","m":"key","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\YieldHandler","m":"processExpr","a":1,"t":1,"f":"_","l":73,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Yield_","m":"value","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\YieldHandler","m":"processExpr","a":1,"t":1,"f":"_","l":74,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Yield_","m":"value","d":true,"e":null}}

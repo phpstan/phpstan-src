@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Callables\\SimpleImpurePoint","m":"createFromVariant","a":1,"t":1,"f":"_","l":63,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\Callables\\SimpleImpurePoint","m":"SIDE_EFFECT_FLIP_PARAMETERS","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Callables\\SimpleImpurePoint","m":"createFromVariant","a":1,"t":1,"f":"_","l":68,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\Callables\\SimpleImpurePoint","m":"SIDE_EFFECT_FLIP_PARAMETERS","d":false,"e":-1}}

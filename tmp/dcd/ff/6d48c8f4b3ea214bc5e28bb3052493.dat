@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"ATTRIBUTE_IS_MATCH_NAME","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":92,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LastConditionVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}

@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\ParamAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"Attribute","m":"TARGET_PARAMETER","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\ParamAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"Attribute","m":"TARGET_PROPERTY","d":false,"e":-1}}

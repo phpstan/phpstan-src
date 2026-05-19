@@ -186,4 +186,15 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14648(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14648.php'], [
+			[
+				'PHPDoc tag @var for variable $class contains unknown class Bug14648Helper\MyClass.',
+				9,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

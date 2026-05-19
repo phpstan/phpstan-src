@@ -1,0 +1,8 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"class","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"methods","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"methodCalls","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"classReflection","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"getClass","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"class","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"getMethods","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"methods","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"getMethodCalls","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"methodCalls","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"getClassReflection","a":1,"t":1,"f":"_","l":64,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassMethodsNode","m":"classReflection","d":false,"e":null}}

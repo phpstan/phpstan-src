@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\Php\\PDOConnectReturnTypeExtension","m":"__construct","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Php\\PDOConnectReturnTypeExtension","m":"phpVersion","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\PDOConnectReturnTypeExtension","m":"isStaticMethodSupported","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Php\\PDOConnectReturnTypeExtension","m":"phpVersion","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\PDOConnectReturnTypeExtension","m":"getTypeFromStaticMethodCall","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}

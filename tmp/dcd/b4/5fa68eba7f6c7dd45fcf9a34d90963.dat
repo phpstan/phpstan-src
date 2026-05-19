@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\AttributesCheck","m":"check","a":1,"t":1,"f":"_","l":74,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\ClassNameUsageLocation","m":"ATTRIBUTE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\AttributesCheck","m":"check","a":1,"t":1,"f":"_","l":86,"p":null,"n":null},"m":{"c":"Attribute","m":"IS_REPEATABLE","d":false,"e":-1}}

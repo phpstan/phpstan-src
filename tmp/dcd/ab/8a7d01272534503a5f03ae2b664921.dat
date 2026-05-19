@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\NonAutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredParameter","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\ParentDirectoryRelativePathHelper","m":"getRelativePath","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\File\\ParentDirectoryRelativePathHelper","m":"getFilenameParts","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\ParentDirectoryRelativePathHelper","m":"getFilenameParts","a":1,"t":1,"f":"_","l":70,"p":null,"n":null},"m":{"c":"PHPStan\\ShouldNotHappenException","m":"__construct","d":false,"e":null}}

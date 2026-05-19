@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Constant\\ConstantStringType","m":"describe","a":1,"t":1,"f":"_","l":127,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Constant\\ConstantStringType","m":"DESCRIBE_LIMIT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Constant\\ConstantStringType","m":"describe","a":1,"t":1,"f":"_","l":129,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Constant\\ConstantStringType","m":"DESCRIBE_LIMIT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Constant\\ConstantStringType","m":"toPhpDocNode","a":1,"t":1,"f":"_","l":638,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode","m":"SINGLE_QUOTED","d":false,"e":-1}}

@@ -1,0 +1,6 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeTraverser","m":"map","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeTraverser","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeTraverser","m":"map","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeTraverser","m":"mapInternal","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeTraverser","m":"__construct","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeTraverserCallable","m":"traverse","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeTraverser","m":"mapInternal","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeTraverser","m":"traverseInternal","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeTraverser","m":"traverseInternal","a":1,"t":1,"f":"_","l":62,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Type","m":"traverse","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\TypeTraverser","m":"traverseInternal","a":1,"t":1,"f":"_","l":62,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeTraverser","m":"mapInternal","d":false,"e":null}}

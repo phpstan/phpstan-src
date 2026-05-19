@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"typeLexer","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"typeParser","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"typeNodeResolver","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"typeLexer","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"typeParser","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeStringResolver","m":"typeNodeResolver","d":false,"e":null}}

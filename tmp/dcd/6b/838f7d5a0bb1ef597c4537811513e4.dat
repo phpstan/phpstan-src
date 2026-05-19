@@ -1,0 +1,7 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\NeverType","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"isSuperTypeOf","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"createYes","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"isSuperTypeOf","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"createMaybe","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"isSuperTypeOf","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"createMaybe","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"isSuperTypeOf","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\IsSuperTypeOfResult","m":"createNo","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"accepts","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\AcceptsResult","m":"createYes","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\NonAcceptingNeverType","m":"accepts","a":1,"t":1,"f":"_","l":39,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\AcceptsResult","m":"createNo","d":false,"e":null}}

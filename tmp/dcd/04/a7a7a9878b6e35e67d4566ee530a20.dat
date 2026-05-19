@@ -1,0 +1,9 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"__construct","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"container","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRules","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"cache","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRules","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"cache","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRules","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"cache","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRulesFromContainer","a":1,"t":1,"f":"_","l":61,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"rules","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRulesFromContainer","a":1,"t":1,"f":"_","l":62,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"rules","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRulesFromContainer","a":1,"t":1,"f":"_","l":66,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"container","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRulesFromContainer","a":1,"t":1,"f":"_","l":70,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"rules","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\LazyRegistry","m":"getRulesFromContainer","a":1,"t":1,"f":"_","l":70,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\LazyRegistry","m":"rules","d":false,"e":null}}

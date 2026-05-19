@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\RequireFileExistsRule","m":"getErrorMessage","a":1,"t":1,"f":"_","l":96,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Include_","m":"TYPE_REQUIRE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\RequireFileExistsRule","m":"getErrorMessage","a":1,"t":1,"f":"_","l":100,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Include_","m":"TYPE_REQUIRE_ONCE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\RequireFileExistsRule","m":"getErrorMessage","a":1,"t":1,"f":"_","l":104,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Include_","m":"TYPE_INCLUDE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\RequireFileExistsRule","m":"getErrorMessage","a":1,"t":1,"f":"_","l":108,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Include_","m":"TYPE_INCLUDE_ONCE","d":false,"e":-1}}

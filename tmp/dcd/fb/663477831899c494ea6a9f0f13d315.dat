@@ -1,0 +1,8 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"type","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"referencedClasses","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"unknownClassErrors","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"tip","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"getType","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"type","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"getReferencedClasses","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"referencedClasses","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"getUnknownClassErrors","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"unknownClassErrors","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"getTip","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\FoundTypeResult","m":"tip","d":false,"e":null}}

@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"reorderArgs","a":1,"t":1,"f":"_","l":334,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"ORIGINAL_ARG_ATTRIBUTE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"reorderArgs","a":1,"t":1,"f":"_","l":346,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"ORIGINAL_ARG_ATTRIBUTE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"reorderArgs","a":1,"t":1,"f":"_","l":360,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"ORIGINAL_ARG_ATTRIBUTE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"reorderArgs","a":1,"t":1,"f":"_","l":372,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ArgumentsNormalizer","m":"ORIGINAL_ARG_ATTRIBUTE","d":false,"e":-1}}

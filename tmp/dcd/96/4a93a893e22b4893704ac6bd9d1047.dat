@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\InnerFunctionRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\InnerFunctionRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\InnerFunctionRuleTest","m":"testInnerFunction","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\InnerFunctionRuleTest","m":"analyse","d":true,"e":null}}

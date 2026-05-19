@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Reflection\\PhpVersionStaticAccessor","m":"registerInstance","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PhpVersionStaticAccessor","m":"instance","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PhpVersionStaticAccessor","m":"getInstance","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PhpVersionStaticAccessor","m":"instance","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\PhpVersionStaticAccessor","m":"getInstance","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\PhpVersionStaticAccessor","m":"instance","d":false,"e":null}}

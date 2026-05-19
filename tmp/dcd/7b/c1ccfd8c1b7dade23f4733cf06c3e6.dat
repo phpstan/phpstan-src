@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":10,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\DeepNodeCloner","m":"cloneNode","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PhpParser\\NodeTraverser","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\DeepNodeCloner","m":"cloneNode","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PhpParser\\NodeVisitor\\CloningVisitor","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\DeepNodeCloner","m":"cloneNode","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PhpParser\\NodeTraverser","m":"traverse","d":false,"e":null}}

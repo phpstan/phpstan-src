@@ -1,0 +1,6 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MethodReturnStatementsNode","m":"__construct","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\ClassMethod","m":"getAttributes","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MethodReturnStatementsNode","m":"__construct","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"PhpParser\\NodeAbstract","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MethodReturnStatementsNode","m":"getMethodName","a":1,"t":1,"f":"_","l":78,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Identifier","m":"toString","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\MethodReturnStatementsNode","m":"getStatements","a":1,"t":1,"f":"_","l":101,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\ClassMethod","m":"getStmts","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":114,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":123,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}

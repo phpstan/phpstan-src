@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Dependency\\ExportedNode\\ExportedEnumNode","m":"getType","a":1,"t":1,"f":"_","l":142,"p":null,"n":null},"m":{"c":"PHPStan\\Dependency\\ExportedNode\\ExportedEnumNode","m":"TYPE_ENUM","d":false,"e":-1}}

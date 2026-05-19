@@ -1,0 +1,5 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"pretty","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"formatErrors","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"stdClass","m":null,"d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"formatErrors","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"stdClass","m":null,"d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"formatErrors","a":1,"t":1,"f":"_","l":57,"p":null,"n":null},"m":{"c":"stdClass","m":null,"d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"formatErrors","a":1,"t":1,"f":"_","l":64,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\ErrorFormatter\\JsonErrorFormatter","m":"pretty","d":false,"e":null}}

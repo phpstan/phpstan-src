@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\RuleErrorTransformer","m":"transform","a":1,"t":1,"f":"_","l":121,"p":null,"n":null},"m":{"c":"PHPStan\\Fixable\\PhpPrinter","m":"TAB_WIDTH","d":false,"e":-1}}

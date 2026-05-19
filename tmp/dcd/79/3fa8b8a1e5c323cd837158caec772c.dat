@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Command\\DiagnoseCommand","m":"__construct","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\DiagnoseCommand","m":"composerAutoloaderProjectPaths","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\DiagnoseCommand","m":"execute","a":1,"t":1,"f":"_","l":81,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\DiagnoseCommand","m":"composerAutoloaderProjectPaths","d":false,"e":null}}

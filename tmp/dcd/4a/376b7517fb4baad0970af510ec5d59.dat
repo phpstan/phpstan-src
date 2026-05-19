@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\InternalEndStatementResult","m":"toPublic","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\EndStatementResult","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\InternalEndStatementResult","m":"toPublic","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\InternalStatementResult","m":"toPublic","d":false,"e":null}}

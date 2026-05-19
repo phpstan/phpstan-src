@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"getMessage","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"getTip","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"tip","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"getIdentifier","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"identifier","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"getMetadata","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError121","m":"metadata","d":false,"e":null}}

@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\Helper\\VoidToNullTypeTransformer","m":"transform","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\MutatingScope","m":"KEEP_VOID_ATTRIBUTE_NAME","d":false,"e":-1}}

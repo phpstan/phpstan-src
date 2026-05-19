@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\NodeConnectingVisitorAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\MethodCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\NodeConnectingVisitorAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\MethodCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\NodeConnectingVisitorAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\MethodCall","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\NodeConnectingVisitorAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}

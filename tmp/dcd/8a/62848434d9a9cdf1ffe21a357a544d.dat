@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Internal\\DeprecatedAttributeHelper","m":"getDeprecatedDescription","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute","m":"getArguments","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Internal\\DeprecatedAttributeHelper","m":"getDeprecatedDescription","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper","m":"filterAttributesByName","d":false,"e":null}}

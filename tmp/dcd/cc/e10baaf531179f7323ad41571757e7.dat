@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\Ignore\\IgnoreLexer","m":"tokenize","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Ignore\\IgnoreLexer","m":"regexp","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Ignore\\IgnoreLexer","m":"tokenize","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Ignore\\IgnoreLexer","m":"regexp","d":false,"e":null}}

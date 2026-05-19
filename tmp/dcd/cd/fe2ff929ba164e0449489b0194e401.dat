@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Collectors\\CollectedData","m":"decode","a":1,"t":1,"f":"_","l":72,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\CollectedData","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Collectors\\CollectedData","m":"__set_state","a":1,"t":1,"f":"_","l":84,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\CollectedData","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Collectors\\CollectedData","m":"changeFilePath","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\CollectedData","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":56,"p":null,"n":null},"m":{"c":"ReturnTypeWillChange","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":57,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}

@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Diagnose\\PHPStanDiagnoseExtension","m":"print","a":1,"t":1,"f":"_","l":65,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"SOURCE_CONFIG","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Diagnose\\PHPStanDiagnoseExtension","m":"print","a":1,"t":1,"f":"_","l":124,"p":null,"n":null},"m":{"c":null,"m":"EXTENSIONS","d":true,"e":0}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Diagnose\\PHPStanDiagnoseExtension","m":"print","a":1,"t":1,"f":"_","l":130,"p":null,"n":null},"m":{"c":null,"m":"EXTENSIONS","d":true,"e":0}}

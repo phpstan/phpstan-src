@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\ErrorSuppressHandler","m":"processExpr","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\ErrorSuppress","m":"expr","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\ErrorSuppressHandler","m":"resolveType","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\ErrorSuppress","m":"expr","d":true,"e":null}}

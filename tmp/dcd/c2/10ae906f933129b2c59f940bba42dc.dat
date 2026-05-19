@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\CloneHandler","m":"processExpr","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Clone_","m":"expr","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\CloneHandler","m":"resolveType","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Clone_","m":"expr","d":true,"e":null}}

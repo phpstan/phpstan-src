@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Classes\\LocalTypeAliasesCheck","m":"checkInTraitDefinitionContext","a":1,"t":1,"f":"_","l":206,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\MissingTypehintCheck","m":"MISSING_ITERABLE_VALUE_TYPE_TIP","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Classes\\LocalTypeAliasesCheck","m":"checkInTraitUseContext","a":1,"t":1,"f":"_","l":285,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\ClassNameUsageLocation","m":"TYPE_ALIAS","d":false,"e":-1}}

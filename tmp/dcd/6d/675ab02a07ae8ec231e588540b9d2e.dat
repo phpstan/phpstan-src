@@ -1,0 +1,5 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"createExplicit","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"createImplicit","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ObjectType","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"createImplicit","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"subtractCatchType","a":1,"t":1,"f":"_","l":76,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ThrowPoint","m":"subtractCatchType","a":1,"t":1,"f":"_","l":76,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\TypeCombinator","m":"remove","d":false,"e":null}}

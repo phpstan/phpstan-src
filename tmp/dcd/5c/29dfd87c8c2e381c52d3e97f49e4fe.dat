@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Traverser\\LateResolvableTraverser","m":"traverse","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\LateResolvableType","m":"isResolvable","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Traverser\\LateResolvableTraverser","m":"traverse","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Type","m":"isResolvable","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Traverser\\LateResolvableTraverser","m":"traverse","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\LateResolvableType","m":"resolve","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Traverser\\LateResolvableTraverser","m":"traverse","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Type","m":"resolve","d":true,"e":null}}

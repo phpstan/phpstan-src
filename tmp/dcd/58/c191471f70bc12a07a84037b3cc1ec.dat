@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\CiDetectedErrorFormatter","m":"formatErrors","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"OndraM\\CiDetector\\CiDetector","m":"CI_GITHUB_ACTIONS","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\ErrorFormatter\\CiDetectedErrorFormatter","m":"formatErrors","a":1,"t":1,"f":"_","l":33,"p":null,"n":null},"m":{"c":"OndraM\\CiDetector\\CiDetector","m":"CI_TEAMCITY","d":false,"e":-1}}

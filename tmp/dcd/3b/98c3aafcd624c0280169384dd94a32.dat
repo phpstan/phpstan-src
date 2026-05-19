@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\ExtendedFunctionVariant","m":"__construct","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\FunctionVariant","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\ExtendedFunctionVariant","m":"getParameters","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\FunctionVariant","m":"getParameters","d":false,"e":null}}

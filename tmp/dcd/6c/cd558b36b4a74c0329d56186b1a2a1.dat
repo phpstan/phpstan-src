@@ -1,0 +1,11 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PhpParser\\NodeTraverser","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PhpParser\\NodeTraverser","m":"addVisitor","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\CleaningVisitor","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"__construct","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PhpParser\\NodeTraverser","m":"addVisitor","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"__construct","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\RemoveUnusedCodeByPhpVersionIdVisitor","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"__construct","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"getVersionString","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"parseFile","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\CleaningParser","m":"clean","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"parseFile","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"parseString","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\CleaningParser","m":"clean","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"parseString","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseString","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CleaningParser","m":"clean","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PhpParser\\NodeTraverser","m":"traverse","d":true,"e":null}}

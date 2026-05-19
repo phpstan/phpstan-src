@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\ApiInstanceofTypeRule","m":"__construct","a":1,"t":1,"f":"_","l":108,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Api\\ApiInstanceofTypeRule","m":"MAP","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Api\\ApiInstanceofTypeRule","m":"processNode","a":1,"t":1,"f":"_","l":125,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\TypeTraverserInstanceofVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}

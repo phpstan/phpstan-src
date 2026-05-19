@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"scope","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"arrayItem","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"getScope","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"scope","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"getArrayItem","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\LiteralArrayItem","m":"arrayItem","d":false,"e":null}}

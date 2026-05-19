@@ -1,0 +1,10 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"__construct","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":50,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":53,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":65,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":67,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":73,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseFile","a":1,"t":1,"f":"_","l":76,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\PathRoutingParser","m":"parseString","a":1,"t":1,"f":"_","l":81,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseString","d":true,"e":null}}

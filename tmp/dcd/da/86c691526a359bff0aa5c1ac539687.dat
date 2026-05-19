@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Traverser\\VoidToNullTraverser","m":"traverse","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\TrinaryLogic","m":"yes","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Traverser\\VoidToNullTraverser","m":"traverse","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Type","m":"isVoid","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Traverser\\VoidToNullTraverser","m":"traverse","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\NullType","m":"__construct","d":false,"e":null}}

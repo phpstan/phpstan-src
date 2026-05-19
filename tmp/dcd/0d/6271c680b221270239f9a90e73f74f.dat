@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"__construct","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"nodeType","d":true,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"__construct","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"processNodeCallback","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"getNodeType","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"nodeType","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"processNode","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\Collectors\\UniversalCollector","m":"processNodeCallback","d":true,"e":null}}

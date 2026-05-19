@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\ThrowExprTypeRule","m":"__construct","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Exceptions\\ThrowExprTypeRule","m":"ruleLevelHelper","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\ThrowExprTypeRule","m":"processNode","a":1,"t":1,"f":"_","l":39,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Exceptions\\ThrowExprTypeRule","m":"ruleLevelHelper","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\ThrowExprTypeRule","m":"processNode","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Throw_","m":"expr","d":true,"e":null}}

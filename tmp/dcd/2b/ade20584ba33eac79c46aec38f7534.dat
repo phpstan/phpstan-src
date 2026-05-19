@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\TooWideFunctionThrowTypeRule","m":"__construct","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Exceptions\\TooWideFunctionThrowTypeRule","m":"check","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Exceptions\\TooWideFunctionThrowTypeRule","m":"processNode","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Exceptions\\TooWideFunctionThrowTypeRule","m":"check","d":false,"e":null}}

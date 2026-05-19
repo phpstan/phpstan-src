@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Expr\\OriginalForeachKeyExpr","m":"__construct","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Variable","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Expr\\OriginalForeachKeyExpr","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":25,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":34,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}

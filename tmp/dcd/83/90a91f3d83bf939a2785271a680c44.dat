@@ -1,0 +1,5 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Assertions","m":"getAsserts","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"NULL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Assertions","m":"getAssertsIfTrue","a":1,"t":1,"f":"_","l":67,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"IF_TRUE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Assertions","m":"getAssertsIfTrue","a":1,"t":1,"f":"_","l":70,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"IF_FALSE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Assertions","m":"getAssertsIfFalse","a":1,"t":1,"f":"_","l":83,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"IF_FALSE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\Assertions","m":"getAssertsIfFalse","a":1,"t":1,"f":"_","l":86,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\Tag\\AssertTag","m":"IF_TRUE","d":false,"e":-1}}

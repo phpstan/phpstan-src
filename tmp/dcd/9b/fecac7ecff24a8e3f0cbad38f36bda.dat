@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Process\\ProcessHelper","m":"getWorkerCommand","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Input\\InputInterface","m":"getOption","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Process\\ProcessHelper","m":"getWorkerCommand","a":1,"t":1,"f":"_","l":64,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Input\\InputInterface","m":"getOption","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Process\\ProcessHelper","m":"getWorkerCommand","a":1,"t":1,"f":"_","l":83,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Input\\InputInterface","m":"getArgument","d":true,"e":null}}

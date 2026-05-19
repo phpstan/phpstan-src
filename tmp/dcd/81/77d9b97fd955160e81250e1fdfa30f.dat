@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":83,"p":null,"n":null},"m":{"c":"PHPUnit\\Framework\\Attributes\\RequiresPhp","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\AttributeReflectionFromNodeRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":86,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\AttributeReflectionFromNodeRuleTest","m":"analyse","d":true,"e":null}}

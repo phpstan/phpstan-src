@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"__construct","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"name","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"__construct","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"argumentTypes","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"getName","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"name","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"getArgumentTypes","a":1,"t":1,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\AttributeReflection","m":"argumentTypes","d":false,"e":null}}

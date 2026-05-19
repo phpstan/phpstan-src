@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\SignatureMap\\Php8SignatureMapProvider","m":"findClassStubs","a":1,"t":1,"f":"_","l":105,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\SignatureMap\\Php8SignatureMapProvider","m":"DIRECTORY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Reflection\\SignatureMap\\Php8SignatureMapProvider","m":"getFunctionSignatures","a":1,"t":1,"f":"_","l":228,"p":null,"n":null},"m":{"c":"PHPStan\\Reflection\\SignatureMap\\Php8SignatureMapProvider","m":"DIRECTORY","d":false,"e":-1}}

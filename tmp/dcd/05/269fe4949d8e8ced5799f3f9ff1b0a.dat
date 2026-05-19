@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\NonEmptyStringFunctionsReturnTypeExtension","m":"getTypeFromFunctionCall","a":1,"t":1,"f":"_","l":62,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\NonEmptyStringFunctionsReturnTypeExtension","m":"isSubstituteFlagSet","a":1,"t":1,"f":"_","l":90,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}

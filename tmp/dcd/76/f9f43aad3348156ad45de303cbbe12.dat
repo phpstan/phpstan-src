@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ObjectType","m":"isExtraOffsetAccessibleClass","a":1,"t":1,"f":"_","l":1412,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\ObjectType","m":"EXTRA_OFFSET_CLASSES","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\ObjectType","m":"tryRemove","a":1,"t":1,"f":"_","l":1900,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\UnionType","m":"EQUAL_UNION_CLASSES","d":false,"e":-1}}

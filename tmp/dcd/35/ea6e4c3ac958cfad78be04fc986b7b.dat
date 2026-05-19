@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\DummyCollectorRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\DummyCollectorRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\DummyCollectorRuleTest","m":"getCollectors","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\DummyCollector","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\DummyCollectorRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\DummyCollectorRuleTest","m":"analyse","d":true,"e":null}}

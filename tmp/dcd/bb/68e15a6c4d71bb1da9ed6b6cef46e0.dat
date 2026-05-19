@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PostIncHandler","m":"processExpr","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PostInc","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PostIncHandler","m":"processExpr","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PostInc","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PostIncHandler","m":"processExpr","a":1,"t":1,"f":"_","l":39,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PostInc","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\PostIncHandler","m":"resolveType","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\PostInc","m":"var","d":true,"e":null}}

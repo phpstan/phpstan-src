@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CachedParser","m":"parseFile","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseFile","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CachedParser","m":"parseFile","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileReader","m":"read","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CachedParser","m":"parseString","a":1,"t":1,"f":"_","l":69,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\Parser","m":"parseString","d":true,"e":null}}

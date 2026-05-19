@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Dependency\\ExportedNodeVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":57,"p":null,"n":null},"m":{"c":"PhpParser\\NodeVisitor","m":"DONT_TRAVERSE_CHILDREN","d":false,"e":0}}

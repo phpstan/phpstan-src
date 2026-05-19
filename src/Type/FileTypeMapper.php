@@ -578,24 +578,41 @@ final class FileTypeMapper
 
 				if ($node instanceof Node\Stmt\Namespace_) {
 					$namespace = $node->name !== null ? (string) $node->name : null;
-				} elseif ($node instanceof Node\Stmt\Use_) {
-					if ($node->type === Node\Stmt\Use_::TYPE_NORMAL) {
-						foreach ($node->uses as $use) {
-							$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
+				} elseif ($node instanceof Node\Stmt\Use_ || $node instanceof Node\Stmt\GroupUse) {
+					if ($node instanceof Node\Stmt\Use_) {
+						if ($node->type === Node\Stmt\Use_::TYPE_NORMAL) {
+							foreach ($node->uses as $use) {
+								$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
+							}
+						} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT) {
+							foreach ($node->uses as $use) {
+								$constUses[strtolower($use->getAlias()->name)] = (string) $use->name;
+							}
 						}
-					} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT) {
+					} else {
+						$prefix = (string) $node->prefix;
 						foreach ($node->uses as $use) {
-							$constUses[strtolower($use->getAlias()->name)] = (string) $use->name;
+							if ($node->type === Node\Stmt\Use_::TYPE_NORMAL || $use->type === Node\Stmt\Use_::TYPE_NORMAL) {
+								$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
+							} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT || $use->type === Node\Stmt\Use_::TYPE_CONSTANT) {
+								$constUses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
+							}
 						}
 					}
-				} elseif ($node instanceof Node\Stmt\GroupUse) {
-					$prefix = (string) $node->prefix;
-					foreach ($node->uses as $use) {
-						if ($node->type === Node\Stmt\Use_::TYPE_NORMAL || $use->type === Node\Stmt\Use_::TYPE_NORMAL) {
-							$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
-						} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT || $use->type === Node\Stmt\Use_::TYPE_CONSTANT) {
-							$constUses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
-						}
+					if (array_key_exists($nameScopeKey, $nameScopeMap)) {
+						$parentNameScope = array_last($typeMapStack) ?? null;
+						$typeAliasesMap = array_last($typeAliasStack) ?? [];
+						$nameScopeMap[$nameScopeKey] = new IntermediaryNameScope(
+							$namespace,
+							$uses,
+							$className,
+							$functionName,
+							$parentNameScope !== null ? $parentNameScope->getTemplatePhpDocNodes() : [],
+							$parentNameScope !== null ? $parentNameScope->getParent() : null,
+							$typeAliasesMap,
+							constUses: $constUses,
+							typeAliasClassName: $lookForTrait,
+						);
 					}
 				} elseif ($node instanceof Node\Stmt\TraitUse) {
 					$traitMethodAliases = [];

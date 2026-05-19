@@ -1,0 +1,8 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Error","m":"getFile","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Error","m":"getLine","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Error","m":"getMessage","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Error","m":"getFile","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Error","m":"getLine","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","a":1,"t":1,"f":"_","l":53,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Error","m":"getMessage","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"hasErrors","a":1,"t":1,"f":"_","l":62,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\AnalysisResult","m":"getTotalErrorsCount","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\AnalysisResult","m":"withFileSpecificErrors","a":1,"t":1,"f":"_","l":167,"p":null,"n":null},"m":{"c":"PHPStan\\Command\\AnalysisResult","m":"__construct","d":false,"e":null}}

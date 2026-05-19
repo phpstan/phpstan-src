@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\ClassForbiddenNameCheck","m":"checkClassNames","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PHPStan\\Classes\\ForbiddenClassNameExtension","m":"EXTENSION_TAG","d":false,"e":0}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\ClassForbiddenNameCheck","m":"checkClassNames","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\ClassForbiddenNameCheck","m":"INTERNAL_CLASS_PREFIXES","d":false,"e":-1}}

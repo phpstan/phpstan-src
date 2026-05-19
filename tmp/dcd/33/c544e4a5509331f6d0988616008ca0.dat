@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver","m":"getClosureType","a":1,"t":1,"f":"_","l":100,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\ArrayMapArgVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver","m":"getClosureType","a":1,"t":1,"f":"_","l":101,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor","m":"ARGS_ATTRIBUTE_NAME","d":false,"e":-1}}

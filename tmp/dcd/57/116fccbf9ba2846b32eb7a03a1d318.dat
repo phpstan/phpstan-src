@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ResultCache\\ResultCacheManager","m":"getMeta","a":1,"t":1,"f":"_","l":1183,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ResultCache\\ResultCacheManager","m":"CACHE_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ResultCache\\ResultCacheManager","m":"getMetaFromPhpStanExtensions","a":1,"t":1,"f":"_","l":1347,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ResultCache\\ResultCacheMetaExtension","m":"EXTENSION_TAG","d":false,"e":0}}

@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"createEmpty","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"hasVariance","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"getVariances","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"getVariance","a":1,"t":1,"f":"_","l":50,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap","m":"getVariances","d":false,"e":null}}

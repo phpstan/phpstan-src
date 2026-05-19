@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\RecursionGuard","m":"run","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\RecursionGuard","m":"context","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\RecursionGuard","m":"run","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\RecursionGuard","m":"context","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\RecursionGuard","m":"run","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\RecursionGuard","m":"context","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\RecursionGuard","m":"runOnObjectIdentity","a":1,"t":1,"f":"_","l":41,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\RecursionGuard","m":"context","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Type\\RecursionGuard","m":"runOnObjectIdentity","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\RecursionGuard","m":"context","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\RecursionGuard","m":"runOnObjectIdentity","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\RecursionGuard","m":"context","d":false,"e":null}}

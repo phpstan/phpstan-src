@@ -1,0 +1,5 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"create","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"SOURCE_CONFIG","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"create","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"MIN_PHP_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"create","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"MAX_PHP_VERSION","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"create","a":1,"t":1,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"SOURCE_COMPOSER_PLATFORM_PHP","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Php\\PhpVersionFactory","m":"create","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PHPStan\\Php\\PhpVersion","m":"SOURCE_RUNTIME","d":false,"e":-1}}

@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\GenerateFactory","m":"__construct","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\GenerateFactory","m":"interface","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\GenerateFactory","m":"__construct","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\GenerateFactory","m":"resultType","d":false,"e":null}}

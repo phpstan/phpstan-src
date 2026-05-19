@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CurlSetOptArrayArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\CurlSetOptArrayArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}

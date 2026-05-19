@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\ResolvedPhpDocBlock","m":"createEmpty","a":1,"t":1,"f":"_","l":209,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\ResolvedPhpDocBlock","m":"EMPTY_DOC_STRING","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\ResolvedPhpDocBlock","m":"hasPhpDocString","a":1,"t":1,"f":"_","l":424,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\ResolvedPhpDocBlock","m":"EMPTY_DOC_STRING","d":false,"e":-1}}

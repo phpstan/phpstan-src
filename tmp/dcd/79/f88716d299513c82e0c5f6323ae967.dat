@@ -1,0 +1,6 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"dataRule","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"testRule","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeArgRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PHPUnit\\Framework\\Attributes\\DataProvider","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"testRule","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"analyse","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPUnit\\Framework\\Attributes\\RequiresPhp","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"testEnumCaseAttribute","a":1,"t":1,"f":"_","l":50,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AttributeArgRuleTest","m":"analyse","d":true,"e":null}}

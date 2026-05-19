@@ -1,0 +1,7 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"downloadPhar","a":1,"t":1,"f":"_","l":322,"p":null,"n":null},"m":{"c":"Nette\\Utils\\Json","m":"FORCE_ARRAY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"downloadPhar","a":1,"t":1,"f":"_","l":325,"p":null,"n":null},"m":{"c":"DateTime","m":"ATOM","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"downloadPhar","a":1,"t":1,"f":"_","l":346,"p":null,"n":null},"m":{"c":"Nette\\Utils\\Json","m":"FORCE_ARRAY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"downloadPhar","a":1,"t":1,"f":"_","l":359,"p":null,"n":null},"m":{"c":"GuzzleHttp\\RequestOptions","m":"SINK","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"downloadPhar","a":1,"t":1,"f":"_","l":360,"p":null,"n":null},"m":{"c":"GuzzleHttp\\RequestOptions","m":"TIMEOUT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"downloadPhar","a":1,"t":1,"f":"_","l":361,"p":null,"n":null},"m":{"c":"GuzzleHttp\\RequestOptions","m":"PROGRESS","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\FixerApplication","m":"writeInfoFile","a":1,"t":1,"f":"_","l":399,"p":null,"n":null},"m":{"c":"DateTime","m":"ATOM","d":false,"e":-1}}

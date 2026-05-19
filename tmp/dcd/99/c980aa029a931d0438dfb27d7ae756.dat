@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\PrintfParameterTypeRuleTest","m":"getRule","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\PrintfParameterTypeRuleTest","m":"checkStrictPrintfPlaceholderTypes","d":true,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\PrintfParameterTypeRuleTest","m":"testStrict","a":1,"t":1,"f":"_","l":119,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Functions\\PrintfParameterTypeRuleTest","m":"checkStrictPrintfPlaceholderTypes","d":true,"e":null}}

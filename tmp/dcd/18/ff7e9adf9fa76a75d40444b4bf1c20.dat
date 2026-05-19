@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Namespaces\\ExistingNamesInUseRule","m":"processNode","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_UNKNOWN","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Namespaces\\ExistingNamesInUseRule","m":"processNode","a":1,"t":1,"f":"_","l":50,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_UNKNOWN","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Namespaces\\ExistingNamesInUseRule","m":"processNode","a":1,"t":1,"f":"_","l":55,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_CONSTANT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Namespaces\\ExistingNamesInUseRule","m":"processNode","a":1,"t":1,"f":"_","l":59,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_FUNCTION","d":false,"e":-1}}

@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError193","m":"getMessage","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError193","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError193","m":"getOriginalNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError193","m":"originalNode","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError193","m":"getNewNodeCallable","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError193","m":"newNodeCallable","d":false,"e":null}}

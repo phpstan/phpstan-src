@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\LazyTypeNodeResolverExtensionRegistryProvider","m":"getRegistry","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDoc\\TypeNodeResolverExtension","m":"EXTENSION_TAG","d":false,"e":0}}

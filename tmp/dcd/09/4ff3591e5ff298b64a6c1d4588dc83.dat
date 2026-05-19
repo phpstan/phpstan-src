@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\ErrorsConsoleStyleTest","m":"setUp","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Internal\\AgentDetector","m":"ENV_VARS","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Command\\ErrorsConsoleStyleTest","m":"renderProgressOutput","a":1,"t":1,"f":"_","l":71,"p":null,"n":null},"m":{"c":"Symfony\\Component\\Console\\Output\\StreamOutput","m":"VERBOSITY_NORMAL","d":false,"e":-1}}

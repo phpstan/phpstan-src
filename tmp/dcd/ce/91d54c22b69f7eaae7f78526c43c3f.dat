@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeArgumentStrategy","m":"accepts","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\AcceptsResult","m":"result","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Generic\\TemplateTypeArgumentStrategy","m":"accepts","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\AcceptsResult","m":"reasons","d":false,"e":null}}

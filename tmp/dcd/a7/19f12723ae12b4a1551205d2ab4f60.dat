@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\VersionCompareFunctionDynamicThrowTypeExtension","m":"getThrowTypeFromFunctionCall","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Php\\VersionCompareFunctionDynamicReturnTypeExtension","m":"VALID_OPERATORS","d":false,"e":-1}}

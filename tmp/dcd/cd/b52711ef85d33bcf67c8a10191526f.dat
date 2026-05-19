@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\PdoStatementFetchAllReturnTypeExtension","m":"getTypeFromMethodCall","a":1,"t":1,"f":"_","l":57,"p":null,"n":null},"m":{"c":"PDO","m":"FETCH_KEY_PAIR","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\PdoStatementFetchAllReturnTypeExtension","m":"getTypeFromMethodCall","a":1,"t":1,"f":"_","l":58,"p":null,"n":null},"m":{"c":"PDO","m":"FETCH_GROUP","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Php\\PdoStatementFetchAllReturnTypeExtension","m":"getTypeFromMethodCall","a":1,"t":1,"f":"_","l":59,"p":null,"n":null},"m":{"c":"PDO","m":"FETCH_UNIQUE","d":false,"e":-1}}

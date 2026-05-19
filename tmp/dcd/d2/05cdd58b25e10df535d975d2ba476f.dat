@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RestrictedUsage\\RestrictedStaticMethodUsageRule","m":"processNode","a":1,"t":1,"f":"_","l":51,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RestrictedUsage\\RestrictedMethodUsageExtension","m":"METHOD_EXTENSION_TAG","d":false,"e":0}}

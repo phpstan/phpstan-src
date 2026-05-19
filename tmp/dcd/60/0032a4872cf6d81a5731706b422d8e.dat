@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\GenerateFactory","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileExcluder","m":"__construct","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileExcluder","m":"__construct","a":1,"t":1,"f":"_","l":62,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileExcluder","m":"isFnmatchPattern","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\File\\FileExcluder","m":"isExcludedFromAnalysing","a":1,"t":1,"f":"_","l":87,"p":null,"n":null},"m":{"c":"PHPStan\\File\\FileHelper","m":"normalizePath","d":false,"e":null}}

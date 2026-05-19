@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Constants\\NativeTypedClassConstantRule","m":"__construct","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Constants\\NativeTypedClassConstantRule","m":"phpVersion","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Constants\\NativeTypedClassConstantRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\ClassConst","m":"type","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Constants\\NativeTypedClassConstantRule","m":"processNode","a":1,"t":1,"f":"_","l":34,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Constants\\NativeTypedClassConstantRule","m":"phpVersion","d":false,"e":null}}

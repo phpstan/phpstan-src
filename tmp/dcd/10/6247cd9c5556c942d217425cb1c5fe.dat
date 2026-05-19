@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\CollectedDataNode","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\CollectedDataNode","m":"collectedData","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\CollectedDataNode","m":"__construct","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\CollectedDataNode","m":"onlyFiles","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\CollectedDataNode","m":"get","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\CollectedDataNode","m":"collectedData","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\CollectedDataNode","m":"isOnlyFilesAnalysis","a":1,"t":1,"f":"_","l":55,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\CollectedDataNode","m":"onlyFiles","d":false,"e":null}}

@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":null,"l":null,"p":"ShipMonk\\PHPStan\\DeadCode\\Provider\\PhpUnitUsageProvider","n":"Data provider method, used by testFileAsserts"},"m":{"c":"PHPStan\\Analyser\\TraitStubFilesTest","m":"dataFileAsserts","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":null,"l":null,"p":"ShipMonk\\PHPStan\\DeadCode\\Provider\\PhpUnitUsageProvider","n":"Test method"},"m":{"c":"PHPStan\\Analyser\\TraitStubFilesTest","m":"testFileAsserts","d":false,"e":null}}

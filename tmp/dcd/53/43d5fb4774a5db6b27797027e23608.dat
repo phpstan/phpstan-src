@@ -1,0 +1,5 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"args","d":true,"e":null}}

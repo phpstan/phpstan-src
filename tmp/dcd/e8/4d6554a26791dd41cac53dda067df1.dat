@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\PhpDoc\\PhpDocStringResolver","m":"resolve","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Lexer\\Lexer","m":"TOKEN_END","d":false,"e":-1}}

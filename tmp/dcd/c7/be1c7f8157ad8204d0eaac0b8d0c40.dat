@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":null,"l":null,"p":"ShipMonk\\PHPStan\\DeadCode\\Provider\\PhpStanUsageProvider","n":"Constructor call from PHPStan DI container"},"m":{"c":"PHPStan\\Fixable\\Patcher","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Fixable\\Patcher","m":"applyDiffs","a":1,"t":1,"f":"_","l":65,"p":null,"n":null},"m":{"c":"PhpMerge\\PhpMerge","m":"mergeHunks","d":true,"e":null}}

@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Generics\\PropertyVarianceRule","m":"__construct","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Generics\\PropertyVarianceRule","m":"varianceCheck","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Generics\\PropertyVarianceRule","m":"processNode","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Generics\\PropertyVarianceRule","m":"varianceCheck","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Generics\\PropertyVarianceRule","m":"hasRestrictedWriteAccess","a":1,"t":1,"f":"_","l":75,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Identifier","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Generics\\PropertyVarianceRule","m":"hasRestrictedWriteAccess","a":1,"t":1,"f":"_","l":75,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\PropertyHook","m":"name","d":true,"e":null}}

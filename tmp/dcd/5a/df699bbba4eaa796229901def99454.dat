@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ArgumentsNormalizerTest","m":"testReorderValid","a":1,"t":1,"f":"_","l":292,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ArgumentsNormalizerTest","m":"testReorderValid","a":1,"t":1,"f":"_","l":293,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"value","d":true,"e":null}}

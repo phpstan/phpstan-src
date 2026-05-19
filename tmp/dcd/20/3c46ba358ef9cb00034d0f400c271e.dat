@@ -1,0 +1,6 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":10,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\AutowiredService","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":16,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayFilterArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"isFirstClassCallable","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayFilterArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Name","m":"toLowerString","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayFilterArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"getArgs","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\ArrayFilterArgVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Arg","m":"setAttribute","d":true,"e":null}}

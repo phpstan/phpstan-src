@@ -1,0 +1,5 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"lessSpecific","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"LESS_SPECIFIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"moreSpecific","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"MORE_SPECIFIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"templateArgument","a":1,"t":1,"f":"_","l":60,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"TEMPLATE_ARGUMENT","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"isMoreSpecific","a":1,"t":1,"f":"_","l":65,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"MORE_SPECIFIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"isTemplateArgument","a":1,"t":1,"f":"_","l":70,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\GeneralizePrecision","m":"TEMPLATE_ARGUMENT","d":false,"e":-1}}

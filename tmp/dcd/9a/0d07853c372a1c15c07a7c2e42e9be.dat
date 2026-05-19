@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"assign","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"__construct","a":1,"t":1,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"scope","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"getAssign","a":1,"t":1,"f":"_","l":23,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"assign","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"getScope","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\Property\\PropertyAssign","m":"scope","d":false,"e":null}}

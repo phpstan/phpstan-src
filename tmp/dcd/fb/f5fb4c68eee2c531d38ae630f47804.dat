@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Type\\Regex\\RegexGroupParser","m":"parseGroups","a":1,"t":1,"f":"_","l":80,"p":null,"n":null},"m":{"c":"PHPStan\\Type\\Regex\\RegexGroupParser","m":"NOT_SUPPORTED_MODIFIERS","d":false,"e":-1}}

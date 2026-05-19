@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"getMessage","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"message","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"getLine","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"line","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"getTip","a":1,"t":1,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"tip","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"getMetadata","a":1,"t":1,"f":"_","l":45,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrors\\RuleError43","m":"metadata","d":false,"e":null}}

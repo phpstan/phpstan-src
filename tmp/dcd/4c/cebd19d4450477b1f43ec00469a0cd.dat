@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AnonymousClassNode","m":"createFromClassNode","a":1,"t":1,"f":"_","l":17,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Class_","m":"getSubNodeNames","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AnonymousClassNode","m":"createFromClassNode","a":1,"t":1,"f":"_","l":21,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\AnonymousClassNode","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AnonymousClassNode","m":"createFromClassNode","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Class_","m":"getAttributes","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":28,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}

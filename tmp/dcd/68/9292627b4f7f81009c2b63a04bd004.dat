@@ -1,0 +1,5 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\RedefinedParametersRule","m":"processNode","a":1,"t":1,"f":"_","l":38,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Param","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\RedefinedParametersRule","m":"processNode","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Variable","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\RedefinedParametersRule","m":"processNode","a":1,"t":1,"f":"_","l":42,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Param","m":"var","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\RedefinedParametersRule","m":"processNode","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Variable","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Functions\\RedefinedParametersRule","m":"processNode","a":1,"t":1,"f":"_","l":46,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Param","m":"var","d":true,"e":null}}

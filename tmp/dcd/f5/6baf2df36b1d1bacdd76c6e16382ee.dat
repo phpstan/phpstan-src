@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Fixable\\PhpPrinterIndentationDetectorVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":78,"p":null,"n":null},"m":{"c":"PhpParser\\NodeVisitor","m":"STOP_TRAVERSAL","d":false,"e":0}}

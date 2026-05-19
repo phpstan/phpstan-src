@@ -1,0 +1,1 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Variables\\Bug13983Rule","m":"processNode","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\Isset_","m":"vars","d":true,"e":null}}

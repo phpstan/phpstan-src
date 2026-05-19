@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Dependency\\ExportedNode\\ExportedAttributeNode","m":"__set_state","a":1,"t":1,"f":"_","l":52,"p":null,"n":null},"m":{"c":"PHPStan\\Dependency\\ExportedNode\\ExportedAttributeNode","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Dependency\\ExportedNode\\ExportedAttributeNode","m":"decode","a":1,"t":1,"f":"_","l":79,"p":null,"n":null},"m":{"c":"PHPStan\\Dependency\\ExportedNode\\ExportedAttributeNode","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":61,"p":null,"n":null},"m":{"c":"ReturnTypeWillChange","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":62,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}

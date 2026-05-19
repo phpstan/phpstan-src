@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Types\\InvalidTypesInUnionRule","m":"processComplexType","a":1,"t":1,"f":"_","l":97,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Types\\InvalidTypesInUnionRule","m":"ONLY_STANDALONE_TYPES","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Types\\InvalidTypesInUnionRule","m":"processComplexType","a":1,"t":1,"f":"_","l":113,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Types\\InvalidTypesInUnionRule","m":"ONLY_STANDALONE_TYPES","d":false,"e":-1}}

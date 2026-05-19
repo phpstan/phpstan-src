@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AnonymousClassNode","m":"createFromClassNode","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Class_","m":null,"d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\AnonymousClassNode","m":"createFromClassNode","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Class_","m":"name","d":true,"e":null}}

@@ -1,0 +1,3 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\IgnoreErrorsTest","m":"testIgnoreErrors","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\Container","m":"getParameter","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\IgnoreErrorsTest","m":"testIgnoreErrors","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\IgnoreErrorsTest","m":"getContainer","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\IgnoreErrorsTest","m":"testIgnoreErrors","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\IgnoreErrorsTest","m":"assertCount","d":true,"e":null}}

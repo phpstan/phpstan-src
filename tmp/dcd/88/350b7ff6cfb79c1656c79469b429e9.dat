@@ -1,0 +1,1 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":null,"l":null,"p":"ShipMonk\\PHPStan\\DeadCode\\Provider\\PhpStanUsageProvider","n":"Constructor call from PHPStan DI container"},"m":{"c":"PHPStan\\Rules\\Functions\\PrintfHelper","m":"__construct","d":false,"e":null}}

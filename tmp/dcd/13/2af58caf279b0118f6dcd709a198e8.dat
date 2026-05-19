@@ -1,0 +1,2 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\ScopeFactory","m":"__construct","a":1,"t":1,"f":"_","l":15,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ScopeFactory","m":"internalScopeFactoryFactory","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\ScopeFactory","m":"create","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\ScopeFactory","m":"internalScopeFactoryFactory","d":false,"e":null}}

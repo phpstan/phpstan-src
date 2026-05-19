@@ -1,0 +1,11 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isPublic","a":1,"t":1,"f":"_","l":85,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"PUBLIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isPublic","a":1,"t":1,"f":"_","l":86,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"VISIBILITY_MASK","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isProtected","a":1,"t":1,"f":"_","l":91,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"PROTECTED","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isPrivate","a":1,"t":1,"f":"_","l":96,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"PRIVATE","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isPrivateSet","a":1,"t":1,"f":"_","l":101,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"PRIVATE_SET","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isProtectedSet","a":1,"t":1,"f":"_","l":106,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"PROTECTED_SET","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isPublicSet","a":1,"t":1,"f":"_","l":111,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"PUBLIC_SET","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isFinal","a":1,"t":1,"f":"_","l":116,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"FINAL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isStatic","a":1,"t":1,"f":"_","l":121,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"STATIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isReadOnly","a":1,"t":1,"f":"_","l":126,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"READONLY","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassPropertyNode","m":"isAbstract","a":1,"t":1,"f":"_","l":146,"p":null,"n":null},"m":{"c":"PhpParser\\Modifiers","m":"ABSTRACT","d":false,"e":-1}}

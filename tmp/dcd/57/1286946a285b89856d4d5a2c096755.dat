@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\UnusedLabelRule","m":"processNode","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\GotoLabelVisitor","m":"LABEL_IS_USED_ATTRIBUTE","d":false,"e":-1}}

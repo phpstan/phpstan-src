@@ -1,0 +1,2 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\DeclareStrictTypesRule","m":"processNode","a":1,"t":1,"f":"_","l":66,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\DeclarePositionVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Keywords\\DeclareStrictTypesRule","m":"processNode","a":1,"t":1,"f":"_","l":70,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\DeclarePositionVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}

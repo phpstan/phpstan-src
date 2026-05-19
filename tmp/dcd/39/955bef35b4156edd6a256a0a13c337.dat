@@ -1,0 +1,9 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"__construct","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"jobSize","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"__construct","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"maximumNumberOfProcesses","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"__construct","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"minimumNumberOfJobsPerProcess","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"scheduleWork","a":1,"t":1,"f":"_","l":47,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"jobSize","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"scheduleWork","a":1,"t":1,"f":"_","l":49,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"minimumNumberOfJobsPerProcess","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"scheduleWork","a":1,"t":1,"f":"_","l":53,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"maximumNumberOfProcesses","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"scheduleWork","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"storedData","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"print","a":1,"t":1,"f":"_","l":61,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"storedData","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parallel\\Scheduler","m":"print","a":1,"t":1,"f":"_","l":65,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\Scheduler","m":"storedData","d":false,"e":null}}

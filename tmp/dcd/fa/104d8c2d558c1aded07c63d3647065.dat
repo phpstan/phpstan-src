@@ -1,0 +1,7 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":30,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt","m":"getComments","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":35,"p":null,"n":null},"m":{"c":"PhpParser\\Comment","m":"getText","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"PhpParser\\Comment","m":"getText","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":40,"p":null,"n":null},"m":{"c":"Nette\\Utils\\Strings","m":"match","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"build","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"identifier","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Playground\\PhpdocCommentRule","m":"processNode","a":1,"t":1,"f":"_","l":44,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\RuleErrorBuilder","m":"message","d":false,"e":null}}

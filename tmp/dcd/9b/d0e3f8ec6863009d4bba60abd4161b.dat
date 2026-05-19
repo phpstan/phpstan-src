@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Constants\\MagicConstantContextRule","m":"processNode","a":1,"t":1,"f":"_","l":56,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\MagicConstantParamDefaultVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}

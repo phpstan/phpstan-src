@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Cache\\Cache","m":"__construct","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\Cache","m":"storage","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\Cache","m":"load","a":1,"t":1,"f":"_","l":26,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\Cache","m":"storage","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Cache\\Cache","m":"save","a":1,"t":1,"f":"_","l":36,"p":null,"n":null},"m":{"c":"PHPStan\\Cache\\Cache","m":"storage","d":false,"e":null}}

@@ -1,0 +1,4 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\UseAliasVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_NORMAL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\UseAliasVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_NORMAL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\UseAliasVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":43,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Use_","m":"TYPE_NORMAL","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\UseAliasVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":64,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\UseAliasVisitor","m":"ATTRIBUTE_NAME","d":false,"e":-1}}

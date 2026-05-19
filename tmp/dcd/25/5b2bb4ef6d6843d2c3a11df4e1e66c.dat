@@ -1,0 +1,3 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Rules\\Classes\\ClassAttributesRule","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Classes\\ClassAttributesRule","m":"attributesCheck","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Classes\\ClassAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":48,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Classes\\ClassAttributesRule","m":"attributesCheck","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Classes\\ClassAttributesRule","m":"processNode","a":1,"t":1,"f":"_","l":50,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\ClassLike","m":"attrGroups","d":true,"e":null}}

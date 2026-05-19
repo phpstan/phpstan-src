@@ -1,0 +1,6 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"node","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"statementResult","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"__construct","a":1,"t":1,"f":"_","l":16,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"hasNativeReturnTypehint","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"getNode","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"node","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"getStatementResult","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"statementResult","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"hasNativeReturnTypehint","a":1,"t":1,"f":"_","l":37,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ExecutionEndNode","m":"hasNativeReturnTypehint","d":false,"e":null}}

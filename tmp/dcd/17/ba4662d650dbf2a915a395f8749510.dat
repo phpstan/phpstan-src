@@ -1,0 +1,6 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":15,"p":null,"n":null},"m":{"c":"Override","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\FnsrExtension","m":"beforeCompile","a":1,"t":1,"f":"_","l":27,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\FnsrExtension","m":"getContainerBuilder","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\FnsrExtension","m":"beforeCompile","a":1,"t":1,"f":"_","l":28,"p":null,"n":null},"m":{"c":"Nette\\DI\\ContainerBuilder","m":"getDefinitionByType","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\FnsrExtension","m":"beforeCompile","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"Nette\\DI\\Definitions\\Definition","m":"setAutowired","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\FnsrExtension","m":"beforeCompile","a":1,"t":1,"f":"_","l":31,"p":null,"n":null},"m":{"c":"Nette\\DI\\ContainerBuilder","m":"getDefinitionByType","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\DependencyInjection\\FnsrExtension","m":"beforeCompile","a":1,"t":1,"f":"_","l":32,"p":null,"n":null},"m":{"c":"Nette\\DI\\Definitions\\Definition","m":"setAutowired","d":true,"e":null}}

@@ -1,0 +1,10 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"fileAnalyser","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"ruleRegistry","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"collectorRegistry","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"nodeScopeResolver","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"__construct","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"internalErrorsCountLimit","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"analyse","a":1,"t":1,"f":"_","l":54,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"nodeScopeResolver","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"analyse","a":1,"t":1,"f":"_","l":85,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"fileAnalyser","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"analyse","a":1,"t":1,"f":"_","l":88,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"ruleRegistry","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"analyse","a":1,"t":1,"f":"_","l":89,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"collectorRegistry","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Analyser\\Analyser","m":"analyse","a":1,"t":1,"f":"_","l":121,"p":null,"n":null},"m":{"c":"PHPStan\\Analyser\\Analyser","m":"internalErrorsCountLimit","d":false,"e":null}}

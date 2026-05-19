@@ -1,0 +1,3 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassStatementsGatherer","m":"gatherNodes","a":1,"t":1,"f":"_","l":191,"p":null,"n":null},"m":{"c":"PHPStan\\Node\\ClassStatementsGatherer","m":"PROPERTY_ENUMERATING_FUNCTIONS","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassStatementsGatherer","m":"tryToApplyPropertyWritesFromAncestorConstructor","a":1,"t":1,"f":"_","l":294,"p":null,"n":null},"m":{"c":"ReflectionProperty","m":"IS_PUBLIC","d":false,"e":-1}}
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Node\\ClassStatementsGatherer","m":"tryToApplyPropertyWritesFromAncestorConstructor","a":1,"t":1,"f":"_","l":294,"p":null,"n":null},"m":{"c":"ReflectionProperty","m":"IS_PROTECTED","d":false,"e":-1}}

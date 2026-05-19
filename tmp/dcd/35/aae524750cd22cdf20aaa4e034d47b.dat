@@ -1,0 +1,5 @@
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Pure\\FunctionPurityCheck","m":"check","a":1,"t":1,"f":"_","l":134,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Expression","m":"expr","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Pure\\FunctionPurityCheck","m":"check","a":1,"t":1,"f":"_","l":137,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Pure\\FunctionPurityCheck","m":"check","a":1,"t":1,"f":"_","l":137,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Expression","m":"expr","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Pure\\FunctionPurityCheck","m":"check","a":1,"t":1,"f":"_","l":141,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Expr\\FuncCall","m":"name","d":true,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Pure\\FunctionPurityCheck","m":"check","a":1,"t":1,"f":"_","l":141,"p":null,"n":null},"m":{"c":"PhpParser\\Node\\Stmt\\Expression","m":"expr","d":true,"e":null}}

@@ -1,0 +1,1 @@
+{"e":null,"t":2,"a":1,"p":true,"o":{"c":"PHPStan\\Parallel\\ForkedProcess","m":"start","a":1,"t":1,"f":"_","l":103,"p":null,"n":null},"m":{"c":"PHPStan\\Parallel\\ForkedProcess","m":"WAITPID_POLL_INTERVAL","d":false,"e":-1}}

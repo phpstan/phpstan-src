@@ -1,0 +1,4 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper","m":"detectLine","a":1,"t":1,"f":"_","l":18,"p":null,"n":null},"m":{"c":"PHPStan\\PhpDocParser\\Ast\\Node","m":"getAttribute","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper","m":"detectLine","a":1,"t":1,"f":"_","l":19,"p":null,"n":null},"m":{"c":"PhpParser\\Node","m":"getDocComment","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper","m":"detectLine","a":1,"t":1,"f":"_","l":22,"p":null,"n":null},"m":{"c":"PhpParser\\Node","m":"getStartLine","d":true,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper","m":"detectLine","a":1,"t":1,"f":"_","l":25,"p":null,"n":null},"m":{"c":"PhpParser\\Comment\\Doc","m":"getStartLine","d":true,"e":null}}

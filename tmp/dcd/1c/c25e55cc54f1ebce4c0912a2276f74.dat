@@ -1,0 +1,2 @@
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":null,"m":null,"a":null,"t":null,"f":"_","l":14,"p":null,"n":null},"m":{"c":"PHPStan\\DependencyInjection\\RegisteredRule","m":"__construct","d":false,"e":null}}
+{"e":null,"t":1,"a":1,"p":true,"o":{"c":"PHPStan\\Rules\\Properties\\AccessPropertiesRule","m":"processNode","a":1,"t":1,"f":"_","l":29,"p":null,"n":null},"m":{"c":"PHPStan\\Rules\\Properties\\AccessPropertiesCheck","m":"check","d":false,"e":null}}

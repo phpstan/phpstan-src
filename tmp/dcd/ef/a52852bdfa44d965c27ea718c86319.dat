@@ -1,0 +1,4 @@
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"__construct","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"startLine","d":false,"e":null}}
+{"e":null,"t":3,"a":2,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"__construct","a":1,"t":1,"f":"_","l":12,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"endLine","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":20,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"startLine","d":false,"e":null}}
+{"e":null,"t":3,"a":1,"p":true,"o":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"enterNode","a":1,"t":1,"f":"_","l":24,"p":null,"n":null},"m":{"c":"PHPStan\\Parser\\LineAttributesVisitor","m":"endLine","d":false,"e":null}}

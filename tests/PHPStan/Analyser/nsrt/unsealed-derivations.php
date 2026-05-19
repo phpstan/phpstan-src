@@ -323,6 +323,41 @@ class FillKeysArray
 
 }
 
+class IntersectKeyArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 * @param array<string, mixed> $other
+	 */
+	public function intersectWithStringKeys(array $arr, array $other): void
+	{
+		// `array_intersect_key` keeps entries from `$arr` whose key is
+		// also a key of `$other`. The explicit `a`/`b` survive as
+		// optional (we don't know that `$other` has them). The unsealed
+		// `<int, string>` range intersects with `<string, mixed>` on
+		// the key side — `int ∩ string` is empty — so the unsealed slot
+		// disappears entirely.
+		assertType('array{a?: 1, b?: 2}', array_intersect_key($arr, $other));
+	}
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 * @param array<int, mixed> $other
+	 */
+	public function intersectWithIntKeys(array $arr, array $other): void
+	{
+		// `$other`'s int keys can match `$arr`'s unsealed int range,
+		// so the unsealed slot survives but its key narrows to the
+		// intersection (`int`). The explicit `a`/`b` are dropped — they
+		// are string keys, and `$other`'s key type is int. With no
+		// explicit keys left, the builder collapses the result to a
+		// plain `array<int, string>`.
+		assertType('array<int, string>', array_intersect_key($arr, $other));
+	}
+
+}
+
 class CountNarrowing
 {
 

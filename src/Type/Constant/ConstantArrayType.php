@@ -1522,6 +1522,18 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i) || !$has->yes());
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			// An unsealed extra at key K survives only if `$other` can
+			// also have key K. Narrow the unsealed key to the intersection
+			// of our extras-range and `$other`'s key type. If they don't
+			// overlap, the unsealed slot is dropped.
+			$narrowedKey = TypeCombinator::intersect($unsealedKey, $otherArraysType->getIterableKeyType());
+			if (!$narrowedKey instanceof NeverType) {
+				$builder->makeUnsealed($narrowedKey, $unsealedValue);
+			}
+		}
+
 		return $builder->getArray();
 	}
 

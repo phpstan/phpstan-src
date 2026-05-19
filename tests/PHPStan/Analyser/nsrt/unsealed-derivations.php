@@ -393,6 +393,24 @@ class PopArray
 
 }
 
+class ShiftArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function shiftPreservesUnsealed(array $arr): void
+	{
+		array_shift($arr);
+		// `array_shift` removes the first element. With explicit keys in
+		// place, that's always the leading explicit key (`a`). The
+		// unsealed extras live "after" the explicit ones and are
+		// preserved.
+		assertType('array{b: 2, ...<int, string>}', $arr);
+	}
+
+}
+
 class CountNarrowing
 {
 

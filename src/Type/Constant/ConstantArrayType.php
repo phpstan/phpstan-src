@@ -2188,6 +2188,16 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $valueType, $isOptional);
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			// `array_shift` removes the *first* element. The explicit
+			// keys precede the unsealed extras in insertion order, so
+			// the shift always lands on an explicit key (when there is
+			// one); the unsealed slot is unaffected. Re-indexing of int
+			// keys doesn't change the unsealed range — it stays `<int, V>`.
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedKey, $unsealedValue);
+		}
+
 		return $builder->getArray();
 	}
 

@@ -1859,4 +1859,40 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testTraverseSimultaneouslyVisitsUnsealedValue(): void
+	{
+		$left = new ConstantArrayType(
+			[new ConstantStringType('a')],
+			[new IntegerType()],
+			unsealed: [new IntegerType(), new IntegerType()],
+		);
+		$right = new ConstantArrayType(
+			[new ConstantStringType('a')],
+			[new StringType()],
+			unsealed: [new IntegerType(), new StringType()],
+		);
+
+		$visited = [];
+		$result = $left->traverseSimultaneously($right, static function (Type $l, Type $r) use (&$visited): Type {
+			$visited[] = [
+				$l->describe(VerbosityLevel::precise()),
+				$r->describe(VerbosityLevel::precise()),
+			];
+			return new MixedType();
+		});
+
+		$this->assertSame(
+			[
+				['int', 'string'],
+				['int', 'string'],
+			],
+			$visited,
+		);
+
+		$this->assertSame(
+			'array{a: mixed, ...<int, mixed>}',
+			$result->describe(VerbosityLevel::precise()),
+		);
+	}
+
 }

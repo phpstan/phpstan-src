@@ -2569,11 +2569,21 @@ class ConstantArrayType implements Type
 			$valueTypes[] = $transformedValueType;
 		}
 
+		$unsealed = $this->unsealed;
+		if ($unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $unsealed;
+			$transformedUnsealedValueType = $cb($unsealedValueType, $right->getIterableValueType());
+			if ($transformedUnsealedValueType !== $unsealedValueType) {
+				$stillOriginal = false;
+				$unsealed = [$unsealedKeyType, $transformedUnsealedValueType];
+			}
+		}
+
 		if ($stillOriginal) {
 			return $this;
 		}
 
-		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $this->unsealed);
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $unsealed);
 	}
 
 	public function isKeysSupersetOf(self $otherArray): bool

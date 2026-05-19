@@ -9,3 +9,8 @@ define('BAR_CONSTANT', 'hello'); // fine
 define('BAR_CONSTANT', null); // fine
 define('BAR_CONSTANT', rand(0,1) ? 1 : 'hello'); // fine
 define('OTHER_CONSTANT', false); // fine - not in dynamicConstantNames
+define('A_NON_EMPTY_STRING', '');
+define('A_NON_EMPTY_STRING', '0');
+define('A_NON_EMPTY_STRING', getString());
+
+function getString(): string {}

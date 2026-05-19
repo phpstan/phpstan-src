@@ -2305,7 +2305,13 @@ class ConstantArrayType implements Type
 			$valueTypes[] = $valueType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
-		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $this->unsealed);
+		$unsealed = $this->unsealed;
+		if ($unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $unsealed;
+			$unsealed = [$unsealedKey, $unsealedValue->generalize(GeneralizePrecision::lessSpecific())];
+		}
+
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $unsealed);
 	}
 
 	private function degradeToGeneralArray(): Type

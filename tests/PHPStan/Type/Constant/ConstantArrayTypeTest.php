@@ -1999,6 +1999,20 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testGeneralizeValuesAlsoBroadensUnsealedValue(): void
+	{
+		$type = new ConstantArrayType(
+			[new ConstantStringType('a')],
+			[new ConstantIntegerType(1)],
+			unsealed: [new IntegerType(), new ConstantStringType('foo')],
+		);
+
+		$this->assertSame(
+			'array{a: int, ...<int, string>}',
+			$type->generalizeValues()->describe(VerbosityLevel::precise()),
+		);
+	}
+
 	public function testTraverseSimultaneouslyVisitsUnsealedValue(): void
 	{
 		$left = new ConstantArrayType(

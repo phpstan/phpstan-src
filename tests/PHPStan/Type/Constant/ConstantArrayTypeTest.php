@@ -10,6 +10,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -1641,6 +1642,221 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	public function testGetArraySize(Type $constantArray, Type $expectedSize): void
 	{
 		$this->assertSame($expectedSize->describe(VerbosityLevel::precise()), $constantArray->getArraySize()->describe(VerbosityLevel::precise()));
+	}
+
+	public static function dataGetFiniteTypes(): iterable
+	{
+		yield 'empty array' => [
+			new ConstantArrayType([], []),
+			['array{}'],
+		];
+
+		yield 'single key with single finite value' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantStringType('foo')],
+			),
+			["array{a: 'foo'}"],
+		];
+
+		yield 'multiple finite-only values' => [
+			new ConstantArrayType(
+				[
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				],
+				[
+					new ConstantIntegerType(1),
+					new ConstantStringType('foo'),
+				],
+			),
+			["array{a: 1, b: 'foo'}"],
+		];
+
+		yield 'union value expands to cartesian product' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new UnionType([
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+				])],
+			),
+			['array{a: 1}', 'array{a: 2}'],
+		];
+
+		yield 'two union values expand to full cartesian product' => [
+			new ConstantArrayType(
+				[
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				],
+				[
+					new UnionType([
+						new ConstantIntegerType(1),
+						new ConstantIntegerType(2),
+					]),
+					new UnionType([
+						new ConstantStringType('x'),
+						new ConstantStringType('y'),
+					]),
+				],
+			),
+			[
+				"array{a: 1, b: 'x'}",
+				"array{a: 1, b: 'y'}",
+				"array{a: 2, b: 'x'}",
+				"array{a: 2, b: 'y'}",
+			],
+		];
+
+		yield 'bool value expands to true/false' => [
+			new ConstantArrayType(
+				[new ConstantStringType('flag')],
+				[new BooleanType()],
+			),
+			['array{flag: true}', 'array{flag: false}'],
+		];
+
+		yield 'non-finite value yields no finite types' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new IntegerType()],
+			),
+			[],
+		];
+
+		yield 'mixed finite and non-finite values yield no finite types' => [
+			new ConstantArrayType(
+				[
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				],
+				[
+					new ConstantIntegerType(1),
+					new IntegerType(),
+				],
+			),
+			[],
+		];
+
+		yield 'optional key forks with-without' => [
+			new ConstantArrayType(
+				[
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				],
+				[
+					new ConstantIntegerType(1),
+					new ConstantStringType('foo'),
+				],
+				[0],
+				[0],
+			),
+			[
+				"array{b: 'foo'}",
+				"array{a: 1, b: 'foo'}",
+			],
+		];
+
+		yield 'all optional keys' => [
+			new ConstantArrayType(
+				[
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				],
+				[
+					new ConstantIntegerType(1),
+					new ConstantStringType('foo'),
+				],
+				[0],
+				[0, 1],
+			),
+			[
+				'array{}',
+				"array{b: 'foo'}",
+				'array{a: 1}',
+				"array{a: 1, b: 'foo'}",
+			],
+		];
+
+		yield 'optional key combined with union value' => [
+			new ConstantArrayType(
+				[
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				],
+				[
+					new UnionType([
+						new ConstantIntegerType(1),
+						new ConstantIntegerType(2),
+					]),
+					new ConstantStringType('foo'),
+				],
+				[2],
+				[0],
+			),
+			[
+				"array{b: 'foo'}",
+				"array{a: 1, b: 'foo'}",
+				"array{a: 2, b: 'foo'}",
+			],
+		];
+
+		yield 'exceeding CALCULATE_SCALARS_LIMIT bails out' => [
+			(static function (): ConstantArrayType {
+				$keyTypes = [];
+				$valueTypes = [];
+				// 8 keys × 2 = 256 combinations, well above the 128 limit.
+				for ($i = 0; $i < 8; $i++) {
+					$keyTypes[] = new ConstantIntegerType($i);
+					$valueTypes[] = new UnionType([
+						new ConstantStringType('a'),
+						new ConstantStringType('b'),
+					]);
+				}
+				return new ConstantArrayType($keyTypes, $valueTypes);
+			})(),
+			[],
+		];
+
+		$never = new NeverType(true);
+		$sealed = [$never, $never];
+
+		yield 'sealed is finite' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantStringType('foo')],
+				unsealed: $sealed,
+			),
+			["array{a: 'foo'}"],
+		];
+
+		yield 'unsealed is finite' => [
+			new ConstantArrayType(
+				[new ConstantStringType('a')],
+				[new ConstantStringType('foo')],
+				unsealed: [new IntegerType(), new StringType()],
+			),
+			[],
+		];
+	}
+
+	/**
+	 * @param list<string> $expectedDescriptions
+	 */
+	#[DataProvider('dataGetFiniteTypes')]
+	public function testGetFiniteTypes(ConstantArrayType $type, array $expectedDescriptions): void
+	{
+		$actual = array_map(
+			static fn (Type $finite): string => $finite->describe(VerbosityLevel::precise()),
+			$type->getFiniteTypes(),
+		);
+
+		$this->assertSame(
+			$expectedDescriptions,
+			$actual,
+			sprintf('%s -> getFiniteTypes()', $type->describe(VerbosityLevel::precise())),
+		);
 	}
 
 }

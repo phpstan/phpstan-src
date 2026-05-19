@@ -3183,6 +3183,10 @@ class ConstantArrayType implements Type
 
 	public function getFiniteTypes(): array
 	{
+		if ($this->isUnsealed()->yes()) {
+			return [];
+		}
+
 		$limit = InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT;
 
 		// Build finite array types incrementally, processing one key at a time.

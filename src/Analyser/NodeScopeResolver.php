@@ -38,6 +38,7 @@ use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
+use PhpParser\Node\Stmt\Goto_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\InlineHTML;
 use PhpParser\Node\Stmt\Return_;
@@ -110,6 +111,7 @@ use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
+use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
@@ -408,12 +410,59 @@ class NodeScopeResolver
 			|| $parentNode instanceof Node\Stmt\ClassMethod
 			|| $parentNode instanceof PropertyHookStatementNode
 			|| $parentNode instanceof Expr\Closure;
+
 		foreach ($stmts as $i => $stmt) {
-			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike)) {
+			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
 				continue;
 			}
 
 			$isLast = $i === $stmtCount - 1;
+
+			$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
+			if ($nestedLabelNames !== null && $context->isTopLevel()) {
+				$originalStorage = $storage;
+				$bodyScope = $scope;
+				$count = 0;
+				do {
+					$prevScope = $bodyScope;
+					$tempStorage = $originalStorage->duplicate();
+					$bodyScopeResult = $this->processStmtNodesInternal(
+						$parentNode,
+						[$stmt],
+						$bodyScope,
+						$tempStorage,
+						new NoopNodeCallback(),
+						$context->enterDeep(),
+					);
+
+					$gotoScope = null;
+					foreach ($bodyScopeResult->getExitPoints() as $ep) {
+						$epStmt = $ep->getStatement();
+						if (!($epStmt instanceof Goto_) || !isset($nestedLabelNames[$epStmt->name->toString()])) {
+							continue;
+						}
+
+						$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
+					}
+
+					if ($gotoScope !== null) {
+						$bodyScope = $scope->mergeWith($gotoScope);
+					}
+
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
+
+					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while ($count < self::LOOP_SCOPE_ITERATIONS);
+
+				$scope = $bodyScope;
+				$storage = $originalStorage;
+			}
+
 			$statementResult = $this->processStmtNode(
 				$stmt,
 				$scope,
@@ -423,6 +472,76 @@ class NodeScopeResolver
 			);
 			$scope = $statementResult->getScope();
 			$hasYield = $hasYield || $statementResult->hasYield();
+
+			if ($stmt instanceof Node\Stmt\Label) {
+				$labelName = $stmt->name->toString();
+
+				$newExitPoints = [];
+				foreach ($exitPoints as $exitPoint) {
+					$exitStmt = $exitPoint->getStatement();
+					if ($exitStmt instanceof Goto_ && $exitStmt->name->toString() === $labelName) {
+						if ($alreadyTerminated) {
+							$scope = $exitPoint->getScope();
+							$alreadyTerminated = false;
+						} else {
+							$scope = $scope->mergeWith($exitPoint->getScope());
+						}
+					} else {
+						$newExitPoints[] = $exitPoint;
+					}
+				}
+				$exitPoints = $newExitPoints;
+
+				if ($alreadyTerminated) {
+					continue;
+				}
+
+				if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
+					$originalStorage = $storage;
+					$bodyStmts = array_slice($stmts, $i + 1);
+					$bodyScope = $scope;
+					$count = 0;
+					do {
+						$prevScope = $bodyScope;
+						$bodyScope = $bodyScope->mergeWith($scope);
+						$tempStorage = $originalStorage->duplicate();
+						$bodyScopeResult = $this->processStmtNodesInternal(
+							$parentNode,
+							$bodyStmts,
+							$bodyScope,
+							$tempStorage,
+							new NoopNodeCallback(),
+							$context->enterDeep(),
+						);
+
+						$gotoScope = null;
+						foreach ($bodyScopeResult->getExitPoints() as $ep) {
+							$epStmt = $ep->getStatement();
+							if (!($epStmt instanceof Goto_) || $epStmt->name->toString() !== $labelName) {
+								continue;
+							}
+
+							$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
+						}
+
+						if ($gotoScope !== null) {
+							$bodyScope = $scope->mergeWith($gotoScope);
+						}
+
+						if ($bodyScope->equals($prevScope)) {
+							break;
+						}
+
+						if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+							$bodyScope = $prevScope->generalizeWith($bodyScope);
+						}
+						$count++;
+					} while ($count < self::LOOP_SCOPE_ITERATIONS);
+
+					$scope = $bodyScope;
+					$storage = $originalStorage;
+				}
+			}
 
 			if ($shouldCheckLastStatement && $isLast) {
 				$endStatements = $statementResult->getEndStatements();
@@ -917,6 +1036,18 @@ class NodeScopeResolver
 			return new InternalStatementResult($scope, $hasYield, true, [
 				new InternalStatementExitPoint($stmt, $scope),
 			], $overridingThrowPoints ?? $throwPoints, $impurePoints);
+		} elseif ($stmt instanceof Goto_) {
+			$hasYield = false;
+			$throwPoints = [];
+			$impurePoints = [];
+
+			return new InternalStatementResult($scope, $hasYield, true, [
+				new InternalStatementExitPoint($stmt, $scope),
+			], $overridingThrowPoints ?? $throwPoints, $impurePoints);
+		} elseif ($stmt instanceof Node\Stmt\Label) {
+			$hasYield = false;
+			$throwPoints = $overridingThrowPoints ?? [];
+			$impurePoints = [];
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
 			if ($stmt->expr instanceof Expr\Throw_) {
 				$scope = $stmtScope;
@@ -4800,6 +4931,9 @@ class NodeScopeResolver
 		$stmts = [];
 		$isPassedUnreachableStatement = false;
 		foreach ($nodes as $node) {
+			if ($node instanceof Node\Stmt\Label) {
+				break;
+			}
 			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
 				continue;
 			}

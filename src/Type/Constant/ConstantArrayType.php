@@ -859,8 +859,6 @@ class ConstantArrayType implements Type
 			);
 			if (!$preserveListCertainty) {
 				$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
-			} elseif ($this->isList->yes() && $newIsList->no()) {
-				return new NeverType();
 			}
 
 			return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
@@ -1744,12 +1742,16 @@ class ConstantArrayType implements Type
 			return new ConstantArrayType([], []);
 		}
 
-		if ($typeToRemove instanceof HasOffsetType) {
-			return $this->unsetOffset($typeToRemove->getOffsetType(), true);
-		}
-
-		if ($typeToRemove instanceof HasOffsetValueType) {
-			return $this->unsetOffset($typeToRemove->getOffsetType(), true);
+		if ($typeToRemove instanceof HasOffsetType || $typeToRemove instanceof HasOffsetValueType) {
+			$unsetResult = $this->unsetOffset($typeToRemove->getOffsetType(), true);
+			// When the source was definitely a list but the post-unset shape
+			// definitely isn't (e.g. unsetting a non-optional leading key
+			// creates a hole), no value of $this could have lacked the
+			// removed key — the subtraction yields the empty set.
+			if ($this->isList->yes() && $unsetResult->isList()->no()) {
+				return new NeverType();
+			}
+			return $unsetResult;
 		}
 
 		return null;

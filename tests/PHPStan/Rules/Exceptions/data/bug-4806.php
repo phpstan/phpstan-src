@@ -12,7 +12,7 @@ class NeverThrows
 	}
 }
 
-class HasNoConstructor
+final class HasNoConstructor
 {
 
 }

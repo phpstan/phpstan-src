@@ -119,4 +119,13 @@ jobs:
       - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - name: "Reflection golden test"
-        run: "make tests-golden-reflection || true"
+        run: |
+          set +e
+          make tests-golden-reflection
+          exit_code="$?"
+
+          if [[ "$exit_code" != "0" ]]; then
+            echo "::notice file=.github/workflows/reflection-golden-test.yml,line=3 ::Reflection golden tests detected changes by this pull request - see https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          fi
+
+          exit 0

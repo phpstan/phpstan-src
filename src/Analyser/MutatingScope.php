@@ -972,27 +972,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
 		) {
-			$type = $this->expressionTypes[$exprString]->getType();
-
-			if (
-				$node instanceof FuncCall
-				&& $node->name instanceof Name
-				&& !$node->isFirstClassCallable()
-				&& count($node->getArgs()) >= 1
-			) {
-				$funcName = $node->name->toLowerString();
-				if (in_array($funcName, ['count', 'sizeof'], true)) {
-					$argType = $this->getType($node->getArgs()[0]->value);
-					$type = TypeCombinator::intersect($type, $argType->getArraySize());
-				} elseif (
-					in_array($funcName, ['strlen', 'mb_strlen'], true)
-					&& $this->getType($node->getArgs()[0]->value)->isNonEmptyString()->yes()
-				) {
-					$type = TypeCombinator::intersect($type, IntegerRangeType::fromInterval(1, null));
-				}
-			}
-
-			return $type;
+			return $this->expressionTypes[$exprString]->getType();
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */
@@ -2839,6 +2819,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
+		if ($expr instanceof Variable) {
+			$this->refineDependentFuncCallTypes($exprString, $type, $nativeType, $expressionTypes, $nativeTypes);
+		}
+
 		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2863,6 +2847,63 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeTypes
+	 */
+	private function refineDependentFuncCallTypes(
+		string $varExprString,
+		Type $varType,
+		Type $varNativeType,
+		array &$expressionTypes,
+		array &$nativeTypes,
+	): void
+	{
+		foreach ($expressionTypes as $exprString => $holder) {
+			$holderExpr = $holder->getExpr();
+			if (!$holderExpr instanceof FuncCall || !$holderExpr->name instanceof Name) {
+				continue;
+			}
+			if ($holderExpr->isFirstClassCallable() || count($holderExpr->getArgs()) < 1) {
+				continue;
+			}
+			if ($this->getNodeKey($holderExpr->getArgs()[0]->value) !== $varExprString) {
+				continue;
+			}
+
+			$funcName = $holderExpr->name->toLowerString();
+			$constraint = null;
+			$nativeConstraint = null;
+			if (in_array($funcName, ['count', 'sizeof'], true)) {
+				$constraint = $varType->getArraySize();
+				$nativeConstraint = $varNativeType->getArraySize();
+			} elseif (in_array($funcName, ['strlen', 'mb_strlen'], true)) {
+				if ($varType->isNonEmptyString()->yes()) {
+					$constraint = IntegerRangeType::fromInterval(1, null);
+				}
+				if ($varNativeType->isNonEmptyString()->yes()) {
+					$nativeConstraint = IntegerRangeType::fromInterval(1, null);
+				}
+			}
+
+			if ($constraint !== null) {
+				$expressionTypes[$exprString] = new ExpressionTypeHolder(
+					$holderExpr,
+					TypeCombinator::intersect($holder->getType(), $constraint),
+					$holder->getCertainty(),
+				);
+			}
+
+			if ($nativeConstraint !== null && array_key_exists($exprString, $nativeTypes)) {
+				$nativeTypes[$exprString] = new ExpressionTypeHolder(
+					$holderExpr,
+					TypeCombinator::intersect($nativeTypes[$exprString]->getType(), $nativeConstraint),
+					$nativeTypes[$exprString]->getCertainty(),
+				);
+			}
+		}
 	}
 
 	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self

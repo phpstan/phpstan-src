@@ -21,7 +21,43 @@ concurrency:
   group: run-issue-bot-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
+  pr-comment-init:
+    name: "Init PR comment (if exists)"
+    if: github.event_name == 'pull_request'
+    runs-on: "ubuntu-latest"
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Find existing PR comment"
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "<!-- phpstan-issue-bot -->"
+
+      - name: "Mark comment as running"
+        if: steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            <!-- phpstan-issue-bot -->
+
+            :hourglass_flowing_sand: A new issue bot run is in progress: [view job](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            This comment will be updated with the latest results when the run completes.
+
   download:
     name: "Download data"
 
@@ -161,6 +197,9 @@ jobs:
 
     runs-on: "ubuntu-latest"
 
+    outputs:
+      pr-evaluate-exit-code: ${{ steps.evaluate-pr.outputs.exit_code }}
+
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
@@ -201,6 +240,7 @@ jobs:
         run: "ls -lA issue-bot/tmp"
 
       - name: "Evaluate results - pull request"
+        id: evaluate-pr
         working-directory: "issue-bot"
         if: github.event_name == 'pull_request'
         env:
@@ -212,12 +252,27 @@ jobs:
 
           cat tmp/step-summary.md >> "$GITHUB_STEP_SUMMARY"
 
+          job_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          {
+            echo "<!-- phpstan-issue-bot -->"
+            echo
+            if [[ "$exit_code" == "2" ]]; then
+              echo "Issue bot detected changes — [view run]($job_url):"
+              echo
+              cat tmp/step-summary.md
+            else
+              echo ":white_check_mark: No changes detected by issue bot in the [latest run]($job_url)."
+            fi
+          } > tmp/pr-comment.md
+
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+
           if [[ "$exit_code" == "2" ]]; then
-            echo "::notice file=.github/workflows/issue-bot.yml,line=3 ::Issue bot detected open issues which are affected by this pull request - see https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-            exit 0
+            echo "::notice file=.github/workflows/issue-bot.yml,line=3 ::Issue bot detected open issues which are affected by this pull request - see $job_url"
           fi
 
-          exit $exit_code
+          # Always exit 0 for the PR pathway so the pr-comment-finalize job still receives outputs/artifacts.
+          exit 0
 
       - name: "Upload step summary"
         if: github.event_name == 'pull_request'
@@ -225,6 +280,13 @@ jobs:
         with:
           name: step-summary
           path: issue-bot/tmp/step-summary.md
+
+      - name: "Upload PR comment body"
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr-comment
+          path: issue-bot/tmp/pr-comment.md
 
       - name: "Evaluate results - push"
         working-directory: "issue-bot"
@@ -244,3 +306,46 @@ jobs:
           fi
 
           exit $exit_code
+
+  pr-comment-finalize:
+    name: "Post/update PR comment"
+    needs: evaluate
+    if: github.event_name == 'pull_request' && needs.evaluate.result == 'success'
+    runs-on: "ubuntu-latest"
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Download PR comment body"
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: pr-comment
+
+      - name: "Find PR comment"
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "<!-- phpstan-issue-bot -->"
+
+      - name: "Post/update PR comment (changes)"
+        if: needs.evaluate.outputs.pr-evaluate-exit-code == '2'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body-path: pr-comment.md
+
+      - name: "Update PR comment (no changes, only if exists)"
+        if: needs.evaluate.outputs.pr-evaluate-exit-code == '0' && steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body-path: pr-comment.md

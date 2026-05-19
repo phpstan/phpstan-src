@@ -80,6 +80,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
+use function max;
 use function min;
 use function pow;
 use function range;
@@ -2083,6 +2084,33 @@ class ConstantArrayType implements Type
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
 			return $this;
+		}
+
+		// With real unsealed extras on the source, the elements being
+		// "removed" might come from the unsealed range rather than from
+		// the trailing explicit keys — the array might have zero extras
+		// (so the trailing explicit keys are popped) or one+ extras (so
+		// they're popped instead, leaving the explicit keys intact).
+		// Encode this by marking the trailing keys as optional and
+		// keeping the unsealed slot in place.
+		if ($this->isUnsealed()->yes()) {
+			$optionalKeys = $this->optionalKeys;
+			$newLength = $keyTypesCount - $length;
+			for ($i = $keyTypesCount - 1; $i >= max($newLength, 0); $i--) {
+				if (in_array($i, $optionalKeys, true)) {
+					continue;
+				}
+				$optionalKeys[] = $i;
+			}
+
+			return $this->recreate(
+				$this->keyTypes,
+				$this->valueTypes,
+				$this->nextAutoIndexes,
+				array_values($optionalKeys),
+				$this->isList,
+				$this->unsealed,
+			);
 		}
 
 		$keyTypes = $this->keyTypes;

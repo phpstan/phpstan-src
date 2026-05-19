@@ -374,6 +374,25 @@ class ReverseArray
 
 }
 
+class PopArray
+{
+
+	/**
+	 * @param array{a: 1, b: 2, ...<int, string>} $arr
+	 */
+	public function popMakesLastKeyOptional(array $arr): void
+	{
+		array_pop($arr);
+		// `array_pop` removes the last element. With unsealed extras, the
+		// last element might be one of those extras (the unsealed slot
+		// silently shrinks by one) or — if no extras existed — the last
+		// explicit key. So the last explicit key becomes optional and
+		// the unsealed slot is preserved (still "zero or more").
+		assertType('array{a: 1, b?: 2, ...<int, string>}', $arr);
+	}
+
+}
+
 class CountNarrowing
 {
 

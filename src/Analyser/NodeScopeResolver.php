@@ -299,47 +299,15 @@ class NodeScopeResolver
 
 			$nestedLabelNames = $node->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
 			if ($nestedLabelNames !== null) {
-				$originalStorage = $expressionResultStorage;
-				$bodyScope = $scope;
-				$count = 0;
-				do {
-					$prevScope = $bodyScope;
-					$tempStorage = $originalStorage->duplicate();
-					$bodyScopeResult = $this->processStmtNodesInternal(
-						$dummyParent,
-						[$node],
-						$bodyScope,
-						$tempStorage,
-						new NoopNodeCallback(),
-						StatementContext::createDeep(),
-					);
-
-					$gotoScope = null;
-					foreach ($bodyScopeResult->getExitPoints() as $ep) {
-						$epStmt = $ep->getStatement();
-						if (!($epStmt instanceof Goto_) || !isset($nestedLabelNames[$epStmt->name->toString()])) {
-							continue;
-						}
-
-						$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-					}
-
-					if ($gotoScope !== null) {
-						$bodyScope = $scope->mergeWith($gotoScope);
-					}
-
-					if ($bodyScope->equals($prevScope)) {
-						break;
-					}
-
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope);
-					}
-					$count++;
-				} while ($count < self::LOOP_SCOPE_ITERATIONS);
-
-				$scope = $bodyScope;
-				$expressionResultStorage = $originalStorage;
+				$scope = $this->resolveBackwardGotoScope(
+					$dummyParent,
+					[$node],
+					$scope,
+					$expressionResultStorage,
+					StatementContext::createDeep(),
+					static fn (string $name): bool => isset($nestedLabelNames[$name]),
+					false,
+				);
 			}
 
 			$statementResult = $this->processStmtNode($node, $scope, $expressionResultStorage, $nodeCallback, StatementContext::createTopLevel());
@@ -348,70 +316,27 @@ class NodeScopeResolver
 			if ($node instanceof Node\Stmt\Label) {
 				$labelName = $node->name->toString();
 
-				$newExitPoints = [];
-				foreach ($exitPoints as $exitPoint) {
-					$exitStmt = $exitPoint->getStatement();
-					if ($exitStmt instanceof Goto_ && $exitStmt->name->toString() === $labelName) {
-						if ($alreadyTerminated) {
-							$scope = $exitPoint->getScope();
-							$alreadyTerminated = false;
-						} else {
-							$scope = $scope->mergeWith($exitPoint->getScope());
-						}
-					} else {
-						$newExitPoints[] = $exitPoint;
-					}
-				}
-				$exitPoints = $newExitPoints;
+				[$scope, $alreadyTerminated, $exitPoints] = $this->mergeForwardGotoExitPoints(
+					$labelName,
+					$scope,
+					$alreadyTerminated,
+					$exitPoints,
+				);
 
 				if ($alreadyTerminated) {
 					continue;
 				}
 
 				if ($node->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true) {
-					$originalStorage = $expressionResultStorage;
-					$bodyStmts = array_slice($stmts, $si + 1);
-					$bodyScope = $scope;
-					$count = 0;
-					do {
-						$prevScope = $bodyScope;
-						$bodyScope = $bodyScope->mergeWith($scope);
-						$tempStorage = $originalStorage->duplicate();
-						$bodyScopeResult = $this->processStmtNodesInternal(
-							$dummyParent,
-							$bodyStmts,
-							$bodyScope,
-							$tempStorage,
-							new NoopNodeCallback(),
-							StatementContext::createDeep(),
-						);
-
-						$gotoScope = null;
-						foreach ($bodyScopeResult->getExitPoints() as $ep) {
-							$epStmt = $ep->getStatement();
-							if (!($epStmt instanceof Goto_) || $epStmt->name->toString() !== $labelName) {
-								continue;
-							}
-
-							$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-						}
-
-						if ($gotoScope !== null) {
-							$bodyScope = $scope->mergeWith($gotoScope);
-						}
-
-						if ($bodyScope->equals($prevScope)) {
-							break;
-						}
-
-						if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-							$bodyScope = $prevScope->generalizeWith($bodyScope);
-						}
-						$count++;
-					} while ($count < self::LOOP_SCOPE_ITERATIONS);
-
-					$scope = $bodyScope;
-					$expressionResultStorage = $originalStorage;
+					$scope = $this->resolveBackwardGotoScope(
+						$dummyParent,
+						array_slice($stmts, $si + 1),
+						$scope,
+						$expressionResultStorage,
+						StatementContext::createDeep(),
+						static fn (string $name): bool => $name === $labelName,
+						true,
+					);
 				}
 			}
 
@@ -435,6 +360,93 @@ class NodeScopeResolver
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
 	{
+	}
+
+	/**
+	 * @param Node\Stmt[] $bodyStmts
+	 * @param Closure(string): bool $gotoNameMatcher
+	 */
+	private function resolveBackwardGotoScope(
+		Node $parentNode,
+		array $bodyStmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+		Closure $gotoNameMatcher,
+		bool $mergeBodyScopeEachIteration,
+	): MutatingScope
+	{
+		$bodyScope = $scope;
+		$count = 0;
+		do {
+			$prevScope = $bodyScope;
+			if ($mergeBodyScopeEachIteration) {
+				$bodyScope = $bodyScope->mergeWith($scope);
+			}
+			$tempStorage = $storage->duplicate();
+			$bodyScopeResult = $this->processStmtNodesInternal(
+				$parentNode,
+				$bodyStmts,
+				$bodyScope,
+				$tempStorage,
+				new NoopNodeCallback(),
+				$context,
+			);
+
+			$gotoScope = null;
+			foreach ($bodyScopeResult->getExitPoints() as $ep) {
+				$epStmt = $ep->getStatement();
+				if (!($epStmt instanceof Goto_) || !$gotoNameMatcher($epStmt->name->toString())) {
+					continue;
+				}
+
+				$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
+			}
+
+			if ($gotoScope !== null) {
+				$bodyScope = $scope->mergeWith($gotoScope);
+			}
+
+			if ($bodyScope->equals($prevScope)) {
+				break;
+			}
+
+			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+				$bodyScope = $prevScope->generalizeWith($bodyScope);
+			}
+			$count++;
+		} while ($count < self::LOOP_SCOPE_ITERATIONS);
+
+		return $bodyScope;
+	}
+
+	/**
+	 * @param InternalStatementExitPoint[] $exitPoints
+	 * @return array{MutatingScope, bool, list<InternalStatementExitPoint>}
+	 */
+	private function mergeForwardGotoExitPoints(
+		string $labelName,
+		MutatingScope $scope,
+		bool $alreadyTerminated,
+		array $exitPoints,
+	): array
+	{
+		$newExitPoints = [];
+		foreach ($exitPoints as $exitPoint) {
+			$exitStmt = $exitPoint->getStatement();
+			if ($exitStmt instanceof Goto_ && $exitStmt->name->toString() === $labelName) {
+				if ($alreadyTerminated) {
+					$scope = $exitPoint->getScope();
+					$alreadyTerminated = false;
+				} else {
+					$scope = $scope->mergeWith($exitPoint->getScope());
+				}
+			} else {
+				$newExitPoints[] = $exitPoint;
+			}
+		}
+
+		return [$scope, $alreadyTerminated, $newExitPoints];
 	}
 
 	/**
@@ -549,47 +561,15 @@ class NodeScopeResolver
 
 			$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
 			if ($nestedLabelNames !== null && $context->isTopLevel()) {
-				$originalStorage = $storage;
-				$bodyScope = $scope;
-				$count = 0;
-				do {
-					$prevScope = $bodyScope;
-					$tempStorage = $originalStorage->duplicate();
-					$bodyScopeResult = $this->processStmtNodesInternal(
-						$parentNode,
-						[$stmt],
-						$bodyScope,
-						$tempStorage,
-						new NoopNodeCallback(),
-						$context->enterDeep(),
-					);
-
-					$gotoScope = null;
-					foreach ($bodyScopeResult->getExitPoints() as $ep) {
-						$epStmt = $ep->getStatement();
-						if (!($epStmt instanceof Goto_) || !isset($nestedLabelNames[$epStmt->name->toString()])) {
-							continue;
-						}
-
-						$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-					}
-
-					if ($gotoScope !== null) {
-						$bodyScope = $scope->mergeWith($gotoScope);
-					}
-
-					if ($bodyScope->equals($prevScope)) {
-						break;
-					}
-
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope);
-					}
-					$count++;
-				} while ($count < self::LOOP_SCOPE_ITERATIONS);
-
-				$scope = $bodyScope;
-				$storage = $originalStorage;
+				$scope = $this->resolveBackwardGotoScope(
+					$parentNode,
+					[$stmt],
+					$scope,
+					$storage,
+					$context->enterDeep(),
+					static fn (string $name): bool => isset($nestedLabelNames[$name]),
+					false,
+				);
 			}
 
 			$statementResult = $this->processStmtNode(
@@ -605,70 +585,27 @@ class NodeScopeResolver
 			if ($stmt instanceof Node\Stmt\Label) {
 				$labelName = $stmt->name->toString();
 
-				$newExitPoints = [];
-				foreach ($exitPoints as $exitPoint) {
-					$exitStmt = $exitPoint->getStatement();
-					if ($exitStmt instanceof Goto_ && $exitStmt->name->toString() === $labelName) {
-						if ($alreadyTerminated) {
-							$scope = $exitPoint->getScope();
-							$alreadyTerminated = false;
-						} else {
-							$scope = $scope->mergeWith($exitPoint->getScope());
-						}
-					} else {
-						$newExitPoints[] = $exitPoint;
-					}
-				}
-				$exitPoints = $newExitPoints;
+				[$scope, $alreadyTerminated, $exitPoints] = $this->mergeForwardGotoExitPoints(
+					$labelName,
+					$scope,
+					$alreadyTerminated,
+					$exitPoints,
+				);
 
 				if ($alreadyTerminated) {
 					continue;
 				}
 
 				if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
-					$originalStorage = $storage;
-					$bodyStmts = array_slice($stmts, $i + 1);
-					$bodyScope = $scope;
-					$count = 0;
-					do {
-						$prevScope = $bodyScope;
-						$bodyScope = $bodyScope->mergeWith($scope);
-						$tempStorage = $originalStorage->duplicate();
-						$bodyScopeResult = $this->processStmtNodesInternal(
-							$parentNode,
-							$bodyStmts,
-							$bodyScope,
-							$tempStorage,
-							new NoopNodeCallback(),
-							$context->enterDeep(),
-						);
-
-						$gotoScope = null;
-						foreach ($bodyScopeResult->getExitPoints() as $ep) {
-							$epStmt = $ep->getStatement();
-							if (!($epStmt instanceof Goto_) || $epStmt->name->toString() !== $labelName) {
-								continue;
-							}
-
-							$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-						}
-
-						if ($gotoScope !== null) {
-							$bodyScope = $scope->mergeWith($gotoScope);
-						}
-
-						if ($bodyScope->equals($prevScope)) {
-							break;
-						}
-
-						if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-							$bodyScope = $prevScope->generalizeWith($bodyScope);
-						}
-						$count++;
-					} while ($count < self::LOOP_SCOPE_ITERATIONS);
-
-					$scope = $bodyScope;
-					$storage = $originalStorage;
+					$scope = $this->resolveBackwardGotoScope(
+						$parentNode,
+						array_slice($stmts, $i + 1),
+						$scope,
+						$storage,
+						$context->enterDeep(),
+						static fn (string $name): bool => $name === $labelName,
+						true,
+					);
 				}
 			}
 

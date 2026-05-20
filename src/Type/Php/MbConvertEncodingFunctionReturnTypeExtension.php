@@ -71,7 +71,11 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 				$constantArrays = $fromEncodingArgType->getConstantArrays();
 				if (count($constantArrays) > 0) {
 					foreach ($constantArrays as $constantArray) {
-						if (count($constantArray->getValueTypes()) > 1) {
+						// Unsealed extras can add further encoding candidates
+						// on top of the explicit ones, so the list may hold
+						// 2+ entries (auto-detect → may return false) even when
+						// only one explicit value is present.
+						if (count($constantArray->getValueTypes()) > 1 || $constantArray->isUnsealed()->yes()) {
 							$returnFalseIfCannotDetectEncoding = true;
 							break;
 						}

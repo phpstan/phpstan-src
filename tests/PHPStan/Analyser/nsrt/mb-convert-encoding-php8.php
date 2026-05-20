@@ -8,6 +8,7 @@ namespace MbConvertEncodingPHP8;
  * @param list<string> $stringList
  * @param list<int> $intList
  * @param 'foo'|'bar'|array{foo: string, bar: int, baz: 'foo'}|bool $union
+ * @param array{'FOO', ...<int, string>} $unsealedEncodings
  */
 function test_mb_convert_encoding(
 	mixed $mixed,
@@ -19,6 +20,7 @@ function test_mb_convert_encoding(
 	array $intList,
 	string|array|bool $union,
 	int $int,
+	array $unsealedEncodings,
 ): void {
 	\PHPStan\Testing\assertType('array|string', mb_convert_encoding($mixed, 'UTF-8'));
 	\PHPStan\Testing\assertType('string', mb_convert_encoding($constantString, 'UTF-8'));
@@ -45,4 +47,9 @@ function test_mb_convert_encoding(
 
 	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', 'auto'));
 	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', ' AUTO '));
+
+	// One explicit encoding, but the unsealed extras can add more, so the
+	// from-encoding list may hold 2+ candidates → auto-detect → false is
+	// possible.
+	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', $unsealedEncodings));
 };

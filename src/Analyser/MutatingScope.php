@@ -3776,6 +3776,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()
 						)
 						|| $guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->yes()
+						|| (
+							!array_key_exists($exprString, $theirExpressionTypes)
+							&& $holder->getType()->equals($guardHolder->getType())
+							&& !$guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType())->no()
+						)
 					)
 				) {
 					continue;

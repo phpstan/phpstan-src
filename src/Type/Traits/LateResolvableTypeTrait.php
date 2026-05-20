@@ -680,6 +680,16 @@ trait LateResolvableTypeTrait
 		return $otherType->isSmallerThanOrEqual($result, $phpVersion);
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return $this->resolve()->shiftLeft($otherType);
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return $this->resolve()->getIntegerRanges();
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->resolve()->exponentiate($exponent);

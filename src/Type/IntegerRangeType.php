@@ -647,6 +647,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return null;
 	}
 
+	public function getIntegerRanges(): array
+	{
+		return [$this];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		if ($exponent instanceof UnionType) {

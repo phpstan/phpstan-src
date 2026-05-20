@@ -365,6 +365,19 @@ interface Type
 	/** Models the ** operator. */
 	public function exponentiate(Type $exponent): Type;
 
+	/**
+	 * The integer ranges (int<a, b>) this type is composed of, used by the arithmetic operators to
+	 * read operand bounds polymorphically. Returns the ranges only when the type is composed entirely
+	 * of integer ranges — a constant or any other non-range member yields an empty array (read
+	 * constants separately via getConstantScalarValues()). Bare non-range types return an empty array.
+	 *
+	 * @return list<IntegerRangeType>
+	 */
+	public function getIntegerRanges(): array;
+
+	/** Models the << operator. Returns `ErrorType` for types where the operation is undefined. */
+	public function shiftLeft(Type $otherType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/** @return list<CallableParametersAcceptor> */

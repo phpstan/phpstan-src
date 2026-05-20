@@ -195,6 +195,16 @@ trait ArrayTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

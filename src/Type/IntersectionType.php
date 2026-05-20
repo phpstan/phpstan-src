@@ -1652,6 +1652,16 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::shiftLeft($this, $otherType);
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->exponentiate($exponent));

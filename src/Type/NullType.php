@@ -407,6 +407,16 @@ class NullType implements ConstantScalarType
 		return [$this];
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::shiftLeft($this, $otherType);
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new UnionType(

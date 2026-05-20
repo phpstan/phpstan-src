@@ -104,24 +104,18 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
-use function assert;
-use function ceil;
 use function count;
 use function dirname;
-use function floor;
 use function in_array;
 use function intval;
-use function is_finite;
 use function is_float;
 use function is_int;
 use function is_numeric;
 use function is_string;
 use function max;
-use function min;
 use function sprintf;
 use function str_starts_with;
 use function strtolower;
-use const INF;
 
 #[AutowiredService]
 final class InitializerExprTypeResolver
@@ -1779,66 +1773,18 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getShiftLeftTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getShiftLeftTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\ShiftLeft($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
 		}
 
-		return $this->getShiftLeftTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getShiftLeftTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return $this->getNeverType($leftType, $rightType);
-		}
-
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						$leftNumberType = $leftTypeInner->toNumber();
-						$rightNumberType = $rightTypeInner->toNumber();
-
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-							return new ErrorType();
-						}
-
-						if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-							throw new ShouldNotHappenException();
-						}
-
-						if ($rightNumberType->getValue() < 0) {
-							return new ErrorType();
-						}
-
-						$resultType = $this->getTypeFromValue(intval($leftNumberType->getValue()) << intval($rightNumberType->getValue()));
-						$resultTypes[] = $resultType;
-					}
-				}
-
-				return TypeCombinator::union(...$resultTypes);
-			}
-
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
-		}
-
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
-
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-			return new ErrorType();
-		}
-
-		return $this->resolveCommonMath(new Expr\BinaryOp\ShiftLeft($left, $right), $leftType, $rightType);
+		return $leftType->shiftLeft($rightType);
 	}
 
 	/**
@@ -2053,336 +1999,7 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		$types = TypeCombinator::union($leftType, $rightType);
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
-
-		if (
-			!$types instanceof MixedType
-			&& (
-				$rightNumberType instanceof IntegerRangeType
-				|| $rightNumberType instanceof ConstantIntegerType
-				|| $rightNumberType instanceof UnionType
-			)
-		) {
-			if ($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType) {
-				return $this->integerRangeMath(
-					$leftNumberType,
-					$expr,
-					$rightNumberType,
-				);
-			} elseif ($leftNumberType instanceof UnionType) {
-				$unionParts = [];
-
-				foreach ($leftNumberType->getTypes() as $type) {
-					$numberType = $type->toNumber();
-					if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
-						$unionParts[] = $this->integerRangeMath($numberType, $expr, $rightNumberType);
-					} else {
-						$unionParts[] = $numberType;
-					}
-				}
-
-				$union = TypeCombinator::union(...$unionParts);
-				if ($leftNumberType instanceof BenevolentUnionType) {
-					return TypeUtils::toBenevolentUnion($union)->toNumber();
-				}
-
-				return $union->toNumber();
-			}
-		}
-
-		if (
-			$leftType->isArray()->yes()
-			|| $rightType->isArray()->yes()
-			|| $types->isArray()->yes()
-		) {
-			return new ErrorType();
-		}
-
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-			return new ErrorType();
-		}
-		if ($leftNumberType instanceof NeverType || $rightNumberType instanceof NeverType) {
-			return $this->getNeverType($leftNumberType, $rightNumberType);
-		}
-
-		if (
-			$leftNumberType->isFloat()->yes()
-			|| $rightNumberType->isFloat()->yes()
-		) {
-			if ($expr instanceof Expr\BinaryOp\ShiftLeft || $expr instanceof Expr\BinaryOp\ShiftRight) {
-				return new IntegerType();
-			}
-			return new FloatType();
-		}
-
-		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
-		if ($expr instanceof Expr\BinaryOp\Div) {
-			if ($types instanceof MixedType || $resultType->isInteger()->yes()) {
-				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-			}
-
-			return new UnionType([new IntegerType(), new FloatType()]);
-		}
-
-		if ($types instanceof MixedType
-			|| $leftType instanceof BenevolentUnionType
-			|| $rightType instanceof BenevolentUnionType
-		) {
-			return TypeUtils::toBenevolentUnion($resultType);
-		}
-
-		return $resultType;
-	}
-
-	/**
-	 * @param ConstantIntegerType|IntegerRangeType $range
-	 * @param BinaryOp\Div|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Plus|BinaryOp\ShiftLeft|BinaryOp\ShiftRight $node
-	 */
-	private function integerRangeMath(Type $range, BinaryOp $node, Type $operand): Type
-	{
-		if ($range instanceof IntegerRangeType) {
-			$rangeMin = $range->getMin();
-			$rangeMax = $range->getMax();
-		} else {
-			$rangeMin = $range->getValue();
-			$rangeMax = $rangeMin;
-		}
-
-		if ($operand instanceof UnionType) {
-
-			$unionParts = [];
-
-			foreach ($operand->getTypes() as $type) {
-				$numberType = $type->toNumber();
-				if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
-					$unionParts[] = $this->integerRangeMath($range, $node, $numberType);
-				} else {
-					$unionParts[] = $type->toNumber();
-				}
-			}
-
-			$union = TypeCombinator::union(...$unionParts);
-			if ($operand instanceof BenevolentUnionType) {
-				return TypeUtils::toBenevolentUnion($union)->toNumber();
-			}
-
-			return $union->toNumber();
-		}
-
-		$operand = $operand->toNumber();
-		if ($operand instanceof IntegerRangeType) {
-			$operandMin = $operand->getMin();
-			$operandMax = $operand->getMax();
-		} elseif ($operand instanceof ConstantIntegerType) {
-			$operandMin = $operand->getValue();
-			$operandMax = $operand->getValue();
-		} else {
-			return $operand;
-		}
-
-		if ($node instanceof BinaryOp\Plus) {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin + $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax + $operand->getValue() : null;
-			} else {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin + $operand->getMin() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax + $operand->getMax() : null;
-			}
-		} elseif ($node instanceof BinaryOp\Minus) {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin - $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax - $operand->getValue() : null;
-			} else {
-				if ($rangeMin === $rangeMax && $rangeMin !== null
-					&& ($operand->getMin() === null || $operand->getMax() === null)) {
-					$min = null;
-					$max = $rangeMin;
-				} else {
-					if ($operand->getMin() === null) {
-						$min = null;
-					} elseif ($rangeMin !== null) {
-						if ($operand->getMax() !== null) {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMax();
-						} else {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMin();
-						}
-					} else {
-						$min = null;
-					}
-
-					if ($operand->getMax() === null) {
-						$min = null;
-						$max = null;
-					} elseif ($rangeMax !== null) {
-						if ($rangeMin !== null && $operand->getMin() === null) {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMax();
-							$max = null;
-						} elseif ($operand->getMin() !== null) {
-							/** @var int|float $max */
-							$max = $rangeMax - $operand->getMin();
-						} else {
-							$max = null;
-						}
-					} else {
-						$max = null;
-					}
-
-					if ($min !== null && $max !== null && $min > $max) {
-						[$min, $max] = [$max, $min];
-					}
-				}
-			}
-		} elseif ($node instanceof Expr\BinaryOp\Mul) {
-			$min1 = $rangeMin === 0 || $operandMin === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMin ?? -INF);
-			$min2 = $rangeMin === 0 || $operandMax === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMax ?? INF);
-			$max1 = $rangeMax === 0 || $operandMin === 0 ? 0 : ($rangeMax ?? INF) * ($operandMin ?? -INF);
-			$max2 = $rangeMax === 0 || $operandMax === 0 ? 0 : ($rangeMax ?? INF) * ($operandMax ?? INF);
-
-			$min = min($min1, $min2, $max1, $max2);
-			$max = max($min1, $min2, $max1, $max2);
-
-			if (!is_finite($min)) {
-				$min = null;
-			}
-			if (!is_finite($max)) {
-				$max = null;
-			}
-		} elseif ($node instanceof Expr\BinaryOp\Div) {
-			if ($operand instanceof ConstantIntegerType) {
-				$min = $rangeMin !== null && $operand->getValue() !== 0 ? $rangeMin / $operand->getValue() : null;
-				$max = $rangeMax !== null && $operand->getValue() !== 0 ? $rangeMax / $operand->getValue() : null;
-			} else {
-				// Avoid division by zero when looking for the min and the max by using the closest int
-				$operandMin = $operandMin !== 0 ? $operandMin : 1;
-				$operandMax = $operandMax !== 0 ? $operandMax : -1;
-
-				if (
-					($operandMin < 0 || $operandMin === null)
-					&& ($operandMax > 0 || $operandMax === null)
-				) {
-					$negativeOperand = IntegerRangeType::fromInterval($operandMin, 0);
-					assert($negativeOperand instanceof IntegerRangeType);
-					$positiveOperand = IntegerRangeType::fromInterval(0, $operandMax);
-					assert($positiveOperand instanceof IntegerRangeType);
-
-					$result = TypeCombinator::union(
-						$this->integerRangeMath($range, $node, $negativeOperand),
-						$this->integerRangeMath($range, $node, $positiveOperand),
-					)->toNumber();
-
-					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
-						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-					}
-
-					return $result;
-				}
-				if (
-					($rangeMin < 0 || $rangeMin === null)
-					&& ($rangeMax > 0 || $rangeMax === null)
-				) {
-					$negativeRange = IntegerRangeType::fromInterval($rangeMin, 0);
-					assert($negativeRange instanceof IntegerRangeType);
-					$positiveRange = IntegerRangeType::fromInterval(0, $rangeMax);
-					assert($positiveRange instanceof IntegerRangeType);
-
-					$result = TypeCombinator::union(
-						$this->integerRangeMath($negativeRange, $node, $operand),
-						$this->integerRangeMath($positiveRange, $node, $operand),
-					)->toNumber();
-
-					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
-						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-					}
-
-					return $result;
-				}
-
-				$rangeMinSign = ($rangeMin ?? -INF) <=> 0;
-				$rangeMaxSign = ($rangeMax ?? INF) <=> 0;
-
-				$min1 = $operandMin !== null ? ($rangeMin ?? -INF) / $operandMin : $rangeMinSign * -0.1;
-				$min2 = $operandMax !== null ? ($rangeMin ?? -INF) / $operandMax : $rangeMinSign * 0.1;
-				$max1 = $operandMin !== null ? ($rangeMax ?? INF) / $operandMin : $rangeMaxSign * -0.1;
-				$max2 = $operandMax !== null ? ($rangeMax ?? INF) / $operandMax : $rangeMaxSign * 0.1;
-
-				$min = min($min1, $min2, $max1, $max2);
-				$max = max($min1, $min2, $max1, $max2);
-
-				if ($min === -INF) {
-					$min = null;
-				}
-				if ($max === INF) {
-					$max = null;
-				}
-			}
-
-			if ($min !== null && $max !== null && $min > $max) {
-				[$min, $max] = [$max, $min];
-			}
-
-			if (is_float($min)) {
-				$min = (int) ceil($min);
-			}
-			if (is_float($max)) {
-				$max = (int) floor($max);
-			}
-
-			// invert maximas on division with negative constants
-			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
-					|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
-				&& ($min === null || $max === null)) {
-				[$min, $max] = [$max, $min];
-			}
-
-			if ($min === null && $max === null) {
-				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-			}
-
-			return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
-		} elseif ($node instanceof Expr\BinaryOp\ShiftLeft) {
-			if (!$operand instanceof ConstantIntegerType) {
-				return new IntegerType();
-			}
-			if ($operand->getValue() < 0) {
-				return new ErrorType();
-			}
-			$min = $rangeMin !== null ? intval($rangeMin) << $operand->getValue() : null;
-			$max = $rangeMax !== null ? intval($rangeMax) << $operand->getValue() : null;
-		} elseif ($node instanceof Expr\BinaryOp\ShiftRight) {
-			if (!$operand instanceof ConstantIntegerType) {
-				return new IntegerType();
-			}
-			if ($operand->getValue() < 0) {
-				return new ErrorType();
-			}
-			$min = $rangeMin !== null ? intval($rangeMin) >> $operand->getValue() : null;
-			$max = $rangeMax !== null ? intval($rangeMax) >> $operand->getValue() : null;
-		} else {
-			throw new ShouldNotHappenException();
-		}
-
-		if (is_float($min)) {
-			$min = null;
-		}
-		if (is_float($max)) {
-			$max = null;
-		}
-
-		return IntegerRangeType::fromInterval($min, $max);
+		return ArithmeticOpHelper::commonMath($expr->getOperatorSigil(), $leftType, $rightType);
 	}
 
 	/**

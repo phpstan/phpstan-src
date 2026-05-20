@@ -906,6 +906,16 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return null;
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->getStaticObjectType()->exponentiate($exponent);

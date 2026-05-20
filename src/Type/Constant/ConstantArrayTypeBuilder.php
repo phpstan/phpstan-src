@@ -13,7 +13,6 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function array_filter;
 use function array_map;
 use function array_unique;
@@ -253,7 +252,7 @@ final class ConstantArrayTypeBuilder
 
 			$scalarTypes = $offsetType->toArrayKey()->getConstantScalarTypes();
 			if (count($scalarTypes) === 0) {
-				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
+				$integerRanges = $offsetType->getIntegerRanges();
 				if (count($integerRanges) > 0) {
 					foreach ($integerRanges as $integerRange) {
 						$finiteTypes = $integerRange->getFiniteTypes();

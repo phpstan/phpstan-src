@@ -30,11 +30,12 @@ final class TypeUtils
 	}
 
 	/**
+	 * @deprecated Use Type::getIntegerRanges() instead
 	 * @return list<IntegerRangeType>
 	 */
 	public static function getIntegerRanges(Type $type): array
 	{
-		return self::map(IntegerRangeType::class, $type, false);
+		return $type->getIntegerRanges();
 	}
 
 	/**

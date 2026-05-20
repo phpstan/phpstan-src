@@ -474,7 +474,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 18
+			count: 16
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
@@ -499,18 +499,6 @@ parameters:
 			rawMessage: PHPDoc tag @var with type float|int is not subtype of native type int.
 			identifier: varTag.nativeType
 			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
-			identifier: varTag.type
-			count: 4
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
-			identifier: varTag.type
-			count: 6
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
@@ -884,6 +872,18 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Accessory/OversizedArrayType.php
+
+		-
+			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
+			identifier: varTag.type
+			count: 4
+			path: src/Type/ArithmeticOpHelper.php
+
+		-
+			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
+			identifier: varTag.type
+			count: 6
+			path: src/Type/ArithmeticOpHelper.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'

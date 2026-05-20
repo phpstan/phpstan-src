@@ -540,6 +540,16 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

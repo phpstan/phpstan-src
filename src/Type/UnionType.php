@@ -1315,6 +1315,35 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		// A fully-constant union folds as a whole so the CALCULATE_SCALARS_LIMIT generalization sees
+		// the true cross-product; a union mixing constants and ranges must be mapped member by member,
+		// because getConstantScalarValues() yields nothing once a non-constant member is present.
+		if ($this->getConstantScalarValues() !== []) {
+			return ArithmeticOpHelper::shiftLeft($this, $otherType);
+		}
+
+		return $this->unionTypes(static fn (Type $type): Type => $type->shiftLeft($otherType));
+	}
+
+	public function getIntegerRanges(): array
+	{
+		$ranges = [];
+		foreach ($this->types as $type) {
+			$typeRanges = $type->getIntegerRanges();
+			if ($typeRanges === []) {
+				return [];
+			}
+
+			foreach ($typeRanges as $range) {
+				$ranges[] = $range;
+			}
+		}
+
+		return $ranges;
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->exponentiate($exponent));

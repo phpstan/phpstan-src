@@ -257,6 +257,16 @@ class NonexistentParentClassType implements Type
 		return null;
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

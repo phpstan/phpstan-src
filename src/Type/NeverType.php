@@ -630,6 +630,16 @@ class NeverType implements CompoundType
 		return null;
 	}
 
+	public function shiftLeft(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::shiftLeft($this, $otherType);
+	}
+
+	public function getIntegerRanges(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this;

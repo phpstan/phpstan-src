@@ -2367,7 +2367,9 @@ class NodeScopeResolver
 				} else {
 					$constantName = new Name\FullyQualified($const->name->toString());
 				}
-				$scope = $scope->assignExpression(new ConstFetch($constantName), $scope->getType($const->value), $scope->getNativeType($const->value));
+				$constType = $scope->getType($const->value);
+				$constType = $scope->getConstantExplicitTypeFromConfig($constantName->toString(), $constType);
+				$scope = $scope->assignExpression(new ConstFetch($constantName), $constType, $scope->getNativeType($const->value));
 			}
 		} elseif ($stmt instanceof Node\Stmt\ClassConst) {
 			$hasYield = false;

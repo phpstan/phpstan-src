@@ -10,6 +10,14 @@ define('GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES', null);
 define('GLOBAL_DYNAMIC_EMPTY_ARRAY', []);
 define('GLOBAL_NON_DYNAMIC_EMPTY_ARRAY', []); // not listed in `dynamicConstantNames` NEON config
 
+const GLOBAL_CONST_PURE_CONSTANT = 123;
+const GLOBAL_CONST_DYNAMIC_CONSTANT = false;
+const GLOBAL_CONST_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES = null;
+
+assertType('bool', GLOBAL_CONST_DYNAMIC_CONSTANT);
+assertType('string|null', GLOBAL_CONST_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES);
+assertType('123', GLOBAL_CONST_PURE_CONSTANT);
+
 class DynamicConstantClass
 {
 	const DYNAMIC_CONSTANT_IN_CLASS = 'abcdef';
@@ -48,5 +56,6 @@ class NoDynamicConstantClass
 		assertType('array', DynamicConstantClass::DYNAMIC_EMPTY_ARRAY_NO_PHPDOC);
 		assertType('array', GLOBAL_DYNAMIC_EMPTY_ARRAY);
 		assertType('array{}', GLOBAL_NON_DYNAMIC_EMPTY_ARRAY);
+
 	}
 }

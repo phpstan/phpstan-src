@@ -3,6 +3,7 @@
 namespace Bug13273;
 
 use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertNativeType;
 
 function test(int $param): void
 {
@@ -12,4 +13,7 @@ function test(int $param): void
 	assertType('true', array_key_exists('param', $vars));
 	assertType('true', array_key_exists('local', $vars));
 	assertType('false', array_key_exists('nonexistent', $vars));
+	assertNativeType('true', array_key_exists('param', $vars));
+	assertNativeType('true', array_key_exists('local', $vars));
+	assertNativeType('false', array_key_exists('nonexistent', $vars));
 }

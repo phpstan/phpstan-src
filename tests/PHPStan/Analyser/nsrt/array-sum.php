@@ -264,3 +264,23 @@ function foo32($list)
 {
 	assertType('(float|int)', array_sum($list));
 }
+
+/**
+ * @param array{1, 2, ...<int, int>} $list
+ */
+function foo33($list)
+{
+	// The explicit `1, 2` sum to 3, but the unsealed `<int, int>` extras
+	// can add any number of further ints — the result must include them.
+	assertType('int', array_sum($list));
+}
+
+/**
+ * @param array{1, 2, ...<int, float>} $list
+ */
+function foo34($list)
+{
+	// Zero extras keeps the exact int sum `3`; one-or-more float extras
+	// make it float.
+	assertType('3|float', array_sum($list));
+}

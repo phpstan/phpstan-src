@@ -53,6 +53,7 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArithmeticOpHelper;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -1912,29 +1913,7 @@ final class InitializerExprTypeResolver
 
 	private function optimizeScalarType(Type $type): Type
 	{
-		$types = [];
-		if ($type->isInteger()->yes()) {
-			$types[] = new IntegerType();
-		}
-		if ($type->isString()->yes()) {
-			$types[] = new StringType();
-		}
-		if ($type->isFloat()->yes()) {
-			$types[] = new FloatType();
-		}
-		if ($type->isNull()->yes()) {
-			$types[] = new NullType();
-		}
-
-		if (count($types) === 0) {
-			return new ErrorType();
-		}
-
-		if (count($types) === 1) {
-			return $types[0];
-		}
-
-		return new UnionType($types);
+		return ArithmeticOpHelper::optimizeScalarType($type);
 	}
 
 	/**
@@ -2722,14 +2701,7 @@ final class InitializerExprTypeResolver
 
 	private function getNeverType(Type $leftType, Type $rightType): Type
 	{
-		// make sure we don't lose the explicit flag in the process
-		if ($leftType instanceof NeverType && $leftType->isExplicit()) {
-			return $leftType;
-		}
-		if ($rightType instanceof NeverType && $rightType->isExplicit()) {
-			return $rightType;
-		}
-		return new NeverType();
+		return ArithmeticOpHelper::getNeverType($leftType, $rightType);
 	}
 
 }

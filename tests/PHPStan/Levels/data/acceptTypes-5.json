@@ -130,6 +130,16 @@
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array<callable(): mixed> given.",
+        "line": 577,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array<string> given.",
+        "line": 578,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array<int> given.",
         "line": 579,
         "ignorable": true
@@ -145,6 +155,11 @@
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{foo: 'date', bar: 'date'} given.",
+        "line": 583,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{foo: 'nonexistent'} given.",
         "line": 584,
         "ignorable": true
@@ -152,6 +167,11 @@
     {
         "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{bar: 'date'} given.",
         "line": 585,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, non-empty-array<callable(): mixed> given.",
+        "line": 588,
         "ignorable": true
     },
     {

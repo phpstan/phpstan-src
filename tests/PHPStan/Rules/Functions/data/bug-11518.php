@@ -4,7 +4,7 @@ namespace Bug11518;
 
 /**
  * @param mixed[] $a
- * @return array{thing: mixed}
+ * @return array{thing: mixed, ...}
  * */
 function blah(array $a): array
 {

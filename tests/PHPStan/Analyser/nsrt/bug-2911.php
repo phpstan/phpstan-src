@@ -49,32 +49,32 @@ final class ArrayItemRemoval
 	private function getResultSettings(array $settings): array
 	{
 		$settings = array_merge(self::DEFAULT_SETTINGS, $settings);
-		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffset('remove')", $settings);
+		assertType('array{remove: mixed, limit: mixed, ...<string, mixed>}', $settings);
 
 		if (!is_string($settings['remove'])) {
 			throw $this->configException($settings, 'remove');
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', string)", $settings);
+		assertType('array{remove: string, limit: mixed, ...<string, mixed>}', $settings);
 
 		$settings['remove'] = strtolower($settings['remove']);
 
-		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', lowercase-string)", $settings);
+		assertType('array{remove: lowercase-string, limit: mixed, ...<string, mixed>}', $settings);
 
 		if (!in_array($settings['remove'], ['first', 'last', 'all'], true)) {
 			throw $this->configException($settings, 'remove');
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
+		assertType("array{remove: 'all'|'first'|'last', limit: mixed, ...<string, mixed>}", $settings);
 
 		if (!is_numeric($settings['limit']) || $settings['limit'] < 1) {
 			throw $this->configException($settings, 'limit');
 		}
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('limit', float|int<1, max>|numeric-string)&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
+		assertType("array{remove: 'all'|'first'|'last', limit: float|int<1, max>|numeric-string, ...<string, mixed>}", $settings);
 
 		$settings['limit'] = (int) $settings['limit'];
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('limit', int)&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
+		assertType("array{remove: 'all'|'first'|'last', limit: int, ...<string, mixed>}", $settings);
 
 		return $settings;
 	}
@@ -110,19 +110,19 @@ final class ArrayItemRemoval2
 	{
 		$settings = array_merge(self::DEFAULT_SETTINGS, $settings);
 
-		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffset('remove')", $settings);
+		assertType('array{remove: mixed, limit: mixed, ...<string, mixed>}', $settings);
 
 		if (!is_string($settings['remove'])) {
 			throw new Exception();
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', string)", $settings);
+		assertType('array{remove: string, limit: mixed, ...<string, mixed>}', $settings);
 
 		if (!is_int($settings['limit'])) {
 			throw new Exception();
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('limit', int)&hasOffsetValue('remove', string)", $settings);
+		assertType('array{remove: string, limit: int, ...<string, mixed>}', $settings);
 
 		return $settings;
 	}

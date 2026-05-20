@@ -16,7 +16,6 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
 use function is_string;
@@ -99,10 +98,9 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 			}
 
 			if ($this->checkMissingVarTagTypehint) {
-				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($varTagType) as $iterableType) {
-					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($varTagType) as $iterableTypeDescription) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s has no value type specified in iterable type %s.',
+						'%s has no value type specified in %s.',
 						$identifier,
 						$iterableTypeDescription,
 					))

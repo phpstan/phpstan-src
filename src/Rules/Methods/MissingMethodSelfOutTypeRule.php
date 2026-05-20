@@ -45,10 +45,9 @@ final class MissingMethodSelfOutTypeRule implements Rule
 		$phpDocTagMessage = 'PHPDoc tag @phpstan-self-out';
 
 		$messages = [];
-		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($selfOutType) as $iterableType) {
-			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($selfOutType) as $iterableTypeDescription) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has %s with no value type specified in iterable type %s.',
+				'Method %s::%s() has %s with no value type specified in %s.',
 				$classReflection->getDisplayName(),
 				$methodReflection->getName(),
 				$phpDocTagMessage,

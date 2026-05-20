@@ -188,7 +188,10 @@ function moreTest(bool $bool, int $int) {
 	assertType("'a0'", $a);
 	assertType("'a2'", $b);
 	assertType("'a3'", $c);
-	assertType("1|2|3|4|5|6|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'|'aKey'", $d);
-	assertType("1|2|3|4|5|6|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'|'aKey'", $e);
+	// $d's slot is at $int (general int), so it accumulates every int-keyed
+	// value that has ever been at $array[$int] across the lifetime of the
+	// byref, but never the string-keyed `'key'` slot ($int can't equal 'key').
+	assertType("1|2|3|4|5|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'", $d);
+	assertType("1|2|3|4|5|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'", $e);
 	assertType("'aKey'", $f);
 }

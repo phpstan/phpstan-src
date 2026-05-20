@@ -262,6 +262,10 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				'Interface IteratorAggregate specifies template type TValue of interface Traversable as string but it\'s already specified as CrossCheckInterfaces\Item.',
 				19,
 			],
+			[
+				'Interface IteratorAggregate specifies template type TValue of interface Traversable as array{a: int, ...<int, string>} but it\'s already specified as array{a: int, ...<int, int>}.',
+				67,
+			],
 		]);
 	}
 

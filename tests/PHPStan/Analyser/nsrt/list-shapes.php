@@ -21,6 +21,6 @@ class Foo
 		assertType("array{'a'}", $l3);
 		assertType("array{'a', 'b'}", $l4);
 		assertType("array{0: 'a', 1?: 'b'}", $l5);
-		assertType("array{'a', 'b'}", $l6);
+		assertType("array{'a', 'b', ...}", $l6);
 	}
 }

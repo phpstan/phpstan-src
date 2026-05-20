@@ -1429,27 +1429,27 @@ final class TypeSpecifier
 				continue;
 			}
 
-			// `truncateListToSize` rebuilds the inner array as a list shape
-			// — that's only sound when the *outer* type is definitely a
-			// list. The inner array alone may have `isList()` answer `Maybe`
-			// (e.g. `ArrayType<int<0, max>, T>` inside a
-			// `non-empty-list<T>` intersection), so the gate has to live
-			// here, not on the per-array method.
 			$resultTypes[] = $isList->yes()
 				? $arrayType->truncateListToSize($sizeType)
 				: TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 
 		if ($context->truthy() && $isConstantArray->yes() && $isList->yes()) {
-			$hasOptionalKeys = false;
+			$hasOptionalKeysOrUnsealed = false;
 			foreach ($type->getConstantArrays() as $arrayType) {
-				if ($arrayType->getOptionalKeys() !== []) {
-					$hasOptionalKeys = true;
+				if ($arrayType->getOptionalKeys() !== [] || $arrayType->isUnsealed()->yes()) {
+					// Unsealed CATs can't be narrowed via the
+					// `HasOffsetValueType`-only shortcut below — the
+					// intersection of an unsealed shape with a single-slot
+					// constraint produces `NeverType`. Fall through to
+					// the full builder-based narrowing, which carries the
+					// unsealed slot via the loop above.
+					$hasOptionalKeysOrUnsealed = true;
 					break;
 				}
 			}
 
-			if (!$hasOptionalKeys) {
+			if (!$hasOptionalKeysOrUnsealed) {
 				$argExpr = $countFuncCall->getArgs()[0]->value;
 				$argExprString = $this->exprPrinter->printExpr($argExpr);
 

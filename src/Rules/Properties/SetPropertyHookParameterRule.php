@@ -119,10 +119,9 @@ final class SetPropertyHookParameterRule implements Rule
 			return $errors;
 		}
 
-		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
-			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableTypeDescription) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Set hook for property %s::$%s has parameter $%s with no value type specified in iterable type %s.',
+				'Set hook for property %s::$%s has parameter $%s with no value type specified in %s.',
 				$classReflection->getDisplayName(),
 				$hookReflection->getHookedPropertyName(),
 				$parameter->getName(),

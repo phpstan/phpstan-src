@@ -273,3 +273,26 @@ class Baz
 	}
 
 }
+
+class UnsealedArrayShape
+{
+
+	/**
+	 * @param array{a: int, ...} $a
+	 * @param array{a: int, ...<mixed>} $b
+	 */
+	public function doFoo(array $a, array $b): void
+	{
+
+	}
+
+	/**
+	 * @param non-empty-array{a?: int, b?: int, ...} $a
+	 * @param non-empty-array{a?: int, b?: int, ...<mixed>} $b
+	 */
+	public function doBar(array $a, array $b): void
+	{
+
+	}
+
+}

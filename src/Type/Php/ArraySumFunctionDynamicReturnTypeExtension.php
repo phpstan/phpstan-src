@@ -48,6 +48,18 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 					}
 				}
 
+				$unsealedTypes = $constantArray->getUnsealedTypes();
+				if ($unsealedTypes !== null && $constantArray->isUnsealed()->yes()) {
+					// The unsealed slot holds zero-or-more further values.
+					// Add the zero-extras result (just the explicit sum) as
+					// its own variant so e.g. a float unsealed value doesn't
+					// erase the exact int sum, then extend with the
+					// one-or-more-extras case: explicit sum + value × count.
+					$resultTypes[] = $scope->getType($node);
+					$extrasNode = new Mul(new TypeExpr($unsealedTypes[1]), new TypeExpr(IntegerRangeType::fromInterval(1, null)));
+					$node = new Plus($node, $extrasNode);
+				}
+
 				$resultTypes[] = $scope->getType($node);
 			}
 		} else {

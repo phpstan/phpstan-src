@@ -81,7 +81,7 @@ class IgnoreLexerTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param list<array{string, IgnoreLexer::TOKEN_*}> $expectedTokens
+	 * @param list<array{string, IgnoreLexer::TOKEN_*, int}> $expectedTokens
 	 */
 	#[DataProvider('dataTokenize')]
 	public function testTokenize(string $input, array $expectedTokens): void

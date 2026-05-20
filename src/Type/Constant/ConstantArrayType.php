@@ -4,11 +4,13 @@ namespace PHPStan\Type\Constant;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeUnsealedTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -23,26 +25,39 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\Generic\TemplateStrictMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\StaticTypeFactory;
+use PHPStan\Type\StrictMixedType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -50,6 +65,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -64,6 +80,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
+use function max;
 use function min;
 use function pow;
 use function range;
@@ -72,6 +89,7 @@ use function sprintf;
 use function str_contains;
 use function strtolower;
 use function strtoupper;
+use function usort;
 use const CASE_LOWER;
 use const CASE_UPPER;
 
@@ -92,12 +110,17 @@ class ConstantArrayType implements Type
 
 	private TrinaryLogic $isList;
 
+	/** @var array{Type, Type}|null */
+	private ?array $unsealed; // phpcs:ignore
+
 	/** @var self[]|null */
 	private ?array $allArrays = null;
 
 	private ?Type $iterableKeyType = null;
 
 	private ?Type $iterableValueType = null;
+
+	private ?Type $keyTypesUnion = null;
 
 	/** @var array<int|string, int>|null */
 	private ?array $keyIndexMap = null;
@@ -108,6 +131,7 @@ class ConstantArrayType implements Type
 	 * @param array<int, Type> $valueTypes
 	 * @param list<int> $nextAutoIndexes
 	 * @param int[] $optionalKeys
+	 * @param array{Type, Type}|null $unsealed
 	 */
 	public function __construct(
 		private array $keyTypes,
@@ -115,19 +139,89 @@ class ConstantArrayType implements Type
 		private array $nextAutoIndexes = [0],
 		private array $optionalKeys = [],
 		?TrinaryLogic $isList = null,
+		?array $unsealed = null,
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
 
-		$keyTypesCount = count($this->keyTypes);
-		if ($keyTypesCount === 0) {
-			$isList = TrinaryLogic::createYes();
-		}
-
+		// Fill in `$isList` from the shape when the caller didn't pass one.
+		// For empty CATs the answer derives from the unsealed key type
+		// (no explicit keys to inspect); for non-empty ones the default
+		// is `No` and the caller is expected to assert list-ness via
+		// `makeList()` if appropriate.
 		if ($isList === null) {
-			$isList = TrinaryLogic::createNo();
+			if (count($this->keyTypes) === 0) {
+				if ($unsealed === null) {
+					$isList = TrinaryLogic::createYes();
+				} else {
+					[$unsealedKeyType] = $unsealed;
+					if ($unsealedKeyType instanceof NeverType && $unsealedKeyType->isExplicit()) {
+						$isList = TrinaryLogic::createYes();
+					} elseif ($unsealedKeyType->isInteger()->yes()) {
+						$isList = TrinaryLogic::createMaybe();
+					} else {
+						$isList = TrinaryLogic::createNo();
+					}
+				}
+			} else {
+				$isList = TrinaryLogic::createNo();
+			}
 		}
 		$this->isList = $isList;
+
+		if ($unsealed !== null) {
+			if (in_array($unsealed[0]->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
+				$unsealed[0] = new MixedType();
+			}
+			if ($unsealed[0] instanceof StrictMixedType && !$unsealed[0] instanceof TemplateStrictMixedType) {
+				$unsealed[0] = (new UnionType([new StringType(), new IntegerType()]))->toArrayKey();
+			}
+		} elseif (BleedingEdgeToggle::isBleedingEdge()) {
+			$never = new NeverType(true);
+			$unsealed = [$never, $never];
+		}
+		$this->unsealed = $unsealed;
+	}
+
+	public function isSealed(): TrinaryLogic
+	{
+		return $this->isUnsealed()->negate();
+	}
+
+	public function isUnsealed(): TrinaryLogic
+	{
+		$unsealed = $this->unsealed;
+		if ($unsealed === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		[$keyType] = $unsealed;
+
+		return TrinaryLogic::createFromBoolean(!$keyType instanceof NeverType || !$keyType->isExplicit());
+	}
+
+	/**
+	 * @phpstan-pure
+	 * @return array{Type, Type}|null
+	 */
+	public function getUnsealedTypes(): ?array
+	{
+		return $this->unsealed;
+	}
+
+	/**
+	 * @internal
+	 */
+	public function dropUnsealedTypes(): self
+	{
+		return $this->recreate(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			$this->isList,
+			null,
+		);
 	}
 
 	/**
@@ -135,16 +229,18 @@ class ConstantArrayType implements Type
 	 * @param array<int, Type> $valueTypes
 	 * @param list<int> $nextAutoIndexes
 	 * @param int[] $optionalKeys
+	 * @param array{Type, Type}|null $unsealed
 	 */
 	protected function recreate(
 		array $keyTypes,
 		array $valueTypes,
-		array $nextAutoIndexes = [0],
-		array $optionalKeys = [],
-		?TrinaryLogic $isList = null,
+		array $nextAutoIndexes,
+		array $optionalKeys,
+		?TrinaryLogic $isList,
+		?array $unsealed,
 	): self
 	{
-		return new self($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList);
+		return new self($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $unsealed);
 	}
 
 	public function getConstantArrays(): array
@@ -167,6 +263,16 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			foreach ($unsealedKeyType->getReferencedClasses() as $referencedClass) {
+				$referencedClasses[] = $referencedClass;
+			}
+			foreach ($unsealedValueType->getReferencedClasses() as $referencedClass) {
+				$referencedClasses[] = $referencedClass;
+			}
+		}
+
 		return $referencedClasses;
 	}
 
@@ -185,6 +291,16 @@ class ConstantArrayType implements Type
 			$keyType = new UnionType($this->keyTypes);
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$unsealedKeyType = $this->unsealed[0];
+			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			}
+			$keyType = TypeCombinator::union($keyType, $unsealedKeyType);
+		}
+
 		return $this->iterableKeyType = $keyType;
 	}
 
@@ -194,7 +310,19 @@ class ConstantArrayType implements Type
 			return $this->iterableValueType;
 		}
 
-		return $this->iterableValueType = count($this->valueTypes) > 0 ? TypeCombinator::union(...$this->valueTypes) : new NeverType(true);
+		$valueType = count($this->valueTypes) > 0 ? TypeCombinator::union(...$this->valueTypes) : new NeverType(true);
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$valueType = TypeCombinator::union($valueType, $this->unsealed[1]);
+		}
+
+		return $this->iterableValueType = $valueType;
+	}
+
+	private function getKeyTypesUnion(): Type
+	{
+		return $this->keyTypesUnion ??= count($this->keyTypes) > 0
+			? TypeCombinator::union(...$this->keyTypes)
+			: new NeverType();
 	}
 
 	public function getKeyType(): Type
@@ -209,6 +337,10 @@ class ConstantArrayType implements Type
 
 	public function isConstantValue(): TrinaryLogic
 	{
+		if ($this->isUnsealed()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createYes();
 	}
 
@@ -265,10 +397,22 @@ class ConstantArrayType implements Type
 				continue;
 			}
 
+			if (count($keys) === 0 && $this->isUnsealed()->yes() && $this->unsealed !== null) {
+				// Variant with no explicit keys but real unsealed extras: the
+				// builder's getArray() would degrade this to a general
+				// ArrayType. Construct the CAT directly so the variant keeps
+				// its extras for downstream consumers (e.g. flattenTypes).
+				$arrays[] = new ConstantArrayType([], [], unsealed: $this->unsealed);
+				continue;
+			}
+
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$builder->disableArrayDegradation();
 			foreach ($keys as $i) {
 				$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i]);
+			}
+			if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+				$builder->makeUnsealed($this->unsealed[0], $this->unsealed[1]);
 			}
 
 			$array = $builder->getArray();
@@ -329,16 +473,213 @@ class ConstantArrayType implements Type
 		return in_array($i, $this->optionalKeys, true);
 	}
 
+	public function sortKeys(): self
+	{
+		$indices = array_keys($this->keyTypes);
+		usort($indices, fn (int $a, int $b): int => $this->keyTypes[$a]->getValue() <=> $this->keyTypes[$b]->getValue());
+
+		$newKeyTypes = [];
+		$newValueTypes = [];
+		$indexMap = [];
+		foreach ($indices as $newIdx => $oldIdx) {
+			$newKeyTypes[] = $this->keyTypes[$oldIdx];
+			$newValueTypes[] = $this->valueTypes[$oldIdx];
+			$indexMap[$oldIdx] = $newIdx;
+		}
+
+		$newOptionalKeys = [];
+		foreach ($this->optionalKeys as $oldIdx) {
+			$newOptionalKeys[] = $indexMap[$oldIdx];
+		}
+		sort($newOptionalKeys);
+
+		return $this->recreate(
+			$newKeyTypes,
+			$newValueTypes,
+			$this->nextAutoIndexes,
+			$newOptionalKeys,
+			$this->isList,
+			$this->unsealed,
+		);
+	}
+
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType && !$type instanceof IntersectionType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		if ($type instanceof self && count($this->keyTypes) === 0) {
-			return AcceptsResult::createFromBoolean(count($type->keyTypes) === 0);
+		$isUnsealed = $this->isUnsealed();
+		if (!$isUnsealed->yes()) {
+			if ($type instanceof self && count($this->keyTypes) === 0) {
+				return AcceptsResult::createFromBoolean(count($type->keyTypes) === 0);
+			}
 		}
 
+		$result = $this->checkOurKeys($type, $strictTypes)->and(new AcceptsResult($type->isArray(), []));
+		if ($this->unsealed === null) {
+			if ($type->isOversizedArray()->yes()) {
+				if (!$result->no()) {
+					return AcceptsResult::createYes();
+				}
+			}
+
+			return $result;
+		}
+
+		if ($result->no()) {
+			return $result;
+		}
+
+		[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+
+		if ($isUnsealed->no()) {
+			if (!$type->isConstantArray()->yes()) {
+				return $result->and(AcceptsResult::createNo([
+					'Sealed array shape can only accept a constant array. Extra keys are not allowed.',
+				]));
+			}
+
+			$constantArrays = $type->getConstantArrays();
+			if (count($constantArrays) !== 1) {
+				throw new ShouldNotHappenException('Type with more than one constant array occurred, should have been eliminated with `instanceof CompoundType` above.');
+			}
+
+			$keys = [];
+			foreach ($constantArrays[0]->getKeyTypes() as $otherKeyType) {
+				$keys[$otherKeyType->getValue()] = $otherKeyType;
+			}
+
+			foreach ($this->keyTypes as $keyType) {
+				unset($keys[$keyType->getValue()]);
+			}
+
+			foreach ($keys as $extraKey) {
+				$result = $result->and(AcceptsResult::createNo([
+					sprintf('Sealed array shape does not accept array with extra key %s.', $extraKey->describe(VerbosityLevel::precise())),
+				]));
+			}
+
+			if (!$constantArrays[0]->isUnsealed()->no()) {
+				$result = $result->and(AcceptsResult::createNo([
+					'Sealed array shape does not accept unsealed array shape.',
+				]));
+			}
+
+			return $result;
+		}
+
+		if (!$type->isConstantArray()->yes()) {
+			return $result->and($unsealedKeyType->accepts($type->getIterableKeyType(), $strictTypes))
+				->and($unsealedValueType->accepts($type->getIterableValueType(), $strictTypes));
+		}
+
+		$constantArrays = $type->getConstantArrays();
+		if (count($constantArrays) !== 1) {
+			throw new ShouldNotHappenException('Type with more than one constant array occurred, should have been eliminated with `instanceof CompoundType` above.');
+		}
+
+		$keys = [];
+		$constantArray = $constantArrays[0];
+		foreach ($constantArray->getKeyTypes() as $i => $otherKeyType) {
+			$keys[$otherKeyType->getValue()] = [$i, $otherKeyType];
+		}
+
+		foreach ($this->keyTypes as $keyType) {
+			unset($keys[$keyType->getValue()]);
+		}
+
+		foreach ($keys as [$i, $extraKeyType]) {
+			$acceptsKey = $unsealedKeyType->accepts($extraKeyType, $strictTypes)->decorateReasons(
+				static fn (string $reason) => sprintf(
+					'Unsealed array key type %s does not accept extra key type %s: %s',
+					$unsealedKeyType->describe(VerbosityLevel::value()),
+					$extraKeyType->describe(VerbosityLevel::value()),
+					$reason,
+				),
+			);
+			if (!$acceptsKey->yes() && count($acceptsKey->reasons) === 0) {
+				$acceptsKey = new AcceptsResult($acceptsKey->result, [
+					sprintf(
+						'Unsealed array key type %s does not accept extra key type %s.',
+						$unsealedKeyType->describe(VerbosityLevel::value()),
+						$extraKeyType->describe(VerbosityLevel::value()),
+					),
+				]);
+			}
+			$result = $result->and($acceptsKey);
+
+			$extraValueType = $constantArray->getValueTypes()[$i];
+			$acceptsValue = $unsealedValueType->accepts($extraValueType, $strictTypes)->decorateReasons(
+				static fn (string $reason) => sprintf(
+					'Unsealed array value type %s does not accept extra offset %s with value type %s: %s',
+					$unsealedValueType->describe(VerbosityLevel::value()),
+					$extraKeyType->describe(VerbosityLevel::value()),
+					$extraValueType->describe(VerbosityLevel::value()),
+					$reason,
+				),
+			);
+			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0) {
+				$acceptsValue = new AcceptsResult($acceptsValue->result, [
+					sprintf(
+						'Unsealed array value type %s does not accept extra offset %s with value type %s.',
+						$unsealedValueType->describe(VerbosityLevel::value()),
+						$extraKeyType->describe(VerbosityLevel::value()),
+						$extraValueType->describe(VerbosityLevel::value()),
+					),
+				]);
+			}
+			$result = $result->and($acceptsValue);
+		}
+
+		$otherUnsealed = $constantArray->unsealed;
+		if ($otherUnsealed !== null && !$constantArray->isUnsealed()->no()) {
+			[$otherUnsealedKeyType, $otherUnsealedValueType] = $otherUnsealed;
+
+			$acceptsUnsealedKey = $unsealedKeyType->accepts($otherUnsealedKeyType, $strictTypes)->decorateReasons(
+				static fn (string $reason) => sprintf(
+					'Unsealed array key type %s does not accept unsealed array key type %s: %s',
+					$unsealedKeyType->describe(VerbosityLevel::value()),
+					$otherUnsealedKeyType->describe(VerbosityLevel::value()),
+					$reason,
+				),
+			);
+			if (!$acceptsUnsealedKey->yes() && count($acceptsUnsealedKey->reasons) === 0) {
+				$acceptsUnsealedKey = new AcceptsResult($acceptsUnsealedKey->result, [
+					sprintf(
+						'Unsealed array key type %s does not accept unsealed array key type %s.',
+						$unsealedKeyType->describe(VerbosityLevel::value()),
+						$otherUnsealedKeyType->describe(VerbosityLevel::value()),
+					),
+				]);
+			}
+			$result = $result->and($acceptsUnsealedKey);
+
+			$acceptsUnsealedValue = $unsealedValueType->accepts($otherUnsealedValueType, $strictTypes)->decorateReasons(
+				static fn (string $reason) => sprintf(
+					'Unsealed array value type %s does not accept unsealed array value type %s: %s',
+					$unsealedValueType->describe(VerbosityLevel::value()),
+					$otherUnsealedValueType->describe(VerbosityLevel::value()),
+					$reason,
+				),
+			);
+			if (!$acceptsUnsealedValue->yes() && count($acceptsUnsealedValue->reasons) === 0) {
+				$acceptsUnsealedValue = new AcceptsResult($acceptsUnsealedValue->result, [
+					sprintf(
+						'Unsealed array value type %s does not accept unsealed array value type %s.',
+						$unsealedValueType->describe(VerbosityLevel::value()),
+						$otherUnsealedValueType->describe(VerbosityLevel::value()),
+					),
+				]);
+			}
+			$result = $result->and($acceptsUnsealedValue);
+		}
+
+		return $result;
+	}
+
+	private function checkOurKeys(Type $type, bool $strictTypes): AcceptsResult
+	{
 		$result = AcceptsResult::createYes();
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
@@ -385,26 +726,35 @@ class ConstantArrayType implements Type
 			$result = $result->and($acceptsValue);
 		}
 
-		$result = $result->and(new AcceptsResult($type->isArray(), []));
-		if ($type->isOversizedArray()->yes()) {
-			if (!$result->no()) {
-				return AcceptsResult::createYes();
-			}
-		}
-
 		return $result;
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
+			$thisUnsealedness = $this->isUnsealed();
+			$typeUnsealedness = $type->isUnsealed();
+			$bothDefinite = $this->unsealed !== null && $type->unsealed !== null;
+
 			if (count($this->keyTypes) === 0) {
-				return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+				if (!$bothDefinite) {
+					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+				}
+				if ($thisUnsealedness->no()) {
+					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+				}
+				// $this is unsealed with no known keys — fall through to extras/unsealed-part checks below
 			}
 
 			$results = [];
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
+				if ($bothDefinite && $hasOffset->no() && $typeUnsealedness->yes()) {
+					[$typeUnsealedKey] = $type->unsealed;
+					if (!$typeUnsealedKey->isSuperTypeOf($keyType)->no()) {
+						$hasOffset = TrinaryLogic::createMaybe();
+					}
+				}
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
 						return IsSuperTypeOfResult::createNo();
@@ -416,11 +766,67 @@ class ConstantArrayType implements Type
 					$results[] = IsSuperTypeOfResult::createMaybe();
 				}
 
-				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
+				$otherValueType = $type->getOffsetValueType($keyType);
+				if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
+					[, $typeUnsealedValue] = $type->unsealed;
+					$otherValueType = $typeUnsealedValue;
+				}
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
 				if ($isValueSuperType->no()) {
 					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
 				}
 				$results[] = $isValueSuperType;
+			}
+
+			if ($bothDefinite) {
+				$thisKeyValues = [];
+				foreach ($this->keyTypes as $thisKeyType) {
+					$thisKeyValues[$thisKeyType->getValue()] = true;
+				}
+
+				foreach ($type->getKeyTypes() as $i => $typeKey) {
+					if (array_key_exists($typeKey->getValue(), $thisKeyValues)) {
+						continue;
+					}
+
+					if ($thisUnsealedness->no()) {
+						if (!$type->isOptionalKey($i)) {
+							return IsSuperTypeOfResult::createNo();
+						}
+						$results[] = IsSuperTypeOfResult::createMaybe();
+						continue;
+					}
+
+					[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+					$keyCheck = $thisUnsealedKey->isSuperTypeOf($typeKey);
+					if ($keyCheck->no()) {
+						if ($type->isOptionalKey($i)) {
+							$results[] = IsSuperTypeOfResult::createMaybe();
+							continue;
+						}
+						return IsSuperTypeOfResult::createNo();
+					}
+					$valueCheck = $thisUnsealedValue->isSuperTypeOf($type->getValueTypes()[$i]);
+					if ($valueCheck->no()) {
+						if ($type->isOptionalKey($i)) {
+							$results[] = IsSuperTypeOfResult::createMaybe();
+							continue;
+						}
+						return IsSuperTypeOfResult::createNo();
+					}
+					$results[] = $keyCheck->and($valueCheck);
+				}
+
+				if ($typeUnsealedness->yes()) {
+					if ($thisUnsealedness->no()) {
+						$results[] = IsSuperTypeOfResult::createMaybe();
+					} else {
+						[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+						[$typeUnsealedKey, $typeUnsealedValue] = $type->unsealed;
+						$results[] = $thisUnsealedKey->isSuperTypeOf($typeUnsealedKey);
+						$results[] = $thisUnsealedValue->isSuperTypeOf($typeUnsealedValue);
+					}
+				}
 			}
 
 			return IsSuperTypeOfResult::createYes()->and(...$results);
@@ -497,6 +903,29 @@ class ConstantArrayType implements Type
 			return false;
 		}
 
+		// Both `unsealed === null` (legacy / pre-bleeding-edge, where
+		// `isUnsealed()` answers `Maybe`) and `unsealed === [explicitNever,
+		// explicitNever]` (the fresh bleeding-edge sealed marker, where
+		// `isUnsealed()` answers `No`) mean "no real extras". Treat them as
+		// equivalent here — use `!isUnsealed()->yes()` rather than
+		// `isUnsealed()->no()`, otherwise a legacy-null shape and a
+		// marker-sealed shape compare unequal. Only compare the actual
+		// extras when both sides genuinely have them.
+		$thisHasExtras = $this->isUnsealed()->yes();
+		$otherHasExtras = $type->isUnsealed()->yes();
+		if ($thisHasExtras !== $otherHasExtras) {
+			return false;
+		}
+
+		if ($thisHasExtras && $this->unsealed !== null && $type->unsealed !== null) {
+			if (!$this->unsealed[0]->equals($type->unsealed[0])) {
+				return false;
+			}
+			if (!$this->unsealed[1]->equals($type->unsealed[1])) {
+				return false;
+			}
+		}
+
 		return true;
 	}
 
@@ -567,7 +996,17 @@ class ConstantArrayType implements Type
 	/** @return ConstantArrayTypeAndMethod[] */
 	private function doFindTypeAndMethodNames(bool &$hasNonExistentMethod = false): array
 	{
-		if (count($this->keyTypes) !== 2) {
+		$isUnsealed = $this->isUnsealed()->yes();
+
+		// Sealed: must have exactly the two callable slots, no more, no less.
+		// Unsealed: explicit keys may cover 0, 1, both, or neither — but any
+		// explicit key outside {0, 1} immediately disqualifies, because the
+		// callable shape `[classOrObject, method]` has no room for other
+		// keys.
+		if (!$isUnsealed && count($this->keyTypes) !== 2) {
+			return [];
+		}
+		if (count($this->keyTypes) > 2) {
 			return [];
 		}
 
@@ -579,11 +1018,47 @@ class ConstantArrayType implements Type
 				continue;
 			}
 
-			if (!$keyType->isSuperTypeOf(new ConstantIntegerType(1))->yes()) {
+			if ($keyType->isSuperTypeOf(new ConstantIntegerType(1))->yes()) {
+				$method = $this->valueTypes[$i];
 				continue;
 			}
 
-			$method = $this->valueTypes[$i];
+			// Explicit key is something other than 0 or 1 — not callable.
+			return [];
+		}
+
+		// Try to fill missing callable slots from the unsealed extras: an
+		// unsealed array `array{0: object, ...<int, string>}` *might* turn
+		// into a callable if the actual value carries a `1 => 'method'`
+		// extra. Require that the unsealed key range covers the missing
+		// slot and that the unsealed value type can overlap with the
+		// type required for that slot (object|class-string for key 0,
+		// non-falsy-string for key 1) — otherwise no concrete value of
+		// this CAT can ever be callable.
+		if ($isUnsealed && $this->unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+
+			if ($classOrObject === null) {
+				if ($unsealedKey->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
+					return [];
+				}
+				$expected = TypeCombinator::union(new ObjectWithoutClassType(), new ClassStringType());
+				if ($expected->isSuperTypeOf($unsealedValue)->no()) {
+					return [];
+				}
+				$classOrObject = $unsealedValue;
+			}
+
+			if ($method === null) {
+				if ($unsealedKey->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
+					return [];
+				}
+				$expected = TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType());
+				if ($expected->isSuperTypeOf($unsealedValue)->no()) {
+					return [];
+				}
+				$method = $unsealedValue;
+			}
 		}
 
 		if ($classOrObject === null || $method === null) {
@@ -631,6 +1106,13 @@ class ConstantArrayType implements Type
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 
+			// Unsealed: the actual value may carry extras beyond keys 0/1,
+			// which would void the callable shape. The CAT itself describes
+			// "zero or more extras", so callable-ness is uncertain.
+			if ($isUnsealed) {
+				$has = $has->and(TrinaryLogic::createMaybe());
+			}
+
 			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $methodName->getValue(), $has);
 		}
 
@@ -675,10 +1157,16 @@ class ConstantArrayType implements Type
 
 		$result = TrinaryLogic::createNo();
 		foreach ($this->keyTypes as $i => $keyType) {
+			// PHP coerces decimal-integer strings to int when used as array
+			// keys ("123" → 123), so a non-constant string offset *could* hit
+			// a constant-integer slot. Skip the upgrade when the offset is
+			// definitely a non-decimal-integer string — those stay as strings
+			// and can never collide with an int key.
 			if (
 				$keyType instanceof ConstantIntegerType
 				&& !$offsetType->isString()->no()
 				&& $offsetType->isConstantScalarValue()->no()
+				&& !$offsetType->isDecimalIntegerString()->no()
 			) {
 				return TrinaryLogic::createMaybe();
 			}
@@ -697,12 +1185,26 @@ class ConstantArrayType implements Type
 			$result = TrinaryLogic::createMaybe();
 		}
 
+		// Unsealed extras (zero-or-more additional entries) can never make a
+		// hit definite — they're uncertain by construction. They only matter
+		// when no explicit key matched ($result is No): if the unsealed key
+		// range overlaps the offset, upgrade No → Maybe. Explicit keys take
+		// precedence at any slot they cover (PHP keys are unique), so a
+		// non-No $result already reflects the strongest answer the unsealed
+		// extras could contribute.
+		if ($result->no() && $this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKeyType] = $this->unsealed;
+			if (!$unsealedKeyType->isSuperTypeOf($offsetType)->no()) {
+				$result = TrinaryLogic::createMaybe();
+			}
+		}
+
 		return $result;
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if (count($this->keyTypes) === 0) {
+		if (count($this->keyTypes) === 0 && !$this->isUnsealed()->yes()) {
 			return new ErrorType();
 		}
 
@@ -728,7 +1230,19 @@ class ConstantArrayType implements Type
 			$matchingValueTypes[] = $this->valueTypes[$i];
 		}
 
-		if ($all) {
+		// Unsealed extras describe entries at keys NOT in the explicit set —
+		// PHP array keys are unique, so an explicit key fully owns its slot.
+		// Only include the unsealed value when the offset has parts not
+		// covered by any explicit key AND those parts overlap the unsealed
+		// key range.
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			if (!$this->getKeyTypesUnion()->isSuperTypeOf($offsetType)->yes() && !$unsealedKeyType->isSuperTypeOf($offsetType)->no()) {
+				$matchingValueTypes[] = $unsealedValueType;
+			}
+		}
+
+		if ($all && !$this->isUnsealed()->yes()) {
 			return $this->getIterableValueType();
 		}
 
@@ -816,7 +1330,7 @@ class ConstantArrayType implements Type
 					return new NeverType();
 				}
 
-				return $this->recreate($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);
+				return $this->recreate($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList, $this->unsealed);
 			}
 
 			return $this;
@@ -861,7 +1375,7 @@ class ConstantArrayType implements Type
 				$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
 			}
 
-			return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
+			return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList, $this->unsealed);
 		}
 
 		$optionalKeys = $this->optionalKeys;
@@ -891,7 +1405,7 @@ class ConstantArrayType implements Type
 			return new NeverType();
 		}
 
-		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
+		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList, $this->unsealed);
 	}
 
 	/**
@@ -930,6 +1444,15 @@ class ConstantArrayType implements Type
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
+		// With real unsealed extras, we can't precisely enumerate the
+		// chunks — the source has an unknown number of extras that
+		// could form additional partial or full chunks. Fall back to
+		// the general `list<chunk<sourceValues>>` shape produced by
+		// the trait, which is correct (just less precise).
+		if ($this->isUnsealed()->yes()) {
+			return $this->traitChunkArray($lengthType, $preserveKeys);
+		}
+
 		$biggerOne = IntegerRangeType::fromInterval(1, null);
 		$finiteTypes = $lengthType->getFiniteTypes();
 		if ($biggerOne->isSuperTypeOf($lengthType)->yes() && count($finiteTypes) < self::CHUNK_FINITE_TYPES_LIMIT) {
@@ -975,6 +1498,11 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedValue->toArrayKey(), $valueType);
+		}
+
 		return $builder->getArray();
 	}
 
@@ -991,6 +1519,11 @@ class ConstantArrayType implements Type
 			);
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedValue->toArrayKey(), $unsealedKey);
+		}
+
 		return $builder->getArray();
 	}
 
@@ -1005,6 +1538,18 @@ class ConstantArrayType implements Type
 				continue;
 			}
 			$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i) || !$has->yes());
+		}
+
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			// An unsealed extra at key K survives only if `$other` can
+			// also have key K. Narrow the unsealed key to the intersection
+			// of our extras-range and `$other`'s key type. If they don't
+			// overlap, the unsealed slot is dropped.
+			$narrowedKey = TypeCombinator::intersect($unsealedKey, $otherArraysType->getIterableKeyType());
+			if (!$narrowedKey instanceof NeverType) {
+				$builder->makeUnsealed($narrowedKey, $unsealedValue);
+			}
 		}
 
 		return $builder->getArray();
@@ -1024,6 +1569,14 @@ class ConstantArrayType implements Type
 				? $this->keyTypes[$i]
 				: null;
 			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $this->isOptionalKey($i));
+		}
+
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			// `array_reverse` only permutes positions; the unsealed slot
+			// is "zero or more extras at unspecified positions" both
+			// before and after.
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedKey, $unsealedValue);
 		}
 
 		return $builder->getArray();
@@ -1058,6 +1611,23 @@ class ConstantArrayType implements Type
 			}
 
 			$matches[] = $this->keyTypes[$index];
+		}
+
+		// Unsealed extras can host additional entries beyond the explicit
+		// keys, so the search may also find the needle there. The unsealed
+		// extras' presence is uncertain by definition (zero or more
+		// entries), so they can never make the needle "definitely found"
+		// (`hasIdenticalValue` stays false) — `false` always remains a
+		// possible result.
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			$considerUnsealed = true;
+			if ($strict->yes()) {
+				$considerUnsealed = !$unsealedValueType->isSuperTypeOf($needleType)->no();
+			}
+			if ($considerUnsealed) {
+				$matches[] = $unsealedKeyType;
+			}
 		}
 
 		if (count($matches) > 0) {
@@ -1115,7 +1685,7 @@ class ConstantArrayType implements Type
 
 		if ($length === 0 || ($offset < 0 && $length < 0 && $offset - $length >= 0)) {
 			// 0 / 0, 3 / 0 or e.g. -3 / -3 or -3 / -4 and so on never extract anything
-			return $this->recreate([], []);
+			return $this->recreate([], [], [0], [], null, [new NeverType(true), new NeverType(true)]);
 		}
 
 		if ($length < 0) {
@@ -1176,6 +1746,19 @@ class ConstantArrayType implements Type
 				: null;
 
 			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $isOptional);
+		}
+
+		// When the requested length runs past the explicit keys, the
+		// missing trailing slots could be filled by the source's
+		// unsealed extras (or be absent). Carry the unsealed slot
+		// through so the result still describes those potential extras.
+		if (
+			$this->isUnsealed()->yes()
+			&& $this->unsealed !== null
+			&& $nonOptionalElementsCount < $length
+		) {
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedKey, $unsealedValue);
 		}
 
 		return $builder->getArray();
@@ -1282,6 +1865,16 @@ class ConstantArrayType implements Type
 				);
 			}
 
+			// `array_splice` removes a slice at an explicit offset and
+			// inserts a replacement there. Real unsealed extras live at
+			// positions past the explicit keys, so they're unaffected
+			// by the operation (re-indexing of int keys keeps the
+			// `<int, V>` range intact). Carry the slot through.
+			if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+				[$unsealedKey, $unsealedValue] = $this->unsealed;
+				$builder->makeUnsealed($unsealedKey, $unsealedValue);
+			}
+
 			$builtType = $builder->getArray();
 			if ($allKeysInteger && !$builtType->isList()->yes()) {
 				$builtType = TypeCombinator::intersect($builtType, new AccessoryArrayListType());
@@ -1331,10 +1924,19 @@ class ConstantArrayType implements Type
 			// Unbounded max: probe explicit keys from `$min` onward until
 			// `hasOffsetValueType` answers `no`. Each probe contributes one
 			// optional (or required, when `hasOffsetValueType` is `yes`) slot.
+			$isUnsealed = $this->isUnsealed()->yes();
 			for ($i = $min;; $i++) {
 				$offsetType = new ConstantIntegerType($i);
 				$hasOffset = $this->hasOffsetValueType($offsetType);
 				if ($hasOffset->no()) {
+					break;
+				}
+				// Real unsealed extras make `hasOffsetValueType` answer
+				// `Maybe` for *any* in-range key, so the probe would
+				// otherwise run until `ARRAY_COUNT_LIMIT` bails (slow +
+				// lossy). Stop once the explicit keys are exhausted; the
+				// unsealed slot attached below covers further entries.
+				if ($isUnsealed && !$hasOffset->yes()) {
 					break;
 				}
 				$builderData[] = [$offsetType, $this->getOffsetValueType($offsetType), !$hasOffset->yes()];
@@ -1348,6 +1950,13 @@ class ConstantArrayType implements Type
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		foreach ($builderData as [$offsetType, $valueType, $optional]) {
 			$builder->setOffsetValueType($offsetType, $valueType, $optional);
+		}
+
+		// Carry the unsealed slot through only for the unbounded-max
+		// branch — a bounded-max range caps the result size and the
+		// unsealed extras can't fit.
+		if ($max === null && $this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$builder->makeUnsealed($this->unsealed[0], $this->unsealed[1]);
 		}
 
 		$builtArray = $builder->getArray();
@@ -1389,7 +1998,10 @@ class ConstantArrayType implements Type
 	{
 		$keysCount = count($this->keyTypes);
 		if ($keysCount === 0) {
-			return TrinaryLogic::createNo();
+			if (!$this->isUnsealed()->yes()) {
+				return TrinaryLogic::createNo();
+			}
+			return TrinaryLogic::createMaybe();
 		}
 
 		$optionalKeysCount = count($this->optionalKeys);
@@ -1404,11 +2016,16 @@ class ConstantArrayType implements Type
 	{
 		$optionalKeysCount = count($this->optionalKeys);
 		$totalKeysCount = count($this->getKeyTypes());
-		if ($optionalKeysCount === 0) {
-			return new ConstantIntegerType($totalKeysCount);
+		if (!$this->isUnsealed()->yes()) {
+			if ($optionalKeysCount === 0) {
+				return new ConstantIntegerType($totalKeysCount);
+			}
+			$max = $totalKeysCount;
+		} else {
+			$max = null;
 		}
 
-		return IntegerRangeType::fromInterval($totalKeysCount - $optionalKeysCount, $totalKeysCount);
+		return IntegerRangeType::fromInterval($totalKeysCount - $optionalKeysCount, $max);
 	}
 
 	public function getFirstIterableKeyType(): Type
@@ -1419,6 +2036,16 @@ class ConstantArrayType implements Type
 			if (!$this->isOptionalKey($i)) {
 				break;
 			}
+		}
+
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$unsealedKeyType = $this->unsealed[0];
+			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			}
+			$keyTypes[] = $unsealedKeyType;
 		}
 
 		return TypeCombinator::union(...$keyTypes);
@@ -1434,6 +2061,16 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$unsealedKeyType = $this->unsealed[0];
+			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
+				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+			}
+			$keyTypes[] = $unsealedKeyType;
+		}
+
 		return TypeCombinator::union(...$keyTypes);
 	}
 
@@ -1447,6 +2084,10 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$valueTypes[] = $this->unsealed[1];
+		}
+
 		return TypeCombinator::union(...$valueTypes);
 	}
 
@@ -1458,6 +2099,10 @@ class ConstantArrayType implements Type
 			if (!$this->isOptionalKey($i)) {
 				break;
 			}
+		}
+
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$valueTypes[] = $this->unsealed[1];
 		}
 
 		return TypeCombinator::union(...$valueTypes);
@@ -1479,6 +2124,33 @@ class ConstantArrayType implements Type
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
 			return $this;
+		}
+
+		// With real unsealed extras on the source, the elements being
+		// "removed" might come from the unsealed range rather than from
+		// the trailing explicit keys — the array might have zero extras
+		// (so the trailing explicit keys are popped) or one+ extras (so
+		// they're popped instead, leaving the explicit keys intact).
+		// Encode this by marking the trailing keys as optional and
+		// keeping the unsealed slot in place.
+		if ($this->isUnsealed()->yes()) {
+			$optionalKeys = $this->optionalKeys;
+			$newLength = $keyTypesCount - $length;
+			for ($i = $keyTypesCount - 1; $i >= max($newLength, 0); $i--) {
+				if (in_array($i, $optionalKeys, true)) {
+					continue;
+				}
+				$optionalKeys[] = $i;
+			}
+
+			return $this->recreate(
+				$this->keyTypes,
+				$this->valueTypes,
+				$this->nextAutoIndexes,
+				array_values($optionalKeys),
+				$this->isList,
+				$this->unsealed,
+			);
 		}
 
 		$keyTypes = $this->keyTypes;
@@ -1524,6 +2196,7 @@ class ConstantArrayType implements Type
 			$nextAutoindexes,
 			array_values($optionalKeys),
 			$this->isList,
+			$this->unsealed,
 		);
 	}
 
@@ -1555,6 +2228,16 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $valueType, $isOptional);
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			// `array_shift` removes the *first* element. The explicit
+			// keys precede the unsealed extras in insertion order, so
+			// the shift always lands on an explicit key (when there is
+			// one); the unsealed slot is unaffected. Re-indexing of int
+			// keys doesn't change the unsealed range — it stays `<int, V>`.
+			[$unsealedKey, $unsealedValue] = $this->unsealed;
+			$builder->makeUnsealed($unsealedKey, $unsealedValue);
+		}
+
 		return $builder->getArray();
 	}
 
@@ -1575,7 +2258,8 @@ class ConstantArrayType implements Type
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{
-		if (count($this->keyTypes) === 0) {
+		// No explicit keys and no real extras — actually empty, return as-is.
+		if (count($this->keyTypes) === 0 && !$this->isUnsealed()->yes()) {
 			return $this;
 		}
 
@@ -1600,7 +2284,14 @@ class ConstantArrayType implements Type
 
 				$accessoryTypes[] = new HasOffsetValueType($keyType, $this->valueTypes[$i]->generalize($precision));
 			}
-		} elseif ($keyTypesCount > $optionalKeysCount) {
+		} elseif ($this->isIterableAtLeastOnce()->yes()) {
+			// Previously gated on `keyTypesCount > optionalKeysCount`,
+			// which mishandles "no explicit keys + real unsealed
+			// extras" (`isIterableAtLeastOnce()` answers `Maybe` —
+			// extras might be empty — and correctly skips
+			// `NonEmptyArrayType`). The new gate also covers the
+			// usual sealed-with-required-keys case, so behaviour for
+			// existing CAT shapes is unchanged.
 			$accessoryTypes[] = new NonEmptyArrayType();
 		}
 
@@ -1622,7 +2313,13 @@ class ConstantArrayType implements Type
 			$valueTypes[] = $valueType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
-		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		$unsealed = $this->unsealed;
+		if ($unsealed !== null) {
+			[$unsealedKey, $unsealedValue] = $unsealed;
+			$unsealed = [$unsealedKey, $unsealedValue->generalize(GeneralizePrecision::lessSpecific())];
+		}
+
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $unsealed);
 	}
 
 	private function degradeToGeneralArray(): Type
@@ -1635,7 +2332,7 @@ class ConstantArrayType implements Type
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
-		$keysArray = $this->getKeysOrValuesArray($this->keyTypes);
+		$keysArray = $this->getKeysOrValuesArray($this->keyTypes, $this->unsealed[0] ?? null);
 
 		return new IntersectionType([
 			new ArrayType(
@@ -1648,21 +2345,33 @@ class ConstantArrayType implements Type
 
 	public function getKeysArray(): self
 	{
-		return $this->getKeysOrValuesArray($this->keyTypes);
+		return $this->getKeysOrValuesArray($this->keyTypes, $this->unsealed[0] ?? null);
 	}
 
 	public function getValuesArray(): self
 	{
-		return $this->getKeysOrValuesArray($this->valueTypes);
+		return $this->getKeysOrValuesArray($this->valueTypes, $this->unsealed[1] ?? null);
 	}
 
 	/**
 	 * @param array<int, Type> $types
 	 */
-	private function getKeysOrValuesArray(array $types): self
+	private function getKeysOrValuesArray(array $types, ?Type $unsealedSourceType): self
 	{
 		$count = count($types);
 		$autoIndexes = range($count - count($this->optionalKeys), $count);
+
+		// The result is always a list — the source's keys/values are
+		// numbered sequentially. The new unsealed slot (if the source
+		// has real extras) describes "zero or more extras at int
+		// positions >= 0 whose values are the source's unsealed
+		// key/value type". `int<0, max>` is the conventional unsealed
+		// key for list-shaped extras; it also enables the short-form
+		// `<value>` describe.
+		$resultUnsealed = null;
+		if ($this->isUnsealed()->yes() && $unsealedSourceType !== null) {
+			$resultUnsealed = [IntegerRangeType::createAllGreaterThanOrEqualTo(0), $unsealedSourceType];
+		}
 
 		if ($this->isList->yes()) {
 			// Optimized version for lists: Assume that if a later key exists, then earlier keys also exist.
@@ -1670,7 +2379,7 @@ class ConstantArrayType implements Type
 				static fn (int $i): ConstantIntegerType => new ConstantIntegerType($i),
 				array_keys($types),
 			);
-			return $this->recreate($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
+			return $this->recreate($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $resultUnsealed);
 		}
 
 		$keyTypes = [];
@@ -1699,7 +2408,7 @@ class ConstantArrayType implements Type
 			$maxIndex++;
 		}
 
-		return $this->recreate($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes());
+		return $this->recreate($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes(), $resultUnsealed);
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -1742,6 +2451,23 @@ class ConstantArrayType implements Type
 				$items = array_slice($items, 0, self::DESCRIBE_LIMIT);
 				$values = array_slice($values, 0, self::DESCRIBE_LIMIT);
 				$append = ', ...';
+			}
+
+			if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+				if (count($items) > 0) {
+					$append .= ', ';
+				}
+				$append .= '...';
+				$keyDescription = $this->unsealed[0]->describe(VerbosityLevel::precise());
+				$isMixedKeyType = $this->unsealed[0] instanceof MixedType && $keyDescription === 'mixed' && !$this->unsealed[0]->isExplicitMixed();
+				$isMixedItemType = $this->unsealed[1] instanceof MixedType && $this->unsealed[1]->describe(VerbosityLevel::precise()) === 'mixed' && !$this->unsealed[1]->isExplicitMixed();
+				if ($isMixedKeyType || ($this->isList()->yes() && $keyDescription === 'int<0, max>')) {
+					if (!$isMixedItemType) {
+						$append .= sprintf('<%s>', $this->unsealed[1]->describe($level));
+					}
+				} else {
+					$append .= sprintf('<%s, %s>', $this->unsealed[0]->describe($level), $this->unsealed[1]->describe($level));
+				}
 			}
 
 			return sprintf(
@@ -1792,6 +2518,43 @@ class ConstantArrayType implements Type
 				$typeMap = $typeMap->union($valueType->inferTemplateTypes($receivedValueType));
 			}
 
+			$unsealed = $this->getUnsealedTypes();
+			if ($unsealed !== null) {
+				[$unsealedKeyType, $unsealedValueType] = $unsealed;
+
+				// Received's explicit keys not in $this's explicit keys are
+				// candidates for matching $this's unsealed extras pattern.
+				// Only contribute when the key type matches; mismatched explicit
+				// keys are extra entries the parameter wouldn't accept anyway,
+				// surfaced by the regular argument-type check.
+				$receivedKeyTypes = $receivedType->getKeyTypes();
+				$receivedValueTypes = $receivedType->getValueTypes();
+				foreach ($receivedKeyTypes as $j => $receivedKeyType) {
+					if ($this->hasOffsetValueType($receivedKeyType)->yes()) {
+						continue;
+					}
+					if (!$unsealedKeyType->isSuperTypeOf($receivedKeyType)->yes()) {
+						continue;
+					}
+					$typeMap = $typeMap->union($unsealedKeyType->inferTemplateTypes($receivedKeyType));
+					$typeMap = $typeMap->union($unsealedValueType->inferTemplateTypes($receivedValueTypes[$j]));
+				}
+
+				// Received's own unsealed extras describe "all the rest" — when
+				// the key type doesn't fit $this's unsealed key pattern there
+				// is no valid template assignment, so force NEVER.
+				$receivedUnsealed = $receivedType->getUnsealedTypes();
+				if ($receivedUnsealed !== null) {
+					[$receivedUnsealedKey, $receivedUnsealedValue] = $receivedUnsealed;
+					if ($unsealedKeyType->isSuperTypeOf($receivedUnsealedKey)->no()) {
+						$typeMap = $typeMap->union($unsealedValueType->inferTemplateTypes(new NeverType()));
+					} else {
+						$typeMap = $typeMap->union($unsealedKeyType->inferTemplateTypes($receivedUnsealedKey));
+						$typeMap = $typeMap->union($unsealedValueType->inferTemplateTypes($receivedUnsealedValue));
+					}
+				}
+			}
+
 			return $typeMap;
 		}
 
@@ -1818,6 +2581,16 @@ class ConstantArrayType implements Type
 
 		foreach ($this->valueTypes as $type) {
 			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		if ($this->unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			foreach ($unsealedKeyType->getReferencedTemplateTypes($variance) as $reference) {
+				$references[] = $reference;
+			}
+			foreach ($unsealedValueType->getReferencedTemplateTypes($variance) as $reference) {
 				$references[] = $reference;
 			}
 		}
@@ -1864,11 +2637,21 @@ class ConstantArrayType implements Type
 			$valueTypes[] = $transformedValueType;
 		}
 
+		$unsealed = $this->unsealed;
+		if ($unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $unsealed;
+			$transformedUnsealedValueType = $cb($unsealedValueType);
+			if ($transformedUnsealedValueType !== $unsealedValueType) {
+				$stillOriginal = false;
+				$unsealed = [$unsealedKeyType, $transformedUnsealedValueType];
+			}
+		}
+
 		if ($stillOriginal) {
 			return $this;
 		}
 
-		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $unsealed);
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
@@ -1890,14 +2673,103 @@ class ConstantArrayType implements Type
 			$valueTypes[] = $transformedValueType;
 		}
 
+		$unsealed = $this->unsealed;
+		if ($unsealed !== null) {
+			[$unsealedKeyType, $unsealedValueType] = $unsealed;
+			$transformedUnsealedValueType = $cb($unsealedValueType, $right->getIterableValueType());
+			if ($transformedUnsealedValueType !== $unsealedValueType) {
+				$stillOriginal = false;
+				$unsealed = [$unsealedKeyType, $transformedUnsealedValueType];
+			}
+		}
+
 		if ($stillOriginal) {
 			return $this;
 		}
 
-		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $unsealed);
 	}
 
 	public function isKeysSupersetOf(self $otherArray): bool
+	{
+		if ($this->unsealed === null || $otherArray->unsealed === null) {
+			return $this->legacyIsKeysSupersetOf($otherArray);
+		}
+
+		[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+		[$otherUnsealedKey, $otherUnsealedValue] = $otherArray->unsealed;
+		$thisHasExtras = $this->isUnsealed()->yes();
+		$otherHasExtras = $otherArray->isUnsealed()->yes();
+
+		$otherHasRequiredKeys = false;
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			if ($otherArray->isOptionalKey($j)) {
+				continue;
+			}
+			$otherHasRequiredKeys = true;
+			break;
+		}
+
+		// Sealed empty $other (no keys, no extras): absorbing it is lossless iff $this
+		// already accepts []. i.e., all of $this's known keys are optional. Otherwise
+		// merge would add [] as a new instance.
+		if (!$otherHasRequiredKeys && !$otherHasExtras && count($otherArray->keyTypes) === 0) {
+			foreach ($this->keyTypes as $i => $keyType) {
+				if (!$this->isOptionalKey($i)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// With real unsealed extras on both sides that can absorb each other's
+		// required keys, merging is acceptable regardless of which keys overlap.
+		if ($thisHasExtras && $otherHasExtras) {
+			return true;
+		}
+
+		// Asymmetric extras: one side has real extras that can absorb the other's keys.
+		if ($thisHasExtras) {
+			if ($this->legacyIsKeysSupersetOf($otherArray)) {
+				return true;
+			}
+			foreach ($otherArray->keyTypes as $j => $keyType) {
+				if ($otherArray->isOptionalKey($j)) {
+					continue;
+				}
+				if ($thisUnsealedKey->isSuperTypeOf($keyType)->no()) {
+					return false;
+				}
+				if ($thisUnsealedValue->isSuperTypeOf($otherArray->valueTypes[$j])->no()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		if ($otherHasExtras) {
+			if ($this->legacyIsKeysSupersetOf($otherArray)) {
+				return true;
+			}
+			foreach ($this->keyTypes as $i => $keyType) {
+				if ($this->isOptionalKey($i)) {
+					continue;
+				}
+				if ($otherUnsealedKey->isSuperTypeOf($keyType)->no()) {
+					return false;
+				}
+				if ($otherUnsealedValue->isSuperTypeOf($this->valueTypes[$i])->no()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		// Both sealed: fall back to the legacy key/value shape check.
+		return $this->legacyIsKeysSupersetOf($otherArray);
+	}
+
+	private function legacyIsKeysSupersetOf(self $otherArray): bool
 	{
 		$keyTypesCount = count($this->keyTypes);
 		$otherKeyTypesCount = count($otherArray->keyTypes);
@@ -1957,6 +2829,114 @@ class ConstantArrayType implements Type
 	public function mergeWith(self $otherArray): self
 	{
 		// only call this after verifying isKeysSupersetOf, or if losing tagged unions is not an issue
+		if ($this->unsealed === null || $otherArray->unsealed === null) {
+			return $this->legacyMergeWith($otherArray);
+		}
+
+		[$thisUnsealedKey, $thisUnsealedValue] = $this->unsealed;
+		[$otherUnsealedKey, $otherUnsealedValue] = $otherArray->unsealed;
+
+		$mergedUnsealedKey = TypeCombinator::union($thisUnsealedKey, $otherUnsealedKey);
+		$mergedUnsealedValue = TypeCombinator::union($thisUnsealedValue, $otherUnsealedValue);
+
+		$absorbIntoExtras = static function (Type $keyType, Type $valueType) use (&$mergedUnsealedKey, &$mergedUnsealedValue): void {
+			$mergedUnsealedKey = TypeCombinator::union($mergedUnsealedKey, $keyType);
+			$mergedUnsealedValue = TypeCombinator::union($mergedUnsealedValue, $valueType);
+		};
+
+		$canAbsorb = static function (self $side, Type $keyType, Type $valueType): bool {
+			if (!$side->isUnsealed()->yes()) {
+				return false;
+			}
+			if ($side->unsealed === null) {
+				return false;
+			}
+			[$sideUnsealedKey, $sideUnsealedValue] = $side->unsealed;
+			if ($sideUnsealedKey->isSuperTypeOf($keyType)->no()) {
+				return false;
+			}
+			if ($sideUnsealedValue->isSuperTypeOf($valueType)->no()) {
+				return false;
+			}
+			return true;
+		};
+
+		$keyTypes = [];
+		$valueTypes = [];
+		$optionalKeys = [];
+		$nextAutoIndexes = [0];
+
+		$otherKeyIndexMap = $otherArray->getKeyIndexMap();
+		$processed = [];
+
+		foreach ($this->keyTypes as $i => $keyType) {
+			$keyValue = $keyType->getValue();
+			$processed[$keyValue] = true;
+			$valueType = $this->valueTypes[$i];
+
+			if (array_key_exists($keyValue, $otherKeyIndexMap)) {
+				$j = $otherKeyIndexMap[$keyValue];
+				$otherValueType = $otherArray->valueTypes[$j];
+				$mergedValue = TypeCombinator::union($valueType, $otherValueType);
+				$optional = $this->isOptionalKey($i) || $otherArray->isOptionalKey($j);
+
+				$keyTypes[] = $keyType;
+				$valueTypes[] = $mergedValue;
+				if ($optional) {
+					$optionalKeys[] = count($keyTypes) - 1;
+				}
+				continue;
+			}
+
+			if ($canAbsorb($otherArray, $keyType, $valueType)) {
+				$absorbIntoExtras($keyType, $valueType);
+				continue;
+			}
+
+			$keyTypes[] = $keyType;
+			$valueTypes[] = $valueType;
+			$optionalKeys[] = count($keyTypes) - 1;
+		}
+
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			$keyValue = $keyType->getValue();
+			if (array_key_exists($keyValue, $processed)) {
+				continue;
+			}
+			$valueType = $otherArray->valueTypes[$j];
+
+			if ($canAbsorb($this, $keyType, $valueType)) {
+				$absorbIntoExtras($keyType, $valueType);
+				continue;
+			}
+
+			$keyTypes[] = $keyType;
+			$valueTypes[] = $valueType;
+			$optionalKeys[] = count($keyTypes) - 1;
+		}
+
+		$resultUnsealed = [$mergedUnsealedKey, $mergedUnsealedValue];
+
+		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
+		sort($nextAutoIndexes);
+
+		$optionalKeys = array_values(array_unique($optionalKeys));
+
+		/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
+		$keyTypes = $keyTypes;
+
+		return $this->recreate(
+			$keyTypes,
+			$valueTypes,
+			$nextAutoIndexes,
+			$optionalKeys,
+			$this->isList->and($otherArray->isList),
+			$resultUnsealed,
+		);
+	}
+
+	private function legacyMergeWith(self $otherArray): self
+	{
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
 		foreach ($this->keyTypes as $i => $keyType) {
@@ -1977,7 +2957,7 @@ class ConstantArrayType implements Type
 		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
-		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList));
+		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList), $this->unsealed);
 	}
 
 	/**
@@ -2033,10 +3013,39 @@ class ConstantArrayType implements Type
 			}
 
 			if (count($this->optionalKeys) !== count($optionalKeys)) {
-				return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList);
+				return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList, $this->unsealed);
 			}
 
-			break;
+			return $this;
+		}
+
+		// Offset isn't in the explicit set. If the unsealed extras' key range
+		// covers it (e.g. `array{a: int, ...<string, float>}` narrowing on
+		// `array_key_exists('b', $arr)`), promote it into the explicit set as
+		// a required slot with the unsealed value type. The unsealed extras
+		// stay around — additional entries at other matching keys are still
+		// possible.
+		if (
+			$this->isUnsealed()->yes()
+			&& $this->unsealed !== null
+			&& ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType)
+		) {
+			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			if (!$unsealedKeyType->isSuperTypeOf($offsetType)->no()) {
+				$keyTypes = $this->keyTypes;
+				$valueTypes = $this->valueTypes;
+				$keyTypes[] = $offsetType;
+				$valueTypes[] = $unsealedValueType;
+
+				return $this->recreate(
+					$keyTypes,
+					$valueTypes,
+					$this->nextAutoIndexes,
+					$this->optionalKeys,
+					TrinaryLogic::createNo(),
+					$this->unsealed,
+				);
+			}
 		}
 
 		return $this;
@@ -2052,7 +3061,7 @@ class ConstantArrayType implements Type
 			return new NeverType();
 		}
 
-		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
+		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);
 	}
 
 	public function makeListMaybe(): Type
@@ -2067,6 +3076,7 @@ class ConstantArrayType implements Type
 			$this->nextAutoIndexes,
 			$this->optionalKeys,
 			TrinaryLogic::createMaybe(),
+			$this->unsealed,
 		);
 	}
 
@@ -2077,12 +3087,17 @@ class ConstantArrayType implements Type
 			$newValueTypes[] = $cb($valueType);
 		}
 
+		$newUnsealed = $this->unsealed === null
+			? null
+			: [$this->unsealed[0], $cb($this->unsealed[1])];
+
 		return $this->recreate(
 			$this->keyTypes,
 			$newValueTypes,
 			$this->nextAutoIndexes,
 			$this->optionalKeys,
 			$this->isList,
+			$newUnsealed,
 		);
 	}
 
@@ -2108,6 +3123,7 @@ class ConstantArrayType implements Type
 			$this->nextAutoIndexes,
 			range(0, $keyCount - 1),
 			$this->isList,
+			$this->unsealed,
 		);
 	}
 
@@ -2122,6 +3138,11 @@ class ConstantArrayType implements Type
 			}
 			$builder->setOffsetValueType($newKeyType, $this->valueTypes[$i], $this->isOptionalKey($i));
 		}
+
+		if ($this->unsealed !== null) {
+			$builder->makeUnsealed(self::foldUnsealedKeyCase($this->unsealed[0], $case), $this->unsealed[1]);
+		}
+
 		$result = $builder->getArray();
 		if ($this->isList()->yes()) {
 			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
@@ -2146,6 +3167,13 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $value, $this->isOptionalKey($i));
 		}
 
+		if ($this->unsealed !== null) {
+			$unsealedValue = TypeCombinator::remove($this->unsealed[1], $falseyTypes);
+			if (!$unsealedValue instanceof NeverType) {
+				$builder->makeUnsealed($this->unsealed[0], $unsealedValue);
+			}
+		}
+
 		return $builder->getArray();
 	}
 
@@ -2161,6 +3189,57 @@ class ConstantArrayType implements Type
 		return TypeCombinator::union(
 			new ConstantStringType(strtolower($type->getValue())),
 			new ConstantStringType(strtoupper($type->getValue())),
+		);
+	}
+
+	private static function foldUnsealedKeyCase(Type $key, ?int $case): Type
+	{
+		if ($key instanceof ConstantStringType) {
+			return self::foldConstantStringKeyCase($key, $case);
+		}
+
+		if ($key instanceof UnionType) {
+			$folded = [];
+			foreach ($key->getTypes() as $innerKey) {
+				$folded[] = self::foldUnsealedKeyCase($innerKey, $case);
+			}
+
+			return TypeCombinator::union(...$folded);
+		}
+
+		// `array_change_key_case` only folds string keys — int keys
+		// (e.g. `...<int, ...>`) pass through unchanged.
+		if (!$key->isString()->yes()) {
+			return $key;
+		}
+
+		// Rebuild from a clean `string` plus the non-case accessories that
+		// case-folding preserves (length is unchanged, so numeric / non-
+		// falsy / non-empty all survive). Any prior lowercase/uppercase
+		// accessory is dropped — matches the `ArrayType::changeKeyCaseArray`
+		// behavior where `strtoupper(lowercase-string)` reads as
+		// `uppercase-string`, not the contradictory intersection.
+		$preserved = [new StringType()];
+		if ($key->isNumericString()->yes()) {
+			$preserved[] = new AccessoryNumericStringType();
+		} elseif ($key->isNonFalsyString()->yes()) {
+			$preserved[] = new AccessoryNonFalsyStringType();
+		} elseif ($key->isNonEmptyString()->yes()) {
+			$preserved[] = new AccessoryNonEmptyStringType();
+		}
+
+		if ($case === CASE_LOWER) {
+			return new IntersectionType([...$preserved, new AccessoryLowercaseStringType()]);
+		}
+		if ($case === CASE_UPPER) {
+			return new IntersectionType([...$preserved, new AccessoryUppercaseStringType()]);
+		}
+
+		// `null` (PHP <8.4 / unspecified) yields lower- or upper-case
+		// keys; record both as a union.
+		return TypeCombinator::union(
+			new IntersectionType([...$preserved, new AccessoryLowercaseStringType()]),
+			new IntersectionType([...$preserved, new AccessoryUppercaseStringType()]),
 		);
 	}
 
@@ -2204,6 +3283,33 @@ class ConstantArrayType implements Type
 			);
 		}
 
+		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
+			$unsealedKeyTypeDescription = $this->unsealed[0]->describe(VerbosityLevel::precise());
+			$isMixedUnsealedKeyType = $this->unsealed[0] instanceof MixedType && $unsealedKeyTypeDescription === 'mixed' && !$this->unsealed[0]->isExplicitMixed();
+			$isMixedUnsealedItemType = $this->unsealed[1] instanceof MixedType && $this->unsealed[1]->describe(VerbosityLevel::precise()) === 'mixed' && !$this->unsealed[1]->isExplicitMixed();
+			if ($isMixedUnsealedKeyType || ($this->isList()->yes() && $unsealedKeyTypeDescription === 'int<0, max>')) {
+				if ($isMixedUnsealedItemType) {
+					return ArrayShapeNode::createUnsealed(
+						$exportValuesOnly ? $values : $items,
+						null,
+						$this->shouldBeDescribedAsAList() ? ArrayShapeNode::KIND_LIST : ArrayShapeNode::KIND_ARRAY,
+					);
+				}
+
+				return ArrayShapeNode::createUnsealed(
+					$exportValuesOnly ? $values : $items,
+					new ArrayShapeUnsealedTypeNode($this->unsealed[1]->toPhpDocNode(), null),
+					$this->shouldBeDescribedAsAList() ? ArrayShapeNode::KIND_LIST : ArrayShapeNode::KIND_ARRAY,
+				);
+			}
+
+			return ArrayShapeNode::createUnsealed(
+				$exportValuesOnly ? $values : $items,
+				new ArrayShapeUnsealedTypeNode($this->unsealed[1]->toPhpDocNode(), $this->unsealed[0]->toPhpDocNode()),
+				ArrayShapeNode::KIND_ARRAY,
+			);
+		}
+
 		return ArrayShapeNode::createSealed(
 			$exportValuesOnly ? $values : $items,
 			$this->shouldBeDescribedAsAList() ? ArrayShapeNode::KIND_LIST : ArrayShapeNode::KIND_ARRAY,
@@ -2219,6 +3325,10 @@ class ConstantArrayType implements Type
 
 	public function getFiniteTypes(): array
 	{
+		if ($this->isUnsealed()->yes()) {
+			return [];
+		}
+
 		$limit = InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT;
 
 		// Build finite array types incrementally, processing one key at a time.
@@ -2277,6 +3387,15 @@ class ConstantArrayType implements Type
 			}
 
 			return true;
+		}
+
+		if ($this->unsealed !== null) {
+			if ($this->unsealed[0]->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+			if ($this->unsealed[1]->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
 		}
 
 		return false;

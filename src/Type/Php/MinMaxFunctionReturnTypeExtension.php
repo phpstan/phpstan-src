@@ -128,6 +128,14 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 					$argumentTypes[] = $innerType;
 				}
 
+				$unsealedTypes = $constArrayType->getUnsealedTypes();
+				if ($unsealedTypes !== null && $constArrayType->isUnsealed()->yes()) {
+					// Unsealed extras can hold further values, so the min/max
+					// must also range over the unsealed value type — otherwise
+					// the explicit entries would be reported as the answer.
+					$argumentTypes[] = $unsealedTypes[1];
+				}
+
 				$resultTypes[] = $this->processType($functionName, $argumentTypes);
 			}
 

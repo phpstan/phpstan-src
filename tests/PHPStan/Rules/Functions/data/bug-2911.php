@@ -25,7 +25,7 @@ function foo2(array $array): void {
 
 
 /**
- * @param array{bar: string} $array
+ * @param array{bar: string, ...} $array
  */
 function bar(array $array): void {
 }

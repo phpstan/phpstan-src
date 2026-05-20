@@ -75,6 +75,13 @@ final class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		}
 
 		if ($type instanceof ConstantArrayType) {
+			// Unsealed extras are unknown further variable names that can't
+			// be enumerated — bail so the caller falls back to the general
+			// `compact()` signature.
+			if ($type->isUnsealed()->yes()) {
+				return null;
+			}
+
 			$result = [];
 			foreach ($type->getValueTypes() as $valueType) {
 				$constantStrings = $this->findConstantStrings($valueType);

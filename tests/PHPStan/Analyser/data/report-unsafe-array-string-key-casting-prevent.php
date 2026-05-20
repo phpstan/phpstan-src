@@ -89,3 +89,41 @@ class FooNonDecimalIntString
 	}
 
 }
+
+class Unsealed
+{
+
+	/**
+	 * @param array{a: int, ...<string, self>} $a
+	 */
+	public function doFoo(array $a): void
+	{
+		assertType('array{a: int, ...<non-decimal-int-string, ReportUnsafeArrayStringKeyCastingPrevent\Unsealed>}', $a);
+		foreach ($a as $k => $v) {
+			assertType('non-decimal-int-string', $k);
+		}
+	}
+
+	/**
+	 * @param array{a: int, ...<self>} $a
+	 */
+	public function doBar(array $a): void
+	{
+		assertType('array{a: int, ...<ReportUnsafeArrayStringKeyCastingPrevent\Unsealed>}', $a);
+		foreach ($a as $k => $v) {
+			assertType('(int|non-decimal-int-string)', $k);
+		}
+	}
+
+	/**
+	 * @param array{a: int, ...<int|string, self>} $a
+	 */
+	public function doBaz(array $a): void
+	{
+		assertType('array{a: int, ...<int|non-decimal-int-string, ReportUnsafeArrayStringKeyCastingPrevent\Unsealed>}', $a);
+		foreach ($a as $k => $v) {
+			assertType('int|non-decimal-int-string', $k);
+		}
+	}
+
+}

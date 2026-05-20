@@ -118,6 +118,35 @@ final class ArrayColumnHelper
 			$builder->setOffsetValueType($keyType, $valueType, $arrayType->isOptionalKey($i));
 		}
 
+		if ($arrayType->isUnsealed()->yes()) {
+			$unsealedTypes = $arrayType->getUnsealedTypes();
+			if ($unsealedTypes !== null) {
+				[$unsealedValueType, $unsealedCertainty] = $this->getOffsetOrProperty($unsealedTypes[1], $columnType, $scope);
+				if (!$unsealedCertainty->yes()) {
+					return null;
+				}
+				if (!$unsealedValueType instanceof NeverType) {
+					if (!$indexType->isNull()->yes()) {
+						[$unsealedKeyFromIndex, $unsealedKeyCertainty] = $this->getOffsetOrProperty($unsealedTypes[1], $indexType, $scope);
+						if ($unsealedKeyFromIndex instanceof NeverType) {
+							$unsealedKey = $unsealedTypes[0];
+						} elseif ($unsealedKeyCertainty->yes()) {
+							$unsealedKey = $this->castToArrayKeyType($unsealedKeyFromIndex);
+						} else {
+							$unsealedKey = $this->castToArrayKeyType(TypeCombinator::union($unsealedKeyFromIndex, new IntegerType()));
+						}
+					} else {
+						// `null` indexType keeps integer-keyed list semantics —
+						// the unsealed range remains keyed by the source's
+						// unsealed keys (typically `int`).
+						$unsealedKey = $unsealedTypes[0];
+					}
+
+					$builder->makeUnsealed($unsealedKey, $unsealedValueType);
+				}
+			}
+		}
+
 		return $builder->getArray();
 	}
 

@@ -31,6 +31,7 @@ use function array_fill;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
+use function array_keys;
 use function array_merge;
 use function array_slice;
 use function array_splice;
@@ -919,7 +920,7 @@ final class TypeCombinator
 				$filledArrays++;
 			}
 
-			if ($generalArrayOccurred || !$isConstantArray) {
+			if (!$isConstantArray) {
 				foreach ($arrayType->getArrays() as $type) {
 					$keyTypesForGeneralArray[] = $type->getIterableKeyType();
 					$valueTypesForGeneralArray[] = $type->getItemType();
@@ -1232,7 +1233,14 @@ final class TypeCombinator
 		}
 
 		if ($emptyArray !== null) {
-			$newArrays[] = $emptyArray;
+			if ($preserveTaggedUnions && $emptyArray instanceof ConstantArrayType) {
+				// Let the empty array participate in merging — the passes below will absorb
+				// it into any array that already accepts [] (all-optional keys, compatible
+				// unsealed extras). If no such array exists, it remains as-is in the result.
+				$arraysToProcess[] = $emptyArray;
+			} else {
+				$newArrays[] = $emptyArray;
+			}
 		}
 
 		$arraysToProcessPerKey = [];
@@ -1315,6 +1323,100 @@ final class TypeCombinator
 					continue 2;
 				}
 			}
+		}
+
+		// Second pass: merge pairs that the eligibleCombinations loop above couldn't touch.
+		// That loop only considers pairs sharing at least one known key, so it never fires
+		// for e.g. `array{}` ∪ `array{a?: 1}` (disjoint, one empty) or for two
+		// unsealed-extras arrays with disjoint required keys. Both collapse losslessly if
+		// one side's extras or optional-key shape can absorb the other side's content.
+		//
+		// Performance: two sealed, non-empty, no-extras arrays with disjoint keys cannot
+		// merge losslessly (legacyIsKeysSupersetOf returns false immediately on the first
+		// missing key). Skip those pairs via a candidate flag to avoid an O(n²) scan that
+		// dominated analyse time on files accumulating many sealed ConstantArrayType
+		// variants (bug-7581 / bug-8146a). A pair is worth checking only if at least one
+		// side is (a) empty, or (b) has real unsealed extras, or (c) has optional keys —
+		// the last case covers the narrowing shape used by e.g. array_key_exists checks
+		// over large optional-key shapes (bug-14032).
+		$indices = array_keys($arraysToProcess);
+		$indicesCount = count($indices);
+		if ($indicesCount > 1) {
+			$candidateFlags = [];
+			foreach ($indices as $idx) {
+				$arr = $arraysToProcess[$idx];
+				$unsealed = $arr->getUnsealedTypes();
+				if ($unsealed === null) {
+					$candidateFlags[$idx] = false;
+					continue;
+				}
+				[$unsealedKey] = $unsealed;
+				$hasRealExtras = !($unsealedKey instanceof NeverType && $unsealedKey->isExplicit());
+				if ($hasRealExtras) {
+					$candidateFlags[$idx] = true;
+					continue;
+				}
+				$keyTypesCount = count($arr->getKeyTypes());
+				if ($keyTypesCount === 0) {
+					$candidateFlags[$idx] = true;
+					continue;
+				}
+				$hasOptional = count($arr->getOptionalKeys()) > 0;
+				$candidateFlags[$idx] = $hasOptional;
+			}
+
+			for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
+				$i = $indices[$ii];
+				if (!array_key_exists($i, $arraysToProcess)) {
+					continue;
+				}
+				if ($arraysToProcess[$i]->getUnsealedTypes() === null) {
+					continue;
+				}
+				for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
+					$j = $indices[$jj];
+					if (!array_key_exists($j, $arraysToProcess)) {
+						continue;
+					}
+					if (!$candidateFlags[$i] && !$candidateFlags[$j]) {
+						continue;
+					}
+					if ($arraysToProcess[$j]->getUnsealedTypes() === null) {
+						continue;
+					}
+					if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
+						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						unset($arraysToProcess[$i]);
+						continue 2;
+					}
+					if (!$arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
+						continue;
+					}
+
+					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
+					unset($arraysToProcess[$j]);
+				}
+			}
+		}
+
+		// Final pass: if merging left us with a ConstantArrayType that has no known keys
+		// but has real unsealed extras, collapse it to a plain ArrayType (mirrors the same
+		// logic in ConstantArrayTypeBuilder::getArray — but applies to results produced by
+		// ConstantArrayType::mergeWith, which doesn't go through the builder).
+		foreach ($arraysToProcess as $idx => $arr) {
+			if (count($arr->getKeyTypes()) !== 0) {
+				continue;
+			}
+			$unsealed = $arr->getUnsealedTypes();
+			if ($unsealed === null) {
+				continue;
+			}
+			[$unsealedKey, $unsealedValue] = $unsealed;
+			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
+				continue;
+			}
+			$newArrays[] = new ArrayType($unsealedKey, $unsealedValue);
+			unset($arraysToProcess[$idx]);
 		}
 
 		// Final pass: collapse the loop-accumulator pattern where each iteration
@@ -1594,6 +1696,7 @@ final class TypeCombinator
 						&& $types[$j] instanceof NonEmptyArrayType
 						&& (count($types[$i]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
 						&& $types[$i]->isOptionalKey(0)
+						&& !$types[$i]->isUnsealed()->yes()
 					) {
 						$types[$i] = $types[$i]->makeOffsetRequired($types[$i]->getKeyTypes()[0]);
 						array_splice($types, $j--, 1);
@@ -1606,6 +1709,7 @@ final class TypeCombinator
 						&& $types[$i] instanceof NonEmptyArrayType
 						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$j]->isList()->yes())
 						&& $types[$j]->isOptionalKey(0)
+						&& !$types[$j]->isUnsealed()->yes()
 					) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$j]->getKeyTypes()[0]);
 						array_splice($types, $i--, 1);
@@ -1666,42 +1770,59 @@ final class TypeCombinator
 						continue 2;
 					}
 
-					if ($types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType)) {
-						$newArray = ConstantArrayTypeBuilder::createEmpty();
-						$valueTypes = $types[$i]->getValueTypes();
-						foreach ($types[$i]->getKeyTypes() as $k => $keyType) {
-							$hasOffset = $types[$j]->hasOffsetValueType($keyType);
-							if ($hasOffset->no()) {
-								continue;
-							}
-							$newArray->setOffsetValueType(
-								self::intersect($keyType, $types[$j]->getIterableKeyType()),
-								self::intersect($valueTypes[$k], $types[$j]->getOffsetValueType($keyType)),
-								$types[$i]->isOptionalKey($k) && !$hasOffset->yes(),
-							);
-						}
-						$types[$i] = $newArray->getArray();
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue 2;
-					}
+					$constArrayIsI = $types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType);
+					$constArrayIsJ = $types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType);
+					if ($constArrayIsI || $constArrayIsJ) {
+						$constArray = $constArrayIsI ? $types[$i] : $types[$j];
+						$otherArray = $constArrayIsI ? $types[$j] : $types[$i];
 
-					if ($types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType)) {
-						$newArray = ConstantArrayTypeBuilder::createEmpty();
-						$valueTypes = $types[$j]->getValueTypes();
-						foreach ($types[$j]->getKeyTypes() as $k => $keyType) {
-							$hasOffset = $types[$i]->hasOffsetValueType($keyType);
-							if ($hasOffset->no()) {
-								continue;
+						if (
+							$otherArray instanceof ConstantArrayType
+							&& !$constArray->isUnsealed()->maybe()
+							&& !$otherArray->isUnsealed()->maybe()
+						) {
+							$merged = self::intersectDefiniteConstantArrays($constArray, $otherArray);
+							if ($merged instanceof NeverType) {
+								return $merged;
 							}
-							$newArray->setOffsetValueType(
-								self::intersect($keyType, $types[$i]->getIterableKeyType()),
-								self::intersect($valueTypes[$k], $types[$i]->getOffsetValueType($keyType)),
-								$types[$j]->isOptionalKey($k) && !$hasOffset->yes(),
-							);
+							$newArrayType = $merged;
+						} else {
+							$newArray = ConstantArrayTypeBuilder::createEmpty();
+							// Preserve unsealed extras from the source shape so the
+							// rebuild doesn't silently turn `array{k: int, ...} & X`
+							// into a sealed `array{k: int}` — intersect with the other
+							// side's iterable key/value so the open part keeps both
+							// sides' refinements.
+							$constUnsealed = $constArray->getUnsealedTypes();
+							if ($constUnsealed !== null && $constArray->isUnsealed()->yes()) {
+								$newUnsealedKey = self::intersect($constUnsealed[0], $otherArray->getIterableKeyType());
+								$newUnsealedValue = self::intersect($constUnsealed[1], $otherArray->getIterableValueType());
+								if (!$newUnsealedKey instanceof NeverType && !$newUnsealedValue instanceof NeverType) {
+									$newArray->makeUnsealed($newUnsealedKey, $newUnsealedValue);
+								}
+							}
+							$valueTypes = $constArray->getValueTypes();
+							foreach ($constArray->getKeyTypes() as $k => $keyType) {
+								$hasOffset = $otherArray->hasOffsetValueType($keyType);
+								if ($hasOffset->no()) {
+									continue;
+								}
+								$newArray->setOffsetValueType(
+									self::intersect($keyType, $otherArray->getIterableKeyType()),
+									self::intersect($valueTypes[$k], $otherArray->getOffsetValueType($keyType)),
+									$constArray->isOptionalKey($k) && !$hasOffset->yes(),
+								);
+							}
+							$newArrayType = $newArray->getArray();
 						}
-						$types[$j] = $newArray->getArray();
-						array_splice($types, $i--, 1);
+
+						if ($constArrayIsI) {
+							$types[$i] = $newArrayType;
+							array_splice($types, $j--, 1);
+						} else {
+							$types[$j] = $newArrayType;
+							array_splice($types, $i--, 1);
+						}
 						$typesCount--;
 						continue 2;
 					}
@@ -1777,6 +1898,124 @@ final class TypeCombinator
 		}
 
 		return new IntersectionType($types);
+	}
+
+	private static function intersectDefiniteConstantArrays(ConstantArrayType $a, ConstantArrayType $b): Type
+	{
+		$aSealed = $a->isUnsealed()->no();
+		$bSealed = $b->isUnsealed()->no();
+		$bothUnsealed = !$aSealed && !$bSealed && $a->getUnsealedTypes() !== null && $b->getUnsealedTypes() !== null;
+
+		$aKeyByValue = [];
+		foreach ($a->getKeyTypes() as $k => $keyType) {
+			$aKeyByValue[$keyType->getValue()] = $k;
+		}
+		$bKeyByValue = [];
+		foreach ($b->getKeyTypes() as $k => $keyType) {
+			$bKeyByValue[$keyType->getValue()] = $k;
+		}
+
+		if ($aSealed && $bSealed) {
+			foreach ($aKeyByValue as $keyValue => $k) {
+				if (!$a->isOptionalKey($k) && !array_key_exists($keyValue, $bKeyByValue)) {
+					return new NeverType();
+				}
+			}
+			foreach ($bKeyByValue as $keyValue => $k) {
+				if (!$b->isOptionalKey($k) && !array_key_exists($keyValue, $aKeyByValue)) {
+					return new NeverType();
+				}
+			}
+		}
+
+		$newArray = ConstantArrayTypeBuilder::createEmpty();
+
+		if ($bothUnsealed) {
+			$aUnsealed = $a->getUnsealedTypes();
+			$bUnsealed = $b->getUnsealedTypes();
+			$unsealedKey = self::intersect($aUnsealed[0], $bUnsealed[0]);
+			$unsealedValue = self::intersect($aUnsealed[1], $bUnsealed[1]);
+			if ($unsealedKey instanceof NeverType || $unsealedValue instanceof NeverType) {
+				return new NeverType();
+			}
+			$newArray->makeUnsealed($unsealedKey, $unsealedValue);
+		} else {
+			$never = new NeverType(true);
+			$newArray->makeUnsealed($never, $never);
+		}
+
+		$resolveOtherValue = static function (ConstantArrayType $other, Type $keyType): ?Type {
+			if ($other->hasOffsetValueType($keyType)->yes()) {
+				return $other->getOffsetValueType($keyType);
+			}
+			$otherUnsealed = $other->getUnsealedTypes();
+			if ($otherUnsealed === null) {
+				return null;
+			}
+			[$unsealedKey, $unsealedValue] = $otherUnsealed;
+			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
+				return null;
+			}
+			if ($unsealedKey->isSuperTypeOf($keyType)->no()) {
+				return null;
+			}
+			return $unsealedValue;
+		};
+
+		$keysToProcess = [];
+		foreach ($aKeyByValue as $keyValue => $k) {
+			$keysToProcess[$keyValue] = [$k, $bKeyByValue[$keyValue] ?? null];
+		}
+		foreach ($bKeyByValue as $keyValue => $k) {
+			if (array_key_exists($keyValue, $keysToProcess)) {
+				continue;
+			}
+
+			$keysToProcess[$keyValue] = [null, $k];
+		}
+
+		foreach ($keysToProcess as [$aIdx, $bIdx]) {
+			if ($aIdx !== null && $bIdx !== null) {
+				$keyType = $a->getKeyTypes()[$aIdx];
+				$value = self::intersect($a->getValueTypes()[$aIdx], $b->getValueTypes()[$bIdx]);
+				$optional = $a->isOptionalKey($aIdx) && $b->isOptionalKey($bIdx);
+			} elseif ($aIdx !== null) {
+				$keyType = $a->getKeyTypes()[$aIdx];
+				$aValue = $a->getValueTypes()[$aIdx];
+				$bValue = $resolveOtherValue($b, $keyType);
+				if ($bValue === null) {
+					if ($a->isOptionalKey($aIdx)) {
+						continue;
+					}
+					return new NeverType();
+				}
+				$value = self::intersect($aValue, $bValue);
+				$optional = $a->isOptionalKey($aIdx);
+			} else {
+				/** @var int<0, max> $bIdx */
+				$keyType = $b->getKeyTypes()[$bIdx];
+				$bValue = $b->getValueTypes()[$bIdx];
+				$aValue = $resolveOtherValue($a, $keyType);
+				if ($aValue === null) {
+					if ($b->isOptionalKey($bIdx)) {
+						continue;
+					}
+					return new NeverType();
+				}
+				$value = self::intersect($aValue, $bValue);
+				$optional = $b->isOptionalKey($bIdx);
+			}
+
+			if ($value instanceof NeverType) {
+				if ($optional) {
+					continue;
+				}
+				return new NeverType();
+			}
+			$newArray->setOffsetValueType($keyType, $value, $optional);
+		}
+
+		return $newArray->getArray();
 	}
 
 	/**

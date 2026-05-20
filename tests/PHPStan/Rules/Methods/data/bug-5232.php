@@ -5,7 +5,7 @@ namespace Bug5232;
 abstract class HelloWorld
 {
 	/**
-	* @phpstan-return array{workId: string, collectionNumber: string, uuid: string|null}
+	* @phpstan-return array{workId: string, collectionNumber: string, uuid: string|null, ...}
 	*/
 	public function sayHello(string $content): array
 	{

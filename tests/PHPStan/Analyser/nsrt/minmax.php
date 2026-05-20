@@ -18,6 +18,18 @@ function dummy5(int $i, int $j): void
 	assertType('array{1: true}', array_filter([false, true]));
 }
 
+/**
+ * @param array{1, 2, ...<int, int>} $unsealed
+ */
+function unsealedMinMax(array $unsealed): void
+{
+	// The unsealed `<int, int>` extras can be any int, so min/max of
+	// `{1, 2} ∪ extras` is unbounded — the explicit `1`/`2` must not be
+	// reported as the result.
+	assertType('int', min($unsealed));
+	assertType('int', max($unsealed));
+}
+
 function dummy6(string $s, string $t): void {
 	assertType('array{0?: non-falsy-string, 1?: non-falsy-string}', array_filter([$s, $t]));
 }

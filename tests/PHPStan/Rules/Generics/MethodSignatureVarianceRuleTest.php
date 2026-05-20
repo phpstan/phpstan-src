@@ -103,6 +103,10 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				'Template type X is declared as covariant, but occurs in invariant position in return type of method MethodSignatureVariance\Covariant\C::m().',
 				71,
 			],
+			[
+				'Template type X is declared as covariant, but occurs in contravariant position in parameter o of method MethodSignatureVariance\Covariant\C::o().',
+				77,
+			],
 		]);
 
 		$this->analyse([__DIR__ . '/data/method-signature-variance-contravariant.php'], [

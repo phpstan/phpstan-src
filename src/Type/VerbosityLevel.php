@@ -141,10 +141,14 @@ final class VerbosityLevel
 				// Keep checking if we need to be very verbose.
 				return $traverse($type);
 			}
-			if ($type->isConstantValue()->yes() && $type->isNull()->no()) {
+			if ($type->isConstantArray()->yes()) {
 				$moreVerbose = true;
 
 				// For ConstantArrayType we need to keep checking if we need to be very verbose.
+				return $traverse($type);
+			}
+			if ($type->isConstantValue()->yes() && $type->isNull()->no()) {
+				$moreVerbose = true;
 				if (!$type->isArray()->no()) {
 					return $traverse($type);
 				}

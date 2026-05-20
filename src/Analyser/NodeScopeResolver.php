@@ -4027,8 +4027,13 @@ class NodeScopeResolver
 		}
 
 		$totalKeys = 0;
+		$hasUnsealed = false;
 		foreach ($constantArrays as $constantArray) {
 			$totalKeys += count($constantArray->getKeyTypes());
+			if (!$constantArray->isUnsealed()->yes()) {
+				continue;
+			}
+			$hasUnsealed = true;
 		}
 		if ($totalKeys === 0 || $totalKeys > self::FOREACH_UNROLL_LIMIT) {
 			return null;
@@ -4159,6 +4164,40 @@ class NodeScopeResolver
 
 		foreach ($allBreakScopes as $breakScope) {
 			$endScope = $endScope->mergeWith($breakScope);
+		}
+
+		// Unsealed shapes describe zero-or-more additional entries beyond the
+		// explicit keys. Run the scope-generalizing loop on top of the
+		// unrolled explicit iterations so body-scope variables (e.g. counters)
+		// account for the extra iterations while keeping the lower bound
+		// established by the non-optional explicit keys.
+		if ($hasUnsealed) {
+			$loopScope = $endScope;
+			$count = 0;
+			do {
+				$prevLoopScope = $loopScope;
+				$iterStorage = $originalStorage->duplicate();
+				$iterBodyScope = $loopScope->mergeWith($endScope);
+				$iterBodyScope = $this->enterForeach($iterBodyScope, $iterStorage, $originalScope, $stmt, new NoopNodeCallback());
+				$iterBodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+				$loopScope = $iterBodyScopeResult->getScope();
+				foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+					$loopScope = $loopScope->mergeWith($continueExitPoint->getScope());
+				}
+				foreach ($iterBodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+					$endScope = $endScope->mergeWith($breakExitPoint->getScope());
+				}
+				$bodyScope = $bodyScope->mergeWith($loopScope);
+				if ($loopScope->equals($prevLoopScope)) {
+					break;
+				}
+				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					$loopScope = $prevLoopScope->generalizeWith($loopScope);
+				}
+				$count++;
+			} while ($count < self::LOOP_SCOPE_ITERATIONS);
+
+			$endScope = $endScope->mergeWith($loopScope);
 		}
 
 		return ['bodyScope' => $bodyScope, 'endScope' => $endScope];

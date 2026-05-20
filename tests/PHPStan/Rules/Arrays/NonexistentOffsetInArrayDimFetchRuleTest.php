@@ -1348,4 +1348,69 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13688.php'], []);
 	}
 
+	public static function dataUnsealedArrayShapes(): iterable
+	{
+		foreach ([false, true] as $reportPossiblyNonexistentGeneralArrayOffset) {
+			yield [$reportPossiblyNonexistentGeneralArrayOffset, false, [
+				[
+					'Offset 2 might not exist on array{a: int, ...<int, int>}.',
+					16,
+				],
+				[
+					'Offset 1 might not exist on array{int, ...<int, int>}.',
+					22,
+				],
+				[
+					'Offset non-decimal-int-string does not exist on array{int, ...<int, int>}.',
+					25,
+				],
+			]];
+			yield [$reportPossiblyNonexistentGeneralArrayOffset, true, [
+				[
+					'Offset 2 might not exist on array{a: int, ...<int, int>}.',
+					16,
+				],
+				[
+					'Offset int might not exist on array{a: int, ...<int, int>}.',
+					17,
+				],
+				[
+					'Offset string might not exist on array{a: int, ...<int, int>}.',
+					18,
+				],
+				[
+					'Offset non-decimal-int-string might not exist on array{a: int, ...<int, int>}.',
+					19,
+				],
+				[
+					'Offset 1 might not exist on array{int, ...<int, int>}.',
+					22,
+				],
+				[
+					'Offset int might not exist on array{int, ...<int, int>}.',
+					23,
+				],
+				[
+					'Offset string might not exist on array{int, ...<int, int>}.',
+					24,
+				],
+				[
+					'Offset non-decimal-int-string does not exist on array{int, ...<int, int>}.',
+					25,
+				],
+			]];
+		}
+	}
+
+	/**
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
+	 */
+	#[DataProvider('dataUnsealedArrayShapes')]
+	public function testUnsealedArrayShapes(bool $reportPossiblyNonexistentGeneralArrayOffset, bool $reportPossiblyNonexistentConstantArrayOffset, array $expectedErrors): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = $reportPossiblyNonexistentGeneralArrayOffset;
+		$this->reportPossiblyNonexistentConstantArrayOffset = $reportPossiblyNonexistentConstantArrayOffset;
+		$this->analyse([__DIR__ . '/data/unsealed-array-shapes-has-offset.php'], $expectedErrors);
+	}
+
 }

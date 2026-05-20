@@ -109,13 +109,14 @@ final class NonexistentOffsetInArrayDimFetchCheck
 					$report = true;
 					break;
 				}
-				if (
-					$this->reportPossiblyNonexistentConstantArrayOffset
-					&& $innerType->isConstantArray()->yes()
-					&& !$innerType->hasOffsetValueType($dimTypeToCheck)->yes()
-				) {
-					$report = true;
-					break;
+				if ($innerType->isConstantArray()->yes() && !$innerType->hasOffsetValueType($dimTypeToCheck)->yes()) {
+					if ($this->reportPossiblyNonexistentConstantArrayOffset) {
+						$report = true;
+						break;
+					} elseif ($dimTypeToCheck->isConstantScalarValue()->yes()) {
+						$report = true;
+						break;
+					}
 				}
 				if ($dimTypeToCheck instanceof BenevolentUnionType) {
 					$flattenedInnerTypes = [$dimTypeToCheck];

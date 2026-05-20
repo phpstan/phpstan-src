@@ -72,4 +72,7 @@ class C {
 
 	/** @param X $n */
 	private function n($n) {}
+
+	/** @param array{a: int, ...<int, X>} $o */
+	function o($o) {}
 }

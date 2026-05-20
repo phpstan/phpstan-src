@@ -97,3 +97,11 @@ function templateTypeMissingInParameter(string $a)
 {
 
 }
+
+/**
+ * @param array{a: int, ...<NonexistentUnsealedKeyClass, NonexistentUnsealedValueClass>} $a
+ */
+function nonexistentClassesInUnsealedExtras(array $a)
+{
+
+}

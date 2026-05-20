@@ -54,10 +54,9 @@ final class MissingMethodReturnTypehintRule implements Rule
 		}
 
 		$messages = [];
-		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($returnType) as $iterableType) {
-			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($returnType) as $iterableTypeDescription) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() return type has no value type specified in iterable type %s.',
+				'Method %s::%s() return type has no value type specified in %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$iterableTypeDescription,

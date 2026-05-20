@@ -113,6 +113,13 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType, bool $isNonEmpty): ?Type
 	{
+		// Unsealed extras can append further segments the constant fold
+		// can't see, so the exact string result would be unsound. Fall
+		// back to the accessory-based result.
+		if ($arrayType->isUnsealed()->yes()) {
+			return null;
+		}
+
 		$sep = $separatorType->getValue();
 		$valueTypes = $arrayType->getValueTypes();
 		$limit = InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT;

@@ -562,6 +562,17 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield ['callable(Foo $foo=, Bar $bar=): Bar'];
 		yield ['Closure(Foo $foo=, Bar $bar=): Bar'];
 		yield ['Closure(Foo $foo=, Bar $bar=): (Closure(Foo): Bar)'];
+
+		yield ['array{a: int}'];
+		yield ['array{a: int, ...}'];
+		yield ['array{a: int, ...<Foo>}'];
+		yield ['array{a: int, ...<int, Foo>}'];
+		yield ['array{int, int, int, ...}'];
+		yield ['array{int, int, int, ...<Foo>}'];
+		yield ['array{int, int, int, ...<int, Foo>}'];
+
+		yield ['list{0?: int, 1?: int, 2?: int, ...}'];
+		yield ['list{0?: int, 1?: int, 2?: int, ...<Foo>}'];
 	}
 
 	#[DataProvider('dataFromTypeStringToPhpDocNode')]

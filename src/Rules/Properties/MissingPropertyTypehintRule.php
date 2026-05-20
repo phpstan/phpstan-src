@@ -52,10 +52,9 @@ final class MissingPropertyTypehintRule implements Rule
 		}
 
 		$messages = [];
-		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($propertyType) as $iterableType) {
-			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($propertyType) as $iterableTypeDescription) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Property %s::$%s type has no value type specified in iterable type %s.',
+				'Property %s::$%s type has no value type specified in %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$iterableTypeDescription,

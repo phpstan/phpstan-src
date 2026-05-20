@@ -11,6 +11,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /**
+ * Try.
+ *
  * @implements Rule<Node\Expr\StaticPropertyFetch>
  */
 #[RegisteredRule(level: 2)]

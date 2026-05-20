@@ -1655,7 +1655,7 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$storage = $originalStorage->duplicate();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
-			$beforeCondBooleanType = $scope->getType($stmt->cond)->toBoolean();
+			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
 			$condScope = $condResult->getFalseyScope();
 			if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
 				if (!$this->polluteScopeWithLoopInitialAssignments) {
@@ -1706,7 +1706,7 @@ class NodeScopeResolver
 			$alwaysIterates = false;
 			$neverIterates = false;
 			if ($context->isTopLevel()) {
-				$condBooleanType = $bodyScopeMaybeRan->getType($stmt->cond)->toBoolean();
+				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 				$neverIterates = $condBooleanType->isFalse()->yes();
 			}
@@ -1804,7 +1804,7 @@ class NodeScopeResolver
 
 			$alwaysIterates = false;
 			if ($context->isTopLevel()) {
-				$condBooleanType = $bodyScope->getType($stmt->cond)->toBoolean();
+				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScope->getType($stmt->cond) : $bodyScope->getNativeType($stmt->cond))->toBoolean();
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 			}
 
@@ -1875,7 +1875,7 @@ class NodeScopeResolver
 					// only the last condition expression is relevant whether the loop continues
 					// see https://www.php.net/manual/en/control-structures.for.php
 					if ($condExpr === $lastCondExpr) {
-						$condTruthiness = $condResultScope->getType($condExpr)->toBoolean();
+						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
 						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
 					}
 

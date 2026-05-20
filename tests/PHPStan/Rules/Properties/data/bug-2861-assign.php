@@ -17,4 +17,17 @@ class Foo {
 			$className::$default = 'value';
 		}
 	}
+
+	public function testInstance(): void {
+		if (property_exists($this, 'default')) {
+			$this->default = 'value';
+		}
+	}
+
+	/** @param self $obj */
+	public function testInstanceObj(self $obj): void {
+		if (property_exists($obj, 'default')) {
+			$obj->default = 'value';
+		}
+	}
 }

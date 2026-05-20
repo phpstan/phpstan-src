@@ -54,3 +54,18 @@ class ExpressionBased {
 		}
 	}
 }
+
+class InstancePropertyAccess {
+	public function test(): void {
+		if (property_exists($this, 'default')) {
+			echo $this->default;
+		}
+	}
+
+	/** @param self $obj */
+	public function testObj(self $obj): void {
+		if (property_exists($obj, 'default')) {
+			echo $obj->default;
+		}
+	}
+}

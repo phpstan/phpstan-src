@@ -10,7 +10,7 @@ class Bug14522Test extends TypeInferenceTestCase
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-14522.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/nsrt/bug-14522.php');
 	}
 
 	/**

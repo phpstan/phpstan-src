@@ -20,3 +20,15 @@ function (string $dolor): void {
 
 	assertType('array{}', compact([]));
 };
+
+/**
+ * @param array{'foo', 'bar', ...<int, string>} $names
+ */
+function unsealedNames(array $names): void {
+	$foo = 'x';
+	$bar = 'y';
+	// The unsealed `<int, string>` extras are unknown further variable
+	// names, so the result can't be enumerated as a sealed shape — it
+	// must widen to the general `compact()` signature.
+	assertType('array<string, mixed>', compact($names));
+};

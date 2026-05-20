@@ -75,3 +75,11 @@ function whileLoopMaybeEnters(int $n): void
 	}
 	assertType('int<0, max>', $total);
 }
+
+/** @param int<-2, 2> $retryCount */
+function maxWithBoundedRange(int $retryCount): void
+{
+	$result = max(0, $retryCount);
+	assertType('int<0, 2>', $result);
+	assertNativeType('int<0, max>', $result);
+}

@@ -4106,4 +4106,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14661(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14661.php'], [
+			[
+				'Unknown parameter $unknown in call to method Bug14661\A::mixedOrder().',
+				47,
+			],
+			[
+				'Missing parameter $b|a (int|string) in call to method Bug14661\C::foo().',
+				64,
+			],
+			[
+				'Missing parameter $a|b (int|string) in call to method Bug14661\C::foo().',
+				65,
+			],
+		]);
+	}
+
 }

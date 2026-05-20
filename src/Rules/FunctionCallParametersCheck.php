@@ -32,12 +32,14 @@ use function array_fill;
 use function array_key_exists;
 use function array_last;
 use function count;
+use function explode;
 use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
 use function max;
 use function sprintf;
+use function str_contains;
 
 #[AutowiredService]
 final class FunctionCallParametersCheck
@@ -581,15 +583,20 @@ final class FunctionCallParametersCheck
 		$errors = [];
 		$isNativelyVariadic = false;
 		foreach ($parameters as $i => $parameter) {
-			$parametersByName[$parameter->getName()] = $parameter;
-			$originalParametersByName[$parameter->getName()] = $originalParameters[$i];
+			$parameterName = $parameter->getName();
+			$parametersByName[$parameterName] = $parameter;
+			$originalParametersByName[$parameterName] = $originalParameters[$i];
 
 			if ($parameter->isVariadic()) {
 				$isNativelyVariadic = true;
 				continue;
 			}
 
-			$unusedParametersByName[$parameter->getName()] = $parameter;
+			$unusedParametersByName[$parameterName] = $parameter;
+		}
+
+		if ($hasNamedArguments) {
+			self::mapCombinedParameterNames($parameters, $originalParameters, $parametersByName, $originalParametersByName);
 		}
 
 		$newArguments = [];
@@ -684,6 +691,48 @@ final class FunctionCallParametersCheck
 		}
 
 		return [$errors, $newArguments];
+	}
+
+	/**
+	 * @param list<ParameterReflection> $parameters
+	 * @param array<int, ParameterReflection|null> $originalParameters
+	 * @param array<string, ParameterReflection> $parametersByName
+	 * @param array<string, ParameterReflection|null> $originalParametersByName
+	 */
+	private static function mapCombinedParameterNames(
+		array $parameters,
+		array $originalParameters,
+		array &$parametersByName,
+		array &$originalParametersByName,
+	): void
+	{
+		foreach ($parameters as $i => $parameter) {
+			$parameterName = $parameter->getName();
+			if (!str_contains($parameterName, '|')) {
+				continue;
+			}
+			$primaryName = explode('|', $parameterName, 2)[0];
+			if (array_key_exists($primaryName, $parametersByName)) {
+				continue;
+			}
+
+			$parametersByName[$primaryName] = $parameter;
+			$originalParametersByName[$primaryName] = $originalParameters[$i];
+		}
+
+		foreach ($parameters as $i => $parameter) {
+			$parameterName = $parameter->getName();
+			if (!str_contains($parameterName, '|')) {
+				continue;
+			}
+			foreach (explode('|', $parameterName) as $name) {
+				if (array_key_exists($name, $parametersByName)) {
+					continue;
+				}
+				$parametersByName[$name] = $parameter;
+				$originalParametersByName[$name] = $originalParameters[$i];
+			}
+		}
 	}
 
 	private function describeParameter(ParameterReflection $parameter, int|string|null $positionOrNamed): string

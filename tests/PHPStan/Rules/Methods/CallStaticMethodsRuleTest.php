@@ -1033,4 +1033,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14661(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-14661-static.php'], [
+			[
+				'Unknown parameter $unknown in call to static method Bug14661Static\E::bar().',
+				26,
+			],
+		]);
+	}
+
 }

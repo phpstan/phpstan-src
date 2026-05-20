@@ -12,6 +12,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -22,11 +23,13 @@ use function array_key_exists;
 use function array_keys;
 use function array_values;
 use function count;
+use function explode;
 use function is_string;
 use function key;
 use function ksort;
 use function max;
 use function sprintf;
+use function str_contains;
 
 /**
  * @api
@@ -323,6 +326,8 @@ final class ArgumentsNormalizer
 			$argumentPositions[$parameter->getName()] = $i;
 		}
 
+		self::mapCombinedParameterPositions($signatureParameters, $argumentPositions);
+
 		$reorderedArgs = [];
 		$additionalNamedArgs = [];
 		$appendArgs = [];
@@ -437,6 +442,39 @@ final class ArgumentsNormalizer
 		}
 
 		return $reorderedArgs;
+	}
+
+	/**
+	 * @param list<ParameterReflection> $signatureParameters
+	 * @param array<string, int> $argumentPositions
+	 */
+	private static function mapCombinedParameterPositions(array $signatureParameters, array &$argumentPositions): void
+	{
+		foreach ($signatureParameters as $i => $parameter) {
+			$parameterName = $parameter->getName();
+			if (!str_contains($parameterName, '|')) {
+				continue;
+			}
+			$primaryName = explode('|', $parameterName, 2)[0];
+			if (array_key_exists($primaryName, $argumentPositions)) {
+				continue;
+			}
+
+			$argumentPositions[$primaryName] = $i;
+		}
+
+		foreach ($signatureParameters as $i => $parameter) {
+			$parameterName = $parameter->getName();
+			if (!str_contains($parameterName, '|')) {
+				continue;
+			}
+			foreach (explode('|', $parameterName) as $name) {
+				if (array_key_exists($name, $argumentPositions)) {
+					continue;
+				}
+				$argumentPositions[$name] = $i;
+			}
+		}
 	}
 
 }

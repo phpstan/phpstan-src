@@ -42,6 +42,11 @@ final class ArithmeticOpHelper
 		return self::shift($leftType, $rightType, static fn (int $value, int $amount): int => $value << $amount);
 	}
 
+	public static function shiftRight(Type $leftType, Type $rightType): Type
+	{
+		return self::shift($leftType, $rightType, static fn (int $value, int $amount): int => $value >> $amount);
+	}
+
 	/**
 	 * Shared implementation of the << and >> operators. The shift amount must be one or more constant
 	 * non-negative integers, otherwise the result is a plain int (shifting always yields an int). The

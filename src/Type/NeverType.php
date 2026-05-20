@@ -635,6 +635,11 @@ class NeverType implements CompoundType
 		return ArithmeticOpHelper::shiftLeft($this, $otherType);
 	}
 
+	public function shiftRight(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::shiftRight($this, $otherType);
+	}
+
 	public function getIntegerRanges(): array
 	{
 		return [];

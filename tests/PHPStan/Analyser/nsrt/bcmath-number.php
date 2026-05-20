@@ -387,7 +387,7 @@ class Foo
 			assertType('non-empty-string&numeric-string', $a . $b);
 			assertType('*ERROR*', $a ** $b);
 			assertType('*ERROR*', $a << $b);
-			assertType('*NEVER*', $a >> $b);
+			assertType('*ERROR*', $a >> $b);
 			assertType('bool', $a < $b);
 			assertType('bool', $a <= $b);
 			assertType('bool', $a > $b);

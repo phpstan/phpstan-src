@@ -685,6 +685,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->shiftLeft($otherType);
 	}
 
+	public function shiftRight(Type $otherType): Type
+	{
+		return $this->resolve()->shiftRight($otherType);
+	}
+
 	public function getIntegerRanges(): array
 	{
 		return $this->resolve()->getIntegerRanges();

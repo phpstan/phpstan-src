@@ -326,6 +326,11 @@ class HasMethodType implements AccessoryType, CompoundType
 		return new ErrorType();
 	}
 
+	public function shiftRight(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function getIntegerRanges(): array
 	{
 		return [];

@@ -1795,66 +1795,18 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getShiftRightTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getShiftRightTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\ShiftRight($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
 		}
 
-		return $this->getShiftRightTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getShiftRightTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return $this->getNeverType($leftType, $rightType);
-		}
-
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						$leftNumberType = $leftTypeInner->toNumber();
-						$rightNumberType = $rightTypeInner->toNumber();
-
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-							return new ErrorType();
-						}
-
-						if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-							throw new ShouldNotHappenException();
-						}
-
-						if ($rightNumberType->getValue() < 0) {
-							return new ErrorType();
-						}
-
-						$resultType = $this->getTypeFromValue(intval($leftNumberType->getValue()) >> intval($rightNumberType->getValue()));
-						$resultTypes[] = $resultType;
-					}
-				}
-
-				return TypeCombinator::union(...$resultTypes);
-			}
-
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
-		}
-
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
-
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-			return new ErrorType();
-		}
-
-		return $this->resolveCommonMath(new Expr\BinaryOp\ShiftRight($left, $right), $leftType, $rightType);
+		return $leftType->shiftRight($rightType);
 	}
 
 	private function optimizeScalarType(Type $type): Type

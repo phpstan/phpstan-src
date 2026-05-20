@@ -378,6 +378,9 @@ interface Type
 	/** Models the << operator. Returns `ErrorType` for types where the operation is undefined. */
 	public function shiftLeft(Type $otherType): Type;
 
+	/** Models the >> operator. Returns `ErrorType` for types where the operation is undefined. */
+	public function shiftRight(Type $otherType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/** @return list<CallableParametersAcceptor> */

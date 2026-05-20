@@ -903,17 +903,21 @@ class ConstantArrayType implements Type
 			return false;
 		}
 
-		// Both `unsealed === null` and `unsealed === [explicitNever, explicitNever]`
-		// mean "sealed", just from different code paths (pre-bleeding-edge vs.
-		// fresh bleeding-edge builder). Treat them as equivalent here, only
-		// comparing the actual extras when both sides have real ones.
-		$thisIsSealed = $this->isUnsealed()->no();
-		$otherIsSealed = $type->isUnsealed()->no();
-		if ($thisIsSealed !== $otherIsSealed) {
+		// Both `unsealed === null` (legacy / pre-bleeding-edge, where
+		// `isUnsealed()` answers `Maybe`) and `unsealed === [explicitNever,
+		// explicitNever]` (the fresh bleeding-edge sealed marker, where
+		// `isUnsealed()` answers `No`) mean "no real extras". Treat them as
+		// equivalent here — use `!isUnsealed()->yes()` rather than
+		// `isUnsealed()->no()`, otherwise a legacy-null shape and a
+		// marker-sealed shape compare unequal. Only compare the actual
+		// extras when both sides genuinely have them.
+		$thisHasExtras = $this->isUnsealed()->yes();
+		$otherHasExtras = $type->isUnsealed()->yes();
+		if ($thisHasExtras !== $otherHasExtras) {
 			return false;
 		}
 
-		if (!$thisIsSealed && $this->unsealed !== null && $type->unsealed !== null) {
+		if ($thisHasExtras && $this->unsealed !== null && $type->unsealed !== null) {
 			if (!$this->unsealed[0]->equals($type->unsealed[0])) {
 				return false;
 			}

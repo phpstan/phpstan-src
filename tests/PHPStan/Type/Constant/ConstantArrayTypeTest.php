@@ -1549,6 +1549,32 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testEqualsTreatsLegacyNullAndSealedMarkerAsEqual(): void
+	{
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+
+		try {
+			// Pre-bleeding-edge construction leaves the unsealed slot null
+			// (`isUnsealed()` answers `Maybe`).
+			BleedingEdgeToggle::setBleedingEdge(false);
+			$legacyNull = new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()]);
+
+			// Bleeding-edge construction seeds the `[NeverType, NeverType]`
+			// sealed marker (`isUnsealed()` answers `No`).
+			BleedingEdgeToggle::setBleedingEdge(true);
+			$sealedMarker = new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()]);
+
+			// Both represent the same sealed shape, so they must compare
+			// equal in both directions — this mismatch is what made the
+			// `TypeToPhpDocNode` round-trip fail under old PHPUnit (data
+			// providers run before the container enables bleeding edge).
+			$this->assertTrue($legacyNull->equals($sealedMarker), 'legacy-null should equal sealed-marker');
+			$this->assertTrue($sealedMarker->equals($legacyNull), 'sealed-marker should equal legacy-null');
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		}
+	}
+
 	public function testSealedness(): void
 	{
 		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();

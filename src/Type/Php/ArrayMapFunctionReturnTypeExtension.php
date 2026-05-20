@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
@@ -34,8 +33,6 @@ use function count;
 #[AutowiredService]
 final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	private int $cloneCounter = 0;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -134,7 +131,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			if (count($constantArrays) > 0) {
 				$totalCount = TypeCombinator::countConstantArrayValueTypes($constantArrays) * TypeCombinator::countConstantArrayValueTypes([$valueType]);
 				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-					$mappedArrayType = $arrayType->mapValueType(fn (Type $type): Type => $this->resolveCallbackReturnType($scope, $callback, $type));
+					$mappedArrayType = $arrayType->mapValueType(static fn (Type $type): Type => self::resolveCallbackReturnType($scope, $callback, $type));
 				} else {
 					$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 						$arrayType->getIterableKeyType(),
@@ -166,7 +163,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		return $mappedArrayType;
 	}
 
-	private function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type
+	private static function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type
 	{
 		if ($callback instanceof Node\Expr\Closure || $callback instanceof Node\Expr\ArrowFunction) {
 			$clone = clone $callback;
@@ -177,8 +174,6 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			);
 			$clone->setAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME, [new Node\Arg(new TypeExpr($wrappedType))]);
 			$clone->setAttribute('phpstanCachedTypes', []);
-			$clone->setAttribute(ExprPrinter::ATTRIBUTE_CACHE_KEY, null);
-			$clone->setAttribute('startFilePos', -(++$this->cloneCounter));
 
 			$closureType = $scope->getType($clone);
 			if ($closureType->isCallable()->yes()) {

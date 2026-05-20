@@ -926,7 +926,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& (($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
 			&& (($attributes['startFilePos'] ?? null) !== null)
 		) {
-			$key .= '/*' . $attributes['startFilePos'] . '*/';
+			$key .= '/*' . $attributes['startFilePos'];
+			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] as $arg) {
+				$key .= ':' . $this->exprPrinter->printExpr($arg->value);
+			}
+			$key .= '*/';
 		}
 
 		if (($attributes[self::KEEP_VOID_ATTRIBUTE_NAME] ?? null) === true) {

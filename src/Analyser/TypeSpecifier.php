@@ -57,6 +57,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -88,6 +89,7 @@ use function array_map;
 use function array_merge;
 use function array_reverse;
 use function array_shift;
+use function array_values;
 use function count;
 use function in_array;
 use function is_string;
@@ -2904,6 +2906,74 @@ final class TypeSpecifier
 		return $specifiedTypes;
 	}
 
+	private function resolveClassStringComparison(
+		ClassConstFetch $classExpr,
+		ConstantStringType $constType,
+		Expr $originalClassExpr,
+		TypeSpecifierContext $context,
+		Scope $scope,
+		Expr $rootExpr,
+	): SpecifiedTypes
+	{
+		if (!$classExpr->class instanceof Expr) {
+			throw new ShouldNotHappenException();
+		}
+
+		$className = $constType->getValue();
+		if ($className === '') {
+			throw new ShouldNotHappenException();
+		}
+
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Instanceof_(
+					$classExpr->class,
+					new Name($className),
+				),
+				$context,
+			)->unionWith(
+				$this->create($originalClassExpr, $constType, $context, $scope),
+			)->setRootExpr($rootExpr);
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($className);
+		$narrowedType = new ObjectType($className, classReflection: $classReflection->asFinal());
+
+		// Infer generic type parameters from the current type when narrowing to a child class.
+		// For union types (e.g. Cat<string>|Dog<string>), scope application via
+		// addTypeToExpression already preserves generics through TypeCombinator::intersect.
+		// This inference handles the parent-to-child case (e.g. Animal<string> → Cat<string>).
+		$currentVarType = $scope->getType($classExpr->class);
+		$currentReflections = $currentVarType->getObjectClassReflections();
+		$childTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
+		if (
+			count($childTemplateTypes) > 0
+			&& count($currentReflections) === 1
+			&& count($currentReflections[0]->getTemplateTypeMap()->getTypes()) > 0
+		) {
+			$freshChild = new GenericObjectType($className, array_values($childTemplateTypes));
+			$ancestor = $freshChild->getAncestorWithClassName($currentReflections[0]->getName());
+			if ($ancestor !== null) {
+				$inferredMap = $ancestor->inferTemplateTypes($currentVarType);
+				$resolved = [];
+				foreach ($childTemplateTypes as $name => $tType) {
+					$resolved[] = $inferredMap->getType($name) ?? $tType;
+				}
+				$narrowedType = new GenericObjectType($className, $resolved);
+			}
+		}
+
+		return $this->create(
+			$classExpr->class,
+			$narrowedType,
+			$context,
+			$scope,
+		)->unionWith(
+			$this->create($originalClassExpr, $constType, $context, $scope),
+		)->setRootExpr($rootExpr);
+	}
+
 	private function resolveNormalizedIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$leftExpr = $expr->left;
@@ -3221,22 +3291,14 @@ final class TypeSpecifier
 			$rightType->getValue() !== '' &&
 			strtolower($unwrappedLeftExpr->name->toString()) === 'class'
 		) {
-			if ($this->reflectionProvider->hasClass($rightType->getValue())) {
-				return $this->create(
-					$unwrappedLeftExpr->class,
-					new ObjectType($rightType->getValue(), classReflection: $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
-					$context,
-					$scope,
-				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
-			}
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Instanceof_(
-					$unwrappedLeftExpr->class,
-					new Name($rightType->getValue()),
-				),
+			return $this->resolveClassStringComparison(
+				$unwrappedLeftExpr,
+				$rightType,
+				$leftExpr,
 				$context,
-			)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
+				$scope,
+				$expr,
+			);
 		}
 
 		$leftType = $scope->getType($leftExpr);
@@ -3252,23 +3314,14 @@ final class TypeSpecifier
 			$leftType->getValue() !== '' &&
 			strtolower($unwrappedRightExpr->name->toString()) === 'class'
 		) {
-			if ($this->reflectionProvider->hasClass($leftType->getValue())) {
-				return $this->create(
-					$unwrappedRightExpr->class,
-					new ObjectType($leftType->getValue(), classReflection: $this->reflectionProvider->getClass($leftType->getValue())->asFinal()),
-					$context,
-					$scope,
-				)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
-			}
-
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Instanceof_(
-					$unwrappedRightExpr->class,
-					new Name($leftType->getValue()),
-				),
+			return $this->resolveClassStringComparison(
+				$unwrappedRightExpr,
+				$leftType,
+				$rightExpr,
 				$context,
-			)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
+				$scope,
+				$expr,
+			);
 		}
 
 		if ($context->false()) {

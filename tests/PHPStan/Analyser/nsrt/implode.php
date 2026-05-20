@@ -68,4 +68,21 @@ class Foo
 	public function constArrays7($constArr) {
 		assertType("'1a'|'1b'|'1c'|'2a'|'2b'|'2c'|'a'|'b'|'c'", implode('', $constArr));
 	}
+
+	/** @param array{'a', 'b', ...<int, string>} $unsealed */
+	public function unsealedConstArr($unsealed) {
+		// The unsealed `<int, string>` extras can append more segments, so
+		// the exact constant fold `'a,b'` is unsound. The result keeps only
+		// what's guaranteed: with a non-falsy separator and at least two
+		// explicit elements, the output always contains a comma.
+		assertType('non-falsy-string', implode(',', $unsealed));
+	}
+
+	/** @param array{'a', 'b', ...<int, string>} $unsealed */
+	public function unsealedConstArrEmptySeparator($unsealed) {
+		// Empty separator + a possibly-empty unsealed value type leaves no
+		// accessory PHPStan can prove, so the result widens to `string`
+		// (still sound — no bogus constant fold).
+		assertType('string', implode('', $unsealed));
+	}
 }

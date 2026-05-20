@@ -1657,6 +1657,11 @@ class IntersectionType implements CompoundType
 		return ArithmeticOpHelper::shiftLeft($this, $otherType);
 	}
 
+	public function minus(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::minus($this, $otherType);
+	}
+
 	public function shiftRight(Type $otherType): Type
 	{
 		return ArithmeticOpHelper::shiftRight($this, $otherType);

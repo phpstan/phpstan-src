@@ -13,6 +13,7 @@ use function in_array;
 use function intval;
 use function is_finite;
 use function is_float;
+use function is_int;
 use function max;
 use function min;
 use const INF;
@@ -45,6 +46,11 @@ final class ArithmeticOpHelper
 	public static function shiftRight(Type $leftType, Type $rightType): Type
 	{
 		return self::shift($leftType, $rightType, static fn (int $value, int $amount): int => $value >> $amount);
+	}
+
+	public static function minus(Type $leftType, Type $rightType): Type
+	{
+		return self::numericOp($leftType, $rightType, self::OP_MINUS, static fn ($left, $right) => $left - $right);
 	}
 
 	/**
@@ -104,6 +110,198 @@ final class ArithmeticOpHelper
 		}
 
 		return TypeCombinator::union(...$results);
+	}
+
+	/**
+	 * Shared implementation of the +, -, *, / operators on numeric operands. Decomposes both
+	 * operands polymorphically — constant scalars via getConstantScalarValues(), integer ranges via
+	 * getIntegerRanges() — so it never inspects operand classes for IntegerRangeType/ConstantIntegerType.
+	 *
+	 * @param callable(int|float, int|float): (int|float|null) $scalarFold maps a pair of constant
+	 *   operands to the result value, or null to mark the whole operation an error (e.g. division by zero).
+	 */
+	private static function numericOp(Type $leftType, Type $rightType, string $op, callable $scalarFold): Type
+	{
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return self::getNeverType($leftType, $rightType);
+		}
+
+		$leftNumber = $leftType->toNumber();
+		$rightNumber = $rightType->toNumber();
+		if ($leftNumber instanceof ErrorType || $rightNumber instanceof ErrorType) {
+			return new ErrorType();
+		}
+
+		$leftValues = $leftNumber->getConstantScalarValues();
+		$rightValues = $rightNumber->getConstantScalarValues();
+		if ($leftValues !== [] && $rightValues !== []) {
+			if (count($leftValues) * count($rightValues) <= InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+				$results = [];
+				foreach ($leftValues as $leftValue) {
+					foreach ($rightValues as $rightValue) {
+						// toNumber() above guarantees numeric constant values
+						if ((!is_int($leftValue) && !is_float($leftValue)) || (!is_int($rightValue) && !is_float($rightValue))) {
+							throw new ShouldNotHappenException();
+						}
+
+						$folded = $scalarFold($leftValue, $rightValue);
+						if ($folded === null) {
+							return new ErrorType();
+						}
+						$results[] = ConstantTypeHelper::getTypeFromValue($folded);
+					}
+				}
+
+				return TypeCombinator::union(...$results);
+			}
+
+			$leftNumber = self::optimizeScalarType($leftNumber);
+			$rightNumber = self::optimizeScalarType($rightNumber);
+		}
+
+		$leftPieces = self::integerPieces($leftNumber);
+		$rightPieces = self::integerPieces($rightNumber);
+		if ($leftPieces !== [] && $rightPieces !== []) {
+			$results = [];
+			foreach ($leftPieces as [$leftPieceMin, $leftPieceMax]) {
+				foreach ($rightPieces as [$rightPieceMin, $rightPieceMax]) {
+					$results[] = self::combineIntegerRanges($leftPieceMin, $leftPieceMax, $rightPieceMin, $rightPieceMax, $op);
+				}
+			}
+
+			$union = TypeCombinator::union(...$results);
+			if ($leftNumber instanceof BenevolentUnionType || $rightNumber instanceof BenevolentUnionType) {
+				return TypeUtils::toBenevolentUnion($union)->toNumber();
+			}
+
+			return $union;
+		}
+
+		return self::numericGeneral($op, $leftType, $rightType, $leftNumber, $rightNumber);
+	}
+
+	/** Float promotion and benevolent/mixed handling once constant folding and integer-range math do not apply. */
+	private static function numericGeneral(string $op, Type $leftType, Type $rightType, Type $leftNumber, Type $rightNumber): Type
+	{
+		$types = TypeCombinator::union($leftType, $rightType);
+
+		if ($leftNumber instanceof NeverType || $rightNumber instanceof NeverType) {
+			return self::getNeverType($leftNumber, $rightNumber);
+		}
+
+		if ($leftNumber->isFloat()->yes() || $rightNumber->isFloat()->yes()) {
+			return new FloatType();
+		}
+
+		$resultType = TypeCombinator::union($leftNumber, $rightNumber);
+		if ($op === self::OP_DIV) {
+			if ($types instanceof MixedType || $resultType->isInteger()->yes()) {
+				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+			}
+
+			return new UnionType([new IntegerType(), new FloatType()]);
+		}
+
+		if ($types instanceof MixedType
+			|| $leftType instanceof BenevolentUnionType
+			|| $rightType instanceof BenevolentUnionType
+		) {
+			return TypeUtils::toBenevolentUnion($resultType);
+		}
+
+		return $resultType;
+	}
+
+	/**
+	 * Decomposes a number type into the integer intervals it covers, as [min, max] bounds (null = unbounded).
+	 * Reads ranges via getIntegerRanges() and constant integers via getConstantScalarValues(), so no operand
+	 * class is inspected. Returns an empty array when the type carries no integer interval.
+	 *
+	 * @return list<array{int|null, int|null}>
+	 */
+	private static function integerPieces(Type $type): array
+	{
+		$pieces = [];
+		foreach ($type->getIntegerRanges() as $range) {
+			$pieces[] = [$range->getMin(), $range->getMax()];
+		}
+		foreach ($type->getConstantScalarValues() as $value) {
+			if (!is_int($value)) {
+				continue;
+			}
+
+			$pieces[] = [$value, $value];
+		}
+
+		return $pieces;
+	}
+
+	/** Combines two integer intervals under +, -, * (operating purely on bounds; no operand classes involved). */
+	private static function combineIntegerRanges(?int $leftMin, ?int $leftMax, ?int $rightMin, ?int $rightMax, string $op): Type
+	{
+		if ($op === self::OP_PLUS) {
+			$min = $leftMin !== null && $rightMin !== null ? $leftMin + $rightMin : null;
+			$max = $leftMax !== null && $rightMax !== null ? $leftMax + $rightMax : null;
+		} elseif ($op === self::OP_MINUS) {
+			if ($leftMin === $leftMax && $leftMin !== null && ($rightMin === null || $rightMax === null)) {
+				$min = null;
+				$max = $leftMin;
+			} else {
+				if ($rightMin === null) {
+					$min = null;
+				} elseif ($leftMin !== null) {
+					$min = $rightMax !== null ? $leftMin - $rightMax : $leftMin - $rightMin;
+				} else {
+					$min = null;
+				}
+
+				if ($rightMax === null) {
+					$min = null;
+					$max = null;
+				} elseif ($leftMax !== null) {
+					if ($leftMin !== null && $rightMin === null) {
+						$min = $leftMin - $rightMax;
+						$max = null;
+					} elseif ($rightMin !== null) {
+						$max = $leftMax - $rightMin;
+					} else {
+						$max = null;
+					}
+				} else {
+					$max = null;
+				}
+
+				if ($min !== null && $max !== null && $min > $max) {
+					[$min, $max] = [$max, $min];
+				}
+			}
+		} elseif ($op === self::OP_MUL) {
+			$min1 = $leftMin === 0 || $rightMin === 0 ? 0 : ($leftMin ?? -INF) * ($rightMin ?? -INF);
+			$min2 = $leftMin === 0 || $rightMax === 0 ? 0 : ($leftMin ?? -INF) * ($rightMax ?? INF);
+			$max1 = $leftMax === 0 || $rightMin === 0 ? 0 : ($leftMax ?? INF) * ($rightMin ?? -INF);
+			$max2 = $leftMax === 0 || $rightMax === 0 ? 0 : ($leftMax ?? INF) * ($rightMax ?? INF);
+
+			$min = min($min1, $min2, $max1, $max2);
+			$max = max($min1, $min2, $max1, $max2);
+
+			if (!is_finite($min)) {
+				$min = null;
+			}
+			if (!is_finite($max)) {
+				$max = null;
+			}
+		} else {
+			throw new ShouldNotHappenException();
+		}
+
+		if (is_float($min)) {
+			$min = null;
+		}
+		if (is_float($max)) {
+			$max = null;
+		}
+
+		return IntegerRangeType::fromInterval($min, $max);
 	}
 
 	/**

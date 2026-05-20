@@ -1,6 +1,6 @@
 <?php
 
-const AAA = true;
+define('AAA', true);
 const BBB = true;
 
 if (AAA) {

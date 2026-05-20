@@ -510,6 +510,11 @@ class IterableType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function multiply(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function minus(Type $otherType): Type
 	{
 		return new ErrorType();

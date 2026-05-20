@@ -1660,55 +1660,13 @@ final class InitializerExprTypeResolver
 
 	public function getMulTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
 	{
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						$leftNumberType = $leftTypeInner->toNumber();
-						$rightNumberType = $rightTypeInner->toNumber();
-
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-							return new ErrorType();
-						}
-
-						if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-							throw new ShouldNotHappenException();
-						}
-
-						$resultType = $this->getTypeFromValue($leftNumberType->getValue() * $rightNumberType->getValue());
-						$resultTypes[] = $resultType;
-					}
-				}
-
-				return TypeCombinator::union(...$resultTypes);
-			}
-
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Mul($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() === 0) {
-			if ($rightType->isFloat()->yes()) {
-				return new ConstantFloatType(0.0);
-			}
-			return new ConstantIntegerType(0);
-		}
-		$rightNumberType = $rightType->toNumber();
-		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() === 0) {
-			if ($leftType->isFloat()->yes()) {
-				return new ConstantFloatType(0.0);
-			}
-			return new ConstantIntegerType(0);
-		}
-
-		return $this->resolveCommonMath(new BinaryOp\Mul($left, $right), $leftType, $rightType);
+		return $leftType->multiply($rightType);
 	}
 
 	/**

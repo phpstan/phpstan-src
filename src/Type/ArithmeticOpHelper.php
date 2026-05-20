@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function assert;
 use function ceil;
@@ -51,6 +52,32 @@ final class ArithmeticOpHelper
 	public static function minus(Type $leftType, Type $rightType): Type
 	{
 		return self::numericOp($leftType, $rightType, self::OP_MINUS, static fn ($left, $right) => $left - $right);
+	}
+
+	public static function multiply(Type $leftType, Type $rightType): Type
+	{
+		$zero = self::multiplyByZero($leftType, $rightType) ?? self::multiplyByZero($rightType, $leftType);
+		if ($zero !== null) {
+			return $zero;
+		}
+
+		return self::numericOp($leftType, $rightType, self::OP_MUL, static fn ($left, $right) => $left * $right);
+	}
+
+	/**
+	 * x * 0 collapses to exactly 0 (0.0 when the other operand is a float), but only when the other
+	 * operand is non-constant — two constants are left to the fold so that e.g. 0 * INF stays NAN.
+	 */
+	private static function multiplyByZero(Type $zeroCandidate, Type $other): ?Type
+	{
+		if ($zeroCandidate->toNumber()->getConstantScalarValues() !== [0]) {
+			return null;
+		}
+		if ($other->toNumber()->getConstantScalarValues() !== []) {
+			return null;
+		}
+
+		return $other->isFloat()->yes() ? new ConstantFloatType(0.0) : new ConstantIntegerType(0);
 	}
 
 	/**
@@ -159,22 +186,44 @@ final class ArithmeticOpHelper
 			$rightNumber = self::optimizeScalarType($rightNumber);
 		}
 
-		$leftPieces = self::integerPieces($leftNumber);
-		$rightPieces = self::integerPieces($rightNumber);
-		if ($leftPieces !== [] && $rightPieces !== []) {
-			$results = [];
-			foreach ($leftPieces as [$leftPieceMin, $leftPieceMax]) {
-				foreach ($rightPieces as [$rightPieceMin, $rightPieceMax]) {
-					$results[] = self::combineIntegerRanges($leftPieceMin, $leftPieceMax, $rightPieceMin, $rightPieceMax, $op);
+		// Integer-range math is skipped for mixed operands, which fall straight through to the
+		// benevolent/mixed promotion in numericGeneral() (mirrors the old commonMath()).
+		if (!TypeCombinator::union($leftType, $rightType) instanceof MixedType) {
+			// A union right operand is mapped member by member: the left operand dispatches via Type::op(),
+			// but a union on the right (e.g. float|int<min, 6> from a division) has to be distributed here so
+			// its non-integer members are not dropped by the integer-range decomposition below.
+			if ($rightNumber instanceof UnionType) {
+				$results = [];
+				foreach ($rightNumber->getTypes() as $rightMember) {
+					$results[] = self::numericOp($leftNumber, $rightMember, $op, $scalarFold);
 				}
+
+				$union = TypeCombinator::union(...$results);
+				if ($rightNumber instanceof BenevolentUnionType) {
+					return TypeUtils::toBenevolentUnion($union)->toNumber();
+				}
+
+				return $union;
 			}
 
-			$union = TypeCombinator::union(...$results);
-			if ($leftNumber instanceof BenevolentUnionType || $rightNumber instanceof BenevolentUnionType) {
-				return TypeUtils::toBenevolentUnion($union)->toNumber();
-			}
+			$leftPieces = self::integerPieces($leftNumber);
+			$rightPieces = self::integerPieces($rightNumber);
+			if ($leftPieces !== [] && $rightPieces !== []) {
+				$results = [];
+				foreach ($leftPieces as [$leftPieceMin, $leftPieceMax]) {
+					foreach ($rightPieces as [$rightPieceMin, $rightPieceMax]) {
+						$results[] = self::combineIntegerRanges($leftPieceMin, $leftPieceMax, $rightPieceMin, $rightPieceMax, $op);
+					}
+				}
 
-			return $union;
+				$union = TypeCombinator::union(...$results);
+				// rightNumber is no longer a union here (mapped above), so only leftNumber can be benevolent
+				if ($leftNumber instanceof BenevolentUnionType) {
+					return TypeUtils::toBenevolentUnion($union)->toNumber();
+				}
+
+				return $union;
+			}
 		}
 
 		return self::numericGeneral($op, $leftType, $rightType, $leftNumber, $rightNumber);

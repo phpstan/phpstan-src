@@ -384,6 +384,9 @@ interface Type
 	/** Models the - operator. Returns `ErrorType` for types where the operation is undefined. */
 	public function minus(Type $otherType): Type;
 
+	/** Models the * operator. Returns `ErrorType` for types where the operation is undefined. */
+	public function multiply(Type $otherType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/** @return list<CallableParametersAcceptor> */

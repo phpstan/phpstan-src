@@ -183,7 +183,7 @@ class Foo
 		$b = null;
 		assertType('*ERROR*', $a + $b);
 		assertType('*ERROR*', $a - $b);
-		assertType('0', $a * $b); // BUG: This throws type error, but getMulType assumes that since null (mostly) behaves like zero, it will be zero.
+		assertType('*ERROR*', $a * $b); // BcMath\Number * null is a runtime type error
 		assertType('*ERROR*', $a / $b);
 		assertType('*ERROR*', $a % $b);
 		assertType('non-empty-string&numeric-string', $a . $b);

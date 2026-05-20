@@ -35,6 +35,8 @@ use function count;
 final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	private int $cloneCounter = 0;
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'array_map';
@@ -132,7 +134,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			if (count($constantArrays) > 0) {
 				$totalCount = TypeCombinator::countConstantArrayValueTypes($constantArrays) * TypeCombinator::countConstantArrayValueTypes([$valueType]);
 				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-					$mappedArrayType = $arrayType->mapValueType(static fn (Type $type): Type => self::resolveCallbackReturnType($scope, $callback, $type));
+					$mappedArrayType = $arrayType->mapValueType(fn (Type $type): Type => $this->resolveCallbackReturnType($scope, $callback, $type));
 				} else {
 					$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 						$arrayType->getIterableKeyType(),
@@ -164,11 +166,9 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		return $mappedArrayType;
 	}
 
-	private static function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type
+	private function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type
 	{
 		if ($callback instanceof Node\Expr\Closure || $callback instanceof Node\Expr\ArrowFunction) {
-			static $cloneCounter = 0;
-
 			$clone = clone $callback;
 			$wrappedType = new ConstantArrayType(
 				[new ConstantIntegerType(0)],
@@ -178,7 +178,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$clone->setAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME, [new Node\Arg(new TypeExpr($wrappedType))]);
 			$clone->setAttribute('phpstanCachedTypes', []);
 			$clone->setAttribute(ExprPrinter::ATTRIBUTE_CACHE_KEY, null);
-			$clone->setAttribute('startFilePos', -(++$cloneCounter));
+			$clone->setAttribute('startFilePos', -(++$this->cloneCounter));
 
 			$closureType = $scope->getType($clone);
 			if ($closureType->isCallable()->yes()) {

@@ -292,7 +292,7 @@ class FlipArray
 		// `array_flip` swaps keys and values pair-by-pair, so the
 		// unsealed `<int, string>` becomes `<string, int>` — the value
 		// type passes through `toArrayKey()` to land in the new key slot.
-		assertType("array{foo: 'a', bar: 'b', ...<string, int>}", array_flip($arr));
+		assertType("array{foo: 'a'|int, bar: 'b'|int, ...<string, int>}", array_flip($arr));
 	}
 
 	/**

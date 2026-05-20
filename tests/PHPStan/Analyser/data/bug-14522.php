@@ -3,6 +3,7 @@
 namespace Bug14522;
 
 use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertNativeType;
 
 /**
  * @return int<1, max>
@@ -10,7 +11,9 @@ use function PHPStan\Testing\assertType;
 function getBackoffTime(int $retryCount, int $maxBackoff): int
 {
 	$retryCount = max(0, $retryCount);
+	assertNativeType('int<0, max>', $retryCount);
 	$maxBackoff = max(1, $maxBackoff);
+	assertNativeType('int<1, max>', $maxBackoff);
 
 	$total = 0;
 	for ($i = 0; $i <= $retryCount; ++$i) {
@@ -20,19 +23,10 @@ function getBackoffTime(int $retryCount, int $maxBackoff): int
 	return $total;
 }
 
-/** @param int<0, max> $n */
-function simpleForLoopAlwaysEnters(int $n): void
-{
-	$total = 0;
-	for ($i = 0; $i <= $n; $i++) {
-		$total++;
-	}
-	assertType('int<1, max>', $total);
-}
-
 function forLoopWithMaxAlwaysEnters(int $n): void
 {
 	$n = max(0, $n);
+	assertNativeType('int<0, max>', $n);
 	$total = 0;
 	for ($i = 0; $i <= $n; $i++) {
 		$total++;
@@ -43,6 +37,7 @@ function forLoopWithMaxAlwaysEnters(int $n): void
 function whileLoopAlwaysEnters(int $n): void
 {
 	$n = max(0, $n);
+	assertNativeType('int<0, max>', $n);
 	$i = 0;
 	$total = 0;
 	while ($i <= $n) {

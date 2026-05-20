@@ -42,7 +42,7 @@ class DumpNativeTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14508-native.php'], [
 			[
-				'Dumped type #1: int',
+				'Dumped type #1: int<0, 100>',
 				10,
 			],
 			[

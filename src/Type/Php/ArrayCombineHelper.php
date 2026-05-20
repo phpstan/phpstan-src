@@ -66,6 +66,22 @@ final class ArrayCombineHelper
 					$builder->setOffsetValueType($keyType, $valueType);
 				}
 
+				// When both inputs carry unsealed extras (of matching,
+				// unbounded count) the extra positions pair up: the keys'
+				// unsealed value becomes a key, the values' unsealed value
+				// becomes its value. If only one side is unsealed, the
+				// sealed side caps the size, so no extras can survive.
+				$keysUnsealed = $constantKeysArray->getUnsealedTypes();
+				$valuesUnsealed = $constantValueArrays->getUnsealedTypes();
+				if (
+					$constantKeysArray->isUnsealed()->yes()
+					&& $constantValueArrays->isUnsealed()->yes()
+					&& $keysUnsealed !== null
+					&& $valuesUnsealed !== null
+				) {
+					$builder->makeUnsealed($keysUnsealed[1]->toArrayKey(), $valuesUnsealed[1]);
+				}
+
 				$results[] = $builder->getArray();
 			}
 

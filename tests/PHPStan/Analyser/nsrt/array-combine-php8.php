@@ -162,3 +162,27 @@ function withUnionAsKey(int|bool $oneOrBool)
 
 	assertType("array{1: 'bar'}", array_combine($keys, ['bar']));
 }
+
+/**
+ * @param array{'a', 'b', ...<int, string>} $keys
+ * @param array{1, 2, ...<int, int>} $values
+ */
+function bothUnsealed(array $keys, array $values)
+{
+	// Both arrays carry unsealed extras of matching (unbounded) count;
+	// the extra key/value pairs become the result's unsealed slot:
+	// `<string, int>` (the keys' unsealed value, as a key, mapped to the
+	// values' unsealed value).
+	assertType('array{a: 1, b: 2, ...<string, int>}', array_combine($keys, $values));
+}
+
+/**
+ * @param array{'a', 'b', ...<int, string>} $keys
+ */
+function onlyKeysUnsealed(array $keys)
+{
+	// The values array is sealed (exactly 2), so array_combine only
+	// succeeds when the keys array also has exactly 2 — the extras can't
+	// exist. Result stays sealed.
+	assertType('array{a: 1, b: 2}', array_combine($keys, [1, 2]));
+}

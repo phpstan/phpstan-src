@@ -52,7 +52,6 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArithmeticOpHelper;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -1304,196 +1303,13 @@ final class InitializerExprTypeResolver
 
 	public function getPlusTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
 	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return $this->getNeverType($leftType, $rightType);
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Plus($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
 		}
 
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						$leftNumberType = $leftTypeInner->toNumber();
-						$rightNumberType = $rightTypeInner->toNumber();
-
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-							return new ErrorType();
-						}
-
-						if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-							throw new ShouldNotHappenException();
-						}
-
-						$resultType = $this->getTypeFromValue($leftNumberType->getValue() + $rightNumberType->getValue());
-						$resultTypes[] = $resultType;
-					}
-				}
-
-				return TypeCombinator::union(...$resultTypes);
-			}
-
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
-		}
-
-		$leftConstantArrays = $leftType->getConstantArrays();
-		$rightConstantArrays = $rightType->getConstantArrays();
-
-		$leftCount = count($leftConstantArrays);
-		$rightCount = count($rightConstantArrays);
-		if ($leftCount > 0 && $rightCount > 0
-			&& ($leftCount + $rightCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT)) {
-			$resultTypes = [];
-			foreach ($rightConstantArrays as $rightConstantArray) {
-				foreach ($leftConstantArrays as $leftConstantArray) {
-					$newArrayBuilder = ConstantArrayTypeBuilder::createFromConstantArray($rightConstantArray);
-					foreach ($leftConstantArray->getKeyTypes() as $i => $leftKeyType) {
-						$optional = $leftConstantArray->isOptionalKey($i);
-						$valueType = $leftConstantArray->getOffsetValueType($leftKeyType);
-						if (!$optional) {
-							if ($rightConstantArray->hasOffsetValueType($leftKeyType)->maybe()) {
-								$valueType = TypeCombinator::union($valueType, $rightConstantArray->getOffsetValueType($leftKeyType));
-							}
-						}
-						$newArrayBuilder->setOffsetValueType(
-							$leftKeyType,
-							$valueType,
-							$optional,
-						);
-					}
-					$resultTypes[] = $newArrayBuilder->getArray();
-				}
-			}
-			return TypeCombinator::union(...$resultTypes);
-		}
-
-		$leftIsArray = $leftType->isArray();
-		$rightIsArray = $rightType->isArray();
-		if ($leftIsArray->yes() && $rightIsArray->yes()) {
-			if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
-				// to preserve BenevolentUnionType
-				$keyType = $leftType->getIterableKeyType();
-			} else {
-				$keyTypes = [];
-				foreach ([
-					$leftType->getIterableKeyType(),
-					$rightType->getIterableKeyType(),
-				] as $keyType) {
-					$keyTypes[] = $keyType;
-				}
-				$keyType = TypeCombinator::union(...$keyTypes);
-			}
-
-			$leftIterableValueType = $leftType->getIterableValueType();
-			$arrayType = new ArrayType(
-				$keyType,
-				TypeCombinator::union($leftIterableValueType, $rightType->getIterableValueType()),
-			);
-
-			$accessories = [];
-			if ($leftCount > 0) {
-				// Use the first constant array as a reference to list potential offsets.
-				// We only need to check the first array because we're looking for offsets that exist in ALL arrays.
-				$constantArray = $leftConstantArrays[0];
-				foreach ($constantArray->getKeyTypes() as $offsetType) {
-					if (!$leftType->hasOffsetValueType($offsetType)->yes()) {
-						continue;
-					}
-
-					$valueType = $leftType->getOffsetValueType($offsetType);
-					$accessories[] = new HasOffsetValueType($offsetType, $valueType);
-				}
-			}
-
-			if ($rightCount > 0) {
-				// Use the first constant array as a reference to list potential offsets.
-				// We only need to check the first array because we're looking for offsets that exist in ALL arrays.
-				$constantArray = $rightConstantArrays[0];
-				foreach ($constantArray->getKeyTypes() as $offsetType) {
-					if (!$rightType->hasOffsetValueType($offsetType)->yes()) {
-						continue;
-					}
-
-					$valueType = TypeCombinator::union($leftIterableValueType, $rightType->getOffsetValueType($offsetType));
-					$accessories[] = new HasOffsetValueType($offsetType, $valueType);
-				}
-			}
-
-			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				$accessories[] = new NonEmptyArrayType();
-			}
-			if ($leftType->isList()->yes() && $rightType->isList()->yes()) {
-				$accessories[] = new AccessoryArrayListType();
-			}
-
-			if (count($accessories) > 0) {
-				$arrayType = TypeCombinator::intersect($arrayType, ...$accessories);
-			}
-
-			return $arrayType;
-		}
-
-		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
-			if ($leftIsArray->no() && $rightIsArray->no()) {
-				return new BenevolentUnionType([
-					new FloatType(),
-					new IntegerType(),
-				]);
-			}
-			return new BenevolentUnionType([
-				new FloatType(),
-				new IntegerType(),
-				new ArrayType(new MixedType(), new MixedType()),
-			]);
-		}
-
-		if (
-			($leftIsArray->yes() && $rightIsArray->no())
-			|| ($leftIsArray->no() && $rightIsArray->yes())
-		) {
-			return new ErrorType();
-		}
-
-		if (
-			($leftIsArray->yes() && $rightIsArray->maybe())
-			|| ($leftIsArray->maybe() && $rightIsArray->yes())
-		) {
-			$resultType = new ArrayType(new MixedType(), new MixedType());
-			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
-			}
-
-			return $resultType;
-		}
-
-		if ($leftIsArray->maybe() && $rightIsArray->maybe()) {
-			$plusable = new UnionType([
-				new StringType(),
-				new FloatType(),
-				new IntegerType(),
-				new ArrayType(new MixedType(), new MixedType()),
-				new BooleanType(),
-			]);
-
-			$plusableSuperTypeOfLeft = $plusable->isSuperTypeOf($leftType)->yes();
-			$plusableSuperTypeOfRight = $plusable->isSuperTypeOf($rightType)->yes();
-			if ($plusableSuperTypeOfLeft && $plusableSuperTypeOfRight) {
-				return TypeCombinator::union($leftType, $rightType);
-			}
-			if ($plusableSuperTypeOfLeft && $rightType instanceof MixedType) {
-				return $leftType;
-			}
-			if ($plusableSuperTypeOfRight && $leftType instanceof MixedType) {
-				return $rightType;
-			}
-		}
-
-		return $this->resolveCommonMath(new BinaryOp\Plus($left, $right), $leftType, $rightType);
+		return $leftType->plus($rightType);
 	}
 
 	/**
@@ -1740,20 +1556,6 @@ final class InitializerExprTypeResolver
 		}
 
 		return new TypeResult($resultType->toBoolean(), []);
-	}
-
-	/**
-	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Div|BinaryOp\ShiftLeft|BinaryOp\ShiftRight $expr
-	 */
-	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
-	{
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
-			->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
-		if ($specifiedTypes !== null) {
-			return $specifiedTypes;
-		}
-
-		return ArithmeticOpHelper::commonMath($expr->getOperatorSigil(), $leftType, $rightType);
 	}
 
 	/**

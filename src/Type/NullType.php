@@ -412,6 +412,11 @@ class NullType implements ConstantScalarType
 		return ArithmeticOpHelper::shiftLeft($this, $otherType);
 	}
 
+	public function plus(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::plus($this, $otherType);
+	}
+
 	public function modulo(Type $otherType): Type
 	{
 		return ArithmeticOpHelper::modulo($this, $otherType);

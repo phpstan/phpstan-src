@@ -202,6 +202,11 @@ class ObjectWithoutClassType implements SubtractableType
 		return new ErrorType();
 	}
 
+	public function plus(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function modulo(Type $otherType): Type
 	{
 		return new ErrorType();

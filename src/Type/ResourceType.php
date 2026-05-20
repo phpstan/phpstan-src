@@ -120,6 +120,11 @@ class ResourceType implements Type
 		return new ErrorType();
 	}
 
+	public function plus(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function modulo(Type $otherType): Type
 	{
 		return new ErrorType();

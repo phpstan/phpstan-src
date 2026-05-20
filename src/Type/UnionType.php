@@ -1327,6 +1327,23 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->shiftLeft($otherType));
 	}
 
+	public function plus(Type $otherType): Type
+	{
+		// The + operator unions arrays, so an array-shaped union must be handled as a whole type.
+		// A fully-constant numeric union also folds as a whole so the CALCULATE_SCALARS_LIMIT
+		// generalization sees the true cross-product; only a mixed numeric union is mapped member by
+		// member, because getConstantScalarValues() yields nothing once a range member is present.
+		if (
+			!$this->isArray()->no()
+			|| !$otherType->isArray()->no()
+			|| $this->getConstantScalarValues() !== []
+		) {
+			return ArithmeticOpHelper::plus($this, $otherType);
+		}
+
+		return $this->unionTypes(static fn (Type $type): Type => $type->plus($otherType));
+	}
+
 	public function modulo(Type $otherType): Type
 	{
 		// A fully-constant union folds as a whole so the CALCULATE_SCALARS_LIMIT generalization sees

@@ -379,8 +379,8 @@ class Foo
 	public function bcVsNever(Number $a): void
 	{
 		for ($b = 1; $b < count([]); $b++) {
-			assertType('*NEVER*', $a + $b);
-			assertType('*ERROR*', $a - $b); // Inconsistency: getPlusType handles never types right at the beginning, getMinusType doesn't.
+			assertType('*ERROR*', $a + $b);
+			assertType('*ERROR*', $a - $b);
 			assertType('*ERROR*', $a * $b);
 			assertType('*ERROR*', $a / $b);
 			assertType('*ERROR*', $a % $b);

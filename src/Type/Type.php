@@ -393,6 +393,9 @@ interface Type
 	/** Models the % operator. Returns `ErrorType` for types where the operation is undefined (e.g. modulo by zero). */
 	public function modulo(Type $otherType): Type;
 
+	/** Models the + operator (numeric addition or array union). Returns `ErrorType` where it is undefined. */
+	public function plus(Type $otherType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/** @return list<CallableParametersAcceptor> */

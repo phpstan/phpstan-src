@@ -224,7 +224,7 @@ class Foo
 	public function doShiftLeft($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a << $b);
-		assertNativeType('(float|int)', $a << $b);
+		assertNativeType('int', $a << $b);
 		assertType('8', 1 << 3);
 		assertNativeType('8', 1 << 3);
 		assertType('int', $c << $d);
@@ -239,7 +239,7 @@ class Foo
 	public function doShiftRight($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a >> $b);
-		assertNativeType('(float|int)', $a >> $b);
+		assertNativeType('int', $a >> $b);
 		assertType('0', 1 >> 3);
 		assertNativeType('0', 1 >> 3);
 		assertType('int', $c >> $d);

@@ -442,12 +442,6 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
-			rawMessage: Binary operation "+" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
 			rawMessage: Binary operation "^" between bool|float|int|string|null and bool|float|int|string|null results in an error.
 			identifier: binaryOp.invalid
 			count: 1
@@ -462,7 +456,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 6
+			count: 4
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
@@ -860,18 +854,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Accessory/OversizedArrayType.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
-			identifier: varTag.type
-			count: 4
-			path: src/Type/ArithmeticOpHelper.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
-			identifier: varTag.type
-			count: 6
-			path: src/Type/ArithmeticOpHelper.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'

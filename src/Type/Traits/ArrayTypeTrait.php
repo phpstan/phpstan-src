@@ -5,6 +5,7 @@ namespace PHPStan\Type\Traits;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArithmeticOpHelper;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
@@ -198,6 +199,11 @@ trait ArrayTypeTrait
 	public function shiftLeft(Type $otherType): Type
 	{
 		return new ErrorType();
+	}
+
+	public function plus(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::plus($this, $otherType);
 	}
 
 	public function modulo(Type $otherType): Type

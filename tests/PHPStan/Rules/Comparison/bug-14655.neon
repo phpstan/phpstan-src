@@ -1,0 +1,4 @@
+parameters:
+	dynamicConstantNames:
+		AAA: bool
+		BBB: bool

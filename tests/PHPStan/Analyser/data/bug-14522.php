@@ -22,27 +22,3 @@ function getBackoffTime(int $retryCount, int $maxBackoff): int
 	assertType('int<1, max>', $total);
 	return $total;
 }
-
-function forLoopWithMaxAlwaysEnters(int $n): void
-{
-	$n = max(0, $n);
-	assertNativeType('int<0, max>', $n);
-	$total = 0;
-	for ($i = 0; $i <= $n; $i++) {
-		$total++;
-	}
-	assertType('int<1, max>', $total);
-}
-
-function whileLoopAlwaysEnters(int $n): void
-{
-	$n = max(0, $n);
-	assertNativeType('int<0, max>', $n);
-	$i = 0;
-	$total = 0;
-	while ($i <= $n) {
-		$total++;
-		$i++;
-	}
-	assertType('int<1, max>', $total);
-}

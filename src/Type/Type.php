@@ -390,6 +390,9 @@ interface Type
 	/** Models the / operator. Returns `ErrorType` for types where the operation is undefined (e.g. division by zero). */
 	public function divide(Type $otherType): Type;
 
+	/** Models the % operator. Returns `ErrorType` for types where the operation is undefined (e.g. modulo by zero). */
+	public function modulo(Type $otherType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/** @return list<CallableParametersAcceptor> */

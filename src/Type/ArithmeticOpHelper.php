@@ -82,6 +82,107 @@ final class ArithmeticOpHelper
 		});
 	}
 
+	public static function modulo(Type $leftType, Type $rightType): Type
+	{
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return self::getNeverType($leftType, $rightType);
+		}
+
+		$leftNumber = $leftType->toNumber();
+		$rightNumber = $rightType->toNumber();
+		if ($leftNumber instanceof ErrorType || $rightNumber instanceof ErrorType) {
+			return new ErrorType();
+		}
+
+		$leftValues = $leftNumber->getConstantScalarValues();
+		$rightValues = $rightNumber->getConstantScalarValues();
+		if (
+			$leftValues !== [] && $rightValues !== []
+			&& count($leftValues) * count($rightValues) <= InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
+		) {
+			$results = [];
+			foreach ($leftValues as $leftValue) {
+				foreach ($rightValues as $rightValue) {
+					$rightIntegerValue = (int) $rightValue;
+					if ($rightIntegerValue === 0) {
+						return new ErrorType();
+					}
+					$results[] = ConstantTypeHelper::getTypeFromValue((int) $leftValue % $rightIntegerValue);
+				}
+			}
+
+			return TypeCombinator::union(...$results);
+		}
+
+		// x % 1 is always 0
+		if ($rightType->toInteger()->getConstantScalarValues() === [1]) {
+			return new ConstantIntegerType(0);
+		}
+
+		// modulo by a type that includes a constant 0 is a runtime error
+		foreach ($rightValues as $rightValue) {
+			if (in_array($rightValue, [0, 0.0], true)) {
+				return new ErrorType();
+			}
+		}
+
+		$positiveInt = IntegerRangeType::fromInterval(0, null);
+		if (!$rightType->isInteger()->yes()) {
+			if ($positiveInt->isSuperTypeOf($leftType)->yes()) {
+				return IntegerRangeType::fromInterval(0, null);
+			}
+
+			return new IntegerType();
+		}
+
+		$rangeMax = self::moduloRangeMax($rightType);
+		$rangeMin = null;
+		if ($positiveInt->isSuperTypeOf($leftType)->yes()) {
+			$rangeMin = 0;
+		} elseif ($rangeMax !== null) {
+			$rangeMin = $rangeMax * -1;
+		}
+
+		return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
+	}
+
+	/**
+	 * The upper bound for x % divisor, derived from the divisor's integer bounds via getIntegerRanges()
+	 * and getConstantScalarValues() rather than by inspecting operand classes.
+	 */
+	private static function moduloRangeMax(Type $rightType): ?int
+	{
+		if ($rightType instanceof UnionType) {
+			$rangeMax = null;
+			foreach ($rightType->getTypes() as $member) {
+				$ranges = $member->getIntegerRanges();
+				if ($ranges !== []) {
+					$memberMax = $ranges[0]->getMax();
+					$rangeMax = $memberMax === null ? null : max($rangeMax, $memberMax);
+				} else {
+					foreach ($member->toInteger()->getConstantScalarValues() as $value) {
+						$rangeMax = max($rangeMax, (int) $value - 1);
+					}
+				}
+			}
+
+			return $rangeMax;
+		}
+
+		$ranges = $rightType->getIntegerRanges();
+		if ($ranges !== []) {
+			$max = $ranges[0]->getMax();
+			return $max !== null ? $max - 1 : null;
+		}
+
+		$constValues = $rightType->toInteger()->getConstantScalarValues();
+		if ($constValues !== []) {
+			return (int) $constValues[0] - 1;
+		}
+
+		return null;
+	}
+
 	/**
 	 * x * 0 collapses to exactly 0 (0.0 when the other operand is a float), but only when the other
 	 * operand is non-constant — two constants are left to the fold so that e.g. 0 * INF stays NAN.

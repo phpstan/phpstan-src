@@ -383,7 +383,7 @@ class Foo
 			assertType('*ERROR*', $a - $b); // Inconsistency: getPlusType handles never types right at the beginning, getMinusType doesn't.
 			assertType('*ERROR*', $a * $b);
 			assertType('*ERROR*', $a / $b);
-			assertType('*NEVER*', $a % $b);
+			assertType('*ERROR*', $a % $b);
 			assertType('non-empty-string&numeric-string', $a . $b);
 			assertType('*ERROR*', $a ** $b);
 			assertType('*ERROR*', $a << $b);

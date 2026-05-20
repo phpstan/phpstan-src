@@ -1282,105 +1282,13 @@ final class InitializerExprTypeResolver
 
 	public function getModTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
 	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return $this->getNeverType($leftType, $rightType);
-		}
-
-		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Mod($left, $right), $leftType, $rightType);
-		if ($extensionSpecified !== null) {
-			return $extensionSpecified;
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
 		}
 
-		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
-			return new ErrorType();
-		}
-
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						$leftNumberType = $leftTypeInner->toNumber();
-						$rightNumberType = $rightTypeInner->toNumber();
-
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-							return new ErrorType();
-						}
-
-						if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-							throw new ShouldNotHappenException();
-						}
-
-						$rightIntegerValue = (int) $rightNumberType->getValue();
-						if ($rightIntegerValue === 0) {
-							return new ErrorType();
-						}
-
-						$resultType = $this->getTypeFromValue((int) $leftNumberType->getValue() % $rightIntegerValue);
-						$resultTypes[] = $resultType;
-					}
-				}
-				return TypeCombinator::union(...$resultTypes);
-			}
-
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
-		}
-
-		$integerType = $rightType->toInteger();
-		if ($integerType instanceof ConstantIntegerType && $integerType->getValue() === 1) {
-			return new ConstantIntegerType(0);
-		}
-
-		$rightScalarValues = $rightType->toNumber()->getConstantScalarValues();
-		foreach ($rightScalarValues as $scalarValue) {
-
-			if (in_array($scalarValue, [0, 0.0], true)) {
-				return new ErrorType();
-			}
-		}
-
-		$positiveInt = IntegerRangeType::fromInterval(0, null);
-		if ($rightType->isInteger()->yes()) {
-			$rangeMin = null;
-			$rangeMax = null;
-
-			if ($rightType instanceof IntegerRangeType) {
-				$rangeMax = $rightType->getMax() !== null ? $rightType->getMax() - 1 : null;
-			} elseif ($rightType instanceof ConstantIntegerType) {
-				$rangeMax = $rightType->getValue() - 1;
-			} elseif ($rightType instanceof UnionType) {
-				foreach ($rightType->getTypes() as $type) {
-					if ($type instanceof IntegerRangeType) {
-						if ($type->getMax() === null) {
-							$rangeMax = null;
-						} else {
-							$rangeMax = max($rangeMax, $type->getMax());
-						}
-					} elseif ($type instanceof ConstantIntegerType) {
-						$rangeMax = max($rangeMax, $type->getValue() - 1);
-					}
-				}
-			}
-
-			if ($positiveInt->isSuperTypeOf($leftType)->yes()) {
-				$rangeMin = 0;
-			} elseif ($rangeMax !== null) {
-				$rangeMin = $rangeMax * -1;
-			}
-
-			return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
-		} elseif ($positiveInt->isSuperTypeOf($leftType)->yes()) {
-			return IntegerRangeType::fromInterval(0, null);
-		}
-
-		return new IntegerType();
+		return $leftType->modulo($rightType);
 	}
 
 	/**

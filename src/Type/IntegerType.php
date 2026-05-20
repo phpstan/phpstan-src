@@ -199,6 +199,11 @@ class IntegerType implements Type
 		return ArithmeticOpHelper::shiftLeft($this, $otherType);
 	}
 
+	public function modulo(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::modulo($this, $otherType);
+	}
+
 	public function divide(Type $otherType): Type
 	{
 		return ArithmeticOpHelper::divide($this, $otherType);

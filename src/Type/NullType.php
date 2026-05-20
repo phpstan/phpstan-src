@@ -412,6 +412,11 @@ class NullType implements ConstantScalarType
 		return ArithmeticOpHelper::shiftLeft($this, $otherType);
 	}
 
+	public function divide(Type $otherType): Type
+	{
+		return ArithmeticOpHelper::divide($this, $otherType);
+	}
+
 	public function multiply(Type $otherType): Type
 	{
 		return ArithmeticOpHelper::multiply($this, $otherType);

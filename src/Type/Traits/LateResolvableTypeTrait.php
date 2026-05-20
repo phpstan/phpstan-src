@@ -685,6 +685,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->shiftLeft($otherType);
 	}
 
+	public function divide(Type $otherType): Type
+	{
+		return $this->resolve()->divide($otherType);
+	}
+
 	public function multiply(Type $otherType): Type
 	{
 		return $this->resolve()->multiply($otherType);

@@ -1260,50 +1260,13 @@ final class InitializerExprTypeResolver
 
 	public function getDivTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
 	{
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						$leftNumberType = $leftTypeInner->toNumber();
-						$rightNumberType = $rightTypeInner->toNumber();
-
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-							return new ErrorType();
-						}
-
-						if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-							throw new ShouldNotHappenException();
-						}
-
-						if (in_array($rightNumberType->getValue(), [0, 0.0], true)) {
-							return new ErrorType();
-						}
-
-						$resultType = $this->getTypeFromValue($leftNumberType->getValue() / $rightNumberType->getValue()); // @phpstan-ignore binaryOp.invalid
-						$resultTypes[] = $resultType;
-					}
-				}
-				return TypeCombinator::union(...$resultTypes);
-			}
-
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Div($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
 		}
 
-		$rightScalarValues = $rightType->toNumber()->getConstantScalarValues();
-		foreach ($rightScalarValues as $scalarValue) {
-			if (in_array($scalarValue, [0, 0.0], true)) {
-				return new ErrorType();
-			}
-		}
-
-		return $this->resolveCommonMath(new BinaryOp\Div($left, $right), $leftType, $rightType);
+		return $leftType->divide($rightType);
 	}
 
 	/**

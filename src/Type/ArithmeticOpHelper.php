@@ -64,6 +64,24 @@ final class ArithmeticOpHelper
 		return self::numericOp($leftType, $rightType, self::OP_MUL, static fn ($left, $right) => $left * $right);
 	}
 
+	public static function divide(Type $leftType, Type $rightType): Type
+	{
+		// dividing by a type that includes a constant 0 is a runtime error
+		foreach ($rightType->toNumber()->getConstantScalarValues() as $value) {
+			if (in_array($value, [0, 0.0], true)) {
+				return new ErrorType();
+			}
+		}
+
+		return self::numericOp($leftType, $rightType, self::OP_DIV, static function ($left, $right) {
+			if (in_array($right, [0, 0.0], true)) {
+				return null;
+			}
+
+			return $left / $right;
+		});
+	}
+
 	/**
 	 * x * 0 collapses to exactly 0 (0.0 when the other operand is a float), but only when the other
 	 * operand is non-constant — two constants are left to the fold so that e.g. 0 * INF stays NAN.
@@ -339,6 +357,8 @@ final class ArithmeticOpHelper
 			if (!is_finite($max)) {
 				$max = null;
 			}
+		} elseif ($op === self::OP_DIV) {
+			return self::divideIntegerRanges($leftMin, $leftMax, $rightMin, $rightMax);
 		} else {
 			throw new ShouldNotHappenException();
 		}
@@ -351,6 +371,96 @@ final class ArithmeticOpHelper
 		}
 
 		return IntegerRangeType::fromInterval($min, $max);
+	}
+
+	/**
+	 * Integer-range division, including the splits around zero crossings. Operates purely on bounds —
+	 * the constant-divisor optimisation is min === max, no operand classes are inspected.
+	 */
+	private static function divideIntegerRanges(?int $leftMin, ?int $leftMax, ?int $rightMin, ?int $rightMax): Type
+	{
+		$leftIsNegativeConstant = $leftMin === $leftMax && $leftMin !== null && $leftMin < 0;
+		$rightIsNegativeConstant = $rightMin === $rightMax && $rightMin !== null && $rightMin < 0;
+
+		if ($rightMin === $rightMax && $rightMin !== null) {
+			$min = $leftMin !== null && $rightMin !== 0 ? $leftMin / $rightMin : null;
+			$max = $leftMax !== null && $rightMin !== 0 ? $leftMax / $rightMin : null;
+		} else {
+			// Avoid division by zero when looking for the min and the max by using the closest int
+			$operandMin = $rightMin !== 0 ? $rightMin : 1;
+			$operandMax = $rightMax !== 0 ? $rightMax : -1;
+
+			if (
+				($operandMin < 0 || $operandMin === null)
+				&& ($operandMax > 0 || $operandMax === null)
+			) {
+				$result = TypeCombinator::union(
+					self::divideIntegerRanges($leftMin, $leftMax, $operandMin, 0),
+					self::divideIntegerRanges($leftMin, $leftMax, 0, $operandMax),
+				)->toNumber();
+
+				if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
+					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+				}
+
+				return $result;
+			}
+			if (
+				($leftMin < 0 || $leftMin === null)
+				&& ($leftMax > 0 || $leftMax === null)
+			) {
+				$result = TypeCombinator::union(
+					self::divideIntegerRanges($leftMin, 0, $rightMin, $rightMax),
+					self::divideIntegerRanges(0, $leftMax, $rightMin, $rightMax),
+				)->toNumber();
+
+				if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
+					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+				}
+
+				return $result;
+			}
+
+			$rangeMinSign = ($leftMin ?? -INF) <=> 0;
+			$rangeMaxSign = ($leftMax ?? INF) <=> 0;
+
+			$min1 = $operandMin !== null ? ($leftMin ?? -INF) / $operandMin : $rangeMinSign * -0.1;
+			$min2 = $operandMax !== null ? ($leftMin ?? -INF) / $operandMax : $rangeMinSign * 0.1;
+			$max1 = $operandMin !== null ? ($leftMax ?? INF) / $operandMin : $rangeMaxSign * -0.1;
+			$max2 = $operandMax !== null ? ($leftMax ?? INF) / $operandMax : $rangeMaxSign * 0.1;
+
+			$min = min($min1, $min2, $max1, $max2);
+			$max = max($min1, $min2, $max1, $max2);
+
+			if ($min === -INF) {
+				$min = null;
+			}
+			if ($max === INF) {
+				$max = null;
+			}
+		}
+
+		if ($min !== null && $max !== null && $min > $max) {
+			[$min, $max] = [$max, $min];
+		}
+
+		if (is_float($min)) {
+			$min = (int) ceil($min);
+		}
+		if (is_float($max)) {
+			$max = (int) floor($max);
+		}
+
+		// invert maximas on division with negative constants
+		if (($leftIsNegativeConstant || $rightIsNegativeConstant) && ($min === null || $max === null)) {
+			[$min, $max] = [$max, $min];
+		}
+
+		if ($min === null && $max === null) {
+			return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+		}
+
+		return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 	}
 
 	/**

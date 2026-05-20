@@ -387,6 +387,9 @@ interface Type
 	/** Models the * operator. Returns `ErrorType` for types where the operation is undefined. */
 	public function multiply(Type $otherType): Type;
 
+	/** Models the / operator. Returns `ErrorType` for types where the operation is undefined (e.g. division by zero). */
+	public function divide(Type $otherType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/** @return list<CallableParametersAcceptor> */

@@ -380,6 +380,11 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function divide(Type $otherType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function multiply(Type $otherType): Type
 	{
 		return new ErrorType();

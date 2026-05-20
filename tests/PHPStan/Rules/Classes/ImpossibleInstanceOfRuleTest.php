@@ -599,4 +599,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([$file], []);
 	}
 
+	public function testBug5271(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5271.php'], []);
+	}
+
 }

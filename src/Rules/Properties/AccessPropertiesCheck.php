@@ -3,11 +3,11 @@
 namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node\Arg;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -119,6 +119,14 @@ final class AccessPropertiesCheck
 			$typeForDescribe = $type->getStaticObjectType();
 		}
 
+		$propertyExistsCall = new FuncCall(new FullyQualified('property_exists'), [
+			new Arg($node->var),
+			new Arg(new String_($name)),
+		]);
+		if ($scope->getType($propertyExistsCall)->isTrue()->yes()) {
+			return [];
+		}
+
 		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
 			return [
 				RuleErrorBuilder::message(sprintf(
@@ -202,15 +210,20 @@ final class AccessPropertiesCheck
 				}
 			}
 
-			if ($node->name instanceof Expr) {
+			if ($node->name instanceof Identifier) {
+				$propertyExistsExpr = new FuncCall(new FullyQualified('property_exists'), [
+					new Arg($node->var),
+					new Arg(new String_($name)),
+				]);
+			} else {
 				$propertyExistsExpr = new FuncCall(new FullyQualified('property_exists'), [
 					new Arg($node->var),
 					new Arg($node->name),
 				]);
+			}
 
-				if ($scope->getType($propertyExistsExpr)->isTrue()->yes()) {
-					return [];
-				}
+			if ($scope->getType($propertyExistsExpr)->isTrue()->yes()) {
+				return [];
 			}
 
 			if ($hasStatic->yes()) {

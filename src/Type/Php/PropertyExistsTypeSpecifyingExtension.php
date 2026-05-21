@@ -89,7 +89,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 				]),
 				$context,
 				$scope,
-			);
+			)->unionWith($this->createFuncCallSpec($node, $context, $scope));
 		}
 
 		$propertyNode = new PropertyFetch(

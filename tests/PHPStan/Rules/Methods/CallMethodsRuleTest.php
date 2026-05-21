@@ -428,10 +428,6 @@ class CallMethodsRuleTest extends RuleTestCase
 				911,
 			],
 			[
-				'Cannot call method foo() on class-string|object.',
-				914,
-			],
-			[
 				'Parameter #1 $callable of method Test\\MethodExists::doBar() expects callable(): mixed, array{class-string|object, \'foo\'} given.',
 				915,
 			],
@@ -4104,6 +4100,14 @@ class CallMethodsRuleTest extends RuleTestCase
 				11,
 			],
 		]);
+	}
+
+	public function testBug14667(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14667.php'], []);
 	}
 
 }

@@ -96,7 +96,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			]),
 			$context,
 			$scope,
-		);
+		)->unionWith($this->createFuncCallSpec($node, $context, $scope));
 	}
 
 	private function createFuncCallSpec(FuncCall $node, TypeSpecifierContext $context, Scope $scope): SpecifiedTypes

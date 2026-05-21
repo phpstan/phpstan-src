@@ -6,6 +6,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -65,6 +66,18 @@ final class MethodCallCheck
 		if ($type instanceof StaticType) {
 			$typeForDescribe = $type->getStaticObjectType();
 		}
+		$methodExistsCall = new Expr\FuncCall(new FullyQualified('method_exists'), [
+			new Arg($var),
+			new Arg(new String_($methodName)),
+		]);
+		if ($scope->getType($methodExistsCall)->isTrue()->yes()) {
+			if ($type->hasMethod($methodName)->yes()) {
+				return [[], $type->getMethod($methodName, $scope)];
+			}
+
+			return [[], null];
+		}
+
 		if (!$type->canCallMethods()->yes() || $type->isClassString()->yes()) {
 			return [
 				[
@@ -122,15 +135,20 @@ final class MethodCallCheck
 				}
 			}
 
-			if ($astName instanceof Expr) {
+			if ($astName instanceof Identifier) {
+				$methodExistsExpr = new Expr\FuncCall(new FullyQualified('method_exists'), [
+					new Arg($var),
+					new Arg(new String_($methodName)),
+				]);
+			} else {
 				$methodExistsExpr = new Expr\FuncCall(new FullyQualified('method_exists'), [
 					new Arg($var),
 					new Arg($astName),
 				]);
+			}
 
-				if ($scope->getType($methodExistsExpr)->isTrue()->yes()) {
-					return [[], null];
-				}
+			if ($scope->getType($methodExistsExpr)->isTrue()->yes()) {
+				return [[], null];
 			}
 
 			return [

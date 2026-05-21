@@ -174,7 +174,7 @@ class Foo
 		for ($i = 0; $i < 5; $i++) {
 			$arr[$i] = $i;
 		}
-		assertType("non-empty-array<'x'|int<0, 4>, int<0, max>>", $arr);
+		assertType("non-empty-array<'x'|int<0, 4>, int<0, 4>>", $arr);
 	}
 
 	/**

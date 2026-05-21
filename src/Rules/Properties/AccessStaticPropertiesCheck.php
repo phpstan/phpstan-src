@@ -3,8 +3,14 @@
 namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -254,6 +260,19 @@ final class AccessStaticPropertiesCheck
 						->identifier('property.staticAccess')
 						->build(),
 				]);
+			}
+
+			if ($node->class instanceof Name) {
+				$classExpr = new ClassConstFetch($node->class, new Identifier('class'));
+			} else {
+				$classExpr = $node->class;
+			}
+			$propertyExistsCall = new FuncCall(new FullyQualified('property_exists'), [
+				new Arg($classExpr),
+				new Arg(new String_($name)),
+			]);
+			if ($scope->getType($propertyExistsCall)->isTrue()->yes()) {
+				return [];
 			}
 
 			return array_merge($messages, [

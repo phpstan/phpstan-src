@@ -61,6 +61,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use PHPStan\Type\Traverser\UnsafeArrayStringKeyCastingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -301,7 +302,7 @@ class ConstantArrayType implements Type
 			$keyType = TypeCombinator::union($keyType, $unsealedKeyType);
 		}
 
-		return $this->iterableKeyType = $keyType;
+		return $this->iterableKeyType = UnsafeArrayStringKeyCastingTraverser::castKeyType($keyType);
 	}
 
 	public function getIterableValueType(): Type

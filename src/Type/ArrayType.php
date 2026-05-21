@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -13,7 +12,6 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -37,6 +35,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use PHPStan\Type\Traverser\UnsafeArrayStringKeyCastingTraverser;
 use function array_map;
 use function array_merge;
 use function count;
@@ -239,33 +238,7 @@ class ArrayType implements Type
 			$keyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
 		}
 
-		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();
-		if ($level === null) {
-			return $this->cachedIterableKeyType = $keyType;
-		}
-
-		if ($level === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
-			return $this->cachedIterableKeyType = $keyType;
-		}
-
-		if ($level !== ReportUnsafeArrayStringKeyCastingToggle::DETECT) { // @phpstan-ignore notIdentical.alwaysFalse
-			throw new ShouldNotHappenException();
-		}
-
-		return $this->cachedIterableKeyType = TypeTraverser::map($keyType, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof UnionType) {
-				return $traverse($type);
-			}
-
-			if ($type->isString()->yes() && !$type->isDecimalIntegerString()->no()) {
-				return TypeCombinator::union(
-					new IntegerType(),
-					TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true)),
-				);
-			}
-
-			return $type;
-		});
+		return $this->cachedIterableKeyType = UnsafeArrayStringKeyCastingTraverser::castKeyType($keyType);
 	}
 
 	public function getFirstIterableKeyType(): Type

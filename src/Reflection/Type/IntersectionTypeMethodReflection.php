@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -128,9 +129,17 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return $variants[0];
 	}
 
-	public function getNamedArgumentsVariants(): ?array
+	public function getNamedArgumentsVariants(): array
 	{
-		return null;
+		$allVariants = [];
+		foreach ($this->methods as $method) {
+			$namedVariants = $method->getNamedArgumentsVariants();
+			foreach ($namedVariants ?? $method->getVariants() as $variant) {
+				$allVariants[] = $variant;
+			}
+		}
+
+		return [ParametersAcceptorSelector::combineAcceptorsByParameterName($allVariants)];
 	}
 
 	public function isDeprecated(): TrinaryLogic

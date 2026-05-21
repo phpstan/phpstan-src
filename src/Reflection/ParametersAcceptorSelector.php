@@ -55,6 +55,7 @@ use function defined;
 use function is_int;
 use function is_string;
 use function sprintf;
+use function str_contains;
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
 use const CURLOPT_SHARE;
@@ -461,7 +462,18 @@ final class ParametersAcceptorSelector
 		if (count($parametersAcceptors) === 1) {
 			$acceptor = $parametersAcceptors[0];
 			if (!self::hasAcceptorTemplateOrLateResolvableType($acceptor)) {
-				return $acceptor;
+				$skipEarlyReturn = false;
+				if ($namedArgumentsVariants !== null && self::acceptorHasCompoundParameterNames($acceptor)) {
+					foreach ($args as $arg) {
+						if ($arg->name !== null) {
+							$skipEarlyReturn = true;
+							break;
+						}
+					}
+				}
+				if (!$skipEarlyReturn) {
+					return $acceptor;
+				}
 			}
 		}
 
@@ -868,6 +880,142 @@ final class ParametersAcceptorSelector
 		);
 	}
 
+	/**
+	 * @param ParametersAcceptor[] $acceptors
+	 */
+	public static function combineAcceptorsByParameterName(array $acceptors): ExtendedParametersAcceptor
+	{
+		if (count($acceptors) === 0) {
+			throw new ShouldNotHappenException(
+				'getVariants() must return at least one variant.',
+			);
+		}
+		if (count($acceptors) === 1) {
+			return self::wrapAcceptor($acceptors[0]);
+		}
+
+		$parametersByName = [];
+		$parameterNames = [];
+		foreach ($acceptors as $acceptor) {
+			foreach ($acceptor->getParameters() as $parameter) {
+				$name = $parameter->getName();
+				if (!isset($parametersByName[$name])) {
+					$parameterNames[] = $name;
+					$parametersByName[$name] = [];
+				}
+				$parametersByName[$name][] = $parameter;
+			}
+		}
+
+		$acceptorCount = count($acceptors);
+		$parameters = [];
+		$isVariadic = false;
+		$returnTypes = [];
+		$phpDocReturnTypes = [];
+		$nativeReturnTypes = [];
+
+		foreach ($acceptors as $acceptor) {
+			$returnTypes[] = $acceptor->getReturnType();
+			if ($acceptor instanceof ExtendedParametersAcceptor) {
+				$phpDocReturnTypes[] = $acceptor->getPhpDocReturnType();
+				$nativeReturnTypes[] = $acceptor->getNativeReturnType();
+			}
+			$isVariadic = $isVariadic || $acceptor->isVariadic();
+		}
+
+		foreach ($parameterNames as $name) {
+			$params = $parametersByName[$name];
+			$existsInAll = count($params) === $acceptorCount;
+
+			$types = [];
+			$nativeTypes = [];
+			$phpDocTypes = [];
+			$defaultValues = [];
+			$paramIsVariadic = false;
+			$outType = null;
+			$closureThisType = null;
+			$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+			$attributes = [];
+			$isOptional = !$existsInAll;
+			$passedByRef = $params[0]->passedByReference();
+
+			foreach ($params as $j => $param) {
+				$types[] = $param->getType();
+				$paramIsVariadic = $paramIsVariadic || $param->isVariadic();
+
+				if (!$isOptional && $param->isOptional()) {
+					$isOptional = true;
+				}
+
+				$defaultValue = $param->getDefaultValue();
+				if ($defaultValue !== null) {
+					$defaultValues[] = $defaultValue;
+				}
+
+				if ($j > 0) {
+					$passedByRef = $passedByRef->combine($param->passedByReference());
+				}
+
+				if ($param instanceof ExtendedParameterReflection) {
+					$nativeTypes[] = $param->getNativeType();
+					$phpDocTypes[] = $param->getPhpDocType();
+					$immediatelyInvokedCallable = $param->isImmediatelyInvokedCallable()->or($immediatelyInvokedCallable);
+					$attributes = array_merge($attributes, $param->getAttributes());
+
+					if ($param->getOutType() !== null) {
+						$outType = $outType === null ? $param->getOutType() : TypeCombinator::union($outType, $param->getOutType());
+					} else {
+						$outType = null;
+					}
+
+					if ($param->getClosureThisType() !== null && $closureThisType !== null) {
+						$closureThisType = TypeCombinator::union($closureThisType, $param->getClosureThisType());
+					} elseif ($closureThisType === null && $param === $params[0] && $param->getClosureThisType() !== null) {
+						$closureThisType = $param->getClosureThisType();
+					} else {
+						$closureThisType = null;
+					}
+				} else {
+					$nativeTypes[] = new MixedType();
+					$phpDocTypes[] = $param->getType();
+				}
+			}
+
+			$combinedDefaultValue = count($defaultValues) === count($params)
+				? TypeCombinator::union(...$defaultValues)
+				: null;
+
+			$parameters[] = new ExtendedDummyParameter(
+				$name,
+				TypeCombinator::union(...$types),
+				$isOptional,
+				$passedByRef,
+				$paramIsVariadic,
+				$combinedDefaultValue,
+				TypeCombinator::union(...$nativeTypes),
+				TypeCombinator::union(...$phpDocTypes),
+				$outType,
+				$immediatelyInvokedCallable,
+				$closureThisType,
+				$attributes,
+			);
+		}
+
+		$returnType = TypeCombinator::union(...$returnTypes);
+		$phpDocReturnType = $phpDocReturnTypes === [] ? null : TypeCombinator::union(...$phpDocReturnTypes);
+		$nativeReturnType = $nativeReturnTypes === [] ? null : TypeCombinator::union(...$nativeReturnTypes);
+
+		return new ExtendedFunctionVariant(
+			TemplateTypeMap::createEmpty(),
+			null,
+			$parameters,
+			$isVariadic,
+			$returnType,
+			$phpDocReturnType ?? $returnType,
+			$nativeReturnType ?? new MixedType(),
+		);
+	}
+
 	private static function wrapAcceptor(ParametersAcceptor $acceptor): ExtendedParametersAcceptor
 	{
 		if ($acceptor instanceof ExtendedParametersAcceptor) {
@@ -905,6 +1053,16 @@ final class ParametersAcceptorSelector
 			new MixedType(),
 			TemplateTypeVarianceMap::createEmpty(),
 		);
+	}
+
+	private static function acceptorHasCompoundParameterNames(ParametersAcceptor $acceptor): bool
+	{
+		foreach ($acceptor->getParameters() as $parameter) {
+			if (str_contains($parameter->getName(), '|')) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static function wrapParameter(ParameterReflection $parameter): ExtendedParameterReflection

@@ -89,9 +89,17 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->getVariants()[0];
 	}
 
-	public function getNamedArgumentsVariants(): ?array
+	public function getNamedArgumentsVariants(): array
 	{
-		return null;
+		$allVariants = [];
+		foreach ($this->methods as $method) {
+			$namedVariants = $method->getNamedArgumentsVariants();
+			foreach ($namedVariants ?? $method->getVariants() as $variant) {
+				$allVariants[] = $variant;
+			}
+		}
+
+		return [ParametersAcceptorSelector::combineAcceptorsByParameterName($allVariants)];
 	}
 
 	public function isDeprecated(): TrinaryLogic

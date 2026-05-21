@@ -278,22 +278,76 @@ class NodeScopeResolver
 	{
 		$expressionResultStorage = new ExpressionResultStorage();
 		$alreadyTerminated = false;
+		$exitPoints = [];
+
+		$stmts = [];
+		$stmtToNodeIndex = [];
 		foreach ($nodes as $i => $node) {
-			if (
-				!$node instanceof Node\Stmt
-				|| ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike))
-			) {
+			if (!($node instanceof Node\Stmt)) {
 				continue;
+			}
+
+			$stmtToNodeIndex[count($stmts)] = $i;
+			$stmts[] = $node;
+		}
+
+		$dummyParent = new Node\Stmt\Nop();
+		foreach ($stmts as $si => $node) {
+			if ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\Label)) {
+				continue;
+			}
+
+			$nestedLabelNames = $node->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
+			if ($nestedLabelNames !== null) {
+				$scope = $this->resolveBackwardGotoScope(
+					$dummyParent,
+					[$node],
+					$scope,
+					$expressionResultStorage,
+					StatementContext::createDeep(),
+					static fn (string $name): bool => isset($nestedLabelNames[$name]),
+					false,
+				);
 			}
 
 			$statementResult = $this->processStmtNode($node, $scope, $expressionResultStorage, $nodeCallback, StatementContext::createTopLevel());
 			$scope = $statementResult->getScope();
+
+			if ($node instanceof Node\Stmt\Label) {
+				$labelName = $node->name->toString();
+
+				[$scope, $alreadyTerminated, $exitPoints] = $this->mergeForwardGotoExitPoints(
+					$labelName,
+					$scope,
+					$alreadyTerminated,
+					$exitPoints,
+				);
+
+				if ($alreadyTerminated) {
+					continue;
+				}
+
+				if ($node->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true) {
+					$scope = $this->resolveBackwardGotoScope(
+						$dummyParent,
+						array_slice($stmts, $si + 1),
+						$scope,
+						$expressionResultStorage,
+						StatementContext::createDeep(),
+						static fn (string $name): bool => $name === $labelName,
+						true,
+					);
+				}
+			}
+
+			$exitPoints = array_merge($exitPoints, $statementResult->getExitPoints());
+
 			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
 				continue;
 			}
 
 			$alreadyTerminated = true;
-			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $i + 1), true);
+			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
 			$this->processUnreachableStatement($nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
 
@@ -306,6 +360,93 @@ class NodeScopeResolver
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
 	{
+	}
+
+	/**
+	 * @param Node\Stmt[] $bodyStmts
+	 * @param Closure(string): bool $gotoNameMatcher
+	 */
+	private function resolveBackwardGotoScope(
+		Node $parentNode,
+		array $bodyStmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+		Closure $gotoNameMatcher,
+		bool $mergeBodyScopeEachIteration,
+	): MutatingScope
+	{
+		$bodyScope = $scope;
+		$count = 0;
+		do {
+			$prevScope = $bodyScope;
+			if ($mergeBodyScopeEachIteration) {
+				$bodyScope = $bodyScope->mergeWith($scope);
+			}
+			$tempStorage = $storage->duplicate();
+			$bodyScopeResult = $this->processStmtNodesInternal(
+				$parentNode,
+				$bodyStmts,
+				$bodyScope,
+				$tempStorage,
+				new NoopNodeCallback(),
+				$context,
+			);
+
+			$gotoScope = null;
+			foreach ($bodyScopeResult->getExitPoints() as $ep) {
+				$epStmt = $ep->getStatement();
+				if (!($epStmt instanceof Goto_) || !$gotoNameMatcher($epStmt->name->toString())) {
+					continue;
+				}
+
+				$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
+			}
+
+			if ($gotoScope !== null) {
+				$bodyScope = $scope->mergeWith($gotoScope);
+			}
+
+			if ($bodyScope->equals($prevScope)) {
+				break;
+			}
+
+			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+				$bodyScope = $prevScope->generalizeWith($bodyScope);
+			}
+			$count++;
+		} while ($count < self::LOOP_SCOPE_ITERATIONS);
+
+		return $bodyScope;
+	}
+
+	/**
+	 * @param InternalStatementExitPoint[] $exitPoints
+	 * @return array{MutatingScope, bool, list<InternalStatementExitPoint>}
+	 */
+	private function mergeForwardGotoExitPoints(
+		string $labelName,
+		MutatingScope $scope,
+		bool $alreadyTerminated,
+		array $exitPoints,
+	): array
+	{
+		$newExitPoints = [];
+		foreach ($exitPoints as $exitPoint) {
+			$exitStmt = $exitPoint->getStatement();
+			if ($exitStmt instanceof Goto_ && $exitStmt->name->toString() === $labelName) {
+				if ($alreadyTerminated) {
+					$scope = $exitPoint->getScope();
+					$alreadyTerminated = false;
+				} else {
+					$scope = $scope->mergeWith($exitPoint->getScope());
+				}
+			} else {
+				$newExitPoints[] = $exitPoint;
+			}
+		}
+
+		return [$scope, $alreadyTerminated, $newExitPoints];
 	}
 
 	/**
@@ -420,47 +561,15 @@ class NodeScopeResolver
 
 			$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
 			if ($nestedLabelNames !== null && $context->isTopLevel()) {
-				$originalStorage = $storage;
-				$bodyScope = $scope;
-				$count = 0;
-				do {
-					$prevScope = $bodyScope;
-					$tempStorage = $originalStorage->duplicate();
-					$bodyScopeResult = $this->processStmtNodesInternal(
-						$parentNode,
-						[$stmt],
-						$bodyScope,
-						$tempStorage,
-						new NoopNodeCallback(),
-						$context->enterDeep(),
-					);
-
-					$gotoScope = null;
-					foreach ($bodyScopeResult->getExitPoints() as $ep) {
-						$epStmt = $ep->getStatement();
-						if (!($epStmt instanceof Goto_) || !isset($nestedLabelNames[$epStmt->name->toString()])) {
-							continue;
-						}
-
-						$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-					}
-
-					if ($gotoScope !== null) {
-						$bodyScope = $scope->mergeWith($gotoScope);
-					}
-
-					if ($bodyScope->equals($prevScope)) {
-						break;
-					}
-
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope);
-					}
-					$count++;
-				} while ($count < self::LOOP_SCOPE_ITERATIONS);
-
-				$scope = $bodyScope;
-				$storage = $originalStorage;
+				$scope = $this->resolveBackwardGotoScope(
+					$parentNode,
+					[$stmt],
+					$scope,
+					$storage,
+					$context->enterDeep(),
+					static fn (string $name): bool => isset($nestedLabelNames[$name]),
+					false,
+				);
 			}
 
 			$statementResult = $this->processStmtNode(
@@ -476,70 +585,27 @@ class NodeScopeResolver
 			if ($stmt instanceof Node\Stmt\Label) {
 				$labelName = $stmt->name->toString();
 
-				$newExitPoints = [];
-				foreach ($exitPoints as $exitPoint) {
-					$exitStmt = $exitPoint->getStatement();
-					if ($exitStmt instanceof Goto_ && $exitStmt->name->toString() === $labelName) {
-						if ($alreadyTerminated) {
-							$scope = $exitPoint->getScope();
-							$alreadyTerminated = false;
-						} else {
-							$scope = $scope->mergeWith($exitPoint->getScope());
-						}
-					} else {
-						$newExitPoints[] = $exitPoint;
-					}
-				}
-				$exitPoints = $newExitPoints;
+				[$scope, $alreadyTerminated, $exitPoints] = $this->mergeForwardGotoExitPoints(
+					$labelName,
+					$scope,
+					$alreadyTerminated,
+					$exitPoints,
+				);
 
 				if ($alreadyTerminated) {
 					continue;
 				}
 
 				if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
-					$originalStorage = $storage;
-					$bodyStmts = array_slice($stmts, $i + 1);
-					$bodyScope = $scope;
-					$count = 0;
-					do {
-						$prevScope = $bodyScope;
-						$bodyScope = $bodyScope->mergeWith($scope);
-						$tempStorage = $originalStorage->duplicate();
-						$bodyScopeResult = $this->processStmtNodesInternal(
-							$parentNode,
-							$bodyStmts,
-							$bodyScope,
-							$tempStorage,
-							new NoopNodeCallback(),
-							$context->enterDeep(),
-						);
-
-						$gotoScope = null;
-						foreach ($bodyScopeResult->getExitPoints() as $ep) {
-							$epStmt = $ep->getStatement();
-							if (!($epStmt instanceof Goto_) || $epStmt->name->toString() !== $labelName) {
-								continue;
-							}
-
-							$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-						}
-
-						if ($gotoScope !== null) {
-							$bodyScope = $scope->mergeWith($gotoScope);
-						}
-
-						if ($bodyScope->equals($prevScope)) {
-							break;
-						}
-
-						if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-							$bodyScope = $prevScope->generalizeWith($bodyScope);
-						}
-						$count++;
-					} while ($count < self::LOOP_SCOPE_ITERATIONS);
-
-					$scope = $bodyScope;
-					$storage = $originalStorage;
+					$scope = $this->resolveBackwardGotoScope(
+						$parentNode,
+						array_slice($stmts, $i + 1),
+						$scope,
+						$storage,
+						$context->enterDeep(),
+						static fn (string $name): bool => $name === $labelName,
+						true,
+					);
 				}
 			}
 
@@ -2837,6 +2903,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		ExpressionContext $context,
 		?Type $passedToType,
+		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
 		foreach ($expr->params as $param) {
@@ -2846,12 +2913,8 @@ class NodeScopeResolver
 		$byRefUses = [];
 
 		$closureCallArgs = $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME);
-		$callableParameters = $this->createCallableParameters(
-			$scope,
-			$expr,
-			$closureCallArgs,
-			$passedToType,
-		);
+		$callableParameters = $this->createCallableParameters($scope, $expr, $closureCallArgs, $passedToType);
+		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $closureCallArgs, $nativePassedToType);
 
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
@@ -2902,7 +2965,7 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}
 
-		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
+		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
 		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
@@ -2984,7 +3047,7 @@ class NodeScopeResolver
 				break;
 			}
 
-			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
+			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
 			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
 
 			if ($closureScope->equals($prevScope)) {
@@ -3049,6 +3112,7 @@ class NodeScopeResolver
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		?Type $passedToType,
+		?Type $nativePassedToType = null,
 	): ExpressionResult
 	{
 		foreach ($expr->params as $param) {
@@ -3059,12 +3123,9 @@ class NodeScopeResolver
 		}
 
 		$arrowFunctionCallArgs = $expr->getAttribute(ArrowFunctionArgVisitor::ATTRIBUTE_NAME);
-		$arrowFunctionScope = $scope->enterArrowFunction($expr, $this->createCallableParameters(
-			$scope,
-			$expr,
-			$arrowFunctionCallArgs,
-			$passedToType,
-		));
+		$callableParameters = $this->createCallableParameters($scope, $expr, $arrowFunctionCallArgs, $passedToType);
+		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $arrowFunctionCallArgs, $nativePassedToType);
+		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters, $nativeCallableParameters);
 		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
 		if ($arrowFunctionType === null) {
 			throw new ShouldNotHappenException();
@@ -3076,14 +3137,33 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param Node\Arg[]|null $args
 	 * @return ParameterReflection[]|null
 	 */
 	public function createCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
 	{
+		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $passedToType, static fn (Scope $s, Expr $e) => $s->getType($e));
+	}
+
+	/**
+	 * @param Node\Arg[]|null $args
+	 * @return ParameterReflection[]|null
+	 */
+	public function createNativeCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $nativePassedToType): ?array
+	{
+		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $nativePassedToType, static fn (Scope $s, Expr $e) => $s->getNativeType($e));
+	}
+
+	/**
+	 * @param Node\Arg[]|null $args
+	 * @param Closure(Scope, Expr): Type $typeGetter
+	 * @return ParameterReflection[]|null
+	 */
+	private function doCreateCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType, Closure $typeGetter): ?array
+	{
 		$callableParameters = null;
 		if ($args !== null) {
-			$closureType = $scope->getType($closureExpr);
+			$closureType = $typeGetter($scope, $closureExpr);
 
 			if ($closureType->isCallable()->no()) {
 				return null;
@@ -3100,12 +3180,13 @@ class NodeScopeResolver
 
 					if ($callableParameter->isVariadic()) {
 						$argTypes = [];
-						for ($j = $index; $j < count($args); $j++) {
-							$argTypes[] = $scope->getType($args[$j]->value);
+						$argNumber = count($args);
+						for ($j = $index; $j < $argNumber; $j++) {
+							$argTypes[] = $typeGetter($scope, $args[$j]->value);
 						}
 						$type = TypeCombinator::union(...$argTypes);
 					} else {
-						$type = $scope->getType($args[$index]->value);
+						$type = $typeGetter($scope, $args[$index]->value);
 					}
 					$callableParameters[$index] = new NativeParameterReflection(
 						$callableParameter->getName(),
@@ -3524,7 +3605,7 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
+				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null, $parameterNativeType);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -3583,7 +3664,7 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType ?? null);
+				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType ?? null, $parameterNativeType);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());

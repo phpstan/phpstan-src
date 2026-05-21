@@ -46,6 +46,15 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function afterTraverse(array $nodes): ?array
 	{
+		$stmts = [];
+		foreach ($nodes as $node) {
+			if (!($node instanceof Node\Stmt)) {
+				continue;
+			}
+
+			$stmts[] = $node;
+		}
+		$this->processStatementList($stmts);
 		$this->popScope();
 		$this->subtreeData = [];
 		return null;

@@ -25,7 +25,7 @@ class Foo
 	{
 		assertType('array<ReportUnsafeArrayStringKeyCastingPrevent\Foo>', $a);
 		foreach ($a as $k => $v) {
-			assertType('(int|non-decimal-int-string)', $k);
+			assertType('(int|string)', $k);
 		}
 	}
 
@@ -34,9 +34,9 @@ class Foo
 	 */
 	public function doBaz(array $a): void
 	{
-		assertType('array<int|non-decimal-int-string, ReportUnsafeArrayStringKeyCastingPrevent\Foo>', $a);
+		assertType('array<int|string, ReportUnsafeArrayStringKeyCastingPrevent\Foo>', $a);
 		foreach ($a as $k => $v) {
-			assertType('int|non-decimal-int-string', $k);
+			assertType('int|string', $k);
 		}
 	}
 
@@ -111,7 +111,7 @@ class Unsealed
 	{
 		assertType('array{a: int, ...<ReportUnsafeArrayStringKeyCastingPrevent\Unsealed>}', $a);
 		foreach ($a as $k => $v) {
-			assertType('(int|non-decimal-int-string)', $k);
+			assertType('(int|string)', $k);
 		}
 	}
 
@@ -120,9 +120,9 @@ class Unsealed
 	 */
 	public function doBaz(array $a): void
 	{
-		assertType('array{a: int, ...<int|non-decimal-int-string, ReportUnsafeArrayStringKeyCastingPrevent\Unsealed>}', $a);
+		assertType('array{a: int, ...<int|string, ReportUnsafeArrayStringKeyCastingPrevent\Unsealed>}', $a);
 		foreach ($a as $k => $v) {
-			assertType('int|non-decimal-int-string', $k);
+			assertType('int|string', $k);
 		}
 	}
 

@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Error;
 use Exception;
+use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
@@ -1186,7 +1187,18 @@ class UnionType implements CompoundType
 
 	public function toArrayKey(): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->toArrayKey());
+		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();
+		if ($level !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT || $this->isInteger()->no()) {
+			return $this->unionTypes(static fn (Type $type): Type => $type->toArrayKey());
+		}
+
+		return $this->unionTypes(static function (Type $type): Type {
+			if ($type instanceof StringType) { // @phpstan-ignore phpstanApi.instanceofType
+				return $type;
+			}
+
+			return $type->toArrayKey();
+		});
 	}
 
 	public function toCoercedArgumentType(bool $strictTypes): Type

@@ -86,3 +86,22 @@ class UnsealedArrayShape
 	}
 
 }
+
+class ReleaseNoteParser
+{
+
+	/**
+	 * @param non-empty-string $s
+	 * @return array<int|string, array{section: string, release: string}>
+	 */
+	public function buildCommitMap(string $s): array
+	{
+		/** @var array<string, array{section: string, release: string}> $map */
+		$map = [];
+
+		$map[$s] = ['section' => 'a', 'release' => 'b'];
+
+		return $map;
+	}
+
+}

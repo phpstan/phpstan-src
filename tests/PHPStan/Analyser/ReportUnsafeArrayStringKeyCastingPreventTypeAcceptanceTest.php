@@ -3,19 +3,25 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Rules\Methods\CallMethodsRule;
+use PHPStan\Rules\Methods\ReturnTypeRule;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use function array_merge;
 
 /**
- * @extends RuleTestCase<CallMethodsRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class ReportUnsafeArrayStringKeyCastingPreventTypeAcceptanceTest extends RuleTestCase
 {
 
 	public function getRule(): Rule
 	{
-		return self::getContainer()->getByType(CallMethodsRule::class);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			self::getContainer()->getByType(CallMethodsRule::class),
+			self::getContainer()->getByType(ReturnTypeRule::class),
+		]);
 	}
 
 	public function testRule(): void

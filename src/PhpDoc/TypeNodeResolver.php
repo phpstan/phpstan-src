@@ -988,17 +988,19 @@ final class TypeNodeResolver
 	private function transformUnsafeArrayKey(Type $keyType): Type
 	{
 		if ($this->reportUnsafeArrayStringKeyCasting === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
-			$keyType = TypeTraverser::map($keyType, static function (Type $type, callable $traverse) {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
+			if (!$keyType->isSuperTypeOf(new IntegerType())->yes()) {
+				$keyType = TypeTraverser::map($keyType, static function (Type $type, callable $traverse) {
+					if ($type instanceof UnionType || $type instanceof IntersectionType) {
+						return $traverse($type);
+					}
 
-				if ($type instanceof StringType) {
-					return TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true));
-				}
+					if ($type instanceof StringType) {
+						return TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true));
+					}
 
-				return $type;
-			});
+					return $type;
+				});
+			}
 		}
 
 		return TypeCombinator::intersect($keyType->toArrayKey(), new UnionType([

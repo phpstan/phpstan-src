@@ -37,6 +37,26 @@ class ReportUnsafeArrayStringKeyCastingPreventTypeAcceptanceTest extends RuleTes
 				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\Foo::doBaz() expects array<non-decimal-int-string, stdClass>, non-empty-array<int|non-decimal-int-string, stdClass> given.',
 				39,
 			],
+			[
+				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\UnsealedArrayShape::doFoo() expects array{stdClass, ...<non-decimal-int-string, stdClass>}, array{stdClass, ...<int<min, -1>|int<1, max>|non-decimal-int-string, stdClass>} given.',
+				77,
+				'Unsealed array key type non-decimal-int-string does not accept unsealed array key type int<min, -1>|int<1, max>|non-decimal-int-string.',
+			],
+			[
+				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\UnsealedArrayShape::doBaz() expects array{stdClass, ...<non-decimal-int-string, stdClass>}, array{stdClass, ...<int<min, -1>|int<1, max>|non-decimal-int-string, stdClass>} given.',
+				79,
+				'Unsealed array key type non-decimal-int-string does not accept unsealed array key type int<min, -1>|int<1, max>|non-decimal-int-string.',
+			],
+			[
+				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\UnsealedArrayShape::doFoo() expects array{stdClass, ...<non-decimal-int-string, stdClass>}, array{stdClass, ...<int<min, -1>|int<1, max>|non-decimal-int-string, stdClass>} given.',
+				83,
+				'Unsealed array key type non-decimal-int-string does not accept unsealed array key type int<min, -1>|int<1, max>|non-decimal-int-string.',
+			],
+			[
+				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\UnsealedArrayShape::doBaz() expects array{stdClass, ...<non-decimal-int-string, stdClass>}, array{stdClass, ...<int<min, -1>|int<1, max>|non-decimal-int-string, stdClass>} given.',
+				85,
+				'Unsealed array key type non-decimal-int-string does not accept unsealed array key type int<min, -1>|int<1, max>|non-decimal-int-string.',
+			],
 		]);
 	}
 

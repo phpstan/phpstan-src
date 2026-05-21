@@ -29,6 +29,16 @@ class ReportUnsafeArrayStringKeyCastingDetectTypeAcceptanceTest extends RuleTest
 				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\Foo::doBaz() expects array<non-decimal-int-string, stdClass>, non-empty-array<string, stdClass> given.',
 				39,
 			],
+			[
+				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\UnsealedArrayShape::doBaz() expects array{stdClass, ...<non-decimal-int-string, stdClass>}, array{stdClass, ...<string, stdClass>} given.',
+				79,
+				'Unsealed array key type non-decimal-int-string does not accept unsealed array key type string.',
+			],
+			[
+				'Parameter #1 $a of method ReportUnsafeArrayStringKeyCastingAccepts\UnsealedArrayShape::doBaz() expects array{stdClass, ...<non-decimal-int-string, stdClass>}, array{stdClass, ...<string, stdClass>} given.',
+				85,
+				'Unsealed array key type non-decimal-int-string does not accept unsealed array key type string.',
+			],
 		]);
 	}
 

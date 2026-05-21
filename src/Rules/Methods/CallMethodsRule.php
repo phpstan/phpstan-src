@@ -9,11 +9,13 @@ use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use function array_merge;
+use function str_contains;
 
 /**
  * @implements Rule<Node\Expr\MethodCall>
@@ -69,16 +71,51 @@ final class CallMethodsRule implements Rule
 			return $errors;
 		}
 
+		$args = $node->getArgs();
+		$selectedAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$args,
+			$methodReflection->getVariants(),
+			$methodReflection->getNamedArgumentsVariants(),
+		);
+
+		if ($this->shouldCheckPerUnionMember($selectedAcceptor, $args)) {
+			$callerType = $scope->getType($node->var);
+			foreach ($callerType->getObjectClassReflections() as $classReflection) {
+				if (!$classReflection->hasMethod($methodName)) {
+					continue;
+				}
+				$memberMethod = $classReflection->getMethod($methodName, $scope);
+				$memberAcceptor = ParametersAcceptorSelector::selectFromArgs(
+					$scope,
+					$args,
+					$memberMethod->getVariants(),
+					$memberMethod->getNamedArgumentsVariants(),
+				);
+				$errors = array_merge($errors, $this->checkMethodParameters($memberAcceptor, $scope, $node, $memberMethod));
+			}
+		} else {
+			$errors = array_merge($errors, $this->checkMethodParameters($selectedAcceptor, $scope, $node, $methodReflection));
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkMethodParameters(
+		\PHPStan\Reflection\ParametersAcceptor $acceptor,
+		Scope $scope,
+		MethodCall $node,
+		ExtendedMethodReflection $methodReflection,
+	): array
+	{
 		$declaringClass = $methodReflection->getDeclaringClass();
 		$messagesMethodName = SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()');
 
-		return array_merge($errors, $this->parametersCheck->check(
-			ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$node->getArgs(),
-				$methodReflection->getVariants(),
-				$methodReflection->getNamedArgumentsVariants(),
-			),
+		return $this->parametersCheck->check(
+			$acceptor,
 			$scope,
 			$declaringClass->isBuiltin(),
 			$node,
@@ -99,7 +136,33 @@ final class CallMethodsRule implements Rule
 			'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
 			'%s of method ' . $messagesMethodName . ' contains unresolvable type.',
 			'Method ' . $messagesMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
-		));
+		);
+	}
+
+	/**
+	 * @param Node\Arg[] $args
+	 */
+	private function shouldCheckPerUnionMember(\PHPStan\Reflection\ParametersAcceptor $acceptor, array $args): bool
+	{
+		$hasCompoundName = false;
+		foreach ($acceptor->getParameters() as $parameter) {
+			if (str_contains($parameter->getName(), '|')) {
+				$hasCompoundName = true;
+				break;
+			}
+		}
+
+		if (!$hasCompoundName) {
+			return false;
+		}
+
+		foreach ($args as $arg) {
+			if ($arg->name !== null) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

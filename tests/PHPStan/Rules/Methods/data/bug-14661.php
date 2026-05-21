@@ -77,6 +77,12 @@ function differentTypesErrors(A|B $obj): void
     $obj->differentTypes(b: 1, a: 'hello');
 }
 
+function differentTypesPositional(A|B $obj): void
+{
+    $obj->differentTypes('hello', 1);
+    $obj->differentTypes(1, 'hello');
+}
+
 function threeWayUnion(A|B|C $obj): void
 {
     $obj->mixedOrder(target: 'value');

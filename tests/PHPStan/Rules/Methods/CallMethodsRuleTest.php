@@ -4129,6 +4129,22 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter $b of method Bug14661\A::differentTypes() expects string, int given.',
 				77,
 			],
+			[
+				'Parameter #1 $a of method Bug14661\A::differentTypes() expects int, string given.',
+				82,
+			],
+			[
+				'Parameter #2 $b of method Bug14661\A::differentTypes() expects string, int given.',
+				82,
+			],
+			[
+				'Parameter #1 $b of method Bug14661\B::differentTypes() expects string, int given.',
+				83,
+			],
+			[
+				'Parameter #2 $a of method Bug14661\B::differentTypes() expects int, string given.',
+				83,
+			],
 		]);
 	}
 

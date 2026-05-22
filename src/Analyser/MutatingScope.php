@@ -25,6 +25,7 @@ use PhpParser\NodeFinder;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
@@ -2907,7 +2908,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this;
 		}
 
-		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+		$scope = $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+
+		$function = $scope->getFunction();
+		if (
+			$function instanceof MethodReflection
+			&& strtolower($function->getName()) === '__clone'
+			&& $scope->phpVersion->supportsReadonlyPropertyReinitializationOnClone()
+		) {
+			$scope = $scope->assignExpression(new CloneReinitializationExpr($propertyName), new MixedType(), new MixedType());
+		}
+
+		return $scope;
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self

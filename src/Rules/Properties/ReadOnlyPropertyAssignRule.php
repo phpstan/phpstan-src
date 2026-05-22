@@ -6,6 +6,7 @@ use ArrayAccess;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
@@ -96,14 +97,25 @@ final class ReadOnlyPropertyAssignRule implements Rule
 				throw new ShouldNotHappenException();
 			}
 
+			$methodName = $scopeMethod->getName();
+			$inClone = $this->phpVersion->supportsReadonlyPropertyReinitializationOnClone() && strtolower($methodName) === '__clone';
 			if (
-				in_array($scopeMethod->getName(), $this->constructorsHelper->getConstructors($scopeClassReflection), true)
-				|| strtolower($scopeMethod->getName()) === '__unserialize'
+				in_array($methodName, $this->constructorsHelper->getConstructors($scopeClassReflection), true)
+				|| strtolower($methodName) === '__unserialize'
+				|| $inClone
 			) {
 				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
 						->line($propertyFetch->name->getStartLine())
 						->identifier('property.readOnlyAssignNotOnThis')
+						->build();
+				} elseif (
+					$inClone
+					&& !$scope->hasExpressionType(new CloneReinitializationExpr($propertyReflection->getName()))->no()
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is already assigned.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
+						->identifier('assign.readOnlyProperty')
 						->build();
 				}
 

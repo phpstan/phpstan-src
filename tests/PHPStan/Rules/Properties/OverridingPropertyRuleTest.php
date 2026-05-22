@@ -345,4 +345,28 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/property-override-attr-missing.php', __DIR__ . '/data/property-override-attr-missing.php.fixed');
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug14457(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/bug-14457.php'], [
+			[
+				'Cannot make non-abstract method Bug14457Property\ParentClass::$bar::get() abstract in class Bug14457Property\ChildClass.',
+				10,
+			],
+			[
+				'Cannot make non-abstract method Bug14457Property\SetParent::$setProp::set() abstract in class Bug14457Property\SetChild.',
+				42,
+			],
+			[
+				'Cannot make non-abstract method Bug14457Property\BothParent::$bothProp::get() abstract in class Bug14457Property\BothChild.',
+				54,
+			],
+			[
+				'Cannot make non-abstract method Bug14457Property\BothParent::$bothProp::set() abstract in class Bug14457Property\BothChild.',
+				54,
+			],
+		]);
+	}
+
 }

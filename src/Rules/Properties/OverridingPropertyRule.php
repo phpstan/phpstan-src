@@ -178,6 +178,23 @@ final class OverridingPropertyRule implements Rule
 					))->identifier('property.notWritable')->nonIgnorable()->build();
 				}
 			}
+			if ($node->isAbstract() && $prototype->isAbstract()->no()) {
+				foreach (['get', 'set'] as $hookType) {
+					if (!$propertyReflection->hasHook($hookType) || !$prototype->hasHook($hookType)) {
+						continue;
+					}
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Cannot make non-abstract method %s::$%s::%s() abstract in class %s.',
+						$prototype->getDeclaringClass()->getDisplayName(true),
+						$node->getName(),
+						$hookType,
+						$classReflection->getDisplayName(),
+					))
+						->nonIgnorable()
+						->identifier('property.abstractOverridingNonAbstractHook')
+						->build();
+				}
+			}
 		}
 
 		if ($prototype->isPublic()) {

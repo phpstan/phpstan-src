@@ -853,4 +853,31 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/fix-with-tabs.php', __DIR__ . '/data/fix-with-tabs.php.fixed');
 	}
 
+	public function testBug14457(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-14457.php'], [
+			[
+				'Cannot make non-abstract method Bug14457\ParentClass::foo() abstract in class Bug14457\ChildClass.',
+				12,
+			],
+			[
+				'Cannot make non-abstract method Bug14457\StaticParent::staticMethod() abstract in class Bug14457\StaticChild.',
+				56,
+			],
+			[
+				'Cannot make non-abstract method Bug14457\ProtectedParent::protectedMethod() abstract in class Bug14457\ProtectedChild.',
+				67,
+			],
+			[
+				'Cannot make non-abstract method Bug14457\GrandParent_::inherited() abstract in class Bug14457\Child_.',
+				81,
+			],
+			[
+				'Cannot make non-abstract method Bug14457\ConstructorParent::__construct() abstract in class Bug14457\ConstructorChild.',
+				91,
+			],
+		]);
+	}
+
 }

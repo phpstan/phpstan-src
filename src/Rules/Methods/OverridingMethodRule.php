@@ -87,6 +87,23 @@ final class OverridingMethodRule implements Rule
 								->build(),
 						], $node, $scope);
 					}
+					$parentAbstract = $parentConstructor->isAbstract();
+					if (
+						$method->isAbstract()->yes()
+						&& !(is_bool($parentAbstract) ? $parentAbstract : $parentAbstract->yes())
+					) {
+						return $this->addErrors([
+							RuleErrorBuilder::message(sprintf(
+								'Cannot make non-abstract method %s::%s() abstract in class %s.',
+								$parentConstructor->getDeclaringClass()->getDisplayName(true),
+								$parentConstructor->getName(),
+								$method->getDeclaringClass()->getDisplayName(),
+							))
+								->nonIgnorable()
+								->identifier('method.abstractOverridingNonAbstract')
+								->build(),
+						], $node, $scope);
+					}
 				}
 			}
 
@@ -186,6 +203,22 @@ final class OverridingMethodRule implements Rule
 			))
 				->nonIgnorable()
 				->identifier('method.static')
+				->build();
+		}
+
+		$prototypeAbstract = $prototype->isAbstract();
+		if (
+			$method->isAbstract()->yes()
+			&& !(is_bool($prototypeAbstract) ? $prototypeAbstract : $prototypeAbstract->yes())
+		) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Cannot make non-abstract method %s::%s() abstract in class %s.',
+				$prototypeDeclaringClass->getDisplayName(true),
+				$prototype->getName(),
+				$method->getDeclaringClass()->getDisplayName(),
+			))
+				->nonIgnorable()
+				->identifier('method.abstractOverridingNonAbstract')
 				->build();
 		}
 

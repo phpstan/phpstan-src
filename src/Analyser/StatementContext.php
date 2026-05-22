@@ -15,7 +15,7 @@ final class StatementContext
 
 	private function __construct(
 		private bool $isTopLevel,
-		private int $foreachUnrollFactor = 1,
+		private bool $insideUnrolledForeach = false,
 	)
 	{
 	}
@@ -41,23 +41,23 @@ final class StatementContext
 		return $this->isTopLevel;
 	}
 
-	public function getForeachUnrollFactor(): int
+	public function isInsideUnrolledForeach(): bool
 	{
-		return $this->foreachUnrollFactor;
+		return $this->insideUnrolledForeach;
 	}
 
 	public function enterDeep(): self
 	{
 		if ($this->isTopLevel) {
-			return new self(false, $this->foreachUnrollFactor);
+			return new self(false, $this->insideUnrolledForeach);
 		}
 
 		return $this;
 	}
 
-	public function enterUnrolledForeach(int $totalKeys): self
+	public function enterUnrolledForeach(): self
 	{
-		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys);
+		return new self($this->isTopLevel, true);
 	}
 
 }

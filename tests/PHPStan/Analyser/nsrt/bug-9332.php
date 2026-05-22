@@ -15,7 +15,7 @@ class HelloWorld
 			}
 		}
 
-		assertType("array{a: 'asdfghi', bd: int<1, 1000>, be: int<1, 1000>, cd: int<1, 1000>, ce: int<1, 1000>}", $data);
+		assertType("array{a: 'asdfghi', bd?: int<1, 1000>, be?: int<1, 1000>, cd?: int<1, 1000>, ce?: int<1, 1000>}", $data);
 		$this->doSomething($data);
 	}
 

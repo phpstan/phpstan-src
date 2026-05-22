@@ -178,7 +178,7 @@ final class OverridingPropertyRule implements Rule
 					))->identifier('property.notWritable')->nonIgnorable()->build();
 				}
 			}
-			if ($node->isAbstract() && !$prototype->isAbstract()->yes()) {
+			if ($node->isAbstract() && $prototype->isAbstract()->no()) {
 				foreach (['get', 'set'] as $hookType) {
 					if (!$propertyReflection->hasHook($hookType) || !$prototype->hasHook($hookType)) {
 						continue;

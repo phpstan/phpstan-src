@@ -175,10 +175,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$clone->setAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME, [new Node\Arg(new TypeExpr($wrappedType))]);
 			$clone->setAttribute('phpstanCachedTypes', []);
 
-			$closureType = $scope->getType($clone);
-			if ($closureType->isCallable()->yes()) {
-				return $closureType->getCallableParametersAcceptors($scope)[0]->getReturnType();
-			}
+			return $scope->getType($clone)->getCallableParametersAcceptors($scope)[0]->getReturnType();
 		}
 
 		return $scope->getType(new FuncCall($callback, [

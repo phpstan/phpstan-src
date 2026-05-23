@@ -1033,4 +1033,31 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14667(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-14667-static.php'], [
+			[
+				'Static call to instance method stdClass::foo().',
+				9,
+			],
+			[
+				'Static call to instance method stdClass::foo().',
+				16,
+			],
+			[
+				'Static call to instance method stdClass::foo().',
+				24,
+			],
+			[
+				'Static call to instance method stdClass::foo().',
+				31,
+			],
+			[
+				'Static call to instance method stdClass::foo().',
+				39,
+			],
+		]);
+	}
+
 }

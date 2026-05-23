@@ -1642,14 +1642,26 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-10090.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10090.php'], [
 			[
 				'Undefined variable: $shortcut_id',
-				12,
+				18,
+			],
+			[
+				'Undefined variable: $shortcut_id',
+				19,
 			],
 			[
 				'Variable $x might not be defined.',
-				23,
+				35,
+			],
+			[
+				'Variable $x might not be defined.',
+				36,
+			],
+			[
+				'Undefined variable: $x',
+				79,
 			],
 		]);
 	}

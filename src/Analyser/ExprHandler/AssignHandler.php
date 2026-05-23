@@ -979,14 +979,14 @@ final class AssignHandler implements ExprHandler
 	 */
 	private function isExprSafeToProjectThroughVariable(Expr $expr, string $variableName, array $rhsImpurePoints, Expr $assignedExpr): bool
 	{
-		// Scalar/const-fetch literals and PHPStan virtual nodes (e.g. NativeTypeExpr) are never
-		// narrowing targets at a usage site — skip them so they don't collide with PHP's
-		// numeric-string array-key autocast or leak internal virtual expressions into the
-		// conditional-expression map.
 		if ($expr instanceof IssetExpr) {
 			return $this->isExprSafeToProjectThroughVariable($expr->getExpr(), $variableName, $rhsImpurePoints, $assignedExpr);
 		}
 
+		// Scalar/const-fetch literals and PHPStan virtual nodes (e.g. NativeTypeExpr) are never
+		// narrowing targets at a usage site — skip them so they don't collide with PHP's
+		// numeric-string array-key autocast or leak internal virtual expressions into the
+		// conditional-expression map.
 		if ($expr instanceof Node\Scalar || $expr instanceof ConstFetch || $expr instanceof VirtualNode || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
 			return false;
 		}

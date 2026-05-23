@@ -16,6 +16,7 @@ function doFoo(): void {
 
 	if ($link_mode === "add") {
 		assertVariableCertainty(TrinaryLogic::createNo(), $shortcut_id);
+		echo $shortcut_id;
 	}
 	if ($link_mode === "remove") {
 		assertVariableCertainty(TrinaryLogic::createYes(), $shortcut_id);
@@ -32,6 +33,7 @@ function nullableVariable(): void {
 
 	if ($mode === "missing") {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $x);
+		echo $x;
 	}
 	if ($mode === "found") {
 		assertVariableCertainty(TrinaryLogic::createYes(), $x);
@@ -47,6 +49,7 @@ function definitelyDefined(): void {
 	if ($mode === "missing") {
 		assertVariableCertainty(TrinaryLogic::createYes(), $x);
 		assertType('null', $x);
+		echo $x;
 	}
 	if ($mode === "found") {
 		assertVariableCertainty(TrinaryLogic::createYes(), $x);

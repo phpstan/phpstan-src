@@ -867,35 +867,29 @@ final class AssignHandler implements ExprHandler
 
 			if ($expr instanceof IssetExpr) {
 				$innerExpr = $expr->getExpr();
-				$innerExprString = $this->exprPrinter->printExpr($innerExpr);
-
-				if (!isset($conditionalExpressions[$innerExprString])) {
-					$conditionalExpressions[$innerExprString] = [];
-				}
-
-				$holder = new ConditionalExpressionHolder([
-					'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
-				], ExpressionTypeHolder::createMaybe(
+				$this->addConditionalExpressionHolder(
+					$conditionalExpressions,
+					$variableName,
+					$variableType,
 					$innerExpr,
+					$this->exprPrinter->printExpr($innerExpr),
 					$scope->getType($innerExpr),
-				));
-				$conditionalExpressions[$innerExprString][$holder->getKey()] = $holder;
+					TrinaryLogic::createMaybe(),
+				);
 				continue;
 			}
 
 			$exprString = (string) $exprString;
 
-			if (!isset($conditionalExpressions[$exprString])) {
-				$conditionalExpressions[$exprString] = [];
-			}
-
-			$holder = new ConditionalExpressionHolder([
-				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
-			], ExpressionTypeHolder::createYes(
+			$this->addConditionalExpressionHolder(
+				$conditionalExpressions,
+				$variableName,
+				$variableType,
 				$expr,
+				$exprString,
 				TypeCombinator::intersect($scope->getType($expr), $exprType),
-			));
-			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
+				TrinaryLogic::createYes(),
+			);
 		}
 
 		return $conditionalExpressions;
@@ -915,39 +909,59 @@ final class AssignHandler implements ExprHandler
 
 			if ($expr instanceof IssetExpr) {
 				$innerExpr = $expr->getExpr();
-				$innerExprString = $this->exprPrinter->printExpr($innerExpr);
-
-				if (!isset($conditionalExpressions[$innerExprString])) {
-					$conditionalExpressions[$innerExprString] = [];
-				}
-
-				$holder = new ConditionalExpressionHolder([
-					'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
-				], new ExpressionTypeHolder(
+				$this->addConditionalExpressionHolder(
+					$conditionalExpressions,
+					$variableName,
+					$variableType,
 					$innerExpr,
+					$this->exprPrinter->printExpr($innerExpr),
 					new NeverType(),
 					TrinaryLogic::createNo(),
-				));
-				$conditionalExpressions[$innerExprString][$holder->getKey()] = $holder;
+				);
 				continue;
 			}
 
 			$exprString = (string) $exprString;
 
-			if (!isset($conditionalExpressions[$exprString])) {
-				$conditionalExpressions[$exprString] = [];
-			}
-
-			$holder = new ConditionalExpressionHolder([
-				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
-			], ExpressionTypeHolder::createYes(
+			$this->addConditionalExpressionHolder(
+				$conditionalExpressions,
+				$variableName,
+				$variableType,
 				$expr,
+				$exprString,
 				TypeCombinator::remove($scope->getType($expr), $exprType),
-			));
-			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
+				TrinaryLogic::createYes(),
+			);
 		}
 
 		return $conditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 */
+	private function addConditionalExpressionHolder(
+		array &$conditionalExpressions,
+		string $variableName,
+		Type $variableType,
+		Expr $holderExpr,
+		string $holderExprString,
+		Type $holderType,
+		TrinaryLogic $holderCertainty,
+	): void
+	{
+		if (!isset($conditionalExpressions[$holderExprString])) {
+			$conditionalExpressions[$holderExprString] = [];
+		}
+
+		$holder = new ConditionalExpressionHolder([
+			'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
+		], new ExpressionTypeHolder(
+			$holderExpr,
+			$holderType,
+			$holderCertainty,
+		));
+		$conditionalExpressions[$holderExprString][$holder->getKey()] = $holder;
 	}
 
 	/**

@@ -59,10 +59,21 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$objectOrStringType = $scope->getType($args[0]->value);
 		if ($objectOrStringType->isString()->yes()) {
 			if ($objectOrStringType->isClassString()->yes()) {
-				foreach ($objectOrStringType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
+				$allNative = true;
+				$classReflections = $objectOrStringType->getClassStringObjectType()->getObjectClassReflections();
+				foreach ($classReflections as $classReflection) {
 					if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
 						return $this->createFuncCallSpec($node, $context, $scope);
 					}
+					if ($classReflection->hasNativeMethod($methodNameType->getValue())) {
+						continue;
+					}
+
+					$allNative = false;
+				}
+
+				if ($allNative && $classReflections !== []) {
+					return $this->createFuncCallSpec($node, $context, $scope);
 				}
 
 				return $this->typeSpecifier->create(

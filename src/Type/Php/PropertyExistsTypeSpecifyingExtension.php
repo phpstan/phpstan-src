@@ -67,8 +67,8 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			return new SpecifiedTypes([], []);
 		}
 
-		$objectType = $scope->getType($args[0]->value);
-		if (!$objectType->isObject()->yes()) {
+		$objectOrStringType = $scope->getType($args[0]->value);
+		if (!$objectOrStringType->isObject()->yes()) {
 			return $this->typeSpecifier->create(
 				$args[0]->value,
 				new UnionType([

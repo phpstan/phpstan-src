@@ -56,10 +56,10 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			return $this->createFuncCallSpec($node, $context, $scope);
 		}
 
-		$objectType = $scope->getType($args[0]->value);
-		if ($objectType->isString()->yes()) {
-			if ($objectType->isClassString()->yes()) {
-				foreach ($objectType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
+		$objectOrStringType = $scope->getType($args[0]->value);
+		if ($objectOrStringType->isString()->yes()) {
+			if ($objectOrStringType->isClassString()->yes()) {
+				foreach ($objectOrStringType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
 					if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
 						return $this->createFuncCallSpec($node, $context, $scope);
 					}
@@ -68,7 +68,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 				return $this->typeSpecifier->create(
 					$args[0]->value,
 					new IntersectionType([
-						$objectType,
+						$objectOrStringType,
 						new HasMethodType($methodNameType->getValue()),
 					]),
 					$context,
@@ -79,7 +79,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			return new SpecifiedTypes([], []);
 		}
 
-		foreach ($objectType->getObjectClassReflections() as $classReflection) {
+		foreach ($objectOrStringType->getObjectClassReflections() as $classReflection) {
 			if ($classReflection->hasMethod($methodNameType->getValue()) && !$classReflection->hasNativeMethod($methodNameType->getValue())) {
 				return $this->createFuncCallSpec($node, $context, $scope);
 			}

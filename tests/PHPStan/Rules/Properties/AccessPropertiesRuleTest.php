@@ -1307,7 +1307,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
-		$this->analyse([__DIR__ . '/data/bug-14667.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-14667.php'], [
+			[
+				'Cannot access property $prop on class-string.',
+				65,
+			],
+		]);
 	}
 
 }

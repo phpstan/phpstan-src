@@ -123,7 +123,7 @@ final class AccessPropertiesCheck
 			new Arg($node->var),
 			new Arg(new String_($name)),
 		]);
-		if ($scope->getType($propertyExistsCall)->isTrue()->yes()) {
+		if ($scope->getType($propertyExistsCall)->isTrue()->yes() && !$type->canAccessProperties()->no()) {
 			return [];
 		}
 

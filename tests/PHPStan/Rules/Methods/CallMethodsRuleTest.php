@@ -4107,7 +4107,12 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-14667.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-14667.php'], [
+			[
+				'Cannot call method foo() on class-string.',
+				47,
+			],
+		]);
 	}
 
 }

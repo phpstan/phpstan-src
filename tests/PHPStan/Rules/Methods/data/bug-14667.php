@@ -39,3 +39,11 @@ function testMixedChained($x): void
 		echo $x->getName();
 	}
 }
+
+/** @param class-string $row */
+function testClassString(string $row): void
+{
+	if (method_exists($row, 'foo')) {
+		$row->foo(); // error: Cannot call method foo() on class-string.
+	}
+}

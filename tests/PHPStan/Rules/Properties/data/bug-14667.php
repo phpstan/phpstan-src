@@ -57,3 +57,11 @@ final class Foo
 		}
 	}
 }
+
+/** @param class-string $row */
+function testClassString(string $row): void
+{
+	if (property_exists($row, 'prop')) {
+		echo $row->prop; // error: Cannot access property $prop on class-string.
+	}
+}

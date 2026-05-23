@@ -8,4 +8,9 @@ class Redis {}
 /**
  * @phpstan-all-methods-impure
  */
+class RedisArray {}
+
+/**
+ * @phpstan-all-methods-impure
+ */
 class RedisCluster {}

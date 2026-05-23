@@ -10,7 +10,7 @@ $errorLevels = [E_USER_DEPRECATED, E_USER_ERROR, E_USER_NOTICE, E_USER_WARNING, 
 
 assertType('true', trigger_error('bar'));
 assertType('true', trigger_error('bar', $errorLevels[0]));
-assertType('*NEVER*', trigger_error('bar', $errorLevels[1]));
+assertType('true', trigger_error('bar', $errorLevels[1]));
 assertType('true', trigger_error('bar', $errorLevels[2]));
 assertType('true', trigger_error('bar', $errorLevels[3]));
 assertType('*NEVER*', trigger_error('bar', $errorLevels[4]));

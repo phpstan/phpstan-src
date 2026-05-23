@@ -29,7 +29,7 @@ final class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionRet
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'trigger_error';
+		return in_array($functionReflection->getName(), ['trigger_error', 'user_error'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
@@ -50,7 +50,7 @@ final class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionRet
 			$errorLevel = $errorType->getValue();
 
 			if ($errorLevel === E_USER_ERROR) {
-				return new NeverType(true);
+				return new ConstantBooleanType(true);
 			}
 
 			if (!in_array($errorLevel, [E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED], true)) {

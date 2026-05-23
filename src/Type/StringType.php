@@ -5,6 +5,9 @@ namespace PHPStan\Type;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -289,6 +292,38 @@ class StringType implements Type
 		}
 
 		return new BooleanType();
+	}
+
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
+		if ($this->isClassString()->yes()) {
+			return TrinaryLogic::createMaybe();
+		}
+		return TrinaryLogic::createNo();
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		if ($this->isClassString()->yes()) {
+			throw new MissingPropertyFromReflectionException($this->describe(VerbosityLevel::typeOnly()), $propertyName);
+		}
+		throw new ShouldNotHappenException();
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		if ($this->isClassString()->yes()) {
+			return TrinaryLogic::createMaybe();
+		}
+		return TrinaryLogic::createNo();
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		if ($this->isClassString()->yes()) {
+			throw new MissingPropertyFromReflectionException($this->describe(VerbosityLevel::typeOnly()), $propertyName);
+		}
+		throw new ShouldNotHappenException();
 	}
 
 	public function hasMethod(string $methodName): TrinaryLogic

@@ -9,7 +9,7 @@ use function PHPStan\Testing\assertType;
  */
 function testObjectOrString($objectOrClass): void {
 	if (property_exists($objectOrClass, 'foo')) {
-		assertType('class-string|(object&hasProperty(foo))', $objectOrClass);
+		assertType('(class-string&hasProperty(foo))|(object&hasProperty(foo))', $objectOrClass);
 	}
 }
 
@@ -18,6 +18,6 @@ function testObjectOrString($objectOrClass): void {
  */
 function testObjectOrClassString($objectOrClass): void {
 	if (property_exists($objectOrClass, 'bar')) {
-		assertType('class-string|(object&hasProperty(bar))', $objectOrClass);
+		assertType('(class-string&hasProperty(bar))|(object&hasProperty(bar))', $objectOrClass);
 	}
 }

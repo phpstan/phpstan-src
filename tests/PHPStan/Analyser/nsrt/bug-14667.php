@@ -8,14 +8,14 @@ use function PHPStan\Testing\assertType;
 function testMixed($row): void
 {
 	if (property_exists($row, 'prop')) {
-		assertType('class-string|(object&hasProperty(prop))', $row);
+		assertType('(class-string&hasProperty(prop))|(object&hasProperty(prop))', $row);
 	}
 }
 
 function testExplicitMixed(mixed $row): void
 {
 	if (property_exists($row, 'prop')) {
-		assertType('class-string|(object&hasProperty(prop))', $row);
+		assertType('(class-string&hasProperty(prop))|(object&hasProperty(prop))', $row);
 	}
 }
 

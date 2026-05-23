@@ -76,7 +76,10 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 						new ObjectWithoutClassType(),
 						new HasPropertyType($propertyNameType->getValue()),
 					]),
-					new ClassStringType(),
+					new IntersectionType([
+						new ClassStringType(),
+						new HasPropertyType($propertyNameType->getValue()),
+					]),
 				]),
 				$context,
 				$scope,

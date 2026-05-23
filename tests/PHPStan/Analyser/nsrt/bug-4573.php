@@ -23,7 +23,7 @@ class Foo
 	public function doFoo($stringOrObject): void
 	{
 		if (is_callable([$stringOrObject, 'doFoo'])) {
-			assertType('Bug4573\Bar|class-string', $stringOrObject);
+			assertType('Bug4573\Bar|(class-string&hasMethod(doFoo))', $stringOrObject);
 		}
 	}
 
@@ -33,7 +33,7 @@ class Foo
 	public function doBar($stringOrObject): void
 	{
 		if (method_exists($stringOrObject, 'doFoo')) {
-			assertType('Bug4573\Bar|class-string', $stringOrObject);
+			assertType('Bug4573\Bar|(class-string&hasMethod(doFoo))', $stringOrObject);
 		}
 	}
 

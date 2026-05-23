@@ -92,7 +92,10 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 					new ObjectWithoutClassType(),
 					new HasMethodType($methodNameType->getValue()),
 				]),
-				new ClassStringType(),
+				new IntersectionType([
+					new ClassStringType(),
+					new HasMethodType($methodNameType->getValue()),
+				]),
 			]),
 			$context,
 			$scope,

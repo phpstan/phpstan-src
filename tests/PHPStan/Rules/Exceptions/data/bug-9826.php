@@ -59,3 +59,12 @@ function returnThrowable(): \Exception
 {
 	return new \Exception();
 }
+
+function triggerErrorNeverReturns(): void
+{
+	try {
+		$a = trigger_error("hello", E_USER_ERROR);
+	} catch (\Exception $e) {
+		// ok - trigger_error returns never (explicit), gets throw point like any never-returning function
+	}
+}

@@ -88,12 +88,8 @@ final class MethodThrowPointHelper
 				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
-			if (!$context->isInThrow()) {
-				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
-			}
-
 			$methodReturnedType = $scope->getType($normalizedMethodCall);
-			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+			if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
 				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}
 		}

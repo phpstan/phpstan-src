@@ -626,12 +626,8 @@ final class FuncCallHandler implements ExprHandler
 				|| $requiredParameters > 0
 				|| count($normalizedFuncCall->getArgs()) > 0
 			) {
-				if (!$context->isInThrow()) {
-					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);
-				}
-
 				$functionReturnedType = $scope->getType($normalizedFuncCall);
-				if (!(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
+				if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
 					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);
 				}
 			}

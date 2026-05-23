@@ -36,7 +36,7 @@ final class MethodThrowPointHelper
 		ParametersAcceptor $parametersAcceptor,
 		MethodCall|StaticCall $normalizedMethodCall,
 		MutatingScope $scope,
-		?ExpressionContext $context = null,
+		ExpressionContext $context,
 	): ?InternalThrowPoint
 	{
 		if ($normalizedMethodCall instanceof MethodCall) {
@@ -88,7 +88,7 @@ final class MethodThrowPointHelper
 				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
-			if ($context === null || !$context->isInThrow()) {
+			if (!$context->isInThrow()) {
 				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}
 

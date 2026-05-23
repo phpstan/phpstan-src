@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
+use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
@@ -59,6 +60,7 @@ final class ImplicitToStringCallHelper
 				$toStringMethod->getOnlyVariant(),
 				new Expr\MethodCall($expr, new Identifier('__toString')),
 				$scope,
+				ExpressionContext::createDeep(),
 			);
 			if ($throwPoint !== null) {
 				$throwPoints[] = $throwPoint;

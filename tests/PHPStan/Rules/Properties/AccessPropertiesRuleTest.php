@@ -1302,6 +1302,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2861.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14667(): void
 	{
 		$this->checkThisOnly = false;

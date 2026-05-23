@@ -15,3 +15,12 @@ $undefined_curl_functions = array_filter(
 		return ! function_exists( $function_name );
 	}
 );
+
+function testFunctionExistsGuardReturn(): void {
+	if (!function_exists('curl_init')) {
+		return;
+	}
+	if (function_exists('curl_init')) {
+		echo 'exists';
+	}
+}

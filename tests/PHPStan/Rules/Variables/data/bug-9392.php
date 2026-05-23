@@ -2,6 +2,8 @@
 
 namespace Bug9392;
 
+use function PHPStan\Testing\assertType;
+
 class Range
 {
 	public function __construct(
@@ -17,6 +19,9 @@ new Range(
 	max: $max = 5_000 * 100,
 	notInRangeMessage: sprintf('The price must be between %s and %s.', round($min / 100, 2), round($max / 100, 2)),
 );
+
+assertType('2000', $min);
+assertType('500000', $max);
 
 function foo(?string $c = null, mixed $a = null, mixed $b = null): void
 {

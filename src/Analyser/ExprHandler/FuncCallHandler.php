@@ -311,7 +311,7 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($functionReflection !== null) {
-			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope);
+			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
 			if ($functionThrowPoint !== null) {
 				$throwPoints[] = $functionThrowPoint;
 			}
@@ -580,6 +580,7 @@ final class FuncCallHandler implements ExprHandler
 		?ParametersAcceptor $parametersAcceptor,
 		FuncCall $normalizedFuncCall,
 		MutatingScope $scope,
+		ExpressionContext $context,
 	): ?InternalThrowPoint
 	{
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
@@ -625,6 +626,10 @@ final class FuncCallHandler implements ExprHandler
 				|| $requiredParameters > 0
 				|| count($normalizedFuncCall->getArgs()) > 0
 			) {
+				if (!$context->isInThrow()) {
+					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);
+				}
+
 				$functionReturnedType = $scope->getType($normalizedFuncCall);
 				if (!(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
 					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);

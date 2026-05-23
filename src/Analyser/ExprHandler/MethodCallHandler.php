@@ -144,7 +144,7 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope);
+			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}

@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 function testKeys(\RedisArray $ra): void {
 	$keys = $ra->keys('*');
-	assertType('array<string, list<string>>|false', $keys);
+	assertType('(array<string, list<string>>|false)', $keys);
 	if ($keys === false) {
 		return;
 	}
@@ -23,7 +23,7 @@ function testKeys(\RedisArray $ra): void {
 
 function testInfo(\RedisArray $ra): void {
 	$info = $ra->info();
-	assertType('array<string, array<string, mixed>>|false', $info);
+	assertType('(array<string, array<string, mixed>>|false)', $info);
 	if ($info === false) {
 		return;
 	}
@@ -32,29 +32,29 @@ function testInfo(\RedisArray $ra): void {
 
 function testMget(\RedisArray $ra): void {
 	$values = $ra->mget(['key1', 'key2']);
-	assertType('list<mixed>|false', $values);
+	assertType('(list<mixed>|false)', $values);
 }
 
 function testScan(\RedisArray $ra): void {
 	$iterator = null;
 	$result = $ra->scan($iterator, 'node1');
-	assertType('list<string>|false', $result);
+	assertType('(list<string>|false)', $result);
 }
 
 function testHscan(\RedisArray $ra): void {
 	$iterator = null;
 	$result = $ra->hscan('myhash', $iterator);
-	assertType('array<string, string>|false', $result);
+	assertType('(array<string, string>|false)', $result);
 }
 
 function testSscan(\RedisArray $ra): void {
 	$iterator = null;
 	$result = $ra->sscan('myset', $iterator);
-	assertType('list<string>|false', $result);
+	assertType('(list<string>|false)', $result);
 }
 
 function testZscan(\RedisArray $ra): void {
 	$iterator = null;
 	$result = $ra->zscan('myzset', $iterator);
-	assertType('array<string, float>|false', $result);
+	assertType('(array<string, float>|false)', $result);
 }

@@ -1348,25 +1348,6 @@ class UnionType implements CompoundType
 			return $innerTypes[0];
 		}
 
-		if ($this instanceof BenevolentUnionType) {
-			return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$innerTypes));
-		}
-
-		$uniqueTypes = [];
-		foreach ($innerTypes as $innerType) {
-			$key = $innerType->describe(VerbosityLevel::cache());
-			if (isset($uniqueTypes[$key])) {
-				continue;
-			}
-
-			$uniqueTypes[$key] = $innerType;
-		}
-		$innerTypes = array_values($uniqueTypes);
-
-		if (count($innerTypes) === 1) {
-			return $innerTypes[0];
-		}
-
 		return new UnionType($innerTypes);
 	}
 

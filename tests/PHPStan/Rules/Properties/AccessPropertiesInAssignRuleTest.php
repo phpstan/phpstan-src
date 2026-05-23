@@ -260,7 +260,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	public function testBug14667(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-14667-assign.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-14667.php'], []);
 	}
 
 }

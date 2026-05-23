@@ -18,3 +18,18 @@ function testExplicitMixed(mixed $row): void
 		assertType('class-string|(object&hasProperty(prop))', $row);
 	}
 }
+
+/** @param mixed $row */
+function testMethodExistsMixed($row): void
+{
+	if (method_exists($row, 'foo')) {
+		assertType('class-string|(object&hasMethod(foo))', $row);
+	}
+}
+
+function testMethodExistsExplicitMixed(mixed $row): void
+{
+	if (method_exists($row, 'foo')) {
+		assertType('class-string|(object&hasMethod(foo))', $row);
+	}
+}

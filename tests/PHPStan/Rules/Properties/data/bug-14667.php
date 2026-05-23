@@ -58,6 +58,29 @@ final class Foo
 	}
 }
 
+/** @param mixed $row */
+function testImplicitMixedAssign($row): void
+{
+	if (property_exists($row, 'prop')) {
+		$row->prop = 'value';
+	}
+}
+
+function testExplicitMixedAssign(mixed $row): void
+{
+	if (property_exists($row, 'prop')) {
+		$row->prop = 'value';
+	}
+}
+
+/** @param object|string $row */
+function testObjectOrStringAssign($row): void
+{
+	if (property_exists($row, 'prop')) {
+		$row->prop = 'value';
+	}
+}
+
 /** @param class-string $row */
 function testClassString(string $row): void
 {

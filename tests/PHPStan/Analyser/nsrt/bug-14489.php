@@ -23,7 +23,7 @@ function () {
 	}
 
 	$values = array_values($cData);
-	assertType('array{0: non-empty-array<0|1, 1|4>, 1?: non-empty-array<0|1, 1|4>}', $values);
+	assertType('array{array{1}, array{4}}', $values);
 };
 
 function () {

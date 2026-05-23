@@ -31,7 +31,7 @@ class Test {
 			foreach ($fields as $field) {
 				$credentials[$field] = 'fake';
 			}
-			assertType("non-empty-array{password?: 'fake', username?: 'fake', app_id?: 'fake', app_key?: 'fake'}", $credentials);
+			assertType("array{app_id: 'fake', app_key: 'fake'}|array{username: 'fake', password: 'fake'}", $credentials);
 		}
 	}
 

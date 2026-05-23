@@ -4110,7 +4110,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14667.php'], [
 			[
 				'Cannot call method foo() on class-string.',
-				47,
+				55,
 			],
 		]);
 	}

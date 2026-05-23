@@ -81,6 +81,14 @@ function testObjectOrStringAssign($row): void
 	}
 }
 
+/** @param class-string|object $row */
+function testClassStringOrObject($row): void
+{
+	if (property_exists($row, 'prop')) {
+		echo $row->prop;
+	}
+}
+
 /** @param class-string $row */
 function testClassString(string $row): void
 {

@@ -40,6 +40,14 @@ function testMixedChained($x): void
 	}
 }
 
+/** @param class-string|object $row */
+function testClassStringOrObject($row): void
+{
+	if (method_exists($row, 'foo')) {
+		$row->foo();
+	}
+}
+
 /** @param class-string $row */
 function testClassString(string $row): void
 {

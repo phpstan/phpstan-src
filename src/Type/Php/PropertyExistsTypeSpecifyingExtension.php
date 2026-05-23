@@ -67,8 +67,8 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			return new SpecifiedTypes([], []);
 		}
 
-		$objectType = $scope->getType($args[0]->value);
-		if ($objectType->isString()->yes()) {
+		$objectOrStringType = $scope->getType($args[0]->value);
+		if ($objectOrStringType->isString()->yes()) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
 				new ConstantBooleanType(true),
@@ -77,7 +77,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			);
 		}
 
-		if (!$objectType->isObject()->yes()) {
+		if (!$objectOrStringType->isObject()->yes()) {
 			return $this->typeSpecifier->create(
 				$args[0]->value,
 				new UnionType([

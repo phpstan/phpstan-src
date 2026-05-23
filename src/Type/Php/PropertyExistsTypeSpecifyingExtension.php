@@ -68,15 +68,6 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		}
 
 		$objectType = $scope->getType($args[0]->value);
-		if ($objectType->isString()->yes()) {
-			return $this->typeSpecifier->create(
-				new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
-				new ConstantBooleanType(true),
-				$context,
-				$scope,
-			);
-		}
-
 		if (!$objectType->isObject()->yes()) {
 			return $this->typeSpecifier->create(
 				$args[0]->value,

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
@@ -9,6 +10,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
+use function in_array;
+use function strtolower;
 
 #[AutowiredService]
 final class ConstantConditionRuleHelper
@@ -48,6 +51,19 @@ final class ConstantConditionRuleHelper
 		) {
 			// already checked by different rules
 			return true;
+		}
+
+		if ($expr instanceof FuncCall && $expr->name instanceof Node\Name) {
+			$functionName = strtolower((string) $expr->name);
+			if (in_array($functionName, [
+				'class_exists',
+				'interface_exists',
+				'trait_exists',
+				'enum_exists',
+				'function_exists',
+			], true)) {
+				return true;
+			}
 		}
 
 		if (

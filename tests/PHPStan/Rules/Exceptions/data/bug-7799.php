@@ -10,3 +10,12 @@ function foo(): void {
 	catch (\Exception $e) {}
 	print "reachable\n";
 }
+
+function foo2(): void {
+	try {
+		trigger_error("hello", E_USER_WARNING);
+		print "world\n";
+	}
+	catch (\Exception $e) {}
+	print "reachable\n";
+}

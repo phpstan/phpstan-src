@@ -50,7 +50,7 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 		$args = $node->getArgs();
 		$argType = $scope->getType($args[0]->value);
 
-		// class_exists() will only assure one of the functions to exist.
+		// class_exists() will only assure one of the classes to exist.
 		$constantStrings = $argType->getConstantStrings();
 		if (count($constantStrings) === 1) {
 			if ($functionReflection->getName() === '') {

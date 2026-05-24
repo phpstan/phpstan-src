@@ -49,7 +49,7 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 		$args = $node->getArgs();
 		$argType = $scope->getType($args[0]->value);
 		if ($argType instanceof ConstantStringType) {
-			$funcCall = new FuncCall(new FullyQualified('class_exists'), [
+			$funcCall = new FuncCall(new FullyQualified($functionReflection->getName()), [
 				new Arg(new String_(ltrim($argType->getValue(), '\\'))),
 			]);
 			return $this->typeSpecifier->create(

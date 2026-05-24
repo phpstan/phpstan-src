@@ -9,6 +9,7 @@ function doFoo():void {
 		throw new \Exception();
 	}
 
+	// the function_exists() will only assure one of the functions to exist.
 	funcA();
 	funcB();
 	$func();

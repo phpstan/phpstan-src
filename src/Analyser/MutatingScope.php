@@ -311,6 +311,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if ($expr instanceof FuncCall) {
 				if (
 					!$expr->name instanceof Name
+					// interface_exists() etc. imply class_exists() therefore not listed here
 					|| !in_array($expr->name->name, ['class_exists', 'function_exists'], true)
 				) {
 					continue;
@@ -1378,10 +1379,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				'class_exists',
 				'interface_exists',
 				'trait_exists',
+				'enum_exists',
 			], true)) {
 				return true;
 			}
 		}
+
+		// interface_exists() etc. imply class_exists() therefore not listed here
 		$expr = new FuncCall(new FullyQualified('class_exists'), [
 			new Arg(new String_(ltrim($className, '\\'))),
 		]);

@@ -21,8 +21,7 @@ class Foo
 		$link_mode = isset($shortcut_id) ? "remove" : "add";
 		if ($link_mode === "add") {
 			assertVariableCertainty(
-				// should be NO, see https://github.com/phpstan/phpstan-src/pull/2710#issuecomment-1793677703
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createNo(),
 				$shortcut_id
 			);
 		} else {

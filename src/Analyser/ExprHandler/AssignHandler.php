@@ -44,6 +44,8 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\IssetExpr;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VirtualNode;
@@ -61,6 +63,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
@@ -87,6 +90,7 @@ final class AssignHandler implements ExprHandler
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
 		private PhpVersion $phpVersion,
+		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
@@ -861,19 +865,31 @@ final class AssignHandler implements ExprHandler
 				continue;
 			}
 
-			$exprString = (string) $exprString;
-
-			if (!isset($conditionalExpressions[$exprString])) {
-				$conditionalExpressions[$exprString] = [];
+			if ($expr instanceof IssetExpr) {
+				$innerExpr = $expr->getExpr();
+				$conditionalExpressions = $this->addConditionalExpressionHolder(
+					$conditionalExpressions,
+					$variableName,
+					$variableType,
+					$innerExpr,
+					$this->exprPrinter->printExpr($innerExpr),
+					$scope->getType($innerExpr),
+					TrinaryLogic::createMaybe(),
+				);
+				continue;
 			}
 
-			$holder = new ConditionalExpressionHolder([
-				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
-			], ExpressionTypeHolder::createYes(
+			$exprString = (string) $exprString;
+
+			$conditionalExpressions = $this->addConditionalExpressionHolder(
+				$conditionalExpressions,
+				$variableName,
+				$variableType,
 				$expr,
+				$exprString,
 				TypeCombinator::intersect($scope->getType($expr), $exprType),
-			));
-			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
+				TrinaryLogic::createYes(),
+			);
 		}
 
 		return $conditionalExpressions;
@@ -891,20 +907,62 @@ final class AssignHandler implements ExprHandler
 				continue;
 			}
 
-			$exprString = (string) $exprString;
-
-			if (!isset($conditionalExpressions[$exprString])) {
-				$conditionalExpressions[$exprString] = [];
+			if ($expr instanceof IssetExpr) {
+				$innerExpr = $expr->getExpr();
+				$conditionalExpressions = $this->addConditionalExpressionHolder(
+					$conditionalExpressions,
+					$variableName,
+					$variableType,
+					$innerExpr,
+					$this->exprPrinter->printExpr($innerExpr),
+					new NeverType(),
+					TrinaryLogic::createNo(),
+				);
+				continue;
 			}
 
-			$holder = new ConditionalExpressionHolder([
-				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
-			], ExpressionTypeHolder::createYes(
+			$exprString = (string) $exprString;
+
+			$conditionalExpressions = $this->addConditionalExpressionHolder(
+				$conditionalExpressions,
+				$variableName,
+				$variableType,
 				$expr,
+				$exprString,
 				TypeCombinator::remove($scope->getType($expr), $exprType),
-			));
-			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
+				TrinaryLogic::createYes(),
+			);
 		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function addConditionalExpressionHolder(
+		array $conditionalExpressions,
+		string $variableName,
+		Type $variableType,
+		Expr $holderExpr,
+		string $holderExprString,
+		Type $holderType,
+		TrinaryLogic $holderCertainty,
+	): array
+	{
+		if (!isset($conditionalExpressions[$holderExprString])) {
+			$conditionalExpressions[$holderExprString] = [];
+		}
+
+		$holder = new ConditionalExpressionHolder([
+			'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
+		], new ExpressionTypeHolder(
+			$holderExpr,
+			$holderType,
+			$holderCertainty,
+		));
+		$conditionalExpressions[$holderExprString][$holder->getKey()] = $holder;
 
 		return $conditionalExpressions;
 	}
@@ -938,6 +996,10 @@ final class AssignHandler implements ExprHandler
 	 */
 	private function isExprSafeToProjectThroughVariable(Expr $expr, string $variableName, array $rhsImpurePoints, Expr $assignedExpr): bool
 	{
+		if ($expr instanceof IssetExpr) {
+			return $this->isExprSafeToProjectThroughVariable($expr->getExpr(), $variableName, $rhsImpurePoints, $assignedExpr);
+		}
+
 		// Scalar/const-fetch literals and PHPStan virtual nodes (e.g. NativeTypeExpr) are never
 		// narrowing targets at a usage site — skip them so they don't collide with PHP's
 		// numeric-string array-key autocast or leak internal virtual expressions into the

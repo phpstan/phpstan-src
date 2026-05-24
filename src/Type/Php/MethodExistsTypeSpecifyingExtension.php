@@ -14,7 +14,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -52,9 +51,12 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 	{
 		$args = $node->getArgs();
 		$methodNameType = $scope->getType($args[1]->value);
-		if (!$methodNameType instanceof ConstantStringType) {
+		$constantStringTypes = $methodNameType->getConstantStrings();
+		// method_exists() will only assure one of the methods to exist.
+		if (count($constantStringTypes) !== 1) {
 			return $this->createFuncCallSpec($node, $context, $scope);
 		}
+		$methodNameType = $constantStringTypes[0];
 
 		$objectOrStringType = $scope->getType($args[0]->value);
 		if ($objectOrStringType->isString()->yes()) {

@@ -11,7 +11,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 use function strtolower;
@@ -42,7 +41,8 @@ final class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		}
 		$classType = $scope->getType($args[1]->value);
 
-		if (!$classType instanceof ConstantStringType && !$context->true()) {
+		// is_a() will only assure one of the classes to exist.
+		if (count($classType->getConstantStrings()) !== 1 && !$context->true()) {
 			return new SpecifiedTypes([], []);
 		}
 

@@ -206,6 +206,19 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testEnumExists(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/enum-exists.php'], [
+			[
+				'Class UnknownEnum\Foo not found.',
+				7,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 	public static function dataClassConstantOnExpression(): array
 	{
 		return [

@@ -75,7 +75,7 @@ final class MethodThrowPointHelper
 
 		$throwType = $methodReflection->getThrowType();
 		if ($throwType === null) {
-			$returnType = $parametersAcceptor->getReturnType();
+			$returnType = $scope->getType($normalizedMethodCall);
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 				$throwType = new ObjectType(Throwable::class);
 			}

@@ -823,9 +823,6 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-		if ($scope->nativeTypesPromoted) {
-			return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
-		}
 
 		if ($functionReflection->getName() === 'call_user_func') {
 			$result = ArgumentsNormalizer::reorderCallUserFuncArguments($expr, $scope);
@@ -881,6 +878,10 @@ final class FuncCallHandler implements ExprHandler
 			if ($resolvedType !== null) {
 				return $resolvedType;
 			}
+		}
+
+		if ($scope->nativeTypesPromoted) {
+			return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
 		}
 
 		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);

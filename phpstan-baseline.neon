@@ -13,8 +13,8 @@ parameters:
 			path: src/Analyser/AnalyserResultFinalizer.php
 
 		-
-			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
-			identifier: varTag.type
+			rawMessage: PHPDoc tag @var with type int|string is not subtype of native type string.
+			identifier: varTag.nativeType
 			count: 1
 			path: src/Analyser/ArgumentsNormalizer.php
 
@@ -1066,8 +1066,8 @@ parameters:
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
-			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
-			identifier: varTag.type
+			rawMessage: PHPDoc tag @var with type int|string is not subtype of native type string.
+			identifier: varTag.nativeType
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 

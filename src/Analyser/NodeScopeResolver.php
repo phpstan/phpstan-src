@@ -3517,7 +3517,7 @@ class NodeScopeResolver
 		$processingOrder = array_keys($args);
 		$hasReorderedArgs = false;
 		foreach ($args as $arg) {
-			if ($arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) !== null) {
+			if ($arg->hasAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE)) {
 				$hasReorderedArgs = true;
 				break;
 			}

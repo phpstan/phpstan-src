@@ -81,7 +81,6 @@ final class ImpossibleCheckTypeHelper
 					'interface_exists',
 					'trait_exists',
 					'enum_exists',
-					'function_exists',
 				], true)) {
 					return null;
 				}

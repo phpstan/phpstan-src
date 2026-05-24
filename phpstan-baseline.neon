@@ -1588,12 +1588,6 @@ parameters:
 			path: src/Type/Php/FilterFunctionReturnTypeHelper.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/FunctionExistsFunctionTypeSpecifyingExtension.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1

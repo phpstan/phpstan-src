@@ -867,7 +867,7 @@ final class AssignHandler implements ExprHandler
 
 			if ($expr instanceof IssetExpr) {
 				$innerExpr = $expr->getExpr();
-				$this->addConditionalExpressionHolder(
+				$conditionalExpressions = $this->addConditionalExpressionHolder(
 					$conditionalExpressions,
 					$variableName,
 					$variableType,
@@ -881,7 +881,7 @@ final class AssignHandler implements ExprHandler
 
 			$exprString = (string) $exprString;
 
-			$this->addConditionalExpressionHolder(
+			$conditionalExpressions = $this->addConditionalExpressionHolder(
 				$conditionalExpressions,
 				$variableName,
 				$variableType,
@@ -909,7 +909,7 @@ final class AssignHandler implements ExprHandler
 
 			if ($expr instanceof IssetExpr) {
 				$innerExpr = $expr->getExpr();
-				$this->addConditionalExpressionHolder(
+				$conditionalExpressions = $this->addConditionalExpressionHolder(
 					$conditionalExpressions,
 					$variableName,
 					$variableType,
@@ -923,7 +923,7 @@ final class AssignHandler implements ExprHandler
 
 			$exprString = (string) $exprString;
 
-			$this->addConditionalExpressionHolder(
+			$conditionalExpressions = $this->addConditionalExpressionHolder(
 				$conditionalExpressions,
 				$variableName,
 				$variableType,
@@ -939,16 +939,17 @@ final class AssignHandler implements ExprHandler
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function addConditionalExpressionHolder(
-		array &$conditionalExpressions,
+		array $conditionalExpressions,
 		string $variableName,
 		Type $variableType,
 		Expr $holderExpr,
 		string $holderExprString,
 		Type $holderType,
 		TrinaryLogic $holderCertainty,
-	): void
+	): array
 	{
 		if (!isset($conditionalExpressions[$holderExprString])) {
 			$conditionalExpressions[$holderExprString] = [];
@@ -962,6 +963,8 @@ final class AssignHandler implements ExprHandler
 			$holderCertainty,
 		));
 		$conditionalExpressions[$holderExprString][$holder->getKey()] = $holder;
+
+		return $conditionalExpressions;
 	}
 
 	/**

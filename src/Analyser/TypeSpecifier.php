@@ -3095,10 +3095,11 @@ final class TypeSpecifier
 			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), ['get_class', 'get_debug_type'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 		) {
-			if (count($rightType->getConstantStrings()) === 1 && $this->reflectionProvider->hasClass($rightType->getValue())) {
+			$constantStringTypes = $rightType->getConstantStrings();
+			if (count($constantStringTypes) === 1 && $this->reflectionProvider->hasClass($constantStringTypes[0]->getValue())) {
 				return $this->create(
 					$unwrappedLeftExpr->getArgs()[0]->value,
-					new ObjectType($rightType->getValue(), classReflection: $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
+					new ObjectType($constantStringTypes[0]->getValue(), classReflection: $this->reflectionProvider->getClass($constantStringTypes[0]->getValue())->asFinal()),
 					$context,
 					$scope,
 				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
@@ -3220,7 +3221,7 @@ final class TypeSpecifier
 			strtolower($unwrappedLeftExpr->name->toString()) === 'class'
 		) {
 			$constantStrings = $rightType->getConstantStrings();
-			if (count($constantStrings) === 1) {
+			if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
 				if ($this->reflectionProvider->hasClass($constantStrings[0]->getValue())) {
 					return $this->create(
 						$unwrappedLeftExpr->class,
@@ -3252,7 +3253,7 @@ final class TypeSpecifier
 			strtolower($unwrappedRightExpr->name->toString()) === 'class'
 		) {
 			$constantStrings = $leftType->getConstantStrings();
-			if (count($constantStrings) === 1) {
+			if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
 				if ($this->reflectionProvider->hasClass($constantStrings[0]->getValue())) {
 					return $this->create(
 						$unwrappedRightExpr->class,

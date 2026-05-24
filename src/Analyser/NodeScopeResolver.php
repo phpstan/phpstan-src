@@ -3513,7 +3513,35 @@ class NodeScopeResolver
 		$deferredInvalidateExpressions = [];
 		/** @var ProcessClosureResult[] $deferredByRefClosureResults */
 		$deferredByRefClosureResults = [];
-		foreach ($args as $i => $arg) {
+
+		$processingOrder = array_keys($args);
+		$hasReorderedArgs = false;
+		foreach ($args as $arg) {
+			if ($arg->hasAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE)) {
+				$hasReorderedArgs = true;
+				break;
+			}
+		}
+		if ($hasReorderedArgs) {
+			usort($processingOrder, static function (int $a, int $b) use ($args): int {
+				$aOriginal = $args[$a]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+				$bOriginal = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+				if ($aOriginal === null && $bOriginal === null) {
+					return $a <=> $b;
+				}
+				if ($aOriginal === null) {
+					return 1;
+				}
+				if ($bOriginal === null) {
+					return -1;
+				}
+
+				return $aOriginal->getStartTokenPos() <=> $bOriginal->getStartTokenPos();
+			});
+		}
+
+		foreach ($processingOrder as $i) {
+			$arg = $args[$i];
 			$assignByReference = false;
 			$parameter = null;
 			$parameterType = null;

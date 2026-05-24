@@ -1033,4 +1033,48 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14684(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-14684.php'], [
+			[
+				'Call to private static method privateFoo() of class Bug14684\X.',
+				25,
+			],
+			[
+				'Call to protected static method protectedFoo() of class Bug14684\X.',
+				29,
+			],
+			[
+				'Call to private static method privateFoo() of class Bug14684\SubX.',
+				41,
+			],
+			[
+				'Call to protected static method protectedFoo() of class Bug14684\X.',
+				45,
+			],
+			[
+				'Call to private static method privateFoo() of class Bug14684\X.',
+				52,
+			],
+			[
+				'Call to protected static method protectedFoo() of class Bug14684\X.',
+				56,
+			],
+			[
+				'Call to private static method privateFoo() of class Bug14684\SubX.',
+				60,
+			],
+			[
+				'Call to private static method privateFoo() of class Bug14684\X.',
+				71,
+			],
+			[
+				'Call to protected static method protectedFoo() of class Bug14684\X.',
+				75,
+			],
+		]);
+	}
+
 }

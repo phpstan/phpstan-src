@@ -26,6 +26,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -198,6 +199,18 @@ final class StaticMethodCallCheck
 		if ($classType instanceof GenericClassStringType) {
 			$classType = $classType->getGenericType();
 			if (!$classType->isObject()->yes()) {
+				return [[], null];
+			}
+		} elseif ($classType->isClassString()->yes()) {
+			$nativeMethodTypes = [];
+			foreach ($classType->getClassStringObjectType()->getObjectClassReflections() as $classReflection) {
+				if ($classReflection->hasNativeMethod($methodName)) {
+					$nativeMethodTypes[] = new ObjectType($classReflection->getName());
+				}
+			}
+			if ($nativeMethodTypes !== []) {
+				$classType = TypeCombinator::union(...$nativeMethodTypes);
+			} else {
 				return [[], null];
 			}
 		} elseif ($classType->isString()->yes()) {

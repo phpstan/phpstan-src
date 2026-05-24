@@ -17,7 +17,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -59,9 +58,12 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 	{
 		$args = $node->getArgs();
 		$propertyNameType = $scope->getType($args[1]->value);
-		if (!$propertyNameType instanceof ConstantStringType) {
+		$constantStringTypes = $propertyNameType->getConstantStrings();
+		// property_exists() will only assure one of the properties to exist.
+		if (count($constantStringTypes) !== 1) {
 			return $this->createFuncCallSpec($node, $context, $scope);
 		}
+		$propertyNameType = $constantStringTypes[0];
 
 		if ($propertyNameType->getValue() === '') {
 			return new SpecifiedTypes([], []);

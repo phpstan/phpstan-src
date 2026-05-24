@@ -14,6 +14,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -49,6 +50,9 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 		$args = $node->getArgs();
 		$argType = $scope->getType($args[0]->value);
 		if ($argType instanceof ConstantStringType) {
+			if ($functionReflection->getName() === '') {
+				throw new ShouldNotHappenException();
+			}
 			return $this->typeSpecifier->create(
 				new AlwaysRememberedExpr(
 					new FuncCall(new FullyQualified($functionReflection->getName()), [

@@ -69,7 +69,7 @@ final class NewStaticRule implements Rule
 			return [];
 		}
 
-		foreach ($classReflection->getImmediateInterfaces() as $interface) {
+		foreach ($classReflection->getInterfaces() as $interface) {
 			if ($interface->hasConstructor()) {
 				return [];
 			}

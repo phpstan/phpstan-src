@@ -15,8 +15,8 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use function count;
 use function ltrim;
 
 #[AutowiredService]
@@ -37,15 +37,23 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$argType = $scope->getType($node->getArgs()[0]->value);
-		if ($argType instanceof ConstantStringType) {
-			return $this->typeSpecifier->create(
-				new FuncCall(new FullyQualified('function_exists'), [
-					new Arg(new String_(ltrim($argType->getValue(), '\\'))),
-				]),
-				new ConstantBooleanType(true),
-				$context,
-				$scope,
-			);
+
+		$constantStrings = $argType->getConstantStrings();
+		if (count($constantStrings) === 1) {
+			$specifiedTypes = new SpecifiedTypes();
+
+			foreach ($constantStrings as $constantString) {
+				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+					new FuncCall(new FullyQualified('function_exists'), [
+						new Arg(new String_(ltrim($constantString->getValue(), '\\'))),
+					]),
+					new ConstantBooleanType(true),
+					$context,
+					$scope,
+				));
+			}
+
+			return $specifiedTypes;
 		}
 
 		return $this->typeSpecifier->create(

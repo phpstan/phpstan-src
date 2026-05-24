@@ -269,12 +269,12 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8980.php'], [
 			[
 				'Function funcA not found.',
-				12,
+				13,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'Function funcB not found.',
-				13,
+				14,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);

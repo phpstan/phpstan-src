@@ -39,7 +39,7 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 		$argType = $scope->getType($node->getArgs()[0]->value);
 
 		$constantStrings = $argType->getConstantStrings();
-		if (count($constantStrings) > 0) {
+		if (count($constantStrings) === 1) {
 			$specifiedTypes = new SpecifiedTypes();
 
 			foreach ($constantStrings as $constantString) {

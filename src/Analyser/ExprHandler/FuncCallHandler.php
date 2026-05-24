@@ -596,8 +596,8 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		$throwType = $functionReflection->getThrowType();
-		if ($throwType === null && $parametersAcceptor !== null) {
-			$returnType = $parametersAcceptor->getReturnType();
+		if ($throwType === null) {
+			$returnType = $scope->getType($normalizedFuncCall);
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 				$throwType = new ObjectType(Throwable::class);
 			}

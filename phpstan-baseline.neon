@@ -1591,19 +1591,7 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
-			path: src/Type/Php/IsAFunctionTypeSpecifyingExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
 			path: src/Type/Php/MbSubstituteCharacterDynamicReturnTypeExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/MethodExistsTypeSpecifyingExtension.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
@@ -1628,12 +1616,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Php/NumberFormatFunctionDynamicReturnTypeExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/PropertyExistsTypeSpecifyingExtension.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'

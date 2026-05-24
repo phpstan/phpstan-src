@@ -11,4 +11,5 @@ function doFoo():void {
 
 	funcA();
 	funcB();
+	$func();
 }

@@ -3095,10 +3095,11 @@ final class TypeSpecifier
 			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), ['get_class', 'get_debug_type'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 		) {
-			if ($rightType instanceof ConstantStringType && $this->reflectionProvider->hasClass($rightType->getValue())) {
+			$constantStringTypes = $rightType->getConstantStrings();
+			if (count($constantStringTypes) === 1 && $this->reflectionProvider->hasClass($constantStringTypes[0]->getValue())) {
 				return $this->create(
 					$unwrappedLeftExpr->getArgs()[0]->value,
-					new ObjectType($rightType->getValue(), classReflection: $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
+					new ObjectType($constantStringTypes[0]->getValue(), classReflection: $this->reflectionProvider->getClass($constantStringTypes[0]->getValue())->asFinal()),
 					$context,
 					$scope,
 				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
@@ -3217,26 +3218,27 @@ final class TypeSpecifier
 			$unwrappedLeftExpr->class instanceof Expr &&
 			$unwrappedLeftExpr->name instanceof Node\Identifier &&
 			$unwrappedRightExpr instanceof ClassConstFetch &&
-			$rightType instanceof ConstantStringType &&
-			$rightType->getValue() !== '' &&
 			strtolower($unwrappedLeftExpr->name->toString()) === 'class'
 		) {
-			if ($this->reflectionProvider->hasClass($rightType->getValue())) {
-				return $this->create(
-					$unwrappedLeftExpr->class,
-					new ObjectType($rightType->getValue(), classReflection: $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
-					$context,
+			$constantStrings = $rightType->getConstantStrings();
+			if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
+				if ($this->reflectionProvider->hasClass($constantStrings[0]->getValue())) {
+					return $this->create(
+						$unwrappedLeftExpr->class,
+						new ObjectType($constantStrings[0]->getValue(), classReflection: $this->reflectionProvider->getClass($constantStrings[0]->getValue())->asFinal()),
+						$context,
+						$scope,
+					)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
+				}
+				return $this->specifyTypesInCondition(
 					$scope,
+					new Instanceof_(
+						$unwrappedLeftExpr->class,
+						new Name($constantStrings[0]->getValue()),
+					),
+					$context,
 				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
 			}
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Instanceof_(
-					$unwrappedLeftExpr->class,
-					new Name($rightType->getValue()),
-				),
-				$context,
-			)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
 		}
 
 		$leftType = $scope->getType($leftExpr);
@@ -3248,27 +3250,28 @@ final class TypeSpecifier
 			$unwrappedRightExpr->class instanceof Expr &&
 			$unwrappedRightExpr->name instanceof Node\Identifier &&
 			$unwrappedLeftExpr instanceof ClassConstFetch &&
-			$leftType instanceof ConstantStringType &&
-			$leftType->getValue() !== '' &&
 			strtolower($unwrappedRightExpr->name->toString()) === 'class'
 		) {
-			if ($this->reflectionProvider->hasClass($leftType->getValue())) {
-				return $this->create(
-					$unwrappedRightExpr->class,
-					new ObjectType($leftType->getValue(), classReflection: $this->reflectionProvider->getClass($leftType->getValue())->asFinal()),
-					$context,
+			$constantStrings = $leftType->getConstantStrings();
+			if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
+				if ($this->reflectionProvider->hasClass($constantStrings[0]->getValue())) {
+					return $this->create(
+						$unwrappedRightExpr->class,
+						new ObjectType($constantStrings[0]->getValue(), classReflection: $this->reflectionProvider->getClass($constantStrings[0]->getValue())->asFinal()),
+						$context,
+						$scope,
+					)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
+				}
+
+				return $this->specifyTypesInCondition(
 					$scope,
+					new Instanceof_(
+						$unwrappedRightExpr->class,
+						new Name($constantStrings[0]->getValue()),
+					),
+					$context,
 				)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
 			}
-
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Instanceof_(
-					$unwrappedRightExpr->class,
-					new Name($leftType->getValue()),
-				),
-				$context,
-			)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
 		}
 
 		if ($context->false()) {

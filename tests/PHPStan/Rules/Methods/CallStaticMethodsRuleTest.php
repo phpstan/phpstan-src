@@ -1051,4 +1051,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClassExistOnCall(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/class-exists-on-static-call.php'], []);
+	}
+
 }

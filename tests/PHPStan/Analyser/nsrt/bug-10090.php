@@ -69,6 +69,23 @@ function shortTernary(): void {
 	}
 }
 
+function notDefinedOrNull(): void {
+	if (rand(0,1)) {
+		$x = null;
+	}
+
+	$mode = isset($x) ? "found" : "missing";
+
+	if ($mode === "missing") {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $x);
+		echo $x;
+	}
+	if ($mode === "found") {
+		assertVariableCertainty(TrinaryLogic::createYes(), $x);
+		assertType('*NEVER*', $x);
+	}
+}
+
 function withBoolean(): void {
 	if (rand(0,1)) {
 		$x = 1;

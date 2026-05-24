@@ -1660,8 +1660,16 @@ class DefinedVariableRuleTest extends RuleTestCase
 				36,
 			],
 			[
+				'Variable $x might not be defined.',
+				80,
+			],
+			[
+				'Variable $x might not be defined.',
+				81,
+			],
+			[
 				'Undefined variable: $x',
-				79,
+				96,
 			],
 		]);
 	}

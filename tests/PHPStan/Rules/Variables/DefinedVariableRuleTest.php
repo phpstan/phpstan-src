@@ -1636,4 +1636,42 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9392.php'], []);
 	}
 
+	public function testBug10090(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10090.php'], [
+			[
+				'Undefined variable: $shortcut_id',
+				18,
+			],
+			[
+				'Undefined variable: $shortcut_id',
+				19,
+			],
+			[
+				'Variable $x might not be defined.',
+				35,
+			],
+			[
+				'Variable $x might not be defined.',
+				36,
+			],
+			[
+				'Variable $x might not be defined.',
+				80,
+			],
+			[
+				'Variable $x might not be defined.',
+				81,
+			],
+			[
+				'Undefined variable: $x',
+				96,
+			],
+		]);
+	}
+
 }

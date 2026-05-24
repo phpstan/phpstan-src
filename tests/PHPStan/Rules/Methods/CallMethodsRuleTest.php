@@ -4106,4 +4106,46 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14661(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14661.php'], [
+			[
+				'Parameter $a of method Bug14661\A::differentTypes() expects int, string given.',
+				76,
+			],
+			[
+				'Parameter $b of method Bug14661\A::differentTypes() expects string, int given.',
+				76,
+			],
+			[
+				'Parameter $a of method Bug14661\A::differentTypes() expects int, string given.',
+				77,
+			],
+			[
+				'Parameter $b of method Bug14661\A::differentTypes() expects string, int given.',
+				77,
+			],
+			[
+				'Parameter #1 $a of method Bug14661\A::differentTypes() expects int, string given.',
+				82,
+			],
+			[
+				'Parameter #2 $b of method Bug14661\A::differentTypes() expects string, int given.',
+				82,
+			],
+			[
+				'Parameter #1 $b of method Bug14661\B::differentTypes() expects string, int given.',
+				83,
+			],
+			[
+				'Parameter #2 $a of method Bug14661\B::differentTypes() expects int, string given.',
+				83,
+			],
+		]);
+	}
+
 }

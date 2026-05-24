@@ -300,11 +300,7 @@ final class NewHandler implements ExprHandler
 				return InternalThrowPoint::createExplicit($scope, $throwType, $new, true);
 			}
 		} elseif ($this->implicitThrows) {
-			if (!$context->isInThrow()) {
-				return InternalThrowPoint::createImplicit($scope, $methodCall);
-			}
-
-			if (!$constructorReflection->getDeclaringClass()->is(Throwable::class)) {
+			if (!$context->isInThrow() || !$constructorReflection->getDeclaringClass()->is(Throwable::class)) {
 				return InternalThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}

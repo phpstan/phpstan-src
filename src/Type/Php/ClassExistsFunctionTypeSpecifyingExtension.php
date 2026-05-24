@@ -49,14 +49,17 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 	{
 		$args = $node->getArgs();
 		$argType = $scope->getType($args[0]->value);
-		if ($argType instanceof ConstantStringType) {
+
+		// class_exists() will only assure one of the functions to exist.
+		$constantStrings = $argType->getConstantStrings();
+		if (count($constantStrings) === 1) {
 			if ($functionReflection->getName() === '') {
 				throw new ShouldNotHappenException();
 			}
 			return $this->typeSpecifier->create(
 				new AlwaysRememberedExpr(
 					new FuncCall(new FullyQualified($functionReflection->getName()), [
-						new Arg(new String_(ltrim($argType->getValue(), '\\'))),
+						new Arg(new String_(ltrim($constantStrings[0]->getValue(), '\\'))),
 					]),
 					new BooleanType(),
 					new BooleanType(),
@@ -68,7 +71,7 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 				$this->typeSpecifier->create(
 					new AlwaysRememberedExpr(
 						new FuncCall(new FullyQualified('class_exists'), [
-							new Arg(new String_(ltrim($argType->getValue(), '\\'))),
+							new Arg(new String_(ltrim($constantStrings[0]->getValue(), '\\'))),
 						]),
 						new BooleanType(),
 						new BooleanType(),

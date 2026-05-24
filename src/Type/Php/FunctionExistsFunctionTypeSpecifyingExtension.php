@@ -40,20 +40,14 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 
 		$constantStrings = $argType->getConstantStrings();
 		if (count($constantStrings) === 1) {
-			$specifiedTypes = new SpecifiedTypes();
-
-			foreach ($constantStrings as $constantString) {
-				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-					new FuncCall(new FullyQualified('function_exists'), [
-						new Arg(new String_(ltrim($constantString->getValue(), '\\'))),
-					]),
-					new ConstantBooleanType(true),
-					$context,
-					$scope,
-				));
-			}
-
-			return $specifiedTypes;
+			return $this->typeSpecifier->create(
+				new FuncCall(new FullyQualified('function_exists'), [
+					new Arg(new String_(ltrim($constantStrings[0]->getValue(), '\\'))),
+				]),
+				new ConstantBooleanType(true),
+				$context,
+				$scope,
+			);
 		}
 
 		return $this->typeSpecifier->create(

@@ -1066,6 +1066,14 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				'Call to private static method privateFoo() of class Bug14684\SubX.',
 				60,
 			],
+			[
+				'Call to private static method privateFoo() of class Bug14684\X.',
+				71,
+			],
+			[
+				'Call to protected static method protectedFoo() of class Bug14684\X.',
+				75,
+			],
 		]);
 	}
 

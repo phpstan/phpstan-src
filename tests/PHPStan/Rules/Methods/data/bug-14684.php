@@ -60,3 +60,22 @@ function testLiteralClassCall(): void
 		SubX::privateFoo();
 	}
 }
+
+class Y {
+}
+
+/** @param class-string<X|Y> $row */
+function testClassStringUnion(string $row): void
+{
+	if (method_exists($row, 'privateFoo')) {
+		$row::privateFoo();
+	}
+
+	if (method_exists($row, 'protectedFoo')) {
+		$row::protectedFoo();
+	}
+
+	if (method_exists($row, 'publicFoo')) {
+		$row::publicFoo();
+	}
+}

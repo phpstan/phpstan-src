@@ -21,3 +21,18 @@ function () {
 		};
 	}
 };
+
+function () {
+	assertType('bool', class_exists('foo123'));
+	if (class_exists('foo123')) {
+		assertType('true', class_exists('foo123'));
+		function () {
+			assertType('true', class_exists('foo123'));
+		};
+	} else {
+		assertType('false', class_exists('foo123'));
+		function () {
+			assertType('bool', class_exists('foo123'));
+		};
+	}
+};

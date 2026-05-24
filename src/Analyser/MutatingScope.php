@@ -2157,7 +2157,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $expr instanceof FuncCall
 			&& !$expr->isFirstClassCallable()
 			&& $expr->name instanceof FullyQualified
-			&& $expr->name->toLowerString() === 'function_exists'
+			&& in_array($expr->name->toLowerString(), ['function_exists', 'class_exists'], true)
 			&& isset($expr->getArgs()[0])
 			&& count($this->getType($expr->getArgs()[0]->value)->getConstantStrings()) === 1
 			&& $type->isTrue()->yes();

@@ -105,16 +105,13 @@ trait TemplateTypeTrait
 
 	public function toArgument(): TemplateType
 	{
-		$newBound = TemplateTypeHelper::toArgument($this->getBound());
-		$newDefault = $this->default !== null ? TemplateTypeHelper::toArgument($this->default) : null;
-
 		return TemplateTypeFactory::create(
 			$this->scope,
 			$this->name,
-			$newBound,
+			TemplateTypeHelper::toArgument($this->getBound()),
 			$this->variance,
 			new TemplateTypeArgumentStrategy(),
-			$newDefault,
+			$this->default !== null ? TemplateTypeHelper::toArgument($this->default) : null,
 		);
 	}
 

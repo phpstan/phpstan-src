@@ -11,14 +11,16 @@ class HelloWorld
 	public function thisWorks(?int $limit, int $offset = 0): void
 	{
 		if ($limit && 0 === ($offset % $limit)) {
-			assertType('(float|int)', ($offset / $limit) + 1);
+			assertType('int', $offset / $limit);
+			assertType('int', ($offset / $limit) + 1);
 		}
 	}
 
 	public function thisDoesntWork(?int $limit, int $offset = 0): void
 	{
 		if ($limit && $offset && (0 === ($offset % $limit))) {
-			assertType('(float|int<min, 0>|int<2, max>)', ($offset / $limit) + 1);
+			assertType('int<min, -1>|int<1, max>', $offset / $limit);
+			assertType('int<min, 0>|int<2, max>', ($offset / $limit) + 1);
 		}
 	}
 
@@ -27,7 +29,7 @@ class HelloWorld
 	{
 		if ($limit) {
 			assertType('(float|int)', $offset / $limit);
-			assertType('(float|int<-2, 2>)', $offsetRange / $limit);
+			assertType('float|int<-2, 2>', $offsetRange / $limit);
 		}
 	}
 

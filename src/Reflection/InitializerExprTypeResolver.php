@@ -1240,6 +1240,20 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		$result = $this->getDivTypeFromTypes($left, $right, $leftType, $rightType);
+
+		if ($leftType->isInteger()->yes() && $rightType->isInteger()->yes()) {
+			$modType = $getTypeCallback(new BinaryOp\Mod($left, $right));
+			if ($modType->isInteger()->yes() && (new ConstantIntegerType(0))->isSuperTypeOf($modType)->yes()) {
+				return TypeCombinator::remove($result, new FloatType());
+			}
+		}
+
+		return $result;
+	}
+
+	private function getDivTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -2034,23 +2048,18 @@ final class InitializerExprTypeResolver
 				);
 			} elseif ($leftNumberType instanceof UnionType) {
 				$unionParts = [];
-				$hasBenevolentPart = false;
 
 				foreach ($leftNumberType->getTypes() as $type) {
 					$numberType = $type->toNumber();
 					if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
-						$part = $this->integerRangeMath($numberType, $expr, $rightNumberType);
-						if ($part instanceof BenevolentUnionType) {
-							$hasBenevolentPart = true;
-						}
-						$unionParts[] = $part;
+						$unionParts[] = $this->integerRangeMath($numberType, $expr, $rightNumberType);
 					} else {
 						$unionParts[] = $numberType;
 					}
 				}
 
 				$union = TypeCombinator::union(...$unionParts);
-				if ($leftNumberType instanceof BenevolentUnionType || $hasBenevolentPart) {
+				if ($leftNumberType instanceof BenevolentUnionType) {
 					return TypeUtils::toBenevolentUnion($union)->toNumber();
 				}
 
@@ -2119,23 +2128,18 @@ final class InitializerExprTypeResolver
 		if ($operand instanceof UnionType) {
 
 			$unionParts = [];
-			$hasBenevolentPart = false;
 
 			foreach ($operand->getTypes() as $type) {
 				$numberType = $type->toNumber();
 				if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
-					$part = $this->integerRangeMath($range, $node, $numberType);
-					if ($part instanceof BenevolentUnionType) {
-						$hasBenevolentPart = true;
-					}
-					$unionParts[] = $part;
+					$unionParts[] = $this->integerRangeMath($range, $node, $numberType);
 				} else {
 					$unionParts[] = $type->toNumber();
 				}
 			}
 
 			$union = TypeCombinator::union(...$unionParts);
-			if ($operand instanceof BenevolentUnionType || $hasBenevolentPart) {
+			if ($operand instanceof BenevolentUnionType) {
 				return TypeUtils::toBenevolentUnion($union)->toNumber();
 			}
 
@@ -2255,7 +2259,11 @@ final class InitializerExprTypeResolver
 						$this->integerRangeMath($range, $node, $positiveOperand),
 					)->toNumber();
 
-					return TypeUtils::toBenevolentUnion($result);
+					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
+						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+					}
+
+					return $result;
 				}
 				if (
 					($rangeMin < 0 || $rangeMin === null)
@@ -2271,7 +2279,11 @@ final class InitializerExprTypeResolver
 						$this->integerRangeMath($positiveRange, $node, $operand),
 					)->toNumber();
 
-					return TypeUtils::toBenevolentUnion($result);
+					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
+						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+					}
+
+					return $result;
 				}
 
 				$rangeMinSign = ($rangeMin ?? -INF) <=> 0;
@@ -2315,7 +2327,7 @@ final class InitializerExprTypeResolver
 				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
 			}
 
-			return TypeUtils::toBenevolentUnion(TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType()));
+			return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 		} elseif ($node instanceof Expr\BinaryOp\ShiftLeft) {
 			if (!$operand instanceof ConstantIntegerType) {
 				return new IntegerType();

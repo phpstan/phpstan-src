@@ -93,20 +93,10 @@ jobs:
             --follow-symlinks
 
       - name: "Invalidate CloudFront"
-<<<<<<< HEAD
         run: |
           aws cloudfront create-invalidation \
             --distribution-id "${{ vars.APIREF_DISTRIBUTION_ID }}" \
             --paths "/${{ github.ref_name }}/*"
-=======
-        uses: chetan/invalidate-cloudfront-action@6adb1f613f4102ad81cd08a7ba83b8abe490cb8d # v2.4.2
-        env:
-          DISTRIBUTION: "E37G1C2KWNAPBD"
-          PATHS: '/${{ github.ref_name }}/*'
-          AWS_REGION: 'eu-west-1'
-          AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
->>>>>>> origin/2.1.x
 
       - uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:

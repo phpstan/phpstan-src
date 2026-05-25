@@ -10,6 +10,8 @@ NonRemoveableTypeTrait = "NonRemoveableTypeTrait"
 supportsLessOverridenParametersWithVariadic = "supportsLessOverridenParametersWithVariadic"
 # API property name
 consts = "consts"
+# PHP built-in function (alias of is_writable)
+is_writeable = "is_writeable"
 
 [default.extend-words]
 # override false-positives

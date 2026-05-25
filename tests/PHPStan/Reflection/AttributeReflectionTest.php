@@ -183,7 +183,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback',
 						[
-							'callback' => 'static-Closure(int): mixed',
+							'callback' => 'Closure(int): mixed',
 						],
 					],
 				],
@@ -194,7 +194,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback',
 						[
-							'callback' => 'static-Closure(int): mixed',
+							'callback' => 'Closure(int): mixed',
 						],
 					],
 				],
@@ -205,7 +205,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback',
 						[
-							'callback' => 'static-Closure(int): string',
+							'callback' => 'Closure(int): string',
 						],
 					],
 				],
@@ -219,7 +219,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback2',
 						[
-							'callback' => 'static-Closure(mixed): mixed',
+							'callback' => 'Closure(mixed): mixed',
 						],
 					],
 				],
@@ -230,7 +230,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback2',
 						[
-							'callback' => 'static-Closure(int=): mixed',
+							'callback' => 'Closure(int=): mixed',
 						],
 					],
 				],
@@ -241,7 +241,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback2',
 						[
-							'callback' => 'static-Closure(int ...): mixed',
+							'callback' => 'Closure(int ...): mixed',
 						],
 					],
 				],

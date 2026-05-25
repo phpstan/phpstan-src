@@ -18,7 +18,7 @@ function (): void {
 	/** @var array<non-empty-string, string> $a */
 	$a = [];
 	$c = static fn (): array => $a;
-	assertType('static-Closure(): array<non-empty-string, string>', $c);
+	assertType('Closure(): array<non-empty-string, string>', $c);
 
 	$r = result($c);
 	assertType('array<non-empty-string, string>', $r);

@@ -287,9 +287,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private function describeBody(bool $showPure, bool $showStatic): string
 	{
-		$prefix = $showStatic && $this->isStatic->yes() ? 'static-' : '';
-
 		if ($this->isCommonCallable) {
+			$prefix = $showStatic && $this->isStatic->yes() ? 'static-' : '';
 			$name = $showPure && $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
 			return $prefix . $name;
 		}
@@ -318,7 +317,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->mustUseReturnValue,
 		);
 
-		return $prefix . $printer->print($selfWithoutParameterNames->toPhpDocNode());
+		return $printer->print($selfWithoutParameterNames->toPhpDocNode());
 	}
 
 	public function isOffsetAccessLegal(): TrinaryLogic

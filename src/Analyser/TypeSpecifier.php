@@ -742,11 +742,15 @@ final class TypeSpecifier
 				if ($types->shouldOverwrite()) {
 					$result = $result->setAlwaysOverwriteTypes();
 				}
-				return $result->setNewConditionalExpressionHolders(array_merge(
+				$leftNormalizedForHolders = $leftTypesForHolders->normalize($scope);
+				$rightNormalizedForHolders = $rightTypesForHolders->normalize($rightScope);
+				return $result->setNewConditionalExpressionHolders($this->mergeHolders(
 					$this->processBooleanNotSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, $rightScope),
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, $scope),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, $rightScope),
 					$this->processBooleanSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, $scope),
+					$this->processBooleanSureConditionalTypes($scope, $leftNormalizedForHolders, $rightNormalizedForHolders, $rightScope),
+					$this->processBooleanSureConditionalTypes($scope, $rightNormalizedForHolders, $leftNormalizedForHolders, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -795,11 +799,15 @@ final class TypeSpecifier
 				if ($types->shouldOverwrite()) {
 					$result = $result->setAlwaysOverwriteTypes();
 				}
-				return $result->setNewConditionalExpressionHolders(array_merge(
+				$leftNormalizedForHolders = $leftTypes->normalize($scope);
+				$rightNormalizedForHolders = $rightTypes->normalize($rightScope);
+				return $result->setNewConditionalExpressionHolders($this->mergeHolders(
 					$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes, $rightScope),
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes, $scope),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes, $rightScope),
 					$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes, $scope),
+					$this->processBooleanSureConditionalTypes($scope, $leftNormalizedForHolders, $rightNormalizedForHolders, $rightScope),
+					$this->processBooleanSureConditionalTypes($scope, $rightNormalizedForHolders, $leftNormalizedForHolders, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -2121,6 +2129,26 @@ final class TypeSpecifier
 		}
 
 		return [];
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> ...$arrays
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function mergeHolders(array ...$arrays): array
+	{
+		$result = [];
+		foreach ($arrays as $array) {
+			foreach ($array as $exprString => $holders) {
+				if (!isset($result[$exprString])) {
+					$result[$exprString] = $holders;
+				} else {
+					$result[$exprString] = array_merge($result[$exprString], $holders);
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	private function isTrackableExpression(Expr $expr): bool

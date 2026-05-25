@@ -254,7 +254,7 @@ class ClosureTypeTest extends PHPStanTestCase
 			'static pure common closure at value' => [
 				new ClosureType(impurePoints: [], isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::value(),
-				'pure-Closure',
+				'static-pure-Closure',
 			],
 		];
 	}

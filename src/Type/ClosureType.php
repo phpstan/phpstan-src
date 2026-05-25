@@ -282,37 +282,6 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			static fn (): string => 'Closure',
 			function (): string {
 				if ($this->isCommonCallable) {
-					return $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
-				}
-
-				$printer = new Printer();
-				$selfWithoutParameterNames = new self(
-					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
-						'',
-						$p->getType(),
-						optional: $p->isOptional() && !$p->isVariadic(),
-						passedByReference: PassedByReference::createNo(),
-						variadic: $p->isVariadic(),
-						defaultValue: $p->getDefaultValue(),
-					), $this->parameters),
-					$this->returnType,
-					$this->variadic,
-					$this->templateTypeMap,
-					$this->resolvedTemplateTypeMap,
-					$this->callSiteVarianceMap,
-					$this->templateTags,
-					$this->throwPoints,
-					$this->impurePoints,
-					$this->invalidateExpressions,
-					$this->usedVariables,
-					$this->acceptsNamedArguments,
-					$this->mustUseReturnValue,
-				);
-
-				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
-			},
-			function (): string {
-				if ($this->isCommonCallable) {
 					$prefix = $this->isStatic->yes() ? 'static-' : '';
 					$name = $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
 					return $prefix . $name;

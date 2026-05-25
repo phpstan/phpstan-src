@@ -1,0 +1,97 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+# Posts the issue-bot result as a PR comment.
+#
+# The "Issue bot" workflow runs on the `pull_request` event, whose GITHUB_TOKEN is
+# read-only (and has no secrets) for PRs from forks — so it cannot comment there.
+# This workflow runs on `workflow_run`, which executes in the base-repo context with
+# access to secrets and a writable token, so it can comment on fork PRs too. It only
+# consumes the artifact produced by the analysis run; it never checks out or runs PR code.
+#
+# Posting uses PHPSTAN_BOT_TOKEN so the comment comes from the bot account.
+
+name: "Issue bot PR comment"
+
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: ["Issue bot"]
+    types:
+      - completed
+
+permissions: {}
+
+concurrency:
+  group: issue-bot-pr-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  comment:
+    name: "Post/update PR comment"
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: "ubuntu-latest"
+    permissions:
+      actions: read # download the pr-comment artifact from the triggering run
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Download PR comment artifact"
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: pr-comment
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Resolve PR number"
+        id: pr
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          github-token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          script: |
+            // Resolve the PR from the triggering run's head SHA. workflow_run.pull_requests
+            // is empty for fork PRs, and the SHA is GitHub-provided (not artifact-controlled),
+            // so this is the trustworthy way to find which PR to comment on.
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.payload.workflow_run.head_sha,
+            });
+            const pr = prs.find(p => p.state === 'open') ?? prs[0];
+            if (pr === undefined) {
+              core.info('No pull request associated with this commit; nothing to comment on.');
+              return;
+            }
+            core.setOutput('number', pr.number);
+
+      - name: "Find existing comment"
+        if: steps.pr.outputs.number != ''
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          issue-number: ${{ steps.pr.outputs.number }}
+          body-includes: "<!-- phpstan-issue-bot -->"
+
+      # Changes detected: create the comment if missing, otherwise update it.
+      - name: "Post/update comment (changes)"
+        if: steps.pr.outputs.number != '' && hashFiles('pr-comment-exit-2') != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ steps.pr.outputs.number }}
+          edit-mode: replace
+          body-path: pr-comment.md
+
+      # No changes: only update an already-existing comment, never create a new one.
+      - name: "Update comment (no changes, only if exists)"
+        if: steps.pr.outputs.number != '' && hashFiles('pr-comment-exit-0') != '' && steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body-path: pr-comment.md

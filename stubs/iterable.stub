@@ -196,11 +196,9 @@ class IteratorIterator implements OuterIterator {
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
- * @template TIterator of \RecursiveIterator<TKey, TValue>|\IteratorAggregate<TKey, TValue>
+ * @template TIterator of \RecursiveIterator|\IteratorAggregate
  *
- * @implements OuterIterator<TKey, TValue>
+ * @implements OuterIterator<key-of<TIterator>, value-of<TIterator>>
  *
  * @mixin TIterator
  */

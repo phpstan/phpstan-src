@@ -49,17 +49,16 @@ final class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecify
 		if (count($constantNames) !== 1 || $constantNames[0]->getValue() === '') {
 			return new SpecifiedTypes([], []);
 		}
-		$constantName = $constantNames[0];
 
 		$valueType = $scope->getType($args[1]->value);
 		$finalType = $scope->getConstantExplicitTypeFromConfig(
-			$constantName->getValue(),
+			$constantNames[0]->getValue(),
 			$valueType,
 		);
 
 		return $this->typeSpecifier->create(
 			new Node\Expr\ConstFetch(
-				new Node\Name\FullyQualified($constantName->getValue()),
+				new Node\Name\FullyQualified($constantNames[0]->getValue()),
 			),
 			$finalType,
 			TypeSpecifierContext::createTruthy(),

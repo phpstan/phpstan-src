@@ -53,9 +53,8 @@ final class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecif
 		if (count($constantNames) !== 1 || $constantNames[0]->getValue() === '') {
 			return new SpecifiedTypes([], []);
 		}
-		$constantName = $constantNames[0];
 
-		$expr = $this->constantHelper->createExprFromConstantName($constantName->getValue());
+		$expr = $this->constantHelper->createExprFromConstantName($constantNames[0]->getValue());
 		if ($expr === null) {
 			return new SpecifiedTypes([], []);
 		}

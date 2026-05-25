@@ -1552,12 +1552,6 @@ parameters:
 			path: src/Type/Php/CompactFunctionReturnTypeExtension.php
 
 		-
-			rawMessage: 'Parameter #1 $name of class PhpParser\Node\Name\FullyQualified constructor expects non-empty-array<string>|PhpParser\Node\Name|non-empty-string, string given.'
-			identifier: argument.type
-			count: 1
-			path: src/Type/Php/DefineConstantTypeSpecifyingExtension.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() or Type::getObjectClassReflections() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1

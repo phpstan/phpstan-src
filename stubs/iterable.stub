@@ -196,16 +196,16 @@ class IteratorIterator implements OuterIterator {
 }
 
 /**
- * @template TIterator of \RecursiveIterator|\IteratorAggregate
+ * @template T of \RecursiveIterator|\IteratorAggregate
  *
- * @implements OuterIterator<key-of<TIterator>, value-of<TIterator>>
+ * @implements OuterIterator<key-of<T>, value-of<T>>
  *
- * @mixin TIterator
+ * @mixin T
  */
 class RecursiveIteratorIterator implements OuterIterator
 {
 	/**
-	 * @param TIterator $iterator
+	 * @param T $iterator
 	 */
 	public function __construct(
 		$iterator,

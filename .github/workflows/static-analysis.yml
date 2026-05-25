@@ -72,7 +72,7 @@ jobs:
         if: failure() && (matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1')
         run: "php -d memory_limit=599M bin/phpstan analyse --generate-baseline baseline-php-${{ matrix.php-version }}.neon"
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ failure() }}
         with:
           name: baseline-${{ matrix.php-version }}
@@ -113,7 +113,7 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Cache Result cache"
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./tmp
           key: "result-cache-v15-${{ matrix.php-version }}-${{ github.run_id }}"

@@ -202,14 +202,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
 					659,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
 					662,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					665,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
@@ -959,6 +962,8 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug10502(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-10502.php'], [
 			[
@@ -968,6 +973,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				"Call to function is_callable() with array{1: 'count', 0: ArrayObject<int, int>} will always evaluate to true.",
 				24,
+				$tipText,
 			],
 		]);
 	}

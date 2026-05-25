@@ -18,6 +18,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\Type;
@@ -161,6 +162,10 @@ class GenericObjectType extends ObjectType
 			return $nakedSuperTypeOf->and(IsSuperTypeOfResult::createMaybe());
 		}
 
+		if (!$acceptsContext && $this->ancestorHasAllUnresolvedCovariantArgs($type, $ancestor)) {
+			return $nakedSuperTypeOf->and(IsSuperTypeOfResult::createMaybe());
+		}
+
 		if (count($this->types) !== count($ancestor->types)) {
 			return IsSuperTypeOfResult::createNo();
 		}
@@ -207,6 +212,48 @@ class GenericObjectType extends ObjectType
 		}
 
 		return $result;
+	}
+
+	private function ancestorHasAllUnresolvedCovariantArgs(ObjectType $type, self $ancestor): bool
+	{
+		$typeClassReflection = $type->getClassReflection();
+		if ($typeClassReflection !== null && $typeClassReflection->isGeneric()) {
+			return false;
+		}
+
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return false;
+		}
+
+		$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		$hasCovariantWithMixed = false;
+
+		foreach ($typeList as $i => $templateType) {
+			if (!isset($ancestor->types[$i]) || !isset($this->types[$i])) {
+				continue;
+			}
+			if (!$templateType instanceof TemplateType) {
+				continue;
+			}
+
+			$thisVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			$effectiveVariance = $thisVariance->invariant() ? $templateType->getVariance() : $thisVariance;
+
+			if (!$effectiveVariance->covariant()) {
+				continue;
+			}
+
+			if (!$ancestor->types[$i] instanceof MixedType || $ancestor->types[$i] instanceof TemplateType) {
+				return false;
+			}
+
+			if (!$this->types[$i] instanceof MixedType || $this->types[$i] instanceof TemplateType) {
+				$hasCovariantWithMixed = true;
+			}
+		}
+
+		return $hasCovariantWithMixed;
 	}
 
 	public function getClassReflection(): ?ClassReflection

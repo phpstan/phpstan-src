@@ -15,12 +15,10 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Accessory\HasPropertyType;
-use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -80,18 +78,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		}
 
 		if (!$objectOrStringType->isObject()->yes()) {
-			return $this->typeSpecifier->create(
-				$args[0]->value,
-				new UnionType([
-					new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($propertyNameType->getValue()),
-					]),
-					new ClassStringType(),
-				]),
-				$context,
-				$scope,
-			);
+			return new SpecifiedTypes([], []);
 		}
 
 		$propertyNode = new PropertyFetch(

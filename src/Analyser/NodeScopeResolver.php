@@ -1143,6 +1143,9 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, new NoopExpressionNode($stmt->expr, $hasAssign), $scope, $storage);
 			}
 			$scope = $result->getScope();
+			if (count($result->getImpurePoints()) > 0) {
+				$scope = $scope->invalidateExistenceCheckExpressions();
+			}
 			$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
 				$scope,
 				$stmt->expr,

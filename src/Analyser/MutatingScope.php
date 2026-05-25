@@ -2986,6 +2986,62 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	private const EXISTENCE_CHECK_FUNCTIONS = [
+		'class_exists',
+		'interface_exists',
+		'trait_exists',
+		'enum_exists',
+		'function_exists',
+		'defined',
+	];
+
+	public function invalidateExistenceCheckExpressions(): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$invalidated = false;
+
+		foreach ($expressionTypes as $exprString => $holder) {
+			$expr = $holder->getExpr();
+			if (!$expr instanceof FuncCall || !$expr->name instanceof Name) {
+				continue;
+			}
+			if (!in_array($expr->name->toLowerString(), self::EXISTENCE_CHECK_FUNCTIONS, true)) {
+				continue;
+			}
+			if ($holder->getType()->isTrue()->yes()) {
+				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$invalidated = true;
+		}
+
+		if (!$invalidated) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	private function getIntertwinedRefRootVariableName(Expr $expr): ?string
 	{
 		if ($expr instanceof Variable && is_string($expr->name)) {

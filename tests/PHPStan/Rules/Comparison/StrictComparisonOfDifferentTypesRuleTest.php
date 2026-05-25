@@ -199,6 +199,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between int<0, 1> and 100 will always evaluate to false.',
 					622,
+					$tipText,
 				],
 				[
 					'Strict comparison using === between 100 and \'foo\' will always evaluate to false.',
@@ -443,6 +444,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between 2 and 2 will always evaluate to true.',
 				11,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}
@@ -491,10 +493,13 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug2851b(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
 		$this->analyse([__DIR__ . '/data/bug-2851b.php'], [
 			[
 				'Strict comparison using === between 0 and 0 will always evaluate to true.',
 				21,
+				$tipText,
 			],
 		]);
 	}
@@ -565,14 +570,17 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug3633(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/bug-3633.php'], [
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\HelloWorld)> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				37,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\HelloWorld\' will always evaluate to true.',
 				41,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
@@ -581,38 +589,47 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\OtherClass)> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				64,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				71,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\OtherClass\' will always evaluate to true.',
 				74,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\FinalClass)> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				93,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\FinalClass)> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				96,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
 				102,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				106,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				109,
+				$tipText,
 			],
 			[
 				'Strict comparison using !== between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to false.',
 				112,
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',

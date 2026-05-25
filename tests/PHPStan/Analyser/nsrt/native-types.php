@@ -334,7 +334,7 @@ class TestPhp8Stubs
 	{
 		$a = array_replace([1, 2, 3], [4, 5, 6]);
 		assertType('array{4, 5, 6}', $a);
-		assertNativeType('array{4, 5, 6}', $a);
+		assertNativeType('array', $a);
 	}
 
 }

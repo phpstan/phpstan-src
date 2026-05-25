@@ -17,6 +17,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -876,6 +877,17 @@ class ArrayType implements Type
 
 		if ($typeToRemove instanceof NonEmptyArrayType) {
 			return new ConstantArrayType([], []);
+		}
+
+		if ($typeToRemove instanceof HasOffsetType) {
+			return $this->unsetOffset($typeToRemove->getOffsetType());
+		}
+
+		if (
+			$typeToRemove instanceof HasOffsetValueType
+			&& $typeToRemove->getValueType()->isSuperTypeOf($this->itemType)->yes()
+		) {
+			return $this->unsetOffset($typeToRemove->getOffsetType());
 		}
 
 		return null;

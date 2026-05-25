@@ -6167,6 +6167,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 				IntersectionType::class,
 				'non-empty-array<string, string>&oversized-array',
 			],
+			[
+				new ArrayType(new UnionType([new ConstantIntegerType(0), new StringType()]), new MixedType()),
+				new HasOffsetValueType(new ConstantIntegerType(0), new MixedType()),
+				ArrayType::class,
+				'array<string, mixed>',
+			],
+			[
+				new ArrayType(new UnionType([new ConstantIntegerType(0), new StringType()]), new IntegerType()),
+				new HasOffsetValueType(new ConstantIntegerType(0), new IntegerType()),
+				ArrayType::class,
+				'array<string, int>',
+			],
+			[
+				new ArrayType(new UnionType([new ConstantIntegerType(0), new StringType()]), new MixedType()),
+				new HasOffsetValueType(new ConstantIntegerType(0), new StringType()),
+				ArrayType::class,
+				'array<0|string, mixed>',
+			],
 		];
 	}
 

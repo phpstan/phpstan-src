@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -35,6 +36,7 @@ final class MethodThrowPointHelper
 		ParametersAcceptor $parametersAcceptor,
 		MethodCall|StaticCall $normalizedMethodCall,
 		MutatingScope $scope,
+		ExpressionContext $context,
 	): ?InternalThrowPoint
 	{
 		if ($normalizedMethodCall instanceof MethodCall) {
@@ -87,7 +89,7 @@ final class MethodThrowPointHelper
 			}
 		} elseif ($this->implicitThrows) {
 			$methodReturnedType = $scope->getType($normalizedMethodCall);
-			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+			if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
 				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}
 		}

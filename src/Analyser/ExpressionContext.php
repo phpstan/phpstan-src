@@ -11,6 +11,7 @@ final class ExpressionContext
 		private bool $isDeep,
 		private ?string $inAssignRightSideVariableName,
 		private ?Expr $inAssignRightSideExpr,
+		private bool $inThrow = false,
 	)
 	{
 	}
@@ -31,7 +32,7 @@ final class ExpressionContext
 			return $this;
 		}
 
-		return new self(true, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr);
+		return new self(true, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow);
 	}
 
 	public function isDeep(): bool
@@ -39,9 +40,19 @@ final class ExpressionContext
 		return $this->isDeep;
 	}
 
+	public function enterThrow(): self
+	{
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, true);
+	}
+
+	public function isInThrow(): bool
+	{
+		return $this->inThrow;
+	}
+
 	public function enterRightSideAssign(string $variableName, Expr $expr): self
 	{
-		return new self($this->isDeep, $variableName, $expr);
+		return new self($this->isDeep, $variableName, $expr, $this->inThrow);
 	}
 
 	public function getInAssignRightSideVariableName(): ?string

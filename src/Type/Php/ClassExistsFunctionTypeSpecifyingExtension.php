@@ -13,14 +13,18 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use function count;
 use function in_array;
 use function ltrim;
@@ -30,6 +34,10 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 {
 
 	private TypeSpecifier $typeSpecifier;
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
+	}
 
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
@@ -49,6 +57,16 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 	{
 		$args = $node->getArgs();
 		$argType = $scope->getType($args[0]->value);
+		$functionName = $functionReflection->getName();
+
+		if ($this->isCallAlwaysFalse($functionName, $argType)) {
+			return $this->typeSpecifier->create(
+				$args[0]->value,
+				new NeverType(),
+				$context,
+				$scope,
+			);
+		}
 
 		// class_exists() will only assure one of the classes to exist.
 		$constantStrings = $argType->getConstantStrings();
@@ -99,6 +117,42 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
 	{
 		$this->typeSpecifier = $typeSpecifier;
+	}
+
+	private function isCallAlwaysFalse(string $functionName, Type $argType): bool
+	{
+		$constantStrings = $argType->getConstantStrings();
+		if ($constantStrings === []) {
+			return false;
+		}
+
+		foreach ($constantStrings as $constantString) {
+			$name = ltrim($constantString->getValue(), '\\');
+			if (!$this->reflectionProvider->hasClass($name)) {
+				return false;
+			}
+			if ($this->matchesFunctionKind($functionName, $this->reflectionProvider->getClass($name))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private function matchesFunctionKind(string $functionName, ClassReflection $reflection): bool
+	{
+		switch ($functionName) {
+			case 'class_exists':
+				return !$reflection->isInterface() && !$reflection->isTrait();
+			case 'interface_exists':
+				return $reflection->isInterface();
+			case 'trait_exists':
+				return $reflection->isTrait();
+			case 'enum_exists':
+				return $reflection->isEnum();
+			default:
+				return true;
+		}
 	}
 
 }

@@ -58,6 +58,7 @@ final class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
+		$onlyReportFalse = false;
 		if ($node instanceof FuncCall) {
 			if ($node->isFirstClassCallable()) {
 				return null;
@@ -66,6 +67,17 @@ final class ImpossibleCheckTypeHelper
 			$argsCount = count($args);
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
+				if (in_array($functionName, [
+					'class_exists',
+					'interface_exists',
+					'trait_exists',
+					'enum_exists',
+				], true)) {
+					// Runtime autoload can always fail, so do not report "always true" for these.
+					// "Always false" is still reportable when the type specifier proves impossibility
+					// (e.g. class_exists() on a constant string that names an interface).
+					$onlyReportFalse = true;
+				}
 				if ($functionName === 'assert' && $argsCount >= 1) {
 					$arg = $args[0]->value;
 					$assertValue = ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg) : $scope->getNativeType($arg))->toBoolean();
@@ -76,13 +88,7 @@ final class ImpossibleCheckTypeHelper
 
 					return $assertValueIsTrue;
 				}
-				if (in_array($functionName, [
-					'class_exists',
-					'interface_exists',
-					'trait_exists',
-					'enum_exists',
-					'function_exists',
-				], true)) {
+				if ($functionName === 'function_exists') {
 					return null;
 				}
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
@@ -284,7 +290,12 @@ final class ImpossibleCheckTypeHelper
 
 			$rootExprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr);
 			if ($rootExprType instanceof ConstantBooleanType) {
-				return $rootExprType->getValue();
+				$value = $rootExprType->getValue();
+				if ($onlyReportFalse && $value === true) {
+					return null;
+				}
+
+				return $value;
 			}
 
 			return null;
@@ -362,7 +373,16 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		$result = TrinaryLogic::createYes()->and(...$results);
-		return $result->maybe() ? null : $result->yes();
+		if ($result->maybe()) {
+			return null;
+		}
+
+		$value = $result->yes();
+		if ($onlyReportFalse && $value === true) {
+			return null;
+		}
+
+		return $value;
 	}
 
 	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool

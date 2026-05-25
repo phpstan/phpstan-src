@@ -43,14 +43,14 @@ jobs:
           php-version: "8.2"
           extensions: mbstring, intl
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       # only sebastian/diff ^4 supports PHP 7.4 so we need that in the PHAR
       - name: "Downgrade PHPUnit"
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Install compiler dependencies"
-        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+        uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "compiler"
 
@@ -70,7 +70,7 @@ jobs:
         run: "composer dump"
 
       - name: "Install Box dependencies"
-        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+        uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "compiler/box"
 
@@ -93,7 +93,7 @@ jobs:
       - name: "Set autoloader suffix"
         run: "composer config autoloader-suffix PHPStanChecksum"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         env:
           COMPOSER_ROOT_VERSION: "2.1.x-dev"
 
@@ -271,10 +271,10 @@ jobs:
           coverage: "none"
           php-version: "8.2"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install Box dependencies"
-        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+        uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "compiler/box"
 

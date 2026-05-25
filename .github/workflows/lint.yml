@@ -49,7 +49,7 @@ jobs:
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1'
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - uses: ./.github/actions/downgrade-code
         with:
@@ -92,10 +92,10 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install build-cs dependencies"
-        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+        uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "build-cs"
 
@@ -126,7 +126,7 @@ jobs:
           coverage: "none"
           php-version: "8.5"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Composer Dependency Analyser"
         run: "make composer-dependency-analyser"
@@ -152,7 +152,7 @@ jobs:
           coverage: "none"
           php-version: "8.5"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Name Collision Detector"
         run: "make name-collision"

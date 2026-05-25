@@ -48,7 +48,7 @@ jobs:
           # Include exotic extensions to discover more symbols
           extensions: ds,mbstring,runkit7,scoutapm,seaslog,simdjson,var_representation,yac
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Dump phpSymbols.txt"
         run: "php tests/dump-reflection-test-symbols.php"
@@ -103,7 +103,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=2G
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Dump previous reflection data"
         run: "php tests/generate-reflection-test.php"
@@ -116,7 +116,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Reflection golden test"
         run: |

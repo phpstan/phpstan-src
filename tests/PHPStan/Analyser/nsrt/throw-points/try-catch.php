@@ -115,7 +115,7 @@ function (): void {
 	try {
 		$foo = new \InvalidArgumentException();
 	} catch (Throwable $e) {
-		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 	}
 };
 

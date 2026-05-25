@@ -23,4 +23,14 @@ class HelloWorld
 			assertType('SplFileInfo|string', $fileinfo);
 		}
 	}
+
+	/**
+	 * @param RecursiveIteratorIterator<RecursiveDirectoryIterator> $iterator
+	 */
+	public function test(RecursiveIteratorIterator $iterator): void
+	{
+		foreach ($iterator as $fileinfo) {
+			assertType('SplFileInfo|string', $fileinfo);
+		}
+	}
 }

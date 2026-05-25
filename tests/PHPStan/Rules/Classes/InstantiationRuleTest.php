@@ -351,7 +351,7 @@ class InstantiationRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3425.php'], [
 			[
-				'Parameter #1 $iterator of class RecursiveIteratorIterator constructor expects TIterator of IteratorAggregate<TKey, TValue>|RecursiveIterator<TKey, TValue>, Generator<int, int, mixed, void> given.',
+				'Parameter #1 $iterator of class RecursiveIteratorIterator constructor expects TIterator of IteratorAggregate|RecursiveIterator, Generator<int, int, mixed, void> given.',
 				5,
 			],
 		]);

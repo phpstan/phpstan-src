@@ -231,6 +231,26 @@ class ClosureTypeTest extends PHPStanTestCase
 				VerbosityLevel::cache(),
 				'static-Closure',
 			],
+			'static pure common closure at precise' => [
+				new ClosureType(impurePoints: [], isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::precise(),
+				'static-pure-Closure',
+			],
+			'static pure common closure at cache' => [
+				new ClosureType(impurePoints: [], isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::cache(),
+				'static-pure-Closure',
+			],
+			'static pure closure at precise' => [
+				new ClosureType([], new MixedType(), false, impurePoints: [], isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::precise(),
+				'static-Closure(): mixed',
+			],
+			'static pure closure at cache' => [
+				new ClosureType([], new MixedType(), false, impurePoints: [], isStatic: TrinaryLogic::createYes()),
+				VerbosityLevel::cache(),
+				'static-Closure(): mixed',
+			],
 		];
 	}
 

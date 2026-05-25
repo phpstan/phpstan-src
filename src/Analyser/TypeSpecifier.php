@@ -735,6 +735,18 @@ final class TypeSpecifier
 						$rightTypesForHolders = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 					}
 				}
+				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
+					$truthyLeftTypes = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
+					if ($this->allExpressionsTrackable($truthyLeftTypes)) {
+						$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
+					}
+				}
+				if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
+					$truthyRightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
+					if ($this->allExpressionsTrackable($truthyRightTypes)) {
+						$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
+					}
+				}
 				$result = new SpecifiedTypes(
 					$types->getSureTypes(),
 					$types->getSureNotTypes(),
@@ -747,6 +759,10 @@ final class TypeSpecifier
 					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, false, $leftTypesForHolders, false, $scope),
 					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, true, $rightTypesForHolders, true, $rightScope),
 					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, true, $leftTypesForHolders, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, false, $rightTypesForHolders, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, false, $leftTypesForHolders, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, true, $rightTypesForHolders, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, true, $leftTypesForHolders, false, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -800,6 +816,10 @@ final class TypeSpecifier
 					$this->processBooleanConditionalTypes($scope, $rightTypes, false, $leftTypes, false, $scope),
 					$this->processBooleanConditionalTypes($scope, $leftTypes, true, $rightTypes, true, $rightScope),
 					$this->processBooleanConditionalTypes($scope, $rightTypes, true, $leftTypes, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, false, $rightTypes, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, false, $leftTypes, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, true, $rightTypes, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, true, $leftTypes, false, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -2141,6 +2161,22 @@ final class TypeSpecifier
 		return $expr instanceof Expr\PropertyFetch
 			|| $expr instanceof Expr\ArrayDimFetch
 			|| $expr instanceof Expr\StaticPropertyFetch;
+	}
+
+	private function allExpressionsTrackable(SpecifiedTypes $types): bool
+	{
+		foreach ($types->getSureTypes() as [$expr]) {
+			if (!$this->isTrackableExpression($expr)) {
+				return false;
+			}
+		}
+		foreach ($types->getSureNotTypes() as [$expr]) {
+			if (!$this->isTrackableExpression($expr)) {
+				return false;
+			}
+		}
+
+		return $types->getSureTypes() !== [] || $types->getSureNotTypes() !== [];
 	}
 
 	/**

@@ -3,6 +3,7 @@
 namespace PHPStan\Testing;
 
 use PHPStan\File\FileHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_values;
@@ -116,6 +117,10 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 		$filePath = __DIR__ . '/data/assert-certainty-variable-or-offset.php';
 
 		[$variableAssert, $offsetAssert] = array_values(self::gatherAssertTypes($filePath));
+
+		if ($variableAssert === null || $offsetAssert === null) {
+			throw new ShouldNotHappenException();
+		}
 
 		$this->assertSame('variable $context', $variableAssert[4]);
 		$this->assertSame("offset 'email'", $offsetAssert[4]);

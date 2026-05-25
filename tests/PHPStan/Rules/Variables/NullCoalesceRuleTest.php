@@ -459,4 +459,26 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10854(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10854.php'], [
+			[
+				'Variable $a on left side of ?? always exists and is not nullable.',
+				10,
+			],
+			[
+				'Variable $a on left side of ?? always exists and is not nullable.',
+				17,
+			],
+			[
+				'Variable $a on left side of ?? always exists and is not nullable.',
+				37,
+			],
+			[
+				'Variable $a on left side of ??= always exists and is not nullable.',
+				44,
+			],
+		]);
+	}
+
 }

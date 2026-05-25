@@ -77,7 +77,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		[$type, $name] = explode(' ', $symbol);
 
-		if ($name === '') {
+		if ($name === null || $name === '') {
 			throw new ShouldNotHappenException();
 		}
 
@@ -288,6 +288,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		[$className, $methodName] = explode('::', $classMethodName);
 
+		if ($methodName === null) {
+			throw new ShouldNotHappenException();
+		}
+
 		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
 
 		if (! $reflectionProvider->hasClass($className)) {
@@ -429,6 +433,11 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	private static function generateClassPropertyDescription(string $propertyName): string
 	{
 		[$className, $propertyName] = explode('::', $propertyName);
+
+		if ($propertyName === null) {
+			throw new ShouldNotHappenException();
+		}
+
 		// remove $
 		$propertyName = substr($propertyName, 1);
 

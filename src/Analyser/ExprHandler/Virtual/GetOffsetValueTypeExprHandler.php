@@ -12,7 +12,9 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements ExprHandler<GetOffsetValueTypeExpr>
@@ -42,7 +44,14 @@ final class GetOffsetValueTypeExprHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
-		return $scope->getType($expr->getVar())->getOffsetValueType($scope->getType($expr->getDim()));
+		$varType = $scope->getType($expr->getVar());
+		$dimType = $scope->getType($expr->getDim());
+		$offsetValueType = $varType->getOffsetValueType($dimType);
+		if (!$varType->isArray()->no() && !$varType->hasOffsetValueType($dimType)->yes()) {
+			$offsetValueType = TypeCombinator::union($offsetValueType, new NullType());
+		}
+
+		return $offsetValueType;
 	}
 
 }

@@ -45,7 +45,7 @@ final class TaintRule implements Rule
 	public function processNode(\PhpParser\Node $node, Scope $scope): array
 	{
 		$sinkCollectorData = $node->get(SinkCollector::class);
-		assertType("array<string, list<array{string, 'html'|'input'|'sql', string, int}>>", $sinkCollectorData);
+		assertType("array<string, non-empty-list<array{string, 'html'|'input'|'sql', string, int}>>", $sinkCollectorData);
 
 		return [];
 	}

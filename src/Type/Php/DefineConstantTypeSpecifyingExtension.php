@@ -11,7 +11,6 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 
@@ -45,13 +44,12 @@ final class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecify
 	): SpecifiedTypes
 	{
 		$args = $node->getArgs();
-		$constantName = $scope->getType($args[0]->value);
-		if (
-			!$constantName instanceof ConstantStringType
-			|| $constantName->getValue() === ''
-		) {
+		$constantNames = $scope->getType($args[0]->value)->getConstantStrings();
+
+		if (count($constantNames) !== 1 || $constantNames[0]->getValue() === '') {
 			return new SpecifiedTypes([], []);
 		}
+		$constantName = $constantNames[0];
 
 		$valueType = $scope->getType($args[1]->value);
 		$finalType = $scope->getConstantExplicitTypeFromConfig(

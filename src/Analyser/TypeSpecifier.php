@@ -742,7 +742,7 @@ final class TypeSpecifier
 				if ($types->shouldOverwrite()) {
 					$result = $result->setAlwaysOverwriteTypes();
 				}
-				return $result->setNewConditionalExpressionHolders(array_merge(
+				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolderArrays(
 					$this->processBooleanNotSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, $rightScope),
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, $scope),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, $rightScope),
@@ -795,7 +795,7 @@ final class TypeSpecifier
 				if ($types->shouldOverwrite()) {
 					$result = $result->setAlwaysOverwriteTypes();
 				}
-				return $result->setNewConditionalExpressionHolders(array_merge(
+				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolderArrays(
 					$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes, $rightScope),
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes, $scope),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes, $rightScope),
@@ -1109,6 +1109,15 @@ final class TypeSpecifier
 								}
 
 								return $result;
+							}
+
+							if ($constantArrays === [] && $varType->isArray()->yes() && $varType->getIterableValueType()->isNull()->no()) {
+								return $this->create(
+									$issetExpr->var,
+									new HasOffsetType($dimType),
+									$context,
+									$scope,
+								)->setRootExpr($expr);
 							}
 						}
 					}
@@ -2117,6 +2126,35 @@ final class TypeSpecifier
 				$holders[$exprString][$holder->getKey()] = $holder;
 			}
 
+			foreach ($rightTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+				if (!$this->isTrackableExpression($expr)) {
+					continue;
+				}
+
+				if (!isset($holders[$exprString])) {
+					$holders[$exprString] = [];
+				}
+
+				$conditions = $conditionExpressionTypes;
+				foreach (array_keys($conditions) as $conditionExprString) {
+					if ($conditionExprString !== $exprString) {
+						continue;
+					}
+					unset($conditions[$conditionExprString]);
+				}
+
+				if (count($conditions) === 0) {
+					continue;
+				}
+
+				$targetScope = $expr instanceof Expr\Variable ? $scope : $rightScope;
+				$holder = new ConditionalExpressionHolder(
+					$conditions,
+					ExpressionTypeHolder::createYes($expr, TypeCombinator::remove($targetScope->getType($expr), $type)),
+				);
+				$holders[$exprString][$holder->getKey()] = $holder;
+			}
+
 			return $holders;
 		}
 
@@ -2132,6 +2170,25 @@ final class TypeSpecifier
 		return $expr instanceof Expr\PropertyFetch
 			|| $expr instanceof Expr\ArrayDimFetch
 			|| $expr instanceof Expr\StaticPropertyFetch;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> ...$arrays
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function mergeConditionalHolderArrays(array ...$arrays): array
+	{
+		$result = [];
+		foreach ($arrays as $array) {
+			foreach ($array as $exprString => $holders) {
+				if (!isset($result[$exprString])) {
+					$result[$exprString] = $holders;
+				} else {
+					$result[$exprString] = array_merge($result[$exprString], $holders);
+				}
+			}
+		}
+		return $result;
 	}
 
 	/**
@@ -2305,6 +2362,35 @@ final class TypeSpecifier
 				$holder = new ConditionalExpressionHolder(
 					$conditions,
 					ExpressionTypeHolder::createYes($expr, TypeCombinator::remove($targetScope->getType($expr), $type)),
+				);
+				$holders[$exprString][$holder->getKey()] = $holder;
+			}
+
+			foreach ($rightTypes->getSureTypes() as $exprString => [$expr, $type]) {
+				if (!$this->isTrackableExpression($expr)) {
+					continue;
+				}
+
+				if (!isset($holders[$exprString])) {
+					$holders[$exprString] = [];
+				}
+
+				$conditions = $conditionExpressionTypes;
+				foreach (array_keys($conditions) as $conditionExprString) {
+					if ($conditionExprString !== $exprString) {
+						continue;
+					}
+					unset($conditions[$conditionExprString]);
+				}
+
+				if (count($conditions) === 0) {
+					continue;
+				}
+
+				$targetScope = $expr instanceof Expr\Variable ? $scope : $rightScope;
+				$holder = new ConditionalExpressionHolder(
+					$conditions,
+					ExpressionTypeHolder::createYes($expr, TypeCombinator::intersect($targetScope->getType($expr), $type)),
 				);
 				$holders[$exprString][$holder->getKey()] = $holder;
 			}

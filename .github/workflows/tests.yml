@@ -39,15 +39,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -82,15 +82,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -99,7 +99,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=-1
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Check PHP configuration"
         run: "vendor/bin/phpunit --check-php-configuration"
@@ -119,15 +119,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
           php-version: "8.2"
@@ -136,7 +136,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=-1
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Check PHP configuration"
         run: "vendor/bin/phpunit --check-php-configuration"
@@ -151,15 +151,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
           php-version: "8.3"
@@ -168,7 +168,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=1G
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - id: set-matrix
         run: echo "matrix=$(php .github/workflows/tests-levels-matrix.php)" >> "$GITHUB_OUTPUT"
@@ -190,15 +190,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
           php-version: "8.3"
@@ -207,7 +207,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=-1
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Check PHP configuration"
         run: "vendor/bin/phpunit --check-php-configuration"
@@ -234,15 +234,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -255,7 +255,7 @@ jobs:
         shell: bash
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Downgrade PHPUnit with Paratest"
         shell: bash
@@ -284,15 +284,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: "Checkout build-infection"
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: "phpstan/build-infection"
           path: "build-infection"
@@ -303,9 +303,9 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           php-extensions: ds,mbstring
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "tests/"
 
@@ -315,7 +315,7 @@ jobs:
           composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16 symfony/process:^7 symfony/string:^7 symfony/console:^7 --update-with-dependencies --ignore-platform-reqs --working-dir=tests
           composer require --dev phpunit/phpunit:^12 sebastian/diff --update-with-dependencies --ignore-platform-reqs
 
-      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "build-infection/"
 
@@ -333,7 +333,7 @@ jobs:
           echo "name=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')" >> "$GITHUB_OUTPUT"
 
       - name: "Restore result cache"
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./tmp
           key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
@@ -364,7 +364,7 @@ jobs:
             --logger-text=php://stdout
 
       - name: "Save result cache"
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: ${{ !cancelled() }}
         with:
           path: ./tmp

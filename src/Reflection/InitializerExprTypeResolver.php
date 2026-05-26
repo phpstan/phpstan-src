@@ -1063,7 +1063,14 @@ final class InitializerExprTypeResolver
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a & $b);
 		if ($result instanceof Type) {
 			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
+		}
+
+		$bitwiseAndRange = $this->computeBitwiseAndRange($leftType, $rightType);
+		if ($bitwiseAndRange !== null) {
+			return $bitwiseAndRange;
+		}
+
+		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1084,18 +1091,8 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
-
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
-		}
-
-		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() >= 0) {
-			return IntegerRangeType::fromInterval(0, $rightNumberType->getValue());
-		}
-		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() >= 0) {
-			return IntegerRangeType::fromInterval(0, $leftNumberType->getValue());
 		}
 
 		return new IntegerType();
@@ -1122,7 +1119,14 @@ final class InitializerExprTypeResolver
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a | $b);
 		if ($result instanceof Type) {
 			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
+		}
+
+		$bitwiseOrRange = $this->computeBitwiseOrXorRange($leftType, $rightType);
+		if ($bitwiseOrRange !== null) {
+			return $bitwiseOrRange;
+		}
+
+		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1171,7 +1175,14 @@ final class InitializerExprTypeResolver
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a ^ $b);
 		if ($result instanceof Type) {
 			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
+		}
+
+		$bitwiseXorRange = $this->computeBitwiseOrXorRange($leftType, $rightType);
+		if ($bitwiseXorRange !== null) {
+			return $bitwiseXorRange;
+		}
+
+		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1983,6 +1994,64 @@ final class InitializerExprTypeResolver
 		}
 
 		return new UnionType($types);
+	}
+
+	/**
+	 * @return array{int, int}|null [min, max] or null if bounds are not known
+	 */
+	private function getNonNegativeIntegerBounds(Type $type): ?array
+	{
+		if ($type instanceof IntegerRangeType) {
+			$min = $type->getMin();
+			$max = $type->getMax();
+			if ($min !== null && $min >= 0 && $max !== null) {
+				return [$min, $max];
+			}
+			return null;
+		}
+		if ($type instanceof ConstantIntegerType && $type->getValue() >= 0) {
+			return [$type->getValue(), $type->getValue()];
+		}
+		return null;
+	}
+
+	private function computeBitwiseAndRange(Type $leftType, Type $rightType): ?Type
+	{
+		$leftBounds = $this->getNonNegativeIntegerBounds($leftType);
+		$rightBounds = $this->getNonNegativeIntegerBounds($rightType);
+		if ($leftBounds !== null && $rightBounds !== null) {
+			return IntegerRangeType::fromInterval(0, min($leftBounds[1], $rightBounds[1]));
+		}
+		if ($leftBounds !== null && $rightType->isInteger()->yes()) {
+			return IntegerRangeType::fromInterval(0, $leftBounds[1]);
+		}
+		if ($rightBounds !== null && $leftType->isInteger()->yes()) {
+			return IntegerRangeType::fromInterval(0, $rightBounds[1]);
+		}
+		return null;
+	}
+
+	private function computeBitwiseOrXorRange(Type $leftType, Type $rightType): ?Type
+	{
+		$leftBounds = $this->getNonNegativeIntegerBounds($leftType);
+		$rightBounds = $this->getNonNegativeIntegerBounds($rightType);
+		if ($leftBounds === null || $rightBounds === null) {
+			return null;
+		}
+		$maxValue = max($leftBounds[1], $rightBounds[1]);
+		$upperBound = self::allBitsMask($maxValue);
+		return IntegerRangeType::fromInterval(0, $upperBound);
+	}
+
+	private static function allBitsMask(int $value): int
+	{
+		$value |= $value >> 1;
+		$value |= $value >> 2;
+		$value |= $value >> 4;
+		$value |= $value >> 8;
+		$value |= $value >> 16;
+		$value |= $value >> 32;
+		return $value;
 	}
 
 	/**

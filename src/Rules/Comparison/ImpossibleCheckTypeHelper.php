@@ -322,6 +322,20 @@ final class ImpossibleCheckTypeHelper
 			return null;
 		}
 
+		if ($specifiedTypes->isEquality()) {
+			if ($scope->hasExpressionType($node)->yes()) {
+				$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
+				if ($nodeType->isTrue()->yes()) {
+					return true;
+				}
+				if ($nodeType->isFalse()->yes()) {
+					return false;
+				}
+			}
+
+			return null;
+		}
+
 		$sureTypes = $specifiedTypes->getSureTypes();
 		$sureNotTypes = $specifiedTypes->getSureNotTypes();
 

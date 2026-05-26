@@ -21,6 +21,8 @@ final class SpecifiedTypes
 
 	private bool $overwrite = false;
 
+	private bool $equality = false;
+
 	/** @var array<string, ConditionalExpressionHolder[]> */
 	private array $newConditionalExpressionHolders = [];
 
@@ -91,6 +93,30 @@ final class SpecifiedTypes
 		$self->overwrite = true;
 
 		return $self;
+	}
+
+	/**
+	 * Marks these types as coming from an equality check, the same concept as
+	 * the "=Type" equality assertions documented at
+	 * https://phpstan.org/writing-php-code/narrowing-types#equality-assertions
+	 *
+	 * The narrowed types are only applied; they do not determine the check
+	 * outcome, so ImpossibleCheckTypeHelper will not use them to report
+	 * always-true/false for the check expression.
+	 *
+	 * @api
+	 */
+	public function setEquality(): self
+	{
+		$self = clone $this;
+		$self->equality = true;
+
+		return $self;
+	}
+
+	public function isEquality(): bool
+	{
+		return $this->equality;
 	}
 
 	/**
@@ -311,6 +337,9 @@ final class SpecifiedTypes
 		if ($this->overwrite && $other->overwrite) {
 			$result = $result->setAlwaysOverwriteTypes();
 		}
+		if ($this->equality || $other->equality) {
+			$result->equality = true;
+		}
 
 		return $result->setRootExpr($rootExpr);
 	}
@@ -530,6 +559,9 @@ final class SpecifiedTypes
 		if ($this->overwrite || $other->overwrite) {
 			$result = $result->setAlwaysOverwriteTypes();
 		}
+		if ($this->equality || $other->equality) {
+			$result->equality = true;
+		}
 
 		$conditionalExpressionHolders = $this->newConditionalExpressionHolders;
 		foreach ($other->newConditionalExpressionHolders as $exprString => $holders) {
@@ -568,6 +600,7 @@ final class SpecifiedTypes
 		$conditionalExpressionHolders = [];
 		$recipes = [];
 		$augments = [];
+		$equality = false;
 
 		foreach ($typesList as $types) {
 			foreach ($types->sureTypes as $exprString => [$exprNode, $type]) {
@@ -588,6 +621,7 @@ final class SpecifiedTypes
 			}
 
 			$overwrite = $overwrite || $types->overwrite;
+			$equality = $equality || $types->equality;
 			$rootExpr = self::mergeRootExpr($rootExpr, $types->rootExpr);
 
 			foreach ($types->newConditionalExpressionHolders as $exprString => $holders) {
@@ -618,6 +652,7 @@ final class SpecifiedTypes
 		$result->newConditionalExpressionHolders = $conditionalExpressionHolders;
 		$result->conditionalExpressionHolderRecipes = $recipes;
 		$result->deferredAugments = $augments;
+		$result->equality = $equality;
 
 		return $result->setRootExpr($rootExpr);
 	}

@@ -743,10 +743,10 @@ final class TypeSpecifier
 					$result = $result->setAlwaysOverwriteTypes();
 				}
 				return $result->setNewConditionalExpressionHolders(array_merge(
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders->getSureNotTypes(), false, $rightTypesForHolders->getSureNotTypes(), false, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders->getSureNotTypes(), false, $leftTypesForHolders->getSureNotTypes(), false, $scope),
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders->getSureTypes(), true, $rightTypesForHolders->getSureTypes(), true, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders->getSureTypes(), true, $leftTypesForHolders->getSureTypes(), true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, false, $rightTypesForHolders, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, false, $leftTypesForHolders, false, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, true, $rightTypesForHolders, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, true, $leftTypesForHolders, true, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -796,10 +796,10 @@ final class TypeSpecifier
 					$result = $result->setAlwaysOverwriteTypes();
 				}
 				return $result->setNewConditionalExpressionHolders(array_merge(
-					$this->processBooleanConditionalTypes($scope, $leftTypes->getSureNotTypes(), false, $rightTypes->getSureNotTypes(), false, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypes->getSureNotTypes(), false, $leftTypes->getSureNotTypes(), false, $scope),
-					$this->processBooleanConditionalTypes($scope, $leftTypes->getSureTypes(), true, $rightTypes->getSureTypes(), true, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypes->getSureTypes(), true, $leftTypes->getSureTypes(), true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, false, $rightTypes, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, false, $leftTypes, false, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, true, $rightTypes, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, true, $leftTypes, true, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -2064,13 +2064,12 @@ final class TypeSpecifier
 	}
 
 	/**
-	 * @param array<string, array{Expr, Type}> $conditionTypes
-	 * @param array<string, array{Expr, Type}> $holderTypes
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, array $conditionTypes, bool $conditionsAreSure, array $holderTypes, bool $holdersAreSure, Scope $rightScope): array
+	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, bool $conditionsAreSure, SpecifiedTypes $holderSpecifiedTypes, bool $holdersAreSure, Scope $rightScope): array
 	{
 		$conditionExpressionTypes = [];
+		$conditionTypes = $conditionsAreSure ? $conditionSpecifiedTypes->getSureTypes() : $conditionSpecifiedTypes->getSureNotTypes();
 		foreach ($conditionTypes as $exprString => [$expr, $type]) {
 			if (!$this->isTrackableExpression($expr)) {
 				continue;
@@ -2094,6 +2093,7 @@ final class TypeSpecifier
 
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
+			$holderTypes = $holdersAreSure ? $holderSpecifiedTypes->getSureTypes() : $holderSpecifiedTypes->getSureNotTypes();
 			foreach ($holderTypes as $exprString => [$expr, $type]) {
 				if (!$this->isTrackableExpression($expr)) {
 					continue;

@@ -19,11 +19,13 @@ use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
 use ReflectionProperty;
 use function count;
 use function in_array;
+use function is_string;
 use function strtolower;
 
 final class ClassStatementsGatherer
@@ -231,6 +233,10 @@ final class ClassStatementsGatherer
 			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope, false);
 			return;
 		}
+		if ($node instanceof Expr\Variable) {
+			$this->tryToApplyPromotedParameterRead($node, $scope);
+			return;
+		}
 		if ($node instanceof FunctionCallableNode) {
 			$node = $node->getOriginalNode();
 		} elseif ($node instanceof InstantiationCallableNode) {
@@ -276,6 +282,61 @@ final class ClassStatementsGatherer
 				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName())),
 				$scope,
 			);
+		}
+	}
+
+	private function tryToApplyPromotedParameterRead(Expr\Variable $node, Scope $scope): void
+	{
+		if (!is_string($node->name) || $node->name === '') {
+			return;
+		}
+		if ($scope->isInExpressionAssign($node)) {
+			return;
+		}
+		if ($scope->isInAnonymousFunction()) {
+			return;
+		}
+		$function = $scope->getFunction();
+		if (!$function instanceof MethodReflection) {
+			return;
+		}
+		if (strtolower($function->getName()) !== '__construct') {
+			return;
+		}
+		if ($function->getDeclaringClass()->getName() !== $this->classReflection->getName()) {
+			return;
+		}
+
+		$variableName = $node->name;
+		$constructorNode = null;
+		foreach ($this->methods as $method) {
+			$methodNode = $method->getNode();
+			if (strtolower($methodNode->name->toString()) !== '__construct') {
+				continue;
+			}
+			$constructorNode = $methodNode;
+			break;
+		}
+
+		if ($constructorNode === null) {
+			return;
+		}
+
+		foreach ($constructorNode->params as $param) {
+			if ($param->flags === 0 && $param->hooks === []) {
+				continue;
+			}
+			if (!$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
+				continue;
+			}
+			if ($param->var->name !== $variableName) {
+				continue;
+			}
+			$this->propertyUsages[] = new PropertyRead(
+				new PropertyFetch(new Expr\Variable('this'), new Identifier($variableName), $node->getAttributes()),
+				$scope,
+			);
+			return;
 		}
 	}
 

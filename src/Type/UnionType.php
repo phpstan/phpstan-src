@@ -1321,11 +1321,11 @@ class UnionType implements CompoundType
 		$changed = false;
 		foreach ($this->types as $innerType) {
 			$removed = TypeCombinator::remove($innerType, $typeToRemove);
-			if ($removed instanceof NeverType) {
-				continue;
-			}
 			if (!$removed->equals($innerType)) {
 				$changed = true;
+			}
+			if ($removed instanceof NeverType) {
+				continue;
 			}
 			if ($removed instanceof self && !$removed instanceof TemplateType) {
 				foreach ($removed->getTypes() as $removedInnerType) {

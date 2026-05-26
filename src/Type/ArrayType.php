@@ -863,10 +863,6 @@ class ArrayType implements Type
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($typeToRemove->isConstantArray()->yes() && $typeToRemove->isIterableAtLeastOnce()->no()) {
-			return TypeCombinator::intersect($this, new NonEmptyArrayType());
-		}
-
 		if ($typeToRemove->isSuperTypeOf(new ConstantArrayType([], []))->yes()) {
 			return TypeCombinator::intersect($this, new NonEmptyArrayType());
 		}

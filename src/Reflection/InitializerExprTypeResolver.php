@@ -1240,6 +1240,20 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		$result = $this->getDivTypeFromTypes($left, $right, $leftType, $rightType);
+
+		if ($leftType->isInteger()->yes() && $rightType->isInteger()->yes()) {
+			$modType = $getTypeCallback(new BinaryOp\Mod($left, $right));
+			if ($modType->isInteger()->yes() && (new ConstantIntegerType(0))->isSuperTypeOf($modType)->yes()) {
+				return TypeCombinator::remove($result, new FloatType());
+			}
+		}
+
+		return $result;
+	}
+
+	private function getDivTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);

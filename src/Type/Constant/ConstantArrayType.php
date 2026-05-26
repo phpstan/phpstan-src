@@ -887,8 +887,6 @@ class ConstantArrayType implements Type
 		);
 		if (!$preserveListCertainty) {
 			$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
-		} elseif ($this->isList->yes() && $newIsList->no()) {
-			return new NeverType();
 		}
 
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);

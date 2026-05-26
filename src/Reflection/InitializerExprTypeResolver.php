@@ -996,11 +996,6 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		return $this->getBitwiseAndTypeFromTypes($leftType, $rightType);
-	}
-
-	public function getBitwiseAndTypeFromTypes(Type $leftType, Type $rightType): Type
-	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
@@ -1060,11 +1055,6 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		return $this->getBitwiseOrTypeFromTypes($leftType, $rightType);
-	}
-
-	public function getBitwiseOrTypeFromTypes(Type $leftType, Type $rightType): Type
-	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
@@ -1114,7 +1104,39 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		return $this->getBitwiseXorTypeFromTypes($leftType, $rightType);
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return $this->getNeverType($leftType, $rightType);
+		}
+
+		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a ^ $b);
+		if ($result instanceof Type) {
+			return $result;
+		} elseif ($result === self::IS_SCALAR_TYPE) {
+			$leftType = $this->optimizeScalarType($leftType);
+			$rightType = $this->optimizeScalarType($rightType);
+		}
+
+		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+		}
+
+		$leftIsString = $leftType->isString();
+		$rightIsString = $rightType->isString();
+		if (
+			($leftIsString->yes() || $leftType instanceof MixedType)
+			&& ($rightIsString->yes() || $rightType instanceof MixedType)
+		) {
+			return new StringType();
+		}
+		if ($leftIsString->maybe() && $rightIsString->maybe()) {
+			return new ErrorType();
+		}
+
+		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
+			return new ErrorType();
+		}
+
+		return new IntegerType();
 	}
 
 	private const IS_SCALAR_TYPE = 1;
@@ -1177,56 +1199,14 @@ final class InitializerExprTypeResolver
 		return TypeCombinator::union(...$resultTypes);
 	}
 
-	public function getBitwiseXorTypeFromTypes(Type $leftType, Type $rightType): Type
-	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return $this->getNeverType($leftType, $rightType);
-		}
-
-		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a ^ $b);
-		if ($result instanceof Type) {
-			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
-			$leftType = $this->optimizeScalarType($leftType);
-			$rightType = $this->optimizeScalarType($rightType);
-		}
-
-		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
-			return new BenevolentUnionType([new IntegerType(), new StringType()]);
-		}
-
-		$leftIsString = $leftType->isString();
-		$rightIsString = $rightType->isString();
-		if (
-			($leftIsString->yes() || $leftType instanceof MixedType)
-			&& ($rightIsString->yes() || $rightType instanceof MixedType)
-		) {
-			return new StringType();
-		}
-		if ($leftIsString->maybe() && $rightIsString->maybe()) {
-			return new ErrorType();
-		}
-
-		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
-			return new ErrorType();
-		}
-
-		return new IntegerType();
-	}
-
 	/**
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
 	public function getSpaceshipType(Expr $left, Expr $right, callable $getTypeCallback): Type
 	{
-		$callbackLeftType = $getTypeCallback($left);
-		$callbackRightType = $getTypeCallback($right);
+		$leftTypes = $getTypeCallback($left);
+		$rightTypes = $getTypeCallback($right);
 
-		return $this->getSpaceshipTypeFromTypes($callbackLeftType, $callbackRightType);
-	}
-
-	public function getSpaceshipTypeFromTypes(Type $leftTypes, Type $rightTypes): Type
-	{
 		if ($leftTypes instanceof NeverType || $rightTypes instanceof NeverType) {
 			return $this->getNeverType($leftTypes, $rightTypes);
 		}
@@ -1260,11 +1240,6 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		return $this->getDivTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getDivTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -1319,11 +1294,6 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		return $this->getModTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getModTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
@@ -1433,11 +1403,6 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		return $this->getPlusTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getPlusTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
@@ -1638,11 +1603,6 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		return $this->getMinusTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getMinusTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -1687,11 +1647,6 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		return $this->getMulTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getMulTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -1751,11 +1706,6 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		return $this->getPowTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getPowTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Pow($left, $right), $leftType, $rightType);
 		if ($extensionSpecified !== null) {
@@ -1784,11 +1734,6 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		return $this->getShiftLeftTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getShiftLeftTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
@@ -1854,11 +1799,6 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		return $this->getShiftRightTypeFromTypes($left, $right, $leftType, $rightType);
-	}
-
-	public function getShiftRightTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
-	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}

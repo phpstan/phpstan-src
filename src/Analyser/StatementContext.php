@@ -13,8 +13,10 @@ namespace PHPStan\Analyser;
 final class StatementContext
 {
 
+	private const LOOP_CONVERGENCE_DEPTH_LIMIT = 2;
+
 	private function __construct(
-		private bool $isTopLevel,
+		private int $depth,
 		private int $foreachUnrollFactor = 1,
 	)
 	{
@@ -25,7 +27,7 @@ final class StatementContext
 	 */
 	public static function createTopLevel(): self
 	{
-		return new self(true);
+		return new self(0);
 	}
 
 	/**
@@ -33,12 +35,17 @@ final class StatementContext
 	 */
 	public static function createDeep(): self
 	{
-		return new self(false);
+		return new self(self::LOOP_CONVERGENCE_DEPTH_LIMIT);
 	}
 
 	public function isTopLevel(): bool
 	{
-		return $this->isTopLevel;
+		return $this->depth === 0;
+	}
+
+	public function shouldRunLoopConvergence(): bool
+	{
+		return $this->depth < self::LOOP_CONVERGENCE_DEPTH_LIMIT;
 	}
 
 	public function getForeachUnrollFactor(): int
@@ -48,16 +55,16 @@ final class StatementContext
 
 	public function enterDeep(): self
 	{
-		if ($this->isTopLevel) {
-			return new self(false, $this->foreachUnrollFactor);
+		if ($this->depth >= self::LOOP_CONVERGENCE_DEPTH_LIMIT) {
+			return $this;
 		}
 
-		return $this;
+		return new self($this->depth + 1, $this->foreachUnrollFactor);
 	}
 
 	public function enterUnrolledForeach(int $totalKeys): self
 	{
-		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys);
+		return new self($this->depth, $this->foreachUnrollFactor * $totalKeys);
 	}
 
 }

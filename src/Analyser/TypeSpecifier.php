@@ -2066,16 +2066,16 @@ final class TypeSpecifier
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, bool $conditionsAreSure, SpecifiedTypes $holderSpecifiedTypes, bool $holdersAreSure, Scope $rightScope): array
+	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, bool $conditionsFromSureTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, Scope $rightScope): array
 	{
 		$conditionExpressionTypes = [];
-		$conditionTypes = $conditionsAreSure ? $conditionSpecifiedTypes->getSureTypes() : $conditionSpecifiedTypes->getSureNotTypes();
+		$conditionTypes = $conditionsFromSureTypes ? $conditionSpecifiedTypes->getSureTypes() : $conditionSpecifiedTypes->getSureNotTypes();
 		foreach ($conditionTypes as $exprString => [$expr, $type]) {
 			if (!$this->isTrackableExpression($expr)) {
 				continue;
 			}
 
-			if ($conditionsAreSure) {
+			if ($conditionsFromSureTypes) {
 				$scopeType = $scope->getType($expr);
 				$conditionType = TypeCombinator::remove($scopeType, $type);
 				if ($scopeType->equals($conditionType)) {
@@ -2093,7 +2093,7 @@ final class TypeSpecifier
 
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
-			$holderTypes = $holdersAreSure ? $holderSpecifiedTypes->getSureTypes() : $holderSpecifiedTypes->getSureNotTypes();
+			$holderTypes = $holdersFromSureTypes ? $holderSpecifiedTypes->getSureTypes() : $holderSpecifiedTypes->getSureNotTypes();
 			foreach ($holderTypes as $exprString => [$expr, $type]) {
 				if (!$this->isTrackableExpression($expr)) {
 					continue;
@@ -2116,7 +2116,7 @@ final class TypeSpecifier
 				}
 
 				$targetScope = $expr instanceof Expr\Variable ? $scope : $rightScope;
-				$holderType = $holdersAreSure
+				$holderType = $holdersFromSureTypes
 					? TypeCombinator::intersect($targetScope->getType($expr), $type)
 					: TypeCombinator::remove($targetScope->getType($expr), $type);
 				$holder = new ConditionalExpressionHolder(

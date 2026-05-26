@@ -1467,10 +1467,10 @@ final class TypeSpecifier
 				$sureNotTypes = [];
 
 				if ($sizeMin !== null && $sizeMin >= 1) {
-					$sureTypes[$argExprString] = [$argExpr, new HasOffsetValueType(new ConstantIntegerType($sizeMin - 1), new MixedType())];
+					$sureTypes[$argExprString] = [$argExpr, new HasOffsetType(new ConstantIntegerType($sizeMin - 1))];
 				}
 				if ($sizeMax !== null) {
-					$sureNotTypes[$argExprString] = [$argExpr, new HasOffsetValueType(new ConstantIntegerType($sizeMax), new MixedType())];
+					$sureNotTypes[$argExprString] = [$argExpr, new HasOffsetType(new ConstantIntegerType($sizeMax))];
 				}
 
 				if ($sureTypes !== [] || $sureNotTypes !== []) {

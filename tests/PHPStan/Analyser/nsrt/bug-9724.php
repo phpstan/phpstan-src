@@ -32,15 +32,4 @@ class HelloWorld
 			assertType('float|int<-2, 2>', $offsetRange / $limit);
 		}
 	}
-
-	private function expectInt(int $page): void
-	{
-	}
-
-	public function originalIssue(?int $limit, int $offset = 0): void
-	{
-		if ($limit && $offset && (0 === ($offset % $limit))) {
-			$this->expectInt(($offset / $limit) + 1);
-		}
-	}
 }

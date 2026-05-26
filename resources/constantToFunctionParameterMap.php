@@ -396,7 +396,7 @@ return [
 
 	'pathinfo' => [
 		'flags' => [
-			'type' => 'bitmask',
+			'type' => 'single',
 			'constants' => [
 				'PATHINFO_DIRNAME',
 				'PATHINFO_BASENAME',

@@ -193,7 +193,7 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 	private const FOREACH_UNROLL_LIMIT = 16;
-	private const FOREACH_UNROLL_NESTED_LIMIT = 16;
+	private const FOREACH_UNROLL_NESTED_LIMIT = 8;
 
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -1450,6 +1450,7 @@ class NodeScopeResolver
 
 			$originalStorage = $storage;
 			$unrolledEndScope = null;
+			$unrolledTotalKeys = null;
 			if ($context->isTopLevel()) {
 				$storage = $originalStorage->duplicate();
 
@@ -1458,6 +1459,7 @@ class NodeScopeResolver
 				if ($unrolledResult !== null) {
 					$bodyScope = $unrolledResult['bodyScope'];
 					$unrolledEndScope = $unrolledResult['endScope'];
+					$unrolledTotalKeys = $unrolledResult['totalKeys'];
 				} else {
 					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $nodeCallback);
 					$count = 0;
@@ -1486,7 +1488,8 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 			$storage = $originalStorage;
 			$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
-			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
+			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
 			$scopesWithIterableValueType = [];
 
@@ -4107,7 +4110,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{bodyScope: MutatingScope, endScope: MutatingScope}|null
+	 * @return array{bodyScope: MutatingScope, endScope: MutatingScope, totalKeys: int}|null
 	 */
 	private function tryProcessUnrolledConstantArrayForeach(
 		Foreach_ $stmt,
@@ -4142,7 +4145,8 @@ class NodeScopeResolver
 		if ($totalKeys === 0 || $totalKeys > self::FOREACH_UNROLL_LIMIT) {
 			return null;
 		}
-		if ($context->getForeachUnrollFactor() * $totalKeys > self::FOREACH_UNROLL_NESTED_LIMIT) {
+		$foreachUnrollFactor = $context->getForeachUnrollFactor();
+		if ($foreachUnrollFactor > 1 && $foreachUnrollFactor * $totalKeys > self::FOREACH_UNROLL_NESTED_LIMIT) {
 			return null;
 		}
 
@@ -4270,7 +4274,7 @@ class NodeScopeResolver
 			$endScope = $endScope->mergeWith($breakScope);
 		}
 
-		return ['bodyScope' => $bodyScope, 'endScope' => $endScope];
+		return ['bodyScope' => $bodyScope, 'endScope' => $endScope, 'totalKeys' => $totalKeys];
 	}
 
 	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee): ?InternalThrowPoint

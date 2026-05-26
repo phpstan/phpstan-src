@@ -3,10 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\ArrayDimFetch;
-use PhpParser\Node\Expr\BinaryOp\Identical;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -115,7 +112,7 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 					$arrayType->getIterableValueType(),
 					$context,
 					$scope,
-				))->setRootExpr(new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
+				))->setEquality();
 			}
 
 			return new SpecifiedTypes();

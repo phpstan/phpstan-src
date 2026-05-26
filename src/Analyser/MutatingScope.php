@@ -3496,6 +3496,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
+		if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->typeSpecifier->create($expr, new ConstantBooleanType(true), TypeSpecifierContext::createTrue(), $this),
+			);
+		}
 		$scope = $this->applySpecifiedTypes($specifiedTypes);
 		$this->truthyScopes[$exprString] = $scope;
 
@@ -3513,6 +3518,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
+		if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->typeSpecifier->create($expr, new ConstantBooleanType(false), TypeSpecifierContext::createTrue(), $this),
+			);
+		}
 		$scope = $this->applySpecifiedTypes($specifiedTypes);
 		$this->falseyScopes[$exprString] = $scope;
 

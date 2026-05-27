@@ -138,6 +138,11 @@ final class VerbosityLevel
 			if ($type->isCallable()->yes()) {
 				$moreVerbose = true;
 
+				if ($type instanceof ClosureType && !$type->isStaticClosure()->maybe()) {
+					$veryVerbose = true;
+					return $type;
+				}
+
 				// Keep checking if we need to be very verbose.
 				return $traverse($type);
 			}

@@ -929,11 +929,13 @@ final class InitializerExprTypeResolver
 			$impurePoints = [];
 			$acceptsNamedArguments = TrinaryLogic::createYes();
 			$mustUseReturnValue = TrinaryLogic::createMaybe();
+			$isStaticClosure = TrinaryLogic::createMaybe();
 			if ($variant instanceof CallableParametersAcceptor) {
 				$throwPoints = $variant->getThrowPoints();
 				$impurePoints = $variant->getImpurePoints();
 				$acceptsNamedArguments = $variant->acceptsNamedArguments();
 				$mustUseReturnValue = $variant->mustUseReturnValue();
+				$isStaticClosure = $variant->isStaticClosure();
 			} elseif ($function !== null) {
 				$returnTypeForThrow = $variant->getReturnType();
 				$throwType = $function->getThrowType();
@@ -977,6 +979,7 @@ final class InitializerExprTypeResolver
 				acceptsNamedArguments: $acceptsNamedArguments,
 				mustUseReturnValue: $mustUseReturnValue,
 				assertions: $assertions,
+				isStatic: $isStaticClosure,
 			);
 		}
 

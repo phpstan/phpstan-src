@@ -421,6 +421,12 @@ final class TypeNodeResolver
 			case 'pure-closure':
 				return ClosureType::createPure();
 
+			case 'static-closure':
+				return new ClosureType(isStatic: TrinaryLogic::createYes());
+
+			case 'static-pure-closure':
+				return new ClosureType(impurePoints: [], isStatic: TrinaryLogic::createYes());
+
 			case 'resource':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
 

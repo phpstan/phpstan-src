@@ -287,33 +287,50 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					return $prefix . $name;
 				}
 
-				$printer = new Printer();
-				$selfWithoutParameterNames = new self(
-					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
-						'',
-						$p->getType(),
-						optional: $p->isOptional() && !$p->isVariadic(),
-						passedByReference: PassedByReference::createNo(),
-						variadic: $p->isVariadic(),
-						defaultValue: $p->getDefaultValue(),
-					), $this->parameters),
-					$this->returnType,
-					$this->variadic,
-					$this->templateTypeMap,
-					$this->resolvedTemplateTypeMap,
-					$this->callSiteVarianceMap,
-					$this->templateTags,
-					$this->throwPoints,
-					$this->impurePoints,
-					$this->invalidateExpressions,
-					$this->usedVariables,
-					$this->acceptsNamedArguments,
-					$this->mustUseReturnValue,
-				);
+				return $this->describeCallable();
+			},
+			function (): string {
+				$prefix = $this->isStatic->yes() ? 'static-' : '';
 
-				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
+				if ($this->isCommonCallable) {
+					$name = $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
+					return $prefix . $name;
+				}
+
+				return $prefix . $this->describeCallable();
 			},
 		);
+	}
+
+	private function describeCallable(): string
+	{
+		$printer = new Printer();
+		$selfWithoutParameterNames = new self(
+			array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
+				'',
+				$p->getType(),
+				optional: $p->isOptional() && !$p->isVariadic(),
+				passedByReference: PassedByReference::createNo(),
+				variadic: $p->isVariadic(),
+				defaultValue: $p->getDefaultValue(),
+			), $this->parameters),
+			$this->returnType,
+			$this->variadic,
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
+			$this->callSiteVarianceMap,
+			$this->templateTags,
+			$this->throwPoints,
+			$this->impurePoints,
+			$this->invalidateExpressions,
+			$this->usedVariables,
+			$this->acceptsNamedArguments,
+			$this->mustUseReturnValue,
+			$this->assertions,
+			$this->isStatic,
+		);
+
+		return $printer->print($selfWithoutParameterNames->toPhpDocNode());
 	}
 
 	public function isOffsetAccessLegal(): TrinaryLogic
@@ -911,7 +928,9 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function toPhpDocNode(): TypeNode
 	{
 		if ($this->isCommonCallable) {
-			return new IdentifierTypeNode($this->isPure()->yes() ? 'pure-Closure' : 'Closure');
+			$prefix = $this->isStatic->yes() ? 'static-' : '';
+			$name = $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
+			return new IdentifierTypeNode($prefix . $name);
 		}
 
 		$parameters = [];

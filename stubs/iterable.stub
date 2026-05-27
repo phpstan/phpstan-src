@@ -159,9 +159,18 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
 }
 
 /**
- * @implements SeekableIterator<string, mixed>
+ * @template TValue = mixed
+ * @implements SeekableIterator<string, TValue>
  */
 class DirectoryIterator extends SplFileInfo implements SeekableIterator
+{
+
+}
+
+/**
+ * @extends DirectoryIterator<SplFileInfo|string>
+ */
+class FilesystemIterator extends DirectoryIterator
 {
 
 }

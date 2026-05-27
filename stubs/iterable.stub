@@ -159,7 +159,7 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
 }
 
 /**
- * @implements SeekableIterator<string, DirectoryIterator>
+ * @implements SeekableIterator<string, mixed>
  */
 class DirectoryIterator extends SplFileInfo implements SeekableIterator
 {

@@ -476,6 +476,18 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12790.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug10128(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10128.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11453(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11453.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11310(): void
 	{

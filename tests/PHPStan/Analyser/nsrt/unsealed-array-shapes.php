@@ -445,3 +445,32 @@ function unsealedNarrowing(array $stringExtras, array $intExtras, array $open, a
 		assertType('*NEVER*', $stringExtras);
 	}
 }
+
+class ConsistentKeyFetchWhenOverlappingWithUnsealedExtraKeys
+{
+
+	/**
+	 * @param array{1: string, 2: string, ...<int, int>} $array
+	 */
+	public function startDay(array $array): void
+	{
+		assertType('string', $array[1]);
+	}
+
+	/**
+	 * @param array{1: string, 2: string, ...<int<0, max>, int>} $array
+	 */
+	public function startDay2(array $array): void
+	{
+		assertType('string', $array[1]);
+	}
+
+	/**
+	 * @param array{1: string, 2: string, ...<int<0, 5>, int>} $array
+	 */
+	public function startDay3(array $array): void
+	{
+		assertType('string', $array[1]);
+	}
+
+}

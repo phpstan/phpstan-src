@@ -18,6 +18,9 @@ use function is_int;
 final class AttributeReflectionFactory
 {
 
+	/** @var array<string, true> */
+	private array $currentlyResolving = [];
+
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionProviderProvider $reflectionProviderProvider,
@@ -98,40 +101,51 @@ final class AttributeReflectionFactory
 			return null;
 		}
 
-		$constructor = $classReflection->getConstructor();
-		$parameters = $constructor->getOnlyVariant()->getParameters();
-		$namedArgTypes = [];
-		foreach ($arguments as $i => $argExpr) {
-			if (is_int($i)) {
-				if (isset($parameters[$i])) {
-					$namedArgTypes[$parameters[$i]->getName()] = $this->initializerExprTypeResolver->getType($argExpr, $context);
-					continue;
-				}
-				if (count($parameters) > 0) {
-					$lastParameter = array_last($parameters);
-					if ($lastParameter->isVariadic()) {
-						$parameterName = $lastParameter->getName();
-						if (array_key_exists($parameterName, $namedArgTypes)) {
-							$namedArgTypes[$parameterName] = TypeCombinator::union($namedArgTypes[$parameterName], $this->initializerExprTypeResolver->getType($argExpr, $context));
-							continue;
-						}
-						$namedArgTypes[$parameterName] = $this->initializerExprTypeResolver->getType($argExpr, $context);
-					}
-				}
-				continue;
-			}
-
-			foreach ($parameters as $parameter) {
-				if ($parameter->getName() !== $i) {
-					continue;
-				}
-
-				$namedArgTypes[$i] = $this->initializerExprTypeResolver->getType($argExpr, $context);
-				break;
-			}
+		$className = $classReflection->getName();
+		if (isset($this->currentlyResolving[$className])) {
+			return new AttributeReflection($className, []);
 		}
 
-		return new AttributeReflection($classReflection->getName(), $namedArgTypes);
+		$this->currentlyResolving[$className] = true;
+
+		try {
+			$constructor = $classReflection->getConstructor();
+			$parameters = $constructor->getOnlyVariant()->getParameters();
+			$namedArgTypes = [];
+			foreach ($arguments as $i => $argExpr) {
+				if (is_int($i)) {
+					if (isset($parameters[$i])) {
+						$namedArgTypes[$parameters[$i]->getName()] = $this->initializerExprTypeResolver->getType($argExpr, $context);
+						continue;
+					}
+					if (count($parameters) > 0) {
+						$lastParameter = array_last($parameters);
+						if ($lastParameter->isVariadic()) {
+							$parameterName = $lastParameter->getName();
+							if (array_key_exists($parameterName, $namedArgTypes)) {
+								$namedArgTypes[$parameterName] = TypeCombinator::union($namedArgTypes[$parameterName], $this->initializerExprTypeResolver->getType($argExpr, $context));
+								continue;
+							}
+							$namedArgTypes[$parameterName] = $this->initializerExprTypeResolver->getType($argExpr, $context);
+						}
+					}
+					continue;
+				}
+
+				foreach ($parameters as $parameter) {
+					if ($parameter->getName() !== $i) {
+						continue;
+					}
+
+					$namedArgTypes[$i] = $this->initializerExprTypeResolver->getType($argExpr, $context);
+					break;
+				}
+			}
+
+			return new AttributeReflection($className, $namedArgTypes);
+		} finally {
+			unset($this->currentlyResolving[$className]);
+		}
 	}
 
 }

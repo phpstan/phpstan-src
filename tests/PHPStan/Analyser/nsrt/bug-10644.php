@@ -19,7 +19,10 @@ function testIssetCoalesce(array $data): void
 	assertType("string", $data['subtitle'] ?? '');
 }
 
-function testSimpleBool(bool $a, mixed $y): void
+/**
+ * @param mixed $y
+ */
+function testSimpleBool(bool $a, $y): void
 {
 	if ($a && !is_string($y)) {
 		throw new \Exception();
@@ -31,7 +34,10 @@ function testSimpleBool(bool $a, mixed $y): void
 	assertType("mixed", $y);
 }
 
-function testSimpleInt(bool $a, mixed $y): void
+/**
+ * @param mixed $y
+ */
+function testSimpleInt(bool $a, $y): void
 {
 	if ($a && !is_int($y)) {
 		throw new \Exception();
@@ -42,7 +48,10 @@ function testSimpleInt(bool $a, mixed $y): void
 	}
 }
 
-function testSimpleArray(bool $a, mixed $y): void
+/**
+ * @param mixed $y
+ */
+function testSimpleArray(bool $a, $y): void
 {
 	if ($a && !is_array($y)) {
 		throw new \Exception();
@@ -53,7 +62,10 @@ function testSimpleArray(bool $a, mixed $y): void
 	}
 }
 
-function testNotNull(?int $x, mixed $y): void
+/**
+ * @param mixed $y
+ */
+function testNotNull(?int $x, $y): void
 {
 	if ($x !== null && !is_string($y)) {
 		throw new \Exception();
@@ -64,7 +76,11 @@ function testNotNull(?int $x, mixed $y): void
 	}
 }
 
-function testInstanceof(mixed $x, mixed $y): void
+/**
+ * @param mixed $x
+ * @param mixed $y
+ */
+function testInstanceof($x, $y): void
 {
 	if ($x instanceof \stdClass && !is_int($y)) {
 		throw new \Exception();

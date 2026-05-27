@@ -3,7 +3,11 @@
 namespace PHPStan\Reflection;
 
 use AttributeReflectionTest\Foo;
+use AttributeReflectionTest\MutualAttrA;
+use AttributeReflectionTest\MutualAttrB;
 use AttributeReflectionTest\MyAttr;
+use AttributeReflectionTest\SelfReferencingAttr;
+use AttributeReflectionTest\SelfRefOnParam;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
@@ -252,6 +256,62 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'one' => '9',
 						'two' => '10',
+					],
+				],
+			],
+		];
+
+		$selfRef = $reflectionProvider->getClass(SelfReferencingAttr::class);
+
+		yield [
+			$selfRef->getConstructor()->getAttributes(),
+			[
+				[
+					SelfReferencingAttr::class,
+					[
+						'param' => "'hi'",
+					],
+				],
+			],
+		];
+
+		$mutualA = $reflectionProvider->getClass(MutualAttrA::class);
+
+		yield [
+			$mutualA->getConstructor()->getAttributes(),
+			[
+				[
+					MutualAttrB::class,
+					[
+						'param' => "'world'",
+					],
+				],
+			],
+		];
+
+		$mutualB = $reflectionProvider->getClass(MutualAttrB::class);
+
+		yield [
+			$mutualB->getConstructor()->getAttributes(),
+			[
+				[
+					MutualAttrA::class,
+					[
+						'param' => "'hello'",
+					],
+				],
+			],
+		];
+
+		$selfRefOnParam = $reflectionProvider->getClass(SelfRefOnParam::class);
+
+		yield [
+			$selfRefOnParam->getConstructor()->getOnlyVariant()->getParameters()[0]->getAttributes(),
+			[
+				[
+					SelfRefOnParam::class,
+					[
+						'param' => "'hello'",
 					],
 				],
 			],

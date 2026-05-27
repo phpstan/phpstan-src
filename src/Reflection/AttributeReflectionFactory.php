@@ -98,17 +98,23 @@ final class AttributeReflectionFactory
 			return null;
 		}
 
-		$constructor = $classReflection->getConstructor();
-		$parameters = $constructor->getOnlyVariant()->getParameters();
+		$className = $classReflection->getName();
+
+		$nativeConstructor = $classReflection->getNativeReflection()->getConstructor();
+		if ($nativeConstructor === null) {
+			return null;
+		}
+		$nativeParameters = $nativeConstructor->getParameters();
+
 		$namedArgTypes = [];
 		foreach ($arguments as $i => $argExpr) {
 			if (is_int($i)) {
-				if (isset($parameters[$i])) {
-					$namedArgTypes[$parameters[$i]->getName()] = $this->initializerExprTypeResolver->getType($argExpr, $context);
+				if (isset($nativeParameters[$i])) {
+					$namedArgTypes[$nativeParameters[$i]->getName()] = $this->initializerExprTypeResolver->getType($argExpr, $context);
 					continue;
 				}
-				if (count($parameters) > 0) {
-					$lastParameter = array_last($parameters);
+				if (count($nativeParameters) > 0) {
+					$lastParameter = array_last($nativeParameters);
 					if ($lastParameter->isVariadic()) {
 						$parameterName = $lastParameter->getName();
 						if (array_key_exists($parameterName, $namedArgTypes)) {
@@ -121,7 +127,7 @@ final class AttributeReflectionFactory
 				continue;
 			}
 
-			foreach ($parameters as $parameter) {
+			foreach ($nativeParameters as $parameter) {
 				if ($parameter->getName() !== $i) {
 					continue;
 				}
@@ -131,7 +137,7 @@ final class AttributeReflectionFactory
 			}
 		}
 
-		return new AttributeReflection($classReflection->getName(), $namedArgTypes);
+		return new AttributeReflection($className, $namedArgTypes);
 	}
 
 }

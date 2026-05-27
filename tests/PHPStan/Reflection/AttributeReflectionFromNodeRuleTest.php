@@ -104,6 +104,22 @@ class AttributeReflectionFromNodeRuleTest extends RuleTestCase
 				'#[AttributeReflectionTest\MyAttr(one: 28, two: 29)]',
 				59,
 			],
+			[
+				"#[AttributeReflectionTest\SelfReferencingAttr(param: 'hi')]",
+				67,
+			],
+			[
+				"#[AttributeReflectionTest\MutualAttrB(param: 'world')]",
+				74,
+			],
+			[
+				"#[AttributeReflectionTest\MutualAttrA(param: 'hello')]",
+				81,
+			],
+			[
+				"\$param: #[AttributeReflectionTest\SelfRefOnParam(param: 'hello')]",
+				88,
+			],
 		]);
 	}
 

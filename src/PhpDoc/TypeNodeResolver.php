@@ -1099,12 +1099,16 @@ final class TypeNodeResolver
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->disableArrayDegradation();
 
+		$explicitKeyValues = [];
 		foreach ($typeNode->items as $itemNode) {
 			if ($itemNode->valueType instanceof CallableTypeNode) {
 				$builder->disableClosureDegradation();
 			}
 
 			$offsetType = $this->resolveArrayShapeOffsetType($itemNode, $nameScope);
+			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
+				$explicitKeyValues[] = $offsetType->getValue();
+			}
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
@@ -1138,6 +1142,14 @@ final class TypeNodeResolver
 				$unsealedValueType = $this->resolve($typeNode->unsealedType->valueType, $nameScope);
 				if (count($unsealedKeyFiniteTypes) > 0) {
 					foreach ($unsealedKeyFiniteTypes as $unsealedKeyFiniteType) {
+						// Explicit keys own their slot — the unsealed extras
+						// describe entries at keys NOT in the explicit set.
+						if (
+							($unsealedKeyFiniteType instanceof ConstantIntegerType || $unsealedKeyFiniteType instanceof ConstantStringType)
+							&& in_array($unsealedKeyFiniteType->getValue(), $explicitKeyValues, true)
+						) {
+							continue;
+						}
 						$builder->setOffsetValueType($unsealedKeyFiniteType, $unsealedValueType, true);
 					}
 				} else {

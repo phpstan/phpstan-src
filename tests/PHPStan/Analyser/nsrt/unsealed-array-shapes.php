@@ -80,7 +80,7 @@ class Foo
 	{
 		assertType('array<string, UnsealedArrayShapes\Foo>', $a);
 		assertType('array{a: int, b?: string, c?: string}', $b);
-		assertType('array{a: int, b: float|string, c?: string}', $c);
+		assertType('array{a: int, b: float, c?: string}', $c);
 	}
 
 	/**
@@ -454,6 +454,7 @@ class ConsistentKeyFetchWhenOverlappingWithUnsealedExtraKeys
 	 */
 	public function startDay(array $array): void
 	{
+		assertType('array{1: string, 2: string, ...<int, int>}', $array);
 		assertType('string', $array[1]);
 	}
 
@@ -462,6 +463,7 @@ class ConsistentKeyFetchWhenOverlappingWithUnsealedExtraKeys
 	 */
 	public function startDay2(array $array): void
 	{
+		assertType('array{1: string, 2: string, ...<int<0, max>, int>}', $array);
 		assertType('string', $array[1]);
 	}
 
@@ -470,6 +472,7 @@ class ConsistentKeyFetchWhenOverlappingWithUnsealedExtraKeys
 	 */
 	public function startDay3(array $array): void
 	{
+		assertType('array{1: string, 2: string, 0?: int, 3?: int, 4?: int, 5?: int}', $array);
 		assertType('string', $array[1]);
 	}
 

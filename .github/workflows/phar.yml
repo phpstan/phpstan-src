@@ -44,6 +44,8 @@ jobs:
           extensions: mbstring, intl
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
 
       # only sebastian/diff ^4 supports PHP 7.4 so we need that in the PHAR
       - name: "Downgrade PHPUnit"
@@ -53,6 +55,7 @@ jobs:
         uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "compiler"
+          ignore-cache: true
 
       - name: "Compiler tests"
         working-directory: "compiler"
@@ -73,6 +76,7 @@ jobs:
         uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "compiler/box"
+          ignore-cache: true
 
       - name: "Compile PHAR"
         working-directory: "compiler/build"
@@ -96,6 +100,8 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         env:
           COMPOSER_ROOT_VERSION: "2.2.x-dev"
+        with:
+          ignore-cache: true
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"

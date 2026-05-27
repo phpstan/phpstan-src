@@ -29,6 +29,16 @@ class BenevolentUnionType extends UnionType
 		return $result;
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$result = parent::tryRemove($typeToRemove);
+		if ($result === null) {
+			return null;
+		}
+
+		return TypeUtils::toBenevolentUnion($result);
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return '(' . parent::describe($level) . ')';

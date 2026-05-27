@@ -21,7 +21,7 @@ class Foo
 			return;
 		}
 
-		assertType('array{bool, true}', $array);
+		assertType('array{false, true}|array{true, true}', $array);
 		if ($array === [true, true]) {
 			assertType('array{true, true}', $array);
 			return;

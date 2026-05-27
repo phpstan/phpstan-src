@@ -1317,7 +1317,38 @@ class UnionType implements CompoundType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
+		$innerTypes = [];
+		$changed = false;
+		foreach ($this->types as $innerType) {
+			$removed = TypeCombinator::remove($innerType, $typeToRemove);
+			if (!$removed->equals($innerType)) {
+				$changed = true;
+			}
+			if ($removed instanceof NeverType) {
+				continue;
+			}
+			if ($removed instanceof self && !$removed instanceof TemplateType) {
+				foreach ($removed->getTypes() as $removedInnerType) {
+					$innerTypes[] = $removedInnerType;
+				}
+			} else {
+				$innerTypes[] = $removed;
+			}
+		}
+
+		if (!$changed) {
+			return null;
+		}
+
+		if (count($innerTypes) === 0) {
+			return new NeverType();
+		}
+
+		if (count($innerTypes) === 1) {
+			return $innerTypes[0];
+		}
+
+		return new UnionType($innerTypes);
 	}
 
 	public function exponentiate(Type $exponent): Type

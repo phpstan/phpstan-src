@@ -4200,6 +4200,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $a;
 		}
 
+		// Track whether either input carries a BenevolentUnion so the result
+		// can be re-wrapped at the end. `flattenTypes` below drops the
+		// BenevolentUnion wrapper, which would silently downgrade e.g.
+		// `(float|int)` (numeric-accepting) to a strict `float|int`. Inside a
+		// loop's fixed-point this propagates into the iterable value type of
+		// an array and turns `return [..., $int]` checks into false positives
+		// when the iteration body's `+ 1` arithmetic was originally produced
+		// by an `ErrorType`-derived `int|float` benevolent union (the typical
+		// case for reads of literally-missing keys inside the body).
+		$wrapBenevolent = $a instanceof BenevolentUnionType || $b instanceof BenevolentUnionType;
+
 		$constantIntegers = ['a' => [], 'b' => []];
 		$constantFloats = ['a' => [], 'b' => []];
 		$constantBooleans = ['a' => [], 'b' => []];
@@ -4554,8 +4565,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			TypeUtils::getAccessoryTypes($a),
 		);
 
+		$combined = TypeCombinator::union(...$resultTypes, ...$otherTypes);
+		if ($wrapBenevolent) {
+			$combined = TypeUtils::toBenevolentUnion($combined);
+		}
+
 		return TypeCombinator::union(TypeCombinator::intersect(
-			TypeCombinator::union(...$resultTypes, ...$otherTypes),
+			$combined,
 			...$accessoryTypes,
 		), ...$otherTypes);
 	}

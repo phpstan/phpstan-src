@@ -15,7 +15,6 @@ use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\TrinaryLogic;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflection;
@@ -137,7 +136,7 @@ final class ClosureTypeFactory
 			}
 		}
 
-		return new ClosureType($parameters, TypehintHelper::decideTypeFromReflection(ReflectionType::fromTypeOrNull($betterReflectionFunction->getReturnType()), selfClass: $selfClass), $betterReflectionFunction->isVariadic(), isStatic: TrinaryLogic::createFromBoolean($closureReflectionFunction->isStatic()));
+		return new ClosureType($parameters, TypehintHelper::decideTypeFromReflection(ReflectionType::fromTypeOrNull($betterReflectionFunction->getReturnType()), selfClass: $selfClass), $betterReflectionFunction->isVariadic());
 	}
 
 }

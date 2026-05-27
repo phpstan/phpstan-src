@@ -649,27 +649,100 @@ final class InitializerExprTypeResolver
 			$valueType = $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
 				$constantArrays = $valueType->getConstantArrays();
-				if (count($constantArrays) === 1) {
-					$constantArrayType = $constantArrays[0];
-
+				if (count($constantArrays) > 0) {
 					$hasStringKey = false;
 					if ($this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-						foreach ($constantArrayType->getKeyTypes() as $keyType) {
-							if ($keyType->isString()->yes()) {
-								$hasStringKey = true;
-								break;
+						foreach ($constantArrays as $constantArrayType) {
+							foreach ($constantArrayType->getKeyTypes() as $keyType) {
+								if ($keyType->isString()->yes()) {
+									$hasStringKey = true;
+									break 2;
+								}
 							}
 						}
 					}
 
-					foreach ($constantArrayType->getValueTypes() as $i => $innerValueType) {
-						if ($hasStringKey) {
-							$arrayBuilder->setOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType, $constantArrayType->isOptionalKey($i));
-							if (!$constantArrayType->isOptionalKey($i)) {
-								$hasOffsetValueTypes[$constantArrayType->getKeyTypes()[$i]->getValue()] = new HasOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType);
+					if ($hasStringKey) {
+						$totalArrays = count($constantArrays);
+						/** @var array<int|string, array{valueTypes: list<Type>, keyType: ConstantIntegerType|ConstantStringType, presentCount: int, anyOptional: bool}> $mergedKeys */
+						$mergedKeys = [];
+						$keyOrder = [];
+
+						foreach ($constantArrays as $constantArrayType) {
+							foreach ($constantArrayType->getKeyTypes() as $i => $keyType) {
+								$keyValue = $keyType->getValue();
+								if (!isset($mergedKeys[$keyValue])) {
+									$mergedKeys[$keyValue] = [
+										'valueTypes' => [],
+										'keyType' => $keyType,
+										'presentCount' => 0,
+										'anyOptional' => false,
+									];
+									$keyOrder[] = $keyValue;
+								}
+								$mergedKeys[$keyValue]['valueTypes'][] = $constantArrayType->getValueTypes()[$i];
+								$mergedKeys[$keyValue]['presentCount']++;
+								if (!$constantArrayType->isOptionalKey($i)) {
+									continue;
+								}
+
+								$mergedKeys[$keyValue]['anyOptional'] = true;
 							}
-						} else {
-							$arrayBuilder->setOffsetValueType(null, $innerValueType, $constantArrayType->isOptionalKey($i));
+						}
+
+						foreach ($keyOrder as $keyValue) {
+							$info = $mergedKeys[$keyValue];
+							$mergedValueType = TypeCombinator::union(...$info['valueTypes']);
+							$isOptional = $info['anyOptional'] || $info['presentCount'] < $totalArrays;
+							$arrayBuilder->setOffsetValueType($info['keyType'], $mergedValueType, $isOptional);
+
+							if (isset($hasOffsetValueTypes[$keyValue])) {
+								if ($isOptional) {
+									$hasOffsetValueTypes[$keyValue] = new HasOffsetValueType(
+										$info['keyType'],
+										TypeCombinator::union($hasOffsetValueTypes[$keyValue]->getValueType(), $mergedValueType),
+									);
+								} else {
+									$hasOffsetValueTypes[$keyValue] = new HasOffsetValueType($info['keyType'], $mergedValueType);
+								}
+							} elseif (!$isOptional) {
+								$hasOffsetValueTypes[$keyValue] = new HasOffsetValueType($info['keyType'], $mergedValueType);
+							}
+						}
+					} else {
+						$maxLen = 0;
+						$totalArrays = count($constantArrays);
+						foreach ($constantArrays as $constantArrayType) {
+							$len = count($constantArrayType->getKeyTypes());
+							if ($len <= $maxLen) {
+								continue;
+							}
+
+							$maxLen = $len;
+						}
+
+						for ($pos = 0; $pos < $maxLen; $pos++) {
+							$posValueTypes = [];
+							$presentCount = 0;
+							$anyOptional = false;
+							foreach ($constantArrays as $constantArrayType) {
+								$keyTypes = $constantArrayType->getKeyTypes();
+								if ($pos >= count($keyTypes)) {
+									continue;
+								}
+
+								$posValueTypes[] = $constantArrayType->getValueTypes()[$pos];
+								$presentCount++;
+								if (!$constantArrayType->isOptionalKey($pos)) {
+									continue;
+								}
+
+								$anyOptional = true;
+							}
+
+							$mergedValueType = TypeCombinator::union(...$posValueTypes);
+							$isOptional = $anyOptional || $presentCount < $totalArrays;
+							$arrayBuilder->setOffsetValueType(null, $mergedValueType, $isOptional);
 						}
 					}
 				} else {

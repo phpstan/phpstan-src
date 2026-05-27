@@ -60,3 +60,30 @@ function myFunction4() {
 function myFunction5() {
 
 }
+
+#[Attribute(Attribute::TARGET_METHOD)]
+class SelfReferencingAttr
+{
+	#[SelfReferencingAttr('hi')]
+	public function __construct(string $param) {}
+}
+
+#[Attribute(Attribute::TARGET_ALL)]
+class MutualAttrA
+{
+	#[MutualAttrB('world')]
+	public function __construct(string $param) {}
+}
+
+#[Attribute(Attribute::TARGET_ALL)]
+class MutualAttrB
+{
+	#[MutualAttrA('hello')]
+	public function __construct(string $param) {}
+}
+
+#[Attribute(Attribute::TARGET_ALL)]
+class SelfRefOnParam
+{
+	public function __construct(#[SelfRefOnParam('hello')] string $param) {}
+}

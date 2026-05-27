@@ -1501,7 +1501,15 @@ class ConstantArrayType implements Type
 
 		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
 			[, $unsealedValue] = $this->unsealed;
-			$builder->makeUnsealed($unsealedValue->toArrayKey(), $valueType);
+			$tailKey = $unsealedValue->toArrayKey();
+			// See flipArray() for the rationale: install the unsealed
+			// tail only when its key type is non-finite; otherwise let
+			// setOffsetValueType expand it into optional explicit slots
+			// (merged with any matching existing keys).
+			if (count($tailKey->getFiniteTypes()) === 0) {
+				$builder->makeUnsealed($tailKey, $valueType);
+			}
+			$builder->setOffsetValueType($tailKey, $valueType, true);
 		}
 
 		return $builder->getArray();
@@ -1522,7 +1530,19 @@ class ConstantArrayType implements Type
 
 		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
 			[$unsealedKey, $unsealedValue] = $this->unsealed;
-			$builder->makeUnsealed($unsealedValue->toArrayKey(), $unsealedKey);
+			$flippedKey = $unsealedValue->toArrayKey();
+			$flippedValue = $unsealedKey;
+			// For a non-finite tail key (e.g. `string`), install the
+			// unsealed extras first; setOffsetValueType then widens any
+			// overlapping explicit values with the tail's value type.
+			// For a finite tail key (e.g. `0|1`), setOffsetValueType
+			// expands the tail into optional explicit slots that fully
+			// cover the tail's domain, so no residual unsealed tail is
+			// needed.
+			if (count($flippedKey->getFiniteTypes()) === 0) {
+				$builder->makeUnsealed($flippedKey, $flippedValue);
+			}
+			$builder->setOffsetValueType($flippedKey, $flippedValue, true);
 		}
 
 		return $builder->getArray();

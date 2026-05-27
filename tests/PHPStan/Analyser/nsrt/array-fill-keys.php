@@ -104,3 +104,13 @@ function withNotConstantArray(array $foo, array $bar, array $baz, array $floats,
 		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));
 	}
 }
+
+/**
+ * @param array{0: 1, 1: 2, 2: 3} $sealed
+ * @param array{0: 1, 1: 2, 2: 3, ...<int, bool>} $unsealed
+ */
+function sealedArrayFillKeys(array $sealed, array $unsealed): void
+{
+	assertType("array{1: 'b', 2: 'b', 3: 'b'}", array_fill_keys($sealed, 'b'));
+	assertType("array{1: 'b', 2: 'b', 3: 'b', 0?: 'b'}", array_fill_keys($unsealed, 'b'));
+}

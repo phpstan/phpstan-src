@@ -93,3 +93,14 @@ function foo10(array $array)
 		assertType("*NEVER*", array_flip($array)); // this could be array<string, int>&hasOffsetValue(17, 'bar') according to https://3v4l.org/1TAFk
 	}
 }
+
+/**
+ * @param array{0: 1, 1: 2, 2: 3} $sealed
+ * @param array{0: 1, 1: 2, 2: 3, ...<int, bool>} $unsealed
+ */
+function sealedArrayFlip(array $sealed, array $unsealed): void
+{
+	assertType('array{1: 0, 2: 1, 3: 2}', array_flip($sealed));
+	assertType('array{1: int, 2: 1, 3: 2, 0?: int}', array_flip($unsealed));
+	assertType('int', array_flip($unsealed)[1]);
+}

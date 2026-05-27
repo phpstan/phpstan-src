@@ -2775,6 +2775,38 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ClosureType::class,
 			'Closure(): mixed',
 		];
+		yield 'union of static and maybe-static closure' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+			],
+			ClosureType::class,
+			'Closure(): mixed',
+		];
+		yield 'union of non-static and maybe-static closure' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+			],
+			ClosureType::class,
+			'Closure(): mixed',
+		];
+		yield 'union of two static closures' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+			],
+			ClosureType::class,
+			'static-Closure(): mixed',
+		];
+		yield 'union of static common closure and static common closure' => [
+			[
+				new ClosureType(isStatic: TrinaryLogic::createYes()),
+				new ClosureType(isStatic: TrinaryLogic::createYes()),
+			],
+			ClosureType::class,
+			'static-Closure',
+		];
 		yield [
 			[
 				new IntersectionType([
@@ -5110,6 +5142,38 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ClosureType::class,
 			'pure-Closure',
+		];
+		yield 'intersect of static and non-static closure' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield 'intersect of static and maybe-static closure' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+			],
+			ClosureType::class,
+			'static-Closure(): mixed',
+		];
+		yield 'intersect of non-static and maybe-static closure' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+			],
+			ClosureType::class,
+			'Closure(): mixed',
+		];
+		yield 'intersect of two static closures' => [
+			[
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+			],
+			ClosureType::class,
+			'static-Closure(): mixed',
 		];
 
 		$xy = new ConstantArrayType([

@@ -424,6 +424,21 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			]),
 			'non-empty-array{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
+
+		yield [
+			new ClosureType(isStatic: TrinaryLogic::createYes()),
+			'static-Closure',
+		];
+
+		yield [
+			new ClosureType(impurePoints: [], isStatic: TrinaryLogic::createYes()),
+			'static-pure-Closure',
+		];
+
+		yield [
+			ClosureType::createPure(),
+			'pure-Closure',
+		];
 	}
 
 	#[DataProvider('dataToPhpDocNode')]
@@ -532,6 +547,11 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield [
 			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)]),
 			'non-decimal-int-string',
+		];
+
+		yield [
+			new ClosureType(),
+			'Closure',
 		];
 	}
 

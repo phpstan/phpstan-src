@@ -194,12 +194,12 @@ class ClosureTypeTest extends PHPStanTestCase
 			'static closure at precise' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::precise(),
-				'Closure(): mixed',
+				'static-Closure(): mixed',
 			],
 			'static closure at cache' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::cache(),
-				'Closure(): mixed',
+				'static-Closure(): mixed',
 			],
 			'non-static closure at precise' => [
 				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
@@ -244,12 +244,12 @@ class ClosureTypeTest extends PHPStanTestCase
 			'static pure closure at precise' => [
 				new ClosureType([], new MixedType(), false, impurePoints: [], isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::precise(),
-				'Closure(): mixed',
+				'static-Closure(): mixed',
 			],
 			'static pure closure at cache' => [
 				new ClosureType([], new MixedType(), false, impurePoints: [], isStatic: TrinaryLogic::createYes()),
 				VerbosityLevel::cache(),
-				'Closure(): mixed',
+				'static-Closure(): mixed',
 			],
 			'static pure common closure at value' => [
 				new ClosureType(impurePoints: [], isStatic: TrinaryLogic::createYes()),
@@ -267,6 +267,67 @@ class ClosureTypeTest extends PHPStanTestCase
 	): void
 	{
 		$this->assertSame($expectedDescription, $type->describe($level));
+	}
+
+	public static function dataAccepts(): array
+	{
+		return [
+			'static closure accepts static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			'static closure does not accept non-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				TrinaryLogic::createNo(),
+			],
+			'non-static closure does not accept static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				TrinaryLogic::createNo(),
+			],
+			'non-static closure accepts non-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			'maybe-static closure accepts static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			'maybe-static closure accepts non-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			'static closure maybe accepts maybe-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createYes()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				TrinaryLogic::createMaybe(),
+			],
+			'non-static closure maybe accepts maybe-static closure' => [
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createNo()),
+				new ClosureType([], new MixedType(), false, isStatic: TrinaryLogic::createMaybe()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	#[DataProvider('dataAccepts')]
+	public function testAccepts(
+		Type $type,
+		Type $otherType,
+		TrinaryLogic $expectedResult,
+	): void
+	{
+		$actualResult = $type->accepts($otherType, true);
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->result->describe(),
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
 	}
 
 	public function testIsStaticClosure(): void

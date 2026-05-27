@@ -7,7 +7,7 @@ on:
     types:
       - opened
     branches:
-      - '2.2.x'
+      - '2.3.x'
 
 
 permissions:
@@ -27,6 +27,6 @@ jobs:
       - name: Comment PR
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
-          body: "You've opened the pull request against the latest branch 2.2.x. PHPStan 2.2 is not going to be released for months. If your code is relevant on 2.1.x and you want it to be released sooner, please rebase your pull request and change its target to 2.1.x."
+          body: "You've opened the pull request against the latest branch 2.3.x. PHPStan 2.3 is not going to be released for months. If your code is relevant on 2.2.x and you want it to be released sooner, please rebase your pull request and change its target to 2.2.x."
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}

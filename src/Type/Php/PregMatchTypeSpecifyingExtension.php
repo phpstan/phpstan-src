@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -41,13 +43,34 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	{
 		$args = $node->getArgs();
 		$patternArg = $args[0] ?? null;
+		$subjectArg = $args[1] ?? null;
 		$matchesArg = $args[2] ?? null;
 		$flagsArg = $args[3] ?? null;
 
-		if (
-			$patternArg === null || $matchesArg === null
-		) {
+		if ($patternArg === null) {
 			return new SpecifiedTypes();
+		}
+
+		$subjectTypes = new SpecifiedTypes();
+		if (
+			$subjectArg !== null
+			&& $context->true()
+			&& $scope->getType($subjectArg->value)->isString()->yes()
+			&& !$this->isSubExprOfMatchesArg($subjectArg->value, $matchesArg?->value)
+		) {
+			$subjectType = $this->regexShapeMatcher->matchSubjectExpr($patternArg->value, $scope);
+			if ($subjectType !== null) {
+				$subjectTypes = $this->typeSpecifier->create(
+					$subjectArg->value,
+					$subjectType,
+					$context,
+					$scope,
+				)->setRootExpr($node);
+			}
+		}
+
+		if ($matchesArg === null) {
+			return $subjectTypes;
 		}
 
 		$flagsType = null;
@@ -69,7 +92,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$matchedType = $this->regexShapeMatcher->matchAllExpr($patternArg->value, $flagsType, $wasMatched, $scope);
 		}
 		if ($matchedType === null) {
-			return new SpecifiedTypes();
+			return $subjectTypes;
 		}
 
 		$overwrite = false;
@@ -88,7 +111,23 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$types = $types->setAlwaysOverwriteTypes();
 		}
 
-		return $types;
+		return $types->unionWith($subjectTypes);
+	}
+
+	private function isSubExprOfMatchesArg(Expr $subject, ?Expr $matchesVar): bool
+	{
+		if ($matchesVar === null) {
+			return false;
+		}
+
+		$rootVar = $subject;
+		while ($rootVar instanceof ArrayDimFetch) {
+			$rootVar = $rootVar->var;
+		}
+
+		return $rootVar instanceof Expr\Variable
+			&& $matchesVar instanceof Expr\Variable
+			&& $rootVar->name === $matchesVar->name;
 	}
 
 }

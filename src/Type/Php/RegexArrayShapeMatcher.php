@@ -61,6 +61,32 @@ final class RegexArrayShapeMatcher
 		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, false);
 	}
 
+	public function matchSubjectExpr(Expr $patternExpr, Scope $scope): ?Type
+	{
+		$patternType = $this->getPatternType($patternExpr, $scope);
+		$constantStrings = $patternType->getConstantStrings();
+		if (count($constantStrings) === 0) {
+			return null;
+		}
+
+		$subjectTypes = [];
+		foreach ($constantStrings as $constantString) {
+			$astWalkResult = $this->regexGroupParser->parseGroups($constantString->getValue());
+			if ($astWalkResult === null) {
+				return null;
+			}
+
+			$subjectType = $astWalkResult->getSubjectBaseType();
+			if ((new StringType())->equals($subjectType)) {
+				return null;
+			}
+
+			$subjectTypes[] = $subjectType;
+		}
+
+		return TypeCombinator::union(...$subjectTypes);
+	}
+
 	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
 	{
 		if ($wasMatched->no()) {

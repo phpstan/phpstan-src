@@ -47,6 +47,13 @@ final class ParameterAllowedConstants
 		return $this->exclusiveGroups;
 	}
 
+	public function equals(self $other): bool
+	{
+		return $this->type === $other->type
+			&& $this->constants === $other->constants
+			&& $this->exclusiveGroups === $other->exclusiveGroups;
+	}
+
 	/**
 	 * @param list<ConstantReflection> $constants
 	 */

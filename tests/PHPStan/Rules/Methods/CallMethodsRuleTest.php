@@ -969,6 +969,14 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14719(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14719.php'], []);
+	}
+
 	public function testClosureBind(): void
 	{
 		$this->checkThisOnly = false;
@@ -4009,6 +4017,14 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Constant Collator::FRENCH_COLLATION is not allowed for parameter #2 $flags of method Collator::sort().',
 				25,
+			],
+			[
+				'Constant PDO::ATTR_ERRMODE is not allowed for parameter $mode of method PDOStatement::fetch().',
+				28,
+			],
+			[
+				'Constants PDO::FETCH_ASSOC, PDO::FETCH_NUM cannot be combined for parameter $mode of method PDOStatement::setFetchMode().',
+				31,
 			],
 		]);
 	}

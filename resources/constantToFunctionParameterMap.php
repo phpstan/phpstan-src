@@ -2019,7 +2019,7 @@ return [
 
 	'PDOStatement::fetchAll' => [
 		'mode' => [
-			'type' => 'single',
+			'type' => 'bitmask',
 			'constants' => [
 				'PDO::FETCH_DEFAULT',
 				'PDO::FETCH_LAZY',
@@ -2040,12 +2040,29 @@ return [
 				'PDO::FETCH_PROPS_LATE',
 				'PDO::FETCH_NAMED',
 			],
+			'exclusiveGroups' => [
+				[
+					'PDO::FETCH_DEFAULT',
+					'PDO::FETCH_LAZY',
+					'PDO::FETCH_ASSOC',
+					'PDO::FETCH_NUM',
+					'PDO::FETCH_BOTH',
+					'PDO::FETCH_OBJ',
+					'PDO::FETCH_BOUND',
+					'PDO::FETCH_COLUMN',
+					'PDO::FETCH_CLASS',
+					'PDO::FETCH_INTO',
+					'PDO::FETCH_FUNC',
+					'PDO::FETCH_KEY_PAIR',
+					'PDO::FETCH_NAMED',
+				],
+			],
 		],
 	],
 
 	'PDOStatement::setFetchMode' => [
 		'mode' => [
-			'type' => 'single',
+			'type' => 'bitmask',
 			'constants' => [
 				'PDO::FETCH_DEFAULT',
 				'PDO::FETCH_LAZY',
@@ -2065,6 +2082,23 @@ return [
 				'PDO::FETCH_SERIALIZE',
 				'PDO::FETCH_PROPS_LATE',
 				'PDO::FETCH_NAMED',
+			],
+			'exclusiveGroups' => [
+				[
+					'PDO::FETCH_DEFAULT',
+					'PDO::FETCH_LAZY',
+					'PDO::FETCH_ASSOC',
+					'PDO::FETCH_NUM',
+					'PDO::FETCH_BOTH',
+					'PDO::FETCH_OBJ',
+					'PDO::FETCH_BOUND',
+					'PDO::FETCH_COLUMN',
+					'PDO::FETCH_CLASS',
+					'PDO::FETCH_INTO',
+					'PDO::FETCH_FUNC',
+					'PDO::FETCH_KEY_PAIR',
+					'PDO::FETCH_NAMED',
+				],
 			],
 		],
 	],

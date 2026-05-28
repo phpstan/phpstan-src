@@ -812,6 +812,14 @@ final class ParametersAcceptorSelector
 					$closureThisType = null;
 				}
 
+				$allowedConstants = $parameters[$i]->getAllowedConstants();
+				if ($allowedConstants !== null) {
+					$otherAllowedConstants = $parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null;
+					if ($otherAllowedConstants === null || !$allowedConstants->equals($otherAllowedConstants)) {
+						$allowedConstants = null;
+					}
+				}
+
 				$parameters[$i] = new ExtendedDummyParameter(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),
 					$type,
@@ -825,7 +833,7 @@ final class ParametersAcceptorSelector
 					$immediatelyInvokedCallable,
 					$closureThisType,
 					$attributes,
-					null,
+					$allowedConstants,
 				);
 
 				if ($isVariadic) {

@@ -23,3 +23,9 @@ $collator->sort($arr, \Collator::SORT_STRING);
 
 // Collator::sort - wrong class constant
 $collator->sort($arr, \Collator::FRENCH_COLLATION);
+
+// PDOStatement::fetch - wrong class constant via named argument (multi-variant method)
+$stmt->fetch(mode: \PDO::ATTR_ERRMODE);
+
+// PDOStatement::setFetchMode - exclusive base modes via named argument (multi-variant method)
+$stmt->setFetchMode(mode: \PDO::FETCH_ASSOC | \PDO::FETCH_NUM);

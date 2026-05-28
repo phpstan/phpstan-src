@@ -546,6 +546,7 @@ return [
 			'type' => 'single',
 			'constants' => [
 				'FILTER_VALIDATE_INT',
+				'FILTER_VALIDATE_BOOL',
 				'FILTER_VALIDATE_BOOLEAN',
 				'FILTER_VALIDATE_FLOAT',
 				'FILTER_VALIDATE_REGEXP',
@@ -618,6 +619,7 @@ return [
 			'type' => 'single',
 			'constants' => [
 				'FILTER_VALIDATE_INT',
+				'FILTER_VALIDATE_BOOL',
 				'FILTER_VALIDATE_BOOLEAN',
 				'FILTER_VALIDATE_FLOAT',
 				'FILTER_VALIDATE_REGEXP',

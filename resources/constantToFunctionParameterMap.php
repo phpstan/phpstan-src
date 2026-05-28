@@ -1961,6 +1961,24 @@ return [
 				'Collator::NUMERIC_COLLATION',
 			],
 		],
+		'value' => [
+			'type' => 'single',
+			'constants' => [
+				'Collator::DEFAULT_VALUE',
+				'Collator::ON',
+				'Collator::OFF',
+				'Collator::NON_IGNORABLE',
+				'Collator::SHIFTED',
+				'Collator::LOWER_FIRST',
+				'Collator::UPPER_FIRST',
+				'Collator::PRIMARY',
+				'Collator::SECONDARY',
+				'Collator::TERTIARY',
+				'Collator::DEFAULT_STRENGTH',
+				'Collator::QUATERNARY',
+				'Collator::IDENTICAL',
+			],
+		],
 	],
 
 	'Collator::getAttribute' => [

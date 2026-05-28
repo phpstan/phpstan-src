@@ -526,6 +526,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14715(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14715.php');
+		$this->assertNoErrors($errors);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{

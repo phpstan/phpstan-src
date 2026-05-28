@@ -171,6 +171,10 @@ final class FunctionCallParametersCheck
 				if (count($arrays) > 0) {
 					$maxKeys = null;
 					foreach ($arrays as $array) {
+						if ($array->isUnsealed()->yes()) {
+							$maxKeys = 0;
+							break;
+						}
 						$countType = $array->getArraySize();
 						if ($countType instanceof ConstantIntegerType) {
 							$keysCount = $countType->getValue();

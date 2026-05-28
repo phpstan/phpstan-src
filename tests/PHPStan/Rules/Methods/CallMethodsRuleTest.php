@@ -1026,6 +1026,20 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4865.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14715(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14715.php'], [
+			[
+				'Parameter #1 $a of method Bug14715CallMethods\Foo::bar() expects int, bool|int|string given.',
+				19,
+			],
+		]);
+	}
+
 	public function testArrowFunctionClosureBind(): void
 	{
 		$this->checkThisOnly = false;

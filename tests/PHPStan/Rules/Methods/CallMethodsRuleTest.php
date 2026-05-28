@@ -969,6 +969,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14719(): void
 	{
 		$this->checkThisOnly = false;

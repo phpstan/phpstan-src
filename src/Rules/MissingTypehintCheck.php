@@ -108,7 +108,7 @@ final class MissingTypehintCheck
 			}
 			if ($type->isIterable()->yes()) {
 				if ($type->isConstantArray()->yes()) {
-					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$descriptions) {
+					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
 						}
@@ -116,10 +116,6 @@ final class MissingTypehintCheck
 						if ($type instanceof ConstantArrayType) {
 							$unsealed = $type->getUnsealedTypes();
 							if ($unsealed !== null) {
-								$iterableUnsealedValue = $unsealed[1];
-								if ($iterableUnsealedValue instanceof MixedType && !$iterableUnsealedValue->isExplicitMixed()) {
-									$descriptions[] = 'unsealed extra keys (...)';
-								}
 								return $traverse($type->dropUnsealedTypes());
 							}
 						}

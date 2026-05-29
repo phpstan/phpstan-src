@@ -18,7 +18,7 @@ class Foo
 
 		if (!array_key_exists('key', $arr)) {
 			assertType('*NEVER*', $arr);
-			assertNativeType('array', $arr);
+			assertNativeType("array<mixed~'key', mixed>", $arr);
 			throw new \Exception('no key "key" found.');
 		}
 		assertType('array{key: array{inner: mixed}}', $arr);

@@ -53,6 +53,9 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		$subjectTypes = new SpecifiedTypes();
+		// Only narrow plain variables. This covers the vast majority of real-world code and avoids
+		// breaking exotic subjects like `preg_match($p, $matches[2], $matches)` (see Rules bug-9503),
+		// where the subject is an offset of the same array that receives the matches output.
 		if (
 			$subjectArg !== null
 			&& $subjectArg->value instanceof Expr\Variable

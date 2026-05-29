@@ -80,8 +80,9 @@ function pregMatchWithNonConstantPattern(string $pattern, string $x): void {
 
 function pregMatchSubjectSharesVarWithMatches(): void {
 	$matches = ['', '', 'foo'];
-	// subject ($matches[2]) shares its root variable with the $matches output arg,
-	// so subject narrowing is skipped to avoid conflicting specifications
+	// the subject ($matches[2]) is not a plain variable but an array offset, so subject
+	// narrowing is skipped (only plain variables are narrowed) and the $matches output is
+	// typed normally without conflicting specifications (see Rules bug-9503)
 	if (preg_match('/^(a|b|c)$/', $matches[2], $matches)) {
 		assertType("array{non-falsy-string, 'a'|'b'|'c'}", $matches);
 	}

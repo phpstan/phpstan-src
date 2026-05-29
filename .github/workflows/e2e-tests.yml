@@ -298,6 +298,22 @@ jobs:
               ../bashunit -a contains 'FooTrait.php (in context of class E2EInTrait\Bar):18:Strict comparison using === between E2EInTrait\Bar and null will always evaluate to false.' "$OUTPUT"
               ../bashunit -a contains 'FooTrait.php (in context of class E2EInTrait\Foo):18:Strict comparison using === between E2EInTrait\Foo and null will always evaluate to false.' "$OUTPUT"
           - script: |
+              cd e2e/bug-14718
+              # https://github.com/phpstan/phpstan/issues/14718
+              # an inline @phpstan-ignore on an error deduplicated into the trait must suppress it,
+              # consistently with both an empty and a primed result cache
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
+              ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
+              # with the ignore removed, the error is reported in the trait file and a generated
+              # baseline records the trait file path, not the using-class file
+              sed -i 's# // @phpstan-ignore identical.alwaysFalse##' src/FooTrait.php
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
+              ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              ../../bin/phpstan --generate-baseline=baseline.neon
+              ../bashunit -a contains 'path: src/FooTrait.php' "$(cat baseline.neon)"
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv

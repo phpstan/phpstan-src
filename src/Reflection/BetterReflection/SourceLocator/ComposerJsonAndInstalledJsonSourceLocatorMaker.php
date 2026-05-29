@@ -178,6 +178,9 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	private function packageToPsr4AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
 		$psr4 = $package[$autoloadSection]['psr-4'] ?? [];
+		if (!is_array($psr4)) {
+			return []; // skip on invalid schema
+		}
 		foreach ($psr4 as $key => $namespacePaths) {
 			if (!is_string($key)) {
 				return []; // skip on invalid schema
@@ -204,6 +207,9 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	private function packageToPsr0AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
 		$psr0 = $package[$autoloadSection]['psr-0'] ?? [];
+		if (!is_array($psr0)) {
+			return []; // skip on invalid schema
+		}
 		foreach ($psr0 as $key => $namespacePaths) {
 			if (!is_string($key)) {
 				return []; // skip on invalid schema
@@ -230,6 +236,9 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	private function packageToClassMapPaths(array $package, string $autoloadSection = 'autoload'): array
 	{
 		$classMap = $package[$autoloadSection]['classmap'] ?? [];
+		if (!is_array($classMap)) {
+			return []; // skip on invalid schema
+		}
 		foreach ($classMap as $classmapPath) {
 			if (!is_string($classmapPath)) {
 				return []; // skip on invalid schema
@@ -246,6 +255,9 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	private function packageToFilePaths(array $package, string $autoloadSection = 'autoload'): array
 	{
 		$filePaths = $package[$autoloadSection]['files'] ?? [];
+		if (!is_array($filePaths)) {
+			return []; // skip on invalid schema
+		}
 		foreach ($filePaths as $filePath) {
 			if (!is_string($filePath)) {
 				return []; // skip on invalid schema

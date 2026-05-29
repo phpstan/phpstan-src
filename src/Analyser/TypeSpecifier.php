@@ -51,7 +51,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -1395,44 +1394,6 @@ final class TypeSpecifier
 			if ($extensionResult !== null) {
 				return $extensionResult;
 			}
-		}
-
-		if (
-			$context->true()
-			&& $exprNode instanceof FuncCall
-			&& $exprNode->name instanceof Name
-			&& !$exprNode->isFirstClassCallable()
-			&& strtolower((string) $exprNode->name) === 'get_parent_class'
-			&& isset($exprNode->getArgs()[0])
-		) {
-			$argType = $scope->getType($exprNode->getArgs()[0]->value);
-			$objectType = new ObjectType($constantStringValue);
-			$classStringType = new GenericClassStringType($objectType);
-
-			if ($argType->isString()->yes()) {
-				return $this->create(
-					$exprNode->getArgs()[0]->value,
-					$classStringType,
-					$context,
-					$scope,
-				)->setRootExpr($rootExpr);
-			}
-
-			if ($argType->isObject()->yes()) {
-				return $this->create(
-					$exprNode->getArgs()[0]->value,
-					$objectType,
-					$context,
-					$scope,
-				)->setRootExpr($rootExpr);
-			}
-
-			return $this->create(
-				$exprNode->getArgs()[0]->value,
-				TypeCombinator::union($objectType, $classStringType),
-				$context,
-				$scope,
-			)->setRootExpr($rootExpr);
 		}
 
 		if (

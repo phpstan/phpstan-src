@@ -179,12 +179,12 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	{
 		$psr4 = $package[$autoloadSection]['psr-4'] ?? [];
 		if (!is_array($psr4)) {
-			return []; // skip on invalid schema
+			return []; // skip on invalid data
 		}
 		foreach ($psr4 as $key => $namespacePaths) {
 			$stringArray = $this->toStringArray($namespacePaths);
 			if (!is_string($key) || $stringArray === null) {
-				return []; // skip on invalid schema
+				return []; // skip on invalid data
 			}
 
 			$psr4[$key] = $stringArray;
@@ -201,12 +201,12 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	{
 		$psr0 = $package[$autoloadSection]['psr-0'] ?? [];
 		if (!is_array($psr0)) {
-			return []; // skip on invalid schema
+			return []; // skip on invalid data
 		}
 		foreach ($psr0 as $key => $namespacePaths) {
 			$stringArray = $this->toStringArray($namespacePaths);
 			if (!is_string($key) || $stringArray === null) {
-				return []; // skip on invalid schema
+				return []; // skip on invalid data
 			}
 
 			$psr0[$key] = $stringArray;

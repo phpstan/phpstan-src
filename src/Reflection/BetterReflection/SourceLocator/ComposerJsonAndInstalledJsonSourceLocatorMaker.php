@@ -21,8 +21,10 @@ use function array_reverse;
 use function count;
 use function dirname;
 use function glob;
+use function is_array;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function str_contains;
 use const GLOB_ONLYDIR;
 
@@ -175,7 +177,23 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToPsr4AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package[$autoloadSection]['psr-4'] ?? []);
+		$psr4 = $package[$autoloadSection]['psr-4'] ?? [];
+		foreach ($psr4 as $key => $namespacePaths) {
+			if (!is_string($key)) {
+				return []; // skip on invalid schema
+			}
+
+			if (is_array($namespacePaths)) {
+				foreach ($namespacePaths as $namespacePath) {
+					if (!is_string($namespacePath)) {
+						return []; // skip on invalid schema
+					}
+				}
+			} elseif (!is_string($namespacePaths)) {
+				return []; // skip on invalid schema
+			}
+		}
+		return $psr4;
 	}
 
 	/**
@@ -185,7 +203,23 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToPsr0AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package[$autoloadSection]['psr-0'] ?? []);
+		$psr0 = $package[$autoloadSection]['psr-0'] ?? [];
+		foreach ($psr0 as $key => $namespacePaths) {
+			if (!is_string($key)) {
+				return []; // skip on invalid schema
+			}
+
+			if (is_array($namespacePaths)) {
+				foreach ($namespacePaths as $namespacePath) {
+					if (!is_string($namespacePath)) {
+						return []; // skip on invalid schema
+					}
+				}
+			} elseif (!is_string($namespacePaths)) {
+				return []; // skip on invalid schema
+			}
+		}
+		return $psr0;
 	}
 
 	/**
@@ -195,7 +229,13 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToClassMapPaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($classmapPath): string => (string) $classmapPath, $package[$autoloadSection]['classmap'] ?? []);
+		$classMap = $package[$autoloadSection]['classmap'] ?? [];
+		foreach ($classMap as $classmapPath) {
+			if (!is_string($classmapPath)) {
+				return []; // skip on invalid schema
+			}
+		}
+		return $classMap;
 	}
 
 	/**
@@ -205,7 +245,13 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToFilePaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($filePath): string => (string) $filePath, $package[$autoloadSection]['files'] ?? []);
+		$filePaths = $package[$autoloadSection]['files'] ?? [];
+		foreach ($filePaths as $filePath) {
+			if (!is_string($filePath)) {
+				return []; // skip on invalid schema
+			}
+		}
+		return $filePaths;
 	}
 
 	/**

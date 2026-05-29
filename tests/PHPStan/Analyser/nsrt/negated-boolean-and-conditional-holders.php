@@ -4,10 +4,10 @@ namespace NegatedBooleanAndConditionalHolders;
 
 use function PHPStan\Testing\assertType;
 
-// The negation of a `&&` condition specifies the inner BooleanAnd in a mixed
-// truthy-and-false context. The cross-kind conditional holders must still be
-// created from the falsey narrowing in that context (and the isset() truthy
-// fallback must NOT fire there).
+// Negating a `&&` condition with `!(...)` specifies the inner BooleanAnd in a
+// pure falsey context. The cross-kind conditional holders (and the isset()
+// truthy fallback) must be created there too. For the mixed truthy-and-false
+// context reached via `=== true`, see boolean-and-conditional-holders-mixed-context.php.
 
 /**
  * @param array<string, mixed> $data

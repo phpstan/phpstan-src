@@ -77,3 +77,28 @@ function pregMatchWithNonConstantPattern(string $pattern, string $x): void {
 		assertType('string', $x);
 	}
 }
+
+function pregMatchSubjectSharesVarWithMatches(): void {
+	$matches = ['', '', 'foo'];
+	// subject ($matches[2]) shares its root variable with the $matches output arg,
+	// so subject narrowing is skipped to avoid conflicting specifications
+	if (preg_match('/^(a|b|c)$/', $matches[2], $matches)) {
+		assertType("array{non-falsy-string, 'a'|'b'|'c'}", $matches);
+	}
+}
+
+function pregMatchNullableSubject(?string $x): void {
+	// a null subject is coerced to '' which cannot match a non-empty pattern, so null is removed
+	if (preg_match('/^(a|b|c)$/', $x)) {
+		assertType('non-falsy-string', $x);
+	} else {
+		assertType('string|null', $x);
+	}
+}
+
+function pregMatchIntStringSubject(int|string $x): void {
+	// an int subject can be coerced to a matching string, so narrowing it away would be unsound
+	if (preg_match('/^(a|b|c)$/', $x)) {
+		assertType('int|string', $x);
+	}
+}

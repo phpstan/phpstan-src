@@ -14,6 +14,8 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function in_array;
 use function strtolower;
 
@@ -55,7 +57,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		if (
 			$subjectArg !== null
 			&& $context->true()
-			&& $scope->getType($subjectArg->value)->isString()->yes()
+			&& $this->canNarrowSubject($scope->getType($subjectArg->value))
 			&& !$this->isSubExprOfMatchesArg($subjectArg->value, $matchesArg?->value)
 		) {
 			$subjectType = $this->regexShapeMatcher->matchSubjectExpr($patternArg->value, $scope);
@@ -112,6 +114,21 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		return $types->unionWith($subjectTypes);
+	}
+
+	/**
+	 * The subject is narrowed to a non-empty/non-falsy string derived from the pattern. A `null`
+	 * subject is coerced to `''` by preg_*, which cannot produce such a match, so a nullable string
+	 * subject can be narrowed too. Non-string scalars (e.g. `int`) may be coerced to a matching
+	 * string, so they must be left untouched.
+	 */
+	private function canNarrowSubject(Type $subjectType): bool
+	{
+		if ($subjectType->isNull()->yes()) {
+			return false;
+		}
+
+		return TypeCombinator::removeNull($subjectType)->isString()->yes();
 	}
 
 	private function isSubExprOfMatchesArg(Expr $subject, ?Expr $matchesVar): bool

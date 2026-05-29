@@ -2810,33 +2810,6 @@ final class TypeSpecifier
 			}
 		}
 
-		// array_key_first($a) !== null
-		// array_key_last($a) !== null
-		// array_find_key($a, $cb) !== null
-		if (
-			$unwrappedLeftExpr instanceof FuncCall
-			&& $unwrappedLeftExpr->name instanceof Name
-			&& !$unwrappedLeftExpr->isFirstClassCallable()
-			&& isset($unwrappedLeftExpr->getArgs()[0])
-			&& $rightType->isNull()->yes()
-		) {
-			$funcName = $unwrappedLeftExpr->name->toLowerString();
-			$bothDirections = in_array($funcName, ['array_key_first', 'array_key_last'], true);
-			$notNullOnly = $funcName === 'array_find_key';
-			if ($bothDirections || $notNullOnly) {
-				$args = $unwrappedLeftExpr->getArgs();
-				$argType = $scope->getType($args[0]->value);
-				if ($argType->isArray()->yes()) {
-					if ($bothDirections) {
-						return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
-					}
-					if ($context->falsey()) {
-						return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
-					}
-				}
-			}
-		}
-
 		// preg_match($a) === $b
 		if (
 			$context->true()

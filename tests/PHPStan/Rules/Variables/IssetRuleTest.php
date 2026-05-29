@@ -530,6 +530,7 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-9503.php'], [
 			[
+				// false positive on exotic code example
 				"Offset 2 on list{0: non-falsy-string, 1?: ''|'a', 2: 'b'} in isset() always exists and is not nullable.",
 				11,
 			],

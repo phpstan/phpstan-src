@@ -2457,6 +2457,60 @@ final class TypeSpecifier
 	}
 
 	/**
+	 * Dispatches a function call appearing on one side of a comparison to its type-specifying
+	 * extensions, carrying the other side's type as the condition type. Only extensions that opt in to
+	 * the condition type - i.e. ones that would not handle the call without it - take part, so plain
+	 * truthy/falsey extensions are left untouched. Returns null when no extension narrows anything, so
+	 * the caller can fall back to its remaining handling.
+	 */
+	private function specifyTypesForFuncCallComparison(
+		FuncCall $funcCall,
+		Type $conditionType,
+		TypeSpecifierContext $context,
+		Scope $scope,
+		Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		if (
+			!$funcCall->name instanceof Name
+			|| $funcCall->isFirstClassCallable()
+			|| !$this->reflectionProvider->hasFunction($funcCall->name, $scope)
+		) {
+			return null;
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($funcCall->name, $scope);
+		$normalizedExpr = $funcCall;
+		$args = $funcCall->getArgs();
+		if (count($args) > 0) {
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+			$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $funcCall) ?? $funcCall;
+		}
+
+		$contextWithConditionType = $context->withNarrowedReturnType($conditionType);
+		foreach ($this->getFunctionTypeSpecifyingExtensions() as $extension) {
+			if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $contextWithConditionType)) {
+				continue;
+			}
+
+			// Only extensions that explicitly require the condition type take part in comparisons;
+			// extensions that would also handle the call without it narrow truthy/falsey only.
+			if ($extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
+				continue;
+			}
+
+			$specifiedTypes = $extension->specifyTypes($functionReflection, $normalizedExpr, $scope, $contextWithConditionType);
+			if ($specifiedTypes->getSureTypes() === [] && $specifiedTypes->getSureNotTypes() === []) {
+				continue;
+			}
+
+			return $specifiedTypes->setRootExpr($rootExpr);
+		}
+
+		return null;
+	}
+
+	/**
 	 * @return MethodTypeSpecifyingExtension[]
 	 */
 	private function getMethodTypeSpecifyingExtensionsForClass(string $className): array
@@ -2902,31 +2956,18 @@ final class TypeSpecifier
 			)->setRootExpr($expr);
 		}
 
-		// get_class($a) === 'Foo'
+		// func($a) === $expr - hand off to the function's type-specifying extensions, carrying the
+		// compared type as the condition type (e.g. get_class($a) === Foo::class).
 		if (
-			$context->true()
+			!$context->null()
 			&& $unwrappedLeftExpr instanceof FuncCall
-			&& $unwrappedLeftExpr->name instanceof Name
-			&& !$unwrappedLeftExpr->isFirstClassCallable()
-			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), ['get_class', 'get_debug_type'], true)
-			&& isset($unwrappedLeftExpr->getArgs()[0])
 		) {
-			$constantStringTypes = $rightType->getConstantStrings();
-			if (count($constantStringTypes) === 1 && $this->reflectionProvider->hasClass($constantStringTypes[0]->getValue())) {
-				return $this->create(
-					$unwrappedLeftExpr->getArgs()[0]->value,
-					new ObjectType($constantStringTypes[0]->getValue(), classReflection: $this->reflectionProvider->getClass($constantStringTypes[0]->getValue())->asFinal()),
-					$context,
-					$scope,
-				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
-			}
-			if ($rightType->getClassStringObjectType()->isObject()->yes()) {
-				return $this->create(
-					$unwrappedLeftExpr->getArgs()[0]->value,
-					$rightType->getClassStringObjectType(),
-					$context,
-					$scope,
-				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
+			$extensionResult = $this->specifyTypesForFuncCallComparison($unwrappedLeftExpr, $rightType, $context, $scope, $expr);
+			if ($extensionResult !== null) {
+				if ($leftExpr !== $unwrappedLeftExpr) {
+					$extensionResult = $extensionResult->unionWith($this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr));
+				}
+				return $extensionResult;
 			}
 		}
 

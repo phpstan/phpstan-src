@@ -21,6 +21,10 @@ final class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 
 	private TypeSpecifier $typeSpecifier;
 
+	public function __construct(private CountFuncCallTypeSpecifier $countFuncCallTypeSpecifier)
+	{
+	}
+
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
@@ -39,7 +43,27 @@ final class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if (!$scope->getType($node->getArgs()[0]->value)->isArray()->yes()) {
+		$argType = $scope->getType($node->getArgs()[0]->value);
+
+		$narrowedReturnType = $context->getNarrowedReturnType();
+		if ($narrowedReturnType !== null) {
+			$specifiedTypes = $this->countFuncCallTypeSpecifier->specifyTypesForCountFuncCall(
+				$this->typeSpecifier,
+				$node,
+				$argType,
+				$narrowedReturnType,
+				$context,
+				$scope,
+				$node,
+			);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
+			}
+
+			return new SpecifiedTypes([], []);
+		}
+
+		if (!$argType->isArray()->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 

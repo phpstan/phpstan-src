@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Type;
 
 /**
  * @api
@@ -21,7 +22,7 @@ final class TypeSpecifierContext
 	/** @var self[] */
 	private static array $registry;
 
-	private function __construct(private ?int $value)
+	private function __construct(private ?int $value, private ?Type $narrowedReturnType = null)
 	{
 	}
 
@@ -88,6 +89,34 @@ final class TypeSpecifierContext
 	public function null(): bool
 	{
 		return $this->value === null;
+	}
+
+	/**
+	 * If non-null, a constraint on the analyzed function/method's return value for the branch this
+	 * context represents (the truthy()=true branch). Type-specifying extensions may use it to narrow
+	 * arguments more precisely than the truthy/falsey/true/false buckets allow - e.g. for
+	 * `count($x) >= 2` the count() extension receives IntegerRangeType(2, max) here.
+	 *
+	 * It is null in every standard context; only comparison-rewriting code attaches one via
+	 * withNarrowedReturnType(), and negate() drops it again.
+	 *
+	 * @api
+	 */
+	public function getNarrowedReturnType(): ?Type
+	{
+		return $this->narrowedReturnType;
+	}
+
+	/**
+	 * Returns a context carrying the given narrowed return type. Intentionally bypasses the flyweight
+	 * registry. The narrowed return type is a one-directional hint valid only for this exact (bitmask, type)
+	 * pair - negate() discards it and falls back to bitmask-only behavior.
+	 *
+	 * @api
+	 */
+	public function withNarrowedReturnType(Type $narrowedReturnType): self
+	{
+		return new self($this->value, $narrowedReturnType);
 	}
 
 }

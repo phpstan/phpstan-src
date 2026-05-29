@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\IntegerRangeType;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class TypeSpecifierContextTest extends PHPStanTestCase
@@ -87,6 +88,36 @@ class TypeSpecifierContextTest extends PHPStanTestCase
 	{
 		$this->expectException(ShouldNotHappenException::class);
 		TypeSpecifierContext::createNull()->negate();
+	}
+
+	public function testConditionTypeNullByDefault(): void
+	{
+		$this->assertNull(TypeSpecifierContext::createTrue()->getNarrowedReturnType());
+		$this->assertNull(TypeSpecifierContext::createTruthy()->getNarrowedReturnType());
+		$this->assertNull(TypeSpecifierContext::createFalsey()->getNarrowedReturnType());
+		$this->assertNull(TypeSpecifierContext::createNull()->getNarrowedReturnType());
+	}
+
+	public function testWithConditionType(): void
+	{
+		$narrowedReturnType = IntegerRangeType::createAllGreaterThanOrEqualTo(2);
+		$context = TypeSpecifierContext::createTruthy()->withNarrowedReturnType($narrowedReturnType);
+
+		$this->assertSame($narrowedReturnType, $context->getNarrowedReturnType());
+
+		// the bitmask-derived bool accessors are unaffected by the narrowed return type
+		$this->assertTrue($context->true());
+		$this->assertTrue($context->truthy());
+		$this->assertFalse($context->false());
+		$this->assertFalse($context->falsey());
+		$this->assertFalse($context->null());
+	}
+
+	public function testNegateDropsConditionType(): void
+	{
+		$context = TypeSpecifierContext::createTruthy()->withNarrowedReturnType(IntegerRangeType::createAllGreaterThanOrEqualTo(2));
+
+		$this->assertNull($context->negate()->getNarrowedReturnType());
 	}
 
 }

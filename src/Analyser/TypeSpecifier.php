@@ -35,14 +35,12 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
-use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -71,6 +69,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Php\CountFuncCallTypeSpecifier;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
@@ -93,7 +92,6 @@ use function in_array;
 use function is_string;
 use function strtolower;
 use function substr;
-use const COUNT_NORMAL;
 
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
 final class TypeSpecifier
@@ -120,6 +118,7 @@ final class TypeSpecifier
 		private array $methodTypeSpecifyingExtensions,
 		private array $staticMethodTypeSpecifyingExtensions,
 		private bool $rememberPossiblyImpureFunctionValues,
+		private CountFuncCallTypeSpecifier $countFuncCallTypeSpecifier,
 	)
 	{
 	}
@@ -265,36 +264,12 @@ final class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				$sizeType = null;
-				if ($leftType instanceof ConstantIntegerType) {
-					if ($orEqual) {
-						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-					} else {
-						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
-					}
-				} elseif ($leftType instanceof IntegerRangeType) {
-					if ($context->falsey() && $leftType->getMax() !== null) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
-						}
-					} elseif ($context->truthy() && $leftType->getMin() !== null) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
-						}
-					}
-				} else {
-					$sizeType = $leftType;
-				}
+				$sizeType = $this->resolveResultSizeType($leftType, $orEqual, $context);
 
 				if ($sizeType !== null) {
-					$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
-					if ($specifiedTypes !== null) {
-						$result = $result->unionWith($specifiedTypes);
-					}
+					// hand the size constraint to count()'s type-specifying extension via the condition type
+					$specifiedTypes = $this->specifyTypesInCondition($scope, $expr->right, $context->withNarrowedReturnType($sizeType))->setRootExpr($expr);
+					$result = $result->unionWith($specifiedTypes);
 				}
 
 				if (
@@ -374,7 +349,7 @@ final class TypeSpecifier
 				$subtractedType = $scope->getType($expr->right->right);
 				if (
 					$countArgType->isList()->yes()
-					&& $this->isNormalCountCall($expr->right->left, $countArgType, $scope)->yes()
+					&& $this->countFuncCallTypeSpecifier->isNormalCountCall($expr->right->left, $countArgType, $scope)->yes()
 					&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($subtractedType)->yes()
 				) {
 					$arrayArg = $expr->right->left->getArgs()[0]->value;
@@ -412,20 +387,12 @@ final class TypeSpecifier
 				&& count($expr->right->getArgs()) === 1
 				&& $leftType->isInteger()->yes()
 			) {
-				if (
-					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
-				) {
-					$argType = $scope->getType($expr->right->getArgs()[0]->value);
-					if ($argType->isString()->yes()) {
-						$accessory = new AccessoryNonEmptyStringType();
-
-						if (IntegerRangeType::createAllGreaterThanOrEqualTo(2 - $offset)->isSuperTypeOf($leftType)->yes()) {
-							$accessory = new AccessoryNonFalsyStringType();
-						}
-
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr));
-					}
+				$sizeType = $this->resolveResultSizeType($leftType, $orEqual, $context);
+				if ($sizeType !== null) {
+					// hand the length constraint to strlen()'s type-specifying extension via the condition type
+					$result = $result->unionWith(
+						$this->specifyTypesInCondition($scope, $expr->right, $context->withNarrowedReturnType($sizeType))->setRootExpr($expr),
+					);
 				}
 			}
 
@@ -1346,140 +1313,34 @@ final class TypeSpecifier
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
-	private function isNormalCountCall(FuncCall $countFuncCall, Type $typeToCount, Scope $scope): TrinaryLogic
+	/**
+	 * Resolves the integer constraint on an int-returning function call on the right-hand side of a
+	 * `$leftType <op> call(...)` comparison. Used to hand a condition type to that function's
+	 * type-specifying extension (e.g. count(), strlen()).
+	 */
+	private function resolveResultSizeType(Type $leftType, bool $orEqual, TypeSpecifierContext $context): ?Type
 	{
-		if (count($countFuncCall->getArgs()) === 1) {
-			return TrinaryLogic::createYes();
+		if ($leftType instanceof ConstantIntegerType) {
+			return $orEqual
+				? IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue())
+				: IntegerRangeType::createAllGreaterThan($leftType->getValue());
 		}
 
-		$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-		return (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($typeToCount->getIterableValueType()->isArray()->negate());
-	}
-
-	private function specifyTypesForCountFuncCall(
-		FuncCall $countFuncCall,
-		Type $type,
-		Type $sizeType,
-		TypeSpecifierContext $context,
-		Scope $scope,
-		Expr $rootExpr,
-	): ?SpecifiedTypes
-	{
-		$isConstantArray = $type->isConstantArray();
-		$isList = $type->isList();
-		$oneOrMore = IntegerRangeType::fromInterval(1, null);
-		if (
-			!$this->isNormalCountCall($countFuncCall, $type, $scope)->yes()
-			|| (!$isConstantArray->yes() && !$isList->yes())
-			|| !$oneOrMore->isSuperTypeOf($sizeType)->yes()
-			|| $sizeType->isSuperTypeOf($type->getArraySize())->yes()
-		) {
+		if ($leftType instanceof IntegerRangeType) {
+			if ($context->falsey() && $leftType->getMax() !== null) {
+				return $orEqual
+					? IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax())
+					: IntegerRangeType::createAllGreaterThan($leftType->getMax());
+			}
+			if ($context->truthy() && $leftType->getMin() !== null) {
+				return $orEqual
+					? IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin())
+					: IntegerRangeType::createAllGreaterThan($leftType->getMin());
+			}
 			return null;
 		}
 
-		if ($context->falsey() && $isConstantArray->yes()) {
-			$remainingSize = TypeCombinator::remove($type->getArraySize(), $sizeType);
-			if (!$remainingSize instanceof NeverType) {
-				$negatedContext = $context->false()
-					? TypeSpecifierContext::createTrue()
-					: TypeSpecifierContext::createTruthy();
-				$result = $this->specifyTypesForCountFuncCall(
-					$countFuncCall,
-					$type,
-					$remainingSize,
-					$negatedContext,
-					$scope,
-					$rootExpr,
-				);
-				if ($result !== null) {
-					return $result;
-				}
-			}
-
-			// Fallback: directly filter constant arrays by their exact sizes.
-			// This avoids using TypeCombinator::remove() with falsey context,
-			// which can incorrectly remove arrays whose count doesn't match
-			// but whose shape is a subtype of the matched array.
-			$keptTypes = [];
-			foreach ($type->getConstantArrays() as $arrayType) {
-				if ($sizeType->isSuperTypeOf($arrayType->getArraySize())->yes()) {
-					continue;
-				}
-
-				$keptTypes[] = $arrayType;
-			}
-			if ($keptTypes !== []) {
-				return $this->create(
-					$countFuncCall->getArgs()[0]->value,
-					TypeCombinator::union(...$keptTypes),
-					$context->negate(),
-					$scope,
-				)->setRootExpr($rootExpr);
-			}
-		}
-
-		$resultTypes = [];
-		foreach ($type->getArrays() as $arrayType) {
-			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($arrayType->getArraySize());
-			if ($isSizeSuperTypeOfArraySize->no()) {
-				continue;
-			}
-
-			if ($context->falsey() && $isSizeSuperTypeOfArraySize->maybe()) {
-				continue;
-			}
-
-			$resultTypes[] = $isList->yes()
-				? $arrayType->truncateListToSize($sizeType)
-				: TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
-		}
-
-		if ($context->truthy() && $isConstantArray->yes() && $isList->yes()) {
-			$hasOptionalKeysOrUnsealed = false;
-			foreach ($type->getConstantArrays() as $arrayType) {
-				if ($arrayType->getOptionalKeys() !== [] || $arrayType->isUnsealed()->yes()) {
-					// Unsealed CATs can't be narrowed via the
-					// `HasOffsetValueType`-only shortcut below — the
-					// intersection of an unsealed shape with a single-slot
-					// constraint produces `NeverType`. Fall through to
-					// the full builder-based narrowing, which carries the
-					// unsealed slot via the loop above.
-					$hasOptionalKeysOrUnsealed = true;
-					break;
-				}
-			}
-
-			if (!$hasOptionalKeysOrUnsealed) {
-				$argExpr = $countFuncCall->getArgs()[0]->value;
-				$argExprString = $this->exprPrinter->printExpr($argExpr);
-
-				$sizeMin = null;
-				$sizeMax = null;
-				if ($sizeType instanceof ConstantIntegerType) {
-					$sizeMin = $sizeType->getValue();
-					$sizeMax = $sizeType->getValue();
-				} elseif ($sizeType instanceof IntegerRangeType) {
-					$sizeMin = $sizeType->getMin();
-					$sizeMax = $sizeType->getMax();
-				}
-
-				$sureTypes = [];
-				$sureNotTypes = [];
-
-				if ($sizeMin !== null && $sizeMin >= 1) {
-					$sureTypes[$argExprString] = [$argExpr, new HasOffsetValueType(new ConstantIntegerType($sizeMin - 1), new MixedType())];
-				}
-				if ($sizeMax !== null) {
-					$sureNotTypes[$argExprString] = [$argExpr, new HasOffsetValueType(new ConstantIntegerType($sizeMax), new MixedType())];
-				}
-
-				if ($sureTypes !== [] || $sureNotTypes !== []) {
-					return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($rootExpr);
-				}
-			}
-		}
-
-		return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);
+		return $leftType;
 	}
 
 	private function specifyTypesForConstantBinaryExpression(
@@ -2897,7 +2758,7 @@ final class TypeSpecifier
 				$argType = $scope->getType($unwrappedRightExpr->getArgs()[0]->value);
 				$sizeType = $scope->getType($leftExpr);
 
-				$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedRightExpr, $argType, $sizeType, $context, $scope, $expr);
+				$specifiedTypes = $this->countFuncCallTypeSpecifier->specifyTypesForCountFuncCall($this, $unwrappedRightExpr, $argType, $sizeType, $context, $scope, $expr);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -2940,7 +2801,7 @@ final class TypeSpecifier
 				);
 			}
 
-			$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
+			$specifiedTypes = $this->countFuncCallTypeSpecifier->specifyTypesForCountFuncCall($this, $unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
 			if ($specifiedTypes !== null) {
 				if ($leftExpr !== $unwrappedLeftExpr) {
 					$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);

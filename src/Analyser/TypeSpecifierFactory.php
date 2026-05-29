@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Php\CountFuncCallTypeSpecifier;
 use function array_merge;
 
 #[AutowiredService(name: 'typeSpecifierFactory')]
@@ -36,6 +37,7 @@ final class TypeSpecifierFactory
 			$methodTypeSpecifying,
 			$staticMethodTypeSpecifying,
 			$this->container->getParameter('rememberPossiblyImpureFunctionValues'),
+			$this->container->getByType(CountFuncCallTypeSpecifier::class),
 		);
 
 		foreach (array_merge(

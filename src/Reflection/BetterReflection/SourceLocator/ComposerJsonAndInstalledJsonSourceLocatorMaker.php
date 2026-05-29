@@ -195,6 +195,8 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			} elseif (!is_string($namespacePaths)) {
 				return []; // skip on invalid schema
 			}
+
+			$psr4[$key] = (array) $namespacePaths;
 		}
 		return $psr4;
 	}
@@ -224,6 +226,8 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			} elseif (!is_string($namespacePaths)) {
 				return []; // skip on invalid schema
 			}
+
+			$psr0[$key] = (array) $namespacePaths;
 		}
 		return $psr0;
 	}

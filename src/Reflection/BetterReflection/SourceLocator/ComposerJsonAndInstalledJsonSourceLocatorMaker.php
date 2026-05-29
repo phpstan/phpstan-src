@@ -195,7 +195,14 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToClassMapPaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return $package[$autoloadSection]['classmap'] ?? [];
+		$classmap = $package[$autoloadSection]['classmap'] ?? [];
+		foreach($classmap as $k => $value) {
+			// skip invalid classmap
+			if (!is_string($value)) {
+				return [];
+			}
+		}
+		return $classmap;
 	}
 
 	/**

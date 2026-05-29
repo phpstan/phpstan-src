@@ -25,7 +25,7 @@ class ErrorTest extends PHPStanTestCase
 		$withoutTraitContext = $error->removeTraitContext();
 		$this->assertSame('trait.php', $withoutTraitContext->getFile());
 		// filePath must follow the file onto the trait, otherwise editor URLs and
-		// inline @phpstan-ignore lookups point at the using-class file (#14718).
+		// inline ignore-comment lookups point at the using-class file (#14718).
 		$this->assertSame('trait.php', $withoutTraitContext->getFilePath());
 		$this->assertNull($withoutTraitContext->getTraitFilePath());
 	}

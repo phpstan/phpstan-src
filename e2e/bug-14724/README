@@ -1,0 +1,1 @@
+this test case intentionally ships with a invalid composer.json (according to schema), as this is what made PHPStan crash at startup.

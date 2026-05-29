@@ -129,6 +129,10 @@ jobs:
               composer install
               ../../bin/phpstan analyze bug-14515.php
           - script: |
+              cd e2e/bug-14724
+              composer install
+              ../../bin/phpstan analyze app/
+          - script: |
               cd e2e/bug10449
               ../../bin/phpstan analyze
               git apply patch.diff

@@ -21,8 +21,10 @@ use function array_reverse;
 use function count;
 use function dirname;
 use function glob;
+use function is_array;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function str_contains;
 use const GLOB_ONLYDIR;
 
@@ -175,7 +177,19 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToPsr4AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package[$autoloadSection]['psr-4'] ?? []);
+		$psr4 = $package[$autoloadSection]['psr-4'] ?? [];
+		if (!is_array($psr4)) {
+			return []; // skip on invalid data
+		}
+		foreach ($psr4 as $key => $namespacePaths) {
+			$stringArray = $this->toStringArray($namespacePaths);
+			if (!is_string($key) || $stringArray === null) {
+				return []; // skip on invalid data
+			}
+
+			$psr4[$key] = $stringArray;
+		}
+		return $psr4;
 	}
 
 	/**
@@ -185,7 +199,19 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToPsr0AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package[$autoloadSection]['psr-0'] ?? []);
+		$psr0 = $package[$autoloadSection]['psr-0'] ?? [];
+		if (!is_array($psr0)) {
+			return []; // skip on invalid data
+		}
+		foreach ($psr0 as $key => $namespacePaths) {
+			$stringArray = $this->toStringArray($namespacePaths);
+			if (!is_string($key) || $stringArray === null) {
+				return []; // skip on invalid data
+			}
+
+			$psr0[$key] = $stringArray;
+		}
+		return $psr0;
 	}
 
 	/**
@@ -195,7 +221,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToClassMapPaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return $package[$autoloadSection]['classmap'] ?? [];
+		return $this->toStringArray($package[$autoloadSection]['classmap'] ?? []) ?? [];
 	}
 
 	/**
@@ -205,7 +231,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToFilePaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return $package[$autoloadSection]['files'] ?? [];
+		return $this->toStringArray($package[$autoloadSection]['files'] ?? []) ?? [];
 	}
 
 	/**
@@ -255,6 +281,24 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	private function prefixPaths(array $paths, string $prefix): array
 	{
 		return array_map(static fn (string $path): string => $prefix . $path, $paths);
+	}
+
+	/**
+	 * @param array<mixed>|string $stringOrArray
+	 * @return array<string>|null
+	 */
+	private function toStringArray(array|string $stringOrArray): ?array
+	{
+		if (is_string($stringOrArray)) {
+			return (array) $stringOrArray;
+		}
+
+		foreach ($stringOrArray as $stringOrArrayItem) {
+			if (!is_string($stringOrArrayItem)) {
+				return null;
+			}
+		}
+		return $stringOrArray;
 	}
 
 }

@@ -1,0 +1,15 @@
+{
+	"autoload-dev": {
+		"classmap": [
+			[
+				"app/classes/path-1",
+				"app/classes/path-2"
+			]
+		],
+		"files": [
+			[
+				"app/file.php"
+			]
+		]
+	}
+}

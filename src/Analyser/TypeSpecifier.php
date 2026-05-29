@@ -1387,39 +1387,11 @@ final class TypeSpecifier
 		if (count($scalarValues) !== 1 || !is_string($scalarValues[0])) {
 			return null;
 		}
-		$constantStringValue = $scalarValues[0];
 
 		if ($exprNode instanceof FuncCall) {
 			$extensionResult = $this->specifyTypesForFuncCallComparison($exprNode, $constantType, $context, $scope, $rootExpr);
 			if ($extensionResult !== null) {
 				return $extensionResult;
-			}
-		}
-
-		if (
-			$context->false()
-			&& $exprNode instanceof FuncCall
-			&& $exprNode->name instanceof Name
-			&& !$exprNode->isFirstClassCallable()
-			&& in_array(strtolower((string) $exprNode->name), [
-				'trim', 'ltrim', 'rtrim', 'chop',
-				'mb_trim', 'mb_ltrim', 'mb_rtrim',
-			], true)
-			&& isset($exprNode->getArgs()[0])
-			&& $constantStringValue === ''
-		) {
-			$argValue = $exprNode->getArgs()[0]->value;
-			$argType = $scope->getType($argValue);
-			if ($argType->isString()->yes()) {
-				return $this->create(
-					$argValue,
-					new IntersectionType([
-						new StringType(),
-						new AccessoryNonEmptyStringType(),
-					]),
-					$context->negate(),
-					$scope,
-				)->setRootExpr($rootExpr);
 			}
 		}
 

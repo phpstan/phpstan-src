@@ -728,23 +728,29 @@ final class TypeSpecifier
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;
 				if ($context->truthy()) {
+					// Mixed truthy-and-false context (produced by negation): re-derive
+					// empty holders from the falsey narrowing of each arm.
 					if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
 						$leftTypesForHolders = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 					}
 					if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
 						$rightTypesForHolders = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 					}
-				}
-				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
-					$truthyLeftTypes = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
-					if ($this->allExpressionsTrackable($truthyLeftTypes)) {
-						$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
+				} else {
+					// Pure false context: when the falsey narrowing of an arm is empty
+					// (e.g. isset() on a non-constant array dim fetch), derive conditions
+					// from its truthy narrowing instead, swapping sure/sureNot types.
+					if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
+						$truthyLeftTypes = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
+						if ($this->allExpressionsTrackable($truthyLeftTypes)) {
+							$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
+						}
 					}
-				}
-				if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
-					$truthyRightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
-					if ($this->allExpressionsTrackable($truthyRightTypes)) {
-						$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
+					if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
+						$truthyRightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
+						if ($this->allExpressionsTrackable($truthyRightTypes)) {
+							$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
+						}
 					}
 				}
 				$result = new SpecifiedTypes(

@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -56,9 +55,9 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$subjectTypes = new SpecifiedTypes();
 		if (
 			$subjectArg !== null
+			&& $subjectArg->value instanceof Expr\Variable
 			&& $context->true()
 			&& $this->canNarrowSubject($scope->getType($subjectArg->value))
-			&& !$this->isSubExprOfMatchesArg($subjectArg->value, $matchesArg?->value)
 		) {
 			$subjectType = $this->regexShapeMatcher->matchSubjectExpr($patternArg->value, $scope);
 			if ($subjectType !== null) {
@@ -129,22 +128,6 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		return TypeCombinator::removeNull($subjectType)->isString()->yes();
-	}
-
-	private function isSubExprOfMatchesArg(Expr $subject, ?Expr $matchesVar): bool
-	{
-		if ($matchesVar === null) {
-			return false;
-		}
-
-		$rootVar = $subject;
-		while ($rootVar instanceof ArrayDimFetch) {
-			$rootVar = $rootVar->var;
-		}
-
-		return $rootVar instanceof Expr\Variable
-			&& $matchesVar instanceof Expr\Variable
-			&& $rootVar->name === $matchesVar->name;
 	}
 
 }

@@ -76,12 +76,7 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
-			$subjectType = $astWalkResult->getSubjectBaseType();
-			if ((new StringType())->equals($subjectType)) {
-				return null;
-			}
-
-			$subjectTypes[] = $subjectType;
+			$subjectTypes[] = $astWalkResult->getSubjectBaseType();
 		}
 
 		return TypeCombinator::union(...$subjectTypes);

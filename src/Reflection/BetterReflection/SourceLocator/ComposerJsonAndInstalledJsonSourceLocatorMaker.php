@@ -23,6 +23,7 @@ use function dirname;
 use function glob;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function str_contains;
 use const GLOB_ONLYDIR;
 
@@ -195,14 +196,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToClassMapPaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		$classmap = $package[$autoloadSection]['classmap'] ?? [];
-		foreach($classmap as $k => $value) {
-			// skip invalid classmap
-			if (!is_string($value)) {
-				return [];
-			}
-		}
-		return $classmap;
+		return array_map(static fn ($classmapPath): string => (string) $classmapPath, $package[$autoloadSection]['classmap'] ?? []);
 	}
 
 	/**
@@ -212,7 +206,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	private function packageToFilePaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return $package[$autoloadSection]['files'] ?? [];
+		return array_map(static fn ($filePath): string => (string) $filePath, $package[$autoloadSection]['files'] ?? []);
 	}
 
 	/**

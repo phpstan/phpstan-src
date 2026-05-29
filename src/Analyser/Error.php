@@ -117,7 +117,7 @@ final class Error implements JsonSerializable
 			$this->traitFilePath,
 			$this->line,
 			$this->canBeIgnored,
-			$this->filePath,
+			$this->traitFilePath,
 			null,
 			$this->tip,
 			$this->nodeLine,

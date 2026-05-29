@@ -16,6 +16,20 @@ class ErrorTest extends PHPStanTestCase
 		$this->assertSame(10, $error->getLine());
 	}
 
+	public function testRemoveTraitContextUsesTraitFileAsFilePath(): void
+	{
+		$error = new Error('Message', 'trait.php (in context of class C)', 11, true, 'user.php', 'trait.php');
+		$this->assertSame('user.php', $error->getFilePath());
+		$this->assertSame('trait.php', $error->getTraitFilePath());
+
+		$withoutTraitContext = $error->removeTraitContext();
+		$this->assertSame('trait.php', $withoutTraitContext->getFile());
+		// filePath must follow the file onto the trait, otherwise editor URLs and
+		// inline @phpstan-ignore lookups point at the using-class file (#14718).
+		$this->assertSame('trait.php', $withoutTraitContext->getFilePath());
+		$this->assertNull($withoutTraitContext->getTraitFilePath());
+	}
+
 	public static function dataValidIdentifier(): iterable
 	{
 		yield ['a'];

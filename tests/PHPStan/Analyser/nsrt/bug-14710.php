@@ -66,10 +66,18 @@ function pregMatchCompare(string $x): void {
 	}
 }
 
-function pregMatchNoSubject(): void {
-	if (preg_match('/^(a|b|c)$/', 'a')) {
-		// non-variable subject, no narrowing needed
+function pregMatchNotIdentical(string $x): void {
+	if (preg_match('#ExtensionInterface$#', $x) !== 1) {
+		return;
 	}
+	assertType('non-falsy-string', $x);
+}
+
+function pregMatchNotEqual(string $x): void {
+	if (preg_match('#ExtensionInterface$#', $x) != 1) {
+		return;
+	}
+	assertType('non-falsy-string', $x);
 }
 
 function pregMatchWithNonConstantPattern(string $pattern, string $x): void {

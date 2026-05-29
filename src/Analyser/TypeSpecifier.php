@@ -43,8 +43,6 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -52,7 +50,6 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
@@ -70,7 +67,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Php\CountFuncCallTypeSpecifier;
-use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
@@ -1394,43 +1390,10 @@ final class TypeSpecifier
 		}
 		$constantStringValue = $scalarValues[0];
 
-		if (
-			$exprNode instanceof FuncCall
-			&& $exprNode->name instanceof Name
-			&& !$exprNode->isFirstClassCallable()
-			&& strtolower($exprNode->name->toString()) === 'gettype'
-			&& isset($exprNode->getArgs()[0])
-		) {
-			$type = null;
-			if ($constantStringValue === 'string') {
-				$type = new StringType();
-			}
-			if ($constantStringValue === 'array') {
-				$type = new ArrayType(new MixedType(), new MixedType());
-			}
-			if ($constantStringValue === 'boolean') {
-				$type = new BooleanType();
-			}
-			if (in_array($constantStringValue, ['resource', 'resource (closed)'], true)) {
-				$type = new ResourceType();
-			}
-			if ($constantStringValue === 'integer') {
-				$type = new IntegerType();
-			}
-			if ($constantStringValue === 'double') {
-				$type = new FloatType();
-			}
-			if ($constantStringValue === 'NULL') {
-				$type = new NullType();
-			}
-			if ($constantStringValue === 'object') {
-				$type = new ObjectWithoutClassType();
-			}
-
-			if ($type !== null) {
-				$callType = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
-				$argType = $this->create($exprNode->getArgs()[0]->value, $type, $context, $scope)->setRootExpr($rootExpr);
-				return $callType->unionWith($argType);
+		if ($exprNode instanceof FuncCall) {
+			$extensionResult = $this->specifyTypesForFuncCallComparison($exprNode, $constantType, $context, $scope, $rootExpr);
+			if ($extensionResult !== null) {
+				return $extensionResult;
 			}
 		}
 

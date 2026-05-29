@@ -91,7 +91,7 @@ function pregMatchSubjectSharesVarWithMatches(): void {
 function pregMatchNullableSubject(?string $x): void {
 	// a null subject is coerced to '' which cannot match a non-empty pattern, so null is removed
 	if (preg_match('/^(a|b|c)$/', $x)) {
-		assertType('non-falsy-string', $x);
+		assertType('string|null', $x); // could be non-falsy-string
 	} else {
 		assertType('string|null', $x);
 	}

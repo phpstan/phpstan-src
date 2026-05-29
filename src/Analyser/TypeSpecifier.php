@@ -727,8 +727,7 @@ final class TypeSpecifier
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;
-				// In a mixed truthy-and-false context (produced by negating a `=== true`
-				// comparison) re-derive empty holders from the falsey narrowing of each arm.
+				// In a mixed truthy-and-false context, re-derive empty holders from the falsey narrowing.
 				if ($context->truthy()) {
 					if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
 						$leftTypesForHolders = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
@@ -737,12 +736,8 @@ final class TypeSpecifier
 						$rightTypesForHolders = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 					}
 				}
-				// Fallback for any arm still empty: when the falsey narrowing produces
-				// nothing (e.g. isset() on an array dim fetch) derive conditions from the
-				// truthy narrowing instead, swapping sure/sureNot types. This only fills
-				// arms the block above left empty — it never overrides a non-empty falsey
-				// re-derivation — and is needed in both the pure false context and the
-				// mixed truthy-and-false context.
+				// For arms still empty (e.g. isset() on an array dim fetch), derive conditions
+				// from the truthy narrowing instead, swapping sure/sureNot types.
 				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
 					$truthyLeftTypes = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
 					if ($this->allExpressionsTrackable($truthyLeftTypes)) {

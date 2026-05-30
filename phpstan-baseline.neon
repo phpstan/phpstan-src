@@ -1602,12 +1602,6 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/NumberFormatFunctionDynamicReturnTypeExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/Php/RangeFunctionReturnTypeExtension.php
 
@@ -1622,18 +1616,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/StrRepeatFunctionReturnTypeExtension.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'

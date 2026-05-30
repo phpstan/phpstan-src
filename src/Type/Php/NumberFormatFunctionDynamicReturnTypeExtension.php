@@ -7,12 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use function count;
 use function in_array;
 
 #[AutowiredService]
@@ -34,7 +34,8 @@ final class NumberFormatFunctionDynamicReturnTypeExtension implements DynamicFun
 		$thousandsType = $scope->getType($functionCall->getArgs()[3]->value);
 		$decimalType = $scope->getType($functionCall->getArgs()[2]->value);
 
-		if (!$thousandsType instanceof ConstantStringType || $thousandsType->getValue() !== '') {
+		$constantThousandsTypes = $thousandsType->getConstantStrings();
+		if (count($constantThousandsTypes) !== 1 || $constantThousandsTypes[0]->getValue() !== '') {
 			return $stringType;
 		}
 

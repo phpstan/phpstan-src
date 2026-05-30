@@ -727,12 +727,27 @@ final class TypeSpecifier
 			if ($context->false()) {
 				$leftTypesForHolders = $leftTypes;
 				$rightTypesForHolders = $rightTypes;
+				// In a mixed truthy-and-false context, re-derive empty holders from the falsey narrowing.
 				if ($context->truthy()) {
 					if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
 						$leftTypesForHolders = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 					}
 					if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
 						$rightTypesForHolders = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
+					}
+				}
+				// For arms still empty (e.g. isset() on an array dim fetch), derive conditions
+				// from the truthy narrowing instead, swapping sure/sureNot types.
+				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
+					$truthyLeftTypes = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
+					if ($this->allExpressionsTrackable($truthyLeftTypes)) {
+						$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
+					}
+				}
+				if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
+					$truthyRightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
+					if ($this->allExpressionsTrackable($truthyRightTypes)) {
+						$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
 					}
 				}
 				$result = new SpecifiedTypes(
@@ -747,6 +762,10 @@ final class TypeSpecifier
 					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, false, $leftTypesForHolders, false, $scope),
 					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, true, $rightTypesForHolders, true, $rightScope),
 					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, true, $leftTypesForHolders, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, false, $rightTypesForHolders, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, false, $leftTypesForHolders, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, true, $rightTypesForHolders, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, true, $leftTypesForHolders, false, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -800,6 +819,10 @@ final class TypeSpecifier
 					$this->processBooleanConditionalTypes($scope, $rightTypes, false, $leftTypes, false, $scope),
 					$this->processBooleanConditionalTypes($scope, $leftTypes, true, $rightTypes, true, $rightScope),
 					$this->processBooleanConditionalTypes($scope, $rightTypes, true, $leftTypes, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, false, $rightTypes, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, false, $leftTypes, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, true, $rightTypes, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, true, $leftTypes, false, $scope),
 				))->setRootExpr($expr);
 			}
 
@@ -2141,6 +2164,22 @@ final class TypeSpecifier
 		return $expr instanceof Expr\PropertyFetch
 			|| $expr instanceof Expr\ArrayDimFetch
 			|| $expr instanceof Expr\StaticPropertyFetch;
+	}
+
+	private function allExpressionsTrackable(SpecifiedTypes $types): bool
+	{
+		foreach ($types->getSureTypes() as [$expr]) {
+			if (!$this->isTrackableExpression($expr)) {
+				return false;
+			}
+		}
+		foreach ($types->getSureNotTypes() as [$expr]) {
+			if (!$this->isTrackableExpression($expr)) {
+				return false;
+			}
+		}
+
+		return $types->getSureTypes() !== [] || $types->getSureNotTypes() !== [];
 	}
 
 	/**

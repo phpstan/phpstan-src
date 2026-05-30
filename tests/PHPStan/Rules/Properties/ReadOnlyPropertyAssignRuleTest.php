@@ -191,6 +191,64 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug11495(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$errors = [
+				[
+					'Readonly property Bug11495\HelloWorld::$foo is assigned outside of the constructor.',
+					17,
+				],
+				[
+					'Readonly property Bug11495\HelloWorld::$foo is assigned outside of the constructor.',
+					20,
+				],
+				[
+					'Readonly property Bug11495\DoubleAssign::$foo is assigned outside of the constructor.',
+					40,
+				],
+				[
+					'Readonly property Bug11495\DoubleAssign::$foo is assigned outside of the constructor.',
+					41,
+				],
+				[
+					'Readonly property Bug11495\BranchedAssign::$foo is assigned outside of the constructor.',
+					57,
+				],
+				[
+					'Readonly property Bug11495\BranchedAssign::$foo is assigned outside of the constructor.',
+					59,
+				],
+				[
+					'Readonly property Bug11495\ConditionalThenAssign::$foo is assigned outside of the constructor.',
+					76,
+				],
+				[
+					'Readonly property Bug11495\ConditionalThenAssign::$foo is assigned outside of the constructor.',
+					78,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Readonly property Bug11495\HelloWorld::$foo is not assigned on $this.',
+					20,
+				],
+				[
+					'Readonly property Bug11495\DoubleAssign::$foo is already assigned.',
+					41,
+				],
+				[
+					'Readonly property Bug11495\ConditionalThenAssign::$foo is already assigned.',
+					78,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11495.php'], $errors);
+	}
+
 	#[RequiresPhp('>= 8.4.0')]
 	public function testBug12871(): void
 	{

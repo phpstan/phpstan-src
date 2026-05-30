@@ -36,6 +36,14 @@ class Foo
 			"'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
 			str_repeat('a', 99)
 		);
+		assertType(
+			"'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'|'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'",
+			str_repeat(rand(0,1)?'a':'b', 49)
+		);
+		assertType(
+			"literal-string&lowercase-string&non-falsy-string",
+			str_repeat(rand(0,1)?'a':'b', 50) // test upper limit
+		);
 		assertType('literal-string&lowercase-string&non-falsy-string', str_repeat('a', 100));
 		assertType('literal-string&non-falsy-string&uppercase-string', str_repeat('A', 100));
 		assertType('literal-string&lowercase-string&non-empty-string&numeric-string&uppercase-string', str_repeat('0', 100)); // could be non-falsy-string

@@ -21,6 +21,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
 use function str_repeat;
 use function strlen;
@@ -56,14 +57,23 @@ final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		$inputType = $scope->getType($args[0]->value);
-		if ($multiplierType instanceof ConstantIntegerType) {
-			$constantInputStrings = $inputType->getConstantStrings();
-			if (
-				count($constantInputStrings) === 1
-				// don't generate type too big to avoid hitting memory limit
-				&& strlen($constantInputStrings[0]->getValue()) * $multiplierType->getValue() < 100
-			) {
-				return new ConstantStringType(str_repeat($constantInputStrings[0]->getValue(), $multiplierType->getValue()));
+		$constantInputStrings = $inputType->getConstantStrings();
+		if (
+			$multiplierType instanceof ConstantIntegerType
+			&& count($constantInputStrings) > 0
+		) {
+			$length = 0;
+			foreach ($constantInputStrings as $constantInputString) {
+				$length += strlen($constantInputString->getValue()) * $multiplierType->getValue();
+			}
+
+			// don't generate type too big to avoid hitting memory limit
+			if ($length < 100) {
+				$strings = [];
+				foreach ($constantInputStrings as $constantInputString) {
+					$strings[] = new ConstantStringType(str_repeat($constantInputString->getValue(), $multiplierType->getValue()));
+				}
+				return TypeCombinator::union(...$strings);
 			}
 		}
 

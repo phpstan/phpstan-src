@@ -7,12 +7,15 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -128,9 +131,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			if (count($constantArrays) > 0) {
 				$totalCount = TypeCombinator::countConstantArrayValueTypes($constantArrays) * TypeCombinator::countConstantArrayValueTypes([$valueType]);
 				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-					$mappedArrayType = $arrayType->mapValueType(static fn (Type $type): Type => $scope->getType(new FuncCall($callback, [
-						new Node\Arg(new TypeExpr($type)),
-					])));
+					$mappedArrayType = $arrayType->mapValueType(static fn (Type $type): Type => self::resolveCallbackReturnType($scope, $callback, $type));
 				} else {
 					$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 						$arrayType->getIterableKeyType(),
@@ -160,6 +161,26 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return $mappedArrayType;
+	}
+
+	private static function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type
+	{
+		if ($callback instanceof Node\Expr\Closure || $callback instanceof Node\Expr\ArrowFunction) {
+			$clone = clone $callback;
+			$wrappedType = new ConstantArrayType(
+				[new ConstantIntegerType(0)],
+				[$argType],
+				isList: TrinaryLogic::createYes(),
+			);
+			$clone->setAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME, [new Node\Arg(new TypeExpr($wrappedType))]);
+			$clone->setAttribute('phpstanCachedTypes', []);
+
+			return $scope->getType($clone)->getCallableParametersAcceptors($scope)[0]->getReturnType();
+		}
+
+		return $scope->getType(new FuncCall($callback, [
+			new Node\Arg(new TypeExpr($argType)),
+		]));
 	}
 
 	/**

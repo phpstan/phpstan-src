@@ -38,8 +38,8 @@ final class NumberFormatFunctionDynamicReturnTypeExtension implements DynamicFun
 			return $stringType;
 		}
 
-		$constantScalarTypes = $decimalType->getConstantScalarTypes();
-		if (count($constantScalarTypes) !== 1 || !in_array($constantScalarTypes[0]->getValue(), [null, '.', ''], true)) {
+		$constantScalarValues = $decimalType->getConstantScalarValues();
+		if (count($constantScalarValues) !== 1 || !in_array($constantScalarValues[0], [null, '.', ''], true)) {
 			return $stringType;
 		}
 

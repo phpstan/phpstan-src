@@ -2647,6 +2647,10 @@ class ConstantArrayType implements Type
 
 				if ($valueIsSuperType->yes()) {
 					$unsetResult = $this->unsetOffset($offsetType, true);
+					// When the source was definitely a list but the post-unset shape
+					// definitely isn't (e.g. unsetting a non-optional leading key
+					// creates a hole), no value of $this could have lacked the
+					// removed key — the subtraction yields the empty set.
 					if ($this->isList->yes() && $unsetResult->isList()->no()) {
 						return new NeverType();
 					}
@@ -2672,6 +2676,10 @@ class ConstantArrayType implements Type
 
 		if ($typeToRemove instanceof HasOffsetType) {
 			$unsetResult = $this->unsetOffset($typeToRemove->getOffsetType(), true);
+			// When the source was definitely a list but the post-unset shape
+			// definitely isn't (e.g. unsetting a non-optional leading key
+			// creates a hole), no value of $this could have lacked the
+			// removed key — the subtraction yields the empty set.
 			if ($this->isList->yes() && $unsetResult->isList()->no()) {
 				return new NeverType();
 			}

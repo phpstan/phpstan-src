@@ -414,8 +414,8 @@ final class FilterFunctionReturnTypeHelper
 		$range = [];
 		if (isset($typeOptions['min_range'])) {
 			$minRange = $typeOptions['min_range'];
-			if (count($minRange->getConstantScalarTypes()) === 1) {
-				$range['min'] = (int) $minRange->getConstantScalarTypes()[0]->getValue();
+			if (count($minRange->getConstantScalarValues()) === 1) {
+				$range['min'] = (int) $minRange->getConstantScalarValues()[0];
 			} elseif ($minRange instanceof IntegerRangeType) {
 				$range['min'] = $minRange->getMin();
 			} else {
@@ -424,8 +424,8 @@ final class FilterFunctionReturnTypeHelper
 		}
 		if (isset($typeOptions['max_range'])) {
 			$maxRange = $typeOptions['max_range'];
-			if (count($maxRange->getConstantScalarTypes()) === 1) {
-				$range['max'] = (int) $maxRange->getConstantScalarTypes()[0]->getValue();
+			if (count($maxRange->getConstantScalarValues()) === 1) {
+				$range['max'] = (int) $maxRange->getConstantScalarValues()[0];
 			} elseif ($maxRange instanceof IntegerRangeType) {
 				$range['max'] = $maxRange->getMax();
 			} else {

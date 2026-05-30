@@ -213,16 +213,15 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
+		// Only reachable through TypeCombinator::remove(), which short-circuits the
+		// full-overlap case to NeverType and the disjoint case to the unchanged type
+		// before delegating here. So when we get here the value types always partially
+		// overlap and removing $typeToRemove's value type genuinely narrows ours.
 		if ($typeToRemove instanceof self && $this->offsetType->equals($typeToRemove->getOffsetType())) {
-			$valueIsSuperType = $typeToRemove->getValueType()->isSuperTypeOf($this->valueType);
-
-			if ($valueIsSuperType->no()) {
-				return null;
-			}
-
-			$newValueType = TypeCombinator::remove($this->valueType, $typeToRemove->getValueType());
-
-			return new self($this->offsetType, $newValueType);
+			return new self(
+				$this->offsetType,
+				TypeCombinator::remove($this->valueType, $typeToRemove->getValueType()),
+			);
 		}
 
 		return null;

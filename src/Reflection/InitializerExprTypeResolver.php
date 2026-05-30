@@ -1211,17 +1211,15 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftTypes, $rightTypes);
 		}
 
-		$leftTypes = $leftTypes->getConstantScalarTypes();
-		$rightTypes = $rightTypes->getConstantScalarTypes();
+		$leftValues = $leftTypes->getConstantScalarValues();
+		$rightValues = $rightTypes->getConstantScalarValues();
 
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0 && $leftTypesCount * $rightTypesCount <= self::CALCULATE_SCALARS_LIMIT) {
+		$leftValuesCount = count($leftValues);
+		$rightValuesCount = count($rightValues);
+		if ($leftValuesCount > 0 && $rightValuesCount > 0 && $leftValuesCount * $rightValuesCount <= self::CALCULATE_SCALARS_LIMIT) {
 			$resultTypes = [];
-			foreach ($leftTypes as $leftType) {
-				foreach ($rightTypes as $rightType) {
-					$leftValue = $leftType->getValue();
-					$rightValue = $rightType->getValue();
+			foreach ($leftValues as $leftValue) {
+				foreach ($rightValues as $rightValue) {
 					$resultType = $this->getTypeFromValue($leftValue <=> $rightValue);
 					$resultTypes[] = $resultType;
 				}

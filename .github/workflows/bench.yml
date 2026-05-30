@@ -90,4 +90,4 @@ jobs:
           working-directory: "tests/"
 
       - name: "Run phpbench test"
-        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --report=aggregate --ansi"
+        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --report=my-report --ansi"

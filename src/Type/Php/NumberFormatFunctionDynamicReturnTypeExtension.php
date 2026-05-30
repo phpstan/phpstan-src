@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -39,7 +38,8 @@ final class NumberFormatFunctionDynamicReturnTypeExtension implements DynamicFun
 			return $stringType;
 		}
 
-		if (!$decimalType instanceof ConstantScalarType || !in_array($decimalType->getValue(), [null, '.', ''], true)) {
+		$constantScalarValues = $decimalType->getConstantScalarValues();
+		if (count($constantScalarValues) !== 1 || !in_array($constantScalarValues[0], [null, '.', ''], true)) {
 			return $stringType;
 		}
 

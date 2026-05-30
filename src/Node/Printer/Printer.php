@@ -7,6 +7,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\BooleanOrNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
@@ -102,6 +103,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_PropertyInitializationExpr(PropertyInitializationExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanPropertyInitialization(%s)', $expr->getPropertyName());
+	}
+
+	protected function pPHPStan_Node_CloneReinitializationExpr(CloneReinitializationExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanCloneReinitialization(%s)', $expr->getPropertyName());
 	}
 
 	protected function pPHPStan_Node_ForeachValueByRefExpr(ForeachValueByRefExpr $expr): string // phpcs:ignore

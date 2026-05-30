@@ -10,7 +10,6 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
@@ -42,11 +41,11 @@ final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 			return null;
 		}
 
-		$formatType = $scope->getType($args[1]->value);
-
-		if (!$formatType instanceof ConstantStringType) {
+		$formatType = $scope->getType($args[1]->value)->getConstantStrings();
+		if (count($formatType) !== 1) {
 			return null;
 		}
+		$formatType = $formatType[0];
 
 		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cdeEfosux]{1})/', $formatType->getValue(), $matches) > 0) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();

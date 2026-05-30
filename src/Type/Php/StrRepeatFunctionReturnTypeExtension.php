@@ -56,13 +56,15 @@ final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		$inputType = $scope->getType($args[0]->value);
-		if (
-			$inputType instanceof ConstantStringType
-			&& $multiplierType instanceof ConstantIntegerType
-			// don't generate type too big to avoid hitting memory limit
-			&& strlen($inputType->getValue()) * $multiplierType->getValue() < 100
-		) {
-			return new ConstantStringType(str_repeat($inputType->getValue(), $multiplierType->getValue()));
+		if ($multiplierType instanceof ConstantIntegerType) {
+			$constantInputStrings = $inputType->getConstantStrings();
+			if (
+				count($constantInputStrings) === 1
+				// don't generate type too big to avoid hitting memory limit
+				&& strlen($constantInputStrings[0]->getValue()) * $multiplierType->getValue() < 100
+			) {
+				return new ConstantStringType(str_repeat($constantInputStrings[0]->getValue(), $multiplierType->getValue()));
+			}
 		}
 
 		$accessoryTypes = [];

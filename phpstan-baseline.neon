@@ -1558,12 +1558,6 @@ parameters:
 			path: src/Type/Php/DsMapDynamicReturnTypeExtension.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Type/Php/FilterFunctionReturnTypeHelper.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -1592,12 +1586,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/NumberFormatFunctionDynamicReturnTypeExtension.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'

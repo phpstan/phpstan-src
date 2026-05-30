@@ -15,7 +15,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
@@ -30,6 +29,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_merge;
+use function count;
 use function hexdec;
 use function is_int;
 use function octdec;
@@ -413,19 +413,21 @@ final class FilterFunctionReturnTypeHelper
 
 		$range = [];
 		if (isset($typeOptions['min_range'])) {
-			if ($typeOptions['min_range'] instanceof ConstantScalarType) {
-				$range['min'] = (int) $typeOptions['min_range']->getValue();
-			} elseif ($typeOptions['min_range'] instanceof IntegerRangeType) {
-				$range['min'] = $typeOptions['min_range']->getMin();
+			$minRange = $typeOptions['min_range'];
+			if (count($minRange->getConstantScalarTypes()) === 1) {
+				$range['min'] = (int) $minRange->getConstantScalarTypes()[0]->getValue();
+			} elseif ($minRange instanceof IntegerRangeType) {
+				$range['min'] = $minRange->getMin();
 			} else {
 				$range['min'] = null;
 			}
 		}
 		if (isset($typeOptions['max_range'])) {
-			if ($typeOptions['max_range'] instanceof ConstantScalarType) {
-				$range['max'] = (int) $typeOptions['max_range']->getValue();
-			} elseif ($typeOptions['max_range'] instanceof IntegerRangeType) {
-				$range['max'] = $typeOptions['max_range']->getMax();
+			$maxRange = $typeOptions['max_range'];
+			if (count($maxRange->getConstantScalarTypes()) === 1) {
+				$range['max'] = (int) $maxRange->getConstantScalarTypes()[0]->getValue();
+			} elseif ($maxRange instanceof IntegerRangeType) {
+				$range['max'] = $maxRange->getMax();
 			} else {
 				$range['max'] = null;
 			}

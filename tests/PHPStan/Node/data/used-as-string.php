@@ -163,3 +163,18 @@ function passMixedArgument(): void
 {
 	takesMixed('mixed argument');
 }
+
+class StringableObject
+{
+
+	public function __toString(): string
+	{
+		return 'stringable';
+	}
+
+}
+
+function passStringableArgument(StringableObject $obj): void
+{
+	takesString($obj);
+}

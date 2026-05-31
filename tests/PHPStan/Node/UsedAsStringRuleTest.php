@@ -179,6 +179,10 @@ class UsedAsStringRuleTest extends RuleTestCase
 				"Used as string: 'union with string argument' ('union with string argument')",
 				137,
 			],
+			[
+				'Used as string: $obj (ExprUsedAsString\StringableObject)',
+				179,
+			],
 		]);
 	}
 

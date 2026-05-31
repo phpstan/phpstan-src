@@ -3,6 +3,7 @@
 namespace PHPStan\Node;
 
 use Override;
+use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
 /**
@@ -23,24 +24,19 @@ use PhpParser\NodeAbstract;
  * own node (a concatenation, interpolation or `(string)` cast), the enclosing
  * assignment does not report it a second time.
  *
- * The wrapped node is usually an expression, but for inline HTML it is the
- * original {@see \PhpParser\Node\Stmt\InlineHTML} statement, hence
- * {@see getNode()} returns a {@see NodeAbstract} rather than an
- * {@see \PhpParser\Node\Expr}.
- *
  * @api
  */
 final class UsedAsStringNode extends NodeAbstract implements VirtualNode
 {
 
-	public function __construct(private NodeAbstract $node)
+	public function __construct(private Expr $expr)
 	{
-		parent::__construct($node->getAttributes());
+		parent::__construct($expr->getAttributes());
 	}
 
-	public function getNode(): NodeAbstract
+	public function getExpr(): Expr
 	{
-		return $this->node;
+		return $this->expr;
 	}
 
 	#[Override]

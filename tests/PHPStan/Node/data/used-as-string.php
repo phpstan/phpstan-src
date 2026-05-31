@@ -79,3 +79,7 @@ function passArguments(Holder $h, string $s): void
 	takesInt(5);
 	takesInt($h->num);
 }
+
+function withDefaults(string $s = 'string default', int $i = 5, ?string $n = null): void
+{
+}

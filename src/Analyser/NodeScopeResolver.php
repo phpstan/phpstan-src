@@ -3285,6 +3285,19 @@ class NodeScopeResolver
 		}
 
 		$this->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+
+		$nativeParameterType = $param->type !== null
+			? ParserNodeTypeToPHPStanType::resolve($param->type, $scope->isInClass() ? $scope->getClassReflection() : null)
+			: null;
+		if (
+			$nativeParameterType === null
+			|| !$nativeParameterType->isString()->yes()
+			|| ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($param->default)
+		) {
+			return;
+		}
+
+		$this->callNodeCallback($nodeCallback, new UsedAsStringNode($param->default), $scope, $storage);
 	}
 
 	/**

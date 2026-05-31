@@ -127,6 +127,10 @@ class UsedAsStringRuleTest extends RuleTestCase
 				"Used as string: 'passed as string argument' ('passed as string argument')",
 				78,
 			],
+			[
+				"Used as string: 'string default' ('string default')",
+				83,
+			],
 		]);
 	}
 

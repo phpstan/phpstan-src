@@ -17,7 +17,8 @@ use PhpParser\NodeAbstract;
  *   variable (`$foo->{$s}`, `$$s`, etc.),
  * - the value assigned to a variable when that value is a string,
  * - the value assigned to (or the default of) a native `string`-typed property,
- * - an argument passed to a native `string` parameter.
+ * - an argument passed to a native `string` parameter and the default of a
+ *   native `string`-typed parameter.
  *
  * Concatenations and interpolated strings are reported once for the whole
  * expression instead of once per nested operand, so a rule can interpret the

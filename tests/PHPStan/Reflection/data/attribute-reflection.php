@@ -85,5 +85,8 @@ class MutualAttrB
 #[Attribute(Attribute::TARGET_ALL)]
 class SelfRefOnParam
 {
-	public function __construct(#[SelfRefOnParam('hello')] string $param) {}
+	public function __construct(
+		#[SelfRefOnParam('hello')]
+		string $param
+	) {}
 }

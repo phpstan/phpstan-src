@@ -3724,6 +3724,13 @@ class NodeScopeResolver
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				if (
+					$parameterNativeType !== null
+					&& $parameterNativeType->isString()->yes()
+					&& !ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($arg->value)
+				) {
+					$this->callNodeCallback($nodeCallback, new UsedAsStringNode($arg->value), $scopeToPass, $storage);
+				}
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();

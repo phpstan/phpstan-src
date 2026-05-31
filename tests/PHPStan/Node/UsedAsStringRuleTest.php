@@ -119,6 +119,14 @@ class UsedAsStringRuleTest extends RuleTestCase
 				'Used as string: $name (string)',
 				64,
 			],
+			[
+				'Used as string: $s (string)',
+				77,
+			],
+			[
+				"Used as string: 'passed as string argument' ('passed as string argument')",
+				78,
+			],
 		]);
 	}
 

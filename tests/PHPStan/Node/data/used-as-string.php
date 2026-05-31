@@ -63,3 +63,19 @@ function dynamicNames(Holder $h, string $name): void
 	Holder::{$name}();
 	$y = $h::{$name};
 }
+
+function takesString(string $s): void
+{
+}
+
+function takesInt(int $i): void
+{
+}
+
+function passArguments(Holder $h, string $s): void
+{
+	takesString($s);
+	takesString('passed as string argument');
+	takesInt(5);
+	takesInt($h->num);
+}

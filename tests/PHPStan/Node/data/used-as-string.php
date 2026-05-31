@@ -83,3 +83,15 @@ function passArguments(Holder $h, string $s): void
 function withDefaults(string $s = 'string default', int $i = 5, ?string $n = null): void
 {
 }
+
+function closuresAndArrowFunctions(string $s): void
+{
+	$closure = function (string $cs = 'closure string default', int $ci = 5): void {
+	};
+	$closure($s);
+	$closure('closure string argument');
+
+	$arrow = fn (string $as = 'arrow string default', int $ai = 5): string => $as;
+	$arrow($s);
+	$arrow('arrow string argument');
+}

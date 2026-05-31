@@ -3737,9 +3737,13 @@ class NodeScopeResolver
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				// Closures and arrow functions expose their parameters as NativeParameterReflection
+				// (not ExtendedParameterReflection), so $parameterNativeType is null for them - their
+				// declared type already is the native type.
+				$argStringSlotType = $parameterNativeType ?? ($parameter instanceof NativeParameterReflection ? $parameter->getType() : null);
 				if (
-					$parameterNativeType !== null
-					&& $parameterNativeType->isString()->yes()
+					$argStringSlotType !== null
+					&& $argStringSlotType->isString()->yes()
 					&& !ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($arg->value)
 				) {
 					$this->callNodeCallback($nodeCallback, new UsedAsStringNode($arg->value), $scopeToPass, $storage);

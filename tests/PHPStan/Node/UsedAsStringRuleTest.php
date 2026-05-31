@@ -131,6 +131,30 @@ class UsedAsStringRuleTest extends RuleTestCase
 				"Used as string: 'string default' ('string default')",
 				83,
 			],
+			[
+				"Used as string: 'closure string default' ('closure string default')",
+				89,
+			],
+			[
+				'Used as string: $s (string)',
+				91,
+			],
+			[
+				"Used as string: 'closure string argument' ('closure string argument')",
+				92,
+			],
+			[
+				"Used as string: 'arrow string default' ('arrow string default')",
+				94,
+			],
+			[
+				'Used as string: $s (string)',
+				95,
+			],
+			[
+				"Used as string: 'arrow string argument' ('arrow string argument')",
+				96,
+			],
 		]);
 	}
 

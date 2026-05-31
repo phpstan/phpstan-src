@@ -24,7 +24,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 
 /**
  * Marks expressions whose value is used as a string so that NodeScopeResolver
- * can emit an {@see \PHPStan\Node\ExprUsedAsStringNode} for them.
+ * can emit an {@see \PHPStan\Node\UsedAsStringNode} for them.
  *
  * Nested concatenations and interpolation parts are "claimed" by the enclosing
  * concatenation so that a concatenation chain is reported once for the whole

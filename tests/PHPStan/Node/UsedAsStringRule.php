@@ -16,9 +16,9 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<ExprUsedAsStringNode>
+ * @implements Rule<UsedAsStringNode>
  */
-class ExprUsedAsStringRule implements Rule
+class UsedAsStringRule implements Rule
 {
 
 	private Standard $printer;
@@ -30,7 +30,7 @@ class ExprUsedAsStringRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return ExprUsedAsStringNode::class;
+		return UsedAsStringNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -52,7 +52,7 @@ class ExprUsedAsStringRule implements Rule
 				'Used as string: %s (%s)',
 				$printed,
 				$type,
-			))->identifier('tests.exprUsedAsString')->build(),
+			))->identifier('tests.usedAsString')->build(),
 		];
 	}
 

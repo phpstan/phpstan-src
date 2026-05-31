@@ -19,7 +19,7 @@ use PhpParser\NodeAbstract;
  *
  * @api
  */
-final class ExprUsedAsStringNode extends NodeAbstract implements VirtualNode
+final class UsedAsStringNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(private NodeAbstract $node)
@@ -35,7 +35,7 @@ final class ExprUsedAsStringNode extends NodeAbstract implements VirtualNode
 	#[Override]
 	public function getType(): string
 	{
-		return 'PHPStan_Node_ExprUsedAsStringNode';
+		return 'PHPStan_Node_UsedAsStringNode';
 	}
 
 	/**

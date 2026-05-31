@@ -85,7 +85,6 @@ use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
-use PHPStan\Node\ExprUsedAsStringNode;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -108,6 +107,7 @@ use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Node\UsedAsStringNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
@@ -2473,7 +2473,7 @@ class NodeScopeResolver
 			$impurePoints = [
 				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
-			$this->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($stmt), $scope, $storage);
+			$this->callNodeCallback($nodeCallback, new UsedAsStringNode($stmt), $scope, $storage);
 		} elseif ($stmt instanceof Node\Stmt\Block) {
 			$result = $this->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 			if ($this->polluteScopeWithBlock) {
@@ -2759,7 +2759,7 @@ class NodeScopeResolver
 
 		if ($expr->getAttribute(ExprUsedAsStringVisitor::ATTRIBUTE_NAME) === true) {
 			$usedAsStringScope = $context->isDeep() ? $scope->exitFirstLevelStatements() : $scope;
-			$this->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($expr), $usedAsStringScope, $storage);
+			$this->callNodeCallback($nodeCallback, new UsedAsStringNode($expr), $usedAsStringScope, $storage);
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */

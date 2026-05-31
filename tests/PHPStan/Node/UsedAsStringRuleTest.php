@@ -6,19 +6,19 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<ExprUsedAsStringRule>
+ * @extends RuleTestCase<UsedAsStringRule>
  */
-class ExprUsedAsStringRuleTest extends RuleTestCase
+class UsedAsStringRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ExprUsedAsStringRule();
+		return new UsedAsStringRule();
 	}
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/expr-used-as-string.php'], [
+		$this->analyse([__DIR__ . '/data/used-as-string.php'], [
 			[
 				"Used as string: 'plain' ('plain')",
 				9,

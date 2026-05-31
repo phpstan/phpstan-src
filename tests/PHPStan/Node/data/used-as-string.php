@@ -115,3 +115,17 @@ function closuresAndArrowFunctions(string $s): void
 	$arrow($s);
 	$arrow('arrow string argument');
 }
+
+function takesUnionWithString(string|int $u): void
+{
+}
+
+function takesUnionWithoutString(int|float $u): void
+{
+}
+
+function passUnionArguments(): void
+{
+	takesUnionWithString('union with string argument');
+	takesUnionWithoutString(5);
+}

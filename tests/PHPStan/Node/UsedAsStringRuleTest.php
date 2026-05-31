@@ -167,6 +167,10 @@ class UsedAsStringRuleTest extends RuleTestCase
 				"Used as string: 'arrow string argument' ('arrow string argument')",
 				116,
 			],
+			[
+				"Used as string: 'union with string argument' ('union with string argument')",
+				129,
+			],
 		]);
 	}
 

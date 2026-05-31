@@ -19,8 +19,10 @@ use PhpParser\NodeAbstract;
  * - the value assigned to a native property whose type allows a string (a plain
  *   `string` or a union containing `string`, e.g. `string|int`) and the default
  *   of a native `string`-typed property,
- * - an argument passed to a native `string` parameter (including closures and
- *   arrow functions) and the default of a native `string`-typed parameter.
+ * - an argument passed to a native parameter whose type allows a string (a plain
+ *   `string` or a union containing `string`, e.g. `string|int`), including
+ *   closures and arrow functions, and the default of a native `string`-typed
+ *   parameter.
  *
  * Concatenations and interpolated strings are reported once for the whole
  * expression instead of once per nested operand, so a rule can interpret the

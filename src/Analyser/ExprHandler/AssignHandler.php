@@ -258,13 +258,7 @@ final class AssignHandler implements ExprHandler
 			return false;
 		}
 
-		foreach (TypeUtils::flattenTypes($slotType) as $innerType) {
-			if ($innerType->isString()->yes()) {
-				return true;
-			}
-		}
-
-		return false;
+		return !$slotType->isString()->no();
 	}
 
 	private function getAssignTargetPropertyNativeType(MutatingScope $scope, Expr $var): ?Type

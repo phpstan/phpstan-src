@@ -5,7 +5,9 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
+use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -87,6 +89,20 @@ final class ExprUsedAsStringVisitor extends NodeVisitorAbstract
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether the expression already produces its own UsedAsStringNode, so that an
+	 * enclosing context (e.g. a string-typed assignment target) must not report it a
+	 * second time. True for marked nodes (concatenation, interpolation, echo/print
+	 * argument, …), the operand-emitting `(string)` cast and nested assignments.
+	 */
+	public static function isAlreadyUsedAsStringSite(Expr $expr): bool
+	{
+		return $expr->getAttribute(self::ATTRIBUTE_NAME) === true
+			|| $expr instanceof Cast\String_
+			|| $expr instanceof Assign
+			|| $expr instanceof AssignRef;
 	}
 
 }

@@ -64,36 +64,60 @@ class UsedAsStringRuleTest extends RuleTestCase
 				20,
 			],
 			[
+				"Used as string: '123' ('123')",
+				26,
+			],
+			[
+				"Used as string: '' ('')",
+				27,
+			],
+			[
 				"Used as string: \$html .= <<<EOS\n<script nonce=\"{\$nonce}\" type=\"module\">\nEOS ('<script nonce=\"123\" type=\"module\">')",
 				28,
 			],
 			[
-				'Used as string: $h->{$name} (mixed)',
-				48,
+				"Used as string: '' ('')",
+				36,
 			],
 			[
-				'Used as string: $name (string)',
-				48,
+				"Used as string: '' ('')",
+				40,
 			],
 			[
-				'Used as string: $name (string)',
-				49,
-			],
-			[
-				'Used as string: $name (string)',
+				"Used as string: 'assigned to string property' ('assigned to string property')",
 				50,
 			],
 			[
-				'Used as string: $name (string)',
-				51,
-			],
-			[
-				'Used as string: $name (string)',
+				"Used as string: 'assigned to static string property' ('assigned to static string property')",
 				52,
 			],
 			[
+				'Used as string: $h->{$name} (mixed)',
+				59,
+			],
+			[
 				'Used as string: $name (string)',
-				53,
+				59,
+			],
+			[
+				'Used as string: $name (string)',
+				60,
+			],
+			[
+				'Used as string: $name (string)',
+				61,
+			],
+			[
+				'Used as string: $name (string)',
+				62,
+			],
+			[
+				'Used as string: $name (string)',
+				63,
+			],
+			[
+				'Used as string: $name (string)',
+				64,
 			],
 		]);
 	}

@@ -1244,6 +1244,14 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $prop, $scope, $storage);
 				if ($prop->default !== null) {
 					$this->processExprNode($stmt, $prop->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+
+					if (
+						$nativePropertyType !== null
+						&& $nativePropertyType->isString()->yes()
+						&& !ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($prop->default)
+					) {
+						$this->callNodeCallback($nodeCallback, new UsedAsStringNode($prop->default), $scope, $storage);
+					}
 				}
 
 				if (!$scope->isInClass()) {

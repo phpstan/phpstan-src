@@ -35,11 +35,22 @@ class Holder
 
 	public string $prop = '';
 
+	public int $num = 1;
+
+	public static string $staticProp = '';
+
 	public function method(): void
 	{
 	}
 
 	public const CONST_NAME = 1;
+
+	public function assignProperties(): void
+	{
+		$this->prop = 'assigned to string property';
+		$this->num = 5;
+		self::$staticProp = 'assigned to static string property';
+	}
 
 }
 

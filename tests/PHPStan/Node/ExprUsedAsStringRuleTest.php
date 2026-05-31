@@ -21,63 +21,55 @@ class ExprUsedAsStringRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/expr-used-as-string.php'], [
 			[
 				"Used as string: 'plain' ('plain')",
-				7,
-			],
-			[
-				'Used as string: \'<script src="\' . $s . \'" nonce=123></script>\' (non-falsy-string)',
-				8,
-			],
-			[
-				'Used as string: "<script src=\"{$s}\" nonce=123></script>" (non-falsy-string)',
 				9,
 			],
 			[
-				"Used as string: 'printed' ('printed')",
+				'Used as string: \'<script src="\' . $s . \'" nonce=123></script>\' (non-falsy-string)',
 				10,
 			],
 			[
-				"Used as string: 'a' . \$s . 'b' (non-falsy-string)",
+				'Used as string: "<script src=\"{$s}\" nonce=123></script>" (non-falsy-string)',
 				11,
 			],
 			[
-				'Used as string: $s (string)',
+				"Used as string: 'printed' ('printed')",
 				12,
 			],
 			[
-				'Used as string: $s .= "appended" (non-falsy-string)',
+				"Used as string: 'a' . \$s . 'b' (non-falsy-string)",
 				13,
 			],
 			[
-				'Used as string: $s .= \' src="\' . $s . \'"\' (non-falsy-string)',
+				'Used as string: $s (string)',
 				14,
 			],
 			[
-				"Used as string: \$s . 'plain' (non-falsy-string)",
+				'Used as string: $s .= "appended" (non-falsy-string)',
 				15,
 			],
 			[
-				'Used as string: "interp {$s} end" (non-falsy-string)',
+				'Used as string: $s .= \' src="\' . $s . \'"\' (non-falsy-string)',
 				16,
 			],
 			[
-				"Used as string: '<script src=\"my.js\" nonce=123></script>\n' (\"<script src=\\\"my.js\\\" nonce=123></script>\\n\")",
+				"Used as string: \$s . 'plain' (non-falsy-string)",
+				17,
+			],
+			[
+				'Used as string: "interp {$s} end" (non-falsy-string)',
 				18,
 			],
 			[
+				"Used as string: '<script src=\"my.js\" nonce=123></script>\n' (\"<script src=\\\"my.js\\\" nonce=123></script>\\n\")",
+				20,
+			],
+			[
 				"Used as string: \$html .= <<<EOS\n<script nonce=\"{\$nonce}\" type=\"module\">\nEOS ('<script nonce=\"123\" type=\"module\">')",
-				26,
+				28,
 			],
 			[
 				'Used as string: $h->{$name} (mixed)',
-				46,
-			],
-			[
-				'Used as string: $name (string)',
-				46,
-			],
-			[
-				'Used as string: $name (string)',
-				47,
+				48,
 			],
 			[
 				'Used as string: $name (string)',
@@ -94,6 +86,14 @@ class ExprUsedAsStringRuleTest extends RuleTestCase
 			[
 				'Used as string: $name (string)',
 				51,
+			],
+			[
+				'Used as string: $name (string)',
+				52,
+			],
+			[
+				'Used as string: $name (string)',
+				53,
 			],
 		]);
 	}

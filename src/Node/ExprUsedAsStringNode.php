@@ -3,7 +3,6 @@
 namespace PHPStan\Node;
 
 use Override;
-use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
 /**
@@ -15,19 +14,22 @@ use PhpParser\NodeAbstract;
  * expression instead of once per nested operand, so a rule can interpret the
  * built string as a single unit.
  *
+ * The wrapped node is usually an expression, but for inline HTML it is the
+ * original {@see \PhpParser\Node\Stmt\InlineHTML} statement.
+ *
  * @api
  */
 final class ExprUsedAsStringNode extends NodeAbstract implements VirtualNode
 {
 
-	public function __construct(private Expr $expr)
+	public function __construct(private NodeAbstract $node)
 	{
-		parent::__construct($expr->getAttributes());
+		parent::__construct($node->getAttributes());
 	}
 
-	public function getExpr(): Expr
+	public function getNode(): NodeAbstract
 	{
-		return $this->expr;
+		return $this->node;
 	}
 
 	#[Override]

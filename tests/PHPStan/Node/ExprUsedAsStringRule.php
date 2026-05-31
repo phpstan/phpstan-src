@@ -3,10 +3,15 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\InlineHTML;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -30,13 +35,23 @@ class ExprUsedAsStringRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$expr = $node->getExpr();
+		$inner = $node->getNode();
+
+		if ($inner instanceof Expr) {
+			$printed = $this->printer->prettyPrintExpr($inner);
+			$type = $scope->getType($inner)->describe(VerbosityLevel::precise());
+		} elseif ($inner instanceof InlineHTML) {
+			$printed = $this->printer->prettyPrintExpr(new String_($inner->value, $inner->getAttributes()));
+			$type = (new ConstantStringType($inner->value))->describe(VerbosityLevel::precise());
+		} else {
+			throw new ShouldNotHappenException();
+		}
 
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Used as string: %s (%s)',
-				$this->printer->prettyPrintExpr($expr),
-				$scope->getType($expr)->describe(VerbosityLevel::precise()),
+				$printed,
+				$type,
 			))->identifier('tests.exprUsedAsString')->build(),
 		];
 	}

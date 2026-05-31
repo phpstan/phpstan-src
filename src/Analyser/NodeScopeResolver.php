@@ -2473,7 +2473,7 @@ class NodeScopeResolver
 			$impurePoints = [
 				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
-			$this->callNodeCallback($nodeCallback, new ExprUsedAsStringNode(new Node\Scalar\String_($stmt->value, $stmt->getAttributes())), $scope, $storage);
+			$this->callNodeCallback($nodeCallback, new ExprUsedAsStringNode($stmt), $scope, $storage);
 		} elseif ($stmt instanceof Node\Stmt\Block) {
 			$result = $this->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 			if ($this->polluteScopeWithBlock) {

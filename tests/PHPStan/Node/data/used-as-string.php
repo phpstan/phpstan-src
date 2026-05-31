@@ -137,3 +137,8 @@ function passUnionArguments(): void
 	takesUnionWithString('union with string argument');
 	takesUnionWithoutString(5);
 }
+
+function arrayAssignment(): void
+{
+	$bar = array('Bar1', 'Bar2', 'Bar3');
+}

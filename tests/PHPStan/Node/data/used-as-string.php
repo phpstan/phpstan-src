@@ -154,3 +154,12 @@ function passPhpDocStringArgument(): void
 {
 	takesPhpDocString('phpdoc string argument');
 }
+
+function takesMixed(mixed $m): void
+{
+}
+
+function passMixedArgument(): void
+{
+	takesMixed('mixed argument');
+}

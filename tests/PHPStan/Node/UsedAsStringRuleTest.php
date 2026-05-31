@@ -85,75 +85,87 @@ class UsedAsStringRuleTest extends RuleTestCase
 			],
 			[
 				"Used as string: 'assigned to string property' ('assigned to string property')",
-				50,
-			],
-			[
-				"Used as string: 'assigned to static string property' ('assigned to static string property')",
-				52,
-			],
-			[
-				'Used as string: $h->{$name} (mixed)',
-				59,
-			],
-			[
-				'Used as string: $name (string)',
-				59,
-			],
-			[
-				'Used as string: $name (string)',
-				60,
-			],
-			[
-				'Used as string: $name (string)',
-				61,
-			],
-			[
-				'Used as string: $name (string)',
 				62,
 			],
 			[
-				'Used as string: $name (string)',
-				63,
-			],
-			[
-				'Used as string: $name (string)',
+				"Used as string: 'assigned to static string property' ('assigned to static string property')",
 				64,
 			],
 			[
-				'Used as string: $s (string)',
+				"Used as string: 'assigned to union string property' ('assigned to union string property')",
+				65,
+			],
+			[
+				'Used as string: $h->{$name} (mixed)',
+				73,
+			],
+			[
+				'Used as string: $name (string)',
+				73,
+			],
+			[
+				'Used as string: $name (string)',
+				74,
+			],
+			[
+				'Used as string: $name (string)',
+				75,
+			],
+			[
+				'Used as string: $name (string)',
+				76,
+			],
+			[
+				'Used as string: $name (string)',
 				77,
 			],
 			[
-				"Used as string: 'passed as string argument' ('passed as string argument')",
+				'Used as string: $name (string)',
 				78,
-			],
-			[
-				"Used as string: 'string default' ('string default')",
-				83,
-			],
-			[
-				"Used as string: 'closure string default' ('closure string default')",
-				89,
 			],
 			[
 				'Used as string: $s (string)',
 				91,
 			],
 			[
-				"Used as string: 'closure string argument' ('closure string argument')",
+				"Used as string: 'passed as string argument' ('passed as string argument')",
 				92,
 			],
 			[
-				"Used as string: 'arrow string default' ('arrow string default')",
-				94,
+				"Used as string: 'method string argument' ('method string argument')",
+				99,
+			],
+			[
+				"Used as string: 'static string argument' ('static string argument')",
+				100,
+			],
+			[
+				"Used as string: 'string default' ('string default')",
+				103,
+			],
+			[
+				"Used as string: 'closure string default' ('closure string default')",
+				109,
 			],
 			[
 				'Used as string: $s (string)',
-				95,
+				111,
+			],
+			[
+				"Used as string: 'closure string argument' ('closure string argument')",
+				112,
+			],
+			[
+				"Used as string: 'arrow string default' ('arrow string default')",
+				114,
+			],
+			[
+				'Used as string: $s (string)',
+				115,
 			],
 			[
 				"Used as string: 'arrow string argument' ('arrow string argument')",
-				96,
+				116,
 			],
 		]);
 	}

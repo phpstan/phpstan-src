@@ -218,7 +218,7 @@ final class AssignHandler implements ExprHandler
 	/**
 	 * Emits a {@see UsedAsStringNode} for the assigned value when it lands in a
 	 * string slot: a string-valued variable assignment or an assignment to a
-	 * native `string`-typed property.
+	 * native property whose type allows a string.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -234,20 +234,41 @@ final class AssignHandler implements ExprHandler
 			return;
 		}
 
-		$slotType = $this->getAssignTargetStringSlotType($scope, $expr->var, $expr->expr);
-		if ($slotType === null || !$slotType->isString()->yes()) {
+		if (!$this->isAssignToStringSlot($scope, $expr->var, $expr->expr)) {
 			return;
 		}
 
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new UsedAsStringNode($expr->expr), $scope, $storage);
 	}
 
-	private function getAssignTargetStringSlotType(MutatingScope $scope, Expr $var, Expr $assignedExpr): ?Type
+	/**
+	 * Whether the assigned value lands in a string slot: a string-valued variable
+	 * assignment, or an assignment to a native property whose declared type allows a
+	 * string (a plain `string` or a union that contains `string`, e.g. `string|int`).
+	 * A union without any `string` member (e.g. `int|float`) is not a string slot.
+	 */
+	private function isAssignToStringSlot(MutatingScope $scope, Expr $var, Expr $assignedExpr): bool
 	{
 		if ($var instanceof Variable) {
-			return $scope->getType($assignedExpr);
+			return $scope->getType($assignedExpr)->isString()->yes();
 		}
 
+		$slotType = $this->getAssignTargetPropertyNativeType($scope, $var);
+		if ($slotType === null) {
+			return false;
+		}
+
+		foreach (TypeUtils::flattenTypes($slotType) as $innerType) {
+			if ($innerType->isString()->yes()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function getAssignTargetPropertyNativeType(MutatingScope $scope, Expr $var): ?Type
+	{
 		if ($var instanceof PropertyFetch) {
 			if (!$var->name instanceof Node\Identifier) {
 				return null;

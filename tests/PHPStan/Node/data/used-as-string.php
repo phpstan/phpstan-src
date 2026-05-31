@@ -39,7 +39,19 @@ class Holder
 
 	public static string $staticProp = '';
 
+	public string|int $unionWithString;
+
+	public int|float $unionWithoutString = 1;
+
 	public function method(): void
+	{
+	}
+
+	public function methodWithStringParam(string $arg): void
+	{
+	}
+
+	public static function staticMethodWithStringParam(string $arg): void
 	{
 	}
 
@@ -50,6 +62,8 @@ class Holder
 		$this->prop = 'assigned to string property';
 		$this->num = 5;
 		self::$staticProp = 'assigned to static string property';
+		$this->unionWithString = 'assigned to union string property';
+		$this->unionWithoutString = 5;
 	}
 
 }
@@ -78,6 +92,12 @@ function passArguments(Holder $h, string $s): void
 	takesString('passed as string argument');
 	takesInt(5);
 	takesInt($h->num);
+}
+
+function passMethodArguments(Holder $h): void
+{
+	$h->methodWithStringParam('method string argument');
+	Holder::staticMethodWithStringParam('static string argument');
 }
 
 function withDefaults(string $s = 'string default', int $i = 5, ?string $n = null): void

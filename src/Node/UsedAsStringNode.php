@@ -16,7 +16,9 @@ use PhpParser\NodeAbstract;
  * - the dynamic name of a property/method/constant access or a variable
  *   variable (`$foo->{$s}`, `$$s`, etc.),
  * - the value assigned to a variable when that value is a string,
- * - the value assigned to (or the default of) a native `string`-typed property,
+ * - the value assigned to a native property whose type allows a string (a plain
+ *   `string` or a union containing `string`, e.g. `string|int`) and the default
+ *   of a native `string`-typed property,
  * - an argument passed to a native `string` parameter (including closures and
  *   arrow functions) and the default of a native `string`-typed parameter.
  *

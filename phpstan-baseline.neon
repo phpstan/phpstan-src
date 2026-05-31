@@ -115,12 +115,6 @@ parameters:
 			path: src/Analyser/TypeSpecifier.php
 
 		-
-			rawMessage: 'Cannot call method getPathname() on SplFileInfo|string.'
-			identifier: method.nonObject
-			count: 1
-			path: src/Cache/FileCacheStorage.php
-
-		-
 			rawMessage: 'Template type TNodeType is declared as covariant, but occurs in contravariant position in parameter node of method PHPStan\Collectors\Collector::processNode().'
 			identifier: generics.variance
 			count: 1

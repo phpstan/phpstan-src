@@ -168,8 +168,16 @@ class UsedAsStringRuleTest extends RuleTestCase
 				116,
 			],
 			[
+				"Used as string: '' ('')",
+				121,
+			],
+			[
+				"Used as string: \$html .= <<<'EOS'\n<script nonce=\"123\" type=\"module\">\nEOS ('<script nonce=\"123\" type=\"module\">')",
+				122,
+			],
+			[
 				"Used as string: 'union with string argument' ('union with string argument')",
-				129,
+				137,
 			],
 		]);
 	}

@@ -116,6 +116,14 @@ function closuresAndArrowFunctions(string $s): void
 	$arrow('arrow string argument');
 }
 
+function doNowdoc(): void
+{
+	$html = '';
+	$html .= <<<'EOS'
+<script nonce="123" type="module">
+EOS;
+}
+
 function takesUnionWithString(string|int $u): void
 {
 }

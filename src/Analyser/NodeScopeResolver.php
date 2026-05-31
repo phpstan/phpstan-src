@@ -3301,6 +3301,22 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * Whether the native type is a string slot: a plain `string` or a union that
+	 * contains a `string` member (e.g. `string|int`). Plain `mixed` is not a string
+	 * slot, so arguments to untyped or PHPDoc-only `@param string` parameters do not fire.
+	 */
+	private function isStringSlotType(Type $type): bool
+	{
+		foreach (TypeUtils::flattenTypes($type) as $slotMemberType) {
+			if ($slotMemberType->isString()->yes()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param AttributeGroup[] $attrGroups
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -3743,7 +3759,7 @@ class NodeScopeResolver
 				$argStringSlotType = $parameterNativeType ?? ($parameter instanceof NativeParameterReflection ? $parameter->getType() : null);
 				if (
 					$argStringSlotType !== null
-					&& !$argStringSlotType->isString()->no()
+					&& $this->isStringSlotType($argStringSlotType)
 					&& !ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($arg->value)
 				) {
 					$this->callNodeCallback($nodeCallback, new UsedAsStringNode($arg->value), $scopeToPass, $storage);

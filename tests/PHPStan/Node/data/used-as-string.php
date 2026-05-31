@@ -142,3 +142,15 @@ function arrayAssignment(): void
 {
 	$bar = array('Bar1', 'Bar2', 'Bar3');
 }
+
+/**
+ * @param string $s
+ */
+function takesPhpDocString($s): void
+{
+}
+
+function passPhpDocStringArgument(): void
+{
+	takesPhpDocString('phpdoc string argument');
+}

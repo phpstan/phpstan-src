@@ -58,7 +58,6 @@ final class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
-		$onlyReportFalse = false;
 		if ($node instanceof FuncCall) {
 			if ($node->isFirstClassCallable()) {
 				return null;
@@ -67,17 +66,6 @@ final class ImpossibleCheckTypeHelper
 			$argsCount = count($args);
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
-				if (in_array($functionName, [
-					'class_exists',
-					'interface_exists',
-					'trait_exists',
-					'enum_exists',
-				], true)) {
-					// Runtime autoload can always fail, so do not report "always true" for these.
-					// "Always false" is still reportable when the type specifier proves impossibility
-					// (e.g. class_exists() on a constant string that names an interface).
-					$onlyReportFalse = true;
-				}
 				if ($functionName === 'assert' && $argsCount >= 1) {
 					$arg = $args[0]->value;
 					$assertValue = ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg) : $scope->getNativeType($arg))->toBoolean();
@@ -290,12 +278,7 @@ final class ImpossibleCheckTypeHelper
 
 			$rootExprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr);
 			if ($rootExprType instanceof ConstantBooleanType) {
-				$value = $rootExprType->getValue();
-				if ($onlyReportFalse && $value === true) {
-					return null;
-				}
-
-				return $value;
+				return $this->decideSpecifiedTypeWasFound($node, $rootExprType->getValue());
 			}
 
 			return null;
@@ -373,16 +356,39 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		$result = TrinaryLogic::createYes()->and(...$results);
-		if ($result->maybe()) {
+
+		return $this->decideSpecifiedTypeWasFound($node, $result->maybe() ? null : $result->yes());
+	}
+
+	/**
+	 * Post-processes a candidate result to decide whether it should be reported.
+	 *
+	 * For class_exists()/interface_exists()/trait_exists()/enum_exists() the "always true"
+	 * result is suppressed, because runtime autoload can always fail. "Always false" is still
+	 * reported when the type specifier proves impossibility (e.g. class_exists() on a constant
+	 * string that names an interface).
+	 */
+	private function decideSpecifiedTypeWasFound(Expr $node, ?bool $result): ?bool
+	{
+		if ($result === true && $this->isAutoloadableExistenceCheck($node)) {
 			return null;
 		}
 
-		$value = $result->yes();
-		if ($onlyReportFalse && $value === true) {
-			return null;
+		return $result;
+	}
+
+	private function isAutoloadableExistenceCheck(Expr $node): bool
+	{
+		if (!$node instanceof FuncCall || !$node->name instanceof Node\Name) {
+			return false;
 		}
 
-		return $value;
+		return in_array(strtolower((string) $node->name), [
+			'class_exists',
+			'interface_exists',
+			'trait_exists',
+			'enum_exists',
+		], true);
 	}
 
 	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool

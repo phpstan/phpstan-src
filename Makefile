@@ -204,7 +204,7 @@ infection:
 .PHONY: phpbench
 phpbench:
 	@find tests/bench/storage/local-baseline.xml -mtime -60m | grep . || (echo "PHPBench baseline file does not exist or is too old. Regenerate it using 'make phpbench-baseline'." && exit 1)
-	XDEBUG_MODE=off tests/vendor/bin/phpbench run --file=tests/bench/storage/local-baseline.xml --report=aggregate
+	XDEBUG_MODE=off tests/vendor/bin/phpbench run --file=tests/bench/storage/local-baseline.xml --report=my-report
 
 .PHONY: phpbench-baseline
 phpbench-baseline:

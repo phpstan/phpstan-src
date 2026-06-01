@@ -1,7 +1,18 @@
 {
-	"$schema":"./tests/vendor/phpbench/phpbench/phpbench.schema.json",
-	"runner.bootstrap": "vendor/autoload.php",
-	"runner.path": "tests/bench",
-	"runner.file_pattern": "*Bench.php",
-	"storage.xml_storage_path": "tests/bench/storage"
+  "$schema": "./tests/vendor/phpbench/phpbench/phpbench.schema.json",
+  "runner.bootstrap": "vendor/autoload.php",
+  "runner.path": "tests/bench",
+  "runner.file_pattern": "*Bench.php",
+  "storage.xml_storage_path": "tests/bench/storage",
+  "report.generators": {
+    "my-report": {
+      "extends": "aggregate",
+      "cols": {
+        "set": null,
+        "mem_peak": null,
+        "mode": null,
+        "rstdev": null
+      }
+    }
+  }
 }

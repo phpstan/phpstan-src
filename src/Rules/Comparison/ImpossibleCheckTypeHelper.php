@@ -370,25 +370,21 @@ final class ImpossibleCheckTypeHelper
 	 */
 	private function decideSpecifiedTypeWasFound(Expr $node, ?bool $result): ?bool
 	{
-		if ($result === true && $this->isAutoloadableExistenceCheck($node)) {
+		if (
+			$result === true
+			&& $node instanceof FuncCall
+			&& $node->name instanceof Node\Name
+			&& in_array(strtolower((string) $node->name), [
+				'class_exists',
+				'interface_exists',
+				'trait_exists',
+				'enum_exists',
+			], true)
+		) {
 			return null;
 		}
 
 		return $result;
-	}
-
-	private function isAutoloadableExistenceCheck(Expr $node): bool
-	{
-		if (!$node instanceof FuncCall || !$node->name instanceof Node\Name) {
-			return false;
-		}
-
-		return in_array(strtolower((string) $node->name), [
-			'class_exists',
-			'interface_exists',
-			'trait_exists',
-			'enum_exists',
-		], true);
 	}
 
 	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool

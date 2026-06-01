@@ -1,0 +1,7 @@
+includes:
+	- phpstan.neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: identical.alwaysFalse
+			path: src/Foo.php

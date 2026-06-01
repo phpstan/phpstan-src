@@ -300,19 +300,28 @@ jobs:
           - script: |
               cd e2e/bug-14718
               # https://github.com/phpstan/phpstan/issues/14718
-              # an inline @phpstan-ignore on an error deduplicated into the trait must suppress it,
-              # consistently with both an empty and a primed result cache
+              # An inline @phpstan-ignore on an error deduplicated directly into the trait must
+              # suppress it, consistently with both an empty and a primed result cache.
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
               ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
-              # with the ignore removed, the error is reported in the trait file and a generated
-              # baseline records the trait file path, not the using-class file
+              # With the ignore removed, the error is reported directly in the trait file.
               sed -i 's# // @phpstan-ignore identical.alwaysFalse##' src/FooTrait.php
               ../../bin/phpstan clear-result-cache
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
               ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              # An ignoreErrors path may target the error by the trait file or by the using-class
+              # file - both keep working (no BC break).
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon"
+              # A generated baseline suppresses the error on re-run, with both an empty and a
+              # primed result cache (the issue reported baseline generation as impossible).
               ../../bin/phpstan --generate-baseline=baseline.neon
-              ../bashunit -a contains 'path: src/FooTrait.php' "$(cat baseline.neon)"
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
           - script: |
               cd e2e/result-cache-meta-extension
               composer install

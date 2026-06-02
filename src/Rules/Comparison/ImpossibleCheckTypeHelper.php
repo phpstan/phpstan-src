@@ -58,6 +58,36 @@ final class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
+		$specifiedValue = $this->getSpecifiedType($scope, $node);
+
+		/**
+		 * For class_exists()/interface_exists()/trait_exists()/enum_exists() the "always true"
+		 * result is suppressed, because runtime autoload can always fail. "Always false" is still
+		 * reported when the type specifier proves impossibility (e.g. class_exists() on a constant
+		 * string that names an interface).
+		 */
+		if (
+			$specifiedValue === true
+			&& $node instanceof FuncCall
+			&& $node->name instanceof Node\Name
+			&& in_array(strtolower((string) $node->name), [
+				'class_exists',
+				'interface_exists',
+				'trait_exists',
+				'enum_exists',
+			], true)
+		) {
+			return null;
+		}
+
+		return $specifiedValue;
+	}
+
+	private function getSpecifiedType(
+		Scope $scope,
+		Expr $node,
+	): ?bool
+	{
 		if ($node instanceof FuncCall) {
 			if ($node->isFirstClassCallable()) {
 				return null;
@@ -76,13 +106,7 @@ final class ImpossibleCheckTypeHelper
 
 					return $assertValueIsTrue;
 				}
-				if (in_array($functionName, [
-					'class_exists',
-					'interface_exists',
-					'trait_exists',
-					'enum_exists',
-					'function_exists',
-				], true)) {
+				if ($functionName === 'function_exists') {
 					return null;
 				}
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
@@ -362,6 +386,7 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		$result = TrinaryLogic::createYes()->and(...$results);
+
 		return $result->maybe() ? null : $result->yes();
 	}
 

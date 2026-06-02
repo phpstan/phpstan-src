@@ -290,6 +290,25 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7898.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testStructExists(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/check-type-function-call-struct-exists.php'], [
+			['Call to function class_exists() with \'CheckTypeFunctionCall\\\\_Interface\' will always evaluate to false.', 23],
+			['Call to function class_exists() with \'CheckTypeFunctionCall\\\\_Trait\' will always evaluate to false.', 25],
+			['Call to function interface_exists() with \'CheckTypeFunctionCall\\\\_Enum\' will always evaluate to false.', 27],
+			['Call to function interface_exists() with \'CheckTypeFunctionCall\\\\_Class\' will always evaluate to false.', 29],
+			['Call to function interface_exists() with \'CheckTypeFunctionCall\\\\_Trait\' will always evaluate to false.', 30],
+			['Call to function trait_exists() with \'CheckTypeFunctionCall\\\\_Enum\' will always evaluate to false.', 32],
+			['Call to function trait_exists() with \'CheckTypeFunctionCall\\\\_Interface\' will always evaluate to false.', 33],
+			['Call to function trait_exists() with \'CheckTypeFunctionCall\\\\_Class\' will always evaluate to false.', 34],
+			['Call to function enum_exists() with \'CheckTypeFunctionCall\\\\_Interface\' will always evaluate to false.', 38],
+			['Call to function enum_exists() with \'CheckTypeFunctionCall\\\\_Class\' will always evaluate to false.', 39],
+			['Call to function enum_exists() with \'CheckTypeFunctionCall\\\\_Trait\' will always evaluate to false.', 40],
+		]);
+	}
+
 	public function testDoNotReportTypesFromPhpDocs(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;

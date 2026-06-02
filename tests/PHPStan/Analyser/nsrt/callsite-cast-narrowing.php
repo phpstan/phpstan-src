@@ -68,6 +68,13 @@ class HelloWorld
 			assertType('false', $bool);
 		}
 		assertType('bool', $bool);
+
+		if (ctype_digit((string) $bool) === true) {
+			assertType('true', $bool);
+		} else {
+			assertType('false', $bool);
+		}
+		assertType('bool', $bool);
 	}
 
 }

@@ -32,4 +32,14 @@ class Foo
 
 		assertType('mixed~(int<48, 57>|int<256, max>)', $foo); // not all numeric strings are covered by ctype_digit
 	}
+
+	public function doString(string $string): void
+	{
+		if (ctype_digit($string) === true) {
+			assertType('decimal-int-string', $string);
+		} else {
+			assertType('string', $string);
+		}
+
+	}
 }

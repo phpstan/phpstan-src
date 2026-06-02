@@ -144,7 +144,7 @@ class EvaluateCommand extends Command
 			$text = sprintf(
 				"Result of the [code snippet](https://phpstan.org/r/%s) from %s in [#%d](https://github.com/phpstan/phpstan/issues/%d) changed:\n\n```diff\n%s```",
 				$hash,
-				implode(' ', array_map(static fn (string $user): string => sprintf('`@%s`', $user), $users)),
+				implode(' ', array_map(static fn (string $user): string => sprintf('@%s', $user), $users)),
 				$issue,
 				$issue,
 				$diff,

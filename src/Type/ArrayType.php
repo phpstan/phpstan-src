@@ -503,7 +503,55 @@ class ArrayType implements Type
 			return $this;
 		}
 
+		$constantArrays = $otherArraysType->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			// When the other operand is one or more array shapes with a known
+			// sealedness, the result is a (possibly unsealed) array shape too:
+			// it can only contain the keys present in those shapes, each
+			// optional because the general first array may or may not have it.
+			$allSealednessKnown = true;
+			foreach ($constantArrays as $constantArray) {
+				if ($constantArray->isUnsealed()->maybe()) {
+					$allSealednessKnown = false;
+					break;
+				}
+			}
+
+			if ($allSealednessKnown) {
+				$results = [];
+				foreach ($constantArrays as $constantArray) {
+					$results[] = $this->intersectConstantArrayShape($constantArray);
+				}
+
+				return TypeCombinator::union(...$results);
+			}
+		}
+
 		return $this->withTypes($otherArraysType->getIterableKeyType(), $this->getIterableValueType());
+	}
+
+	private function intersectConstantArrayShape(ConstantArrayType $constantArray): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$valueType = $this->getIterableValueType();
+		$keyType = $this->getIterableKeyType();
+		foreach ($constantArray->getKeyTypes() as $shapeKeyType) {
+			if (TypeCombinator::intersect($shapeKeyType, $keyType) instanceof NeverType) {
+				continue;
+			}
+			$builder->setOffsetValueType($shapeKeyType, $valueType, true);
+		}
+
+		$unsealed = $constantArray->getUnsealedTypes();
+		if ($constantArray->isUnsealed()->yes() && $unsealed !== null) {
+			$narrowedUnsealedKey = TypeCombinator::intersect($unsealed[0], $keyType);
+			if (!$narrowedUnsealedKey instanceof NeverType) {
+				$builder->makeUnsealed($narrowedUnsealedKey, $valueType);
+			}
+		}
+
+		return $builder->getArray();
 	}
 
 	public function popArray(): Type

@@ -114,7 +114,7 @@ final class AnalyserResultFinalizer
 		$collectorErrors = [];
 		$locallyIgnoredCollectorErrors = [];
 		foreach ($tempCollectorErrors as $tempCollectorError) {
-			$file = $tempCollectorError->getFilePath();
+			$file = $tempCollectorError->getTraitFilePath() ?? $tempCollectorError->getFilePath();
 			$linesToIgnore = $allLinesToIgnore[$file] ?? [];
 			$unmatchedLineIgnores = $allUnmatchedLineIgnores[$file] ?? [];
 			$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(

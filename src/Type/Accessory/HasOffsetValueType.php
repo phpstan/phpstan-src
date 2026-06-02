@@ -33,7 +33,6 @@ use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeStringTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
@@ -57,7 +56,6 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
-	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	public function __construct(private ConstantStringType|ConstantIntegerType $offsetType, private Type $valueType)
@@ -211,6 +209,22 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			return new ErrorType();
 		}
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		// Only reachable through TypeCombinator::remove(), which short-circuits the
+		// full-overlap case to NeverType and the disjoint case to the unchanged type
+		// before delegating here. So when we get here the value types always partially
+		// overlap and removing $typeToRemove's value type genuinely narrows ours.
+		if ($typeToRemove instanceof self && $this->offsetType->equals($typeToRemove->getOffsetType())) {
+			return new self(
+				$this->offsetType,
+				TypeCombinator::remove($this->valueType, $typeToRemove->getValueType()),
+			);
+		}
+
+		return null;
 	}
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type

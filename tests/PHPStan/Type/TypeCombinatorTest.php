@@ -6185,6 +6185,67 @@ class TypeCombinatorTest extends PHPStanTestCase
 				ArrayType::class,
 				'array<0|string, mixed>',
 			],
+			// HasOffsetValueType with partial value overlap — narrow value, keep key mandatory
+			[
+				new ConstantArrayType(
+					[new ConstantStringType('a')],
+					[new UnionType([new StringType(), new IntegerType()])],
+				),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+				ConstantArrayType::class,
+				'array{a: string}',
+			],
+			// HasOffsetValueType with partial value overlap — narrow value, keep key optional
+			[
+				new ConstantArrayType(
+					[new ConstantStringType('a')],
+					[new UnionType([new StringType(), new IntegerType()])],
+					[0],
+					[0],
+				),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+				ConstantArrayType::class,
+				'array{a?: string}',
+			],
+			// HasOffsetValueType with full value overlap on optional key — remove key entirely
+			[
+				new ConstantArrayType(
+					[new ConstantStringType('a')],
+					[new IntegerType()],
+					[0],
+					[0],
+				),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+				ConstantArrayType::class,
+				'array{}',
+			],
+			// HasOffsetValueType with partial value overlap — multi-key array
+			[
+				new ConstantArrayType(
+					[new ConstantStringType('a'), new ConstantStringType('b')],
+					[new UnionType([new StringType(), new IntegerType()]), new StringType()],
+				),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+				ConstantArrayType::class,
+				'array{a: string, b: string}',
+			],
+			// HasOffsetValueType removing another HasOffsetValueType with same offset
+			[
+				new HasOffsetValueType(new ConstantStringType('a'), new UnionType([new StringType(), new IntegerType()])),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+				HasOffsetValueType::class,
+				'hasOffsetValue(\'a\', string)',
+			],
+			// HasOffsetValueType on IntersectionType — narrow value type through intersection
+			[
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetValueType(new ConstantStringType('a'), new UnionType([new StringType(), new IntegerType()])),
+				]),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+				IntersectionType::class,
+				'non-empty-array&hasOffsetValue(\'a\', string)',
+			],
 		];
 	}
 

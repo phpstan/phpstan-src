@@ -2629,7 +2629,52 @@ class ConstantArrayType implements Type
 			return new ConstantArrayType([], []);
 		}
 
-		if ($typeToRemove instanceof HasOffsetType || $typeToRemove instanceof HasOffsetValueType) {
+		if ($typeToRemove instanceof HasOffsetValueType) {
+			$offsetType = $typeToRemove->getOffsetType();
+			$valueTypeToRemove = $typeToRemove->getValueType();
+
+			foreach ($this->keyTypes as $i => $keyType) {
+				if ($keyType->getValue() !== $offsetType->getValue()) {
+					continue;
+				}
+
+				$currentValueType = $this->valueTypes[$i];
+				$valueIsSuperType = $valueTypeToRemove->isSuperTypeOf($currentValueType);
+
+				if ($valueIsSuperType->no()) {
+					return null;
+				}
+
+				if ($valueIsSuperType->yes()) {
+					$unsetResult = $this->unsetOffset($offsetType, true);
+					// When the source was definitely a list but the post-unset shape
+					// definitely isn't (e.g. unsetting a non-optional leading key
+					// creates a hole), no value of $this could have lacked the
+					// removed key — the subtraction yields the empty set.
+					if ($this->isList->yes() && $unsetResult->isList()->no()) {
+						return new NeverType();
+					}
+					return $unsetResult;
+				}
+
+				$newValueType = TypeCombinator::remove($currentValueType, $valueTypeToRemove);
+				$valueTypes = $this->valueTypes;
+				$valueTypes[$i] = $newValueType;
+
+				return $this->recreate(
+					$this->keyTypes,
+					$valueTypes,
+					$this->nextAutoIndexes,
+					$this->optionalKeys,
+					$this->isList,
+					$this->unsealed,
+				);
+			}
+
+			return null;
+		}
+
+		if ($typeToRemove instanceof HasOffsetType) {
 			$unsetResult = $this->unsetOffset($typeToRemove->getOffsetType(), true);
 			// When the source was definitely a list but the post-unset shape
 			// definitely isn't (e.g. unsetting a non-optional leading key

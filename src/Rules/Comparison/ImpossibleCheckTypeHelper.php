@@ -61,8 +61,6 @@ final class ImpossibleCheckTypeHelper
 		$specifiedValue = $this->getSpecifiedType($scope, $node);
 
 		/**
-		 * Post-processes a candidate result to decide whether it should be reported.
-		 *
 		 * For class_exists()/interface_exists()/trait_exists()/enum_exists() the "always true"
 		 * result is suppressed, because runtime autoload can always fail. "Always false" is still
 		 * reported when the type specifier proves impossibility (e.g. class_exists() on a constant

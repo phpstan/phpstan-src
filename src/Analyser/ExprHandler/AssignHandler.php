@@ -244,8 +244,11 @@ final class AssignHandler implements ExprHandler
 	/**
 	 * Whether the assigned value lands in a string slot: a string-valued variable
 	 * assignment, or an assignment to a native property whose declared type allows a
-	 * string (a plain `string` or a union that contains `string`, e.g. `string|int`).
-	 * A union without any `string` member (e.g. `int|float`) is not a string slot.
+	 * string (a plain `string` or a union that contains `string`, e.g. `string|int`)
+	 * when the assigned value can actually be coerced to a string in the current
+	 * typing mode. A union without any `string` member (e.g. `int|float`) is not a
+	 * string slot, and a value that cannot be coerced to a string (e.g. a
+	 * non-`Stringable` object) does not land in the slot as a string.
 	 */
 	private function isAssignToStringSlot(MutatingScope $scope, Expr $var, Expr $assignedExpr): bool
 	{
@@ -254,11 +257,26 @@ final class AssignHandler implements ExprHandler
 		}
 
 		$slotType = $this->getAssignTargetPropertyNativeType($scope, $var);
-		if ($slotType === null) {
+		if ($slotType === null || !$this->containsString($slotType)) {
 			return false;
 		}
 
-		foreach (TypeUtils::flattenTypes($slotType) as $innerType) {
+		// Only fire when the assigned value can actually be coerced to a string in
+		// the current (strict/weak) typing mode: a non-`Stringable` object assigned
+		// to a `string|int` property is not used as a string, while a `Stringable`
+		// assigned to it in weak mode is.
+		$coercedAssignedType = $scope->getType($assignedExpr)->toCoercedArgumentType($scope->isDeclareStrictTypes());
+
+		return $this->containsString($coercedAssignedType);
+	}
+
+	/**
+	 * Whether the type is a plain `string` or a union with at least one `string`
+	 * member (e.g. `string|int`).
+	 */
+	private function containsString(Type $type): bool
+	{
+		foreach (TypeUtils::flattenTypes($type) as $innerType) {
 			if ($innerType->isString()->yes()) {
 				return true;
 			}

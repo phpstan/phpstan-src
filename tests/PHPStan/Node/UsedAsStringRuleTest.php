@@ -181,7 +181,25 @@ class UsedAsStringRuleTest extends RuleTestCase
 			],
 			[
 				'Used as string: $obj (ExprUsedAsString\StringableObject)',
-				179,
+				184,
+			],
+		]);
+	}
+
+	public function testRuleNonStrictTypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/used-as-string-non-strict.php'], [
+			[
+				"Used as string: '' ('')",
+				25,
+			],
+			[
+				'Used as string: $s (ExprUsedAsStringNonStrict\StringableObject)',
+				34,
+			],
+			[
+				'Used as string: 5 (5)',
+				46,
 			],
 		]);
 	}

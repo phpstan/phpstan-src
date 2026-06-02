@@ -174,7 +174,22 @@ class StringableObject
 
 }
 
+class NonStringableObject
+{
+
+}
+
 function passStringableArgument(StringableObject $obj): void
 {
 	takesString($obj);
+}
+
+function assignObjectsToStringSlots(StringableObject $stringable, NonStringableObject $plain): void
+{
+	$h = new Holder();
+	// strict_types = 1: a Stringable is not coerced to a string, so it does not fire.
+	$h->prop = $stringable;
+	// A non-Stringable object cannot be coerced to a string, so it does not fire
+	// even though the property type allows a string.
+	$h->unionWithString = $plain;
 }

@@ -17,8 +17,11 @@ use PhpParser\NodeAbstract;
  *   variable (`$foo->{$s}`, `$$s`, etc.),
  * - the value assigned to a variable when that value is a string,
  * - the value assigned to a native property whose type allows a string (a plain
- *   `string` or a union containing `string`, e.g. `string|int`) and the default
- *   of a native `string`-typed property,
+ *   `string` or a union containing `string`, e.g. `string|int`) when the assigned
+ *   value can be coerced to a string in the current typing mode (so a
+ *   non-`Stringable` object assigned to such a slot does not fire, while a
+ *   `Stringable` assigned to it in weak mode does), and the default of a native
+ *   `string`-typed property,
  * - an argument passed to a native parameter whose type allows a string (a plain
  *   `string` or a union containing `string`, e.g. `string|int`), including
  *   closures and arrow functions, and the default of a native `string`-typed

@@ -16,7 +16,9 @@ final class RegexGroupWalkResult
 		private ?array $onlyLiterals,
 		private TrinaryLogic $isNonEmpty,
 		private TrinaryLogic $isNonFalsy,
-		private TrinaryLogic $isNumeric,
+		private TrinaryLogic $isDecimalInteger,
+		private TrinaryLogic $isNonDecimalInteger,
+		private bool $seenDecimalIntegerSign,
 	)
 	{
 	}
@@ -29,6 +31,8 @@ final class RegexGroupWalkResult
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
+			TrinaryLogic::createMaybe(),
+			false,
 		);
 	}
 
@@ -39,7 +43,9 @@ final class RegexGroupWalkResult
 			$this->onlyLiterals,
 			$this->isNonEmpty,
 			$this->isNonFalsy,
-			$this->isNumeric,
+			$this->isDecimalInteger,
+			$this->isNonDecimalInteger,
+			$this->seenDecimalIntegerSign,
 		);
 	}
 
@@ -53,7 +59,9 @@ final class RegexGroupWalkResult
 			$onlyLiterals,
 			$this->isNonEmpty,
 			$this->isNonFalsy,
-			$this->isNumeric,
+			$this->isDecimalInteger,
+			$this->isNonDecimalInteger,
+			$this->seenDecimalIntegerSign,
 		);
 	}
 
@@ -64,7 +72,9 @@ final class RegexGroupWalkResult
 			$this->onlyLiterals,
 			$nonEmpty,
 			$this->isNonFalsy,
-			$this->isNumeric,
+			$this->isDecimalInteger,
+			$this->isNonDecimalInteger,
+			$this->seenDecimalIntegerSign,
 		);
 	}
 
@@ -75,18 +85,50 @@ final class RegexGroupWalkResult
 			$this->onlyLiterals,
 			$this->isNonEmpty,
 			$nonFalsy,
-			$this->isNumeric,
+			$this->isDecimalInteger,
+			$this->isNonDecimalInteger,
+			$this->seenDecimalIntegerSign,
 		);
 	}
 
-	public function numeric(TrinaryLogic $numeric): self
+	/** A decimal integer string is composed only of digits, optionally preceded by a single leading minus sign. */
+	public function decimalInteger(TrinaryLogic $decimalInteger): self
 	{
 		return new self(
 			$this->inOptionalQuantification,
 			$this->onlyLiterals,
 			$this->isNonEmpty,
 			$this->isNonFalsy,
-			$numeric,
+			$decimalInteger,
+			$this->isNonDecimalInteger,
+			$this->seenDecimalIntegerSign,
+		);
+	}
+
+	/** A non-decimal integer string is guaranteed to contain no decimal integer (e.g. it has no digits at all). */
+	public function nonDecimalInteger(TrinaryLogic $nonDecimalInteger): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$nonDecimalInteger,
+			$this->seenDecimalIntegerSign,
+		);
+	}
+
+	public function seenDecimalIntegerSign(bool $seenDecimalIntegerSign): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->isNonDecimalInteger,
+			$seenDecimalIntegerSign,
 		);
 	}
 
@@ -127,9 +169,19 @@ final class RegexGroupWalkResult
 		return $this->isNonFalsy;
 	}
 
-	public function isNumeric(): TrinaryLogic
+	public function isDecimalInteger(): TrinaryLogic
 	{
-		return $this->isNumeric;
+		return $this->isDecimalInteger;
+	}
+
+	public function isNonDecimalInteger(): TrinaryLogic
+	{
+		return $this->isNonDecimalInteger;
+	}
+
+	public function hasSeenDecimalIntegerSign(): bool
+	{
+		return $this->seenDecimalIntegerSign;
 	}
 
 }

@@ -124,6 +124,7 @@ final class RegexGroupParser
 			false,
 			$modifiers,
 			RegexGroupWalkResult::createEmpty(),
+			false,
 		);
 
 		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral() && !$this->containsEscapeK($ast)) {
@@ -411,6 +412,7 @@ final class RegexGroupParser
 			false,
 			$patternModifiers,
 			RegexGroupWalkResult::createEmpty(),
+			false,
 		);
 
 		if ($maybeConstant && $walkResult->getOnlyLiterals() !== null && $walkResult->getOnlyLiterals() !== []) {
@@ -481,7 +483,7 @@ final class RegexGroupParser
 		bool $inClass,
 		string $patternModifiers,
 		RegexGroupWalkResult $walkResult,
-		bool $inNegativeClass = false,
+		bool $inNegativeClass,
 	): RegexGroupWalkResult
 	{
 		$children = $ast->getChildren();

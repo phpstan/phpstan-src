@@ -67,7 +67,7 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 		if ($exprArg instanceof Cast\String_) {
 			$accessories = [
 				new StringType(),
-				new AccessoryNumericStringType()
+				new AccessoryNumericStringType(),
 			];
 			if ($context->true()) {
 				$accessories[] = new AccessoryDecimalIntegerStringType();

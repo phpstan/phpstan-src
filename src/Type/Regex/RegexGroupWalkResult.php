@@ -17,7 +17,6 @@ final class RegexGroupWalkResult
 		private TrinaryLogic $isNonEmpty,
 		private TrinaryLogic $isNonFalsy,
 		private TrinaryLogic $isDecimalInteger,
-		private TrinaryLogic $isNonDecimalInteger,
 		private bool $seenDecimalIntegerSign,
 	)
 	{
@@ -28,7 +27,6 @@ final class RegexGroupWalkResult
 		return new self(
 			false,
 			[],
-			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
@@ -44,7 +42,6 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->isNonDecimalInteger,
 			$this->seenDecimalIntegerSign,
 		);
 	}
@@ -60,7 +57,6 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->isNonDecimalInteger,
 			$this->seenDecimalIntegerSign,
 		);
 	}
@@ -73,7 +69,6 @@ final class RegexGroupWalkResult
 			$nonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->isNonDecimalInteger,
 			$this->seenDecimalIntegerSign,
 		);
 	}
@@ -86,7 +81,6 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$nonFalsy,
 			$this->isDecimalInteger,
-			$this->isNonDecimalInteger,
 			$this->seenDecimalIntegerSign,
 		);
 	}
@@ -100,21 +94,6 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$decimalInteger,
-			$this->isNonDecimalInteger,
-			$this->seenDecimalIntegerSign,
-		);
-	}
-
-	/** A non-decimal integer string is guaranteed to contain no decimal integer (e.g. it has no digits at all). */
-	public function nonDecimalInteger(TrinaryLogic $nonDecimalInteger): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$nonDecimalInteger,
 			$this->seenDecimalIntegerSign,
 		);
 	}
@@ -127,7 +106,6 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->isNonDecimalInteger,
 			$seenDecimalIntegerSign,
 		);
 	}
@@ -172,11 +150,6 @@ final class RegexGroupWalkResult
 	public function isDecimalInteger(): TrinaryLogic
 	{
 		return $this->isDecimalInteger;
-	}
-
-	public function isNonDecimalInteger(): TrinaryLogic
-	{
-		return $this->isNonDecimalInteger;
 	}
 
 	public function hasSeenDecimalIntegerSign(): bool

@@ -24,11 +24,9 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_values;
-use function chr;
 use function count;
 use function in_array;
 use function is_int;
-use function ord;
 use function preg_replace;
 use function rtrim;
 use function sscanf;
@@ -124,7 +122,6 @@ final class RegexGroupParser
 			false,
 			$modifiers,
 			RegexGroupWalkResult::createEmpty(),
-			false,
 		);
 
 		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral() && !$this->containsEscapeK($ast)) {
@@ -412,7 +409,6 @@ final class RegexGroupParser
 			false,
 			$patternModifiers,
 			RegexGroupWalkResult::createEmpty(),
-			false,
 		);
 
 		if ($maybeConstant && $walkResult->getOnlyLiterals() !== null && $walkResult->getOnlyLiterals() !== []) {
@@ -438,15 +434,6 @@ final class RegexGroupParser
 				return new UnionType([new ConstantStringType(''), $result]);
 			}
 			return $result;
-		} elseif ($walkResult->isNonDecimalInteger()->yes()) {
-			$accessories = [new StringType(), new AccessoryDecimalIntegerStringType(true)];
-			if ($walkResult->isNonFalsy()->yes()) {
-				$accessories[] = new AccessoryNonFalsyStringType();
-			} elseif ($walkResult->isNonEmpty()->yes()) {
-				$accessories[] = new AccessoryNonEmptyStringType();
-			}
-
-			return new IntersectionType($accessories);
 		} elseif ($walkResult->isNonFalsy()->yes()) {
 			return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 		} elseif ($walkResult->isNonEmpty()->yes()) {
@@ -483,7 +470,6 @@ final class RegexGroupParser
 		bool $inClass,
 		string $patternModifiers,
 		RegexGroupWalkResult $walkResult,
-		bool $inNegativeClass,
 	): RegexGroupWalkResult
 	{
 		$children = $ast->getChildren();
@@ -555,27 +541,19 @@ final class RegexGroupParser
 			$walkResult = $walkResult->onlyLiterals($onlyLiterals);
 
 			if ($literalValue !== null) {
-				if (!$inNegativeClass) {
-					if (Strings::match($literalValue, '/^\d+$/') !== null) {
-						if ($walkResult->isDecimalInteger()->maybe()) {
-							$walkResult = $walkResult->decimalInteger(TrinaryLogic::createYes());
-						}
-					} elseif (
-						$literalValue === '-'
-						&& $walkResult->isDecimalInteger()->maybe()
-						&& !$walkResult->hasSeenDecimalIntegerSign()
-					) {
-						// a single leading minus sign keeps the string a decimal integer (e.g. "-1")
-						$walkResult = $walkResult->seenDecimalIntegerSign(true);
-					} else {
-						$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
+				if (Strings::match($literalValue, '/^\d+$/') !== null) {
+					if ($walkResult->isDecimalInteger()->maybe()) {
+						$walkResult = $walkResult->decimalInteger(TrinaryLogic::createYes());
 					}
-
-					// a literal token outside a negative class might be (part of) a decimal integer,
-					// so we can no longer guarantee the absence of one
-					if ($literalValue !== '') {
-						$walkResult = $walkResult->nonDecimalInteger(TrinaryLogic::createNo());
-					}
+				} elseif (
+					$literalValue === '-'
+					&& $walkResult->isDecimalInteger()->maybe()
+					&& !$walkResult->hasSeenDecimalIntegerSign()
+				) {
+					// a single leading minus sign keeps the string a decimal integer (e.g. "-1")
+					$walkResult = $walkResult->seenDecimalIntegerSign(true);
+				} else {
+					$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
 				}
 
 				if (!$walkResult->isInOptionalQuantification() && $literalValue !== '') {
@@ -595,7 +573,6 @@ final class RegexGroupParser
 			$nonEmpty = TrinaryLogic::createYes();
 			$nonFalsy = TrinaryLogic::createYes();
 			$decimalInteger = TrinaryLogic::createYes();
-			$nonDecimalInteger = TrinaryLogic::createYes();
 			foreach ($children as $child) {
 				$childResult = $this->walkGroupAst(
 					$child,
@@ -605,15 +582,12 @@ final class RegexGroupParser
 						->nonEmpty(TrinaryLogic::createMaybe())
 						->nonFalsy(TrinaryLogic::createMaybe())
 						->decimalInteger(TrinaryLogic::createMaybe())
-						->nonDecimalInteger(TrinaryLogic::createMaybe())
 						->seenDecimalIntegerSign(false),
-					$inNegativeClass,
 				);
 
 				$nonEmpty = $nonEmpty->and($childResult->isNonEmpty());
 				$nonFalsy = $nonFalsy->and($childResult->isNonFalsy());
 				$decimalInteger = $decimalInteger->and($childResult->isDecimalInteger());
-				$nonDecimalInteger = $nonDecimalInteger->and($childResult->isNonDecimalInteger());
 
 				if ($newLiterals === null) {
 					continue;
@@ -632,23 +606,14 @@ final class RegexGroupParser
 				->onlyLiterals($newLiterals)
 				->nonEmpty($walkResult->isNonEmpty()->or($nonEmpty))
 				->nonFalsy($walkResult->isNonFalsy()->or($nonFalsy))
-				->decimalInteger($walkResult->isDecimalInteger()->and($decimalInteger))
-				->nonDecimalInteger($walkResult->isNonDecimalInteger()->and($nonDecimalInteger));
+				->decimalInteger($walkResult->isDecimalInteger()->and($decimalInteger));
 		}
 
-		// a negative class never matches a decimal integer on its own; when it excludes every
-		// digit it can only match non-digit characters, so the result is a non-decimal-int-string
+		// [^0-9] should not parse as decimal-int-string, and [^list-everything-but-numbers] is technically
+		// doable but really silly compared to just \d so we can safely assume the string is not a decimal
+		// integer for negative classes
 		if ($ast->getId() === '#negativeclass') {
 			$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
-			if ($this->negatedClassExcludesAllDigits($ast)) {
-				if ($walkResult->isNonDecimalInteger()->maybe()) {
-					$walkResult = $walkResult->nonDecimalInteger(TrinaryLogic::createYes());
-				}
-			} else {
-				$walkResult = $walkResult->nonDecimalInteger(TrinaryLogic::createNo());
-			}
-
-			$inNegativeClass = true;
 		}
 
 		foreach ($children as $child) {
@@ -657,48 +622,10 @@ final class RegexGroupParser
 				$inClass,
 				$patternModifiers,
 				$walkResult,
-				$inNegativeClass,
 			);
 		}
 
 		return $walkResult;
-	}
-
-	private function negatedClassExcludesAllDigits(TreeNode $negativeClass): bool
-	{
-		$excludedDigits = [];
-		foreach ($negativeClass->getChildren() as $child) {
-			if ($child->getId() === '#range') {
-				$from = $child->getChild(0)->getValueValue();
-				$to = $child->getChild(1)->getValueValue();
-				if (strlen($from) === 1 && strlen($to) === 1) {
-					for ($ord = ord($from); $ord <= ord($to); $ord++) {
-						$char = chr($ord);
-						if (Strings::match($char, '/^\d$/') === null) {
-							continue;
-						}
-						$excludedDigits[$char] = true;
-					}
-				}
-			} elseif ($child->getId() === 'token') {
-				$value = $child->getValueValue();
-				if ($child->getValueToken() === 'character_type' && $value === '\d') {
-					for ($digit = 0; $digit <= 9; $digit++) {
-						$excludedDigits[(string) $digit] = true;
-					}
-				} elseif (Strings::match($value, '/^\d$/') !== null) {
-					$excludedDigits[$value] = true;
-				}
-			}
-		}
-
-		for ($digit = 0; $digit <= 9; $digit++) {
-			if (!array_key_exists((string) $digit, $excludedDigits)) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool

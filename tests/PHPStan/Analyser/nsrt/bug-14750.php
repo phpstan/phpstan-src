@@ -22,8 +22,9 @@ function pregMatchDecimalIntStringTypeMatches(string $x): void
 		assertType('decimal-int-string', $matches[1]);
 	}
 
+	// a negated digit class does not match a decimal integer
 	if (preg_match('/^([^0-9])$/', $x, $matches)) {
-		assertType('non-decimal-int-string&non-empty-string', $matches[1]);
+		assertType('non-empty-string', $matches[1]);
 	}
 }
 
@@ -49,18 +50,8 @@ function edgeCases(string $x): void
 		assertType('non-empty-string', $matches[1]);
 	}
 
-	// quantified negated digit class only matches non-digits
+	// a negated digit class never yields a decimal integer
 	if (preg_match('/^([^0-9]+)$/', $x, $matches)) {
-		assertType('non-decimal-int-string&non-empty-string', $matches[1]);
-	}
-
-	// negated class that does not exclude every digit can still match a decimal integer
-	if (preg_match('/^([^1-4])$/', $x, $matches)) {
 		assertType('non-empty-string', $matches[1]);
-	}
-
-	// alternation of a digit and a negated digit class
-	if (preg_match('/^(\d|[^0-9])$/', $x, $matches)) {
-		assertType('decimal-int-string|(non-decimal-int-string&non-empty-string)', $matches[1]);
 	}
 }

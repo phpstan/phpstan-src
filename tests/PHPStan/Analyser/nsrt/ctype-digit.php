@@ -14,7 +14,7 @@ class Foo
 		assertType('mixed', $foo);
 
 		if (is_string($foo) && ctype_digit($foo)) {
-			assertType('numeric-string', $foo);
+			assertType('decimal-int-string', $foo);
 		} else {
 			assertType('mixed', $foo);
 		}
@@ -26,10 +26,20 @@ class Foo
 		}
 
 		if (ctype_digit($foo)) {
-			assertType('int<48, 57>|int<256, max>|numeric-string', $foo);
+			assertType('int<48, 57>|int<256, max>|decimal-int-string', $foo);
 			return;
 		}
 
 		assertType('mixed~(int<48, 57>|int<256, max>)', $foo); // not all numeric strings are covered by ctype_digit
+	}
+
+	public function doString(string $string): void
+	{
+		if (ctype_digit($string) === true) {
+			assertType('decimal-int-string', $string);
+		} else {
+			assertType('string', $string);
+		}
+
 	}
 }

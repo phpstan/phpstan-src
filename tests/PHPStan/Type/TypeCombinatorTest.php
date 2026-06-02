@@ -5714,6 +5714,30 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array<string>|ArrayObject',
 			],
 			[
+				new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+				]),
+				new IntersectionType([
+					new StringType(),
+					new AccessoryDecimalIntegerStringType(),
+				]),
+				IntersectionType::class,
+				'numeric-string',
+			],
+			[
+				new IntersectionType([
+					new StringType(),
+					new AccessoryDecimalIntegerStringType(),
+				]),
+				new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
 				new ConstantBooleanType(true),
 				new ConstantBooleanType(false),
 				ConstantBooleanType::class,

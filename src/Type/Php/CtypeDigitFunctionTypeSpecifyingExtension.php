@@ -12,6 +12,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -56,7 +57,7 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 		if ($context->true()) {
 			$types[] = new IntersectionType([
 				new StringType(),
-				new AccessoryNumericStringType(),
+				new AccessoryDecimalIntegerStringType(),
 			]);
 		}
 
@@ -64,12 +65,16 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 		$specifiedTypes = $this->typeSpecifier->create($exprArg, $unionType, $context, $scope);
 
 		if ($exprArg instanceof Cast\String_) {
+			$accessories = [
+				new StringType(),
+				new AccessoryNumericStringType(),
+			];
+			if ($context->true()) {
+				$accessories[] = new AccessoryDecimalIntegerStringType();
+			}
 			$castedType = new UnionType([
 				IntegerRangeType::fromInterval(0, null),
-				new IntersectionType([
-					new StringType(),
-					new AccessoryNumericStringType(),
-				]),
+				new IntersectionType($accessories),
 				new ConstantBooleanType(true),
 			]);
 			$specifiedTypes = $specifiedTypes->unionWith(

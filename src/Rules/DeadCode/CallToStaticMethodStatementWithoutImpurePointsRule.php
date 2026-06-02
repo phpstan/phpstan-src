@@ -36,19 +36,22 @@ final class CallToStaticMethodStatementWithoutImpurePointsRule implements Rule
 
 		$errors = [];
 		foreach ($node->get(PossiblyPureStaticCallCollector::class) as $filePath => $data) {
-			foreach ($data as [$className, $method, $line]) {
+			foreach ($data as [$className, $method, $line, $classDisplayName, $hasEmptyBody]) {
 				$lowerClassName = strtolower($className);
-
-				if (!array_key_exists($lowerClassName, $methods)) {
-					continue;
-				}
-
 				$lowerMethod = strtolower($method);
-				if (!array_key_exists($lowerMethod, $methods[$lowerClassName])) {
-					continue;
-				}
 
-				$originalMethodName = $methods[$lowerClassName][$lowerMethod];
+				if (
+					!array_key_exists($lowerClassName, $methods)
+					|| !array_key_exists($lowerMethod, $methods[$lowerClassName])
+				) {
+					if (!$hasEmptyBody) {
+						continue;
+					}
+
+					$originalMethodName = $classDisplayName . '::' . $method;
+				} else {
+					$originalMethodName = $methods[$lowerClassName][$lowerMethod];
+				}
 
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Call to %s() on a separate line has no effect.',

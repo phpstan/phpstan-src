@@ -33,13 +33,13 @@ final class CallToConstructorStatementWithoutImpurePointsRule implements Rule
 
 		$errors = [];
 		foreach ($node->get(PossiblyPureNewCollector::class) as $filePath => $data) {
-			foreach ($data as [$class, $line]) {
+			foreach ($data as [$class, $line, $hasEmptyConstructorBody]) {
 				$lowerClass = strtolower($class);
-				if (!array_key_exists($lowerClass, $classesWithConstructors)) {
+				if (!$hasEmptyConstructorBody && !array_key_exists($lowerClass, $classesWithConstructors)) {
 					continue;
 				}
 
-				$originalClassName = $classesWithConstructors[$lowerClass];
+				$originalClassName = $classesWithConstructors[$lowerClass] ?? $class;
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Call to new %s() on a separate line has no effect.',
 					$originalClassName,

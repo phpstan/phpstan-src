@@ -8,15 +8,19 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\Reflection\ReflectionProvider;
+use function count;
 
 /**
- * @implements Collector<Node\Stmt\Expression, array{string, int}>
+ * @implements Collector<Node\Stmt\Expression, array{string, int, bool}>
  */
 #[RegisteredCollector(level: 4)]
 final class PossiblyPureFuncCallCollector implements Collector
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private EmptyBodyCallableDetector $emptyBodyCallableDetector,
+	)
 	{
 	}
 
@@ -61,7 +65,11 @@ final class PossiblyPureFuncCallCollector implements Collector
 			return null;
 		}
 
-		return [$functionReflection->getName(), $node->getStartLine()];
+		$hasEmptyBody = !$functionReflection->isBuiltin()
+			&& count($functionReflection->getAsserts()->getAll()) === 0
+			&& $this->emptyBodyCallableDetector->hasEmptyFunctionBody($functionReflection->getFileName(), $functionReflection->getName());
+
+		return [$functionReflection->getName(), $node->getStartLine(), $hasEmptyBody];
 	}
 
 }

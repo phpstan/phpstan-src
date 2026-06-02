@@ -26,10 +26,23 @@ class CallToConstructorStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14757(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14757.php'], [
+			[
+				'Call to new PHPStan\Type\StringType() on a separate line has no effect.',
+				8,
+			],
+		]);
+	}
+
 	protected function getCollectors(): array
 	{
 		return [
-			new PossiblyPureNewCollector(self::createReflectionProvider()),
+			new PossiblyPureNewCollector(
+				self::createReflectionProvider(),
+				self::getContainer()->getByType(EmptyBodyCallableDetector::class),
+			),
 			new ConstructorWithoutImpurePointsCollector(),
 		];
 	}

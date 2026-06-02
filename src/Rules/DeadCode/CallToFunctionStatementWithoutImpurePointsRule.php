@@ -33,13 +33,13 @@ final class CallToFunctionStatementWithoutImpurePointsRule implements Rule
 
 		$errors = [];
 		foreach ($node->get(PossiblyPureFuncCallCollector::class) as $filePath => $data) {
-			foreach ($data as [$func, $line]) {
+			foreach ($data as [$func, $line, $hasEmptyBody]) {
 				$lowerFunc = strtolower($func);
-				if (!array_key_exists($lowerFunc, $functions)) {
+				if (!$hasEmptyBody && !array_key_exists($lowerFunc, $functions)) {
 					continue;
 				}
 
-				$originalFunctionName = $functions[$lowerFunc];
+				$originalFunctionName = $functions[$lowerFunc] ?? $func;
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Call to function %s() on a separate line has no effect.',
 					$originalFunctionName,

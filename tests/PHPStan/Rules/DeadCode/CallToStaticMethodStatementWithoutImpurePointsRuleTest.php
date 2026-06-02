@@ -59,6 +59,17 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 		]);
 	}
 
+	public function testBug14757(): void
+	{
+		require_once __DIR__ . '/data/bug-14757-static-definition.php';
+		$this->analyse([__DIR__ . '/data/bug-14757-static-call.php'], [
+			[
+				'Call to Bug14757Static\Utils::emptyStatic() on a separate line has no effect.',
+				6,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
@@ -77,7 +88,9 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 	protected function getCollectors(): array
 	{
 		return [
-			new PossiblyPureStaticCallCollector(),
+			new PossiblyPureStaticCallCollector(
+				self::getContainer()->getByType(EmptyBodyCallableDetector::class),
+			),
 			new MethodWithoutImpurePointsCollector(),
 		];
 	}

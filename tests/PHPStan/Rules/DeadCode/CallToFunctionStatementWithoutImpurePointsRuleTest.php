@@ -27,6 +27,17 @@ class CallToFunctionStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14757(): void
+	{
+		require_once __DIR__ . '/data/bug-14757-function-definition.php';
+		$this->analyse([__DIR__ . '/data/bug-14757-function-call.php'], [
+			[
+				'Call to function Bug14757Func\emptyFunc() on a separate line has no effect.',
+				6,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{
@@ -45,7 +56,10 @@ class CallToFunctionStatementWithoutImpurePointsRuleTest extends RuleTestCase
 	protected function getCollectors(): array
 	{
 		return [
-			new PossiblyPureFuncCallCollector(self::createReflectionProvider()),
+			new PossiblyPureFuncCallCollector(
+				self::createReflectionProvider(),
+				self::getContainer()->getByType(EmptyBodyCallableDetector::class),
+			),
 			new FunctionWithoutImpurePointsCollector(),
 		];
 	}

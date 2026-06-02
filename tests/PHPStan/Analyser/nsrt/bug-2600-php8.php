@@ -26,14 +26,14 @@ class Foo
 	 * @param mixed $x
 	 */
 	public function doBaz(...$x) {
-		assertType('array<int|string, mixed>', $x);
+		assertType('array<int<0, max>|string, mixed>', $x);
 	}
 
 	/**
 	 * @param mixed ...$x
 	 */
 	public function doLorem(...$x) {
-		assertType('array<int|string, mixed>', $x);
+		assertType('array<int<0, max>|string, mixed>', $x);
 	}
 
 	public function doIpsum($x = null) {
@@ -65,24 +65,24 @@ class Bar
 	 * @param string $x
 	 */
 	public function doBaz(...$x) {
-		assertType('array<int|string, string>', $x);
+		assertType('array<int<0, max>|string, string>', $x);
 	}
 
 	/**
 	 * @param string ...$x
 	 */
 	public function doLorem(...$x) {
-		assertType('array<int|string, string>', $x);
+		assertType('array<int<0, max>|string, string>', $x);
 	}
 }
 
 function foo($x, string ...$y): void
 {
 	assertType('mixed', $x);
-	assertType('array<int|string, string>', $y);
+	assertType('array<int<0, max>|string, string>', $y);
 }
 
 function ($x, string ...$y): void {
 	assertType('mixed', $x);
-	assertType('array<int|string, string>', $y);
+	assertType('array<int<0, max>|string, string>', $y);
 };

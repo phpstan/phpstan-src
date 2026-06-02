@@ -27,7 +27,7 @@ function test(): void
 {
 	$u = new Upload();
 	$u->onUpload(function (...$postFiles): bool {
-		assertType('array<int|string, array{error: int, name: string}>', $postFiles);
+		assertType('array<int<0, max>|string, array{error: int, name: string}>', $postFiles);
 		foreach ($postFiles as $postFile) {
 			assertType('array{error: int, name: string}', $postFile);
 			if ($postFile['error'] !== 0) {
@@ -50,7 +50,7 @@ function mixedTypes(\Closure $fx): void
 function testMixedTypes(): void
 {
 	mixedTypes(function (...$args): void {
-		assertType('array<int|string, float|int|string>', $args);
+		assertType('array<int<0, max>|string, float|int|string>', $args);
 	});
 }
 
@@ -66,7 +66,7 @@ function testVariadicNotFirst(): void
 {
 	twoParams(function (int $first, string ...$rest): void {
 		assertType('int', $first);
-		assertType('array<int|string, string>', $rest);
+		assertType('array<int<0, max>|string, string>', $rest);
 	});
 }
 
@@ -74,14 +74,14 @@ function testVariadicNotFirst(): void
 function testArrowFunction(): void
 {
 	$u = new Upload();
-	$u->onUpload(fn (...$postFiles) => assertType('array<int|string, array{error: int, name: string}>', $postFiles) || true);
+	$u->onUpload(fn (...$postFiles) => assertType('array<int<0, max>|string, array{error: int, name: string}>', $postFiles) || true);
 }
 
 // Immediately-invoked closure with variadic
 function testImmediatelyInvoked(): void
 {
 	$result = (function (...$args): string {
-		assertType('array<int|string, 1|3.14|\'hello\'>', $args);
+		assertType('array<int<0, max>|string, 1|3.14|\'hello\'>', $args);
 		return implode(', ', $args);
 	})(1, 'hello', 3.14);
 }
@@ -89,7 +89,7 @@ function testImmediatelyInvoked(): void
 // Immediately-invoked arrow function with variadic
 function testImmediatelyInvokedArrow(): void
 {
-	$result = (fn (...$args) => assertType('array<int|string, 1|3.14|\'hello\'>', $args))(1, 'hello', 3.14);
+	$result = (fn (...$args) => assertType('array<int<0, max>|string, 1|3.14|\'hello\'>', $args))(1, 'hello', 3.14);
 }
 
 // Variadic param with last callable parameter also variadic
@@ -103,6 +103,6 @@ function variadicExpected(\Closure $fx): void
 function testVariadicExpected(): void
 {
 	variadicExpected(function (...$args): void {
-		assertType('array<int|string, int|string>', $args);
+		assertType('array<int<0, max>|string, int|string>', $args);
 	});
 }

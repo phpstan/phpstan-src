@@ -10,7 +10,7 @@ if (PHP_VERSION_ID >= 80000) {
 		 * @param mixed $x
 		 */
 		public function doBaz(...$x) {
-			assertType('array<int|string, mixed>', $x);
+			assertType('array<int<0, max>|string, mixed>', $x);
 		}
 	}
 } else {

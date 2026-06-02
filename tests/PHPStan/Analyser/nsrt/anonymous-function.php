@@ -8,7 +8,7 @@ function () {
 	$integer = 1;
 	function (string $str, ...$arr) use ($integer, $bar) {
 		assertType('string', $str);
-		assertType('array<int|string, mixed>', $arr);
+		assertType('array<int<0, max>|string, mixed>', $arr);
 		assertType('1', $integer);
 		assertType('*ERROR*', $bar);
 	};

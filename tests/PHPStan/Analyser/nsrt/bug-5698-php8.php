@@ -9,8 +9,8 @@ class FooPHP8
 {
 
 	function foo(int ...$foo): void {
-		assertType('array<int|string, int>', $foo);
-		assertNativeType('array<int|string, int>', $foo);
+		assertType('array<int<0, max>|string, int>', $foo);
+		assertNativeType('array<int<0, max>|string, int>', $foo);
 	}
 
 }

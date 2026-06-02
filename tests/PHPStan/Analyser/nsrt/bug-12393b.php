@@ -343,7 +343,7 @@ class FooIntString
 	public function doFoo(int $b): void
 	{
 		$this->foo = $b;
-		assertType('lowercase-string&numeric-string&uppercase-string', $this->foo);
+		assertType('decimal-int-string', $this->foo);
 	}
 
 	public function doBar(): void
@@ -418,7 +418,7 @@ class FooNullableIntString
 	public function doFoo(?int $b): void
 	{
 		$this->foo = $b;
-		assertType('lowercase-string&numeric-string&uppercase-string', $this->foo);
+		assertType('decimal-int-string', $this->foo);
 	}
 
 	public function doBar(): void

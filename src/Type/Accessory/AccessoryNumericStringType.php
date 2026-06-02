@@ -217,7 +217,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	{
 		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();
 		if ($level !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
-			new UnionType([
+			return new UnionType([
 				new IntegerType(),
 				new IntersectionType([
 					new StringType(),

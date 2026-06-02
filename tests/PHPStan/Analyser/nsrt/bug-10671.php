@@ -16,19 +16,19 @@ function callClosure(Closure $closure): void
 
 // Arrow function with variadic - the bug
 callClosure(
-	fn(...$args) => assertType('array<int|string, mixed>', $args)
+	fn(...$args) => assertType('array<int<0, max>|string, mixed>', $args)
 );
 
 // Anonymous function with variadic - works correctly
 callClosure(
 	function (...$args) {
-		assertType('array<int|string, mixed>', $args);
+		assertType('array<int<0, max>|string, mixed>', $args);
 	}
 );
 
 // Arrow function with typed variadic
 callClosure(
-	fn(int ...$args) => assertType('array<int|string, int>', $args)
+	fn(int ...$args) => assertType('array<int<0, max>|string, int>', $args)
 );
 
 // Arrow function with variadic and preceding params
@@ -40,11 +40,11 @@ function callClosure2(Closure $closure): void
 }
 
 callClosure2(
-	fn(string $first, ...$rest) => assertType('array<int|string, mixed>', $rest)
+	fn(string $first, ...$rest) => assertType('array<int<0, max>|string, mixed>', $rest)
 );
 
 callClosure2(
 	function (string $first, ...$rest) {
-		assertType('array<int|string, mixed>', $rest);
+		assertType('array<int<0, max>|string, mixed>', $rest);
 	}
 );

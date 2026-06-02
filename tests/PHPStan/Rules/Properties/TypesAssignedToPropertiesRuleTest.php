@@ -651,9 +651,9 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-11275.php'], [
 			[
-				'Property Bug11275\D::$b (list<Bug11275\B>) does not accept array<int|string, Bug11275\B>.',
+				'Property Bug11275\D::$b (list<Bug11275\B>) does not accept array<int<0, max>|string, Bug11275\B>.',
 				50,
-				'array<int|string, Bug11275\B> might not be a list.',
+				'array<int<0, max>|string, Bug11275\B> might not be a list.',
 			],
 		]);
 	}

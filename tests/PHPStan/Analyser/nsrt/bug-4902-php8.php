@@ -44,10 +44,10 @@ class Wrapper {
 	 * @param Wrapper<T-all> ...$wrappers
 	 */
 	function unwrapAllAndWrapAgain(Wrapper ...$wrappers): void {
-		assertType('array<int|string, T-all (method Bug4902Php8\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(function (Wrapper $item) {
+		assertType('array<int<0, max>|string, T-all (method Bug4902Php8\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(function (Wrapper $item) {
 			return $this->unwrap($item);
 		}, $wrappers));
-		assertType('array<int|string, T-all (method Bug4902Php8\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(fn (Wrapper $item) => $this->unwrap($item), $wrappers));
+		assertType('array<int<0, max>|string, T-all (method Bug4902Php8\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(fn (Wrapper $item) => $this->unwrap($item), $wrappers));
 	}
 
 }

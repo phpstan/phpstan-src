@@ -37,7 +37,7 @@ class Foo
 		assertType('TypesNamespaceTypehints\Foo', $fooObject);
 		assertType('TypesNamespaceTypehints\Bar', $anotherBarObject);
 		assertType('callable(): mixed', $callable);
-		assertType('array<int|string, string>', $variadicStrings);
+		assertType('array<int<0, max>|string, string>', $variadicStrings);
 		assertType('string', $variadicStrings[0]);
 	}
 

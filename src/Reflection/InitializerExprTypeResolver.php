@@ -786,8 +786,8 @@ final class InitializerExprTypeResolver
 			);
 		}
 		if ($isVariadic) {
-			if (!$this->phpVersion->supportsNamedArguments()) {
-				return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $this->getFunctionType(
+			if ($this->phpVersion->supportsNamedArguments()) {
+				return new ArrayType(new UnionType([IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()]), $this->getFunctionType(
 					$type,
 					false,
 					false,

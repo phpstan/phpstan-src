@@ -1794,7 +1794,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$paramExprString = '$' . $parameter->getName();
 			if ($parameter->isVariadic()) {
 				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
-					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
+					$parameterType = new ArrayType(new UnionType([IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()]), $parameterType);
 				} else {
 					$parameterType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $parameterType), new AccessoryArrayListType()]);
 				}
@@ -1809,7 +1809,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
 				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
-					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
+					$nativeParameterType = new ArrayType(new UnionType([IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()]), $nativeParameterType);
 				} else {
 					$nativeParameterType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $nativeParameterType), new AccessoryArrayListType()]);
 				}
@@ -2303,7 +2303,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if ($isVariadic) {
 			if (!$this->getPhpVersion()->supportsNamedArguments()->no()) {
-				return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $this->getFunctionType(
+				return new ArrayType(new UnionType([IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()]), $this->getFunctionType(
 					$type,
 					$isNullable,
 					false,
@@ -2372,7 +2372,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$elementType = TypeCombinator::union(...$elementTypes);
 
 		if (!$this->getPhpVersion()->supportsNamedArguments()->no()) {
-			return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $elementType);
+			return new ArrayType(new UnionType([IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()]), $elementType);
 		}
 
 		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $elementType), new AccessoryArrayListType()]);

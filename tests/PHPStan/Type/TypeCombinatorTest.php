@@ -5723,7 +5723,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new AccessoryDecimalIntegerStringType(),
 				]),
 				IntersectionType::class,
-				'numeric-string'
+				'numeric-string',
 			],
 			[
 				new IntersectionType([
@@ -5735,7 +5735,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new AccessoryNumericStringType(),
 				]),
 				NeverType::class,
-				'*NEVER*=implicit'
+				'*NEVER*=implicit',
 			],
 			[
 				new ConstantBooleanType(true),

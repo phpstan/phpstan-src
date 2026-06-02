@@ -3665,6 +3665,21 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12880.php'], []);
 	}
 
+	public function testBug14732(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14732.php'], [
+			[
+				'Parameter #1 $seed of method Bug14732\MondayMorning::add() expects Bug14732\MondayMorning, array<mixed> given.',
+				20,
+			],
+		]);
+	}
+
 	public function testBug12940(): void
 	{
 		$this->checkThisOnly = false;

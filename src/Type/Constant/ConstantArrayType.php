@@ -2499,7 +2499,16 @@ class ConstantArrayType implements Type
 			);
 		};
 		return $level->handle(
-			fn (): string => $this->isIterableAtLeastOnce()->no() ? $arrayName : sprintf('%s<%s, %s>', $arrayName, $this->getIterableKeyType()->describe($level), $this->getIterableValueType()->describe($level)),
+			function () use ($arrayName, $level): string {
+				if ($this->isIterableAtLeastOnce()->no()) {
+					return $arrayName;
+				}
+				$keyType = $this->getIterableKeyType();
+				if (in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
+					return sprintf('%s<%s>', $arrayName, $this->getIterableValueType()->describe($level));
+				}
+				return sprintf('%s<%s, %s>', $arrayName, $keyType->describe($level), $this->getIterableValueType()->describe($level));
+			},
 			static fn (): string => $describeValue(true),
 			static fn (): string => $describeValue(false),
 		);

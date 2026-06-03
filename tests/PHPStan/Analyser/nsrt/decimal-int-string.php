@@ -14,7 +14,7 @@ class Foo
 	{
 		assertType('decimal-int-string' ,$s);
 		$a = [$s => 1];
-		assertType('non-empty-array<decimal-int-string, 1>', $a);
+		assertType('non-empty-array<int|decimal-int-string, 1>', $a);
 
 		assertType('bool', (bool) $s);
 

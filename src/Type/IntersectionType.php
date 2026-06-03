@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
@@ -1554,18 +1553,6 @@ class IntersectionType implements CompoundType
 
 	public function toArrayKey(): Type
 	{
-		// A decimal-int-string is always coerced to an integer key by PHP, so the precise
-		// key type is int. But mirroring StringType::toArrayKey(), we only narrow to int
-		// under 'prevent'; by default we keep the string key to avoid false positives like
-		// isset($stringKeyedArray[(string) $int]) reporting the offset can never exist (bug #4671).
-		if ($this->isDecimalIntegerString()->yes()) {
-			if (ReportUnsafeArrayStringKeyCastingToggle::getLevel() !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
-				return $this;
-			}
-
-			return new IntegerType();
-		}
-
 		if ($this->isNumericString()->yes()) {
 			return TypeCombinator::union(
 				new IntegerType(),

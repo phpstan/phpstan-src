@@ -6,6 +6,13 @@ use function PHPStan\Testing\assertType;
 
 function pregMatchDecimalIntStringTypeMatches(string $x): void
 {
+	if (preg_match('/^[0-9]+$/', $x)) {
+		assertType('decimal-int-string', $x);
+	}
+	if (preg_match('/^-?[0-9]+$/', $x)) {
+		assertType('decimal-int-string', $x);
+	}
+
 	if (preg_match('/^(-?[0-9]+)$/', $x, $matches)) { // all chars in string are "-" or numbers
 		assertType('decimal-int-string', $x);
 		assertType('array{decimal-int-string, decimal-int-string}', $matches);

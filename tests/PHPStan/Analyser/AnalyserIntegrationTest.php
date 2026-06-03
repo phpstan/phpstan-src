@@ -1274,9 +1274,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug13982(): void
 	{
-		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13982.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Call to method class@anonymous/tests/PHPStan/Analyser/data/bug-13982.php:6::test2() on a separate line has no effect.', $errors[0]->getMessage());
+		$this->assertSame(15, $errors[0]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

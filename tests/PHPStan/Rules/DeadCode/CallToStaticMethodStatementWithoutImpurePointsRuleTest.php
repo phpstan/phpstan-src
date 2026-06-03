@@ -14,7 +14,7 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 
 	protected function getRule(): Rule
 	{
-		return new CallToStaticMethodStatementWithoutImpurePointsRule();
+		return new CallToStaticMethodStatementWithoutImpurePointsRule(new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider()));
 	}
 
 	public function testRule(): void
@@ -43,6 +43,18 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 			[
 				'Call to CallToStaticMethodWithoutImpurePoints\SubSubY::mySubSubFunc() on a separate line has no effect.',
 				21,
+			],
+			[
+				'Call to CallToStaticMethodWithoutImpurePoints\SubSubY::mySubSubCallSelfFunc() on a separate line has no effect.',
+				22,
+			],
+			[
+				'Call to CallToStaticMethodWithoutImpurePoints\SubSubY::mySubSubCallParentFunc() on a separate line has no effect.',
+				23,
+			],
+			[
+				'Call to CallToStaticMethodWithoutImpurePoints\SubSubY::mySubSubCallStaticFunc() on a separate line has no effect.',
+				24,
 			],
 			[
 				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
@@ -76,9 +88,13 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 
 	protected function getCollectors(): array
 	{
+		$purityResolver = new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider());
+
 		return [
 			new PossiblyPureStaticCallCollector(),
-			new MethodWithoutImpurePointsCollector(),
+			new MethodWithoutImpurePointsCollector($purityResolver),
+			new FunctionWithoutImpurePointsCollector($purityResolver),
+			new ConstructorWithoutImpurePointsCollector($purityResolver),
 		];
 	}
 

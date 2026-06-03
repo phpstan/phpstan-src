@@ -10,11 +10,15 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use function count;
 
 /**
- * @implements Collector<MethodReturnStatementsNode, string>
+ * @implements Collector<MethodReturnStatementsNode, array{string, list<string>}>
  */
 #[RegisteredCollector(level: 4)]
 final class ConstructorWithoutImpurePointsCollector implements Collector
 {
+
+	public function __construct(private PossiblyPureCallTransitivePurityResolver $purityResolver)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -32,14 +36,6 @@ final class ConstructorWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
-		if (count($node->getImpurePoints()) !== 0) {
-			return null;
-		}
-
-		if (count($node->getStatementResult()->getThrowPoints()) !== 0) {
-			return null;
-		}
-
 		foreach ($method->getParameters() as $parameter) {
 			if (!$parameter->passedByReference()->createsNewVariable()) {
 				continue;
@@ -52,7 +48,15 @@ final class ConstructorWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
-		return $method->getDeclaringClass()->getName();
+		$dependencies = $this->purityResolver->resolveDependencies(
+			$node->getImpurePoints(),
+			$node->getStatementResult()->getThrowPoints(),
+		);
+		if ($dependencies === null) {
+			return null;
+		}
+
+		return [$method->getDeclaringClass()->getName(), $dependencies];
 	}
 
 }

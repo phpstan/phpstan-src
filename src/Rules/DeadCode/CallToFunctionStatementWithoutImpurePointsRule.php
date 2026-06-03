@@ -19,6 +19,10 @@ use function strtolower;
 final class CallToFunctionStatementWithoutImpurePointsRule implements Rule
 {
 
+	public function __construct(private PossiblyPureCallTransitivePurityResolver $purityResolver)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return CollectedDataNode::class;
@@ -26,9 +30,17 @@ final class CallToFunctionStatementWithoutImpurePointsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$pureKeys = $this->purityResolver->getPureCallableKeys($node);
+
 		$functions = [];
-		foreach ($node->get(FunctionWithoutImpurePointsCollector::class) as [$functionName]) {
-			$functions[strtolower($functionName)] = $functionName;
+		foreach ($node->get(FunctionWithoutImpurePointsCollector::class) as $collected) {
+			foreach ($collected as [$functionName]) {
+				if (!isset($pureKeys[PossiblyPureCallTransitivePurityResolver::functionKey($functionName)])) {
+					continue;
+				}
+
+				$functions[strtolower($functionName)] = $functionName;
+			}
 		}
 
 		$errors = [];

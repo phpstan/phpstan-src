@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
@@ -1555,9 +1554,6 @@ class IntersectionType implements CompoundType
 	public function toArrayKey(): Type
 	{
 		if ($this->isDecimalIntegerString()->yes()) {
-			if (ReportUnsafeArrayStringKeyCastingToggle::getLevel() !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
-				return $this;
-			}
 			return new IntegerType();
 		}
 

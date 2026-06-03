@@ -1328,7 +1328,12 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug14758(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-14758.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-14758.php'], [
+			[
+				'Offset decimal-int-string does not exist on array<string, string>.',
+				9
+			]
+		]);
 	}
 
 	#[RequiresPhp('>= 8.4.0')]

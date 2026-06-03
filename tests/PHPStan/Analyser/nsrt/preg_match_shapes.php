@@ -447,7 +447,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('~^([157])$~', $s, $matches) === 1) {
-		assertType("array{non-falsy-string, '1'|'5'|'7'}", $matches);
+		assertType("array{decimal-int-string, '1'|'5'|'7'}", $matches);
 	}
 };
 
@@ -1007,7 +1007,7 @@ function bug12749e(string $str): void
 function bug12749f(string $str): void
 {
 	if (preg_match('/^[0-9]$/', $str, $match)) {
-		assertType('array{non-empty-string}', $match); // could be numeric-string
+		assertType('array{decimal-int-string}', $match);
 	}
 }
 

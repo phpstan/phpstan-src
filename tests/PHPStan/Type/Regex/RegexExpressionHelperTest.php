@@ -57,4 +57,24 @@ class RegexExpressionHelperTest extends PHPStanTestCase
 		);
 	}
 
+	public static function dataIsAnchoredPattern(): iterable
+	{
+		yield ['/^\d$/', true];
+		yield ['/^\d/', false];
+		yield ['/\d$/', false];
+		yield ['/\d/', false];
+		yield ['\d', false];
+	}
+
+	#[DataProvider('dataIsAnchoredPattern')]
+	public function testIsAnchoredPattern(string $regex, bool $expected): void
+	{
+		$regexExpressionHelper = self::getContainer()->getByType(RegexExpressionHelper::class);
+
+		$this->assertSame(
+			$expected,
+			$regexExpressionHelper->isAnchoredPattern($regex),
+		);
+	}
+
 }

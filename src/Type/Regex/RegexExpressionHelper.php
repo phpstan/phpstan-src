@@ -13,6 +13,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function ltrim;
+use function str_ends_with;
+use function str_starts_with;
 use function strrpos;
 use function substr;
 
@@ -87,6 +89,13 @@ final class RegexExpressionHelper
 		}
 
 		return substr($pattern, $endDelimiterPos + 1);
+	}
+
+	public function isAnchoredPattern(string $pattern): bool
+	{
+		$cleanedPattern = $this->removeDelimitersAndModifiers($pattern);
+
+		return str_starts_with($cleanedPattern, '^') && str_ends_with($cleanedPattern, '$');
 	}
 
 	public function removeDelimitersAndModifiers(string $pattern): string

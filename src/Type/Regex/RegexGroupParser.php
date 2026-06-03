@@ -125,8 +125,14 @@ final class RegexGroupParser
 		);
 
 		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral() && !$this->containsEscapeK($ast)) {
-			// we could handle numeric-string, in case we know the regex is delimited by ^ and $
-			if ($subjectAsGroupResult->isNonFalsy()->yes()) {
+			if (
+				$subjectAsGroupResult->isDecimalInteger()->yes()
+				&& $this->regexExpressionHelper->isAnchoredPattern($regex)
+			) {
+				$astWalkResult = $astWalkResult->withSubjectBaseType(
+					new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]),
+				);
+			} elseif ($subjectAsGroupResult->isNonFalsy()->yes()) {
 				$astWalkResult = $astWalkResult->withSubjectBaseType(
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 				);
@@ -482,11 +488,16 @@ final class RegexGroupParser
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
 				$nonFalsy = false;
-				if ($this->isMaybeEmptyNode($child, $patternModifiers, $nonFalsy)) {
+				$isNonDecimal = false;
+				if ($this->isMaybeEmptyNode($child, $patternModifiers, $nonFalsy, $isNonDecimal)) {
 					continue;
 				}
 
 				$meaningfulTokens++;
+
+				if ($isNonDecimal) {
+					$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
+				}
 
 				if (!$nonFalsy) {
 					continue;
@@ -628,7 +639,7 @@ final class RegexGroupParser
 		return $walkResult;
 	}
 
-	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
+	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy, bool &$isNonDecimal): bool
 	{
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
@@ -647,11 +658,14 @@ final class RegexGroupParser
 			if ($literal !== '' && $literal !== '0') {
 				$isNonFalsy = true;
 			}
+			if (Strings::match($literal, '/^\d+$/') === null) {
+				$isNonDecimal = true;
+			}
 			return $literal === '';
 		}
 
 		foreach ($node->getChildren() as $child) {
-			if (!$this->isMaybeEmptyNode($child, $patternModifiers, $isNonFalsy)) {
+			if (!$this->isMaybeEmptyNode($child, $patternModifiers, $isNonFalsy, $isNonDecimal)) {
 				return false;
 			}
 		}

@@ -6,8 +6,14 @@ use function PHPStan\Testing\assertType;
 
 function pregMatchDecimalIntStringTypeMatches(string $x): void
 {
-	if (preg_match('/^(-?[0-9]+)$/', $x, $matches)) {
-		assertType('decimal-int-string', $matches[1]);
+	if (preg_match('/^(-?[0-9]+)$/', $x, $matches)) { // all chars in string are "-" or numbers
+		assertType('decimal-int-string', $x);
+		assertType('array{decimal-int-string, decimal-int-string}', $matches);
+	}
+
+	if (preg_match('/(-?[0-9]+)/', $x, $matches)) { // subject contains  "-" or numbers, but might also contain others
+		assertType('non-empty-string', $x);
+		assertType('array{non-empty-string, decimal-int-string}', $matches);
 	}
 
 	if (preg_match('/^([3-9]+)$/', $x, $matches)) {
@@ -37,7 +43,7 @@ function edgeCases(string $x): void
 
 	// a required leading minus and digits is always non-falsy
 	if (preg_match('/^(-[0-9]+)$/', $x, $matches)) {
-		assertType('decimal-int-string&non-falsy-string', $matches[1]);
+		assertType('non-falsy-string', $matches[1]);
 	}
 
 	// a minus that is not a leading sign does not yield a decimal integer

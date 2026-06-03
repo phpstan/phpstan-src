@@ -13,5 +13,4 @@
 /tests/PHPStan/Reflection/data/golden/
 /tests/bench/storage/local-baseline.xml
 tmp/.memory_limit
-e2e/bashunit
 /.phpbench

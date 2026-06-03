@@ -14,7 +14,7 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToMethodStatementWithoutImpurePointsRule();
+		return new CallToMethodStatementWithoutImpurePointsRule(new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider()));
 	}
 
 	public function testRule(): void
@@ -75,6 +75,20 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTransitive(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-method-without-impure-points-transitive.php'], [
+			[
+				'Call to method CallToMethodWithoutImpurePointsTransitive\Foo::pureBase() on a separate line has no effect.',
+				37,
+			],
+			[
+				'Call to method CallToMethodWithoutImpurePointsTransitive\Foo::transitive() on a separate line has no effect.',
+				38,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11011(): void
 	{
@@ -109,9 +123,13 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 
 	protected function getCollectors(): array
 	{
+		$purityResolver = new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider());
+
 		return [
 			new PossiblyPureMethodCallCollector(),
-			new MethodWithoutImpurePointsCollector(),
+			new MethodWithoutImpurePointsCollector($purityResolver),
+			new FunctionWithoutImpurePointsCollector($purityResolver),
+			new ConstructorWithoutImpurePointsCollector($purityResolver),
 		];
 	}
 

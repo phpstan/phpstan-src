@@ -10,11 +10,15 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use function count;
 
 /**
- * @implements Collector<FunctionReturnStatementsNode, string>
+ * @implements Collector<FunctionReturnStatementsNode, array{string, list<string>}>
  */
 #[RegisteredCollector(level: 4)]
 final class FunctionWithoutImpurePointsCollector implements Collector
 {
+
+	public function __construct(private PossiblyPureCallTransitivePurityResolver $purityResolver)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -31,14 +35,6 @@ final class FunctionWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
-		if (count($node->getImpurePoints()) !== 0) {
-			return null;
-		}
-
-		if (count($node->getStatementResult()->getThrowPoints()) !== 0) {
-			return null;
-		}
-
 		foreach ($function->getParameters() as $parameter) {
 			if (!$parameter->passedByReference()->createsNewVariable()) {
 				continue;
@@ -51,7 +47,15 @@ final class FunctionWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
-		return $function->getName();
+		$dependencies = $this->purityResolver->resolveDependencies(
+			$node->getImpurePoints(),
+			$node->getStatementResult()->getThrowPoints(),
+		);
+		if ($dependencies === null) {
+			return null;
+		}
+
+		return [$function->getName(), $dependencies];
 	}
 
 }

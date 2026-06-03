@@ -13,7 +13,7 @@ class CallToConstructorStatementWithoutImpurePointsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToConstructorStatementWithoutImpurePointsRule();
+		return new CallToConstructorStatementWithoutImpurePointsRule(new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider()));
 	}
 
 	public function testRule(): void
@@ -26,11 +26,25 @@ class CallToConstructorStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTransitive(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-constructor-without-impure-points-transitive.php'], [
+			[
+				'Call to new CallToConstructorWithoutImpurePointsTransitive\PureCtor() on a separate line has no effect.',
+				42,
+			],
+		]);
+	}
+
 	protected function getCollectors(): array
 	{
+		$purityResolver = new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider());
+
 		return [
 			new PossiblyPureNewCollector(self::createReflectionProvider()),
-			new ConstructorWithoutImpurePointsCollector(),
+			new ConstructorWithoutImpurePointsCollector($purityResolver),
+			new MethodWithoutImpurePointsCollector($purityResolver),
+			new FunctionWithoutImpurePointsCollector($purityResolver),
 		];
 	}
 

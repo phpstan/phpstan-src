@@ -1553,6 +1553,10 @@ class IntersectionType implements CompoundType
 
 	public function toArrayKey(): Type
 	{
+		if ($this->isDecimalIntegerString()->yes()) {
+			return new IntegerType();
+		}
+
 		if ($this->isNumericString()->yes()) {
 			return TypeCombinator::union(
 				new IntegerType(),

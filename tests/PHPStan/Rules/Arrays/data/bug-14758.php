@@ -1,5 +1,7 @@
 <?php
 
+namespace Bug14758;
+
 /**
  * @param string $s
  * @param array<string, string> $arr

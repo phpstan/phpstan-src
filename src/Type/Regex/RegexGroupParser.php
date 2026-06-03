@@ -552,7 +552,7 @@ final class RegexGroupParser
 				) {
 					// a single leading minus sign keeps the string a decimal integer (e.g. "-1")
 					$walkResult = $walkResult->seenDecimalIntegerSign(true);
-				} else {
+				} elseif ($literalValue !== '') {
 					$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
 				}
 

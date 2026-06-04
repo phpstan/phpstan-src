@@ -27,11 +27,11 @@ class HelloWorld
 		$type = array_map(static function (array $result): array {
 			assertType('array{a: int}', $result);
 			$result['a'] = (string) $result['a'];
-			assertType('array{a: lowercase-string&numeric-string&uppercase-string}', $result);
+			assertType('array{a: decimal-int-string}', $result);
 
 			return $result;
 		}, $results);
 
-		assertType('list<array{a: lowercase-string&numeric-string&uppercase-string}>', $type);
+		assertType('list<array{a: decimal-int-string}>', $type);
 	}
 }

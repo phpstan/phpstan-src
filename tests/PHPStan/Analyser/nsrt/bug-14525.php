@@ -20,7 +20,7 @@ function arrayWalkGeneric(): void
 	array_walk($array, function (&$value, $key): void {
 		$value = (string) $value;
 	});
-	assertType("array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+	assertType('array<string, decimal-int-string>', $array);
 }
 
 function arrayWalkNoModification(): void
@@ -63,7 +63,7 @@ function arrayWalkNonEmptyArray(): void
 	array_walk($array, function (&$value): void {
 		$value = (string) $value;
 	});
-	assertType("non-empty-array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+	assertType('non-empty-array<string, decimal-int-string>', $array);
 }
 
 function arrayWalkList(): void
@@ -73,7 +73,7 @@ function arrayWalkList(): void
 	array_walk($list, function (&$value): void {
 		$value = (string) $value;
 	});
-	assertType("list<lowercase-string&numeric-string&uppercase-string>", $list);
+	assertType('list<decimal-int-string>', $list);
 }
 
 function arrayWalkAlwaysTerminating(): void
@@ -84,7 +84,7 @@ function arrayWalkAlwaysTerminating(): void
 		$value = (string) $value;
 		return;
 	});
-	assertType("array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+	assertType('array<string, decimal-int-string>', $array);
 }
 
 function arrayWalkNestedArray(): void
@@ -106,7 +106,7 @@ function arrayWalkWithNestedClosure(): void
 		}, [1, 2, 3]);
 		$value = (string) $value;
 	});
-	assertType("array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+	assertType('array<string, decimal-int-string>', $array);
 }
 
 function arrayWalkWithNestedClosureByRef(): void
@@ -121,5 +121,5 @@ function arrayWalkWithNestedClosureByRef(): void
 		$fn();
 		$value = (string) $value;
 	});
-	assertType("array<string, lowercase-string&numeric-string&uppercase-string>", $array);
+	assertType('array<string, decimal-int-string>', $array);
 }

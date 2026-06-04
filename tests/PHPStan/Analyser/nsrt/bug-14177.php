@@ -26,7 +26,7 @@ class HelloWorld
 			function (array $matches): string {
 				$id = (int) $matches[1];
 
-				assertType('list{0: non-falsy-string, 1: numeric-string, 2?: string, 3?: string}', $matches);
+				assertType('list{0: non-falsy-string, 1: decimal-int-string, 2?: string, 3?: string}', $matches);
 
 				$replacement = sprintf(
 					'<img src="%s"%s/>',
@@ -34,7 +34,7 @@ class HelloWorld
 					array_key_exists(3, $matches) ? sprintf(' class="%s"', $matches[3]) : '',
 				);
 
-				assertType('list{0: non-falsy-string, 1: numeric-string, 2?: string, 3?: string}', $matches);
+				assertType('list{0: non-falsy-string, 1: decimal-int-string, 2?: string, 3?: string}', $matches);
 
 				return array_key_exists(2, $matches) && $matches[2] !== ''
 					? sprintf('<a href="%s">%s</a>', $matches[2], $replacement)
@@ -51,7 +51,7 @@ class HelloWorld
 			function (array $matches): string {
 				$id = (int) $matches[0];
 
-				assertType('list{0: non-falsy-string, 1?: \'\'|numeric-string, 2?: string, 3?: string}', $matches);
+				assertType('list{0: non-falsy-string, 1?: \'\'|decimal-int-string, 2?: string, 3?: string}', $matches);
 
 				$replacement = sprintf(
 					'<img src="%s"%s/>',
@@ -59,7 +59,7 @@ class HelloWorld
 					array_key_exists(2, $matches) ? sprintf(' class="%s"', $matches[2]) : '',
 				);
 
-				assertType('list{0: non-falsy-string, 1?: \'\'|numeric-string, 2?: string, 3?: string}', $matches);
+				assertType('list{0: non-falsy-string, 1?: \'\'|decimal-int-string, 2?: string, 3?: string}', $matches);
 
 				return array_key_exists(1, $matches) && $matches[1] !== ''
 					? sprintf('<a href="%s">%s</a>', $matches[1], $replacement)

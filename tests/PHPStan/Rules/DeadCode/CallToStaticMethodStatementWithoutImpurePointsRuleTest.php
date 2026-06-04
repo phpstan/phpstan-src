@@ -71,6 +71,16 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 		]);
 	}
 
+	public function testThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-static-method-without-impure-points-throws.php'], [
+			[
+				'Call to CallToStaticMethodWithoutImpurePointsThrows\Foo::noThrowsStatic() on a separate line has no effect.',
+				34,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{

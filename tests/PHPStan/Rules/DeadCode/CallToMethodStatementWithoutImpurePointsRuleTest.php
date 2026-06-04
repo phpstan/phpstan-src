@@ -100,6 +100,16 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-method-without-impure-points-throws.php'], [
+			[
+				'Call to method CallToMethodWithoutImpurePointsThrows\Foo::noThrowsMethod() on a separate line has no effect.',
+				34,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12379(): void
 	{

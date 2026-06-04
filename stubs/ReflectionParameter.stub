@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @template-covariant TName of string = string
+ */
 class ReflectionParameter
 {
     /**
@@ -15,5 +18,10 @@ class ReflectionParameter
 	public function hasType(): bool
 	{
 	}
+
+	/**
+	 * @return TName
+	 */
+	public function getName(): string {}
 
 }

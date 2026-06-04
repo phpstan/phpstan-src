@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @template-covariant TClass of object = object
+ * @template-covariant TName of string = string
+ */
 class ReflectionMethod
 {
 

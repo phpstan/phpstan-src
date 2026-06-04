@@ -23,7 +23,7 @@ class HelloWorld
 		assertType('non-empty-string', $m->getName());
 
 		$params = $m->getParameters();
-		assertType('non-empty-string', $params[0]->getName());
+		assertType('\'x\'', $params[0]->getName());
 
 		$rf = new \ReflectionFunction('Bug7056\fooo');
 		assertType('non-empty-string', $rf->getName());

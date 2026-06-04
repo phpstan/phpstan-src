@@ -47,6 +47,11 @@ final class FunctionWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
+		$throwType = $function->getThrowType();
+		if ($throwType !== null && !$throwType->isVoid()->yes()) {
+			return null;
+		}
+
 		$dependencies = $this->purityResolver->resolveDependencies(
 			$node->getImpurePoints(),
 			$node->getStatementResult()->getThrowPoints(),

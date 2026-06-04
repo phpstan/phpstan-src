@@ -36,6 +36,16 @@ class CallToConstructorStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-constructor-without-impure-points-throws.php'], [
+			[
+				'Call to new CallToConstructorWithoutImpurePointsThrows\NoThrows() on a separate line has no effect.',
+				39,
+			],
+		]);
+	}
+
 	protected function getCollectors(): array
 	{
 		$purityResolver = new PossiblyPureCallTransitivePurityResolver(self::createReflectionProvider());

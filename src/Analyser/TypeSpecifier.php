@@ -37,6 +37,7 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -2967,6 +2968,60 @@ final class TypeSpecifier
 		return $specifiedTypes;
 	}
 
+	/**
+	 * Returns the inner expression E when $expr casts E to a string and back to an int,
+	 * i.e. `(string) (int) E`, `strval(intval(E))` or any mix of the cast/function forms.
+	 * This is the canonical "decimal integer string" round-trip that
+	 * ConstantStringType::isDecimalIntegerString() checks with `(string) (int) $value === $value`.
+	 */
+	private function getDecimalIntegerStringCastedExpr(Expr $expr): ?Expr
+	{
+		$intCasted = $this->getStringCastedExpr($expr);
+		if ($intCasted === null) {
+			return null;
+		}
+
+		return $this->getIntCastedExpr($intCasted);
+	}
+
+	private function getStringCastedExpr(Expr $expr): ?Expr
+	{
+		if ($expr instanceof Expr\Cast\String_) {
+			return $expr->expr;
+		}
+
+		if (
+			$expr instanceof FuncCall
+			&& $expr->name instanceof Name
+			&& !$expr->isFirstClassCallable()
+			&& strtolower($expr->name->toString()) === 'strval'
+			&& count($expr->getArgs()) === 1
+		) {
+			return $expr->getArgs()[0]->value;
+		}
+
+		return null;
+	}
+
+	private function getIntCastedExpr(Expr $expr): ?Expr
+	{
+		if ($expr instanceof Expr\Cast\Int_) {
+			return $expr->expr;
+		}
+
+		if (
+			$expr instanceof FuncCall
+			&& $expr->name instanceof Name
+			&& !$expr->isFirstClassCallable()
+			&& strtolower($expr->name->toString()) === 'intval'
+			&& count($expr->getArgs()) === 1
+		) {
+			return $expr->getArgs()[0]->value;
+		}
+
+		return null;
+	}
+
 	private function resolveNormalizedIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$leftExpr = $expr->left;
@@ -3226,6 +3281,37 @@ final class TypeSpecifier
 					$context,
 					$scope,
 				)->setRootExpr($expr));
+			}
+		}
+
+		// (string) (int) $x === $x  (and the strval(intval()) equivalents)
+		if (!$context->null()) {
+			$leftCastedExpr = $this->getDecimalIntegerStringCastedExpr($unwrappedLeftExpr);
+			$rightCastedExpr = $this->getDecimalIntegerStringCastedExpr($unwrappedRightExpr);
+
+			$decimalValueExpr = null;
+			if (
+				$leftCastedExpr !== null
+				&& $this->exprPrinter->printExpr($leftCastedExpr) === $this->exprPrinter->printExpr($unwrappedRightExpr)
+			) {
+				$decimalValueExpr = $unwrappedRightExpr;
+			} elseif (
+				$rightCastedExpr !== null
+				&& $this->exprPrinter->printExpr($rightCastedExpr) === $this->exprPrinter->printExpr($unwrappedLeftExpr)
+			) {
+				$decimalValueExpr = $unwrappedLeftExpr;
+			}
+
+			if ($decimalValueExpr !== null) {
+				$decimalValueType = $scope->getType($decimalValueExpr);
+				if ($decimalValueType->isString()->yes()) {
+					return $this->create(
+						$decimalValueExpr,
+						TypeCombinator::intersect($decimalValueType, new AccessoryDecimalIntegerStringType($context->falsey())),
+						TypeSpecifierContext::createTruthy(),
+						$scope,
+					)->setRootExpr($expr);
+				}
 			}
 		}
 

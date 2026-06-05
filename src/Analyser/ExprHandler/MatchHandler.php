@@ -64,9 +64,28 @@ final class MatchHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		$types = [];
+		foreach ($this->getArmScopesAndTypes($scope, $expr) as [$armScope, $armType]) {
+			$types[] = $armType;
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	/**
+	 * For each reachable match arm, returns the arm's body type together with the
+	 * scope in which the match subject is narrowed to that arm's condition. This
+	 * lets callers reconstruct the relationship between the match result and the
+	 * narrowed subject (e.g. to project a later narrowing of the assigned result
+	 * back onto the subject).
+	 *
+	 * @return list<array{MutatingScope, Type}>
+	 */
+	public function getArmScopesAndTypes(MutatingScope $scope, Match_ $expr): array
+	{
 		$cond = $expr->cond;
 		$condType = $scope->getType($cond);
-		$types = [];
+		$armScopesAndTypes = [];
 
 		$matchScope = $scope;
 		$arms = $expr->arms;
@@ -123,10 +142,11 @@ final class MatchHandler implements ExprHandler
 						$conditionCaseType = new UnionType($conditionCases);
 					}
 
-					$types[] = $matchScope->addTypeToExpression(
+					$armScope = $matchScope->addTypeToExpression(
 						$cond,
 						$conditionCaseType,
-					)->getType($arm->body);
+					);
+					$armScopesAndTypes[] = [$armScope, $armScope->getType($arm->body)];
 					unset($arms[$i]);
 				}
 
@@ -155,7 +175,7 @@ final class MatchHandler implements ExprHandler
 				if ($expr->hasAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME)) {
 					$arm->body->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, $expr->getAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME));
 				}
-				$types[] = $matchScope->getType($arm->body);
+				$armScopesAndTypes[] = [$matchScope, $matchScope->getType($arm->body)];
 				continue;
 			}
 
@@ -172,13 +192,13 @@ final class MatchHandler implements ExprHandler
 				if ($expr->hasAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME)) {
 					$arm->body->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, $expr->getAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME));
 				}
-				$types[] = $truthyScope->getType($arm->body);
+				$armScopesAndTypes[] = [$truthyScope, $truthyScope->getType($arm->body)];
 			}
 
 			$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 		}
 
-		return TypeCombinator::union(...$types);
+		return $armScopesAndTypes;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

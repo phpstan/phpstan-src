@@ -12,6 +12,7 @@ use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
+use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -91,6 +92,7 @@ final class AssignHandler implements ExprHandler
 		private TypeSpecifier $typeSpecifier,
 		private PhpVersion $phpVersion,
 		private ExprPrinter $exprPrinter,
+		private MatchHandler $matchHandler,
 	)
 	{
 	}
@@ -271,6 +273,13 @@ final class AssignHandler implements ExprHandler
 						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 					}
+				}
+
+				if ($assignedExpr instanceof Match_) {
+					$conditionalExpressions = $this->mergeConditionalExpressions(
+						$conditionalExpressions,
+						$this->processMatchForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $assignedExpr),
+					);
 				}
 
 				$truthyType = TypeCombinator::removeFalsey($type);
@@ -965,6 +974,73 @@ final class AssignHandler implements ExprHandler
 		$conditionalExpressions[$holderExprString][$holder->getKey()] = $holder;
 
 		return $conditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function mergeConditionalExpressions(array $conditionalExpressions, array $newConditionalExpressions): array
+	{
+		foreach ($newConditionalExpressions as $exprString => $holders) {
+			foreach ($holders as $key => $holder) {
+				$conditionalExpressions[$exprString][$key] = $holder;
+			}
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * Recovers the relationship between a `$var = match (...) { … }` result and the
+	 * match subject. Each arm body is assigned to `$var` inside the scope where the
+	 * subject is narrowed to that arm's condition, then the per-arm scopes are merged
+	 * the same way an equivalent `if`/`elseif`/`else` chain would be — reusing
+	 * MutatingScope's merge machinery so the resulting conditional-expression holders
+	 * are identical to the `if` form. A later narrowing of `$var` then narrows the
+	 * subject accordingly.
+	 *
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processMatchForConditionalExpressionsAfterAssign(
+		MutatingScope $scope,
+		string $variableName,
+		Match_ $expr,
+	): array
+	{
+		$armScopesAndTypes = $this->matchHandler->getArmScopesAndTypes($scope, $expr);
+		if (count($armScopesAndTypes) < 2) {
+			return [];
+		}
+
+		$armScopes = [];
+		foreach ($armScopesAndTypes as [$armScope, $armType]) {
+			$armScopes[] = $armScope->assignVariable(
+				$variableName,
+				$armType,
+				$armType,
+				TrinaryLogic::createYes(),
+			);
+		}
+
+		$mergedScope = $armScopes[0];
+		for ($i = 1, $count = count($armScopes); $i < $count; $i++) {
+			$mergedScope = $armScopes[$i]->mergeWith($mergedScope, true);
+		}
+
+		$existingConditionalExpressions = $scope->getConditionalExpressions();
+		$newConditionalExpressions = [];
+		foreach ($mergedScope->getConditionalExpressions() as $exprString => $holders) {
+			foreach ($holders as $key => $holder) {
+				if (isset($existingConditionalExpressions[$exprString][$key])) {
+					continue;
+				}
+				$newConditionalExpressions[$exprString][$key] = $holder;
+			}
+		}
+
+		return $newConditionalExpressions;
 	}
 
 	/**

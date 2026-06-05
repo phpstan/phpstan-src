@@ -2139,9 +2139,19 @@ final class TypeSpecifier
 				}
 
 				$targetScope = $expr instanceof Expr\Variable ? $scope : $rightScope;
+				$targetType = $targetScope->getType($expr);
 				$holderType = $holdersFromSureTypes
-					? TypeCombinator::intersect($targetScope->getType($expr), $type)
-					: TypeCombinator::remove($targetScope->getType($expr), $type);
+					? TypeCombinator::intersect($targetType, $type)
+					: TypeCombinator::remove($targetType, $type);
+
+				// These boolean-decomposition holders only refine an expression's
+				// type in a future scope; they must never collapse it to never and
+				// thereby mark the whole scope unreachable. A never result is an
+				// artifact (e.g. removing a non-nullable property's full type after
+				// swapping isset() narrowing), not a real contradiction.
+				if ($holderType instanceof NeverType && !$targetType instanceof NeverType) {
+					continue;
+				}
 				$holder = new ConditionalExpressionHolder(
 					$conditions,
 					ExpressionTypeHolder::createYes($expr, $holderType),

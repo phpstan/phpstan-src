@@ -13,11 +13,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\IntersectionType;
-use PHPStan\Type\StringType;
-use PHPStan\Type\Type;
 use function in_array;
 use function strtolower;
 
@@ -58,24 +54,18 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$subjectTypes = new SpecifiedTypes();
 		if (
 			$subjectArg !== null
-			&& !$context->null()
+			&& $context->true()
 			&& $scope->getType($subjectArg->value)->isString()->yes()
 			&& !$this->isSubExprOfMatchesArg($subjectArg->value, $matchesArg !== null ? $matchesArg->value : null)
 		) {
 			$subjectType = $this->regexShapeMatcher->matchSubjectExpr($patternArg->value, $scope);
 			if ($subjectType !== null) {
-				if ($context->false()) {
-					$subjectType = $this->negateSubjectType($subjectType);
-				}
-
-				if ($subjectType !== null) {
-					$subjectTypes = $this->typeSpecifier->create(
-						$subjectArg->value,
-						$subjectType,
-						$context->false() ? TypeSpecifierContext::createTrue() : $context,
-						$scope,
-					)->setRootExpr($node);
-				}
+				$subjectTypes = $this->typeSpecifier->create(
+					$subjectArg->value,
+					$subjectType,
+					$context,
+					$scope,
+				)->setRootExpr($node);
 			}
 		}
 
@@ -122,22 +112,6 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		return $types->unionWith($subjectTypes);
-	}
-
-	/**
-	 * Negates the type a subject is narrowed to when the pattern matches, for the
-	 * branch where the pattern does not match. The only string refinement with a
-	 * complement representable within `string` is decimal-int-string, whose
-	 * complement is non-decimal-int-string. Returns null when no narrowing applies.
-	 */
-	private function negateSubjectType(Type $subjectType): ?Type
-	{
-		$decimalIntString = new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]);
-		if ($subjectType->equals($decimalIntString)) {
-			return new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(true)]);
-		}
-
-		return null;
 	}
 
 	private function isSubExprOfMatchesArg(Expr $subject, ?Expr $matchesVar): bool

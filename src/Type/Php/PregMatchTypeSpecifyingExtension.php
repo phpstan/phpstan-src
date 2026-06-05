@@ -58,7 +58,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$subjectTypes = new SpecifiedTypes();
 		if (
 			$subjectArg !== null
-			&& ($context->true() || $context->false())
+			&& !$context->null()
 			&& $scope->getType($subjectArg->value)->isString()->yes()
 			&& !$this->isSubExprOfMatchesArg($subjectArg->value, $matchesArg !== null ? $matchesArg->value : null)
 		) {

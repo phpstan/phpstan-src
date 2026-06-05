@@ -222,7 +222,12 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug4671(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-4671.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4671.php'], [
+			[
+				'Offset decimal-int-string on array<string, string> in isset() does not exist.',
+				13,
+			],
+		]);
 	}
 
 	public function testVariableCertaintyInIsset(): void

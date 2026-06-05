@@ -48,3 +48,22 @@ function fourConditions(bool $a, bool $b, ?int $expiration, ?int $auto): void
 		assertType('int|null', $auto);
 	}
 }
+
+function compoundHolderSide(?int $a, ?object $b, bool $mock): void
+{
+	// The guarded side `$a === null && $b === null` is itself a conjunction.
+	// Its negation `$a !== null || $b !== null` is a disjunction and must not be
+	// split into independent `$mock => $a !== null` / `$mock => $b !== null`
+	// holders that would each over-narrow.
+	if ($a === null && $b === null && !$mock) {
+		throw new \LogicException();
+	}
+
+	if ($mock) {
+		return;
+	}
+
+	// only (a !== null || b !== null) is known here
+	assertType('int|null', $a);
+	assertType('object|null', $b);
+}

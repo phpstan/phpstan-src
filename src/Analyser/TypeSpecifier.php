@@ -758,10 +758,10 @@ final class TypeSpecifier
 					$result = $result->setAlwaysOverwriteTypes();
 				}
 				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolders([
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, $scope),
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope),
 				]))->setRootExpr($expr);
 			}
 
@@ -811,10 +811,10 @@ final class TypeSpecifier
 					$result = $result->setAlwaysOverwriteTypes();
 				}
 				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolders([
-					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, $scope),
-					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, false, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, false, $rightScope),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, false, $scope),
 				]))->setRootExpr($expr);
 			}
 
@@ -2106,7 +2106,7 @@ final class TypeSpecifier
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, Scope $rightScope): array
+	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope): array
 	{
 		// The condition side asserts that its sub-expression evaluates truthy.
 		// When that sub-expression is itself a compound boolean (e.g. `$a && $b`),
@@ -2146,6 +2146,32 @@ final class TypeSpecifier
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
 			$holderTypes = $holdersFromSureTypes ? $holderSpecifiedTypes->getSureTypes() : $holderSpecifiedTypes->getSureNotTypes();
+
+			// In the `BooleanAnd` false context a true condition implies the other
+			// side is false. When that other side is a plain conjunction
+			// (`$a === null && $b === null`), its false narrowing is empty, so the
+			// holder narrowings are re-derived by swapping the truthy sure/sureNot
+			// lists — landing in the sureNot list here. The implied negation is then a
+			// disjunction (`$a !== null || $b !== null`) that cannot be expressed as
+			// independent per-expression narrowings: splitting it into one holder per
+			// expression would let each fire on its own and over-narrow, so no holder
+			// is produced. A genuine negated conjunction (`!($a instanceof X && ...)`)
+			// instead asserts every conjunct true through the sure list, which is sound
+			// to split; likewise the `BooleanOr` true context. Only the swapped
+			// sureNot multi-target case is suppressed.
+			if ($holderSideIsNegated && !$holdersFromSureTypes) {
+				$trackableHolderCount = 0;
+				foreach ($holderTypes as [$holderExpr]) {
+					if (!$this->isTrackableExpression($holderExpr)) {
+						continue;
+					}
+					$trackableHolderCount++;
+				}
+				if ($trackableHolderCount > 1) {
+					return [];
+				}
+			}
+
 			foreach ($holderTypes as $exprString => [$expr, $type]) {
 				if (!$this->isTrackableExpression($expr)) {
 					continue;

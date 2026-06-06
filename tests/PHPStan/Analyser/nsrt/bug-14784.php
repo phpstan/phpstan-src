@@ -35,6 +35,9 @@ function doFoo(string $str): void
 	if (preg_match('/^(?:0|abc)$/', $str)) {
 		assertType('non-empty-string', $str);
 	}
+	if (preg_match('/^(?:2|abc)$/', $str)) {
+		assertType('non-falsy-string', $str);
+	}
 
 	// a capturing decimal alternation keeps the group decimal too
 	if (preg_match('/^(0|[1-9][0-9]*)$/', $str, $matches)) {

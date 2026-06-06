@@ -217,14 +217,13 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 	public function toNumber(): Type
 	{
-		if ($this->inverse) {
-			return new UnionType([
-				$this->toInteger(),
-				$this->toFloat(),
-			]);
-		}
-
-		return $this->toInteger();
+		// Decimal integer strings larger than PHP_INT_MAX (or smaller than
+		// PHP_INT_MIN) overflow to float when coerced to a number, so the
+		// numeric coercion is int|float even for non-inverse values.
+		return new UnionType([
+			$this->toInteger(),
+			$this->toFloat(),
+		]);
 	}
 
 	public function toAbsoluteNumber(): Type

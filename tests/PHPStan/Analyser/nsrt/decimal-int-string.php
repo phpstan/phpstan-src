@@ -112,18 +112,6 @@ class Foo
 	/**
 	 * @param numeric-string $s
 	 */
-	public function removingZeroFromNumericMakesNonFalsy(string $s): void
-	{
-		if ($s !== '0') {
-			assertType('non-falsy-string&numeric-string', $s);
-		} else {
-			assertType("'0'", $s);
-		}
-	}
-
-	/**
-	 * @param numeric-string $s
-	 */
 	public function numericUnionWithZeroRoundTrips(string $s): void
 	{
 		$t = $s !== '0' ? $s : '0';

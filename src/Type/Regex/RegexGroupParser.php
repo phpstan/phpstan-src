@@ -617,7 +617,7 @@ final class RegexGroupParser
 				->onlyLiterals($newLiterals)
 				->nonEmpty($walkResult->isNonEmpty()->or($nonEmpty))
 				->nonFalsy($walkResult->isNonFalsy()->or($nonFalsy))
-				->decimalInteger($walkResult->isDecimalInteger()->and($decimalInteger));
+				->decimalInteger($this->concatDecimalInteger($walkResult->isDecimalInteger(), $decimalInteger));
 		}
 
 		// [^0-9] should not parse as decimal-int-string, and [^list-everything-but-numbers] is technically
@@ -637,6 +637,27 @@ final class RegexGroupParser
 		}
 
 		return $walkResult;
+	}
+
+	/**
+	 * Combines the running decimal-integer state with an appended part (e.g. an alternation).
+	 *
+	 * Mirrors the per-token logic: a non-decimal part makes the whole string non-decimal, while a
+	 * decimal part forces the whole string to a decimal integer. This cannot be expressed with a
+	 * plain `and()` because the initial "maybe" state would swallow a decimal part instead of
+	 * committing to "yes".
+	 */
+	private function concatDecimalInteger(TrinaryLogic $left, TrinaryLogic $right): TrinaryLogic
+	{
+		if ($left->no() || $right->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		if ($left->yes() || $right->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy, bool &$isNonDecimal): bool

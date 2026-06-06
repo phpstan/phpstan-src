@@ -1668,7 +1668,7 @@ parameters:
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 6
+			count: 7
 			path: src/Type/TypeCombinator.php
 
 		-

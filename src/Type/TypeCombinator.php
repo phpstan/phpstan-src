@@ -7,6 +7,7 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -600,13 +601,9 @@ final class TypeCombinator
 			}
 
 			if ($a->getValue() === '0') {
-				$description = $b->describe(VerbosityLevel::value());
-				if ($description === 'non-falsy-string') {
-					return [null, new IntersectionType([
-						new StringType(),
-						new AccessoryNonEmptyStringType(),
-						...self::getAccessoryCaseStringTypes($b),
-					])];
+				$nonEmpty = self::downgradeNonFalsyStringToNonEmpty($b);
+				if ($nonEmpty !== null) {
+					return [null, $nonEmpty];
 				}
 			}
 		}
@@ -625,13 +622,9 @@ final class TypeCombinator
 			}
 
 			if ($b->getValue() === '0') {
-				$description = $a->describe(VerbosityLevel::value());
-				if ($description === 'non-falsy-string') {
-					return [new IntersectionType([
-						new StringType(),
-						new AccessoryNonEmptyStringType(),
-						...self::getAccessoryCaseStringTypes($a),
-					]), null];
+				$nonEmpty = self::downgradeNonFalsyStringToNonEmpty($a);
+				if ($nonEmpty !== null) {
+					return [$nonEmpty, null];
 				}
 			}
 		}
@@ -671,6 +664,43 @@ final class TypeCombinator
 		}
 
 		return $accessory;
+	}
+
+	/**
+	 * Turns a non-falsy-string type into its non-empty-string counterpart by
+	 * downgrading the non-falsy accessory while preserving every other accessory
+	 * (numeric-string, decimal-int-string, lowercase-string, …). Used to simplify
+	 * `'0' | non-falsy-string-X` back to `non-empty-string-X`, since `"0"` is the
+	 * only value that separates the two. Returns null when $type is not a
+	 * non-constant non-falsy-string built from an intersection.
+	 */
+	private static function downgradeNonFalsyStringToNonEmpty(Type $type): ?Type
+	{
+		if (!$type instanceof IntersectionType || $type->getConstantStrings() !== []) {
+			return null;
+		}
+
+		$newTypes = [];
+		$found = false;
+		foreach ($type->getTypes() as $innerType) {
+			if ($innerType instanceof AccessoryNonFalsyStringType) {
+				$found = true;
+				continue;
+			}
+
+			$newTypes[] = $innerType;
+		}
+
+		if (!$found) {
+			return null;
+		}
+
+		$withoutNonFalsy = self::intersect(...$newTypes);
+		if ($withoutNonFalsy->isNonEmptyString()->yes()) {
+			return $withoutNonFalsy;
+		}
+
+		return self::intersect($withoutNonFalsy, new AccessoryNonEmptyStringType());
 	}
 
 	private static function removeDecimalIntStringAccessory(Type $type): Type

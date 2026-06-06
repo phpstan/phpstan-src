@@ -27,12 +27,12 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 
 /**
  * This accessory type is coupled with `Type::isDecimalIntegerString()` method.
@@ -55,7 +55,6 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
-	use NonRemoveableTypeTrait;
 
 	/** @api */
 	public function __construct(private bool $inverse = false)
@@ -201,6 +200,22 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->inverse) {
+			return null;
+		}
+
+		// `"0"` is the only falsy decimal integer string, so removing it
+		// from a (non-inverse) decimal-int-string makes it non-falsy.
+		$constantStrings = $typeToRemove->getConstantStrings();
+		if (count($constantStrings) === 1 && $constantStrings[0]->getValue() === '0') {
+			return new IntersectionType([new StringType(), $this, new AccessoryNonFalsyStringType()]);
+		}
+
+		return null;
 	}
 
 	public function toNumber(): Type

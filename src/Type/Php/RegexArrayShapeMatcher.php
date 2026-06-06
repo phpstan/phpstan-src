@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -170,7 +171,7 @@ final class RegexArrayShapeMatcher
 			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
 				// positive match has a subject but not any capturing group
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll));
+				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched));
 
 				$combiType = TypeCombinator::union(
 					$builder->getArray(),
@@ -233,7 +234,7 @@ final class RegexArrayShapeMatcher
 			) {
 				// positive match has a subject but not any capturing group
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll));
+				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched));
 
 				$combiTypes[] = $builder->getArray();
 			}
@@ -273,7 +274,7 @@ final class RegexArrayShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			$this->createSubjectValueType($subjectBaseType, $flags, $matchesAll),
+			$this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched),
 			$this->isSubjectOptional($wasMatched, $matchesAll),
 		);
 
@@ -317,7 +318,12 @@ final class RegexArrayShapeMatcher
 		}
 
 		if ($matchesAll && $this->containsSetOrder($flags)) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $builder->getArray()), new AccessoryArrayListType()]);
+			$accessoryTypes = [new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $builder->getArray()), new AccessoryArrayListType()];
+			if ($wasMatched->yes()) {
+				$accessoryTypes[] = new NonEmptyArrayType();
+			}
+
+			return new IntersectionType($accessoryTypes);
 		}
 
 		if ($forceList) {
@@ -339,7 +345,7 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param Type $baseType A string type (or string variant) representing the subject of the match
 	 */
-	private function createSubjectValueType(Type $baseType, int $flags, bool $matchesAll): Type
+	private function createSubjectValueType(Type $baseType, int $flags, bool $matchesAll, TrinaryLogic $wasMatched): Type
 	{
 		$subjectValueType = TypeCombinator::removeNull($this->getValueType($baseType, $flags, $matchesAll));
 
@@ -347,10 +353,15 @@ final class RegexArrayShapeMatcher
 			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
 
 			if ($this->containsPatternOrder($flags)) {
-				$subjectValueType = new IntersectionType([
+				$accessoryTypes = [
 					new ArrayType(new IntegerType(), $subjectValueType),
 					new AccessoryArrayListType(),
-				]);
+				];
+				if ($wasMatched->yes()) {
+					$accessoryTypes[] = new NonEmptyArrayType();
+				}
+
+				$subjectValueType = new IntersectionType($accessoryTypes);
 			}
 		}
 
@@ -414,7 +425,12 @@ final class RegexArrayShapeMatcher
 			}
 
 			if ($this->containsPatternOrder($flags)) {
-				$groupValueType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $groupValueType), new AccessoryArrayListType()]);
+				$accessoryTypes = [new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $groupValueType), new AccessoryArrayListType()];
+				if ($wasMatched->yes()) {
+					$accessoryTypes[] = new NonEmptyArrayType();
+				}
+
+				$groupValueType = new IntersectionType($accessoryTypes);
 			}
 
 			return $groupValueType;

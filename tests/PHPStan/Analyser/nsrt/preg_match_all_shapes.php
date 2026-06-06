@@ -26,11 +26,11 @@ function (string $size): void {
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches)) {
-		assertType("array{0: list<string>, num: list<''|decimal-int-string>, 1: list<''|decimal-int-string>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<''|decimal-int-string>, 1: non-empty-list<''|decimal-int-string>}", $matches);
 	} else {
 		assertType("array{}", $matches);
 	}
-	assertType("array{}|array{0: list<string>, num: list<''|decimal-int-string>, 1: list<''|decimal-int-string>}", $matches);
+	assertType("array{}|array{0: non-empty-list<string>, num: non-empty-list<''|decimal-int-string>, 1: non-empty-list<''|decimal-int-string>}", $matches);
 };
 
 function (string $size): void {
@@ -44,20 +44,20 @@ function (string $size): void {
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches) != false) {
-		assertType("array{0: list<string>, num: list<''|decimal-int-string>, 1: list<''|decimal-int-string>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<''|decimal-int-string>, 1: non-empty-list<''|decimal-int-string>}", $matches);
 	} else {
 		assertType("array{}", $matches);
 	}
-	assertType("array{}|array{0: list<string>, num: list<''|decimal-int-string>, 1: list<''|decimal-int-string>}", $matches);
+	assertType("array{}|array{0: non-empty-list<string>, num: non-empty-list<''|decimal-int-string>, 1: non-empty-list<''|decimal-int-string>}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches) == true) {
-		assertType("array{0: list<string>, num: list<''|decimal-int-string>, 1: list<''|decimal-int-string>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<''|decimal-int-string>, 1: non-empty-list<''|decimal-int-string>}", $matches);
 	} else {
 		assertType("array{}", $matches);
 	}
-	assertType("array{}|array{0: list<string>, num: list<''|decimal-int-string>, 1: list<''|decimal-int-string>}", $matches);
+	assertType("array{}|array{0: non-empty-list<string>, num: non-empty-list<''|decimal-int-string>, 1: non-empty-list<''|decimal-int-string>}", $matches);
 };
 
 function (string $size): void {
@@ -76,61 +76,61 @@ function (string $size): void {
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches)) {
-		assertType("array{0: list<string>, num: list<decimal-int-string>, 1: list<decimal-int-string>, suffix: list<''|'ab'>, 2: list<''|'ab'>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<decimal-int-string>, 1: non-empty-list<decimal-int-string>, suffix: non-empty-list<''|'ab'>, 2: non-empty-list<''|'ab'>}", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType("array{0: list<string>, num: list<decimal-int-string>, 1: list<decimal-int-string>, suffix: list<'ab'|null>, 2: list<'ab'|null>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<decimal-int-string>, 1: non-empty-list<decimal-int-string>, suffix: non-empty-list<'ab'|null>, 2: non-empty-list<'ab'|null>}", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_SET_ORDER)) {
-		assertType("list<array{0: string, num: decimal-int-string, 1: decimal-int-string, suffix?: 'ab', 2?: 'ab'}>", $matches);
+		assertType("non-empty-list<array{0: string, num: decimal-int-string, 1: decimal-int-string, suffix?: 'ab', 2?: 'ab'}>", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_PATTERN_ORDER)) {
-		assertType("array{0: list<string>, num: list<decimal-int-string>, 1: list<decimal-int-string>, suffix: list<''|'ab'>, 2: list<''|'ab'>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<decimal-int-string>, 1: non-empty-list<decimal-int-string>, suffix: non-empty-list<''|'ab'>, 2: non-empty-list<''|'ab'>}", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_UNMATCHED_AS_NULL|PREG_SET_ORDER)) {
-		assertType("list<array{0: string, num: decimal-int-string, 1: decimal-int-string, suffix: 'ab'|null, 2: 'ab'|null}>", $matches);
+		assertType("non-empty-list<array{0: string, num: decimal-int-string, 1: decimal-int-string, suffix: 'ab'|null, 2: 'ab'|null}>", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_UNMATCHED_AS_NULL|PREG_PATTERN_ORDER)) {
-		assertType("array{0: list<string>, num: list<decimal-int-string>, 1: list<decimal-int-string>, suffix: list<'ab'|null>, 2: list<'ab'|null>}", $matches);
+		assertType("array{0: non-empty-list<string>, num: non-empty-list<decimal-int-string>, 1: non-empty-list<decimal-int-string>, suffix: non-empty-list<'ab'|null>, 2: non-empty-list<'ab'|null>}", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE)) {
-		assertType("list<array{0: array{string, int<-1, max>}, num: array{decimal-int-string, int<-1, max>}, 1: array{decimal-int-string, int<-1, max>}, suffix?: array{'ab', int<-1, max>}, 2?: array{'ab', int<-1, max>}}>", $matches);
+		assertType("non-empty-list<array{0: array{string, int<-1, max>}, num: array{decimal-int-string, int<-1, max>}, 1: array{decimal-int-string, int<-1, max>}, suffix?: array{'ab', int<-1, max>}, 2?: array{'ab', int<-1, max>}}>", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_PATTERN_ORDER|PREG_OFFSET_CAPTURE)) {
-		assertType("array{0: list<array{string, int<-1, max>}>, num: list<array{decimal-int-string, int<-1, max>}>, 1: list<array{decimal-int-string, int<-1, max>}>, suffix: list<array{''|'ab', int<-1, max>}>, 2: list<array{''|'ab', int<-1, max>}>}", $matches);
+		assertType("array{0: non-empty-list<array{string, int<-1, max>}>, num: non-empty-list<array{decimal-int-string, int<-1, max>}>, 1: non-empty-list<array{decimal-int-string, int<-1, max>}>, suffix: non-empty-list<array{''|'ab', int<-1, max>}>, 2: non-empty-list<array{''|'ab', int<-1, max>}>}", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_UNMATCHED_AS_NULL|PREG_SET_ORDER|PREG_OFFSET_CAPTURE)) {
-		assertType("list<array{0: array{string|null, int<-1, max>}, num: array{decimal-int-string|null, int<-1, max>}, 1: array{decimal-int-string|null, int<-1, max>}, suffix: array{'ab'|null, int<-1, max>}, 2: array{'ab'|null, int<-1, max>}}>", $matches);
+		assertType("non-empty-list<array{0: array{string|null, int<-1, max>}, num: array{decimal-int-string|null, int<-1, max>}, 1: array{decimal-int-string|null, int<-1, max>}, suffix: array{'ab'|null, int<-1, max>}, 2: array{'ab'|null, int<-1, max>}}>", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_UNMATCHED_AS_NULL|PREG_PATTERN_ORDER|PREG_OFFSET_CAPTURE)) {
-		assertType("array{0: list<array{string|null, int<-1, max>}>, num: list<array{decimal-int-string|null, int<-1, max>}>, 1: list<array{decimal-int-string|null, int<-1, max>}>, suffix: list<array{'ab'|null, int<-1, max>}>, 2: list<array{'ab'|null, int<-1, max>}>}", $matches);
+		assertType("array{0: non-empty-list<array{string|null, int<-1, max>}>, num: non-empty-list<array{decimal-int-string|null, int<-1, max>}>, 1: non-empty-list<array{decimal-int-string|null, int<-1, max>}>, suffix: non-empty-list<array{'ab'|null, int<-1, max>}>, 2: non-empty-list<array{'ab'|null, int<-1, max>}>}", $matches);
 	}
 };
 
@@ -165,14 +165,28 @@ class Bug11457
 
 	function doFoobar(string $s): void {
 		if (preg_match_all('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_OFFSET_CAPTURE)) {
-			assertType("array{list<array{string, int<-1, max>}>, list<array{''|'foo', int<-1, max>}>, list<array{''|'bar', int<-1, max>}>, list<array{''|'baz', int<-1, max>}>}", $matches);
+			assertType("array{non-empty-list<array{string, int<-1, max>}>, non-empty-list<array{''|'foo', int<-1, max>}>, non-empty-list<array{''|'bar', int<-1, max>}>, non-empty-list<array{''|'baz', int<-1, max>}>}", $matches);
 		}
 	}
 
 	function doFoobarNull(string $s): void {
 		if (preg_match_all('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL)) {
-			assertType("array{list<array{string|null, int<-1, max>}>, list<array{'foo'|null, int<-1, max>}>, list<array{'bar'|null, int<-1, max>}>, list<array{'baz'|null, int<-1, max>}>}", $matches);
+			assertType("array{non-empty-list<array{string|null, int<-1, max>}>, non-empty-list<array{'foo'|null, int<-1, max>}>, non-empty-list<array{'bar'|null, int<-1, max>}>, non-empty-list<array{'baz'|null, int<-1, max>}>}", $matches);
 		}
+	}
+}
+
+function bug14781(string $s): void {
+	if (preg_match_all('/(\d+)/', $s, $matches)) {
+		assertType('array{non-empty-list<string>, non-empty-list<decimal-int-string>}', $matches);
+		// accessing offset 0 is safe because the lists are non-empty
+		assertType('string', $matches[0][0]);
+		assertType('decimal-int-string', $matches[1][0]);
+	}
+
+	if (preg_match_all('/(\d+)/', $s, $setMatches, PREG_SET_ORDER)) {
+		assertType('non-empty-list<array{string, decimal-int-string}>', $setMatches);
+		assertType('array{string, decimal-int-string}', $setMatches[0]);
 	}
 }
 

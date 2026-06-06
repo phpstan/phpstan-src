@@ -758,10 +758,10 @@ final class TypeSpecifier
 					$result = $result->setAlwaysOverwriteTypes();
 				}
 				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolders([
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope),
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope, $expr->right),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope, $expr->left),
+					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope, $expr->right),
+					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope, $expr->left),
 				]))->setRootExpr($expr);
 			}
 
@@ -811,10 +811,10 @@ final class TypeSpecifier
 					$result = $result->setAlwaysOverwriteTypes();
 				}
 				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolders([
-					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, false, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, false, $scope),
-					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, false, $rightScope),
-					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, false, $scope),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, false, $rightScope, $expr->right),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, false, $scope, $expr->left),
+					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, false, $rightScope, $expr->right),
+					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, false, $scope, $expr->left),
 				]))->setRootExpr($expr);
 			}
 
@@ -2106,7 +2106,7 @@ final class TypeSpecifier
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope): array
+	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null): array
 	{
 		// The condition side asserts that its sub-expression evaluates truthy.
 		// When that sub-expression is itself a compound boolean (e.g. `$a && $b`),
@@ -2147,29 +2147,17 @@ final class TypeSpecifier
 			$holders = [];
 			$holderTypes = $holdersFromSureTypes ? $holderSpecifiedTypes->getSureTypes() : $holderSpecifiedTypes->getSureNotTypes();
 
-			// In the `BooleanAnd` false context a true condition implies the other
-			// side is false. When that other side is a plain conjunction
-			// (`$a === null && $b === null`), its false narrowing is empty, so the
-			// holder narrowings are re-derived by swapping the truthy sure/sureNot
-			// lists — landing in the sureNot list here. The implied negation is then a
-			// disjunction (`$a !== null || $b !== null`) that cannot be expressed as
-			// independent per-expression narrowings: splitting it into one holder per
-			// expression would let each fire on its own and over-narrow, so no holder
-			// is produced. A genuine negated conjunction (`!($a instanceof X && ...)`)
-			// instead asserts every conjunct true through the sure list, which is sound
-			// to split; likewise the `BooleanOr` true context. Only the swapped
-			// sureNot multi-target case is suppressed.
-			if ($holderSideIsNegated && !$holdersFromSureTypes) {
-				$trackableHolderCount = 0;
-				foreach ($holderTypes as [$holderExpr]) {
-					if (!$this->isTrackableExpression($holderExpr)) {
-						continue;
-					}
-					$trackableHolderCount++;
-				}
-				if ($trackableHolderCount > 1) {
-					return [];
-				}
+			// A holder side that is itself a compound boolean cannot always be split
+			// into independent per-expression holders. In the `BooleanAnd` false
+			// context the holder asserts its side is false: when that side is a
+			// conjunction (`$a && $b`), its negation is the disjunction `!$a || !$b`,
+			// which has no per-expression narrowing — narrowing each conjunct
+			// independently would drop a reachable value (e.g. `$a = false, $b = true`).
+			// Symmetrically, in the `BooleanOr` true context the holder asserts its
+			// side is true, and a disjunction side (`$a || $b`) is itself a disjunction.
+			// Such a side is left whole rather than split into over-narrowing holders.
+			if ($this->isUnsplittableCompoundHolderSide($holderSideExpr, $holderSideIsNegated)) {
+				return [];
 			}
 
 			foreach ($holderTypes as $exprString => [$expr, $type]) {
@@ -2215,6 +2203,25 @@ final class TypeSpecifier
 		}
 
 		return [];
+	}
+
+	/**
+	 * A holder side whose truth value is asserted as a disjunction cannot be
+	 * decomposed into independent per-expression holders. That happens for a
+	 * conjunction (`&&`) asserted false (negated context) and for a disjunction
+	 * (`||`) asserted true.
+	 */
+	private function isUnsplittableCompoundHolderSide(?Expr $holderSideExpr, bool $holderSideIsNegated): bool
+	{
+		if ($holderSideExpr === null) {
+			return false;
+		}
+
+		if ($holderSideIsNegated) {
+			return $holderSideExpr instanceof BooleanAnd || $holderSideExpr instanceof LogicalAnd;
+		}
+
+		return $holderSideExpr instanceof BooleanOr || $holderSideExpr instanceof LogicalOr;
 	}
 
 	private function isTrackableExpression(Expr $expr): bool

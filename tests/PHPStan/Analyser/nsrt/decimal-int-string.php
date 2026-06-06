@@ -78,6 +78,18 @@ class Foo
 	}
 
 	/**
+	 * @param numeric-string $s
+	 */
+	public function removingZeroMakesNumericNonFalsy(string $s): void
+	{
+		if ($s !== '0') {
+			assertType('non-falsy-string&numeric-string', $s);
+		} else {
+			assertType("'0'", $s);
+		}
+	}
+
+	/**
 	 * @param non-decimal-int-string $s
 	 */
 	public function removingZeroFromNonDecimal(string $s): void

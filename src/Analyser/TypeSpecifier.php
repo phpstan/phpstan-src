@@ -2969,43 +2969,50 @@ final class TypeSpecifier
 	}
 
 	/**
-	 * Returns the inner expression E when $expr casts E to a string and back to an int,
-	 * i.e. `(string) (int) E`, `strval(intval(E))` or any mix of the cast/function forms.
-	 * This is the canonical "decimal integer string" round-trip that
+	 * When $castExpr casts $valueExpr to an int and back to a string — i.e. the
+	 * `(string) (int) $valueExpr` round-trip (in any combination of the (string)/(int)
+	 * casts and the strval()/intval() function forms) — returns $valueExpr so the
+	 * comparison `$castExpr === $valueExpr` can narrow it to a decimal / non-decimal
+	 * integer string. This is the canonical "decimal integer string" round-trip that
 	 * ConstantStringType::isDecimalIntegerString() checks with `(string) (int) $value === $value`.
+	 *
+	 * The cast forms are stripped from the AST only to match the value expression; whether
+	 * the casts actually compute the int-then-string round-trip is confirmed through the
+	 * type system via Type::toInteger() and Type::toString() rather than by relying on the
+	 * exact order or shape of the casts.
 	 */
-	private function getDecimalIntegerStringCastedExpr(Expr $expr): ?Expr
+	private function getDecimalIntegerStringRoundTripExpr(Expr $castExpr, Expr $valueExpr, Scope $scope): ?Expr
 	{
-		$intCasted = $this->getStringCastedExpr($expr);
-		if ($intCasted === null) {
+		$valueType = $scope->getType($valueExpr);
+		if (!$valueType->isString()->yes()) {
 			return null;
 		}
 
-		return $this->getIntCastedExpr($intCasted);
-	}
-
-	private function getStringCastedExpr(Expr $expr): ?Expr
-	{
-		if ($expr instanceof Expr\Cast\String_) {
-			return $expr->expr;
+		$baseExpr = $castExpr;
+		$unwrapped = false;
+		while (($inner = $this->getCastInnerExpr($baseExpr)) !== null) {
+			$baseExpr = $inner;
+			$unwrapped = true;
 		}
 
 		if (
-			$expr instanceof FuncCall
-			&& $expr->name instanceof Name
-			&& !$expr->isFirstClassCallable()
-			&& strtolower($expr->name->toString()) === 'strval'
-			&& count($expr->getArgs()) === 1
+			!$unwrapped
+			|| $this->exprPrinter->printExpr($baseExpr) !== $this->exprPrinter->printExpr($valueExpr)
 		) {
-			return $expr->getArgs()[0]->value;
+			return null;
 		}
 
-		return null;
+		return $scope->getType($castExpr)->equals($valueType->toInteger()->toString())
+			? $valueExpr
+			: null;
 	}
 
-	private function getIntCastedExpr(Expr $expr): ?Expr
+	/**
+	 * Strips a single (string)/(int) cast or strval()/intval() call, returning its inner expression.
+	 */
+	private function getCastInnerExpr(Expr $expr): ?Expr
 	{
-		if ($expr instanceof Expr\Cast\Int_) {
+		if ($expr instanceof Expr\Cast\String_ || $expr instanceof Expr\Cast\Int_) {
 			return $expr->expr;
 		}
 
@@ -3013,7 +3020,7 @@ final class TypeSpecifier
 			$expr instanceof FuncCall
 			&& $expr->name instanceof Name
 			&& !$expr->isFirstClassCallable()
-			&& strtolower($expr->name->toString()) === 'intval'
+			&& in_array(strtolower($expr->name->toString()), ['strval', 'intval'], true)
 			&& count($expr->getArgs()) === 1
 		) {
 			return $expr->getArgs()[0]->value;
@@ -3286,32 +3293,17 @@ final class TypeSpecifier
 
 		// (string) (int) $x === $x  (and the strval(intval()) equivalents)
 		if (!$context->null()) {
-			$leftCastedExpr = $this->getDecimalIntegerStringCastedExpr($unwrappedLeftExpr);
-			$rightCastedExpr = $this->getDecimalIntegerStringCastedExpr($unwrappedRightExpr);
-
-			$decimalValueExpr = null;
-			if (
-				$leftCastedExpr !== null
-				&& $this->exprPrinter->printExpr($leftCastedExpr) === $this->exprPrinter->printExpr($unwrappedRightExpr)
-			) {
-				$decimalValueExpr = $unwrappedRightExpr;
-			} elseif (
-				$rightCastedExpr !== null
-				&& $this->exprPrinter->printExpr($rightCastedExpr) === $this->exprPrinter->printExpr($unwrappedLeftExpr)
-			) {
-				$decimalValueExpr = $unwrappedLeftExpr;
-			}
+			$decimalValueExpr = $this->getDecimalIntegerStringRoundTripExpr($unwrappedLeftExpr, $unwrappedRightExpr, $scope)
+				?? $this->getDecimalIntegerStringRoundTripExpr($unwrappedRightExpr, $unwrappedLeftExpr, $scope);
 
 			if ($decimalValueExpr !== null) {
 				$decimalValueType = $scope->getType($decimalValueExpr);
-				if ($decimalValueType->isString()->yes()) {
-					return $this->create(
-						$decimalValueExpr,
-						TypeCombinator::intersect($decimalValueType, new AccessoryDecimalIntegerStringType($context->falsey())),
-						TypeSpecifierContext::createTruthy(),
-						$scope,
-					)->setRootExpr($expr);
-				}
+				return $this->create(
+					$decimalValueExpr,
+					TypeCombinator::intersect($decimalValueType, new AccessoryDecimalIntegerStringType($context->falsey())),
+					TypeSpecifierContext::createTruthy(),
+					$scope,
+				)->setRootExpr($expr);
 			}
 		}
 

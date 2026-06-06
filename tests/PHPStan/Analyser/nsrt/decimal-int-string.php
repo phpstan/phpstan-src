@@ -112,6 +112,18 @@ class Foo
 	/**
 	 * @param numeric-string $s
 	 */
+	public function removingZeroFromNumericMakesNonFalsy(string $s): void
+	{
+		if ($s !== '0') {
+			assertType('non-falsy-string&numeric-string', $s);
+		} else {
+			assertType("'0'", $s);
+		}
+	}
+
+	/**
+	 * @param numeric-string $s
+	 */
 	public function numericUnionWithZeroRoundTrips(string $s): void
 	{
 		$t = $s !== '0' ? $s : '0';
@@ -125,6 +137,48 @@ class Foo
 	{
 		$t = $s !== '0' ? $s : '0';
 		assertType('non-empty-string', $t);
+	}
+
+	/**
+	 * @param uppercase-string $s
+	 */
+	public function removingZeroFromUppercase(string $s): void
+	{
+		// '' is a falsy uppercase-string too, so removing '0' alone does not
+		// make an uppercase-string non-falsy.
+		if ($s !== '0') {
+			assertType('uppercase-string', $s);
+		}
+	}
+
+	/**
+	 * @param uppercase-string $s
+	 */
+	public function uppercaseUnionWithZeroRoundTrips(string $s): void
+	{
+		$t = $s !== '0' ? $s : '0';
+		assertType('uppercase-string', $t);
+	}
+
+	/**
+	 * @param lowercase-string $s
+	 */
+	public function removingZeroFromLowercase(string $s): void
+	{
+		// '' is a falsy lowercase-string too, so removing '0' alone does not
+		// make a lowercase-string non-falsy.
+		if ($s !== '0') {
+			assertType('lowercase-string', $s);
+		}
+	}
+
+	/**
+	 * @param lowercase-string $s
+	 */
+	public function lowercaseUnionWithZeroRoundTrips(string $s): void
+	{
+		$t = $s !== '0' ? $s : '0';
+		assertType('lowercase-string', $t);
 	}
 
 }

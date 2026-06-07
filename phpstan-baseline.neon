@@ -784,12 +784,6 @@ parameters:
 			path: src/Type/Accessory/AccessoryArrayListType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Accessory/AccessoryDecimalIntegerStringType.php
-
-		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -807,11 +801,6 @@ parameters:
 			count: 1
 			path: src/Type/Accessory/AccessoryLowercaseStringType.php
 
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
@@ -825,11 +814,6 @@ parameters:
 			count: 1
 			path: src/Type/Accessory/AccessoryNonFalsyStringType.php
 
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Accessory/AccessoryNumericStringType.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.

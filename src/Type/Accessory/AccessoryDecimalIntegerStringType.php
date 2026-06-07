@@ -208,9 +208,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 			return null;
 		}
 
-		// `"0"` is the only falsy decimal integer string, so removing it
-		// from a (non-inverse) decimal-int-string makes it non-falsy.
-		if ($typeToRemove->isSuperTypeOf(new ConstantStringType('0'))->yes()) {
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
 			return new IntersectionType([new StringType(), $this, new AccessoryNonFalsyStringType()]);
 		}
 

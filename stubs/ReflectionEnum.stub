@@ -1,29 +1,14 @@
 <?php
 
 /**
- * @template-covariant T of UnitEnum
- * @extends ReflectionClass<T>
+ * @template-covariant TReflectedClass of UnitEnum
+ * @extends ReflectionClass<TReflectedClass>
  */
 class ReflectionEnum extends ReflectionClass
 {
-
 	/**
-	 * @return (T is BackedEnum ? ReflectionEnumBackedCase[] : ReflectionEnumUnitCase[])
-	 */
-	public function getCases(): array {}
-
-	/**
-	 * @return (T is BackedEnum ? ReflectionEnumBackedCase : ReflectionEnumUnitCase)
-	 * @throws ReflectionException
-	 */
-	public function getCase(string $name): ReflectionEnumUnitCase {}
-
-	/**
-	 * @phpstan-assert-if-true self<T&BackedEnum> $this
+	 * @phpstan-assert-if-true self<TReflectedClass&BackedEnum> $this
 	 * @phpstan-assert-if-true !null $this->getBackingType()
 	 */
 	public function isBacked(): bool {}
-
-	public function getBackingType(): ?ReflectionNamedType {}
-
 }

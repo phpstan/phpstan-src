@@ -132,10 +132,8 @@ parameters:
 	stubFiles:
 		- ../stubs/Memcached.stub
 		- ../stubs/Redis.stub
-		- ../stubs/ReflectionAttribute.stub
-		- ../stubs/ReflectionClassConstant.stub
+		- ../stubs/ReflectionEnum.stub
 		- ../stubs/ReflectionFunctionAbstract.stub
-		- ../stubs/ReflectionMethod.stub
 		- ../stubs/ReflectionParameter.stub
 		- ../stubs/ReflectionProperty.stub
 		- ../stubs/iterable.stub

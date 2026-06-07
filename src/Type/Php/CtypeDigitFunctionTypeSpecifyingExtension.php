@@ -12,7 +12,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -55,9 +54,12 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 		];
 
 		if ($context->true()) {
+			// ctype_digit() is true for any non-empty string consisting solely of
+			// decimal digits, which includes leading-zero strings like "02" that are
+			// not decimal-int-strings. The closest accessory super-type is numeric-string.
 			$types[] = new IntersectionType([
 				new StringType(),
-				new AccessoryDecimalIntegerStringType(),
+				new AccessoryNumericStringType(),
 			]);
 		}
 
@@ -69,9 +71,6 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 				new StringType(),
 				new AccessoryNumericStringType(),
 			];
-			if ($context->true()) {
-				$accessories[] = new AccessoryDecimalIntegerStringType();
-			}
 			$castedType = new UnionType([
 				IntegerRangeType::fromInterval(0, null),
 				new IntersectionType($accessories),

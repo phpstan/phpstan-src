@@ -617,7 +617,7 @@ final class RegexGroupParser
 				->onlyLiterals($newLiterals)
 				->nonEmpty($walkResult->isNonEmpty()->or($nonEmpty))
 				->nonFalsy($walkResult->isNonFalsy()->or($nonFalsy))
-				->decimalInteger($walkResult->isDecimalInteger()->and($decimalInteger));
+				->decimalInteger(TrinaryLogic::maxMin($walkResult->isDecimalInteger(), $decimalInteger));
 		}
 
 		// [^0-9] should not parse as decimal-int-string, and [^list-everything-but-numbers] is technically

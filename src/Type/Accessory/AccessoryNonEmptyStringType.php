@@ -13,6 +13,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -376,8 +377,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		$constantStrings = $typeToRemove->getConstantStrings();
-		if (count($constantStrings) === 1 && $constantStrings[0]->getValue() === '0') {
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
 			return new AccessoryNonFalsyStringType();
 		}
 

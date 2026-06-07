@@ -411,18 +411,23 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		if ($this->inverse) {
+			// A non-decimal-int-string may still be numeric ("02", "2.0", "1e1")
+			// or empty (""), so it can be loosely equal to a decimal-int-string,
+			// another numeric value or null. Nothing can be decided here.
+			return new BooleanType();
+		}
+
+		// A decimal-int-string is a numeric string, so it compares like one:
+		// numerically against other numeric strings (and numbers), and never
+		// loosely equal to null (it is always non-empty) or to a non-numeric
+		// string (that would be a byte-wise comparison that cannot match).
 		if ($type->isNull()->yes()) {
 			return new ConstantBooleanType(false);
 		}
 
-		if ($type->isString()->yes()) {
-			if ($this->inverse) {
-				if ($type->isDecimalIntegerString()->yes()) {
-					return new ConstantBooleanType(false);
-				}
-			} elseif ($type->isDecimalIntegerString()->no()) {
-				return new ConstantBooleanType(false);
-			}
+		if ($type->isString()->yes() && $type->isNumericString()->no()) {
+			return new ConstantBooleanType(false);
 		}
 
 		return new BooleanType();

@@ -1810,7 +1810,7 @@ return [
 	],
 
 	'DOMDocument::schemaValidate' => [
-		'options' => [
+		'flags' => [
 			'type' => 'bitmask',
 			'constants' => [
 				'LIBXML_SCHEMA_CREATE',

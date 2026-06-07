@@ -37,7 +37,7 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			rawMessage: 'Method PHPStan\Reflection\ClassReflection::findConstructor() should return PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod|null but returns ReflectionMethod.'
+			rawMessage: 'Method PHPStan\Reflection\ClassReflection::findConstructor() should return PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod<TReflectedClass of object>|null but returns ReflectionMethod.'
 			identifier: return.type
 			count: 2
 			path: ../src/Reflection/ClassReflection.php

@@ -16,6 +16,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -210,8 +211,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 		// `"0"` is the only falsy decimal integer string, so removing it
 		// from a (non-inverse) decimal-int-string makes it non-falsy.
-		$constantStrings = $typeToRemove->getConstantStrings();
-		if (count($constantStrings) === 1 && $constantStrings[0]->getValue() === '0') {
+		if ($typeToRemove->isSuperTypeOf(new ConstantStringType('0'))->yes()) {
 			return new IntersectionType([new StringType(), $this, new AccessoryNonFalsyStringType()]);
 		}
 

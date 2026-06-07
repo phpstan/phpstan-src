@@ -13,34 +13,34 @@ function doNonAutoCapturingFlag(string $s): void {
 	assertType('array{}|array{non-empty-string}', $matches);
 
 	if (preg_match('/(\d+)(?P<num>\d+)/n', $s, $matches)) {
-		assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
-	assertType('array{}|array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+	assertType('array{}|array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 
 	if (preg_match('/(\w)-(?P<num>\d+)-(\w)/n', $s, $matches)) {
-		assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
-	assertType('array{}|array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+	assertType('array{}|array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 }
 
 // delimiter variants, see https://www.php.net/manual/en/regexp.reference.delimiters.php
 function (string $s): void {
 	if (preg_match('{(\d+)(?P<num>\d+)}n', $s, $matches)) {
-		assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
 function (string $s): void {
 	if (preg_match('<(\d+)(?P<num>\d+)>n', $s, $matches)) {
-		assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
 function (string $s): void {
 	if (preg_match('((\d+)(?P<num>\d+))n', $s, $matches)) {
-		assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
 function (string $s): void {
 	if (preg_match('[(\d+)(?P<num>\d+)]n', $s, $matches)) {
-		assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };

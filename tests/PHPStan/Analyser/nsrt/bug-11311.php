@@ -8,7 +8,7 @@ use InvalidArgumentException;
 function doFoo(string $s) {
 	if (1 === preg_match('/(?<major>\d+)\.(?<minor>\d+)(?:\.(?<patch>\d+))?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
 
-		assertType('array{0: non-falsy-string, major: decimal-int-string, 1: decimal-int-string, minor: decimal-int-string, 2: decimal-int-string, patch: decimal-int-string|null, 3: decimal-int-string|null}', $matches);
+		assertType('array{0: non-falsy-string, major: numeric-string, 1: numeric-string, minor: numeric-string, 2: numeric-string, patch: numeric-string|null, 3: numeric-string|null}', $matches);
 	}
 }
 
@@ -106,21 +106,21 @@ function (string $size): void {
 	if (preg_match('/ab(\d+)e(\d?)/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType("array{non-falsy-string, decimal-int-string, ''|decimal-int-string}", $matches);
+	assertType("array{non-falsy-string, numeric-string, ''|decimal-int-string}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(?P<num>\d+)e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: non-falsy-string, num: decimal-int-string, 1: decimal-int-string}', $matches);
+	assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(\d\d)/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{non-falsy-string, decimal-int-string&non-falsy-string}', $matches);
+	assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -162,7 +162,7 @@ function (string $size): void {
 	if (preg_match('/ab(\d+\d?)e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{non-falsy-string, decimal-int-string}', $matches);
+	assertType('array{non-falsy-string, numeric-string}', $matches);
 };
 
 function (string $s): void {
@@ -191,12 +191,12 @@ function (string $s): void {
 
 function (string $s): void {
 	preg_match('/%a(\d*)/', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{}|array{non-falsy-string, ''|decimal-int-string}", $matches);
+	assertType("array{}|array{non-falsy-string, ''|numeric-string}", $matches);
 };
 
 function (string $s): void {
 	preg_match('/%a(\d*)?/', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{}|array{non-falsy-string, ''|decimal-int-string|null}", $matches);
+	assertType("array{}|array{non-falsy-string, ''|numeric-string|null}", $matches);
 };
 
 function (string $s): void {

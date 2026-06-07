@@ -26,9 +26,9 @@ function doFoo(string $str): void
 		assertType('decimal-int-string', $str);
 	}
 
-	// alternation digits prefixed by required digits stays decimal
+	// a leading [0-9]+ can match "0", so e.g. "00" is possible: numeric, not decimal
 	if (preg_match('/^[0-9]+(?:0|5)$/', $str)) {
-		assertType('decimal-int-string', $str);
+		assertType('numeric-string', $str);
 	}
 
 	// an alternation branch that is not decimal breaks the narrowing

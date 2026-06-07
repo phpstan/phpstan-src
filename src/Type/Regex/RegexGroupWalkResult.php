@@ -18,6 +18,12 @@ final class RegexGroupWalkResult
 		private TrinaryLogic $isNonFalsy,
 		private TrinaryLogic $isDecimalInteger,
 		private bool $seenDecimalIntegerSign,
+		private bool $decimalLeadingResolved,
+		private bool $decimalSeenDigit,
+		private bool $decimalLeadCanBeZero,
+		private bool $decimalBad,
+		private bool $decimalAtomRepeats,
+		private bool $decimalAtomOptional,
 	)
 	{
 	}
@@ -31,6 +37,12 @@ final class RegexGroupWalkResult
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
 			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
 		);
 	}
 
@@ -43,6 +55,12 @@ final class RegexGroupWalkResult
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
 			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
 		);
 	}
 
@@ -58,6 +76,12 @@ final class RegexGroupWalkResult
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
 			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
 		);
 	}
 
@@ -70,6 +94,12 @@ final class RegexGroupWalkResult
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
 			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
 		);
 	}
 
@@ -82,6 +112,12 @@ final class RegexGroupWalkResult
 			$nonFalsy,
 			$this->isDecimalInteger,
 			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
 		);
 	}
 
@@ -95,6 +131,12 @@ final class RegexGroupWalkResult
 			$this->isNonFalsy,
 			$decimalInteger,
 			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
 		);
 	}
 
@@ -107,6 +149,120 @@ final class RegexGroupWalkResult
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
 			$seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
+		);
+	}
+
+	public function decimalLeadingResolved(bool $decimalLeadingResolved): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->seenDecimalIntegerSign,
+			$decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
+		);
+	}
+
+	public function decimalSeenDigit(bool $decimalSeenDigit): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
+		);
+	}
+
+	public function decimalLeadCanBeZero(bool $decimalLeadCanBeZero): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
+		);
+	}
+
+	public function decimalBad(bool $decimalBad): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$decimalBad,
+			$this->decimalAtomRepeats,
+			$this->decimalAtomOptional,
+		);
+	}
+
+	public function decimalAtomRepeats(bool $decimalAtomRepeats): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$decimalAtomRepeats,
+			$this->decimalAtomOptional,
+		);
+	}
+
+	public function decimalAtomOptional(bool $decimalAtomOptional): self
+	{
+		return new self(
+			$this->inOptionalQuantification,
+			$this->onlyLiterals,
+			$this->isNonEmpty,
+			$this->isNonFalsy,
+			$this->isDecimalInteger,
+			$this->seenDecimalIntegerSign,
+			$this->decimalLeadingResolved,
+			$this->decimalSeenDigit,
+			$this->decimalLeadCanBeZero,
+			$this->decimalBad,
+			$this->decimalAtomRepeats,
+			$decimalAtomOptional,
 		);
 	}
 
@@ -155,6 +311,47 @@ final class RegexGroupWalkResult
 	public function hasSeenDecimalIntegerSign(): bool
 	{
 		return $this->seenDecimalIntegerSign;
+	}
+
+	public function isDecimalLeadingResolved(): bool
+	{
+		return $this->decimalLeadingResolved;
+	}
+
+	public function hasDecimalSeenDigit(): bool
+	{
+		return $this->decimalSeenDigit;
+	}
+
+	public function isDecimalLeadCanBeZero(): bool
+	{
+		return $this->decimalLeadCanBeZero;
+	}
+
+	public function isDecimalBad(): bool
+	{
+		return $this->decimalBad;
+	}
+
+	public function isDecimalAtomRepeats(): bool
+	{
+		return $this->decimalAtomRepeats;
+	}
+
+	public function isDecimalAtomOptional(): bool
+	{
+		return $this->decimalAtomOptional;
+	}
+
+	/**
+	 * Whether a decimal-integer match is guaranteed to be a canonical decimal
+	 * integer string, i.e. it can never have a leading zero (like "00" or "007")
+	 * or be a negative zero ("-0"). Both of those stay strings as array keys,
+	 * so they must not be narrowed to decimal-int-string.
+	 */
+	public function isDecimalIntegerLeadingZeroSafe(): bool
+	{
+		return !$this->decimalBad && !($this->seenDecimalIntegerSign && $this->decimalLeadCanBeZero);
 	}
 
 }

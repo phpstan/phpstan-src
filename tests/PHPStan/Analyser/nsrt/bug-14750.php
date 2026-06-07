@@ -11,23 +11,23 @@ function pregMatchDecimalIntStringTypeMatches(string $x): void
 	}
 
 	if (preg_match('/^[0-9]+$/', $x)) {
-		assertType('decimal-int-string', $x);
+		assertType('numeric-string', $x);
 	}
 	if (preg_match('/^-?[0-9]+$/', $x)) {
-		assertType('decimal-int-string', $x);
+		assertType('numeric-string', $x);
 	}
 	if (preg_match('/^-?[0-9\w]+$/', $x)) {
 		assertType('non-empty-string', $x);
 	}
 
 	if (preg_match('/^(-?[0-9]+)$/', $x, $matches)) { // all chars in string are "-" or numbers
-		assertType('decimal-int-string', $x);
-		assertType('array{decimal-int-string, decimal-int-string}', $matches);
+		assertType('numeric-string', $x);
+		assertType('array{numeric-string, numeric-string}', $matches);
 	}
 
 	if (preg_match('/(-?[0-9]+)/', $x, $matches)) { // subject contains  "-" or numbers, but might also contain others
 		assertType('non-empty-string', $x);
-		assertType('array{non-empty-string, decimal-int-string}', $matches);
+		assertType('array{non-empty-string, numeric-string}', $matches);
 	}
 
 	if (preg_match('/^([3-9]+)$/', $x, $matches)) {
@@ -35,7 +35,7 @@ function pregMatchDecimalIntStringTypeMatches(string $x): void
 	}
 
 	if (preg_match('/^(\d+)$/', $x, $matches)) {
-		assertType('decimal-int-string', $matches[1]);
+		assertType('numeric-string', $matches[1]);
 	}
 
 	if (preg_match('/^([3-9])$/', $x, $matches)) {
@@ -52,7 +52,7 @@ function edgeCases(string $x): void
 {
 	// zero-or-more digits can also match the empty string
 	if (preg_match('/^(\d*)$/', $x, $matches)) {
-		assertType("''|decimal-int-string", $matches[1]);
+		assertType("''|numeric-string", $matches[1]);
 	}
 
 	// a required leading minus and digits is always non-falsy

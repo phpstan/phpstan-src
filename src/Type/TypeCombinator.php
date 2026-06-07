@@ -676,7 +676,7 @@ final class TypeCombinator
 	 */
 	private static function downgradeNonFalsyStringToNonEmpty(Type $type): ?Type
 	{
-		if (!$type instanceof IntersectionType || $type->getConstantStrings() !== []) {
+		if (!$type instanceof IntersectionType || $type->isNonFalsyString()->no()) {
 			return null;
 		}
 

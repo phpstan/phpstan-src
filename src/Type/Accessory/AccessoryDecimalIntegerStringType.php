@@ -33,7 +33,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 
 /**
  * This accessory type is coupled with `Type::isDecimalIntegerString()` method.

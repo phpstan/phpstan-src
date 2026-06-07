@@ -17,13 +17,7 @@ final class RegexGroupWalkResult
 		private TrinaryLogic $isNonEmpty,
 		private TrinaryLogic $isNonFalsy,
 		private TrinaryLogic $isDecimalInteger,
-		private bool $seenDecimalIntegerSign,
-		private bool $decimalLeadingResolved,
-		private bool $decimalSeenDigit,
-		private bool $decimalLeadCanBeZero,
-		private bool $decimalBad,
-		private bool $decimalAtomRepeats,
-		private bool $decimalAtomOptional,
+		private RegexDecimalIntegerState $decimalState,
 	)
 	{
 	}
@@ -36,13 +30,7 @@ final class RegexGroupWalkResult
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
 			TrinaryLogic::createMaybe(),
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
+			RegexDecimalIntegerState::createEmpty(),
 		);
 	}
 
@@ -54,13 +42,7 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
+			$this->decimalState,
 		);
 	}
 
@@ -75,13 +57,7 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
+			$this->decimalState,
 		);
 	}
 
@@ -93,13 +69,7 @@ final class RegexGroupWalkResult
 			$nonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
+			$this->decimalState,
 		);
 	}
 
@@ -111,13 +81,7 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$nonFalsy,
 			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
+			$this->decimalState,
 		);
 	}
 
@@ -130,17 +94,11 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$decimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
+			$this->decimalState,
 		);
 	}
 
-	public function seenDecimalIntegerSign(bool $seenDecimalIntegerSign): self
+	public function withDecimalState(RegexDecimalIntegerState $decimalState): self
 	{
 		return new self(
 			$this->inOptionalQuantification,
@@ -148,121 +106,7 @@ final class RegexGroupWalkResult
 			$this->isNonEmpty,
 			$this->isNonFalsy,
 			$this->isDecimalInteger,
-			$seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
-		);
-	}
-
-	public function decimalLeadingResolved(bool $decimalLeadingResolved): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
-		);
-	}
-
-	public function decimalSeenDigit(bool $decimalSeenDigit): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
-		);
-	}
-
-	public function decimalLeadCanBeZero(bool $decimalLeadCanBeZero): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
-		);
-	}
-
-	public function decimalBad(bool $decimalBad): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$decimalBad,
-			$this->decimalAtomRepeats,
-			$this->decimalAtomOptional,
-		);
-	}
-
-	public function decimalAtomRepeats(bool $decimalAtomRepeats): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$decimalAtomRepeats,
-			$this->decimalAtomOptional,
-		);
-	}
-
-	public function decimalAtomOptional(bool $decimalAtomOptional): self
-	{
-		return new self(
-			$this->inOptionalQuantification,
-			$this->onlyLiterals,
-			$this->isNonEmpty,
-			$this->isNonFalsy,
-			$this->isDecimalInteger,
-			$this->seenDecimalIntegerSign,
-			$this->decimalLeadingResolved,
-			$this->decimalSeenDigit,
-			$this->decimalLeadCanBeZero,
-			$this->decimalBad,
-			$this->decimalAtomRepeats,
-			$decimalAtomOptional,
+			$decimalState,
 		);
 	}
 
@@ -308,39 +152,9 @@ final class RegexGroupWalkResult
 		return $this->isDecimalInteger;
 	}
 
-	public function hasSeenDecimalIntegerSign(): bool
+	public function getDecimalState(): RegexDecimalIntegerState
 	{
-		return $this->seenDecimalIntegerSign;
-	}
-
-	public function isDecimalLeadingResolved(): bool
-	{
-		return $this->decimalLeadingResolved;
-	}
-
-	public function hasDecimalSeenDigit(): bool
-	{
-		return $this->decimalSeenDigit;
-	}
-
-	public function isDecimalLeadCanBeZero(): bool
-	{
-		return $this->decimalLeadCanBeZero;
-	}
-
-	public function isDecimalBad(): bool
-	{
-		return $this->decimalBad;
-	}
-
-	public function isDecimalAtomRepeats(): bool
-	{
-		return $this->decimalAtomRepeats;
-	}
-
-	public function isDecimalAtomOptional(): bool
-	{
-		return $this->decimalAtomOptional;
+		return $this->decimalState;
 	}
 
 	/**
@@ -351,7 +165,7 @@ final class RegexGroupWalkResult
 	 */
 	public function isDecimalIntegerLeadingZeroSafe(): bool
 	{
-		return !$this->decimalBad && !($this->seenDecimalIntegerSign && $this->decimalLeadCanBeZero);
+		return $this->decimalState->isLeadingZeroSafe();
 	}
 
 }

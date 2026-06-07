@@ -32,6 +32,14 @@ function subject(string $s): void
 	if (preg_match('/^-?\d$/', $s, $m)) {
 		assertType('numeric-string', $m[0]);
 	}
+	// a zero-able lead followed by more digits inside an alternation (e.g. "01")
+	if (preg_match('/^0(?:1|2)$/', $s, $m)) {
+		assertType('numeric-string', $m[0]);
+	}
+	// a quantified group of digits can still match "00"
+	if (preg_match('/^(?:\d)+$/', $s, $m)) {
+		assertType('numeric-string', $m[0]);
+	}
 
 	// single digit, or a leading non-zero digit, stays a decimal-int-string
 	if (preg_match('/^\d$/', $s, $m)) {

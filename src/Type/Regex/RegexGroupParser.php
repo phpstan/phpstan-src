@@ -547,13 +547,12 @@ final class RegexGroupParser
 			// (so a leading zero may be followed by more digits) and whether it
 			// is optional, which is consumed when the atom is processed.
 			$walkResult = $walkResult
-				->decimalAtomRepeats($max === null || $max >= 2)
-				->decimalAtomOptional($min === 0)
+				->withDecimalState($walkResult->getDecimalState()->withPendingQuantifier($max === null || $max >= 2, $min === 0))
 				->onlyLiterals(null);
 		} elseif (in_array($ast->getId(), ['#class', '#negativeclass'], true)) {
 			$inClass = true;
 
-			[$atomRepeats, $atomOptional, $walkResult] = $this->consumeDecimalAtomQuantification($walkResult);
+			$decimalState = $walkResult->getDecimalState();
 
 			[$classAllDigit, $classCanBeZero] = $ast->getId() === '#class'
 				? $this->getClassDecimalInfo($ast)
@@ -563,12 +562,14 @@ final class RegexGroupParser
 				if ($walkResult->isDecimalInteger()->maybe()) {
 					$walkResult = $walkResult->decimalInteger(TrinaryLogic::createYes());
 				}
-				$walkResult = $this->applyDecimalDigitPosition($walkResult, $classCanBeZero, !$atomOptional, $atomRepeats);
+				$walkResult = $walkResult->withDecimalState($decimalState->withDigit($classCanBeZero, false));
 			} else {
 				// [^0-9] should not parse as decimal-int-string, and [^list-everything-but-numbers] is
 				// technically doable but really silly compared to just \d so we can safely assume the string
 				// is not a decimal integer for negative classes (and classes containing non-digits).
-				$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
+				$walkResult = $walkResult
+					->withDecimalState($decimalState->consumePendingQuantifier())
+					->decimalInteger(TrinaryLogic::createNo());
 			}
 
 			if ($ast->getId() === '#class' && $walkResult->getOnlyLiterals() !== null) {
@@ -592,27 +593,26 @@ final class RegexGroupParser
 
 			if ($literalValue !== null) {
 				if (!$inClass && $literalValue !== '') {
-					[$atomRepeats, $atomOptional, $walkResult] = $this->consumeDecimalAtomQuantification($walkResult);
+					$decimalState = $walkResult->getDecimalState();
 
 					if (Strings::match($literalValue, '/^\d+$/') !== null) {
 						if ($walkResult->isDecimalInteger()->maybe()) {
 							$walkResult = $walkResult->decimalInteger(TrinaryLogic::createYes());
 						}
-						$walkResult = $this->applyDecimalDigitPosition(
-							$walkResult,
-							$literalValue[0] === '0',
-							!$atomOptional,
-							$atomRepeats || strlen($literalValue) > 1,
+						$walkResult = $walkResult->withDecimalState(
+							$decimalState->withDigit($literalValue[0] === '0', strlen($literalValue) > 1),
 						);
 					} elseif (
 						$literalValue === '-'
 						&& $walkResult->isDecimalInteger()->maybe()
-						&& !$walkResult->hasSeenDecimalIntegerSign()
+						&& !$decimalState->hasSeenSign()
 					) {
 						// a single leading minus sign keeps the string a decimal integer (e.g. "-1")
-						$walkResult = $walkResult->seenDecimalIntegerSign(true);
+						$walkResult = $walkResult->withDecimalState($decimalState->consumePendingQuantifier()->withSign());
 					} else {
-						$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
+						$walkResult = $walkResult
+							->withDecimalState($decimalState->consumePendingQuantifier())
+							->decimalInteger(TrinaryLogic::createNo());
 					}
 				}
 
@@ -629,14 +629,12 @@ final class RegexGroupParser
 				return $walkResult;
 			}
 
+			$prefixDecimalState = $walkResult->getDecimalState();
 			$newLiterals = [];
 			$nonEmpty = TrinaryLogic::createYes();
 			$nonFalsy = TrinaryLogic::createYes();
 			$decimalInteger = TrinaryLogic::createYes();
-			$branchBad = false;
-			$branchLeadCanBeZero = false;
-			$branchResolved = true;
-			$branchSeenDigit = false;
+			$branchStates = [];
 			foreach ($children as $child) {
 				$childResult = $this->walkGroupAst(
 					$child,
@@ -646,20 +644,13 @@ final class RegexGroupParser
 						->nonEmpty(TrinaryLogic::createMaybe())
 						->nonFalsy(TrinaryLogic::createMaybe())
 						->decimalInteger(TrinaryLogic::createMaybe())
-						->seenDecimalIntegerSign(false)
-						->decimalLeadingResolved(false)
-						->decimalSeenDigit(false)
-						->decimalLeadCanBeZero(false)
-						->decimalBad(false),
+						->withDecimalState($prefixDecimalState->forAlternationBranch()),
 				);
 
 				$nonEmpty = $nonEmpty->and($childResult->isNonEmpty());
 				$nonFalsy = $nonFalsy->and($childResult->isNonFalsy());
 				$decimalInteger = $decimalInteger->and($childResult->isDecimalInteger());
-				$branchBad = $branchBad || !$childResult->isDecimalIntegerLeadingZeroSafe();
-				$branchLeadCanBeZero = $branchLeadCanBeZero || $childResult->isDecimalLeadCanBeZero();
-				$branchResolved = $branchResolved && $childResult->isDecimalLeadingResolved();
-				$branchSeenDigit = $branchSeenDigit || $childResult->hasDecimalSeenDigit();
+				$branchStates[] = $childResult->getDecimalState();
 
 				if ($newLiterals === null) {
 					continue;
@@ -674,26 +665,12 @@ final class RegexGroupParser
 				}
 			}
 
-			// the alternation is a single conceptual digit position: it is unsafe if any
-			// branch is internally unsafe, or if a preceding zero-able lead now gets more digits
-			$mergedBad = $walkResult->isDecimalBad()
-				|| $branchBad
-				|| ($walkResult->hasDecimalSeenDigit() && $walkResult->isDecimalLeadCanBeZero() && $branchSeenDigit);
-			$mergedLeadCanBeZero = $walkResult->isDecimalLeadingResolved()
-				? $walkResult->isDecimalLeadCanBeZero()
-				: ($walkResult->isDecimalLeadCanBeZero() || $branchLeadCanBeZero);
-
 			return $walkResult
 				->onlyLiterals($newLiterals)
 				->nonEmpty($walkResult->isNonEmpty()->or($nonEmpty))
 				->nonFalsy($walkResult->isNonFalsy()->or($nonFalsy))
 				->decimalInteger(TrinaryLogic::maxMin($walkResult->isDecimalInteger(), $decimalInteger))
-				->decimalLeadingResolved($walkResult->isDecimalLeadingResolved() || $branchResolved)
-				->decimalSeenDigit($walkResult->hasDecimalSeenDigit() || $branchSeenDigit)
-				->decimalLeadCanBeZero($mergedLeadCanBeZero)
-				->decimalBad($mergedBad)
-				->decimalAtomRepeats(false)
-				->decimalAtomOptional(false);
+				->withDecimalState($prefixDecimalState->mergeAlternationBranches($branchStates));
 		}
 
 		foreach ($children as $child) {
@@ -706,63 +683,6 @@ final class RegexGroupParser
 		}
 
 		return $walkResult;
-	}
-
-	/**
-	 * Reads and clears the transient quantification flags set on the walk result
-	 * for the next digit-producing atom.
-	 *
-	 * @return array{bool, bool, RegexGroupWalkResult} [repeats, optional, walkResult]
-	 */
-	private function consumeDecimalAtomQuantification(RegexGroupWalkResult $walkResult): array
-	{
-		return [
-			$walkResult->isDecimalAtomRepeats(),
-			$walkResult->isDecimalAtomOptional(),
-			$walkResult->decimalAtomRepeats(false)->decimalAtomOptional(false),
-		];
-	}
-
-	/**
-	 * Tracks one digit character position to detect whether a leading zero can be
-	 * followed by more digits (which would not be a canonical decimal integer).
-	 *
-	 * @param bool $canBeZero whether this digit can be "0"
-	 * @param bool $mandatory whether this digit is always present (not optional)
-	 * @param bool $repeats whether this digit may appear more than once in a row
-	 */
-	private function applyDecimalDigitPosition(RegexGroupWalkResult $walkResult, bool $canBeZero, bool $mandatory, bool $repeats): RegexGroupWalkResult
-	{
-		$leadingResolved = $walkResult->isDecimalLeadingResolved();
-		$leadCanBeZero = $walkResult->isDecimalLeadCanBeZero();
-		$bad = $walkResult->isDecimalBad();
-
-		// a digit appears after another digit position: if the lead can be a zero,
-		// the value is a leading-zero string like "00"
-		if ($walkResult->hasDecimalSeenDigit() && $leadCanBeZero) {
-			$bad = true;
-		}
-
-		// while the leading digit is not pinned down yet (only optional digits seen
-		// so far), this digit may be the leading one
-		if (!$leadingResolved && $canBeZero) {
-			$leadCanBeZero = true;
-		}
-
-		// a single quantified digit repeated produces a leading-zero string like "00"
-		if ($repeats && $leadCanBeZero) {
-			$bad = true;
-		}
-
-		if ($mandatory) {
-			$leadingResolved = true;
-		}
-
-		return $walkResult
-			->decimalSeenDigit(true)
-			->decimalLeadingResolved($leadingResolved)
-			->decimalLeadCanBeZero($leadCanBeZero)
-			->decimalBad($bad);
 	}
 
 	/**

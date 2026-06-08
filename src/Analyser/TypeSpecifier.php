@@ -3288,9 +3288,12 @@ final class TypeSpecifier
 
 			if ($decimalValueExpr !== null) {
 				$decimalValueType = $scope->getType($decimalValueExpr);
+				$decimalIntegerString = new AccessoryDecimalIntegerStringType();
 				return $this->create(
 					$decimalValueExpr,
-					TypeCombinator::intersect($decimalValueType, new AccessoryDecimalIntegerStringType($context->falsey())),
+					$context->truthy()
+						? TypeCombinator::intersect($decimalValueType, $decimalIntegerString)
+						: TypeCombinator::remove($decimalValueType, $decimalIntegerString),
 					TypeSpecifierContext::createTruthy(),
 					$scope,
 				)->setRootExpr($expr);

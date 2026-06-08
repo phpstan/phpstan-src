@@ -13,9 +13,9 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -125,14 +125,8 @@ final class RegexGroupParser
 		);
 
 		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral() && !$this->containsEscapeK($ast)) {
-			if (
-				$subjectAsGroupResult->isDecimalInteger()->yes()
-				&& $this->regexExpressionHelper->isAnchoredPattern($regex)
-			) {
-				$astWalkResult = $astWalkResult->withSubjectBaseType(
-					new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]),
-				);
-			} elseif ($subjectAsGroupResult->isNonFalsy()->yes()) {
+			// we could handle numeric-string, in case we know the regex is delimited by ^ and $
+			if ($subjectAsGroupResult->isNonFalsy()->yes()) {
 				$astWalkResult = $astWalkResult->withSubjectBaseType(
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 				);
@@ -426,16 +420,16 @@ final class RegexGroupParser
 			return TypeCombinator::union(...$result);
 		}
 
-		if ($walkResult->isDecimalInteger()->yes()) {
+		if ($walkResult->isNumeric()->yes()) {
 			if ($walkResult->isNonFalsy()->yes()) {
 				return new IntersectionType([
 					new StringType(),
-					new AccessoryDecimalIntegerStringType(),
+					new AccessoryNumericStringType(),
 					new AccessoryNonFalsyStringType(),
 				]);
 			}
 
-			$result = new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]);
+			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 			if (!$walkResult->isNonEmpty()->yes()) {
 				return new UnionType([new ConstantStringType(''), $result]);
 			}
@@ -488,16 +482,11 @@ final class RegexGroupParser
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
 				$nonFalsy = false;
-				$isNonDecimal = false;
-				if ($this->isMaybeEmptyNode($child, $patternModifiers, $nonFalsy, $isNonDecimal)) {
+				if ($this->isMaybeEmptyNode($child, $patternModifiers, $nonFalsy)) {
 					continue;
 				}
 
 				$meaningfulTokens++;
-
-				if ($isNonDecimal) {
-					$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
-				}
 
 				if (!$nonFalsy) {
 					continue;
@@ -552,19 +541,10 @@ final class RegexGroupParser
 			$walkResult = $walkResult->onlyLiterals($onlyLiterals);
 
 			if ($literalValue !== null) {
-				if (Strings::match($literalValue, '/^\d+$/') !== null) {
-					if ($walkResult->isDecimalInteger()->maybe()) {
-						$walkResult = $walkResult->decimalInteger(TrinaryLogic::createYes());
-					}
-				} elseif (
-					$literalValue === '-'
-					&& $walkResult->isDecimalInteger()->maybe()
-					&& !$walkResult->hasSeenDecimalIntegerSign()
-				) {
-					// a single leading minus sign keeps the string a decimal integer (e.g. "-1")
-					$walkResult = $walkResult->seenDecimalIntegerSign(true);
-				} elseif ($literalValue !== '') {
-					$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
+				if (Strings::match($literalValue, '/^\d+$/') === null) {
+					$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
+				} elseif ($walkResult->isNumeric()->maybe()) {
+					$walkResult = $walkResult->numeric(TrinaryLogic::createYes());
 				}
 
 				if (!$walkResult->isInOptionalQuantification() && $literalValue !== '') {
@@ -583,7 +563,7 @@ final class RegexGroupParser
 			$newLiterals = [];
 			$nonEmpty = TrinaryLogic::createYes();
 			$nonFalsy = TrinaryLogic::createYes();
-			$decimalInteger = TrinaryLogic::createYes();
+			$numeric = TrinaryLogic::createYes();
 			foreach ($children as $child) {
 				$childResult = $this->walkGroupAst(
 					$child,
@@ -592,13 +572,12 @@ final class RegexGroupParser
 					$walkResult->onlyLiterals([])
 						->nonEmpty(TrinaryLogic::createMaybe())
 						->nonFalsy(TrinaryLogic::createMaybe())
-						->decimalInteger(TrinaryLogic::createMaybe())
-						->seenDecimalIntegerSign(false),
+						->numeric(TrinaryLogic::createMaybe()),
 				);
 
 				$nonEmpty = $nonEmpty->and($childResult->isNonEmpty());
 				$nonFalsy = $nonFalsy->and($childResult->isNonFalsy());
-				$decimalInteger = $decimalInteger->and($childResult->isDecimalInteger());
+				$numeric = $numeric->and($childResult->isNumeric());
 
 				if ($newLiterals === null) {
 					continue;
@@ -617,14 +596,14 @@ final class RegexGroupParser
 				->onlyLiterals($newLiterals)
 				->nonEmpty($walkResult->isNonEmpty()->or($nonEmpty))
 				->nonFalsy($walkResult->isNonFalsy()->or($nonFalsy))
-				->decimalInteger(TrinaryLogic::maxMin($walkResult->isDecimalInteger(), $decimalInteger));
+				->numeric($walkResult->isNumeric()->and($numeric));
 		}
 
-		// [^0-9] should not parse as decimal-int-string, and [^list-everything-but-numbers] is technically
-		// doable but really silly compared to just \d so we can safely assume the string is not a decimal
-		// integer for negative classes
+		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically
+		// doable but really silly compared to just \d so we can safely assume the string is not numeric
+		// for negative classes
 		if ($ast->getId() === '#negativeclass') {
-			$walkResult = $walkResult->decimalInteger(TrinaryLogic::createNo());
+			$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
 		}
 
 		foreach ($children as $child) {
@@ -639,7 +618,7 @@ final class RegexGroupParser
 		return $walkResult;
 	}
 
-	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy, bool &$isNonDecimal): bool
+	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
@@ -658,14 +637,11 @@ final class RegexGroupParser
 			if ($literal !== '' && $literal !== '0') {
 				$isNonFalsy = true;
 			}
-			if (Strings::match($literal, '/^\d+$/') === null) {
-				$isNonDecimal = true;
-			}
 			return $literal === '';
 		}
 
 		foreach ($node->getChildren() as $child) {
-			if (!$this->isMaybeEmptyNode($child, $patternModifiers, $isNonFalsy, $isNonDecimal)) {
+			if (!$this->isMaybeEmptyNode($child, $patternModifiers, $isNonFalsy)) {
 				return false;
 			}
 		}

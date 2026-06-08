@@ -123,6 +123,7 @@ final class RuleLevelHelper
 					$acceptedType->getUsedVariables(),
 					$acceptedType->acceptsNamedArguments(),
 					$acceptedType->mustUseReturnValue(),
+					isStatic: $acceptedType->isStaticClosure(),
 				);
 			}
 

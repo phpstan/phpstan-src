@@ -135,6 +135,7 @@ final class GenericParametersAcceptorResolver
 				$originalParametersAcceptor->acceptsNamedArguments(),
 				$originalParametersAcceptor->mustUseReturnValue(),
 				$originalParametersAcceptor->getAsserts(),
+				$originalParametersAcceptor->isStaticClosure(),
 			);
 		}
 

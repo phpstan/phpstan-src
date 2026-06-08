@@ -38,6 +38,7 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 		private TrinaryLogic $acceptsNamedArguments,
 		private TrinaryLogic $mustUseReturnValue,
 		private ?Assertions $assertions = null,
+		private ?TrinaryLogic $isStatic = null,
 	)
 	{
 		parent::__construct(
@@ -90,6 +91,11 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 	public function getAsserts(): Assertions
 	{
 		return $this->assertions ?? Assertions::createEmpty();
+	}
+
+	public function isStaticClosure(): TrinaryLogic
+	{
+		return $this->isStatic ?? TrinaryLogic::createMaybe();
 	}
 
 }

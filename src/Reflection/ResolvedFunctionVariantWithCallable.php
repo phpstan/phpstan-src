@@ -30,6 +30,7 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 		private TrinaryLogic $acceptsNamedArguments,
 		private TrinaryLogic $mustUseReturnValue,
 		private ?Assertions $assertions = null,
+		private ?TrinaryLogic $isStatic = null,
 	)
 	{
 	}
@@ -122,6 +123,11 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 	public function getAsserts(): Assertions
 	{
 		return $this->assertions ?? Assertions::createEmpty();
+	}
+
+	public function isStaticClosure(): TrinaryLogic
+	{
+		return $this->isStatic ?? TrinaryLogic::createMaybe();
 	}
 
 }

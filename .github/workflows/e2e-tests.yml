@@ -399,6 +399,8 @@ jobs:
 
       - name: "Install bashunit"
         uses: "TypedDevs/bashunit@38fd81415a622ec084aaf2c7a71a543470581437" # 0.38.0
+        with:
+          directory: "e2e"
 
       - name: "Test"
         run: "${{ matrix.script }}"
@@ -548,6 +550,8 @@ jobs:
 
       - name: "Install bashunit"
         uses: "TypedDevs/bashunit@38fd81415a622ec084aaf2c7a71a543470581437" # 0.38.0
+        with:
+          directory: "e2e"
 
       - name: "Test"
         run: ${{ matrix.script }}

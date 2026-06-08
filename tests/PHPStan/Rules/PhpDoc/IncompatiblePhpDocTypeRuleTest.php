@@ -497,4 +497,15 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11463b.php'], []);
 	}
 
+	public function testExplainUnresolvable(): void
+	{
+		$this->analyse([__DIR__ . '/data/explain-unresolvable-method-parameter.php'], [
+			[
+				'PHPDoc tag @param for parameter $a contains unresolvable type.',
+				11,
+				'Sealed array shapes array{foo: int} and array{bar: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys',
+			],
+		]);
+	}
+
 }

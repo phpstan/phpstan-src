@@ -62,6 +62,11 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	{
 	}
 
+	public function isInverse(): bool
+	{
+		return $this->inverse;
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return [];

@@ -5738,6 +5738,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'*NEVER*=implicit',
 			],
 			[
+				new StringType(),
+				new AccessoryDecimalIntegerStringType(),
+				IntersectionType::class,
+				'non-decimal-int-string',
+			],
+			[
+				new StringType(),
+				new AccessoryDecimalIntegerStringType(inverse: true),
+				IntersectionType::class,
+				'decimal-int-string',
+			],
+			[
 				new ConstantBooleanType(true),
 				new ConstantBooleanType(false),
 				ConstantBooleanType::class,

@@ -25,6 +25,17 @@ class Foo
 		}
 	}
 
+	public function castIdenticalDifferentOrder(string $s): void
+	{
+		// the casts can appear in any combination as long as the chain
+		// computes the int-then-string round-trip
+		if ((string) (int) (string) (int) $s === $s) {
+			assertType('decimal-int-string', $s);
+		} else {
+			assertType('non-decimal-int-string', $s);
+		}
+	}
+
 	public function castNotIdentical(string $s): void
 	{
 		if ((string) (int) $s !== $s) {

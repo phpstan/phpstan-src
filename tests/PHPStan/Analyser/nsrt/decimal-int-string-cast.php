@@ -3,8 +3,6 @@
 namespace DecimalIntStringCast;
 
 use function PHPStan\Testing\assertType;
-use function intval;
-use function strval;
 
 class Foo
 {
@@ -32,26 +30,6 @@ class Foo
 		if ((string) (int) $s !== $s) {
 			assertType('non-decimal-int-string', $s);
 		} else {
-			assertType('decimal-int-string', $s);
-		}
-	}
-
-	public function strvalIntval(string $s): void
-	{
-		if (strval(intval($s)) === $s) {
-			assertType('decimal-int-string', $s);
-		} else {
-			assertType('non-decimal-int-string', $s);
-		}
-	}
-
-	public function mixedCastForms(string $s): void
-	{
-		if (strval((int) $s) === $s) {
-			assertType('decimal-int-string', $s);
-		}
-
-		if ((string) intval($s) === $s) {
 			assertType('decimal-int-string', $s);
 		}
 	}

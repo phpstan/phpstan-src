@@ -2971,7 +2971,7 @@ final class TypeSpecifier
 	/**
 	 * When $castExpr casts $valueExpr to an int and back to a string — i.e. the
 	 * `(string) (int) $valueExpr` round-trip (in any combination of the (string)/(int)
-	 * casts and the strval()/intval() function forms) — returns $valueExpr so the
+	 * casts) — returns $valueExpr so the
 	 * comparison `$castExpr === $valueExpr` can narrow it to a decimal / non-decimal
 	 * integer string. This is the canonical "decimal integer string" round-trip that
 	 * ConstantStringType::isDecimalIntegerString() checks with `(string) (int) $value === $value`.
@@ -3008,22 +3008,12 @@ final class TypeSpecifier
 	}
 
 	/**
-	 * Strips a single (string)/(int) cast or strval()/intval() call, returning its inner expression.
+	 * Strips a single (string)/(int) cast, returning its inner expression.
 	 */
 	private function getCastInnerExpr(Expr $expr): ?Expr
 	{
 		if ($expr instanceof Expr\Cast\String_ || $expr instanceof Expr\Cast\Int_) {
 			return $expr->expr;
-		}
-
-		if (
-			$expr instanceof FuncCall
-			&& $expr->name instanceof Name
-			&& !$expr->isFirstClassCallable()
-			&& in_array(strtolower($expr->name->toString()), ['strval', 'intval'], true)
-			&& count($expr->getArgs()) === 1
-		) {
-			return $expr->getArgs()[0]->value;
 		}
 
 		return null;
@@ -3291,7 +3281,7 @@ final class TypeSpecifier
 			}
 		}
 
-		// (string) (int) $x === $x  (and the strval(intval()) equivalents)
+		// (string) (int) $x === $x
 		if (!$context->null()) {
 			$decimalValueExpr = $this->getDecimalIntegerStringRoundTripExpr($unwrappedLeftExpr, $unwrappedRightExpr, $scope)
 				?? $this->getDecimalIntegerStringRoundTripExpr($unwrappedRightExpr, $unwrappedLeftExpr, $scope);

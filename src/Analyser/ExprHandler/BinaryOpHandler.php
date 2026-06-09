@@ -16,6 +16,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\EqualityTypeSpecifyingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -64,6 +65,7 @@ final class BinaryOpHandler implements ExprHandler
 		private PhpVersion $phpVersion,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExprPrinter $exprPrinter,
+		private EqualityTypeSpecifyingHelper $equalityTypeSpecifyingHelper,
 	)
 	{
 	}
@@ -233,7 +235,7 @@ final class BinaryOpHandler implements ExprHandler
 	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		if ($expr instanceof BinaryOp\Identical) {
-			return $typeSpecifier->resolveIdentical($expr, $scope, $context);
+			return $this->equalityTypeSpecifyingHelper->specifyTypesForIdentical($expr, $scope, $context);
 		}
 
 		if ($expr instanceof BinaryOp\NotIdentical) {
@@ -245,7 +247,7 @@ final class BinaryOpHandler implements ExprHandler
 		}
 
 		if ($expr instanceof BinaryOp\Equal) {
-			return $typeSpecifier->resolveEqual($expr, $scope, $context);
+			return $this->equalityTypeSpecifyingHelper->specifyTypesForEqual($expr, $scope, $context);
 		}
 
 		if ($expr instanceof BinaryOp\NotEqual) {

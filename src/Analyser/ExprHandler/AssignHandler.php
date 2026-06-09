@@ -38,6 +38,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -95,6 +96,7 @@ final class AssignHandler implements ExprHandler
 		private PhpVersion $phpVersion,
 		private ExprPrinter $exprPrinter,
 		private MatchHandler $matchHandler,
+		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
 	)
 	{
 	}
@@ -388,6 +390,16 @@ final class AssignHandler implements ExprHandler
 			impurePoints: $result->getImpurePoints(),
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: function (Expr $e, MutatingScope $s) use ($storage): Type {
+				/** @var Assign|AssignRef $e */
+				$assignedExprResult = $storage->findResult($e->expr);
+				if ($assignedExprResult === null) {
+					throw new ShouldNotHappenException();
+				}
+				return $assignedExprResult->getTypeForScope($s);
+			},
+			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}
 
@@ -428,7 +440,14 @@ final class AssignHandler implements ExprHandler
 					$impurePoints[] = new ImpurePoint($scopeBeforeAssignEval, $var, 'superglobal', 'assign to superglobal variable', true);
 				}
 				$assignedExpr = $this->unwrapAssign($assignedExpr);
-				$type = $scopeBeforeAssignEval->getType($assignedExpr);
+				// A plain Assign's value is processed via processExprNode and stored,
+				// so its (possibly migrated) type comes from the ExpressionResult.
+				// AssignOp and other not-separately-processed values fall back to the
+				// legacy scope type (works under PHPSTAN_FNSR=0, guarded under FNSR=1).
+				$assignedExprResult = $storage->findResult($assignedExpr);
+				$type = $assignedExprResult !== null
+					? $assignedExprResult->getType()
+					: $scopeBeforeAssignEval->getType($assignedExpr);
 
 				$conditionalExpressions = [];
 				if ($assignedExpr instanceof Ternary) {
@@ -510,7 +529,10 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
-				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
+				$assignedNativeType = $assignedExprResult !== null
+					? $assignedExprResult->getNativeType()
+					: $scopeBeforeAssignEval->getNativeType($assignedExpr);
+				$scope = $scope->assignVariable($var->name, $type, $assignedNativeType, TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {
 					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}

@@ -10,6 +10,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Type\Type;
 use function sprintf;
 
 #[AutowiredService]
@@ -23,12 +24,10 @@ final class ImplicitToStringCallHelper
 	{
 	}
 
-	public function processImplicitToStringCall(Expr $expr, MutatingScope $scope): ExpressionResult
+	public function processImplicitToStringCall(Expr $expr, Type $exprType, MutatingScope $scope): ExpressionResult
 	{
 		$throwPoints = [];
 		$impurePoints = [];
-
-		$exprType = $scope->getType($expr);
 
 		$toStringMethod = null;
 		if (!$exprType->isObject()->no()) {

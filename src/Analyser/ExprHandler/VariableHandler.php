@@ -19,6 +19,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -33,6 +34,12 @@ use function is_string;
 #[AutowiredService]
 final class VariableHandler implements ExprHandler
 {
+
+	public function __construct(
+		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -97,6 +104,9 @@ final class VariableHandler implements ExprHandler
 			$impurePoints,
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: fn (Expr $e, MutatingScope $s): Type => $this->resolveType($s, $e),
+			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}
 

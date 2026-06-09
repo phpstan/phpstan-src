@@ -5,7 +5,7 @@ namespace PHPStan\Analyser\Fiber;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 
-final class BeforeScopeForExprRequest
+final class ExpressionResultForExprRequest
 {
 
 	public function __construct(public readonly Expr $expr, public readonly MutatingScope $scope)

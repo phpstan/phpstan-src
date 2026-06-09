@@ -94,8 +94,8 @@ final class BinaryOpHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createExplicit($leftResult->getScope(), new ObjectType(DivisionByZeroError::class), $expr, false);
 		}
 		if ($expr instanceof BinaryOp\Concat) {
-			$leftToStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->left, $scope);
-			$rightToStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->right, $leftResult->getScope());
+			$leftToStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->left, $leftResult->getType(), $scope);
+			$rightToStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->right, $rightResult->getType(), $leftResult->getScope());
 			$throwPoints = array_merge($throwPoints, $leftToStringResult->getThrowPoints(), $rightToStringResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $leftToStringResult->getImpurePoints(), $rightToStringResult->getImpurePoints());
 		}

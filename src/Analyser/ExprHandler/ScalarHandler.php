@@ -17,6 +17,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
@@ -30,6 +31,7 @@ final class ScalarHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
 	)
 	{
 	}
@@ -47,6 +49,9 @@ final class ScalarHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
+			expr: $expr,
+			typeCallback: fn (Expr $e, MutatingScope $s): Type => $this->initializerExprTypeResolver->getType($e, InitializerExprContext::fromScope($s)),
+			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}
 

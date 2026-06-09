@@ -358,6 +358,11 @@ class NodeScopeResolver
 	{
 	}
 
+	public function storeResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $result): void
+	{
+		$storage->storeResult($expr, $result);
+	}
+
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
 	{
 	}
@@ -1059,7 +1064,7 @@ class NodeScopeResolver
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope);
+				$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $result->getType(), $scope);
 				$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 				$scope = $result->getScope();
@@ -1118,7 +1123,6 @@ class NodeScopeResolver
 			if ($stmt->expr instanceof Expr\Throw_) {
 				$scope = $stmtScope;
 			}
-			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$hasAssign = false;
 			$currentScope = $scope;
 			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $currentScope, &$hasAssign): void {
@@ -1131,6 +1135,7 @@ class NodeScopeResolver
 				}
 				$nodeCallback($node, $scope);
 			}, ExpressionContext::createTopLevel());
+			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope, $result->getType());
 			$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 			if (
 				count($result->getImpurePoints()) === 0
@@ -2672,7 +2677,7 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
+	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope, Type $exprType): ?Expr
 	{
 		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
 			if (array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
@@ -2715,7 +2720,6 @@ class NodeScopeResolver
 			return $expr;
 		}
 
-		$exprType = $scope->getType($expr);
 		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
 			return $expr;
 		}
@@ -2749,7 +2753,9 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
-			return $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
+			$result = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
+			$this->storeResult($storage, $expr, $result);
+			return $result;
 		}
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
@@ -2760,15 +2766,20 @@ class NodeScopeResolver
 				continue;
 			}
 
-			return $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			$result = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			$result->setExpr($expr);
+			$this->storeResult($storage, $expr, $result);
+			return $result;
 		}
 
 		if ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
-			return new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
+			$result = new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: [], expr: $expr);
+			$this->storeResult($storage, $expr, $result);
+			return $result;
 		}
 
-		return new ExpressionResult(
+		$result = new ExpressionResult(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,
@@ -2776,7 +2787,10 @@ class NodeScopeResolver
 			impurePoints: [],
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
 		);
+		$this->storeResult($storage, $expr, $result);
+		return $result;
 	}
 
 	/**

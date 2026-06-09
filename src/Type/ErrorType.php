@@ -7,9 +7,14 @@ class ErrorType extends MixedType
 {
 
 	/** @api */
-	public function __construct()
+	public function __construct(private ?string $reason = null)
 	{
 		parent::__construct();
+	}
+
+	public function getReason(): ?string
+	{
+		return $this->reason;
 	}
 
 	public function describe(VerbosityLevel $level): string

@@ -231,13 +231,18 @@ final class PropertyTagCheck
 			}
 		}
 
-		if ($this->unresolvableTypeHelper->containsUnresolvableType($type)) {
-			$errors[] = RuleErrorBuilder::message(sprintf(
+		$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($type);
+		if ($unresolvableType !== null) {
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag %s for property %s::$%s contains unresolvable type.',
 				$tagName,
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->identifier('propertyTag.unresolvableType')->build();
+			))->identifier('propertyTag.unresolvableType');
+			foreach ($unresolvableType->reasons as $reason) {
+				$errorBuilder->addTip($reason);
+			}
+			$errors[] = $errorBuilder->build();
 		}
 
 		$escapedClassName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());

@@ -391,10 +391,12 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 					[
 						'Parameter $a of method MethodIntersectionTypes\FooClass::doBar() has unresolvable native type.',
 						33,
+						'Classes MethodIntersectionTypes\Ipsum and MethodIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Method MethodIntersectionTypes\FooClass::doBar() has unresolvable native return type.',
 						33,
+						'Classes MethodIntersectionTypes\Ipsum and MethodIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Parameter $a of method MethodIntersectionTypes\FooClass::doBaz() has unresolvable native type.',

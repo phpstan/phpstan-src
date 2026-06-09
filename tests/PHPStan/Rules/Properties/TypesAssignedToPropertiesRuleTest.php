@@ -215,6 +215,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug3777\Bar::$foo (Bug3777\Foo<stdClass>) does not accept Bug3777\Fooo<object>.',
 				58,
+				'Classes Bug3777\Foo<stdClass> and Bug3777\Fooo<object> are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Property Bug3777\Ipsum::$ipsum (Bug3777\Lorem<stdClass, Exception>) does not accept Bug3777\Lorem<Exception, stdClass>.',
@@ -238,6 +239,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Static property Bug3777Static\Bar::$foo (Bug3777Static\Foo<stdClass>) does not accept Bug3777Static\Fooo<object>.',
 				58,
+				'Classes Bug3777Static\Foo<stdClass> and Bug3777Static\Fooo<object> are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Static property Bug3777Static\Ipsum::$ipsum (Bug3777Static\Lorem<stdClass, Exception>) does not accept Bug3777Static\Lorem<Exception, stdClass>.',

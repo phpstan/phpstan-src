@@ -101,15 +101,19 @@ final class ExistingClassesInPropertiesRule implements Rule
 			),
 		);
 
-		if (
-			$this->phpVersion->supportsPureIntersectionTypes()
-			&& $this->unresolvableTypeHelper->containsUnresolvableType($propertyReflection->getNativeType())
-		) {
-			$errors[] = RuleErrorBuilder::message(sprintf(
+		$unresolvableType = $this->phpVersion->supportsPureIntersectionTypes()
+			? $this->unresolvableTypeHelper->getUnresolvableType($propertyReflection->getNativeType())
+			: null;
+		if ($unresolvableType !== null) {
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s has unresolvable native type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->identifier('property.unresolvableNativeType')->build();
+			))->identifier('property.unresolvableNativeType');
+			foreach ($unresolvableType->reasons as $reason) {
+				$errorBuilder->addTip($reason);
+			}
+			$errors[] = $errorBuilder->build();
 		}
 
 		return $errors;

@@ -109,10 +109,14 @@ final class GenericAncestorsCheck
 			);
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
-			if ($this->unresolvableTypeHelper->containsUnresolvableType($ancestorType)) {
-				$messages[] = RuleErrorBuilder::message($unresolvableTypeMessage)
-					->identifier('generics.unresolvable')
-					->build();
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($ancestorType);
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message($unresolvableTypeMessage)
+					->identifier('generics.unresolvable');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$messages[] = $errorBuilder->build();
 			}
 
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {

@@ -108,6 +108,7 @@ class ConstantArrayType implements Type
 
 	private const DESCRIBE_LIMIT = 8;
 	private const CHUNK_FINITE_TYPES_LIMIT = 5;
+	private const UNSEALED_ARRAY_SHAPES_LINK = 'https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys';
 
 	private TrinaryLogic $isList;
 
@@ -758,6 +759,9 @@ class ConstantArrayType implements Type
 				}
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
+						if ($thisUnsealedness->no() && $typeUnsealedness->no()) {
+							return IsSuperTypeOfResult::createNo([$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+						}
 						return IsSuperTypeOfResult::createNo();
 					}
 
@@ -792,6 +796,9 @@ class ConstantArrayType implements Type
 
 					if ($thisUnsealedness->no()) {
 						if (!$type->isOptionalKey($i)) {
+							if ($typeUnsealedness->no()) {
+								return IsSuperTypeOfResult::createNo([$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+							}
 							return IsSuperTypeOfResult::createNo();
 						}
 						$results[] = IsSuperTypeOfResult::createMaybe();
@@ -852,6 +859,16 @@ class ConstantArrayType implements Type
 		}
 
 		return IsSuperTypeOfResult::createNo();
+	}
+
+	private function sealedArrayShapesCannotBeIntersectedReason(self $type): string
+	{
+		return sprintf(
+			'Sealed array shapes %s and %s cannot be intersected. Unseal at least one of them with ... syntax. Learn more: %s',
+			$this->describe(VerbosityLevel::value()),
+			$type->describe(VerbosityLevel::value()),
+			self::UNSEALED_ARRAY_SHAPES_LINK,
+		);
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType

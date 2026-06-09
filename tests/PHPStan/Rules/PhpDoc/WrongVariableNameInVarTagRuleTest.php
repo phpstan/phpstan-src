@@ -258,6 +258,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
 				23,
+				'Classes SplObjectStorage<object,mixed> and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
@@ -315,6 +316,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
 				23,
+				'Classes SplObjectStorage<object,mixed> and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
@@ -406,6 +408,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
 				23,
+				'Classes SplObjectStorage<object,mixed> and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',

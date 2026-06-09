@@ -288,10 +288,14 @@ final class LocalTypeAliasesCheck
 				}
 			}
 
-			if ($this->unresolvableTypeHelper->containsUnresolvableType($resolvedType)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unresolvable type.', $aliasName))
-					->identifier('typeAlias.unresolvableType')
-					->build();
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($resolvedType);
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf('Type alias %s contains unresolvable type.', $aliasName))
+					->identifier('typeAlias.unresolvableType');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 			}
 
 			$escapedTypeAlias = SprintfHelper::escapeFormatString($aliasName);

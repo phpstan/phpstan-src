@@ -133,12 +133,14 @@ final class MixinCheck
 		$errors = [];
 		foreach ($phpDoc->getMixinTags() as $mixinTag) {
 			$type = $mixinTag->getType();
-			if (
-				$this->unresolvableTypeHelper->containsUnresolvableType($type)
-			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')
-					->identifier('mixin.unresolvableType')
-					->build();
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($type);
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')
+					->identifier('mixin.unresolvableType');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 				continue;
 			}
 

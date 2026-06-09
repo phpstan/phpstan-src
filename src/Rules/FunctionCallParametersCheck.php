@@ -415,15 +415,20 @@ final class FunctionCallParametersCheck
 					}
 				}
 
+				$unresolvableParameterType = $this->unresolvableTypeHelper->getUnresolvableType($parameterType);
 				if (
 					$originalParameter !== null
-					&& !$this->unresolvableTypeHelper->containsUnresolvableType($originalParameter->getType())
-					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameterType)
+					&& $this->unresolvableTypeHelper->getUnresolvableType($originalParameter->getType()) === null
+					&& $unresolvableParameterType !== null
 				) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						$unresolvableParameterTypeMessage,
 						$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
-					))->identifier('argument.unresolvableType')->line($argumentLine)->build();
+					))->identifier('argument.unresolvableType')->line($argumentLine);
+					foreach ($unresolvableParameterType->reasons as $reason) {
+						$errorBuilder->addTip($reason);
+					}
+					$errors[] = $errorBuilder->build();
 				}
 
 				if (
@@ -630,14 +635,18 @@ final class FunctionCallParametersCheck
 				}
 			}
 
+			$unresolvableReturnType = $this->unresolvableTypeHelper->getUnresolvableType($parametersAcceptor->getReturnType());
 			if (
-				!$this->unresolvableTypeHelper->containsUnresolvableType($originalParametersAcceptor->getReturnType())
-				&& $this->unresolvableTypeHelper->containsUnresolvableType($parametersAcceptor->getReturnType())
+				$this->unresolvableTypeHelper->getUnresolvableType($originalParametersAcceptor->getReturnType()) === null
+				&& $unresolvableReturnType !== null
 			) {
-				$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
+				$errorBuilder = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 					->identifier(sprintf('%s.unresolvableReturnType', $nodeType))
-					->line($funcCallLine)
-					->build();
+					->line($funcCallLine);
+				foreach ($unresolvableReturnType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 			}
 		}
 

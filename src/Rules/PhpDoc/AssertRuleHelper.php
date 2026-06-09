@@ -98,12 +98,17 @@ final class AssertRuleHelper
 				AssertTag::IF_FALSE => '@phpstan-assert-if-false',
 			][$assert->getIf()];
 
-			if ($this->unresolvableTypeHelper->containsUnresolvableType($assertedType)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($assertedType);
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag %s for %s contains unresolvable type.',
 					$tagName,
 					$assertedExprString,
-				))->identifier('assert.unresolvableType')->build();
+				))->identifier('assert.unresolvableType');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 				continue;
 			}
 

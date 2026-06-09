@@ -53,7 +53,11 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 			return [];
 		}
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
+			if ($reasons !== []) {
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder->acceptsReasonsTip($reasons));
+			}
+
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
@@ -72,16 +76,11 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		};
 
 		if (!$isAlways) {
-			$errorBuilder = RuleErrorBuilder::message(sprintf(
+			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Call to function %s()%s will always evaluate to false.',
 				$functionName,
 				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-			));
-			if ($reasons !== []) {
-				$errorBuilder = $this->possiblyImpureTipHelper->addTip($scope, $node, $errorBuilder->acceptsReasonsTip($reasons));
-			} else {
-				$errorBuilder = $addTip($errorBuilder);
-			}
+			)));
 			$ruleError = $errorBuilder->identifier('function.impossibleType')->build();
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);

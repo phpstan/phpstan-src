@@ -84,7 +84,14 @@ final class ImpossibleInstanceOfRule implements Rule
 			return [];
 		}
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+		$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
+		$reasons = $classType->isSuperTypeOf($exprType)->reasons;
+
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
+			if ($reasons !== []) {
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder->acceptsReasonsTip($reasons));
+			}
+
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
@@ -104,19 +111,11 @@ final class ImpossibleInstanceOfRule implements Rule
 		};
 
 		if (!$instanceofType->getValue()) {
-			$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
-
-			$errorBuilder = RuleErrorBuilder::message(sprintf(
+			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Instanceof between %s and %s will always evaluate to false.',
 				$exprType->describe(VerbosityLevel::typeOnly()),
 				$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
-			));
-			$reasons = $classType->isSuperTypeOf($exprType)->reasons;
-			if ($reasons !== []) {
-				$errorBuilder = $this->possiblyImpureTipHelper->addTip($scope, $node, $errorBuilder->acceptsReasonsTip($reasons));
-			} else {
-				$errorBuilder = $addTip($errorBuilder);
-			}
+			)));
 			$ruleError = $errorBuilder->identifier('instanceof.alwaysFalse')->build();
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
@@ -132,7 +131,6 @@ final class ImpossibleInstanceOfRule implements Rule
 			return [];
 		}
 
-		$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
 		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 			'Instanceof between %s and %s will always evaluate to true.',
 			$exprType->describe(VerbosityLevel::typeOnly()),

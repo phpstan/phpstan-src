@@ -620,6 +620,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				sprintf('Instanceof between Bug13469\Foo and Stringable will always evaluate to %s.', PHP_VERSION_ID >= 80000 ? 'true' : 'false'),
 				23,
+				PHP_VERSION_ID < 80000 ? 'Final class Bug13469\Foo does not implement interface Stringable.' : null,
 			],
 		]);
 	}

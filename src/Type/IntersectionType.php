@@ -107,6 +107,9 @@ class IntersectionType implements CompoundType
 	/** @var array<string, TrinaryLogic> */
 	private array $cachedHasOffsetValueType = [];
 
+	/** @var array<int, string> */
+	private array $cachedDescriptions = [];
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -380,7 +383,11 @@ class IntersectionType implements CompoundType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return $level->handle(
+		if (isset($this->cachedDescriptions[$level->getLevelValue()])) {
+			return $this->cachedDescriptions[$level->getLevelValue()];
+		}
+
+		return $this->cachedDescriptions[$level->getLevelValue()] = $level->handle(
 			fn (): string => $this->describeType($level),
 			fn (): string => $this->describeItself($level, true),
 			fn (): string => $this->describeItself($level, false),

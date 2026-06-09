@@ -32,7 +32,8 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		if (isset($this->knownClasses[strtolower($className)])) {
+		$lowerClassName = strtolower($className);
+		if (isset($this->knownClasses[$lowerClassName])) {
 			return true;
 		}
 
@@ -43,7 +44,7 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 		$result = $this->provider->hasClass($className);
 
 		if ($result) {
-			$this->knownClasses[strtolower($className)] = true;
+			$this->knownClasses[$lowerClassName] = true;
 		} else {
 			$this->unknownClasses[$className] = true;
 		}

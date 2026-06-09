@@ -171,7 +171,10 @@ class ConstantArrayType implements Type
 		$this->isList = $isList;
 
 		if ($unsealed !== null) {
-			if (in_array($unsealed[0]->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
+			// Only a BenevolentUnionType describes with the surrounding parentheses of
+			// '(int|string)' / '(int|non-decimal-int-string)', so skip the describe() call
+			// for every other key type.
+			if ($unsealed[0] instanceof BenevolentUnionType && in_array($unsealed[0]->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
 				$unsealed[0] = new MixedType();
 			}
 			if ($unsealed[0] instanceof StrictMixedType && !$unsealed[0] instanceof TemplateStrictMixedType) {
@@ -2504,7 +2507,10 @@ class ConstantArrayType implements Type
 					return $arrayName;
 				}
 				$keyType = $this->getIterableKeyType();
-				if (in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
+				// Only a BenevolentUnionType describes with the surrounding parentheses of
+				// '(int|string)' / '(int|non-decimal-int-string)', so skip the describe()
+				// call for every other key type.
+				if ($keyType instanceof BenevolentUnionType && in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
 					return sprintf('%s<%s>', $arrayName, $this->getIterableValueType()->describe($level));
 				}
 				return sprintf('%s<%s, %s>', $arrayName, $keyType->describe($level), $this->getIterableValueType()->describe($level));

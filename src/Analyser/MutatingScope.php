@@ -127,6 +127,7 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -3070,6 +3071,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// Variables will not contain traversable expressions. skip the NodeFinder overhead
 		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
 			return $exprStringToInvalidate === $exprString;
+		}
+
+		// getNodeKey() is the pretty-printed expression, and the standard printer is
+		// compositional: the key of any sub-expression appears verbatim as a substring of
+		// the key of the expression containing it. So if the invalidated expression's key
+		// does not appear anywhere in this expression's key, this expression cannot contain
+		// it and we can skip the expensive AST traversal below.
+		// Carve-outs where that invariant does not hold:
+		// - '$this' is special-cased in the visitor to also match self/static/parent,
+		// - PHPStan's virtual nodes (printed as '__phpstan…') use non-compositional printers
+		//   (e.g. a wrapped variable is printed by name, not as '$name'),
+		// - keys carrying a getNodeKey() suffix ('/*…*/') are not plain substrings.
+		if (
+			$exprStringToInvalidate !== '$this'
+			&& !str_contains($exprStringToInvalidate, '__phpstan')
+			&& !str_contains($exprStringToInvalidate, '/*')
+			&& !str_contains($exprString, '__phpstan')
+			&& !str_contains($exprString, $exprStringToInvalidate)
+		) {
+			return false;
 		}
 
 		$nodeFinder = new NodeFinder();

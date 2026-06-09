@@ -1487,6 +1487,42 @@ final class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
+		// `array{...} + array<TKey, TValue>` keeps the known keyed prefix and
+		// folds the right-hand side into an open `...<TKey, TValue>` tail. This
+		// only applies when the left arrays' sealedness is known (bleeding edge);
+		// otherwise the legacy behavior below is kept for backward compatibility.
+		if ($leftCount > 0 && $rightCount === 0
+			&& $leftCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+			&& $rightType->isArray()->yes()) {
+			$allSealednessKnown = true;
+			foreach ($leftConstantArrays as $leftConstantArray) {
+				if ($leftConstantArray->isUnsealed()->maybe()) {
+					$allSealednessKnown = false;
+					break;
+				}
+			}
+
+			if ($allSealednessKnown) {
+				$rightKeyType = $rightType->getIterableKeyType();
+				$rightValueType = $rightType->getIterableValueType();
+				$resultTypes = [];
+				foreach ($leftConstantArrays as $leftConstantArray) {
+					$newArrayBuilder = ConstantArrayTypeBuilder::createFromConstantArray($leftConstantArray);
+					$existingUnsealed = $leftConstantArray->getUnsealedTypes();
+					if ($leftConstantArray->isUnsealed()->yes() && $existingUnsealed !== null) {
+						$newArrayBuilder->makeUnsealed(
+							TypeCombinator::union($existingUnsealed[0], $rightKeyType),
+							TypeCombinator::union($existingUnsealed[1], $rightValueType),
+						);
+					} else {
+						$newArrayBuilder->makeUnsealed($rightKeyType, $rightValueType);
+					}
+					$resultTypes[] = $newArrayBuilder->getArray();
+				}
+				return TypeCombinator::union(...$resultTypes);
+			}
+		}
+
 		$leftIsArray = $leftType->isArray();
 		$rightIsArray = $rightType->isArray();
 		if ($leftIsArray->yes() && $rightIsArray->yes()) {

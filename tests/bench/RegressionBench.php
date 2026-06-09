@@ -4,6 +4,7 @@ namespace PHPStan\Benchmark;
 
 use PhpBench\Attributes as Bench;
 use Symfony\Component\Finder\Finder;
+use function array_first;
 
 #[Bench\Revs(revs: 1)]
 #[Bench\Iterations(iterations: 5)]
@@ -32,7 +33,8 @@ class RegressionBench extends BenchCase
 	 */
 	public function provideFiles(): iterable
 	{
-		yield from self::findTestDataFilesFromDirectory(__DIR__ . '/data');
+		$arr = self::findTestDataFilesFromDirectory(__DIR__ . '/data');
+		yield array_first($arr);
 	}
 
 	private static function findTestDataFilesFromDirectory(string $directory): array

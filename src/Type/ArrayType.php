@@ -69,7 +69,10 @@ class ArrayType implements Type
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
 	{
-		if (in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
+		// Only a BenevolentUnionType describes with the surrounding parentheses of
+		// '(int|string)' / '(int|non-decimal-int-string)' (a plain union has no outer
+		// parens), so skip the expensive describe() call for every other key type.
+		if ($keyType instanceof BenevolentUnionType && in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
 			$keyType = new MixedType();
 		}
 		if ($keyType instanceof StrictMixedType && !$keyType instanceof TemplateStrictMixedType) {

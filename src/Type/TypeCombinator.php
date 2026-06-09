@@ -1507,7 +1507,21 @@ final class TypeCombinator
 
 			return 0;
 		};
-		usort($types, $sortTypes);
+		// The comparator only orders UnionTypes relative to each other, so sorting is
+		// a no-op unless there are at least two of them. Skip it in the common case.
+		$unionTypesCount = 0;
+		foreach ($types as $type) {
+			if (!$type instanceof UnionType) {
+				continue;
+			}
+			$unionTypesCount++;
+			if ($unionTypesCount >= 2) {
+				break;
+			}
+		}
+		if ($unionTypesCount >= 2) {
+			usort($types, $sortTypes);
+		}
 		// transform A & (B | C) to (A & B) | (A & C)
 		foreach ($types as $i => $type) {
 			if (!$type instanceof UnionType) {
@@ -1516,7 +1530,19 @@ final class TypeCombinator
 
 			$topLevelUnionSubTypes = [];
 			$innerTypes = $type->getTypes();
-			usort($innerTypes, $sortTypes);
+			$innerUnionTypesCount = 0;
+			foreach ($innerTypes as $innerType) {
+				if (!$innerType instanceof UnionType) {
+					continue;
+				}
+				$innerUnionTypesCount++;
+				if ($innerUnionTypesCount >= 2) {
+					break;
+				}
+			}
+			if ($innerUnionTypesCount >= 2) {
+				usort($innerTypes, $sortTypes);
+			}
 			$slice1 = array_slice($types, 0, $i);
 			$slice2 = array_slice($types, $i + 1);
 			foreach ($innerTypes as $innerUnionSubType) {

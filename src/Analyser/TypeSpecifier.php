@@ -44,10 +44,12 @@ use function array_last;
 use function array_map;
 use function array_merge;
 use function count;
+use function getenv;
 use function in_array;
 use function strtolower;
 use function substr;
 use const COUNT_NORMAL;
+use const PHP_VERSION_ID;
 
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
 final class TypeSpecifier
@@ -85,6 +87,11 @@ final class TypeSpecifier
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
+		$enableFnsr = getenv('PHPSTAN_FNSR');
+		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0' && NewWorld::disableOldWorld()) {
+			throw new ShouldNotHappenException('TypeSpecifier should not be used here. Ask ExpressionResult for SpecifiedTypes instead.');
+		}
+
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}

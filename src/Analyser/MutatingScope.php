@@ -120,6 +120,7 @@ use function assert;
 use function count;
 use function explode;
 use function get_class;
+use function getenv;
 use function implode;
 use function in_array;
 use function is_array;
@@ -896,6 +897,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		$enableFnsr = getenv('PHPSTAN_FNSR');
+		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0' && NewWorld::disableOldWorld()) {
+			throw new ShouldNotHappenException('Scope::getType() should not be used here. Either FiberScope::getType() will be used (by extensions), or ExpressionResult::getType() (by Analyser engine in NodeScopeResolver-adjacent and TypeSpecifier-adjacent code.');
+		}
+
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
@@ -1165,11 +1171,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
+		$enableFnsr = getenv('PHPSTAN_FNSR');
+		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0' && NewWorld::disableOldWorld()) {
+			throw new ShouldNotHappenException('Scope::getNativeType() should not be used here. Either FiberScope::getNativeType() will be used (by extensions), or ExpressionResult::getNativeType() (by Analyser engine in NodeScopeResolver-adjacent and TypeSpecifier-adjacent code.');
+		}
+
 		return $this->promoteNativeTypes()->getType($expr);
 	}
 
 	public function getKeepVoidType(Expr $node): Type
 	{
+		$enableFnsr = getenv('PHPSTAN_FNSR');
+		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0' && NewWorld::disableOldWorld()) {
+			throw new ShouldNotHappenException('Scope::getKeepVoidType() should not be used here. Either FiberScope::getKeepVoidType() will be used (by extensions), or ExpressionResult::getKeepVoidType() (by Analyser engine in NodeScopeResolver-adjacent and TypeSpecifier-adjacent code.');
+		}
+
 		if (
 			!$node instanceof Match_
 			&& (

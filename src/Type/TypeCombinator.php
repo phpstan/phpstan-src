@@ -895,6 +895,39 @@ final class TypeCombinator
 			return [];
 		}
 
+		if (count($arrayTypes) > 1) {
+			// Keep list arrays separate from arrays whose keys are exclusively
+			// strings (and thus can never form a list). Merging the two would
+			// widen the key type to `int<0, max>|string` and lose the information
+			// that the integer keys come only from the list part — which in turn
+			// breaks narrowing the union via `array_is_list()`.
+			$listArrayTypes = [];
+			$stringKeyedArrayTypes = [];
+			$emptyArrayTypes = [];
+			$canSeparateLists = true;
+			foreach ($arrayTypes as $arrayType) {
+				if ($arrayType->isIterableAtLeastOnce()->no()) {
+					// The empty array is a subtype of both list and string-keyed
+					// arrays, so it never forces a separation on its own.
+					$emptyArrayTypes[] = $arrayType;
+				} elseif ($arrayType->isList()->yes()) {
+					$listArrayTypes[] = $arrayType;
+				} elseif ($arrayType->getIterableKeyType()->isString()->yes()) {
+					$stringKeyedArrayTypes[] = $arrayType;
+				} else {
+					$canSeparateLists = false;
+					break;
+				}
+			}
+
+			if ($canSeparateLists && $listArrayTypes !== [] && $stringKeyedArrayTypes !== []) {
+				return array_merge(
+					self::processArrayTypes($listArrayTypes),
+					self::processArrayTypes(array_merge($stringKeyedArrayTypes, $emptyArrayTypes)),
+				);
+			}
+		}
+
 		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
 
 		if (count($arrayTypes) === 1) {

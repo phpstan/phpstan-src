@@ -27,7 +27,7 @@ class Test {
 		if (\count($package->getAutoload()) > 0) {
 			$autoloadConfig = $package->getAutoload();
 			foreach ($autoloadConfig as $type => $autoloads) {
-				assertType('array<int<0, max>|string, array<string>|string>', $autoloadConfig[$type]);
+				assertType('array<string, array<string>|string>|list<string>', $autoloadConfig[$type]);
 				if ($type === 'psr-0' || $type === 'psr-4') {
 
 				} elseif ($type === 'classmap') {

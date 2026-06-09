@@ -10,6 +10,10 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Type\Type;
@@ -46,6 +50,11 @@ final class NativeTypeExprHandler implements ExprHandler
 			return $expr->getNativeType();
 		}
 		return $expr->getPhpDocType();
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

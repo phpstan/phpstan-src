@@ -11,6 +11,10 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Type;
 
@@ -44,6 +48,11 @@ final class ErrorSuppressHandler implements ExprHandler
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $scope->getType($expr->expr);
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $typeSpecifier->specifyTypesInCondition($scope, $expr->expr, $context)->setRootExpr($expr);
 	}
 
 }

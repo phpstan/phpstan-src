@@ -13,6 +13,10 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
@@ -90,6 +94,11 @@ final class ConstFetchHandler implements ExprHandler
 		}
 
 		return new ErrorType();
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

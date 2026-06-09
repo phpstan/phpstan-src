@@ -6,7 +6,6 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 
@@ -31,11 +30,11 @@ final class TypeSpecifierFactory
 		$typeSpecifier = new TypeSpecifier(
 			$this->container->getByType(ExprPrinter::class),
 			$this->container->getByType(ReflectionProvider::class),
-			$this->container->getByType(PhpVersion::class),
 			$functionTypeSpecifying,
 			$methodTypeSpecifying,
 			$staticMethodTypeSpecifying,
 			$this->container->getParameter('rememberPossiblyImpureFunctionValues'),
+			$this->container,
 		);
 
 		foreach (array_merge(

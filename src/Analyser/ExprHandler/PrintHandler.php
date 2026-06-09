@@ -13,6 +13,10 @@ use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
@@ -60,6 +64,11 @@ final class PrintHandler implements ExprHandler
 			throwPoints: $throwPoints,
 			impurePoints: array_merge($impurePoints, [new ImpurePoint($scope, $expr, 'print', 'print', true)]),
 		);
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

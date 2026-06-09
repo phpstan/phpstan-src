@@ -12,14 +12,21 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_merge;
 use function strtolower;
@@ -109,6 +116,56 @@ final class InstanceofHandler implements ExprHandler
 		}
 
 		return new BooleanType();
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		$exprNode = $expr->expr;
+		if ($expr->class instanceof Name) {
+			$className = (string) $expr->class;
+			$lowercasedClassName = strtolower($className);
+			if ($lowercasedClassName === 'self' && $scope->isInClass()) {
+				$type = new ObjectType($scope->getClassReflection()->getName());
+			} elseif ($lowercasedClassName === 'static' && $scope->isInClass()) {
+				$type = new StaticType($scope->getClassReflection());
+			} elseif ($lowercasedClassName === 'parent') {
+				if (
+					$scope->isInClass()
+					&& $scope->getClassReflection()->getParentClass() !== null
+				) {
+					$type = new ObjectType($scope->getClassReflection()->getParentClass()->getName());
+				} else {
+					$type = new NonexistentParentClassType();
+				}
+			} else {
+				$type = new ObjectType($className);
+			}
+			return $typeSpecifier->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+		}
+
+		$result = $scope->getType($expr->class)->toObjectTypeForInstanceofCheck();
+		$type = $result->type;
+		$uncertainty = $result->uncertainty;
+
+		if (!$type->isSuperTypeOf(new MixedType())->yes()) {
+			if ($context->true()) {
+				$type = TypeCombinator::intersect(
+					$type,
+					new ObjectWithoutClassType(),
+				);
+				return $typeSpecifier->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+			} elseif ($context->false() && !$uncertainty) {
+				$exprType = $scope->getType($expr->expr);
+				if (!$type->isSuperTypeOf($exprType)->yes()) {
+					return $typeSpecifier->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+				}
+			}
+		}
+		if ($context->true()) {
+			return $typeSpecifier->create($exprNode, new ObjectWithoutClassType(), $context, $scope)->setRootExpr($exprNode);
+		}
+
+		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
 }

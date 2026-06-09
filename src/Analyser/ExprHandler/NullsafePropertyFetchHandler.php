@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\NullsafePropertyFetch;
@@ -16,6 +17,10 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Type\NullType;
@@ -56,6 +61,25 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 				->getType(new PropertyFetch($expr->var, $expr->name)),
 			new NullType(),
 		);
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if ($context->null()) {
+			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		}
+
+		$types = $typeSpecifier->specifyTypesInCondition(
+			$scope,
+			new BooleanAnd(
+				new NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+				new PropertyFetch($expr->var, $expr->name),
+			),
+			$context,
+		)->setRootExpr($expr);
+
+		$nullSafeTypes = $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+		return $context->true() ? $types->unionWith($nullSafeTypes) : $types->normalize($scope)->intersectWith($nullSafeTypes->normalize($scope));
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

@@ -19,10 +19,13 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
 use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
@@ -31,6 +34,7 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -41,7 +45,10 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ObjectType;
@@ -603,6 +610,42 @@ final class NewHandler implements ExprHandler
 		}
 
 		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap));
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (
+			!$expr->class instanceof Name
+			|| !$this->reflectionProvider->hasClass($expr->class->toString())
+		) {
+			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($expr->class->toString());
+
+		if ($classReflection->hasConstructor()) {
+			$methodReflection = $classReflection->getConstructor();
+			$asserts = $methodReflection->getAsserts();
+
+			if ($asserts->getAll() !== []) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+
+				$asserts = $asserts->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+					$type,
+					$parametersAcceptor->getResolvedTemplateTypeMap(),
+					$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+					TemplateTypeVariance::createInvariant(),
+				));
+
+				$specifiedTypes = $typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+		}
+
+		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
 }

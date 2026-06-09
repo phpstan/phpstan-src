@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
+use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
@@ -12,6 +14,10 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -69,6 +75,27 @@ final class TernaryHandler implements ExprHandler
 			$condResult->getTruthyScope()->getType($expr->if),
 			$condResult->getFalseyScope()->getType($expr->else),
 		);
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if ($expr->cond instanceof Ternary || $context->null()) {
+			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		}
+
+		if ($expr->if !== null) {
+			$conditionExpr = new BooleanOr(
+				new BooleanAnd($expr->cond, $expr->if),
+				new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+			);
+		} else {
+			$conditionExpr = new BooleanOr(
+				$expr->cond,
+				new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+			);
+		}
+
+		return $typeSpecifier->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

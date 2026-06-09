@@ -43,6 +43,12 @@ parameters:
 			path: src/Analyser/ExprHandler/BooleanNotHandler.php
 
 		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 2
+			path: src/Analyser/ExprHandler/IssetHandler.php
+
+		-
 			rawMessage: 'Only numeric types are allowed in pre-increment, float|int|string|null given.'
 			identifier: preInc.nonNumeric
 			count: 1
@@ -106,12 +112,6 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 5
-			path: src/Analyser/TypeSpecifier.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
 			path: src/Analyser/TypeSpecifier.php
 
 		-

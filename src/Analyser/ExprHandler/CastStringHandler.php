@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\Cast;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -12,6 +14,10 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
@@ -62,6 +68,15 @@ final class CastStringHandler implements ExprHandler
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getCastType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $typeSpecifier->specifyTypesInCondition(
+			$scope,
+			new NotEqual($expr->expr, new String_('')),
+			$context,
+		)->setRootExpr($expr);
 	}
 
 }

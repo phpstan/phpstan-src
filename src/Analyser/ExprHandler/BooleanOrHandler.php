@@ -13,8 +13,13 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanOrNode;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
@@ -67,6 +72,62 @@ final class BooleanOrHandler implements ExprHandler
 		}
 
 		return new BooleanType();
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		// For deep BooleanOr chains, flatten and process all arms at once
+		// to avoid O(n^2) recursive filterByFalseyValue calls
+		if (BooleanAndHandler::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+			return $typeSpecifier->specifyTypesForFlattenedBooleanOr($scope, $expr, $context);
+		}
+
+		$leftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
+		$rightScope = $scope->filterByFalseyValue($expr->left);
+		$rightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
+
+		if ($context->true()) {
+			if (
+				$scope->getType($expr->left)->toBoolean()->isFalse()->yes()
+			) {
+				$types = $rightTypes->normalize($rightScope);
+			} elseif (
+				$scope->getType($expr->left)->toBoolean()->isTrue()->yes()
+				|| $scope->getType($expr->right)->toBoolean()->isFalse()->yes()
+			) {
+				$types = $leftTypes->normalize($scope);
+			} else {
+				$leftNormalized = $leftTypes->normalize($scope);
+				$rightNormalized = $rightTypes->normalize($rightScope);
+				$types = $leftNormalized->intersectWith($rightNormalized);
+				$types = $typeSpecifier->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
+				$types = $typeSpecifier->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, true, $types);
+			}
+		} else {
+			$types = $leftTypes->unionWith($rightTypes);
+		}
+
+		if ($context->true()) {
+			$result = new SpecifiedTypes(
+				$types->getSureTypes(),
+				$types->getSureNotTypes(),
+			);
+			if ($types->shouldOverwrite()) {
+				$result = $result->setAlwaysOverwriteTypes();
+			}
+			return $result->setNewConditionalExpressionHolders($typeSpecifier->mergeConditionalHolders([
+				$typeSpecifier->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, false, $rightScope, $expr->right),
+				$typeSpecifier->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, false, $scope, $expr->left),
+				$typeSpecifier->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, false, $rightScope, $expr->right),
+				$typeSpecifier->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, false, $scope, $expr->left),
+			]))->setRootExpr($expr);
+		}
+
+		return $types;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

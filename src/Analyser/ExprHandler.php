@@ -37,4 +37,14 @@ interface ExprHandler
 	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type;
 
+	/**
+	 * @param T $expr
+	 */
+	public function specifyTypes(
+		TypeSpecifier $typeSpecifier,
+		Scope $scope,
+		Expr $expr,
+		TypeSpecifierContext $context,
+	): SpecifiedTypes;
+
 }

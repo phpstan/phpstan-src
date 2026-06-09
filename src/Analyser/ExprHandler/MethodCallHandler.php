@@ -20,6 +20,10 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -27,6 +31,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -52,6 +57,7 @@ final class MethodCallHandler implements ExprHandler
 	public function __construct(
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 	)
@@ -267,6 +273,67 @@ final class MethodCallHandler implements ExprHandler
 		}
 
 		return new MixedType();
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (!$expr->name instanceof Identifier) {
+			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		}
+
+		$methodCalledOnType = $scope->getType($expr->var);
+		$methodReflection = $scope->getMethodReflection($methodCalledOnType, $expr->name->name);
+		if ($methodReflection !== null) {
+			// lazy create parametersAcceptor, as creation can be expensive
+			$parametersAcceptor = null;
+
+			$normalizedExpr = $expr;
+			$args = $expr->getArgs();
+			if (count($args) > 0) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+				$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
+			}
+
+			$referencedClasses = $methodCalledOnType->getObjectClassNames();
+			if (
+				count($referencedClasses) === 1
+				&& $this->reflectionProvider->hasClass($referencedClasses[0])
+			) {
+				$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
+				foreach ($typeSpecifier->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
+					if (!$extension->isMethodSupported($methodReflection, $normalizedExpr, $context)) {
+						continue;
+					}
+
+					return $extension->specifyTypes($methodReflection, $normalizedExpr, $scope, $context);
+				}
+			}
+
+			if (count($args) > 0) {
+				$specifiedTypes = $typeSpecifier->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+
+			$assertions = $methodReflection->getAsserts();
+			if ($assertions->getAll() !== []) {
+				$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+
+				$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+					$type,
+					$parametersAcceptor->getResolvedTemplateTypeMap(),
+					$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+					TemplateTypeVariance::createInvariant(),
+				));
+				$specifiedTypes = $typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+		}
+
+		return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 	}
 
 }

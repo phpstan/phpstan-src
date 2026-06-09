@@ -17,15 +17,12 @@ use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
-use PHPStan\Analyser\ExprHandler\BooleanAndHandler;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -33,17 +30,13 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
-use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
-use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
-use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -67,13 +60,11 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -87,7 +78,6 @@ use function array_last;
 use function array_map;
 use function array_merge;
 use function array_reverse;
-use function array_shift;
 use function count;
 use function in_array;
 use function is_string;
@@ -98,8 +88,6 @@ use const COUNT_NORMAL;
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
 final class TypeSpecifier
 {
-
-	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
@@ -115,11 +103,11 @@ final class TypeSpecifier
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private ReflectionProvider $reflectionProvider,
-		private PhpVersion $phpVersion,
 		private array $functionTypeSpecifyingExtensions,
 		private array $methodTypeSpecifyingExtensions,
 		private array $staticMethodTypeSpecifyingExtensions,
 		private bool $rememberPossiblyImpureFunctionValues,
+		private Container $container,
 	)
 	{
 	}
@@ -137,1231 +125,20 @@ final class TypeSpecifier
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
-		if ($expr instanceof Instanceof_) {
-			$exprNode = $expr->expr;
-			if ($expr->class instanceof Name) {
-				$className = (string) $expr->class;
-				$lowercasedClassName = strtolower($className);
-				if ($lowercasedClassName === 'self' && $scope->isInClass()) {
-					$type = new ObjectType($scope->getClassReflection()->getName());
-				} elseif ($lowercasedClassName === 'static' && $scope->isInClass()) {
-					$type = new StaticType($scope->getClassReflection());
-				} elseif ($lowercasedClassName === 'parent') {
-					if (
-						$scope->isInClass()
-						&& $scope->getClassReflection()->getParentClass() !== null
-					) {
-						$type = new ObjectType($scope->getClassReflection()->getParentClass()->getName());
-					} else {
-						$type = new NonexistentParentClassType();
-					}
-				} else {
-					$type = new ObjectType($className);
-				}
-				return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($expr)) {
+				continue;
 			}
 
-			$result = $scope->getType($expr->class)->toObjectTypeForInstanceofCheck();
-			$type = $result->type;
-			$uncertainty = $result->uncertainty;
-
-			if (!$type->isSuperTypeOf(new MixedType())->yes()) {
-				if ($context->true()) {
-					$type = TypeCombinator::intersect(
-						$type,
-						new ObjectWithoutClassType(),
-					);
-					return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
-				} elseif ($context->false() && !$uncertainty) {
-					$exprType = $scope->getType($expr->expr);
-					if (!$type->isSuperTypeOf($exprType)->yes()) {
-						return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
-					}
-				}
-			}
-			if ($context->true()) {
-				return $this->create($exprNode, new ObjectWithoutClassType(), $context, $scope)->setRootExpr($exprNode);
-			}
-		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
-			return $this->resolveIdentical($expr, $scope, $context);
-
-		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Node\Expr\BooleanNot(new Node\Expr\BinaryOp\Identical($expr->left, $expr->right)),
-				$context,
-			)->setRootExpr($expr);
-		} elseif ($expr instanceof Expr\Cast\Bool_) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Node\Expr\BinaryOp\Equal($expr->expr, new ConstFetch(new Name\FullyQualified('true'))),
-				$context,
-			)->setRootExpr($expr);
-		} elseif ($expr instanceof Expr\Cast\String_) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\String_('')),
-				$context,
-			)->setRootExpr($expr);
-		} elseif ($expr instanceof Expr\Cast\Int_) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\Int_(0)),
-				$context,
-			)->setRootExpr($expr);
-		} elseif ($expr instanceof Expr\Cast\Double) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\Float_(0.0)),
-				$context,
-			)->setRootExpr($expr);
-		} elseif ($expr instanceof Node\Expr\BinaryOp\Equal) {
-			return $this->resolveEqual($expr, $scope, $context);
-		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Node\Expr\BooleanNot(new Node\Expr\BinaryOp\Equal($expr->left, $expr->right)),
-				$context,
-			)->setRootExpr($expr);
-
-		} elseif ($expr instanceof Node\Expr\BinaryOp\Smaller || $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual) {
-
-			if (
-				$expr->left instanceof FuncCall
-				&& $expr->left->name instanceof Name
-				&& !$expr->left->isFirstClassCallable()
-				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
-				&& count($expr->left->getArgs()) >= 1
-				&& (
-					!$expr->right instanceof FuncCall
-					|| !$expr->right->name instanceof Name
-					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
-				)
-			) {
-				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
-					? new Node\Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left)
-					: new Node\Expr\BinaryOp\Smaller($expr->right, $expr->left);
-
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Node\Expr\BooleanNot($inverseOperator),
-					$context,
-				)->setRootExpr($expr);
-			}
-
-			$orEqual = $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual;
-			$offset = $orEqual ? 0 : 1;
-			$leftType = $scope->getType($expr->left);
-			$result = (new SpecifiedTypes([], []))->setRootExpr($expr);
-
-			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
-				&& $expr->right->name instanceof Name
-				&& !$expr->right->isFirstClassCallable()
-				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
-				&& count($expr->right->getArgs()) >= 1
-				&& $leftType->isInteger()->yes()
-			) {
-				$argType = $scope->getType($expr->right->getArgs()[0]->value);
-
-				$sizeType = null;
-				if ($leftType instanceof ConstantIntegerType) {
-					if ($orEqual) {
-						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-					} else {
-						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
-					}
-				} elseif ($leftType instanceof IntegerRangeType) {
-					if ($context->falsey() && $leftType->getMax() !== null) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
-						}
-					} elseif ($context->truthy() && $leftType->getMin() !== null) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
-						}
-					}
-				} else {
-					$sizeType = $leftType;
-				}
-
-				if ($sizeType !== null) {
-					$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
-					if ($specifiedTypes !== null) {
-						$result = $result->unionWith($specifiedTypes);
-					}
-				}
-
-				if (
-					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
-				) {
-					if ($context->truthy() && $argType->isArray()->maybe()) {
-						$countables = [];
-						if ($argType instanceof UnionType) {
-							$countableInterface = new ObjectType(Countable::class);
-							foreach ($argType->getTypes() as $innerType) {
-								if ($innerType->isArray()->yes()) {
-									$innerType = TypeCombinator::intersect(new NonEmptyArrayType(), $innerType);
-									$countables[] = $innerType;
-								}
-
-								if (!$countableInterface->isSuperTypeOf($innerType)->yes()) {
-									continue;
-								}
-
-								$countables[] = $innerType;
-							}
-						}
-
-						if (count($countables) > 0) {
-							$countableType = TypeCombinator::union(...$countables);
-
-							return $this->create($expr->right->getArgs()[0]->value, $countableType, $context, $scope)->setRootExpr($expr);
-						}
-					}
-
-					if ($argType->isArray()->yes()) {
-						$newType = new NonEmptyArrayType();
-						if ($context->true() && $argType->isList()->yes()) {
-							$newType = TypeCombinator::intersect($newType, new AccessoryArrayListType());
-						}
-
-						$result = $result->unionWith(
-							$this->create($expr->right->getArgs()[0]->value, $newType, $context, $scope)->setRootExpr($expr),
-						);
-					}
-				}
-
-				// infer $list[$index] after $index < count($list)
-				if (
-					$context->true()
-					&& !$orEqual
-					// constant offsets are handled via HasOffsetType/HasOffsetValueType
-					&& !$leftType instanceof ConstantIntegerType
-					&& $argType->isList()->yes()
-					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
-				) {
-					$arrayArg = $expr->right->getArgs()[0]->value;
-					$dimFetch = new ArrayDimFetch($arrayArg, $expr->left);
-					$result = $result->unionWith(
-						$this->create($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
-					);
-				}
-			}
-
-			// infer $list[$index] after $zeroOrMore < count($list) - N
-			// infer $list[$index] after $zeroOrMore <= count($list) - N
-			if (
-				$context->true()
-				&& $expr->right instanceof Expr\BinaryOp\Minus
-				&& $expr->right->left instanceof FuncCall
-				&& $expr->right->left->name instanceof Name
-				&& !$expr->right->left->isFirstClassCallable()
-				&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
-				&& count($expr->right->left->getArgs()) >= 1
-				// constant offsets are handled via HasOffsetType/HasOffsetValueType
-				&& !$leftType instanceof ConstantIntegerType
-				&& $leftType->isInteger()->yes()
-				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
-			) {
-				$countArgType = $scope->getType($expr->right->left->getArgs()[0]->value);
-				$subtractedType = $scope->getType($expr->right->right);
-				if (
-					$countArgType->isList()->yes()
-					&& $this->isNormalCountCall($expr->right->left, $countArgType, $scope)->yes()
-					&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($subtractedType)->yes()
-				) {
-					$arrayArg = $expr->right->left->getArgs()[0]->value;
-					$dimFetch = new ArrayDimFetch($arrayArg, $expr->left);
-					$result = $result->unionWith(
-						$this->create($dimFetch, $countArgType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
-					);
-				}
-			}
-
-			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
-				&& $expr->right->name instanceof Name
-				&& !$expr->right->isFirstClassCallable()
-				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
-				&& count($expr->right->getArgs()) >= 3
-				&& (
-					IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($leftType)->yes()
-					|| ($expr instanceof Expr\BinaryOp\Smaller && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes())
-				)
-			) {
-				// 0 < preg_match or 1 <= preg_match becomes 1 === preg_match
-				$newExpr = new Expr\BinaryOp\Identical($expr->right, new Node\Scalar\Int_(1));
-
-				return $this->specifyTypesInCondition($scope, $newExpr, $context)->setRootExpr($expr);
-			}
-
-			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
-				&& $expr->right->name instanceof Name
-				&& !$expr->right->isFirstClassCallable()
-				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
-				&& count($expr->right->getArgs()) === 1
-				&& $leftType->isInteger()->yes()
-			) {
-				if (
-					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
-				) {
-					$argType = $scope->getType($expr->right->getArgs()[0]->value);
-					if ($argType->isString()->yes()) {
-						$accessory = new AccessoryNonEmptyStringType();
-
-						if (IntegerRangeType::createAllGreaterThanOrEqualTo(2 - $offset)->isSuperTypeOf($leftType)->yes()) {
-							$accessory = new AccessoryNonFalsyStringType();
-						}
-
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr));
-					}
-				}
-			}
-
-			if ($leftType instanceof ConstantIntegerType) {
-				if ($expr->right instanceof Expr\PostInc) {
-					$result = $result->unionWith($this->createRangeTypes(
-						$expr,
-						$expr->right->var,
-						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset + 1),
-						$context,
-					));
-				} elseif ($expr->right instanceof Expr\PostDec) {
-					$result = $result->unionWith($this->createRangeTypes(
-						$expr,
-						$expr->right->var,
-						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset - 1),
-						$context,
-					));
-				} elseif ($expr->right instanceof Expr\PreInc || $expr->right instanceof Expr\PreDec) {
-					$result = $result->unionWith($this->createRangeTypes(
-						$expr,
-						$expr->right->var,
-						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
-						$context,
-					));
-				}
-			}
-
-			$rightType = $scope->getType($expr->right);
-			if ($rightType instanceof ConstantIntegerType) {
-				if ($expr->left instanceof Expr\PostInc) {
-					$result = $result->unionWith($this->createRangeTypes(
-						$expr,
-						$expr->left->var,
-						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset + 1),
-						$context,
-					));
-				} elseif ($expr->left instanceof Expr\PostDec) {
-					$result = $result->unionWith($this->createRangeTypes(
-						$expr,
-						$expr->left->var,
-						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset - 1),
-						$context,
-					));
-				} elseif ($expr->left instanceof Expr\PreInc || $expr->left instanceof Expr\PreDec) {
-					$result = $result->unionWith($this->createRangeTypes(
-						$expr,
-						$expr->left->var,
-						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
-						$context,
-					));
-				}
-			}
-
-			if ($context->true()) {
-				if (!$expr->left instanceof Node\Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Node\Scalar)) {
-					$result = $result->unionWith(
-						$this->create(
-							$expr->left,
-							$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
-							TypeSpecifierContext::createTruthy(),
-							$scope,
-						)->setRootExpr($expr),
-					);
-				}
-				if (!$expr->right instanceof Node\Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Node\Scalar)) {
-					$result = $result->unionWith(
-						$this->create(
-							$expr->right,
-							$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
-							TypeSpecifierContext::createTruthy(),
-							$scope,
-						)->setRootExpr($expr),
-					);
-				}
-			} elseif ($context->false()) {
-				if (!$expr->left instanceof Node\Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Node\Scalar)) {
-					$result = $result->unionWith(
-						$this->create(
-							$expr->left,
-							$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
-							TypeSpecifierContext::createTruthy(),
-							$scope,
-						)->setRootExpr($expr),
-					);
-				}
-				if (!$expr->right instanceof Node\Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Node\Scalar)) {
-					$result = $result->unionWith(
-						$this->create(
-							$expr->right,
-							$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
-							TypeSpecifierContext::createTruthy(),
-							$scope,
-						)->setRootExpr($expr),
-					);
-				}
-			}
-
-			return $result;
-
-		} elseif ($expr instanceof Node\Expr\BinaryOp\Greater) {
-			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Smaller($expr->right, $expr->left), $context)->setRootExpr($expr);
-
-		} elseif ($expr instanceof Node\Expr\BinaryOp\GreaterOrEqual) {
-			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\SmallerOrEqual($expr->right, $expr->left), $context)->setRootExpr($expr);
-
-		} elseif ($expr instanceof FuncCall && $expr->name instanceof Name) {
-			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
-				// lazy create parametersAcceptor, as creation can be expensive
-				$parametersAcceptor = null;
-
-				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-				$normalizedExpr = $expr;
-				$args = $expr->getArgs();
-				if (count($args) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
-					$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
-				}
-
-				foreach ($this->getFunctionTypeSpecifyingExtensions() as $extension) {
-					if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
-						continue;
-					}
-
-					return $extension->specifyTypes($functionReflection, $normalizedExpr, $scope, $context);
-				}
-
-				if (count($args) > 0) {
-					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-
-				$assertions = $functionReflection->getAsserts();
-				if ($assertions->getAll() !== []) {
-					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
-
-					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-						$type,
-						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						TemplateTypeVariance::createInvariant(),
-					));
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-			}
-
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-		} elseif ($expr instanceof FuncCall) {
-			$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $scope);
-			if ($specifiedTypes !== null) {
-				return $specifiedTypes;
-			}
-
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-		} elseif ($expr instanceof MethodCall && $expr->name instanceof Node\Identifier) {
-			$methodCalledOnType = $scope->getType($expr->var);
-			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $expr->name->name);
-			if ($methodReflection !== null) {
-				// lazy create parametersAcceptor, as creation can be expensive
-				$parametersAcceptor = null;
-
-				$normalizedExpr = $expr;
-				$args = $expr->getArgs();
-				if (count($args) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
-					$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
-				}
-
-				$referencedClasses = $methodCalledOnType->getObjectClassNames();
-				if (
-					count($referencedClasses) === 1
-					&& $this->reflectionProvider->hasClass($referencedClasses[0])
-				) {
-					$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
-					foreach ($this->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
-						if (!$extension->isMethodSupported($methodReflection, $normalizedExpr, $context)) {
-							continue;
-						}
-
-						return $extension->specifyTypes($methodReflection, $normalizedExpr, $scope, $context);
-					}
-				}
-
-				if (count($args) > 0) {
-					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-
-				$assertions = $methodReflection->getAsserts();
-				if ($assertions->getAll() !== []) {
-					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
-
-					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-						$type,
-						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						TemplateTypeVariance::createInvariant(),
-					));
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-			}
-
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-		} elseif ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
-			if ($expr->class instanceof Name) {
-				$calleeType = $scope->resolveTypeByName($expr->class);
-			} else {
-				$calleeType = $scope->getType($expr->class);
-			}
-
-			$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
-			if ($staticMethodReflection !== null) {
-				// lazy create parametersAcceptor, as creation can be expensive
-				$parametersAcceptor = null;
-
-				$normalizedExpr = $expr;
-				$args = $expr->getArgs();
-				if (count($args) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
-					$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
-				}
-
-				$referencedClasses = $calleeType->getObjectClassNames();
-				if (
-					count($referencedClasses) === 1
-					&& $this->reflectionProvider->hasClass($referencedClasses[0])
-				) {
-					$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
-					foreach ($this->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
-						if (!$extension->isStaticMethodSupported($staticMethodReflection, $normalizedExpr, $context)) {
-							continue;
-						}
-
-						return $extension->specifyTypes($staticMethodReflection, $normalizedExpr, $scope, $context);
-					}
-				}
-
-				if (count($args) > 0) {
-					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-
-				$assertions = $staticMethodReflection->getAsserts();
-				if ($assertions->getAll() !== []) {
-					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
-
-					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-						$type,
-						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						TemplateTypeVariance::createInvariant(),
-					));
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-			}
-
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-		} elseif ($expr instanceof BooleanAnd || $expr instanceof LogicalAnd) {
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
-
-			// For deep BooleanAnd chains in truthy context, flatten and
-			// process all arms at once to avoid O(N²) recursive
-			// filterByTruthyValue calls.
-			if (
-				$context->true()
-				&& BooleanAndHandler::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH
-			) {
-				return $this->specifyTypesForFlattenedBooleanAnd($scope, $expr, $context);
-			}
-
-			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
-			$rightScope = $scope->filterByTruthyValue($expr->left);
-			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-			if ($context->true()) {
-				$types = $leftTypes->unionWith($rightTypes);
-			} else {
-				$leftNormalized = $leftTypes->normalize($scope);
-				$rightNormalized = $rightTypes->normalize($rightScope);
-				$types = $leftNormalized->intersectWith($rightNormalized);
-				$types = $this->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
-			}
-			if ($context->false()) {
-				$leftTypesForHolders = $leftTypes;
-				$rightTypesForHolders = $rightTypes;
-				// In a mixed truthy-and-false context, re-derive empty holders from the falsey narrowing.
-				if ($context->truthy()) {
-					if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
-						$leftTypesForHolders = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
-					}
-					if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
-						$rightTypesForHolders = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
-					}
-				}
-				// For arms still empty (e.g. isset() on an array dim fetch), derive conditions
-				// from the truthy narrowing instead, swapping sure/sureNot types.
-				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
-					$truthyLeftTypes = $this->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
-					if ($this->allExpressionsTrackable($truthyLeftTypes)) {
-						$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
-					}
-				}
-				if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
-					$truthyRightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
-					if ($this->allExpressionsTrackable($truthyRightTypes)) {
-						$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
-					}
-				}
-				$result = new SpecifiedTypes(
-					$types->getSureTypes(),
-					$types->getSureNotTypes(),
-				);
-				if ($types->shouldOverwrite()) {
-					$result = $result->setAlwaysOverwriteTypes();
-				}
-				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolders([
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope, $expr->right),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope, $expr->left),
-					$this->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope, $expr->right),
-					$this->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope, $expr->left),
-				]))->setRootExpr($expr);
-			}
-
-			return $types;
-		} elseif ($expr instanceof BooleanOr || $expr instanceof LogicalOr) {
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
-
-			// For deep BooleanOr chains, flatten and process all arms at once
-			// to avoid O(n^2) recursive filterByFalseyValue calls
-			if (BooleanAndHandler::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
-				return $this->specifyTypesForFlattenedBooleanOr($scope, $expr, $context);
-			}
-
-			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
-			$rightScope = $scope->filterByFalseyValue($expr->left);
-			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-
-			if ($context->true()) {
-				if (
-					$scope->getType($expr->left)->toBoolean()->isFalse()->yes()
-				) {
-					$types = $rightTypes->normalize($rightScope);
-				} elseif (
-					$scope->getType($expr->left)->toBoolean()->isTrue()->yes()
-					|| $scope->getType($expr->right)->toBoolean()->isFalse()->yes()
-				) {
-					$types = $leftTypes->normalize($scope);
-				} else {
-					$leftNormalized = $leftTypes->normalize($scope);
-					$rightNormalized = $rightTypes->normalize($rightScope);
-					$types = $leftNormalized->intersectWith($rightNormalized);
-					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($scope, $rightScope, $expr, $types);
-					$types = $this->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, true, $types);
-				}
-			} else {
-				$types = $leftTypes->unionWith($rightTypes);
-			}
-
-			if ($context->true()) {
-				$result = new SpecifiedTypes(
-					$types->getSureTypes(),
-					$types->getSureNotTypes(),
-				);
-				if ($types->shouldOverwrite()) {
-					$result = $result->setAlwaysOverwriteTypes();
-				}
-				return $result->setNewConditionalExpressionHolders($this->mergeConditionalHolders([
-					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, false, $rightScope, $expr->right),
-					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, false, $scope, $expr->left),
-					$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, false, $rightScope, $expr->right),
-					$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, false, $scope, $expr->left),
-				]))->setRootExpr($expr);
-			}
-
-			return $types;
-		} elseif ($expr instanceof Node\Expr\BooleanNot && !$context->null()) {
-			return $this->specifyTypesInCondition($scope, $expr->expr, $context->negate())->setRootExpr($expr);
-		} elseif ($expr instanceof Node\Expr\Assign) {
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
-
-			if ($context->null()) {
-				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
-				$specifiedTypes = $specifiedTypes->removeExpr($this->exprPrinter->printExpr($expr->var));
-			} else {
-				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
-			}
-
-			// infer $arr[$key] after $key = array_key_first/last($arr)
-			if (
-				$expr->expr instanceof FuncCall
-				&& $expr->expr->name instanceof Name
-				&& !$expr->expr->isFirstClassCallable()
-				&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
-				&& count($expr->expr->getArgs()) >= 1
-			) {
-				$arrayArg = $expr->expr->getArgs()[0]->value;
-				$arrayType = $scope->getType($arrayArg);
-
-				if ($arrayType->isArray()->yes()) {
-					if ($context->true()) {
-						$specifiedTypes = $specifiedTypes->unionWith(
-							$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-						$isNonEmpty = true;
-					} else {
-						$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
-					}
-
-					if ($isNonEmpty) {
-						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-						$specifiedTypes = $specifiedTypes->unionWith(
-							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-					} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
-						$keyType = $scope->getType($expr->expr);
-						$nonNullKeyType = TypeCombinator::removeNull($keyType);
-						if (!$nonNullKeyType instanceof NeverType) {
-							$specifiedTypes = $specifiedTypes->unionWith(
-								$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $nonNullKeyType, $arrayType->getIterableValueType()),
-							);
-						}
-					}
-				}
-			}
-
-			// infer $arr[$key] after $key = array_search($needle, $arr) or $key = array_find_key($arr, $callback)
-			if (
-				$expr->expr instanceof FuncCall
-				&& $expr->expr->name instanceof Name
-				&& !$expr->expr->isFirstClassCallable()
-				&& count($expr->expr->getArgs()) >= 2
-			) {
-				$funcName = $expr->expr->name->toLowerString();
-				$arrayArg = null;
-				$sentinelType = null;
-				$isStrictArraySearch = false;
-
-				if ($funcName === 'array_search') {
-					$arrayArg = $expr->expr->getArgs()[1]->value;
-					$sentinelType = new ConstantBooleanType(false);
-					$isStrictArraySearch = count($expr->expr->getArgs()) >= 3 && $scope->getType($expr->expr->getArgs()[2]->value)->isTrue()->yes();
-				} elseif ($funcName === 'array_find_key') {
-					$arrayArg = $expr->expr->getArgs()[0]->value;
-					$sentinelType = new NullType();
-				}
-
-				if ($arrayArg !== null) {
-					$arrayType = $scope->getType($arrayArg);
-
-					if ($arrayType->isArray()->yes()) {
-						if ($context->true()) {
-							$specifiedTypes = $specifiedTypes->unionWith(
-								$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
-							);
-
-							$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-
-							if ($isStrictArraySearch) {
-								$needleType = $scope->getType($expr->expr->getArgs()[0]->value);
-								$dimFetchType = TypeCombinator::intersect($needleType, $arrayType->getIterableValueType());
-							} else {
-								$dimFetchType = $arrayType->getIterableValueType();
-							}
-
-							$specifiedTypes = $specifiedTypes->unionWith(
-								$this->create($dimFetch, $dimFetchType, TypeSpecifierContext::createTrue(), $scope),
-							);
-						} elseif ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
-							$keyType = $scope->getType($expr->expr);
-							$narrowedKeyType = TypeCombinator::remove($keyType, $sentinelType);
-							if (!$narrowedKeyType instanceof NeverType) {
-								if ($isStrictArraySearch) {
-									$needleType = $scope->getType($expr->expr->getArgs()[0]->value);
-									$dimFetchType = TypeCombinator::intersect($needleType, $arrayType->getIterableValueType());
-								} else {
-									$dimFetchType = $arrayType->getIterableValueType();
-								}
-								$specifiedTypes = $specifiedTypes->unionWith(
-									$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $narrowedKeyType, $dimFetchType),
-								);
-							}
-						}
-					}
-				}
-			}
-
-			if ($context->null()) {
-				// infer $arr[$key] after $key = array_rand($arr)
-				if (
-					$expr->expr instanceof FuncCall
-					&& $expr->expr->name instanceof Name
-					&& !$expr->expr->isFirstClassCallable()
-					&& in_array($expr->expr->name->toLowerString(), ['array_rand'], true)
-					&& count($expr->expr->getArgs()) >= 1
-				) {
-					$numArg = null;
-					$args = $expr->expr->getArgs();
-					$arrayArg = $args[0]->value;
-					if (count($args) > 1) {
-						$numArg = $args[1]->value;
-					}
-					$one = new ConstantIntegerType(1);
-					$arrayType = $scope->getType($arrayArg);
-
-					if (
-						$arrayType->isArray()->yes()
-						&& $arrayType->isIterableAtLeastOnce()->yes()
-						&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg))->yes())
-					) {
-						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-
-						return $specifiedTypes->unionWith(
-							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-					}
-				}
-
-				// infer $list[$count] after $count = count($list) - 1
-				if (
-					$expr->expr instanceof Expr\BinaryOp\Minus
-					&& $expr->expr->left instanceof FuncCall
-					&& $expr->expr->left->name instanceof Name
-					&& !$expr->expr->left->isFirstClassCallable()
-					&& $expr->expr->right instanceof Node\Scalar\Int_
-					&& $expr->expr->right->value === 1
-					&& in_array($expr->expr->left->name->toLowerString(), ['count', 'sizeof'], true)
-					&& count($expr->expr->left->getArgs()) >= 1
-				) {
-					$arrayArg = $expr->expr->left->getArgs()[0]->value;
-					$arrayType = $scope->getType($arrayArg);
-					if (
-						$arrayType->isList()->yes()
-						&& $arrayType->isIterableAtLeastOnce()->yes()
-					) {
-						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-
-						return $specifiedTypes->unionWith(
-							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-					}
-				}
-
-				return $specifiedTypes;
-			}
-
-			return $specifiedTypes;
-		} elseif (
-			$expr instanceof Expr\Isset_
-			&& count($expr->vars) > 0
-			&& !$context->null()
-		) {
-			// rewrite multi param isset() to and-chained single param isset()
-			if (count($expr->vars) > 1) {
-				$issets = [];
-				foreach ($expr->vars as $var) {
-					$issets[] = new Expr\Isset_([$var], $expr->getAttributes());
-				}
-
-				$first = array_shift($issets);
-				$andChain = null;
-				foreach ($issets as $isset) {
-					if ($andChain === null) {
-						$andChain = new BooleanAnd($first, $isset);
-						continue;
-					}
-
-					$andChain = new BooleanAnd($andChain, $isset);
-				}
-
-				if ($andChain === null) {
-					throw new ShouldNotHappenException();
-				}
-
-				return $this->specifyTypesInCondition($scope, $andChain, $context)->setRootExpr($expr);
-			}
-
-			$issetExpr = $expr->vars[0];
-
-			if (!$context->true()) {
-				if (!$scope instanceof MutatingScope) {
-					throw new ShouldNotHappenException();
-				}
-
-				$isset = $scope->issetCheck($issetExpr, static fn () => true);
-
-				if ($isset === false) {
-					return new SpecifiedTypes();
-				}
-
-				$type = $scope->getType($issetExpr);
-				$isNullable = !$type->isNull()->no();
-				$exprType = $this->create(
-					$issetExpr,
-					new NullType(),
-					$context->negate(),
-					$scope,
-				)->setRootExpr($expr);
-
-				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
-					if ($isset === true) {
-						if ($isNullable) {
-							return $exprType;
-						}
-
-						// variable cannot exist in !isset()
-						return $exprType->unionWith($this->create(
-							new IssetExpr($issetExpr),
-							new NullType(),
-							$context,
-							$scope,
-						))->setRootExpr($expr);
-					}
-
-					if ($isNullable) {
-						// reduces variable certainty to maybe
-						return $exprType->unionWith($this->create(
-							new IssetExpr($issetExpr),
-							new NullType(),
-							$context->negate(),
-							$scope,
-						))->setRootExpr($expr);
-					}
-
-					// variable cannot exist in !isset()
-					return $this->create(
-						new IssetExpr($issetExpr),
-						new NullType(),
-						$context,
-						$scope,
-					)->setRootExpr($expr);
-				}
-
-				if ($isNullable && $isset === true) {
-					return $exprType;
-				}
-
-				if (
-					$issetExpr instanceof ArrayDimFetch
-					&& $issetExpr->dim !== null
-				) {
-					$varType = $scope->getType($issetExpr->var);
-					if (!$varType instanceof MixedType) {
-						$dimType = $scope->getType($issetExpr->dim);
-
-						if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-							$constantArrays = $varType->getConstantArrays();
-							$typesToRemove = [];
-							foreach ($constantArrays as $constantArray) {
-								$hasOffset = $constantArray->hasOffsetValueType($dimType);
-								if (!$hasOffset->yes() || !$constantArray->getOffsetValueType($dimType)->isNull()->no()) {
-									continue;
-								}
-
-								$typesToRemove[] = $constantArray;
-							}
-
-							if ($typesToRemove !== []) {
-								$typeToRemove = TypeCombinator::union(...$typesToRemove);
-
-								$result = $this->create(
-									$issetExpr->var,
-									$typeToRemove,
-									TypeSpecifierContext::createFalse(),
-									$scope,
-								)->setRootExpr($expr);
-
-								if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
-									$result = $result->unionWith(
-										$this->create(
-											new IssetExpr($issetExpr->var),
-											new NullType(),
-											TypeSpecifierContext::createTruthy(),
-											$scope,
-										)->setRootExpr($expr),
-									);
-								}
-
-								return $result;
-							}
-						}
-					}
-				}
-
-				return new SpecifiedTypes();
-			}
-
-			$tmpVars = [$issetExpr];
-			while (
-				$issetExpr instanceof ArrayDimFetch
-				|| $issetExpr instanceof PropertyFetch
-				|| (
-					$issetExpr instanceof StaticPropertyFetch
-					&& $issetExpr->class instanceof Expr
-				)
-			) {
-				if ($issetExpr instanceof StaticPropertyFetch) {
-					/** @var Expr $issetExpr */
-					$issetExpr = $issetExpr->class;
-				} else {
-					$issetExpr = $issetExpr->var;
-				}
-				$tmpVars[] = $issetExpr;
-			}
-			$vars = array_reverse($tmpVars);
-
-			$types = new SpecifiedTypes();
-			foreach ($vars as $var) {
-
-				if ($var instanceof Expr\Variable && is_string($var->name)) {
-					if ($scope->hasVariableType($var->name)->no()) {
-						return (new SpecifiedTypes([], []))->setRootExpr($expr);
-					}
-				}
-
-				if (
-					$var instanceof ArrayDimFetch
-					&& $var->dim !== null
-					&& !$scope->getType($var->var) instanceof MixedType
-				) {
-					$dimType = $scope->getType($var->dim);
-
-					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						$types = $types->unionWith(
-							$this->create(
-								$var->var,
-								new HasOffsetType($dimType),
-								$context,
-								$scope,
-							)->setRootExpr($expr),
-						);
-					} else {
-						$varType = $scope->getType($var->var);
-
-						$narrowedKey = AllowedArrayKeysTypes::narrowOffsetKeyType($varType, $dimType);
-						if ($narrowedKey !== null) {
-							$types = $types->unionWith(
-								$this->create(
-									$var->dim,
-									$narrowedKey,
-									$context,
-									$scope,
-								)->setRootExpr($expr),
-							);
-						}
-
-						if ($varType->isArray()->yes()) {
-							$types = $types->unionWith(
-								$this->create(
-									$var->var,
-									new NonEmptyArrayType(),
-									$context,
-									$scope,
-								)->setRootExpr($expr),
-							);
-						}
-					}
-				}
-
-				if (
-					$var instanceof PropertyFetch
-					&& $var->name instanceof Node\Identifier
-				) {
-					$types = $types->unionWith(
-						$this->create($var->var, new IntersectionType([
-							new ObjectWithoutClassType(),
-							new HasPropertyType($var->name->toString()),
-						]), TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($expr),
-					);
-				} elseif (
-					$var instanceof StaticPropertyFetch
-					&& $var->class instanceof Expr
-					&& $var->name instanceof Node\VarLikeIdentifier
-				) {
-					$types = $types->unionWith(
-						$this->create($var->class, new IntersectionType([
-							new ObjectWithoutClassType(),
-							new HasPropertyType($var->name->toString()),
-						]), TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($expr),
-					);
-				}
-
-				$types = $types->unionWith(
-					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($expr),
-				);
-			}
-
-			return $types;
-		} elseif (
-			$expr instanceof Expr\BinaryOp\Coalesce
-			&& !$context->null()
-		) {
-			if (!$context->true()) {
-				if (!$scope instanceof MutatingScope) {
-					throw new ShouldNotHappenException();
-				}
-
-				$isset = $scope->issetCheck($expr->left, static fn () => true);
-
-				if ($isset !== true) {
-					return new SpecifiedTypes();
-				}
-
-				return $this->create(
-					$expr->left,
-					new NullType(),
-					$context->negate(),
-					$scope,
-				)->setRootExpr($expr);
-			}
-
-			if ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right)->toBoolean())->yes()) {
-				return $this->create(
-					$expr->left,
-					new NullType(),
-					TypeSpecifierContext::createFalse(),
-					$scope,
-				)->setRootExpr($expr);
-			}
-
-		} elseif (
-			$expr instanceof Expr\Empty_
-		) {
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
-
-			$isset = $scope->issetCheck($expr->expr, static fn () => true);
-			if ($isset === false) {
-				return new SpecifiedTypes();
-			}
-
-			return $this->specifyTypesInCondition($scope, new BooleanOr(
-				new Expr\BooleanNot(new Expr\Isset_([$expr->expr])),
-				new Expr\BooleanNot($expr->expr),
-			), $context)->setRootExpr($expr);
-		} elseif ($expr instanceof Expr\ErrorSuppress) {
-			return $this->specifyTypesInCondition($scope, $expr->expr, $context)->setRootExpr($expr);
-		} elseif (
-			$expr instanceof Expr\Ternary
-			&& !$expr->cond instanceof Expr\Ternary
-			&& !$context->null()
-		) {
-			if ($expr->if !== null) {
-				$conditionExpr = new BooleanOr(
-					new BooleanAnd($expr->cond, $expr->if),
-					new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
-				);
-			} else {
-				$conditionExpr = new BooleanOr(
-					$expr->cond,
-					new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
-				);
-			}
-
-			return $this->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
-
-		} elseif ($expr instanceof Expr\NullsafePropertyFetch && !$context->null()) {
-			$types = $this->specifyTypesInCondition(
-				$scope,
-				new BooleanAnd(
-					new Expr\BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
-					new PropertyFetch($expr->var, $expr->name),
-				),
-				$context,
-			)->setRootExpr($expr);
-
-			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->normalize($scope)->intersectWith($nullSafeTypes->normalize($scope));
-		} elseif ($expr instanceof Expr\NullsafeMethodCall && !$context->null()) {
-			$types = $this->specifyTypesInCondition(
-				$scope,
-				new BooleanAnd(
-					new Expr\BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
-					new MethodCall($expr->var, $expr->name, $expr->args),
-				),
-				$context,
-			)->setRootExpr($expr);
-
-			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->normalize($scope)->intersectWith($nullSafeTypes->normalize($scope));
-		} elseif (
-			$expr instanceof Expr\New_
-			&& $expr->class instanceof Name
-			&& $this->reflectionProvider->hasClass($expr->class->toString())
-		) {
-			$classReflection = $this->reflectionProvider->getClass($expr->class->toString());
-
-			if ($classReflection->hasConstructor()) {
-				$methodReflection = $classReflection->getConstructor();
-				$asserts = $methodReflection->getAsserts();
-
-				if ($asserts->getAll() !== []) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
-
-					$asserts = $asserts->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-						$type,
-						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						TemplateTypeVariance::createInvariant(),
-					));
-
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
-				}
-			}
-		} elseif (!$context->null()) {
-			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+			return $exprHandler->specifyTypes($this, $scope, $expr, $context);
 		}
 
-		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+		return $this->specifyDefaultTypes($scope, $expr, $context);
 	}
 
-	private function isNormalCountCall(FuncCall $countFuncCall, Type $typeToCount, Scope $scope): TrinaryLogic
+	/** @internal */
+	public function isNormalCountCall(FuncCall $countFuncCall, Type $typeToCount, Scope $scope): TrinaryLogic
 	{
 		if (count($countFuncCall->getArgs()) === 1) {
 			return TrinaryLogic::createYes();
@@ -1371,7 +148,8 @@ final class TypeSpecifier
 		return (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($typeToCount->getIterableValueType()->isArray()->negate());
 	}
 
-	private function specifyTypesForCountFuncCall(
+	/** @internal */
+	public function specifyTypesForCountFuncCall(
 		FuncCall $countFuncCall,
 		Type $type,
 		Type $sizeType,
@@ -1656,7 +434,24 @@ final class TypeSpecifier
 		return null;
 	}
 
-	private function handleDefaultTruthyOrFalseyContext(TypeSpecifierContext $context, Expr $expr, Scope $scope): SpecifiedTypes
+	/**
+	 * Fallback used by ExprHandler::specifyTypes implementations that have no
+	 * Expr-specific narrowing: applies the default truthy/falsey narrowing, or
+	 * returns empty SpecifiedTypes in a null context.
+	 *
+	 * @internal
+	 */
+	public function specifyDefaultTypes(Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (!$context->null()) {
+			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+		}
+
+		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	/** @internal */
+	public function handleDefaultTruthyOrFalseyContext(TypeSpecifierContext $context, Expr $expr, Scope $scope): SpecifiedTypes
 	{
 		if ($context->null()) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
@@ -1672,7 +467,8 @@ final class TypeSpecifier
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
-	private function specifyTypesFromConditionalReturnType(
+	/** @internal */
+	public function specifyTypesFromConditionalReturnType(
 		TypeSpecifierContext $context,
 		Expr\CallLike $call,
 		ParametersAcceptor $parametersAcceptor,
@@ -1777,7 +573,8 @@ final class TypeSpecifier
 		return $specifiedTypes;
 	}
 
-	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, Assertions $assertions, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
+	/** @internal */
+	public function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, Assertions $assertions, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
 	{
 		if ($context->null()) {
 			$asserts = $assertions->getAsserts();
@@ -1894,7 +691,8 @@ final class TypeSpecifier
 		return $types;
 	}
 
-	private function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, Scope $scope): ?SpecifiedTypes
+	/** @internal */
+	public function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, Scope $scope): ?SpecifiedTypes
 	{
 		if (!$call->name instanceof Expr) {
 			return null;
@@ -1944,7 +742,8 @@ final class TypeSpecifier
 	 * skipped: in the OR-truthy scope the arm that didn't narrow could still be
 	 * the truthy one, so the sound result is the original (unnarrowed) type.
 	 */
-	private function augmentBooleanOrTruthyWithConditionalHolders(MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
+	/** @internal */
+	public function augmentBooleanOrTruthyWithConditionalHolders(MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
 	{
 		$leftTruthyScope = $scope->filterByTruthyValue($expr->left);
 		$rightTruthyScope = $rightScope->filterByTruthyValue($expr->right);
@@ -2001,7 +800,8 @@ final class TypeSpecifier
 		return $types;
 	}
 
-	private function augmentDisjunctionTypes(
+	/** @internal */
+	public function augmentDisjunctionTypes(
 		MutatingScope $scope,
 		MutatingScope $rightScope,
 		SpecifiedTypes $leftNormalized,
@@ -2088,8 +888,10 @@ final class TypeSpecifier
 	 *
 	 * @param list<array<string, ConditionalExpressionHolder[]>> $holderLists
 	 * @return array<string, ConditionalExpressionHolder[]>
+	 *
+	 * @internal
 	 */
-	private function mergeConditionalHolders(array $holderLists): array
+	public function mergeConditionalHolders(array $holderLists): array
 	{
 		$result = [];
 		foreach ($holderLists as $holders) {
@@ -2105,8 +907,10 @@ final class TypeSpecifier
 
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
+	 *
+	 * @internal
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null): array
+	public function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null): array
 	{
 		// The condition side asserts that its sub-expression evaluates truthy.
 		// When that sub-expression is itself a compound boolean (e.g. `$a && $b`),
@@ -2235,7 +1039,8 @@ final class TypeSpecifier
 			|| $expr instanceof Expr\StaticPropertyFetch;
 	}
 
-	private function allExpressionsTrackable(SpecifiedTypes $types): bool
+	/** @internal */
+	public function allExpressionsTrackable(SpecifiedTypes $types): bool
 	{
 		foreach ($types->getSureTypes() as [$expr]) {
 			if (!$this->isTrackableExpression($expr)) {
@@ -2256,7 +1061,8 @@ final class TypeSpecifier
 	 * without recursive filterByFalseyValue calls. This reduces O(n^2) to O(n)
 	 * for chains with many arms (e.g., 80+ === comparisons in ||).
 	 */
-	private function specifyTypesForFlattenedBooleanOr(
+	/** @internal */
+	public function specifyTypesForFlattenedBooleanOr(
 		MutatingScope $scope,
 		BooleanOr|LogicalOr $expr,
 		TypeSpecifierContext $context,
@@ -2330,8 +1136,10 @@ final class TypeSpecifier
 
 	/**
 	 * @param BooleanAnd|LogicalAnd $expr
+	 *
+	 * @internal
 	 */
-	private function specifyTypesForFlattenedBooleanAnd(
+	public function specifyTypesForFlattenedBooleanAnd(
 		MutatingScope $scope,
 		Expr $expr,
 		TypeSpecifierContext $context,
@@ -2460,7 +1268,8 @@ final class TypeSpecifier
 		return $types;
 	}
 
-	private function createArrayDimFetchConditionalExpressionHolder(
+	/** @internal */
+	public function createArrayDimFetchConditionalExpressionHolder(
 		Expr\Variable $keyVar,
 		Expr $arrayArg,
 		Type $narrowedKeyType,
@@ -2678,7 +1487,8 @@ final class TypeSpecifier
 		return new SpecifiedTypes([], []);
 	}
 
-	private function createRangeTypes(?Expr $rootExpr, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes
+	/** @internal */
+	public function createRangeTypes(?Expr $rootExpr, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$sureNotTypes = [];
 
@@ -2697,16 +1507,20 @@ final class TypeSpecifier
 
 	/**
 	 * @return FunctionTypeSpecifyingExtension[]
+	 *
+	 * @internal
 	 */
-	private function getFunctionTypeSpecifyingExtensions(): array
+	public function getFunctionTypeSpecifyingExtensions(): array
 	{
 		return $this->functionTypeSpecifyingExtensions;
 	}
 
 	/**
 	 * @return MethodTypeSpecifyingExtension[]
+	 *
+	 * @internal
 	 */
-	private function getMethodTypeSpecifyingExtensionsForClass(string $className): array
+	public function getMethodTypeSpecifyingExtensionsForClass(string $className): array
 	{
 		if ($this->methodTypeSpecifyingExtensionsByClass === null) {
 			$byClass = [];
@@ -2721,8 +1535,10 @@ final class TypeSpecifier
 
 	/**
 	 * @return StaticMethodTypeSpecifyingExtension[]
+	 *
+	 * @internal
 	 */
-	private function getStaticMethodTypeSpecifyingExtensionsForClass(string $className): array
+	public function getStaticMethodTypeSpecifyingExtensionsForClass(string $className): array
 	{
 		if ($this->staticMethodTypeSpecifyingExtensionsByClass === null) {
 			$byClass = [];

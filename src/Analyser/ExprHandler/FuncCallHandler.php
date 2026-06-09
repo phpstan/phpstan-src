@@ -25,6 +25,9 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
@@ -36,6 +39,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -50,6 +54,9 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -885,6 +892,64 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if ($expr->name instanceof Name) {
+			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
+
+				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+				$normalizedExpr = $expr;
+				$args = $expr->getArgs();
+				if (count($args) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+					$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
+				}
+
+				foreach ($typeSpecifier->getFunctionTypeSpecifyingExtensions() as $extension) {
+					if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
+						continue;
+					}
+
+					return $extension->specifyTypes($functionReflection, $normalizedExpr, $scope, $context);
+				}
+
+				if (count($args) > 0) {
+					$specifiedTypes = $typeSpecifier->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
+				}
+
+				$assertions = $functionReflection->getAsserts();
+				if ($assertions->getAll() !== []) {
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+
+					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+						$type,
+						$parametersAcceptor->getResolvedTemplateTypeMap(),
+						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						TemplateTypeVariance::createInvariant(),
+					));
+					$specifiedTypes = $typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
+				}
+			}
+
+			return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+		}
+
+		$specifiedTypes = $typeSpecifier->specifyTypesFromCallableCall($context, $expr, $scope);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
+
+		return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 	}
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type

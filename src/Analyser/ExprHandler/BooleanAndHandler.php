@@ -15,8 +15,13 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanAndNode;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
@@ -69,6 +74,77 @@ final class BooleanAndHandler implements ExprHandler
 		}
 
 		return new BooleanType();
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		// For deep BooleanAnd chains in truthy context, flatten and
+		// process all arms at once to avoid O(N²) recursive
+		// filterByTruthyValue calls.
+		if (
+			$context->true()
+			&& self::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH
+		) {
+			return $typeSpecifier->specifyTypesForFlattenedBooleanAnd($scope, $expr, $context);
+		}
+
+		$leftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
+		$rightScope = $scope->filterByTruthyValue($expr->left);
+		$rightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
+		if ($context->true()) {
+			$types = $leftTypes->unionWith($rightTypes);
+		} else {
+			$leftNormalized = $leftTypes->normalize($scope);
+			$rightNormalized = $rightTypes->normalize($rightScope);
+			$types = $leftNormalized->intersectWith($rightNormalized);
+			$types = $typeSpecifier->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
+		}
+		if ($context->false()) {
+			$leftTypesForHolders = $leftTypes;
+			$rightTypesForHolders = $rightTypes;
+			// In a mixed truthy-and-false context, re-derive empty holders from the falsey narrowing.
+			if ($context->truthy()) {
+				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
+					$leftTypesForHolders = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
+				}
+				if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
+					$rightTypesForHolders = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
+				}
+			}
+			// For arms still empty (e.g. isset() on an array dim fetch), derive conditions
+			// from the truthy narrowing instead, swapping sure/sureNot types.
+			if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
+				$truthyLeftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
+				if ($typeSpecifier->allExpressionsTrackable($truthyLeftTypes)) {
+					$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
+				}
+			}
+			if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
+				$truthyRightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
+				if ($typeSpecifier->allExpressionsTrackable($truthyRightTypes)) {
+					$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
+				}
+			}
+			$result = new SpecifiedTypes(
+				$types->getSureTypes(),
+				$types->getSureNotTypes(),
+			);
+			if ($types->shouldOverwrite()) {
+				$result = $result->setAlwaysOverwriteTypes();
+			}
+			return $result->setNewConditionalExpressionHolders($typeSpecifier->mergeConditionalHolders([
+				$typeSpecifier->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope, $expr->right),
+				$typeSpecifier->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope, $expr->left),
+				$typeSpecifier->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope, $expr->right),
+				$typeSpecifier->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope, $expr->left),
+			]))->setRootExpr($expr);
+		}
+
+		return $types;
 	}
 
 	public static function getBooleanExpressionDepth(Expr $expr, int $depth = 0): int

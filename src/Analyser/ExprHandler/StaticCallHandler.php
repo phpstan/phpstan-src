@@ -24,13 +24,22 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -56,6 +65,7 @@ final class StaticCallHandler implements ExprHandler
 	public function __construct(
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 	)
@@ -359,6 +369,72 @@ final class StaticCallHandler implements ExprHandler
 		}
 
 		return $classType;
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (!$expr->name instanceof Identifier) {
+			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		}
+
+		if ($expr->class instanceof Name) {
+			$calleeType = $scope->resolveTypeByName($expr->class);
+		} else {
+			$calleeType = $scope->getType($expr->class);
+		}
+
+		$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
+		if ($staticMethodReflection !== null) {
+			// lazy create parametersAcceptor, as creation can be expensive
+			$parametersAcceptor = null;
+
+			$normalizedExpr = $expr;
+			$args = $expr->getArgs();
+			if (count($args) > 0) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+				$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
+			}
+
+			$referencedClasses = $calleeType->getObjectClassNames();
+			if (
+				count($referencedClasses) === 1
+				&& $this->reflectionProvider->hasClass($referencedClasses[0])
+			) {
+				$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
+				foreach ($typeSpecifier->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
+					if (!$extension->isStaticMethodSupported($staticMethodReflection, $normalizedExpr, $context)) {
+						continue;
+					}
+
+					return $extension->specifyTypes($staticMethodReflection, $normalizedExpr, $scope, $context);
+				}
+			}
+
+			if (count($args) > 0) {
+				$specifiedTypes = $typeSpecifier->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+
+			$assertions = $staticMethodReflection->getAsserts();
+			if ($assertions->getAll() !== []) {
+				$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+
+				$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+					$type,
+					$parametersAcceptor->getResolvedTemplateTypeMap(),
+					$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+					TemplateTypeVariance::createInvariant(),
+				));
+				$specifiedTypes = $typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+		}
+
+		return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 	}
 
 }

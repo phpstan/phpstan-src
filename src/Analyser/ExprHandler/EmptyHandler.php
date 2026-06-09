@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\Empty_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
@@ -12,7 +13,12 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
@@ -58,6 +64,23 @@ final class EmptyHandler implements ExprHandler
 		}
 
 		return new ConstantBooleanType(!$result);
+	}
+
+	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		$isset = $scope->issetCheck($expr->expr, static fn () => true);
+		if ($isset === false) {
+			return new SpecifiedTypes();
+		}
+
+		return $typeSpecifier->specifyTypesInCondition($scope, new BooleanOr(
+			new Expr\BooleanNot(new Expr\Isset_([$expr->expr])),
+			new Expr\BooleanNot($expr->expr),
+		), $context)->setRootExpr($expr);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

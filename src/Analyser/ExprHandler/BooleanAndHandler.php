@@ -12,6 +12,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ConditionalExpressionHolderHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
@@ -42,6 +43,7 @@ final class BooleanAndHandler implements ExprHandler
 
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
+		private ConditionalExpressionHolderHelper $conditionalExpressionHolderHelper,
 	)
 	{
 	}
@@ -104,7 +106,7 @@ final class BooleanAndHandler implements ExprHandler
 			$leftNormalized = $leftTypes->normalize($scope);
 			$rightNormalized = $rightTypes->normalize($rightScope);
 			$types = $leftNormalized->intersectWith($rightNormalized);
-			$types = $typeSpecifier->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
+			$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
 		}
 		if ($context->false()) {
 			$leftTypesForHolders = $leftTypes;
@@ -139,11 +141,11 @@ final class BooleanAndHandler implements ExprHandler
 			if ($types->shouldOverwrite()) {
 				$result = $result->setAlwaysOverwriteTypes();
 			}
-			return $result->setNewConditionalExpressionHolders($typeSpecifier->mergeConditionalHolders([
-				$typeSpecifier->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope, $expr->right),
-				$typeSpecifier->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope, $expr->left),
-				$typeSpecifier->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope, $expr->right),
-				$typeSpecifier->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope, $expr->left),
+			return $result->setNewConditionalExpressionHolders($this->conditionalExpressionHolderHelper->mergeConditionalHolders([
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope, $expr->left),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope, $expr->left),
 			]))->setRootExpr($expr);
 		}
 

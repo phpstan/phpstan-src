@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use Countable;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
@@ -24,10 +23,7 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
-use PHPStan\Reflection\Callables\CallableParametersAcceptor;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
@@ -51,9 +47,6 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -72,12 +65,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
-use function array_key_first;
 use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
-use function array_reverse;
 use function count;
 use function in_array;
 use function is_string;
@@ -692,115 +683,6 @@ final class TypeSpecifier
 	}
 
 	/** @internal */
-	public function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, Scope $scope): ?SpecifiedTypes
-	{
-		if (!$call->name instanceof Expr) {
-			return null;
-		}
-
-		$calleeType = $scope->getType($call->name);
-
-		$assertions = null;
-		$parametersAcceptor = null;
-		if ($calleeType->isCallable()->yes()) {
-			$variants = $calleeType->getCallableParametersAcceptors($scope);
-			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
-			if ($parametersAcceptor instanceof CallableParametersAcceptor) {
-				$assertions = $parametersAcceptor->getAsserts();
-			}
-		}
-
-		if ($assertions === null || $assertions->getAll() === []) {
-			return null;
-		}
-
-		$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-			$type,
-			$parametersAcceptor->getResolvedTemplateTypeMap(),
-			$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-			TemplateTypeVariance::createInvariant(),
-		));
-
-		return $this->specifyTypesFromAsserts($context, $call, $asserts, $parametersAcceptor, $scope);
-	}
-
-	/**
-	 * For `if ($a || $b)` truthy, expressions narrowed by stored conditional
-	 * holders (e.g. `$a = $obj instanceof ClassA;` records "when `$a` is
-	 * truthy, `$obj` is `ClassA`") need to be projected into the OR-truthy
-	 * scope as the union of the per-arm narrowings. specifyTypesInCondition
-	 * for each arm only looks at the boolean variable itself, so the held
-	 * narrowing of `$obj` would otherwise be invisible until a later check
-	 * pins one of the booleans down.
-	 *
-	 * For each conditional-holder target $T:
-	 * - resolve $T's type in the left-truthy and right-truthy filtered scopes
-	 * - if both narrow $T strictly below the original, add `$T : leftT|rightT`
-	 *   as a sure type to the OR-truthy result
-	 *
-	 * The asymmetric case (one arm narrows, the other doesn't) is intentionally
-	 * skipped: in the OR-truthy scope the arm that didn't narrow could still be
-	 * the truthy one, so the sound result is the original (unnarrowed) type.
-	 */
-	/** @internal */
-	public function augmentBooleanOrTruthyWithConditionalHolders(MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
-	{
-		$leftTruthyScope = $scope->filterByTruthyValue($expr->left);
-		$rightTruthyScope = $rightScope->filterByTruthyValue($expr->right);
-
-		$seen = [];
-		foreach ([$scope, $rightScope] as $sourceScope) {
-			foreach ($sourceScope->getConditionalExpressions() as $exprString => $holders) {
-				if (isset($seen[$exprString])) {
-					continue;
-				}
-				if ($holders === []) {
-					continue;
-				}
-				$seen[$exprString] = true;
-				$targetExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-
-				// Only project when the target stays Yes-defined in the original
-				// scope and in both filtered branches. A sure type implicitly
-				// raises certainty to Yes, which would wrongly upgrade Maybe-defined
-				// variables — `if (empty($a['bar']))` for instance leaves `$a`
-				// Maybe-defined because `empty()` tolerates undefined offsets.
-				if (!$scope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-
-				$origType = $scope->getType($targetExpr);
-				$leftType = $leftTruthyScope->getType($targetExpr);
-				$rightType = $rightTruthyScope->getType($targetExpr);
-
-				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
-				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
-
-				if (!$leftNarrowed || !$rightNarrowed) {
-					continue;
-				}
-
-				$unionType = TypeCombinator::union($leftType, $rightType);
-				if ($unionType->equals($origType)) {
-					continue;
-				}
-
-				$types = $types->unionWith(
-					$this->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope),
-				);
-			}
-		}
-
-		return $types;
-	}
-
-	/** @internal */
 	public function augmentDisjunctionTypes(
 		MutatingScope $scope,
 		MutatingScope $rightScope,
@@ -1039,153 +921,6 @@ final class TypeSpecifier
 			|| $expr instanceof Expr\StaticPropertyFetch;
 	}
 
-	/** @internal */
-	public function allExpressionsTrackable(SpecifiedTypes $types): bool
-	{
-		foreach ($types->getSureTypes() as [$expr]) {
-			if (!$this->isTrackableExpression($expr)) {
-				return false;
-			}
-		}
-		foreach ($types->getSureNotTypes() as [$expr]) {
-			if (!$this->isTrackableExpression($expr)) {
-				return false;
-			}
-		}
-
-		return $types->getSureTypes() !== [] || $types->getSureNotTypes() !== [];
-	}
-
-	/**
-	 * Flatten a deep BooleanOr chain into leaf expressions and process them
-	 * without recursive filterByFalseyValue calls. This reduces O(n^2) to O(n)
-	 * for chains with many arms (e.g., 80+ === comparisons in ||).
-	 */
-	/** @internal */
-	public function specifyTypesForFlattenedBooleanOr(
-		MutatingScope $scope,
-		BooleanOr|LogicalOr $expr,
-		TypeSpecifierContext $context,
-	): SpecifiedTypes
-	{
-		// Collect all leaf expressions from the chain
-		$arms = [];
-		$current = $expr;
-		while ($current instanceof BooleanOr || $current instanceof LogicalOr) {
-			$arms[] = $current->right;
-			$current = $current->left;
-		}
-		$arms[] = $current; // leftmost leaf
-		$arms = array_reverse($arms);
-
-		if ($context->false() || $context->falsey()) {
-			// Falsey: all arms are false → union all SpecifiedTypes.
-			// Collect per-expression types first, then build unions once
-			// to avoid O(N²) from incremental TypeCombinator::union() growth.
-			/** @var array<string, array{Expr, list<Type>}> $sureTypesPerExpr */
-			$sureTypesPerExpr = [];
-			/** @var array<string, array{Expr, list<Type>}> $sureNotTypesPerExpr */
-			$sureNotTypesPerExpr = [];
-
-			foreach ($arms as $arm) {
-				$armTypes = $this->specifyTypesInCondition($scope, $arm, $context);
-				foreach ($armTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
-					$sureTypesPerExpr[$exprString][0] = $exprNode;
-					$sureTypesPerExpr[$exprString][1][] = $type;
-				}
-				foreach ($armTypes->getSureNotTypes() as $exprString => [$exprNode, $type]) {
-					$sureNotTypesPerExpr[$exprString][0] = $exprNode;
-					$sureNotTypesPerExpr[$exprString][1][] = $type;
-				}
-			}
-
-			$sureTypes = [];
-			foreach ($sureTypesPerExpr as $exprString => [$exprNode, $types]) {
-				$sureTypes[$exprString] = [$exprNode, TypeCombinator::intersect(...$types)];
-			}
-			$sureNotTypes = [];
-			foreach ($sureNotTypesPerExpr as $exprString => [$exprNode, $types]) {
-				$sureNotTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
-			}
-
-			return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($expr);
-		}
-
-		// Truthy: at least one arm is true → intersect all normalized SpecifiedTypes
-		$armSpecifiedTypes = [];
-		foreach ($arms as $arm) {
-			$armTypes = $this->specifyTypesInCondition($scope, $arm, $context);
-			$armSpecifiedTypes[] = $armTypes->normalize($scope);
-		}
-
-		$types = $armSpecifiedTypes[0];
-		for ($i = 1; $i < count($armSpecifiedTypes); $i++) {
-			$types = $types->intersectWith($armSpecifiedTypes[$i]);
-		}
-
-		$result = new SpecifiedTypes(
-			$types->getSureTypes(),
-			$types->getSureNotTypes(),
-		);
-		if ($types->shouldOverwrite()) {
-			$result = $result->setAlwaysOverwriteTypes();
-		}
-
-		return $result->setRootExpr($expr);
-	}
-
-	/**
-	 * @param BooleanAnd|LogicalAnd $expr
-	 *
-	 * @internal
-	 */
-	public function specifyTypesForFlattenedBooleanAnd(
-		MutatingScope $scope,
-		Expr $expr,
-		TypeSpecifierContext $context,
-	): SpecifiedTypes
-	{
-		$arms = [];
-		$current = $expr;
-		while ($current instanceof BooleanAnd || $current instanceof LogicalAnd) {
-			$arms[] = $current->right;
-			$current = $current->left;
-		}
-		$arms[] = $current;
-		$arms = array_reverse($arms);
-
-		// Truthy: all arms are true → union all SpecifiedTypes.
-		// Collect per-expression types first, then build unions once
-		// to avoid O(N²) from incremental growth.
-		/** @var array<string, array{Expr, list<Type>}> $sureTypesPerExpr */
-		$sureTypesPerExpr = [];
-		/** @var array<string, array{Expr, list<Type>}> $sureNotTypesPerExpr */
-		$sureNotTypesPerExpr = [];
-
-		foreach ($arms as $arm) {
-			$armTypes = $this->specifyTypesInCondition($scope, $arm, $context);
-			foreach ($armTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
-				$sureTypesPerExpr[$exprString][0] = $exprNode;
-				$sureTypesPerExpr[$exprString][1][] = $type;
-			}
-			foreach ($armTypes->getSureNotTypes() as $exprString => [$exprNode, $type]) {
-				$sureNotTypesPerExpr[$exprString][0] = $exprNode;
-				$sureNotTypesPerExpr[$exprString][1][] = $type;
-			}
-		}
-
-		$sureTypes = [];
-		foreach ($sureTypesPerExpr as $exprString => [$exprNode, $types]) {
-			$sureTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
-		}
-		$sureNotTypes = [];
-		foreach ($sureNotTypesPerExpr as $exprString => [$exprNode, $types]) {
-			$sureNotTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
-		}
-
-		return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($expr);
-	}
-
 	/**
 	 * @return array{Expr, ConstantScalarType, Type}|null
 	 */
@@ -1266,28 +1001,6 @@ final class TypeSpecifier
 		}
 
 		return $types;
-	}
-
-	/** @internal */
-	public function createArrayDimFetchConditionalExpressionHolder(
-		Expr\Variable $keyVar,
-		Expr $arrayArg,
-		Type $narrowedKeyType,
-		Type $dimFetchType,
-	): SpecifiedTypes
-	{
-		$dimFetch = new ArrayDimFetch($arrayArg, $keyVar);
-		$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
-		$keyExprString = $this->exprPrinter->printExpr($keyVar);
-
-		$holder = new ConditionalExpressionHolder(
-			[$keyExprString => ExpressionTypeHolder::createYes($keyVar, $narrowedKeyType)],
-			ExpressionTypeHolder::createYes($dimFetch, $dimFetchType),
-		);
-
-		return (new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
-			$dimFetchString => [$holder->getKey() => $holder],
-		]);
 	}
 
 	private function createForExpr(
@@ -1485,24 +1198,6 @@ final class TypeSpecifier
 		}
 
 		return new SpecifiedTypes([], []);
-	}
-
-	/** @internal */
-	public function createRangeTypes(?Expr $rootExpr, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		$sureNotTypes = [];
-
-		if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-			$exprString = $this->exprPrinter->printExpr($expr);
-			if ($context->false()) {
-				$sureNotTypes[$exprString] = [$expr, $type];
-			} elseif ($context->true()) {
-				$inverted = TypeCombinator::remove(new IntegerType(), $type);
-				$sureNotTypes[$exprString] = [$expr, $inverted];
-			}
-		}
-
-		return (new SpecifiedTypes(sureNotTypes: $sureNotTypes))->setRootExpr($rootExpr);
 	}
 
 	/**

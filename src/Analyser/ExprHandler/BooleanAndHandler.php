@@ -26,7 +26,10 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function array_reverse;
+use function is_string;
 
 /**
  * @implements ExprHandler<BooleanAnd|LogicalAnd>
@@ -89,7 +92,7 @@ final class BooleanAndHandler implements ExprHandler
 			$context->true()
 			&& self::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH
 		) {
-			return $typeSpecifier->specifyTypesForFlattenedBooleanAnd($scope, $expr, $context);
+			return $this->specifyTypesForFlattenedBooleanAnd($typeSpecifier, $scope, $expr, $context);
 		}
 
 		$leftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
@@ -119,13 +122,13 @@ final class BooleanAndHandler implements ExprHandler
 			// from the truthy narrowing instead, swapping sure/sureNot types.
 			if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
 				$truthyLeftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
-				if ($typeSpecifier->allExpressionsTrackable($truthyLeftTypes)) {
+				if ($this->allExpressionsTrackable($truthyLeftTypes)) {
 					$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
 				}
 			}
 			if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
 				$truthyRightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
-				if ($typeSpecifier->allExpressionsTrackable($truthyRightTypes)) {
+				if ($this->allExpressionsTrackable($truthyRightTypes)) {
 					$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
 				}
 			}
@@ -159,6 +162,87 @@ final class BooleanAndHandler implements ExprHandler
 		}
 
 		return $depth;
+	}
+
+	/**
+	 * Flatten a deep BooleanAnd chain into leaf expressions and process them
+	 * without recursive filterByTruthyValue calls.
+	 *
+	 * @param BooleanAnd|LogicalAnd $expr
+	 */
+	private function specifyTypesForFlattenedBooleanAnd(
+		TypeSpecifier $typeSpecifier,
+		MutatingScope $scope,
+		Expr $expr,
+		TypeSpecifierContext $context,
+	): SpecifiedTypes
+	{
+		$arms = [];
+		$current = $expr;
+		while ($current instanceof BooleanAnd || $current instanceof LogicalAnd) {
+			$arms[] = $current->right;
+			$current = $current->left;
+		}
+		$arms[] = $current;
+		$arms = array_reverse($arms);
+
+		// Truthy: all arms are true → union all SpecifiedTypes.
+		// Collect per-expression types first, then build unions once
+		// to avoid O(N²) from incremental growth.
+		/** @var array<string, array{Expr, list<Type>}> $sureTypesPerExpr */
+		$sureTypesPerExpr = [];
+		/** @var array<string, array{Expr, list<Type>}> $sureNotTypesPerExpr */
+		$sureNotTypesPerExpr = [];
+
+		foreach ($arms as $arm) {
+			$armTypes = $typeSpecifier->specifyTypesInCondition($scope, $arm, $context);
+			foreach ($armTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
+				$sureTypesPerExpr[$exprString][0] = $exprNode;
+				$sureTypesPerExpr[$exprString][1][] = $type;
+			}
+			foreach ($armTypes->getSureNotTypes() as $exprString => [$exprNode, $type]) {
+				$sureNotTypesPerExpr[$exprString][0] = $exprNode;
+				$sureNotTypesPerExpr[$exprString][1][] = $type;
+			}
+		}
+
+		$sureTypes = [];
+		foreach ($sureTypesPerExpr as $exprString => [$exprNode, $types]) {
+			$sureTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
+		}
+		$sureNotTypes = [];
+		foreach ($sureNotTypesPerExpr as $exprString => [$exprNode, $types]) {
+			$sureNotTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
+		}
+
+		return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($expr);
+	}
+
+	private function allExpressionsTrackable(SpecifiedTypes $types): bool
+	{
+		foreach ($types->getSureTypes() as [$expr]) {
+			if (!$this->isTrackableExpression($expr)) {
+				return false;
+			}
+		}
+		foreach ($types->getSureNotTypes() as [$expr]) {
+			if (!$this->isTrackableExpression($expr)) {
+				return false;
+			}
+		}
+
+		return $types->getSureTypes() !== [] || $types->getSureNotTypes() !== [];
+	}
+
+	private function isTrackableExpression(Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Variable) {
+			return is_string($expr->name);
+		}
+
+		return $expr instanceof Expr\PropertyFetch
+			|| $expr instanceof Expr\ArrayDimFetch
+			|| $expr instanceof Expr\StaticPropertyFetch;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

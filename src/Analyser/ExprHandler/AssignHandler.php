@@ -157,7 +157,7 @@ final class AssignHandler implements ExprHandler
 					$nonNullKeyType = TypeCombinator::removeNull($keyType);
 					if (!$nonNullKeyType instanceof NeverType) {
 						$specifiedTypes = $specifiedTypes->unionWith(
-							$typeSpecifier->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $nonNullKeyType, $arrayType->getIterableValueType()),
+							$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $nonNullKeyType, $arrayType->getIterableValueType()),
 						);
 					}
 				}
@@ -217,7 +217,7 @@ final class AssignHandler implements ExprHandler
 								$dimFetchType = $arrayType->getIterableValueType();
 							}
 							$specifiedTypes = $specifiedTypes->unionWith(
-								$typeSpecifier->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $narrowedKeyType, $dimFetchType),
+								$this->createArrayDimFetchConditionalExpressionHolder($expr->var, $arrayArg, $narrowedKeyType, $dimFetchType),
 							);
 						}
 					}
@@ -1031,6 +1031,27 @@ final class AssignHandler implements ExprHandler
 
 		// stored where processAssignVar is called
 		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+	}
+
+	private function createArrayDimFetchConditionalExpressionHolder(
+		Expr\Variable $keyVar,
+		Expr $arrayArg,
+		Type $narrowedKeyType,
+		Type $dimFetchType,
+	): SpecifiedTypes
+	{
+		$dimFetch = new ArrayDimFetch($arrayArg, $keyVar);
+		$dimFetchString = $this->exprPrinter->printExpr($dimFetch);
+		$keyExprString = $this->exprPrinter->printExpr($keyVar);
+
+		$holder = new ConditionalExpressionHolder(
+			[$keyExprString => ExpressionTypeHolder::createYes($keyVar, $narrowedKeyType)],
+			ExpressionTypeHolder::createYes($dimFetch, $dimFetchType),
+		);
+
+		return (new SpecifiedTypes([], []))->setNewConditionalExpressionHolders([
+			$dimFetchString => [$holder->getKey() => $holder],
+		]);
 	}
 
 	private function unwrapAssign(Expr $expr): Expr

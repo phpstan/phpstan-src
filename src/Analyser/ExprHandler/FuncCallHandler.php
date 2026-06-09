@@ -944,12 +944,44 @@ final class FuncCallHandler implements ExprHandler
 			return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		}
 
-		$specifiedTypes = $typeSpecifier->specifyTypesFromCallableCall($context, $expr, $scope);
+		$specifiedTypes = $this->specifyTypesFromCallableCall($typeSpecifier, $context, $expr, $scope);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
 		}
 
 		return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+	}
+
+	private function specifyTypesFromCallableCall(TypeSpecifier $typeSpecifier, TypeSpecifierContext $context, FuncCall $call, Scope $scope): ?SpecifiedTypes
+	{
+		if (!$call->name instanceof Expr) {
+			return null;
+		}
+
+		$calleeType = $scope->getType($call->name);
+
+		$assertions = null;
+		$parametersAcceptor = null;
+		if ($calleeType->isCallable()->yes()) {
+			$variants = $calleeType->getCallableParametersAcceptors($scope);
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
+			if ($parametersAcceptor instanceof CallableParametersAcceptor) {
+				$assertions = $parametersAcceptor->getAsserts();
+			}
+		}
+
+		if ($assertions === null || $assertions->getAll() === []) {
+			return null;
+		}
+
+		$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+			$type,
+			$parametersAcceptor->getResolvedTemplateTypeMap(),
+			$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
+		));
+
+		return $typeSpecifier->specifyTypesFromAsserts($context, $call, $asserts, $parametersAcceptor, $scope);
 	}
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type

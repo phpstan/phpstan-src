@@ -26,6 +26,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
@@ -37,6 +38,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -61,6 +63,7 @@ final class BinaryOpHandler implements ExprHandler
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private PhpVersion $phpVersion,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
+		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
@@ -459,21 +462,21 @@ final class BinaryOpHandler implements ExprHandler
 
 			if ($leftType instanceof ConstantIntegerType) {
 				if ($expr->right instanceof Expr\PostInc) {
-					$result = $result->unionWith($typeSpecifier->createRangeTypes(
+					$result = $result->unionWith($this->createRangeTypes(
 						$expr,
 						$expr->right->var,
 						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset + 1),
 						$context,
 					));
 				} elseif ($expr->right instanceof Expr\PostDec) {
-					$result = $result->unionWith($typeSpecifier->createRangeTypes(
+					$result = $result->unionWith($this->createRangeTypes(
 						$expr,
 						$expr->right->var,
 						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset - 1),
 						$context,
 					));
 				} elseif ($expr->right instanceof Expr\PreInc || $expr->right instanceof Expr\PreDec) {
-					$result = $result->unionWith($typeSpecifier->createRangeTypes(
+					$result = $result->unionWith($this->createRangeTypes(
 						$expr,
 						$expr->right->var,
 						IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
@@ -485,21 +488,21 @@ final class BinaryOpHandler implements ExprHandler
 			$rightType = $scope->getType($expr->right);
 			if ($rightType instanceof ConstantIntegerType) {
 				if ($expr->left instanceof Expr\PostInc) {
-					$result = $result->unionWith($typeSpecifier->createRangeTypes(
+					$result = $result->unionWith($this->createRangeTypes(
 						$expr,
 						$expr->left->var,
 						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset + 1),
 						$context,
 					));
 				} elseif ($expr->left instanceof Expr\PostDec) {
-					$result = $result->unionWith($typeSpecifier->createRangeTypes(
+					$result = $result->unionWith($this->createRangeTypes(
 						$expr,
 						$expr->left->var,
 						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset - 1),
 						$context,
 					));
 				} elseif ($expr->left instanceof Expr\PreInc || $expr->left instanceof Expr\PreDec) {
-					$result = $result->unionWith($typeSpecifier->createRangeTypes(
+					$result = $result->unionWith($this->createRangeTypes(
 						$expr,
 						$expr->left->var,
 						IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
@@ -564,6 +567,23 @@ final class BinaryOpHandler implements ExprHandler
 		}
 
 		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+	}
+
+	private function createRangeTypes(?Expr $rootExpr, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		$sureNotTypes = [];
+
+		if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
+			$exprString = $this->exprPrinter->printExpr($expr);
+			if ($context->false()) {
+				$sureNotTypes[$exprString] = [$expr, $type];
+			} elseif ($context->true()) {
+				$inverted = TypeCombinator::remove(new IntegerType(), $type);
+				$sureNotTypes[$exprString] = [$expr, $inverted];
+			}
+		}
+
+		return (new SpecifiedTypes(sureNotTypes: $sureNotTypes))->setRootExpr($rootExpr);
 	}
 
 }

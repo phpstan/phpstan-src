@@ -37,6 +37,7 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -2967,6 +2968,57 @@ final class TypeSpecifier
 		return $specifiedTypes;
 	}
 
+	/**
+	 * When $castExpr casts $valueExpr to an int and back to a string — i.e. the
+	 * `(string) (int) $valueExpr` round-trip (in any combination of the (string)/(int)
+	 * casts) — returns $valueExpr so the
+	 * comparison `$castExpr === $valueExpr` can narrow it to a decimal / non-decimal
+	 * integer string. This is the canonical "decimal integer string" round-trip that
+	 * ConstantStringType::isDecimalIntegerString() checks with `(string) (int) $value === $value`.
+	 *
+	 * The cast forms are stripped from the AST only to match the value expression; whether
+	 * the casts actually compute the int-then-string round-trip is confirmed through the
+	 * type system via Type::toInteger() and Type::toString() rather than by relying on the
+	 * exact order or shape of the casts.
+	 */
+	private function getDecimalIntegerStringRoundTripExpr(Expr $castExpr, Expr $valueExpr, Scope $scope): ?Expr
+	{
+		$valueType = $scope->getType($valueExpr);
+		if (!$valueType->isString()->yes()) {
+			return null;
+		}
+
+		$baseExpr = $castExpr;
+		$unwrapped = false;
+		while (($inner = $this->getCastInnerExpr($baseExpr)) !== null) {
+			$baseExpr = $inner;
+			$unwrapped = true;
+		}
+
+		if (
+			!$unwrapped
+			|| $this->exprPrinter->printExpr($baseExpr) !== $this->exprPrinter->printExpr($valueExpr)
+		) {
+			return null;
+		}
+
+		return $scope->getType($castExpr)->equals($valueType->toInteger()->toString())
+			? $valueExpr
+			: null;
+	}
+
+	/**
+	 * Strips a single (string)/(int) cast, returning its inner expression.
+	 */
+	private function getCastInnerExpr(Expr $expr): ?Expr
+	{
+		if ($expr instanceof Expr\Cast\String_ || $expr instanceof Expr\Cast\Int_) {
+			return $expr->expr;
+		}
+
+		return null;
+	}
+
 	private function resolveNormalizedIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$leftExpr = $expr->left;
@@ -3226,6 +3278,25 @@ final class TypeSpecifier
 					$context,
 					$scope,
 				)->setRootExpr($expr));
+			}
+		}
+
+		// (string) (int) $x === $x
+		if (!$context->null()) {
+			$decimalValueExpr = $this->getDecimalIntegerStringRoundTripExpr($unwrappedLeftExpr, $unwrappedRightExpr, $scope)
+				?? $this->getDecimalIntegerStringRoundTripExpr($unwrappedRightExpr, $unwrappedLeftExpr, $scope);
+
+			if ($decimalValueExpr !== null) {
+				$decimalValueType = $scope->getType($decimalValueExpr);
+				$decimalIntegerString = new AccessoryDecimalIntegerStringType();
+				return $this->create(
+					$decimalValueExpr,
+					$context->truthy()
+						? TypeCombinator::intersect($decimalValueType, $decimalIntegerString)
+						: TypeCombinator::remove($decimalValueType, $decimalIntegerString),
+					TypeSpecifierContext::createTruthy(),
+					$scope,
+				)->setRootExpr($expr);
 			}
 		}
 

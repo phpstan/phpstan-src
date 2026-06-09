@@ -331,6 +331,10 @@ class StringType implements Type
 			return new ConstantStringType('');
 		}
 
+		if ($typeToRemove instanceof AccessoryDecimalIntegerStringType) {
+			return TypeCombinator::intersect($this, new AccessoryDecimalIntegerStringType(!$typeToRemove->isInverse()));
+		}
+
 		return null;
 	}
 

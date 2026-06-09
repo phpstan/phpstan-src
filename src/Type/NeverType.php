@@ -33,13 +33,18 @@ class NeverType implements CompoundType
 	use NonGeneralizableTypeTrait;
 
 	/** @api */
-	public function __construct(private bool $isExplicit = false)
+	public function __construct(private bool $isExplicit = false, private ?string $reason = null)
 	{
 	}
 
 	public function isExplicit(): bool
 	{
 		return $this->isExplicit;
+	}
+
+	public function getReason(): ?string
+	{
+		return $this->reason;
 	}
 
 	public function getReferencedClasses(): array

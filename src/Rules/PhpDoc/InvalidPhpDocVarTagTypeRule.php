@@ -87,13 +87,15 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 			if (is_string($name)) {
 				$identifier .= sprintf(' for variable $%s', $name);
 			}
-			if (
-				$this->unresolvableTypeHelper->containsUnresolvableType($varTagType)
-			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($varTagType);
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))
 					->line($docComment->getStartLine())
-					->identifier('varTag.unresolvableType')
-					->build();
+					->identifier('varTag.unresolvableType');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 				continue;
 			}
 

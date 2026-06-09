@@ -71,14 +71,17 @@ final class IncompatibleClassConstantPhpDocTypeRule implements Rule
 		}
 
 		$errors = [];
-		if (
-			$this->unresolvableTypeHelper->containsUnresolvableType($phpDocType)
-		) {
-			$errors[] = RuleErrorBuilder::message(sprintf(
+		$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($phpDocType);
+		if ($unresolvableType !== null) {
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @var for constant %s::%s contains unresolvable type.',
 				$constantReflection->getDeclaringClass()->getName(),
 				$constantName,
-			))->identifier('classConstant.unresolvableType')->build();
+			))->identifier('classConstant.unresolvableType');
+			foreach ($unresolvableType->reasons as $reason) {
+				$errorBuilder->addTip($reason);
+			}
+			$errors[] = $errorBuilder->build();
 		} elseif ($nativeType !== null) {
 			$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
 			if ($isSuperType->no()) {

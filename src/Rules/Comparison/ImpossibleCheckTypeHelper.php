@@ -33,6 +33,8 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_pop;
+use function array_unique;
+use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -53,12 +55,18 @@ final class ImpossibleCheckTypeHelper
 	{
 	}
 
+	/**
+	 * @param list<string> $reasons populated with human-readable explanations of why the
+	 * result is "always false" (empty for the "always true" / inconclusive results)
+	 */
 	public function findSpecifiedType(
 		Scope $scope,
 		Expr $node,
+		array &$reasons = [],
 	): ?bool
 	{
-		$specifiedValue = $this->getSpecifiedType($scope, $node);
+		$specifiedValue = $this->getSpecifiedType($scope, $node, $reasons);
+		$reasons = array_values(array_unique($reasons));
 
 		/**
 		 * For class_exists()/interface_exists()/trait_exists()/enum_exists() the "always true"
@@ -83,9 +91,13 @@ final class ImpossibleCheckTypeHelper
 		return $specifiedValue;
 	}
 
+	/**
+	 * @param list<string> $reasons
+	 */
 	private function getSpecifiedType(
 		Scope $scope,
 		Expr $node,
+		array &$reasons = [],
 	): ?bool
 	{
 		if ($node instanceof FuncCall) {
@@ -360,7 +372,15 @@ final class ImpossibleCheckTypeHelper
 				$argumentType = $scope->getType($assignedInCallVar->expr);
 			}
 
-			$results[] = $resultType->isSuperTypeOf($argumentType)->result;
+			$isSuperType = $resultType->isSuperTypeOf($argumentType);
+			$results[] = $isSuperType->result;
+			if (!$isSuperType->result->no()) {
+				continue;
+			}
+
+			foreach ($isSuperType->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
 
 		foreach ($sureNotTypes as $sureNotType) {
@@ -378,7 +398,15 @@ final class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
 
-			$results[] = $resultType->isSuperTypeOf($argumentType)->negate()->result;
+			$isSuperType = $resultType->isSuperTypeOf($argumentType)->negate();
+			$results[] = $isSuperType->result;
+			if (!$isSuperType->result->no()) {
+				continue;
+			}
+
+			foreach ($isSuperType->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
 
 		if (count($results) === 0) {

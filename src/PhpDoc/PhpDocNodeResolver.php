@@ -733,7 +733,7 @@ final class PhpDocNodeResolver
 			return false;
 		}
 
-		return $this->unresolvableTypeHelper->containsUnresolvableType($type);
+		return $this->unresolvableTypeHelper->getUnresolvableType($type) !== null;
 	}
 
 	public function resolveAllowPrivateMutation(PhpDocNode $phpDocNode): bool

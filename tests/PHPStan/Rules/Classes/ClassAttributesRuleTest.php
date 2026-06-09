@@ -152,6 +152,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 			[
 				'Parameter $repositoryClass of attribute class Bug7171\Entity constructor expects class-string<Bug7171\EntityRepository<T of object>>|null, \'stdClass\' given.',
 				66,
+				'Type #1 from the union: Classes Bug7171\EntityRepository<T of object> and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 		]);
 	}

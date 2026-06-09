@@ -262,10 +262,12 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 					[
 						'Parameter $a of anonymous function has unresolvable native type.',
 						27,
+						'Classes ArrowFunctionIntersectionTypes\Ipsum and ArrowFunctionIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Anonymous function has unresolvable native return type.',
 						27,
+						'Classes ArrowFunctionIntersectionTypes\Ipsum and ArrowFunctionIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Parameter $a of anonymous function has unresolvable native type.',

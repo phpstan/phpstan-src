@@ -157,15 +157,18 @@ final class FunctionDefinitionCheck
 					->nonIgnorable()
 					->build();
 			}
-			if (
-				$this->phpVersion->supportsPureIntersectionTypes()
-				&& $this->unresolvableTypeHelper->containsUnresolvableType($type)
-			) {
-				$errors[] = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $param->var->name))
+			$unresolvableType = $this->phpVersion->supportsPureIntersectionTypes()
+				? $this->unresolvableTypeHelper->getUnresolvableType($type)
+				: null;
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $param->var->name))
 					->line($param->type->getStartLine())
 					->identifier('parameter.unresolvableNativeType')
-					->nonIgnorable()
-					->build();
+					->nonIgnorable();
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 			}
 
 			foreach ($type->getReferencedClasses() as $class) {
@@ -241,15 +244,18 @@ final class FunctionDefinitionCheck
 		}
 
 		$returnType = $scope->getFunctionType($returnTypeNode, false, false);
-		if (
-			$this->phpVersion->supportsPureIntersectionTypes()
-			&& $this->unresolvableTypeHelper->containsUnresolvableType($returnType)
-		) {
-			$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
+		$unresolvableReturnType = $this->phpVersion->supportsPureIntersectionTypes()
+			? $this->unresolvableTypeHelper->getUnresolvableType($returnType)
+			: null;
+		if ($unresolvableReturnType !== null) {
+			$errorBuilder = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 				->line($returnTypeNode->getStartLine())
 				->identifier('return.unresolvableNativeType')
-				->nonIgnorable()
-				->build();
+				->nonIgnorable();
+			foreach ($unresolvableReturnType->reasons as $reason) {
+				$errorBuilder->addTip($reason);
+			}
+			$errors[] = $errorBuilder->build();
 		}
 
 		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
@@ -435,15 +441,18 @@ final class FunctionDefinitionCheck
 					->nonIgnorable()
 					->build();
 			}
-			if (
-				$this->phpVersion->supportsPureIntersectionTypes()
-				&& $this->unresolvableTypeHelper->containsUnresolvableType($parameter->getNativeType())
-			) {
-				$errors[] = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $parameterVar->name))
+			$unresolvableType = $this->phpVersion->supportsPureIntersectionTypes()
+				? $this->unresolvableTypeHelper->getUnresolvableType($parameter->getNativeType())
+				: null;
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $parameterVar->name))
 					->line($parameterNodeCallback()->getStartLine())
 					->identifier('parameter.unresolvableNativeType')
-					->nonIgnorable()
-					->build();
+					->nonIgnorable();
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 			}
 			foreach ($referencedClasses as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
@@ -512,12 +521,16 @@ final class FunctionDefinitionCheck
 
 		if ($this->phpVersion->supportsPureIntersectionTypes() && $functionNode->getReturnType() !== null) {
 			$nativeReturnType = ParserNodeTypeToPHPStanType::resolve($functionNode->getReturnType(), $scope->isInClass() ? $scope->getClassReflection() : null);
-			if ($this->unresolvableTypeHelper->containsUnresolvableType($nativeReturnType)) {
-				$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($nativeReturnType);
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 					->nonIgnorable()
 					->line($returnTypeNode->getStartLine())
-					->identifier('return.unresolvableNativeType')
-					->build();
+					->identifier('return.unresolvableNativeType');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 			}
 		}
 		if ($parametersAcceptor->mustUseReturnValue()->yes()) {

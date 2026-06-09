@@ -49,6 +49,7 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$bar contains unresolvable type.',
 				12,
+				'Classes InvalidPhpDoc\Bar and InvalidPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$classStringInt contains unresolvable type.',
@@ -123,6 +124,7 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$bar contains unresolvable type.',
 				16,
+				'Classes InvalidPhpDoc\Bar and InvalidPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$classStringInt contains unresolvable type.',

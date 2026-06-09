@@ -106,11 +106,18 @@ final class ImpossibleInstanceOfRule implements Rule
 		if (!$instanceofType->getValue()) {
 			$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
 
-			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'Instanceof between %s and %s will always evaluate to false.',
 				$exprType->describe(VerbosityLevel::typeOnly()),
 				$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
-			)))->identifier('instanceof.alwaysFalse')->build();
+			));
+			$reasons = $classType->isSuperTypeOf($exprType)->reasons;
+			if ($reasons !== []) {
+				$errorBuilder = $this->possiblyImpureTipHelper->addTip($scope, $node, $errorBuilder->acceptsReasonsTip($reasons));
+			} else {
+				$errorBuilder = $addTip($errorBuilder);
+			}
+			$ruleError = $errorBuilder->identifier('instanceof.alwaysFalse')->build();
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
 				return [];

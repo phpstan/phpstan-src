@@ -78,6 +78,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Dolor and ImpossibleInstanceOf\Lorem will always evaluate to false.',
 					71,
+					'Classes ImpossibleInstanceOf\Lorem and ImpossibleInstanceOf\Dolor are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 				],
 				[
 					'Instanceof between ImpossibleInstanceOf\FooImpl and ImpossibleInstanceOf\Foo will always evaluate to true.',
@@ -102,6 +103,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Test|null and ImpossibleInstanceOf\Lorem will always evaluate to false.',
 					119,
+					'Classes ImpossibleInstanceOf\Lorem and ImpossibleInstanceOf\Test are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 				],
 				[
 					'Instanceof between ImpossibleInstanceOf\Test and ImpossibleInstanceOf\Test will always evaluate to true.',
@@ -110,6 +112,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Test|null and ImpossibleInstanceOf\Lorem will always evaluate to false.',
 					137,
+					'Classes ImpossibleInstanceOf\Lorem and ImpossibleInstanceOf\Test are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 				],
 				[
 					'Instanceof between ImpossibleInstanceOf\Test and ImpossibleInstanceOf\Test will always evaluate to true.',
@@ -118,6 +121,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between ImpossibleInstanceOf\Test|null and ImpossibleInstanceOf\Lorem will always evaluate to false.',
 					155,
+					'Classes ImpossibleInstanceOf\Lorem and ImpossibleInstanceOf\Test are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 				],
 				[
 					'Instanceof between ImpossibleInstanceOf\Test and ImpossibleInstanceOf\Test will always evaluate to true.',
@@ -224,6 +228,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between stdClass and Exception will always evaluate to false.',
 				15,
+				'Classes Exception and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Instanceof between DateTimeInterface and DateTimeInterface will always evaluate to true.',
@@ -232,6 +237,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between DateTimeInterface and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
 				30,
+				'Final class ImpossibleInstanceofNotPhpDoc\SomeFinalClass does not implement interface DateTimeInterface.',
 			],
 		]);
 	}
@@ -247,6 +253,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between stdClass and Exception will always evaluate to false.',
 				15,
+				'Classes Exception and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Instanceof between DateTimeImmutable and DateTimeInterface will always evaluate to true.',
@@ -255,6 +262,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between DateTimeImmutable and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
 				30,
+				'Classes ImpossibleInstanceofNotPhpDoc\SomeFinalClass and DateTimeImmutable are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Instanceof between DateTimeImmutable and DateTimeImmutable will always evaluate to true.',
@@ -264,6 +272,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between DateTimeImmutable and DateTime will always evaluate to false.',
 				36,
+				'Classes DateTime and DateTimeImmutable are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 				//'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
@@ -569,30 +578,37 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
 				17,
+				'Final class ImpossibleInstanceofNewIsAlwaysFinal\Bar does not implement interface ImpossibleInstanceofNewIsAlwaysFinal\Foo.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
 				33,
+				'Final class ImpossibleInstanceofNewIsAlwaysFinal\Bar does not implement interface ImpossibleInstanceofNewIsAlwaysFinal\Foo.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
 				43,
+				'Final class ImpossibleInstanceofNewIsAlwaysFinal\Bar does not implement interface ImpossibleInstanceofNewIsAlwaysFinal\Foo.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
 				53,
+				'Final class ImpossibleInstanceofNewIsAlwaysFinal\Bar does not implement interface ImpossibleInstanceofNewIsAlwaysFinal\Foo.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
 				63,
+				'Final class ImpossibleInstanceofNewIsAlwaysFinal\Bar does not implement interface ImpossibleInstanceofNewIsAlwaysFinal\Foo.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar|null and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
 				73,
+				'Final class ImpossibleInstanceofNewIsAlwaysFinal\Bar does not implement interface ImpossibleInstanceofNewIsAlwaysFinal\Foo.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar|null and ImpossibleInstanceofNewIsAlwaysFinal\Baz will always evaluate to false.',
 				88,
+				'Classes ImpossibleInstanceofNewIsAlwaysFinal\Baz and ImpossibleInstanceofNewIsAlwaysFinal\Bar are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 		]);
 	}
@@ -644,17 +660,16 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	public function testInTrait(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-in-trait.php'], [
 			[
 				'Instanceof between ImpossibleInstanceofInTrait\Cat and stdClass will always evaluate to false.',
 				25,
-				$tipText,
+				'Classes stdClass and ImpossibleInstanceofInTrait\Cat are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Instanceof between ImpossibleInstanceofInTrait\Dog and stdClass will always evaluate to false.',
 				25,
-				$tipText,
+				'Classes stdClass and ImpossibleInstanceofInTrait\Dog are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 		]);
 	}

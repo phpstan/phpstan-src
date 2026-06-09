@@ -48,7 +48,8 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 			return [];
 		}
 
-		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
+		$reasons = [];
+		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node, $reasons);
 		if ($isAlways === null) {
 			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
@@ -75,12 +76,18 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 		if (!$isAlways) {
 			$method = $this->getMethod($node->class, $node->name->name, $scope);
 
-			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'Call to static method %s::%s()%s will always evaluate to false.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-			)))->identifier('staticMethod.impossibleType')->build();
+			));
+			if ($reasons !== []) {
+				$errorBuilder = $this->possiblyImpureTipHelper->addTip($scope, $node, $errorBuilder->acceptsReasonsTip($reasons));
+			} else {
+				$errorBuilder = $addTip($errorBuilder);
+			}
+			$ruleError = $errorBuilder->identifier('staticMethod.impossibleType')->build();
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
 				return [];

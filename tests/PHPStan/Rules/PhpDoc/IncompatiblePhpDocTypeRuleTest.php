@@ -89,10 +89,12 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
 				126,
+				'Classes InvalidPhpDoc\Bar and InvalidPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @return contains unresolvable type.',
 				126,
+				'Classes InvalidPhpDoc\Bar and InvalidPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @param for parameter $a with type T is not subtype of native type int.',
@@ -218,6 +220,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
 				20,
+				'Classes Bug3753\Bar and Bug3753\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 		]);
 	}
@@ -428,6 +431,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param-closure-this for parameter $i contains unresolvable type.',
 				34,
+				'Classes Exception and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @param-closure-this is for parameter $i with non-Closure type string.',
@@ -503,7 +507,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $a contains unresolvable type.',
 				11,
-				'Sealed array shapes array{foo: int} and array{bar: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys',
+				'Sealed array shapes array{bar: string} and array{foo: int} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys',
 			],
 		]);
 	}

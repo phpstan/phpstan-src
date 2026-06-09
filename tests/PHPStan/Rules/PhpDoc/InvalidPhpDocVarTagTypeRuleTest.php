@@ -46,10 +46,12 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for variable $test contains unresolvable type.',
 				13,
+				'Classes stdClass and InvalidVarTagType\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var contains unresolvable type.',
 				16,
+				'Classes stdClass and InvalidVarTagType\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var for variable $test contains unknown class InvalidVarTagType\aray.',
@@ -63,6 +65,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for variable $staticVar contains unresolvable type.',
 				27,
+				'Classes stdClass and InvalidVarTagType\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Class InvalidVarTagType\Foo referenced with incorrect case: InvalidVarTagType\foo.',

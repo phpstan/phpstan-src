@@ -494,6 +494,25 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testIsSuperTypeOfReasons(): void
+	{
+		// final class can never implement an interface it does not already implement
+		$finalClassVsInterface = (new ObjectType(Throwable::class))->isSuperTypeOf(new ObjectType(Closure::class));
+		$this->assertTrue($finalClassVsInterface->no());
+		$this->assertSame(
+			['Final class Closure does not implement interface Throwable.'],
+			$finalClassVsInterface->reasons,
+		);
+
+		// two unrelated classes can never share an instance because of single inheritance
+		$classVsClass = (new ObjectType(DateTime::class))->isSuperTypeOf(new ObjectType(DateTimeImmutable::class));
+		$this->assertTrue($classVsClass->no());
+		$this->assertSame(
+			['Classes DateTime and DateTimeImmutable are not in an inheritance relationship and because of single inheritance no object can be an instance of both.'],
+			$classVsClass->reasons,
+		);
+	}
+
 	public static function dataAccepts(): array
 	{
 		return [

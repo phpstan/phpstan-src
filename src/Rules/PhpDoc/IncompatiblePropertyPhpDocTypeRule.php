@@ -54,15 +54,18 @@ final class IncompatiblePropertyPhpDocTypeRule implements Rule
 		$classReflection = $node->getClassReflection();
 
 		$messages = [];
-		if (
-			$this->unresolvableTypeHelper->containsUnresolvableType($phpDocType)
-		) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
+		$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($phpDocType);
+		if ($unresolvableType !== null) {
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'%s for property %s::$%s contains unresolvable type.',
 				$description,
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->identifier('property.unresolvableType')->build();
+			))->identifier('property.unresolvableType');
+			foreach ($unresolvableType->reasons as $reason) {
+				$errorBuilder->addTip($reason);
+			}
+			$messages[] = $errorBuilder->build();
 		}
 
 		$nativeType = $node->getNativeType();

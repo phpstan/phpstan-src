@@ -52,6 +52,7 @@ final class IncompatiblePhpDocTypeCheck
 		foreach (['@param' => $resolvedPhpDoc->getParamTags(), '@param-out' => $resolvedPhpDoc->getParamOutTags(), '@param-closure-this' => $resolvedPhpDoc->getParamClosureThisTags()] as $tagName => $parameters) {
 			foreach ($parameters as $parameterName => $phpDocParamTag) {
 				$phpDocParamType = $phpDocParamTag->getType();
+				$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($phpDocParamType);
 
 				if (!isset($nativeParameterTypes[$parameterName])) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -60,14 +61,16 @@ final class IncompatiblePhpDocTypeCheck
 						$parameterName,
 					))->identifier('parameter.notFound')->build();
 
-				} elseif (
-					$this->unresolvableTypeHelper->containsUnresolvableType($phpDocParamType)
-				) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+				} elseif ($unresolvableType !== null) {
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag %s for parameter $%s contains unresolvable type.',
 						$tagName,
 						$parameterName,
-					))->identifier('parameter.unresolvableType')->build();
+					))->identifier('parameter.unresolvableType');
+					foreach ($unresolvableType->reasons as $reason) {
+						$errorBuilder->addTip($reason);
+					}
+					$errors[] = $errorBuilder->build();
 
 				} else {
 					$nativeParamType = $nativeParameterTypes[$parameterName];
@@ -183,11 +186,14 @@ final class IncompatiblePhpDocTypeCheck
 
 		if ($resolvedPhpDoc->getReturnTag() !== null) {
 			$phpDocReturnType = $resolvedPhpDoc->getReturnTag()->getType();
+			$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($phpDocReturnType);
 
-			if (
-				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocReturnType)
-			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->identifier('return.unresolvableType')->build();
+			if ($unresolvableType !== null) {
+				$errorBuilder = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->identifier('return.unresolvableType');
+				foreach ($unresolvableType->reasons as $reason) {
+					$errorBuilder->addTip($reason);
+				}
+				$errors[] = $errorBuilder->build();
 
 			} else {
 				$isReturnSuperType = $nativeReturnType->isSuperTypeOf($phpDocReturnType);

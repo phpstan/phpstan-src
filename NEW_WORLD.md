@@ -139,6 +139,30 @@ deliverable at every point along the way.
     GC scans over live cyclic webs). Late asks build their adapters on a **fresh storage**
     instead — the synthetics-in-flight cycle guard threads through it, only known-result
     seeding is lost on those rare paths.
+12. **`InitializerExprTypeResolver` keeps its `callable(Expr): Type` shape; the new world
+    feeds it a results-first callback** — the form `ArrayHandler` established: the closure
+    closes over the already-processed child `ExpressionResult`s (keyed by
+    `spl_object_id($expr)`), answers from `$childResult->getTypeForScope($s)` when the asked
+    expr is one of them, and only falls back to the guarded `$s->getType($inner)` bridge for
+    exprs it has no result for. Handlers migrating constructs that resolve through
+    `InitializerExprTypeResolver` (BinaryOp, ClassConstFetch, ConstFetch, UnaryMinus/Plus,
+    …) reuse this pattern instead of inventing per-handler plumbing.
+13. **Branch scopes prefer the handler's scope callbacks; adapters are seeded per base
+    scope.** Two lessons from the BooleanAnd/Or leg, both found as mixed-mode nsrt diffs:
+    - `getTruthyScope()`/`getFalseyScope()` consult `truthyScopeCallback`/`falseyScopeCallback`
+      *first*, the specify-callback reconstruction second. A handler that can compose a
+      branch scope incrementally must say so: for `A && B` the truthy scope *is* the right
+      operand's truthy scope (the left narrowing is already part of it) — re-deriving the
+      whole conjunction from per-arm `SpecifiedTypes` re-unions types that were never
+      unioned in the old world and drifts representations (`array<mixed>` vs
+      `array<mixed, mixed>`). Consequence: migrated handlers pass *new-world* scope
+      callbacks or none at all — the old `filterByTruthyValue($expr)` bridges were stripped
+      when the preference flipped.
+    - A `ResultAwareScope` must be seeded only with results **evaluated on its base scope**.
+      A result's memoized type is its evaluation-point type, so seeding the right operand's
+      result (evaluated on the left-truthy scope) into the pre-condition adapter answered
+      narrowing-original asks with already-narrowed types (`is_bool($x) && $x` falsey lost
+      the non-bool half). Everything not seeded re-processes on the base scope (tier 4).
 
 ## 4. What we gain
 
@@ -263,9 +287,9 @@ as factual comments at their call sites, not here.
 - [ ] AssignOpHandler
 - [ ] BinaryOpHandler — `typeCallback` done (Identical/NotIdentical bridge until the equality migration); `specifyTypesCallback` missing
 - [ ] BitwiseNotHandler
-- [ ] BooleanAndHandler
+- [x] BooleanAndHandler — typeCallback composes child results evaluated on the left-truthy scope (no re-walk, no `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH`, no flattened path in the new world); truthy scope incremental via `$rightResult->getTruthyScope()` (§3.13); falsey via specifyTypesCallback with per-base-seeded adapters
 - [ ] BooleanNotHandler
-- [ ] BooleanOrHandler
+- [x] BooleanOrHandler — mirror of BooleanAndHandler (falsey scope incremental, truthy via specifyTypesCallback); `augmentBooleanOrTruthyWithConditionalHolders` priced through the adapters
 - [ ] CastHandler
 - [ ] CastStringHandler
 - [ ] ClassConstFetchHandler
@@ -485,6 +509,43 @@ as factual comments at their call sites, not here.
   Leg coverage: 89.5%+ of executable changed lines via 18 new corpus probes
   (non-nullable/null/array-dim subjects, chains, dynamic names, native asks,
   bare-statement context); the rest are defensive throws and rule-only paths.
+- 2026-06-10 (boolean leg): **`BooleanAndHandler` + `BooleanOrHandler` migrated** — the
+  single-pass showcase. The right operand is evaluated on the left-truthy/left-falsey
+  scope during processing, so the typeCallback composes the two child results directly:
+  no `processExprNode` re-walk on a throwaway storage, no
+  `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH`, no flattened-chain fast path in the new world
+  (the old ones stay for FNSR=0). Meter demo: a 6-arm `&&`/`||` chain (depth 5 > old cap
+  4) narrows every arm and constant-folds whole-chain asks under `disableOldWorld=true`.
+  specifyTypesCallback is the old math with child narrowing from the child results
+  (`specifyChildTypes`: result callback, or the old dispatcher *with the adapter scope*
+  for unmigrated children); `normalize()`/conditional-holder helpers price their
+  narrowing-original asks through `ResultAwareScope`s seeded per base scope (§3.13).
+  Found and fixed in the process:
+  - branch-scope preference flip + legacy-callback strip (§3.13 first bullet; the
+    representation drift showed up as 6 nsrt diffs: mixed-subtract, pr-5379, bug-9400,
+    bug-7156, while-loop-variables, bug-14047);
+  - per-base adapter seeding (§3.13 second bullet; `ReflectionProviderGoldenTest`
+    remembered-`is_bool()` leak);
+  - `FuncCallHandler::specifyTypesViaResults` dynamic-name fall-through invokes the
+    old-world body (`specifyTypesFromCallableCall` + default context) directly — the
+    dispatcher round-trip bounced an adapter scope back into the seeded self-result
+    forever (4.5M-frame stack in nsrt);
+  - virtual nodes built by handlers embed `toFiberScope()` scopes in the new world
+    (`BooleanAndNode`/`BooleanOrNode` right scope) so the ConstantCondition rules'
+    `getRightScope()->getType()` asks resolve through the stored right result;
+  - `ResultAwareScope` answers Yes-tracked plain variables from the holder (tier 2½) —
+    filter-derived adapters lose their context (`plainScope === null`) and variables
+    fell through to the guarded bridge; superglobals (Yes-defined, no holder) keep
+    falling through.
+  Scoreboard: corpus 194/194 (17 new probes: deep chains, const folds via parent asks,
+  inside-out narrowing, representation pins for both regressions, statement null-ctx,
+  Or-in-And falsey, unmigrated-arm fall-through, isset-holder re-derivation, dynamic-name
+  call in condition); nsrt at the known 6; CallMethods/BooleanAnd/BooleanOr/ImpossibleCheck
+  rule tests green; `make phpstan` 204 = HEAD parity; FNSR=0 spot checks byte-identical.
+  Changed-line coverage (corpus + guard-on meter merged): And 84%, Or 90%,
+  ResultAwareScope 100% — remaining gaps are defensive throws, closure-closing braces,
+  one fold return measured-missed under fibers (output proven by the meter), the
+  truthy-and-false holder re-derivation pair, and `setAlwaysOverwriteTypes` propagation.
 - **Known engine debt — `ExpressionResultStorage` memory retention**: every
   `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
   retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker

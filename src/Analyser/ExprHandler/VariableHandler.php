@@ -124,8 +124,6 @@ final class VariableHandler implements ExprHandler
 			$isAlwaysTerminating,
 			$throwPoints,
 			$impurePoints,
-			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
 			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),

@@ -532,6 +532,174 @@ class Foo
 		assertType('5', $n);
 	}
 
+	/**
+	 * Single-pass composition through a chain deeper than the old
+	 * BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4: each right operand is evaluated
+	 * on the left-truthy scope, so the chain composes linearly with no re-walk.
+	 */
+	public function deepBooleanAndChain(bool $a, bool $b, bool $c, bool $d, bool $e, bool $f): void
+	{
+		if ($a && $b && $c && $d && $e && $f) {
+			assertType('true', $a);
+			assertType('true', $f);
+			assertType('true', $a && $b && $c && $d && $e && $f);
+		}
+	}
+
+	public function deepBooleanOrChain(?int $a, ?int $b, ?int $c, ?int $d, ?int $e, ?int $f): void
+	{
+		if ($a || $b || $c || $d || $e || $f) {
+			assertType('bool', $a || $b || $c || $d || $e || $f);
+		} else {
+			assertType('0|null', $a);
+			assertType('0|null', $f);
+		}
+	}
+
+	public function booleanConstantFolding(bool $b): void
+	{
+		assertType('true', 1 && 1);
+		assertType('bool', 1 && $b);
+		assertType('bool', 0 || $b);
+		assertType('true', 1 || $b);
+		assertType('false', $b && 0);
+	}
+
+	/** the right operand sees the left-truthy/left-falsey scope */
+	public function booleanInsideOutNarrowing(?bool $a, bool $b): void
+	{
+		if ($a && $b) {
+			assertType('true', $a);
+			assertType('true', $b);
+		}
+		if ($a || $b) {
+			assertType('bool|null', $a);
+		} else {
+			assertType('false|null', $a);
+			assertType('false', $b);
+		}
+	}
+
+	/**
+	 * The truthy scope of `A && B` is composed incrementally from the right
+	 * operand's truthy scope — re-deriving the whole conjunction would union
+	 * per-arm types and drift the representation (array<mixed> vs the
+	 * expected array<mixed, mixed> from is_array()).
+	 */
+	public function booleanAndNarrowingRepresentation(mixed $m): void
+	{
+		if ($m != 0 && !is_array($m) && $m != null && !is_object($m)) {
+			assertType("mixed~(0|0.0|''|'0'|array<mixed, mixed>|object|false|null)", $m);
+		}
+	}
+
+	/**
+	 * The falsey scope of `A && B` comes from the specify callback: narrowing
+	 * originals must be the pre-condition types (per-base adapter seeding) —
+	 * the remembered is_bool() narrowing of the truthy branch must not leak.
+	 */
+	public function booleanAndFalseyOriginals(Holder $h): void
+	{
+		if (is_bool($h->untyped) && $h->untyped) {
+			assertType('true', $h->untyped);
+		} else {
+			assertType('mixed~true', $h->untyped);
+		}
+		assertType('mixed', $h->untyped);
+	}
+
+	/**
+	 * A dynamic-name call as a boolean operand: its narrowing ask must not
+	 * bounce between the adapter head-check and the FuncCall specify callback
+	 * (the dynamic-name bridge invokes the old-world body directly).
+	 *
+	 * @param callable(): bool $f
+	 */
+	public function dynamicNameCallInCondition(callable $f, ?int $i): void
+	{
+		if ($i !== null && $f()) {
+			assertType('int', $i);
+		}
+	}
+
+	public function booleanOrShortcutNarrowing(bool $b, bool $c): void
+	{
+		if (0 || $b) {
+			assertType('true', $b);
+		}
+		if ($b || 0) {
+			assertType('true', $b);
+		}
+		if (($b || $c) && 1) {
+			assertType('bool', $b);
+		}
+	}
+
+	public function booleanStatementNullContext(bool $a, bool $b): void
+	{
+		$a && $b;
+		$a || $b;
+		assertType('bool', $a);
+	}
+
+	public function booleanOrInsideAndFalsey(?int $a, ?int $b, bool $c): void
+	{
+		if (($a || $b) && $c) {
+			assertType('true', $c);
+		} else {
+			assertType('int|null', $a);
+		}
+	}
+
+	public function booleanOrUnmigratedArm(?int $a, bool $b): void
+	{
+		if (!$a || $b) {
+			assertType('int|null', $a);
+		} else {
+			assertType('int<min, -1>|int<1, max>', $a);
+		}
+	}
+
+	/** @param array<string, int> $arr */
+	public function booleanIssetHolderRederivation(array $arr): void
+	{
+		$ok = isset($arr['a']) && isset($arr['b']);
+		if ($ok) {
+			assertType('int', $arr['a']);
+			assertType('int', $arr['b']);
+		}
+	}
+
+	public function booleanOverwriteArm(string $s, bool $b): void
+	{
+		if (in_array($s, ['a', 'b'], true) && $b) {
+			assertType("'a'|'b'", $s);
+		}
+	}
+
+	/** constant folds asked through a parent boolean's specify callback */
+	public function booleanFoldsViaParentAsks(bool $b, bool $c): void
+	{
+		if (($b && 0) || $c) {
+			assertType('true', $c);
+		}
+		if (($b || 1) || $c) {
+			assertType('bool', $c);
+		}
+		if ((0 || 0) || $c) {
+			assertType('true', $c);
+		}
+	}
+
+	/** a negated exactly-true ask drives the mixed truthy-and-false context */
+	public function booleanNegatedExactContext(mixed $m, bool $b): void
+	{
+		if (!($m instanceof Holder && $b) === false) {
+			assertType(Holder::class, $m);
+			assertType('bool', $b);
+		}
+	}
+
 	private function name(): string
 	{
 		return 'x';

@@ -12,8 +12,10 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ConditionalExpressionHolderHelper;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NewWorld;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\ResultAwareScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -43,6 +45,7 @@ final class BooleanOrHandler implements ExprHandler
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
 		private ConditionalExpressionHolderHelper $conditionalExpressionHolderHelper,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
@@ -294,14 +297,45 @@ final class BooleanOrHandler implements ExprHandler
 		$leftResult = $nodeScopeResolver->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$leftFalseyScope = $leftResult->getFalseyScope();
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $leftFalseyScope, $storage, $nodeCallback, $context);
-		$rightExprType = $rightResult->getScope()->getType($expr->right);
+		$rightExprType = $rightResult->getType();
 		if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
 			$leftMergedWithRightScope = $leftResult->getTruthyScope();
 		} else {
 			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
 		}
 
-		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $leftFalseyScope), $scope, $storage, $context);
+		// the embedded right scope answers the rules' getType()/getNativeType()/
+		// narrowing asks about the right operand — in the new world those must go
+		// through the fiber so the stored right result answers them
+		$rightScopeForNode = NewWorld::isEnabled() ? $leftFalseyScope->toFiberScope() : $leftFalseyScope;
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $rightScopeForNode), $scope, $storage, $context);
+
+		// the single-pass payoff, mirrored from BooleanAndHandler: the right side
+		// was evaluated on the left-falsey scope — no re-walk, no depth cap
+		$typeCallback = static function (Expr $e, MutatingScope $s) use ($leftResult, $rightResult): Type {
+			if (!$e instanceof BooleanOr && !$e instanceof LogicalOr) {
+				throw new ShouldNotHappenException();
+			}
+
+			$leftBooleanType = $leftResult->getTypeForScope($s)->toBoolean();
+			if ($leftBooleanType->isTrue()->yes()) {
+				return new ConstantBooleanType(true);
+			}
+
+			$rightBooleanType = $rightResult->getTypeForScope($s)->toBoolean();
+			if ($rightBooleanType->isTrue()->yes()) {
+				return new ConstantBooleanType(true);
+			}
+
+			if (
+				$leftBooleanType->isFalse()->yes()
+				&& $rightBooleanType->isFalse()->yes()
+			) {
+				return new ConstantBooleanType(false);
+			}
+
+			return new BooleanType();
+		};
 
 		return new ExpressionResult(
 			$leftMergedWithRightScope,
@@ -309,9 +343,104 @@ final class BooleanOrHandler implements ExprHandler
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 			impurePoints: array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-			truthyScopeCallback: static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr->right),
+			// incremental falsey scope: the right operand was evaluated on the
+			// left-falsey scope, so its falsey scope IS the whole disjunction's —
+			// no re-derivation, no cross-arm combination (and no representational
+			// drift from re-uniting per-arm types). The truthy scope cannot be
+			// composed this way (A || B truthy needs both arms) — specify path.
+			falseyScopeCallback: static fn (): MutatingScope => $rightResult->getFalseyScope(),
+			expr: $expr,
+			typeCallback: $typeCallback,
+			specifyTypesCallback: $this->createSpecifyTypesCallback($nodeScopeResolver, $stmt, $leftResult, $rightResult, $leftFalseyScope),
 		);
+	}
+
+	/**
+	 * New-world copy of specifyTypes(): child narrowing comes from the child
+	 * ExpressionResults — the recursion is structural, so deep chains compose
+	 * linearly and the flattened fast path is not needed. The normalize/
+	 * conditional-holder helper code resolves narrowing originals with
+	 * $scope->getType() — those asks are priced through adapters seeded with
+	 * the operand results (fresh storage per ask, NEW_WORLD.md §3.11).
+	 *
+	 * @return callable(Expr, MutatingScope, TypeSpecifierContext): SpecifiedTypes
+	 */
+	private function createSpecifyTypesCallback(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, ExpressionResult $leftResult, ExpressionResult $rightResult, MutatingScope $leftFalseyScope): callable
+	{
+		return function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $leftResult, $rightResult, $leftFalseyScope): SpecifiedTypes {
+			if (!$e instanceof BooleanOr && !$e instanceof LogicalOr) {
+				throw new ShouldNotHappenException();
+			}
+
+			if ($ctx->null()) {
+				return (new SpecifiedTypes([], []))->setRootExpr($e);
+			}
+
+			// each adapter is seeded only with the result evaluated on its base
+			// scope — a result's memoized type is its evaluation-point type, so
+			// seeding it under another base would answer asks about narrowing
+			// originals with already-narrowed types. Other asks re-process on the
+			// base scope (ResultAwareScope tier 4)
+			$adapterStorage = new ExpressionResultStorage();
+			$scopeAdapter = $s->toResultAwareScope([$s->getNodeKey($e->left) => $leftResult], $nodeScopeResolver, $stmt, $adapterStorage);
+			$rightScopeAdapter = $leftFalseyScope->toResultAwareScope([$s->getNodeKey($e->right) => $rightResult], $nodeScopeResolver, $stmt, $adapterStorage);
+
+			$leftTypes = $this->specifyChildTypes($leftResult, $e->left, $s, $scopeAdapter, $ctx)->setRootExpr($e);
+			$rightTypes = $this->specifyChildTypes($rightResult, $e->right, $leftFalseyScope, $rightScopeAdapter, $ctx)->setRootExpr($e);
+
+			if ($ctx->true()) {
+				if (
+					$leftResult->getTypeForScope($s)->toBoolean()->isFalse()->yes()
+				) {
+					$types = $rightTypes->normalize($rightScopeAdapter);
+				} elseif (
+					$leftResult->getTypeForScope($s)->toBoolean()->isTrue()->yes()
+					|| $rightResult->getTypeForScope($s)->toBoolean()->isFalse()->yes()
+				) {
+					$types = $leftTypes->normalize($scopeAdapter);
+				} else {
+					$leftNormalized = $leftTypes->normalize($scopeAdapter);
+					$rightNormalized = $rightTypes->normalize($rightScopeAdapter);
+					$types = $leftNormalized->intersectWith($rightNormalized);
+					$types = $this->augmentBooleanOrTruthyWithConditionalHolders($this->typeSpecifier, $scopeAdapter, $rightScopeAdapter, $e, $types);
+					$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scopeAdapter, $rightScopeAdapter, $leftNormalized, $rightNormalized, $e->left, $e->right, true, $types);
+				}
+			} else {
+				$types = $leftTypes->unionWith($rightTypes);
+			}
+
+			if ($ctx->true()) {
+				$result = new SpecifiedTypes(
+					$types->getSureTypes(),
+					$types->getSureNotTypes(),
+				);
+				if ($types->shouldOverwrite()) {
+					$result = $result->setAlwaysOverwriteTypes();
+				}
+				return $result->setNewConditionalExpressionHolders($this->conditionalExpressionHolderHelper->mergeConditionalHolders([
+					$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scopeAdapter, $leftTypes, $rightTypes, false, false, $rightScopeAdapter, $e->right),
+					$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scopeAdapter, $rightTypes, $leftTypes, false, false, $scopeAdapter, $e->left),
+					$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scopeAdapter, $leftTypes, $rightTypes, true, false, $rightScopeAdapter, $e->right),
+					$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scopeAdapter, $rightTypes, $leftTypes, true, false, $scopeAdapter, $e->left),
+				]))->setRootExpr($e);
+			}
+
+			return $types;
+		};
+	}
+
+	/**
+	 * A child's narrowing from its ExpressionResult; not-yet-migrated children
+	 * take the old-world dispatcher with the adapter scope, keeping their inner
+	 * type lookups unguarded.
+	 */
+	private function specifyChildTypes(ExpressionResult $result, Expr $child, MutatingScope $scope, ResultAwareScope $adapterScope, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if ($result->hasSpecifiedTypesCallback()) {
+			return $result->getSpecifiedTypes($scope, $context);
+		}
+
+		return $this->typeSpecifier->specifyTypesInCondition($adapterScope, $child, $context);
 	}
 
 }

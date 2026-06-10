@@ -200,6 +200,16 @@ final class ExpressionResult
 			return $this->truthyScope;
 		}
 
+		// a handler-provided scope callback is authoritative: handlers pass one
+		// when they can build the branch scope better than re-deriving the whole
+		// condition from scratch — e.g. BooleanAnd composes the right operand's
+		// truthy scope incrementally (the left narrowing is already part of it).
+		// Migrated handlers must pass new-world callbacks here or none at all.
+		if ($this->truthyScopeCallback !== null) {
+			$callback = $this->truthyScopeCallback;
+			return $this->truthyScope = $callback();
+		}
+
 		if ($this->specifyTypesCallback !== null && $this->expr !== null) {
 			return $this->truthyScope = $this->scope->applySpecifiedTypes(
 				$this->getSpecifiedTypes($this->scope, TypeSpecifierContext::createTruthy()),
@@ -207,19 +217,18 @@ final class ExpressionResult
 			);
 		}
 
-		if ($this->truthyScopeCallback === null) {
-			return $this->scope;
-		}
-
-		$callback = $this->truthyScopeCallback;
-		$this->truthyScope = $callback();
-		return $this->truthyScope;
+		return $this->scope;
 	}
 
 	public function getFalseyScope(): MutatingScope
 	{
 		if ($this->falseyScope !== null) {
 			return $this->falseyScope;
+		}
+
+		if ($this->falseyScopeCallback !== null) {
+			$callback = $this->falseyScopeCallback;
+			return $this->falseyScope = $callback();
 		}
 
 		if ($this->specifyTypesCallback !== null && $this->expr !== null) {
@@ -229,13 +238,7 @@ final class ExpressionResult
 			);
 		}
 
-		if ($this->falseyScopeCallback === null) {
-			return $this->scope;
-		}
-
-		$callback = $this->falseyScopeCallback;
-		$this->falseyScope = $callback();
-		return $this->falseyScope;
+		return $this->scope;
 	}
 
 	/**

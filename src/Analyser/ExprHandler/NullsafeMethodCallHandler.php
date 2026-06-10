@@ -189,8 +189,6 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: $plainResult->getThrowPoints(),
 			impurePoints: $plainResult->getImpurePoints(),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $this->defaultNarrowingHelper->createNullsafeSpecifyCallback($expr, $varResult, $resultNarrowingAllowed),

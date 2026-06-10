@@ -613,8 +613,6 @@ final class FuncCallHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
 			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $nameResult, $scopeAfterArgs): SpecifiedTypes {
@@ -828,8 +826,16 @@ final class FuncCallHandler implements ExprHandler
 	): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Name) {
-			// dynamic-name calls: guarded legacy bridge for now (PHPSTAN_FNSR=0)
-			return $this->typeSpecifier->specifyTypesInCondition($scope, $expr, $context);
+			// dynamic-name calls: the old-world body invoked directly for now
+			// (guarded except via an adapter) — re-dispatching through
+			// specifyTypesInCondition would bounce an incoming adapter scope
+			// straight back to this callback (seeded self-result) forever
+			$specifiedTypes = $this->specifyTypesFromCallableCall($this->typeSpecifier, $context, $expr, $scope);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
+			}
+
+			return $this->typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		}
 
 		$adapterBase = $callSiteScope;

@@ -11,6 +11,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
+use function is_string;
 
 /**
  * New-world adapter for code that receives a Scope and calls getType() on it
@@ -215,6 +216,20 @@ final class ResultAwareScope extends MutatingScope
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
 		) {
+			return $this->expressionTypes[$this->getNodeKey($node)]->getType();
+		}
+
+		if (
+			$node instanceof Expr\Variable
+			&& is_string($node->name)
+			&& array_key_exists($this->getNodeKey($node), $this->expressionTypes)
+			&& $this->hasExpressionType($node)->yes()
+		) {
+			// a Yes-tracked variable's type is the holder itself — VariableHandler
+			// only adds undefined-variable handling, excluded by the Yes certainty.
+			// (Superglobals are Yes-defined without a holder — they fall through.)
+			// Keeps variable asks unguarded on filter-derived adapters that lost
+			// the adapter context (plainScope === null)
 			return $this->expressionTypes[$this->getNodeKey($node)]->getType();
 		}
 

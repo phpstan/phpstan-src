@@ -91,8 +91,6 @@ final class PropertyFetchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $this->createTypeCallback($varResult),
 			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),

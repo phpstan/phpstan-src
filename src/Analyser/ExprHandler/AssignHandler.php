@@ -438,7 +438,7 @@ final class AssignHandler implements ExprHandler
 	{
 		if ($expr instanceof AssignRef && $assignedExprResult !== null) {
 			// the old world treats by-reference assignments with default narrowing
-			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $assignedExprResult->getTypeForScope($scope), $context);
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 		}
 
 		if (
@@ -466,7 +466,7 @@ final class AssignHandler implements ExprHandler
 		}
 
 		if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr->var, $assignedExprResult->getTypeForScope($scope), $context)->setRootExpr($expr);
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr->var, $context)->setRootExpr($expr);
 		}
 
 		// guarded legacy bridge

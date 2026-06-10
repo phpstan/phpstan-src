@@ -122,6 +122,23 @@ deliverable at every point along the way.
      holder → known-results map → inline re-process (`processExprNode` on a duplicated
      storage with `NoopNodeCallback` — handles the synthetic exprs extensions love to build)
      → guarded bridge.
+10. **Single-pass analysis kills nullsafe short-circuiting.** The old world walks every
+    eligible expression recursively (`NullsafeShortCircuitingHelper`,
+    `NullsafeOperatorHelper::getNullsafeShortcircuitedExpr`) to find a `?->` somewhere in
+    the chain that influences the result. In the new world expressions process inside-out,
+    so only `NullsafePropertyFetchHandler` and `NullsafeMethodCallHandler` ever see the
+    `?->` — they emit the plain-chain variant alongside their own key **once**, and every
+    parent composes their results. `DefaultNarrowingHelper::specifyDefaultTypes()` therefore
+    needs no expression type at all, and `specifyTypesCallback`s never invoke the
+    `typeCallback` — narrowing callbacks are cheap, type-free closures.
+11. **Result callbacks must not capture the `ExpressionResultStorage`.** Stored results
+    capturing the storage they live in are reference cycles only the cyclic GC can free;
+    one call anywhere in an expression makes the whole ancestor result graph cyclic.
+    Measured: the cycles were the *entire* 4.3× `NodeScopeResolverTest` slowdown (92s → 25s
+    when broken; the engine work itself was at old-world parity all along, the time went to
+    GC scans over live cyclic webs). Late asks build their adapters on a **fresh storage**
+    instead — the synthetics-in-flight cycle guard threads through it, only known-result
+    seeding is lost on those rare paths.
 
 ## 4. What we gain
 

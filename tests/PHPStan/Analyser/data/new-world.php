@@ -253,6 +253,31 @@ class Foo
 	}
 
 	/**
+	 * Nullsafe short-circuiting: a truthy `$bar?->...` implies the subject is
+	 * non-null and the plain-chain variant is narrowed too. In the new world
+	 * this knowledge lives in the nullsafe handlers alone (they process first,
+	 * parents compose their results) — no parent re-derives it from types.
+	 */
+	public function nullsafeShortCircuiting(?Holder $holder): void
+	{
+		if ($holder?->count) {
+			assertType('NewWorldTypeInference\Holder', $holder);
+			assertType('int<min, -1>|int<1, max>', $holder->count);
+		}
+
+		if ($holder?->name !== null) {
+			assertType('NewWorldTypeInference\Holder', $holder);
+			assertType('string', $holder->name);
+		}
+
+		// nullsafe embedded under a migrated handler's narrowing: the FuncCall's
+		// conditional return narrows its argument, the apply side narrows $holder
+		if (strlen((string) $holder?->name) > 0) {
+			assertType('non-empty-string', (string) $holder?->name);
+		}
+	}
+
+	/**
 	 * @param positive-int $p
 	 */
 	public function nativeTypes(int $i, string $s, $p): void
@@ -456,6 +481,15 @@ class Foo
 
 	/** @var mixed */
 	private $mixedProp;
+
+}
+
+class Holder
+{
+
+	public int $count = 0;
+
+	public string $name = '';
 
 }
 

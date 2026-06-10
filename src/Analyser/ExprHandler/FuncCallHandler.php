@@ -593,12 +593,18 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
-		$typeCallback = function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt, $storage, $nameResult, $scopeAfterArgs): Type {
+		// the result lives in $storage — capturing it would make every stored
+		// FuncCall result a reference cycle only the cyclic GC can free, and one
+		// call anywhere in an expression makes the whole ancestor graph cyclic
+		// (measured as the entire 4x analysis slowdown). Late asks build their
+		// adapter on a fresh storage instead: the synthetics-in-flight cycle
+		// guard threads through it, only known-result seeding is lost
+		$typeCallback = function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt, $nameResult, $scopeAfterArgs): Type {
 			if (!$e instanceof FuncCall) {
 				throw new ShouldNotHappenException();
 			}
 
-			return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage, $scopeAfterArgs);
+			return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, new ExpressionResultStorage(), $scopeAfterArgs);
 		};
 
 		return new ExpressionResult(
@@ -611,12 +617,12 @@ final class FuncCallHandler implements ExprHandler
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
-			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $storage, $nameResult, $typeCallback, $scopeAfterArgs): SpecifiedTypes {
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $nameResult, $scopeAfterArgs): SpecifiedTypes {
 				if (!$e instanceof FuncCall) {
 					throw new ShouldNotHappenException();
 				}
 
-				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, static fn (): Type => $typeCallback($e, $s), $nodeScopeResolver, $stmt, $storage, $scopeAfterArgs);
+				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, $nodeScopeResolver, $stmt, new ExpressionResultStorage(), $scopeAfterArgs);
 			},
 			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
@@ -657,7 +663,7 @@ final class FuncCallHandler implements ExprHandler
 					throw new ShouldNotHappenException();
 				}
 
-				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, fn (): Type => $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage, $scope), $nodeScopeResolver, $stmt, $storage, $scope);
+				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, $nodeScopeResolver, $stmt, $storage, $scope);
 			},
 		);
 
@@ -809,14 +815,12 @@ final class FuncCallHandler implements ExprHandler
 	 * narrowing still delegate to TypeSpecifier helpers (with the adapter) —
 	 * to be ported before the old world is deleted.
 	 *
-	 * @param callable(): Type $ownTypeCallback
 	 */
 	private function specifyTypesViaResults(
 		FuncCall $expr,
 		MutatingScope $scope,
 		TypeSpecifierContext $context,
 		?ExpressionResult $nameResult,
-		callable $ownTypeCallback,
 		NodeScopeResolver $nodeScopeResolver,
 		Stmt $stmt,
 		ExpressionResultStorage $storage,
@@ -887,7 +891,7 @@ final class FuncCallHandler implements ExprHandler
 				return (new SpecifiedTypes([], []))->setRootExpr($expr);
 			}
 
-			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $ownTypeCallback(), $context);
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);

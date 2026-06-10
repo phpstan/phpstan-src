@@ -55,7 +55,7 @@ final class ScalarHandler implements ExprHandler
 			impurePoints: [],
 			expr: $expr,
 			typeCallback: $typeCallback,
-			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $typeCallback($e, $s), $ctx),
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}

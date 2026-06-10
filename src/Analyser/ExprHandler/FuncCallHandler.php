@@ -293,6 +293,9 @@ final class FuncCallHandler implements ExprHandler
 		$scopeBeforeArgs = $scope;
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallbackForArgs, $context);
 		$scope = $argsResult->getScope();
+		// extensions price arguments at the call point — before the call's own
+		// virtual mutations (array_shift's shifted arg, invalidations) hit the scope
+		$scopeAfterArgs = $scope;
 		$hasYield = $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
@@ -337,7 +340,7 @@ final class FuncCallHandler implements ExprHandler
 
 		if ($functionReflection !== null) {
 			$normalizedExprForThrowPoint = $normalizedExpr;
-			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context, fn (): Type => $this->resolveTypeViaResults($normalizedExprForThrowPoint, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage), $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage));
+			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context, fn (): Type => $this->resolveTypeViaResults($normalizedExprForThrowPoint, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage, $scopeAfterArgs), $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage));
 			if ($functionThrowPoint !== null) {
 				$throwPoints[] = $functionThrowPoint;
 			}
@@ -590,12 +593,12 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
-		$typeCallback = function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt, $storage, $nameResult): Type {
+		$typeCallback = function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt, $storage, $nameResult, $scopeAfterArgs): Type {
 			if (!$e instanceof FuncCall) {
 				throw new ShouldNotHappenException();
 			}
 
-			return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage);
+			return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage, $scopeAfterArgs);
 		};
 
 		return new ExpressionResult(
@@ -608,12 +611,12 @@ final class FuncCallHandler implements ExprHandler
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
-			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $storage, $nameResult, $typeCallback): SpecifiedTypes {
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $storage, $nameResult, $typeCallback, $scopeAfterArgs): SpecifiedTypes {
 				if (!$e instanceof FuncCall) {
 					throw new ShouldNotHappenException();
 				}
 
-				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, static fn (): Type => $typeCallback($e, $s), $nodeScopeResolver, $stmt, $storage);
+				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, static fn (): Type => $typeCallback($e, $s), $nodeScopeResolver, $stmt, $storage, $scopeAfterArgs);
 			},
 			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
@@ -642,19 +645,19 @@ final class FuncCallHandler implements ExprHandler
 			throwPoints: [],
 			impurePoints: [],
 			expr: $expr,
-			typeCallback: function (Expr $e, MutatingScope $s) use ($nameResult, $nodeScopeResolver, $stmt, $storage): Type {
+			typeCallback: function (Expr $e, MutatingScope $s) use ($nameResult, $nodeScopeResolver, $stmt, $storage, $scope): Type {
 				if (!$e instanceof FuncCall) {
 					throw new ShouldNotHappenException();
 				}
 
-				return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage);
+				return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage, $scope);
 			},
-			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nameResult, $nodeScopeResolver, $stmt, $storage): SpecifiedTypes {
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nameResult, $nodeScopeResolver, $stmt, $storage, $scope): SpecifiedTypes {
 				if (!$e instanceof FuncCall) {
 					throw new ShouldNotHappenException();
 				}
 
-				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, fn (): Type => $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage), $nodeScopeResolver, $stmt, $storage);
+				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, fn (): Type => $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage, $scope), $nodeScopeResolver, $stmt, $storage, $scope);
 			},
 		);
 
@@ -678,9 +681,18 @@ final class FuncCallHandler implements ExprHandler
 		NodeScopeResolver $nodeScopeResolver,
 		Stmt $stmt,
 		ExpressionResultStorage $storage,
+		MutatingScope $callSiteScope,
 	): Type
 	{
-		$adapterScope = $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage);
+		$adapterBase = $callSiteScope;
+		if ($scope->nativeTypesPromoted) {
+			$promotedCallSiteScope = $callSiteScope->doNotTreatPhpDocTypesAsCertain();
+			if (!$promotedCallSiteScope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
+			$adapterBase = $promotedCallSiteScope;
+		}
+		$adapterScope = $this->createAdapterScope($expr, $adapterBase, $nameResult, $nodeScopeResolver, $stmt, $storage);
 
 		if ($expr->name instanceof Expr) {
 			if ($nameResult === null) {
@@ -808,6 +820,7 @@ final class FuncCallHandler implements ExprHandler
 		NodeScopeResolver $nodeScopeResolver,
 		Stmt $stmt,
 		ExpressionResultStorage $storage,
+		MutatingScope $callSiteScope,
 	): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Name) {
@@ -815,7 +828,7 @@ final class FuncCallHandler implements ExprHandler
 			return $this->typeSpecifier->specifyTypesInCondition($scope, $expr, $context);
 		}
 
-		$adapterScope = $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage);
+		$adapterScope = $this->createAdapterScope($expr, $callSiteScope, $nameResult, $nodeScopeResolver, $stmt, $storage);
 
 		if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			// lazy create parametersAcceptor, as creation can be expensive

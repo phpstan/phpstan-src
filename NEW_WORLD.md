@@ -286,7 +286,7 @@ as factual comments at their call sites, not here.
 - [x] AssignHandler — Ternary/Match conditional-expression holders stay old-world until those handlers migrate
 - [ ] AssignOpHandler
 - [ ] BinaryOpHandler — `typeCallback` done (Identical/NotIdentical bridge until the equality migration); `specifyTypesCallback` missing
-- [ ] BitwiseNotHandler
+- [x] BitwiseNotHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
 - [x] BooleanAndHandler — typeCallback composes child results evaluated on the left-truthy scope (no re-walk, no `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH`, no flattened path in the new world); truthy scope incremental via `$rightResult->getTruthyScope()` (§3.13); falsey via specifyTypesCallback with per-base-seeded adapters
 - [x] BooleanNotHandler — typeCallback folds via the inner result; incremental branch scopes (truthy(!X) = X's falsey scope, §3.13); specifyTypesCallback negates the context onto the inner result (unseeded adapter for unmigrated inner)
 - [x] BooleanOrHandler — mirror of BooleanAndHandler (falsey scope incremental, truthy via specifyTypesCallback); `augmentBooleanOrTruthyWithConditionalHolders` priced through the adapters
@@ -328,7 +328,7 @@ as factual comments at their call sites, not here.
 - [x] TernaryHandler — typeCallback composes the branch results (each evaluated on the matching cond-narrowed scope; short ternary asks the cond on its truthy scope via getTypeOnScope); specifyTypesCallback rewrites into the old `(cond && if) || (!cond && else)` synthetic, processed through the migrated boolean handlers (adapter tier 4); branch scopes via the specify path; unlocked AssignHandler's Ternary conditional-holder block (cond result narrowing + getTruthyScope/getFalseyScope + adapter-priced branch types + entry resolver)
 - [x] ThrowHandler — typeCallback is the NonAcceptingNeverType constant; throw point takes the inner result's type; default narrowing callback
 - [x] UnaryMinusHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
-- [ ] UnaryPlusHandler
+- [x] UnaryPlusHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
 - [x] VariableHandler — dynamic variable names bridge
 - [ ] YieldFromHandler
 - [ ] YieldHandler

@@ -898,6 +898,19 @@ class Foo
 		assertType('bool', (bool) -$i);
 	}
 
+	public function unaryPlus(int $i): void
+	{
+		assertType('5', +5);
+		assertType('int', +$i);
+		assertType('3', +'3');
+	}
+
+	public function bitwiseNot(int $i): void
+	{
+		assertType('-6', ~5);
+		assertType('int', ~$i);
+	}
+
 	private function name(): string
 	{
 		return 'x';

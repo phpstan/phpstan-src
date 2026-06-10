@@ -998,6 +998,25 @@ class Foo
 		}
 	}
 
+	/** @return \Generator<int, string, bool, float> */
+	public function yields(): \Generator
+	{
+		$sent = yield 'value';
+		assertType('bool', $sent);
+		$ret = yield from $this->innerGen();
+		assertType('int', $ret);
+
+		return 1.5;
+	}
+
+	/** @return \Generator<int, string, bool, int> */
+	private function innerGen(): \Generator
+	{
+		yield 'x';
+
+		return 5;
+	}
+
 	/** @param class-string<Holder> $cls */
 	public function instantiations(string $cls): void
 	{

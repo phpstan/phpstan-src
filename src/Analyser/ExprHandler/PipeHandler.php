@@ -32,6 +32,10 @@ use function array_merge;
 final class PipeHandler implements ExprHandler
 {
 
+	public function __construct(private TypeSpecifier $typeSpecifier)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Pipe;
@@ -90,6 +94,18 @@ final class PipeHandler implements ExprHandler
 			isAlwaysTerminating: $callResult->isAlwaysTerminating(),
 			throwPoints: $callResult->getThrowPoints(),
 			impurePoints: $callResult->getImpurePoints(),
+			expr: $expr,
+			// the pipe IS the rewritten call — full delegation to its result
+			typeCallback: static fn (Expr $e, MutatingScope $s): Type => $callResult->getTypeForScope($s),
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($callResult, $callExpr, $nodeScopeResolver, $stmt): SpecifiedTypes {
+				if ($callResult->hasSpecifiedTypesCallback()) {
+					return $callResult->getSpecifiedTypes($s, $ctx)->setRootExpr($e);
+				}
+
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->typeSpecifier->specifyTypesInCondition($adapterScope, $callExpr, $ctx)->setRootExpr($e);
+			},
 		);
 	}
 

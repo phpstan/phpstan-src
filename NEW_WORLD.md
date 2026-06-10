@@ -315,7 +315,7 @@ as factual comments at their call sites, not here.
 - [x] NewHandler — typeCallback via exactInstantiation on an adapter seeded with per-arg companions (constructor template inference; anonymous classes via reflection; dynamic class exprs); ctor selection pre-args priced through fresh-storage adapters (live-storage duplicate() is O(file) — the +38MB lesson); specifyTypesCallback = old body with unseeded adapter
 - [x] NullsafeMethodCallHandler — shares the §3.10 callback; call part reused via MethodCallHandler::processCallWithVarResult; call type bridges until MethodCallHandler migrates; impure calls gate result narrowing
 - [x] NullsafePropertyFetchHandler — emits the plain-chain dual key and the subject-not-null entry once, per §3.10; dynamic names bridge
-- [ ] PipeHandler
+- [x] PipeHandler — full delegation to the rewritten call's result (type + narrowing); the de-guarded FuncCall invokable-name ask rides along
 - [x] PostDecHandler
 - [x] PostIncHandler
 - [x] PreDecHandler
@@ -330,8 +330,8 @@ as factual comments at their call sites, not here.
 - [x] UnaryMinusHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
 - [x] UnaryPlusHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
 - [x] VariableHandler — dynamic variable names bridge
-- [ ] YieldFromHandler
-- [ ] YieldHandler
+- [x] YieldFromHandler — typeCallback extracts TReturn from the inner result; default narrowing
+- [x] YieldHandler — typeCallback reads the enclosing generator's TSend (scope-context only); default narrowing
 
 ### Virtual node handlers
 

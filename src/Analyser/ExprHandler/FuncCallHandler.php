@@ -318,7 +318,9 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($normalizedExpr->name instanceof Expr) {
-			$nameType = $scope->getType($normalizedExpr->name);
+			$nameType = $nameResult !== null && $normalizedExpr->name === $expr->name
+				? $nameResult->getType()
+				: $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage())->getType($normalizedExpr->name);
 			if (
 				$nameType->isObject()->yes()
 				&& $nameType->isCallable()->yes()

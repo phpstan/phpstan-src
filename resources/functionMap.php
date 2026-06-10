@@ -8696,7 +8696,7 @@ return [
 'Redis::lSet' => ['__benevolent<Redis|bool>', 'key'=>'string', 'index'=>'int', 'value'=>'mixed'],
 'Redis::lSize' => ['', 'key'=>'string'],
 'Redis::ltrim' => ['__benevolent<Redis|bool>', 'key'=>'string', 'start'=>'int', 'end'=>'int'],
-'Redis::mget' => ['__benevolent<Redis|array<string, mixed>>', 'keys'=>'string[]'],
+'Redis::mget' => ['__benevolent<Redis|array<string, mixed>|false>', 'keys'=>'string[]'],
 'Redis::migrate' => ['__benevolent<Redis|bool>', 'host'=>'string', 'port'=>'int', 'key'=>'string|string[]', 'dstdb'=>'int', 'timeout'=>'int', 'copy='=>'bool', 'replace='=>'bool', 'credentials='=>'mixed'],
 'Redis::move' => ['__benevolent<Redis|bool>', 'key'=>'string', 'index'=>'int'],
 'Redis::mset' => ['__benevolent<Redis|bool>', 'key_values'=>'array<string, mixed>'],

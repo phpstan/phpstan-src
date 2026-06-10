@@ -889,6 +889,15 @@ class Foo
 		}
 	}
 
+	public function unaryMinus(int $i, float $f): void
+	{
+		assertType('-5', -5);
+		assertType('int', -$i);
+		assertType('float', -$f);
+		assertType('7', -(-7));
+		assertType('bool', (bool) -$i);
+	}
+
 	private function name(): string
 	{
 		return 'x';

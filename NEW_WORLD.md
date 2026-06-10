@@ -327,7 +327,7 @@ as factual comments at their call sites, not here.
 - [ ] StaticPropertyFetchHandler
 - [x] TernaryHandler — typeCallback composes the branch results (each evaluated on the matching cond-narrowed scope; short ternary asks the cond on its truthy scope via getTypeOnScope); specifyTypesCallback rewrites into the old `(cond && if) || (!cond && else)` synthetic, processed through the migrated boolean handlers (adapter tier 4); branch scopes via the specify path; unlocked AssignHandler's Ternary conditional-holder block (cond result narrowing + getTruthyScope/getFalseyScope + adapter-priced branch types + entry resolver)
 - [x] ThrowHandler — typeCallback is the NonAcceptingNeverType constant; throw point takes the inner result's type; default narrowing callback
-- [ ] UnaryMinusHandler
+- [x] UnaryMinusHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
 - [ ] UnaryPlusHandler
 - [x] VariableHandler — dynamic variable names bridge
 - [ ] YieldFromHandler

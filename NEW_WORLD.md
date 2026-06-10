@@ -619,6 +619,36 @@ as factual comments at their call sites, not here.
   parity (3 fresh findings fixed: redundant null check, unused truthy helper variant,
   Scope-vs-MutatingScope on the end-node adapter); DefinedVariableRuleTest
   testDynamicAccess failure confirmed pre-existing at HEAD.
+- 2026-06-11 (handler batch): **21 more handlers migrated**, one commit each:
+  ConstFetch, UnaryMinus/UnaryPlus/BitwiseNot (§3.12), Print/Clone/Exit/Eval/Include
+  (constants/delegation), ErrorSuppress (full delegation), CastString/Cast (§3.12 +
+  comparison synthetics via adapters), ClassConstFetch, InterpolatedString (per-part
+  results), Instanceof, **BinaryOp** (the equality milestone: old body direct with
+  unseeded adapter; Type-taking RicherScopeGetTypeHelper variants kill the Identical
+  type bridge; operand companions; apply originals gain dim-fetch + TypeExpr + scalar
+  tiers; FiberScope::getKeepVoidType via the attributed-clone synthetic), ArrayDimFetch,
+  Isset/Empty (issetCheck on adapters; NonNullabilityHelper askScopeFactory),
+  **Coalesce** (isset synthetic through the migrated IssetHandler; the §3.13
+  evaluation-base rule re-confirmed the hard way — never seed results evaluated on
+  ensured scopes), StaticPropertyFetch, the **first-class callable quartet** (typed in
+  the NSR fast-path), **MethodCall/StaticCall** (resolveViaResults with self-seeded
+  adapters + per-arg companions; the old specify bodies direct; MethodThrowPointHelper
+  takes the lazy return-type callback — the implicit-throws/never bridges are gone),
+  **New** (exactInstantiation on a companion-seeded adapter), Yield/YieldFrom, Pipe
+  (full delegation to the rewritten call).
+  Cross-cutting: `processArgs` carries closure/arrow context wrappers as
+  companionResults — a passed closure's type resolves on its context scope, fixing the
+  method/static flavor of the passed-closure problem (task #18's FuncCall flavor and its
+  6 nsrt knowns remain). **Memory lesson (§3.11 extended): adapters in hot paths must
+  use fresh storages — synthetic processing duplicates the adapter's storage and
+  duplicating the live per-file storage is O(file)** (the New leg measured +38 MB peak
+  on a 30-file directory and OOM'd the 599M workers; with fresh storages the batch is
+  memory-neutral: 162.5 MB peak on src/Rules/Comparison before and after).
+  Scoreboard held at every commit: corpus grew 194 → 335 assertions; nsrt at the known
+  6; `make phpstan` 204 = parity; FNSR=0 spot-identical.
+  Remaining handlers: AssignOp (before-scope machinery, AssignOp-Coalesce), Match
+  (per-arm Identical synthetics, enum fast-path — unlocks the AssignHandler Match
+  holder block), Closure + ArrowFunction (the task #18 design session).
 - **Known engine debt — `ExpressionResultStorage` memory retention**: every
   `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
   retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker

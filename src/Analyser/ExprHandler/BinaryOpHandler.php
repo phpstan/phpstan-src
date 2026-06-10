@@ -66,6 +66,7 @@ final class BinaryOpHandler implements ExprHandler
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExprPrinter $exprPrinter,
 		private EqualityTypeSpecifyingHelper $equalityTypeSpecifyingHelper,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
@@ -115,10 +116,31 @@ final class BinaryOpHandler implements ExprHandler
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
+			// the old specifyTypes() body stays the single source for the ~1300
+			// lines of equality/comparison narrowing — invoked directly (the
+			// dispatcher round-trip would bounce off the head-check back into
+			// this callback) with an unseeded adapter: operand and special-case
+			// asks re-evaluate on the ask scope (tier 4), matching the old
+			// resolveType-on-ask-scope semantics; inner synthetics
+			// (BooleanNot(Identical), swapped comparisons) route through the
+			// migrated handlers. The 3.0 cleanup absorbs the body here.
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$e instanceof BinaryOp) {
+					throw new ShouldNotHappenException();
+				}
+
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->specifyTypes($this->typeSpecifier, $adapterScope, $e, $ctx);
+			},
+			// applySpecifiedTypes resolves narrowing originals for the operands
+			// (e.g. the count() call in `count($x) > 0`) from here
+			companionResults: [
+				$scope->getNodeKey($expr->left) => $leftResult,
+				$scope->getNodeKey($expr->right) => $rightResult,
+			],
 		);
 	}
 
@@ -183,10 +205,12 @@ final class BinaryOpHandler implements ExprHandler
 			return new BooleanType();
 		}
 
-		if ($expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical) {
-			// RicherScopeGetTypeHelper resolves operands through the scope —
-			// guarded legacy bridge until the equality migration (PHPSTAN_FNSR=0)
-			return $scope->getType($expr);
+		if ($expr instanceof BinaryOp\Identical) {
+			return $this->richerScopeGetTypeHelper->getIdenticalResultFromTypes($scope, $expr, $getType($expr->left), $getType($expr->right))->type;
+		}
+
+		if ($expr instanceof BinaryOp\NotIdentical) {
+			return $this->richerScopeGetTypeHelper->getNotIdenticalResultFromTypes($scope, $expr, $getType($expr->left), $getType($expr->right))->type;
 		}
 
 		if ($expr instanceof BinaryOp\LogicalXor) {

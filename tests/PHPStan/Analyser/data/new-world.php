@@ -958,6 +958,59 @@ class Foo
 		}
 	}
 
+	public function equalityNarrowing(mixed $m, ?int $i, ?Holder $h, int $n): void
+	{
+		if ($i === null) {
+			assertType('null', $i);
+		} else {
+			assertType('int', $i);
+		}
+		if ($h !== null) {
+			assertType(Holder::class, $h);
+		}
+		if ($m === 'str') {
+			assertType("'str'", $m);
+		}
+		if ($i == null) {
+			assertType('0|null', $i);
+		} else {
+			assertType('int<min, -1>|int<1, max>', $i);
+		}
+		if ($n === 5 || $n === 6) {
+			assertType('5|6', $n);
+		}
+		assertType('bool', $i === null);
+		assertType('true', 5 === 5);
+		assertType('false', 5 !== 5);
+	}
+
+	public function comparisonNarrowing(int $n, ?int $i): void
+	{
+		if ($n > 5) {
+			assertType('int<6, max>', $n);
+		}
+		if ($n <= 0) {
+			assertType('int<min, 0>', $n);
+		}
+		if ($i !== null && $i >= 10) {
+			assertType('int<10, max>', $i);
+		}
+	}
+
+	/** @param list<string> $items */
+	public function countAndStrlenPatterns(array $items, int $idx, string $s): void
+	{
+		if (count($items) > 0) {
+			assertType('non-empty-list<string>', $items);
+		}
+		if ($idx >= 0 && $idx < count($items)) {
+			assertType('string', $items[$idx]);
+		}
+		if (strlen($s) > 0) {
+			assertType('non-empty-string', $s);
+		}
+	}
+
 	public function instanceofChecks(mixed $m, Holder $h, object $o): void
 	{
 		assertType('bool', $m instanceof Holder);

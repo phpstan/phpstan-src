@@ -285,7 +285,7 @@ as factual comments at their call sites, not here.
 - [ ] ArrowFunctionHandler
 - [x] AssignHandler — Ternary/Match conditional-expression holders stay old-world until those handlers migrate
 - [ ] AssignOpHandler
-- [ ] BinaryOpHandler — `typeCallback` done (Identical/NotIdentical bridge until the equality migration); `specifyTypesCallback` missing
+- [x] BinaryOpHandler — typeCallback complete (Identical/NotIdentical via the Type-taking RicherScopeGetTypeHelper variants); specifyTypesCallback invokes the old ~1300-line equality/comparison body directly with an unseeded adapter (single source — the dispatcher round-trip would bounce; the 3.0 cleanup absorbs the body); operand companions for apply originals; the apply path derives synthetic dim-fetch originals from resolvable var+dim; FiberScope::getKeepVoidType via the attributed-clone synthetic
 - [x] BitwiseNotHandler — §3.12 results-first InitializerExprTypeResolver callback; default narrowing
 - [x] BooleanAndHandler — typeCallback composes child results evaluated on the left-truthy scope (no re-walk, no `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH`, no flattened path in the new world); truthy scope incremental via `$rightResult->getTruthyScope()` (§3.13); falsey via specifyTypesCallback with per-base-seeded adapters
 - [x] BooleanNotHandler — typeCallback folds via the inner result; incremental branch scopes (truthy(!X) = X's falsey scope, §3.13); specifyTypesCallback negates the context onto the inner result (unseeded adapter for unmigrated inner)

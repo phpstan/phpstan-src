@@ -3587,30 +3587,70 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 		}
 
-		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
-			$exprString = $this->getNodeKey($expr);
-			if (
-				array_key_exists($exprString, $this->expressionTypes)
-				// a Maybe-certainty holder carries the "when defined" type only;
-				// the original for narrowing math must match getType() semantics
-				// (a maybe-defined variable is still mixed)
-				&& $this->expressionTypes[$exprString]->getCertainty()->yes()
-			) {
-				$nativeHolder = $this->nativeExpressionTypes[$exprString] ?? $this->expressionTypes[$exprString];
-
-				return [
-					TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$exprString]->getType()),
-					TypeUtils::resolveLateResolvableTypes($nativeHolder->getType()),
-				];
-			}
-
-			if (array_key_exists($exprString, $exprResults)) {
-				return [$exprResults[$exprString]->getType(), $exprResults[$exprString]->getNativeType()];
-			}
+		$resolved = $this->tryResolveOriginalTypesForApply($expr, $exprResults);
+		if ($resolved !== null) {
+			return $resolved;
 		}
 
 		// guarded legacy bridge (works under PHPSTAN_FNSR=0)
 		return [$this->getType($expr), $this->getNativeType($expr)];
+	}
+
+	/**
+	 * @param array<string, ExpressionResult> $exprResults
+	 * @return array{Type, Type}|null
+	 */
+	private function tryResolveOriginalTypesForApply(Expr $expr, array $exprResults): ?array
+	{
+		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
+			return null;
+		}
+
+		$exprString = $this->getNodeKey($expr);
+		if (
+			array_key_exists($exprString, $this->expressionTypes)
+			// a Maybe-certainty holder carries the "when defined" type only;
+			// the original for narrowing math must match getType() semantics
+			// (a maybe-defined variable is still mixed)
+			&& $this->expressionTypes[$exprString]->getCertainty()->yes()
+		) {
+			$nativeHolder = $this->nativeExpressionTypes[$exprString] ?? $this->expressionTypes[$exprString];
+
+			return [
+				TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$exprString]->getType()),
+				TypeUtils::resolveLateResolvableTypes($nativeHolder->getType()),
+			];
+		}
+
+		if (array_key_exists($exprString, $exprResults)) {
+			return [$exprResults[$exprString]->getType(), $exprResults[$exprString]->getNativeType()];
+		}
+
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			// a dim fetch built by narrowing code (e.g. the count() index
+			// inference): derive the original from the resolvable var and dim —
+			// plain non-null arrays only, ArrayAccess and nullsafe chains bridge
+			$varPair = $this->tryResolveOriginalTypesForApply($expr->var, $exprResults);
+			if ($varPair === null) {
+				return null;
+			}
+			$dimPair = $this->tryResolveOriginalTypesForApply($expr->dim, $exprResults);
+			if ($dimPair === null) {
+				return null;
+			}
+			[$varType, $varNativeType] = $varPair;
+			[$dimType, $dimNativeType] = $dimPair;
+			if ($varType->isArray()->yes() && !TypeCombinator::containsNull($varType)) {
+				return [
+					$varType->getOffsetValueType($dimType),
+					$varNativeType->isArray()->yes() ? $varNativeType->getOffsetValueType($dimNativeType) : new MixedType(),
+				];
+			}
+
+			return null;
+		}
+
+		return null;
 	}
 
 	/**

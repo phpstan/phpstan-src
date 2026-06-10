@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeResult;
 use function is_string;
 
@@ -29,6 +30,17 @@ final class RicherScopeGetTypeHelper
 	 */
 	public function getIdenticalResult(Scope $scope, Identical $expr): TypeResult
 	{
+		return $this->getIdenticalResultFromTypes($scope, $expr, $scope->getType($expr->left), $scope->getType($expr->right));
+	}
+
+	/**
+	 * Type-taking variant for the new world: operand types come from their
+	 * ExpressionResults, the scope only answers property-reflection lookups.
+	 *
+	 * @return TypeResult<BooleanType>
+	 */
+	public function getIdenticalResultFromTypes(Scope $scope, Identical $expr, Type $leftType, Type $rightType): TypeResult
+	{
 		if (
 			$expr->left instanceof Variable
 			&& is_string($expr->left->name)
@@ -38,9 +50,6 @@ final class RicherScopeGetTypeHelper
 		) {
 			return new TypeResult(new ConstantBooleanType(true), []);
 		}
-
-		$leftType = $scope->getType($expr->left);
-		$rightType = $scope->getType($expr->right);
 
 		if (
 			(
@@ -80,7 +89,15 @@ final class RicherScopeGetTypeHelper
 	 */
 	public function getNotIdenticalResult(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr): TypeResult
 	{
-		$identicalResult = $this->getIdenticalResult($scope, new Identical($expr->left, $expr->right));
+		return $this->getNotIdenticalResultFromTypes($scope, $expr, $scope->getType($expr->left), $scope->getType($expr->right));
+	}
+
+	/**
+	 * @return TypeResult<BooleanType>
+	 */
+	public function getNotIdenticalResultFromTypes(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr, Type $leftType, Type $rightType): TypeResult
+	{
+		$identicalResult = $this->getIdenticalResultFromTypes($scope, new Identical($expr->left, $expr->right), $leftType, $rightType);
 		$identicalType = $identicalResult->type;
 		if ($identicalType instanceof ConstantBooleanType) {
 			return new TypeResult(new ConstantBooleanType(!$identicalType->getValue()), $identicalResult->reasons);

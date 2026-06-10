@@ -12,6 +12,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 final class FiberScope extends MutatingScope
 {
@@ -143,10 +144,32 @@ final class FiberScope extends MutatingScope
 
 	public function getKeepVoidType(Expr $node): Type
 	{
-		// keepVoid is a one-off we will solve separately — regular results store
-		// void as null, so falling back to them would silently lose the void.
-		// Guarded old-world bridge until then (PHPSTAN_FNSR=0).
-		return $this->toMutatingScope()->getKeepVoidType($node);
+		if (
+			!$node instanceof Expr\Match_
+			&& (
+				(
+					!$node instanceof Expr\FuncCall
+					&& !$node instanceof Expr\MethodCall
+					&& !$node instanceof Expr\NullsafeMethodCall
+					&& !$node instanceof Expr\StaticCall
+				) || $node->isFirstClassCallable()
+			)
+		) {
+			return $this->getType($node);
+		}
+
+		$originalType = $this->getType($node);
+		if (!TypeCombinator::containsNull($originalType)) {
+			return $originalType;
+		}
+
+		// the attributed clone is a synthetic expression — the fiber suspends
+		// for it and the handlers honor the attribute when resolving the
+		// return type (VoidToNullTypeTransformer)
+		$clonedNode = clone $node;
+		$clonedNode->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, true);
+
+		return $this->getType($clonedNode);
 	}
 
 	/**

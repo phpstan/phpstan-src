@@ -80,6 +80,7 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -512,33 +513,17 @@ class NodeScopeResolver
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processStmtNodesInternal(
-		Node $parentNode,
-		array $stmts,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-		StatementContext $context,
-	): InternalStatementResult
-	{
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers(
-			$parentNode,
-			$stmts,
-			$scope,
-			$storage,
-			$nodeCallback,
-			$context,
-		);
-		$this->processPendingFibers($storage);
-
-		return $statementResult;
-	}
-
 	/**
+	 * Does not flush pending fibers: a fiber parked on a not-yet-stored expression must
+	 * keep waiting for the expression's real processing (e.g. a do-while condition is
+	 * processed after its body's statement list ends). Pending fibers whose expressions
+	 * never get traversed (synthetic nodes built by rules) are flushed at analysis-unit
+	 * boundaries: end of file statements, function, method, and trait processing.
+	 *
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processStmtNodesInternalWithoutFlushingPendingFibers(
+	private function processStmtNodesInternal(
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,
@@ -2766,7 +2751,19 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
-			$result = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
+			$innerResult = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
+			// carry the original expr, not the virtual callable node — the virtual
+			// node's resolveType is intentionally mixed, the first-class-callable
+			// handlers resolve types for the original expr (guarded legacy bridge,
+			// PHPSTAN_FNSR=0, until those handlers migrate)
+			$result = new ExpressionResult(
+				$innerResult->getScope(),
+				hasYield: $innerResult->hasYield(),
+				isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
+				throwPoints: $innerResult->getThrowPoints(),
+				impurePoints: $innerResult->getImpurePoints(),
+				expr: $expr,
+			);
 			$this->storeResult($storage, $expr, $result);
 			return $result;
 		}
@@ -3044,7 +3041,7 @@ class NodeScopeResolver
 		};
 
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 			$publicStatementResult = $statementResult->toPublic();
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 				$expr,
@@ -3066,7 +3063,7 @@ class NodeScopeResolver
 			$prevScope = $closureScope;
 
 			$storage = $originalStorage->duplicate();
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -3094,7 +3091,7 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 		$publicStatementResult = $statementResult->toPublic();
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 			$expr,
@@ -3996,8 +3993,23 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback): ExpressionResult
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param (callable(Expr, MutatingScope): Type)|null $assignedTypeCallback resolves
+	 *        the assigned value's type in the new world; when null, the virtual
+	 *        type wrappers answer directly and anything else takes the guarded
+	 *        legacy bridge (PHPSTAN_FNSR=0)
+	 */
+	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?callable $assignedTypeCallback = null): ExpressionResult
 	{
+		if ($assignedTypeCallback === null) {
+			if ($assignedExpr instanceof TypeExpr) {
+				$assignedTypeCallback = static fn (Expr $e, MutatingScope $s): Type => $assignedExpr->getExprType();
+			} elseif ($assignedExpr instanceof NativeTypeExpr) {
+				$assignedTypeCallback = static fn (Expr $e, MutatingScope $s): Type => $s->nativeTypesPromoted ? $assignedExpr->getNativeType() : $assignedExpr->getPhpDocType();
+			}
+		}
+
 		return $this->container->getByType(AssignHandler::class)->processAssignVar(
 			$this,
 			$scope,
@@ -4007,7 +4019,15 @@ class NodeScopeResolver
 			$assignedExpr,
 			new VirtualAssignNodeCallback($nodeCallback),
 			ExpressionContext::createDeep(),
-			static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+			static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult(
+				$scope,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+				expr: $assignedExpr,
+				typeCallback: $assignedTypeCallback,
+			),
 			false,
 		);
 	}

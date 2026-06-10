@@ -231,6 +231,85 @@ Status: ✅ done · 🔶 in progress · 🔧 mechanical · 🎯 design-sensitive
   the code states that dependency as a fact (and bridges or skips), it doesn't
   promise future work.
 
+## 5b. Handler migration checklist
+
+`[x]` = `processExpr` wires both `typeCallback` and `specifyTypesCallback` into its
+`ExpressionResult`. Residual guarded bridges inside migrated handlers are documented
+as factual comments at their call sites, not here.
+
+### Expression handlers
+
+- [ ] ArrayDimFetchHandler
+- [x] ArrayHandler
+- [ ] ArrowFunctionHandler
+- [x] AssignHandler — Ternary/Match conditional-expression holders stay old-world until those handlers migrate
+- [ ] AssignOpHandler
+- [ ] BinaryOpHandler — `typeCallback` done (Identical/NotIdentical bridge until the equality migration); `specifyTypesCallback` missing
+- [ ] BitwiseNotHandler
+- [ ] BooleanAndHandler
+- [ ] BooleanNotHandler
+- [ ] BooleanOrHandler
+- [ ] CastHandler
+- [ ] CastStringHandler
+- [ ] ClassConstFetchHandler
+- [ ] CloneHandler
+- [ ] ClosureHandler
+- [ ] CoalesceHandler
+- [ ] ConstFetchHandler
+- [ ] EmptyHandler
+- [ ] ErrorSuppressHandler
+- [ ] EvalHandler
+- [ ] ExitHandler
+- [ ] FirstClassCallableFuncCallHandler
+- [ ] FirstClassCallableMethodCallHandler
+- [ ] FirstClassCallableNewHandler
+- [ ] FirstClassCallableStaticCallHandler
+- [x] FuncCallHandler — dynamic-name calls bridge
+- [ ] IncludeHandler
+- [ ] InstanceofHandler
+- [ ] InterpolatedStringHandler
+- [ ] IssetHandler
+- [ ] MatchHandler
+- [ ] MethodCallHandler
+- [ ] NewHandler
+- [ ] NullsafeMethodCallHandler
+- [ ] NullsafePropertyFetchHandler
+- [ ] PipeHandler
+- [x] PostDecHandler
+- [x] PostIncHandler
+- [x] PreDecHandler
+- [x] PreIncHandler
+- [ ] PrintHandler
+- [ ] PropertyFetchHandler
+- [x] ScalarHandler
+- [ ] StaticCallHandler
+- [ ] StaticPropertyFetchHandler
+- [ ] TernaryHandler
+- [ ] ThrowHandler
+- [ ] UnaryMinusHandler
+- [ ] UnaryPlusHandler
+- [x] VariableHandler — dynamic variable names bridge
+- [ ] YieldFromHandler
+- [ ] YieldHandler
+
+### Virtual node handlers
+
+- [ ] AlwaysRememberedExprHandler
+- [ ] ExistingArrayDimFetchHandler
+- [ ] FunctionCallableNodeHandler
+- [ ] GetIterableKeyTypeExprHandler
+- [ ] GetIterableValueTypeExprHandler
+- [ ] GetOffsetValueTypeExprHandler
+- [ ] InstantiationCallableNodeHandler
+- [ ] MethodCallableNodeHandler
+- [x] NativeTypeExprHandler
+- [ ] OriginalPropertyTypeExprHandler
+- [ ] SetExistingOffsetValueTypeExprHandler
+- [ ] SetOffsetValueTypeExprHandler
+- [ ] StaticMethodCallableNodeHandler
+- [x] TypeExprHandler
+- [ ] UnsetOffsetExprHandler
+
 ## 6. Migration mechanics
 
 - **Exercisers**: tiny files analysed with `bin/phpstan analyse -l 8 test.php --debug` under
@@ -295,3 +374,64 @@ Status: ✅ done · 🔶 in progress · 🔧 mechanical · 🎯 design-sensitive
   function asserts (`@phpstan-assert`), conditional return types, holder-driven
   narrowing (`$len = strlen($s); if ($len)` → `$s` is `non-empty-string`), and
   by-reference assignment.
+- 2026-06-10 (array leg): **`ArrayHandler`, `BinaryOpHandler`, `Pre/PostInc`,
+  `Pre/PostDec` migrate.** The headline test: `$a = [$b = 1, $b + 1, $c = $b,
+  $c + 2, $c++, $c]` infers `array{1, 2, 1, 3, 1, 2}` — each item's type is
+  captured at its own evaluation point (the old world resolves all items on one
+  scope and cannot do this). `processVirtualAssign` takes an optional
+  `$assignedTypeCallback` (auto-priced for `TypeExpr`/`NativeTypeExpr`);
+  `PreInc/PreDec` extract a pure `resolveTypeFromVarType(Expr, Type)` shared by
+  both worlds; `PostInc/PostDec` type as the variable's pre-step value and price
+  the virtual `PreInc/PreDec` assign via the injected pre-handler. BinaryOp's
+  `resolveTypeFromResults` is a full copy of `resolveType` with identity-matched
+  child results (Identical/NotIdentical bridge to `RicherScopeGetTypeHelper`
+  until the equality migration).
+- 2026-06-10 (engine fixes found by the leg, via `make phpstan` divergence triage):
+  1. **Pending fibers parked too eagerly flushed**: the flush ran at the end of
+     *every* statement list, so a fiber asking about an expr that the enclosing
+     statement still had to process (a do-while/while/for condition after its body
+     list) was answered by synthetic re-processing on the scope captured at
+     suspension — and the poisoned result was stored under the *real* AST node's
+     key, early-resuming later legitimate askers (`do { $count++ } while ($count
+     < 3)` reported `0 < 3 always true`). Fix: statement lists never flush;
+     parked requests wait for the real `storeResult` resume, and only
+     analysis-unit boundaries (file statements, function, method, trait) flush
+     genuine synthetics. Resolved 7 `smaller.alwaysTrue` + ~10 loop-flavored
+     src divergences.
+  2. **First-class callables typed `mixed` when assigned** (both worlds —
+     a consolidation regression): the FCC early path stored the virtual
+     `*CallableNode`'s result, whose `expr` was the virtual node; the virtual
+     handler's `resolveType` is intentionally `mixed`, so the result bridge
+     asked the wrong node. Fix: rewrap the result with the original expr so the
+     bridge dispatches to the `FirstClassCallable*Handler`s.
+  `make phpstan` (4G) divergences: 30 → 13; nsrt mixed failures: 45 → 31 (0 errors).
+- 2026-06-10 (corpus + coverage): user-driven xdebug coverage audit of all branch
+  changes vs 2.2.x under `NewWorldTypeInferenceTest` (raw whole-process coverage —
+  PHPUnit per-test coverage misses data providers where the analysis runs).
+  Corpus grown 34 → 132 assertions: all BinaryOp operators, pre/post inc/dec
+  variants, keyed arrays, `is_callable` pair check, nullable truthy narrowing,
+  post-inc-in-condition (exprResults tier of `applySpecifiedTypes`),
+  `assertNativeType` probes, method-call result bridge, tracked-property and
+  is_* narrowing through `ResultAwareScope` + `TypeSpecifier` head-checks,
+  dynamic/undefined variables, unmigrated-condition bridges (BooleanNot/And/Or,
+  instanceof, empty, isset, count), bare-call statements, negated/equality
+  asserts, first-class callables, list assignment, closures/arrow fns, foreach
+  virtual assigns, elseif, echo, min/max signature selection, dynamic
+  return/type-specifying/throw extension probes (`is_int`, `assert`, `intdiv`
+  try/finally certainty). **Coverage of executable changed lines: 47.5%.**
+  Remaining uncovered, classified: old-world bodies moved by consolidation
+  (covered by the pre-existing suite; deleted in 3.0), defensive throws,
+  rule-driven paths (fiber early-resume/synthetic flush, `FiberScope`
+  doNotTreat.../keepVoid — TypeInferenceTestCase runs no rules),
+  `ExpressionTypeResolverExtension` tiers (no such extension in test config),
+  and future-leg provisions (isset-certainty apply branch, TruthyFalsey
+  context, nullsafe roots in migrated specify callbacks).
+- **Known engine debt — `ExpressionResultStorage` memory retention**: every
+  `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
+  retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker
+  limits and OOMs at the default 599M in nested-foreach files
+  (`SplObjectStorage::addAll` in `duplicate()`). Pre-existing at HEAD before the
+  array leg (5 OOM errors baseline vs 7 with it). Needs an eviction strategy
+  (results evictable once no fiber/conditional holder can still ask — e.g.
+  per-statement or per-function clearing, or weak references); per project
+  discipline the fix is algorithmic, not a memory-limit bump.

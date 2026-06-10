@@ -10,6 +10,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -17,6 +18,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
 /**
@@ -25,6 +27,13 @@ use PHPStan\Type\Type;
 #[AutowiredService]
 final class PostDecHandler implements ExprHandler
 {
+
+	public function __construct(
+		private PreDecHandler $preDecHandler,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -35,6 +44,15 @@ final class PostDecHandler implements ExprHandler
 	{
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 
+		// the expression's value is the variable's type before the step
+		$typeCallback = static function (Expr $e, MutatingScope $s) use ($varResult): Type {
+			if (!$e instanceof PostDec) {
+				throw new ShouldNotHappenException();
+			}
+
+			return $varResult->getTypeForScope($s);
+		};
+
 		$scope = $nodeScopeResolver->processVirtualAssign(
 			$varResult->getScope(),
 			$storage,
@@ -42,6 +60,7 @@ final class PostDecHandler implements ExprHandler
 			$expr->var,
 			new PreDec($expr->var),
 			$nodeCallback,
+			fn (Expr $e, MutatingScope $s): Type => $this->preDecHandler->resolveTypeFromVarType($e instanceof PreDec ? $e->var : $e, $varResult->getTypeForScope($s)),
 		)->getScope();
 
 		return new ExpressionResult(
@@ -50,6 +69,9 @@ final class PostDecHandler implements ExprHandler
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),
 			impurePoints: $varResult->getImpurePoints(),
+			expr: $expr,
+			typeCallback: $typeCallback,
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $typeCallback($e, $s), $ctx),
 		);
 	}
 

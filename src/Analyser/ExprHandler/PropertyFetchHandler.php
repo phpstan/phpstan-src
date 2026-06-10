@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ExprHandler;
 
+use Closure;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
@@ -11,6 +12,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -22,8 +24,10 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
@@ -40,6 +44,7 @@ final class PropertyFetchHandler implements ExprHandler
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -51,7 +56,6 @@ final class PropertyFetchHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$scopeBeforeVar = $scope;
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$hasYield = $varResult->hasYield();
 		$throwPoints = $varResult->getThrowPoints();
@@ -60,13 +64,13 @@ final class PropertyFetchHandler implements ExprHandler
 		$scope = $varResult->getScope();
 		if ($expr->name instanceof Identifier) {
 			$propertyName = $expr->name->toString();
-			$propertyHolderType = $scopeBeforeVar->getType($expr->var);
-			$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
+			$propertyHolderType = $varResult->getType();
+			$propertyReflection = $scope->getInstancePropertyReflection($propertyHolderType, $propertyName);
 			if ($propertyReflection !== null && $this->phpVersion->supportsPropertyHooks()) {
 				$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
 				if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
 					$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
-					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
+					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scope, $expr, $nativeProperty, 'get'));
 				}
 			}
 		} else {
@@ -89,7 +93,81 @@ final class PropertyFetchHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: $this->createTypeCallback($varResult),
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
+	}
+
+	/**
+	 * Shared with NullsafePropertyFetchHandler — it passes the var's type with
+	 * null already removed and unions the null back itself.
+	 *
+	 * @param callable(Expr, MutatingScope): Type $varTypeCallback
+	 */
+	public function createTypeCallbackForVarType(callable $varTypeCallback): Closure
+	{
+		return function (Expr $e, MutatingScope $s) use ($varTypeCallback): Type {
+			if (!$e instanceof PropertyFetch && !$e instanceof Expr\NullsafePropertyFetch) {
+				throw new ShouldNotHappenException();
+			}
+
+			if (!$e->name instanceof Identifier) {
+				// dynamic property names: guarded legacy bridge (PHPSTAN_FNSR=0)
+				return $s->getType($e);
+			}
+
+			$varType = $varTypeCallback($e, $s);
+
+			if ($s->nativeTypesPromoted) {
+				$propertyReflection = $s->getInstancePropertyReflection($varType, $e->name->name);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+
+				if (!$propertyReflection->hasNativeType()) {
+					return new MixedType();
+				}
+
+				return $propertyReflection->getNativeType();
+			}
+
+			$returnType = $this->propertyFetchType($s, $varType, $e->name->name, $e);
+
+			return $returnType ?? new ErrorType();
+		};
+	}
+
+	private function createTypeCallback(ExpressionResult $varResult): Closure
+	{
+		// a nullsafe var that can be null short-circuits this fetch too; its
+		// handler already produced the null-union — propagate one level, no
+		// recursive chain walking (NEW_WORLD.md §3.10)
+		$isShortcircuited = static function (Expr $e, MutatingScope $s) use ($varResult): bool {
+			if (!$e instanceof PropertyFetch) {
+				throw new ShouldNotHappenException();
+			}
+
+			return ($e->var instanceof Expr\NullsafePropertyFetch || $e->var instanceof Expr\NullsafeMethodCall)
+				&& TypeCombinator::containsNull($varResult->getTypeForScope($s));
+		};
+		$inner = $this->createTypeCallbackForVarType(static function (Expr $e, MutatingScope $s) use ($varResult, $isShortcircuited): Type {
+			$varType = $varResult->getTypeForScope($s);
+			if ($isShortcircuited($e, $s)) {
+				return TypeCombinator::removeNull($varType);
+			}
+
+			return $varType;
+		});
+
+		return static function (Expr $e, MutatingScope $s) use ($inner, $isShortcircuited): Type {
+			$type = $inner($e, $s);
+			if ($isShortcircuited($e, $s)) {
+				return TypeCombinator::union($type, new NullType());
+			}
+
+			return $type;
+		};
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
@@ -137,7 +215,7 @@ final class PropertyFetchHandler implements ExprHandler
 		return new MixedType();
 	}
 
-	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, PropertyFetch $propertyFetch): ?Type
+	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, PropertyFetch|Expr\NullsafePropertyFetch $propertyFetch): ?Type
 	{
 		$propertyReflection = $scope->getInstancePropertyReflection($fetchedOnType, $propertyName);
 		if ($propertyReflection === null) {

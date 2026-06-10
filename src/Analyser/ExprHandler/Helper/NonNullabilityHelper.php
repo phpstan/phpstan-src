@@ -14,6 +14,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
@@ -65,6 +66,55 @@ final class NonNullabilityHelper
 		}
 
 		$nativeType = $scope->getNativeType($exprToSpecify);
+		$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty);
+		$scope = $scope->specifyExpressionType(
+			$exprToSpecify,
+			$exprTypeWithoutNull,
+			TypeCombinator::removeNull($nativeType),
+			TrinaryLogic::createYes(),
+		);
+
+		return new EnsuredNonNullabilityResult(
+			$scope,
+			$specifiedExpressions,
+		);
+	}
+
+	/**
+	 * New-world variant of ensureShallowNonNullability(): the expression's type
+	 * comes from its already-known ExpressionResult instead of Scope::getType().
+	 * The ArrayDimFetch parent record still reads the parent's type through the
+	 * guarded legacy bridge (PHPSTAN_FNSR=0) until ArrayDimFetchHandler migrates.
+	 */
+	public function ensureShallowNonNullabilityFromTypes(MutatingScope $scope, Expr $exprToSpecify, Type $exprType, Type $nativeType): EnsuredNonNullabilityResult
+	{
+		$isNull = $exprType->isNull();
+		if ($isNull->yes()) {
+			return new EnsuredNonNullabilityResult($scope, []);
+		}
+
+		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
+		if ($exprType->equals($exprTypeWithoutNull)) {
+			return new EnsuredNonNullabilityResult($scope, []);
+		}
+
+		$specifiedExpressions = [];
+		if ($exprToSpecify instanceof Expr\ArrayDimFetch && $exprToSpecify->dim !== null) {
+			$parentExpr = $exprToSpecify->var;
+			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression(
+				$parentExpr,
+				$scope->getType($parentExpr),
+				$scope->getNativeType($parentExpr),
+				$scope->hasExpressionType($parentExpr),
+			);
+		}
+
+		$hasExpressionType = $scope->hasExpressionType($exprToSpecify);
+		$certainty = TrinaryLogic::createYes();
+		if (!$hasExpressionType->no()) {
+			$certainty = $hasExpressionType;
+		}
+
 		$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty);
 		$scope = $scope->specifyExpressionType(
 			$exprToSpecify,

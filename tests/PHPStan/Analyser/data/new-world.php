@@ -277,6 +277,48 @@ class Foo
 		}
 	}
 
+	public function nullsafeVariants(Holder $definite, ?Holder $maybe, string $prop): void
+	{
+		// non-nullable subject: ?-> behaves like -> (no null union)
+		assertType('int', $definite?->count);
+		if ($definite?->count) {
+			assertType('int<min, -1>|int<1, max>', $definite->count);
+		} else {
+			assertType('0', $definite->count);
+		}
+
+		// null subject: always short-circuits
+		$nothing = null;
+		assertType('null', $nothing?->count);
+
+		// chain: the short-circuit null propagates through the plain fetch
+		assertType('int|null', $maybe?->inner->count);
+
+		// dynamic property names take the legacy bridge
+		assertType('mixed', $definite->{$prop});
+		assertType('mixed', $maybe?->{$prop});
+
+		// bare statement (null context narrowing)
+		$maybe?->count;
+		assertType('NewWorldTypeInference\\Holder|null', $maybe);
+	}
+
+	/**
+	 * @param array<int, Holder|null> $holders
+	 */
+	public function nullsafeOnArrayDimFetch(array $holders): void
+	{
+		assertType('int|null', $holders[0]?->count);
+	}
+
+	public function propertyNativeTypes(Holder $h): void
+	{
+		assertNativeType('int', $h->count);
+		assertNativeType('mixed', $h->untyped);
+		assertType('*ERROR*', $h->unknownProp);
+		assertNativeType('*ERROR*', $h->unknownProp);
+	}
+
 	/**
 	 * @param positive-int $p
 	 */
@@ -490,6 +532,11 @@ class Holder
 	public int $count = 0;
 
 	public string $name = '';
+
+	public Holder $inner;
+
+	/** @var mixed */
+	public $untyped;
 
 }
 

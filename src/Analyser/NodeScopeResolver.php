@@ -1127,7 +1127,7 @@ class NodeScopeResolver
 			if ($result->hasSpecifiedTypesCallback()) {
 				$scope = $scope->applySpecifiedTypes(
 					$result->getSpecifiedTypes($scope, TypeSpecifierContext::createNull()),
-					[$scope->getNodeKey($stmt->expr) => $result],
+					$result->getExprResultsForApply(),
 				);
 			} else {
 				$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(

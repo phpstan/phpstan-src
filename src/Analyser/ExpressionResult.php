@@ -40,6 +40,10 @@ final class ExpressionResult
 	 * @param (callable(Expr, MutatingScope, TypeSpecifierContext): SpecifiedTypes)|null $specifyTypesCallback
 	 * @param (callable(): MutatingScope)|null $truthyScopeCallback
 	 * @param (callable(): MutatingScope)|null $falseyScopeCallback
+	 * @param array<string, ExpressionResult> $companionResults results for companion
+	 *        expressions this result's specifyTypesCallback narrows alongside its own
+	 *        (the plain-chain variant of a nullsafe fetch) — applySpecifiedTypes
+	 *        resolves their pre-narrowing types from here
 	 */
 	public function __construct(
 		private MutatingScope $scope,
@@ -53,6 +57,7 @@ final class ExpressionResult
 		?callable $typeCallback = null,
 		?callable $specifyTypesCallback = null,
 		private ?ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider = null,
+		private array $companionResults = [],
 	)
 	{
 		$this->truthyScopeCallback = $truthyScopeCallback;
@@ -198,7 +203,7 @@ final class ExpressionResult
 		if ($this->specifyTypesCallback !== null && $this->expr !== null) {
 			return $this->truthyScope = $this->scope->applySpecifiedTypes(
 				$this->getSpecifiedTypes($this->scope, TypeSpecifierContext::createTruthy()),
-				[$this->scope->getNodeKey($this->expr) => $this],
+				$this->getExprResultsForApply(),
 			);
 		}
 
@@ -220,7 +225,7 @@ final class ExpressionResult
 		if ($this->specifyTypesCallback !== null && $this->expr !== null) {
 			return $this->falseyScope = $this->scope->applySpecifiedTypes(
 				$this->getSpecifiedTypes($this->scope, TypeSpecifierContext::createFalsey()),
-				[$this->scope->getNodeKey($this->expr) => $this],
+				$this->getExprResultsForApply(),
 			);
 		}
 
@@ -231,6 +236,21 @@ final class ExpressionResult
 		$callback = $this->falseyScopeCallback;
 		$this->falseyScope = $callback();
 		return $this->falseyScope;
+	}
+
+	/**
+	 * Self + companions, keyed by node key — the pre-narrowing type sources
+	 * for applySpecifiedTypes().
+	 *
+	 * @return array<string, ExpressionResult>
+	 */
+	public function getExprResultsForApply(): array
+	{
+		if ($this->expr === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->companionResults + [$this->scope->getNodeKey($this->expr) => $this];
 	}
 
 	public function isAlwaysTerminating(): bool

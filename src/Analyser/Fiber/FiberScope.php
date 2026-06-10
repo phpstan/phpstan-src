@@ -110,14 +110,19 @@ final class FiberScope extends MutatingScope
 		return $result->getTypeOnScope($this->filterByValueExprs($result->getScope()));
 	}
 
+	/**
+	 * Scope-walk semantics approximated by the expression result + filter replay
+	 * until the dedicated getScopeType design lands — the old walk is the guarded
+	 * legacy path (PHPSTAN_FNSR=0).
+	 */
 	public function getScopeType(Expr $expr): Type
 	{
-		return $this->toMutatingScope()->getType($expr);
+		return $this->getType($expr);
 	}
 
 	public function getScopeNativeType(Expr $expr): Type
 	{
-		return $this->toMutatingScope()->getNativeType($expr);
+		return $this->getNativeType($expr);
 	}
 
 	/** @api */

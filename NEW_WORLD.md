@@ -290,14 +290,14 @@ as factual comments at their call sites, not here.
 - [ ] MethodCallHandler
 - [ ] NewHandler
 - [ ] NullsafeMethodCallHandler
-- [ ] NullsafePropertyFetchHandler
+- [x] NullsafePropertyFetchHandler — emits the plain-chain dual key and the subject-not-null entry once, per §3.10; dynamic names bridge
 - [ ] PipeHandler
 - [x] PostDecHandler
 - [x] PostIncHandler
 - [x] PreDecHandler
 - [x] PreIncHandler
 - [ ] PrintHandler
-- [ ] PropertyFetchHandler
+- [x] PropertyFetchHandler — one-level short-circuit propagation from a nullsafe var; dynamic names bridge
 - [x] ScalarHandler
 - [ ] StaticCallHandler
 - [ ] StaticPropertyFetchHandler
@@ -467,6 +467,24 @@ as factual comments at their call sites, not here.
   notes; three heuristic attempts each traded fixes for breaks) + the
   multi-assign precision improvement awaiting a mode-dependent-expectations
   policy.
+- 2026-06-11 (property leg): **PropertyFetchHandler + NullsafePropertyFetchHandler
+  migrate** — the first leg driven end-to-end by the §5a loop with the
+  disableOldWorld meter. The nullsafe handler is now the only place that knows
+  about `?->` (§3.10): it evaluates the subject once, narrows it non-null for
+  the property part via the new type-taking
+  `ensureShallowNonNullabilityFromTypes()`, fires the rule callback for the
+  virtual plain fetch itself and stores a result for it, and its
+  specifyTypesCallback emits the plain-chain dual key (one structural
+  `getNullsafeShortcircuitedExpr` call) plus a subject-not-null entry —
+  replacing the old dispatcher-built `BooleanAnd(var !== null, plain)`.
+  The plain handler propagates a nullsafe var's short-circuit null one level
+  (no recursion). `ExpressionResult` gains **companionResults** so
+  applySpecifiedTypes can price the plain variant's original type from the
+  stored plain result. `FiberScope::getScopeType/getScopeNativeType` rerouted
+  through the result path (the reserved scope-walk design pending — flagged).
+  Leg coverage: 89.5%+ of executable changed lines via 18 new corpus probes
+  (non-nullable/null/array-dim subjects, chains, dynamic names, native asks,
+  bare-statement context); the rest are defensive throws and rule-only paths.
 - **Known engine debt — `ExpressionResultStorage` memory retention**: every
   `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
   retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker

@@ -59,6 +59,7 @@ final class IssetHandler implements ExprHandler
 
 	public function __construct(
 		private NonNullabilityHelper $nonNullabilityHelper,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
@@ -350,7 +351,7 @@ final class IssetHandler implements ExprHandler
 		$nonNullabilityResults = [];
 		$isAlwaysTerminating = false;
 		foreach ($expr->vars as $var) {
-			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
+			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var, static fn (MutatingScope $askedScope): MutatingScope => $askedScope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage));
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $varResult->getScope();
@@ -364,7 +365,7 @@ final class IssetHandler implements ExprHandler
 				continue;
 			}
 
-			$varType = $scope->getType($var->var);
+			$varType = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage)->getType($var->var);
 			if ($varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 				continue;
 			}
@@ -391,8 +392,54 @@ final class IssetHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: static function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt): Type {
+				if (!$e instanceof Isset_) {
+					throw new ShouldNotHappenException();
+				}
+
+				// issetCheck() walks the expression asking for types — priced
+				// through an unseeded adapter (ResultAwareScope tiers)
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+				$issetResult = true;
+				foreach ($e->vars as $var) {
+					$result = $adapterScope->issetCheck($var, static function (Type $type): ?bool {
+						$isNull = $type->isNull();
+						if ($isNull->maybe()) {
+							return null;
+						}
+
+						return !$isNull->yes();
+					});
+					if ($result !== null) {
+						if (!$result) {
+							return new ConstantBooleanType($result);
+						}
+
+						continue;
+					}
+
+					$issetResult = $result;
+				}
+
+				if ($issetResult === null) {
+					return new BooleanType();
+				}
+
+				return new ConstantBooleanType($issetResult);
+			},
+			// the old specifyTypes() body stays the single source (the BinaryOp
+			// precedent) — invoked directly with an unseeded adapter; the
+			// multi-isset And-chain synthetic routes through the migrated handlers
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$e instanceof Isset_) {
+					throw new ShouldNotHappenException();
+				}
+
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->specifyTypes($this->typeSpecifier, $adapterScope, $e, $ctx);
+			},
 		);
 	}
 

@@ -13,6 +13,7 @@ use PHPStan\Analyser\EnsuredNonNullabilityResultExpression;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -21,9 +22,16 @@ use PHPStan\Type\TypeCombinator;
 final class NonNullabilityHelper
 {
 
-	public function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
+	/**
+	 * @param (callable(MutatingScope): MutatingScope)|null $askScopeFactory wraps
+	 *        the scope used for type asks (an adapter in the new world); the
+	 *        specification itself happens on the unwrapped scopes. Null keeps
+	 *        the guarded direct asks (PHPSTAN_FNSR=0).
+	 */
+	public function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify, ?callable $askScopeFactory = null): EnsuredNonNullabilityResult
 	{
-		$exprType = $scope->getType($exprToSpecify);
+		$askScope = $askScopeFactory !== null ? $askScopeFactory($scope) : $scope;
+		$exprType = $askScope->getType($exprToSpecify);
 		$isNull = $exprType->isNull();
 		if ($isNull->yes()) {
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -33,9 +41,13 @@ final class NonNullabilityHelper
 
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
-			$originalExprType = $originalScope->getType($exprToSpecify);
+			if (!$originalScope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
+			$originalAskScope = $askScopeFactory !== null ? $askScopeFactory($originalScope) : $originalScope;
+			$originalExprType = $originalAskScope->getType($exprToSpecify);
 			if (!$originalExprType->equals($exprTypeWithoutNull)) {
-				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
+				$originalNativeType = $originalAskScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
 					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $hasExpressionType),
@@ -53,8 +65,8 @@ final class NonNullabilityHelper
 			$parentExpr = $exprToSpecify->var;
 			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression(
 				$parentExpr,
-				$scope->getType($parentExpr),
-				$scope->getNativeType($parentExpr),
+				$askScope->getType($parentExpr),
+				$askScope->getNativeType($parentExpr),
 				$originalScope->hasExpressionType($parentExpr),
 			);
 		}
@@ -65,7 +77,7 @@ final class NonNullabilityHelper
 			$certainty = $hasExpressionType;
 		}
 
-		$nativeType = $scope->getNativeType($exprToSpecify);
+		$nativeType = $askScope->getNativeType($exprToSpecify);
 		$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty);
 		$scope = $scope->specifyExpressionType(
 			$exprToSpecify,
@@ -129,12 +141,15 @@ final class NonNullabilityHelper
 		);
 	}
 
-	public function ensureNonNullability(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
+	/**
+	 * @param (callable(MutatingScope): MutatingScope)|null $askScopeFactory
+	 */
+	public function ensureNonNullability(MutatingScope $scope, Expr $expr, ?callable $askScopeFactory = null): EnsuredNonNullabilityResult
 	{
 		$specifiedExpressions = [];
 		$originalScope = $scope;
-		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions, $originalScope) {
-			$result = $this->ensureShallowNonNullability($scope, $originalScope, $expr);
+		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions, $originalScope, $askScopeFactory) {
+			$result = $this->ensureShallowNonNullability($scope, $originalScope, $expr, $askScopeFactory);
 			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
 				$specifiedExpressions[] = $specifiedExpression;
 			}

@@ -2,17 +2,22 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_last;
 use function array_map;
@@ -57,6 +62,22 @@ final class GenericParametersAcceptorResolver
 			$namedArgTypes[$i] = $argType;
 		}
 
+		// type predicates of passed callables determine their template types exactly,
+		// so they are inferred first and substituted into the parameter types —
+		// the remaining template types are then inferred from what is left over,
+		// e.g. in partition(iterable<T0|T1> $values, callable(T0|T1): ($value is T0 ? true : false) $predicate)
+		// called with iterable<int|string> and is_int(...), T0 becomes int and T1 string
+		$predicateTypeMap = TemplateTypeMap::createEmpty();
+		foreach ($parameters as $param) {
+			if (!isset($namedArgTypes[$param->getName()])) {
+				continue;
+			}
+
+			$predicateTypeMap = $predicateTypeMap->union(
+				self::inferPredicateTemplateTypes($param->getType(), $namedArgTypes[$param->getName()]),
+			);
+		}
+
 		foreach ($parameters as $param) {
 			if (isset($namedArgTypes[$param->getName()])) {
 				$argType = $namedArgTypes[$param->getName()];
@@ -68,10 +89,12 @@ final class GenericParametersAcceptorResolver
 				continue;
 			}
 
-			$paramType = $param->getType();
+			$paramType = self::resolvePredicateTemplateTypes($param->getType(), $predicateTypeMap);
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 			$passedArgs['$' . $param->getName()] = $argType;
 		}
+
+		$typeMap = $typeMap->union($predicateTypeMap);
 
 		$returnType = $parametersAcceptor->getReturnType();
 		if (
@@ -79,7 +102,7 @@ final class GenericParametersAcceptorResolver
 			&& !$returnType->isNegated()
 			&& array_key_exists($returnType->getParameterName(), $passedArgs)
 		) {
-			$paramType = $returnType->getTarget();
+			$paramType = self::resolvePredicateTemplateTypes($returnType->getTarget(), $predicateTypeMap);
 			$argType = $passedArgs[$returnType->getParameterName()];
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 		}
@@ -140,6 +163,43 @@ final class GenericParametersAcceptorResolver
 		}
 
 		return $result;
+	}
+
+	private static function inferPredicateTemplateTypes(Type $paramType, Type $argType): TemplateTypeMap
+	{
+		$typeMap = TemplateTypeMap::createEmpty();
+		if (!$argType->isCallable()->yes()) {
+			return $typeMap;
+		}
+
+		foreach ($paramType instanceof UnionType ? $paramType->getTypes() : [$paramType] as $innerType) {
+			if (!$innerType instanceof CallableParametersAcceptor) {
+				continue;
+			}
+			if ($innerType->getAsserts()->getAll() === []) {
+				continue;
+			}
+
+			foreach ($argType->getCallableParametersAcceptors(new OutOfClassScope()) as $receivedAcceptor) {
+				$typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($innerType, $receivedAcceptor));
+			}
+		}
+
+		return $typeMap;
+	}
+
+	private static function resolvePredicateTemplateTypes(Type $type, TemplateTypeMap $predicateTypeMap): Type
+	{
+		if ($predicateTypeMap->isEmpty()) {
+			return $type;
+		}
+
+		return TemplateTypeHelper::resolveTemplateTypes(
+			$type,
+			$predicateTypeMap,
+			TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
+		);
 	}
 
 }

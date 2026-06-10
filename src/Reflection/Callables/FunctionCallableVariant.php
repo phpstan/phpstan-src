@@ -8,6 +8,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\NeverType;
@@ -25,6 +26,8 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 
 	/** @var SimpleImpurePoint[]|null  */
 	private ?array $impurePoints = null;
+
+	private ?Assertions $asserts = null;
 
 	public function __construct(
 		private FunctionReflection|ExtendedMethodReflection $function,
@@ -176,7 +179,10 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 
 	public function getAsserts(): Assertions
 	{
-		return $this->function->getAsserts();
+		return $this->asserts ??= CallableAssertionsHelper::withConditionalReturnPredicate(
+			$this->function->getAsserts(),
+			$this->variant,
+		);
 	}
 
 	public function isStaticClosure(): TrinaryLogic

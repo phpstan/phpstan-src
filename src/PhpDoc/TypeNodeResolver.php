@@ -40,6 +40,7 @@ use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -60,6 +61,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\ClassStringType;
@@ -1067,7 +1069,12 @@ final class TypeNodeResolver
 			$typeNode->parameters,
 		));
 
-		$returnType = $this->resolve($typeNode->returnType, $nameScope);
+		$assertions = $this->resolveCallableReturnTypeAssertions($typeNode, $nameScope, $parameters);
+		if ($assertions !== null) {
+			$returnType = new BooleanType();
+		} else {
+			$returnType = $this->resolve($typeNode->returnType, $nameScope);
+		}
 
 		if ($mainType instanceof CallableType) {
 			$pure = $mainType->isPure();
@@ -1075,7 +1082,7 @@ final class TypeNodeResolver
 				return new ErrorType();
 			}
 
-			return new CallableType($parameters, $returnType, $isVariadic, $templateTypeMap, templateTags: $templateTags, isPure: $pure);
+			return new CallableType($parameters, $returnType, $isVariadic, $templateTypeMap, templateTags: $templateTags, isPure: $pure, assertions: $assertions);
 
 		} elseif (
 			$mainType instanceof ObjectType
@@ -1087,9 +1094,9 @@ final class TypeNodeResolver
 					'call to a Closure',
 					false,
 				),
-			]);
+			], assertions: $assertions);
 		} elseif ($mainType instanceof ClosureType) {
-			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, templateTags: $templateTags, impurePoints: $mainType->getImpurePoints(), invalidateExpressions: $mainType->getInvalidateExpressions(), usedVariables: $mainType->getUsedVariables(), acceptsNamedArguments: $mainType->acceptsNamedArguments(), mustUseReturnValue: $mainType->mustUseReturnValue(), isStatic: $mainType->isStaticClosure());
+			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, templateTags: $templateTags, impurePoints: $mainType->getImpurePoints(), invalidateExpressions: $mainType->getInvalidateExpressions(), usedVariables: $mainType->getUsedVariables(), acceptsNamedArguments: $mainType->acceptsNamedArguments(), mustUseReturnValue: $mainType->mustUseReturnValue(), assertions: $assertions, isStatic: $mainType->isStaticClosure());
 			if ($closure->isPure()->yes() && $returnType->isVoid()->yes()) {
 				return new ErrorType();
 			}
@@ -1098,6 +1105,36 @@ final class TypeNodeResolver
 		}
 
 		return new ErrorType();
+	}
+
+	/**
+	 * Interprets a conditional return type referencing the callable's own parameter,
+	 * like `callable(mixed $value): ($value is int ? true : false)`, as a type predicate.
+	 *
+	 * @param list<NativeParameterReflection> $parameters
+	 */
+	private function resolveCallableReturnTypeAssertions(CallableTypeNode $typeNode, NameScope $nameScope, array $parameters): ?Assertions
+	{
+		$returnTypeNode = $typeNode->returnType;
+		if (!$returnTypeNode instanceof ConditionalTypeForParameterNode) {
+			return null;
+		}
+
+		foreach ($parameters as $parameter) {
+			if ('$' . $parameter->getName() !== $returnTypeNode->parameterName) {
+				continue;
+			}
+
+			return CallableAssertionsHelper::createAssertionsFromConditional(
+				$returnTypeNode->parameterName,
+				$this->resolve($returnTypeNode->targetType, $nameScope),
+				$returnTypeNode->negated,
+				$this->resolve($returnTypeNode->if, $nameScope),
+				$this->resolve($returnTypeNode->else, $nameScope),
+			);
+		}
+
+		return null;
 	}
 
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type

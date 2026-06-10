@@ -2,12 +2,19 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\PhpDoc\Tag\AssertTag;
+use PHPStan\PhpDoc\Tag\AssertTagParameter;
+use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -50,6 +57,25 @@ class TypeDescriptionTest extends PHPStanTestCase
 		$builder->setOffsetValueType(new ConstantStringType('foo'), new IntegerType(), true);
 		$builder->setOffsetValueType(new ConstantStringType('bar'), new StringType());
 		yield ['array{foo?: int, bar: string}', $builder->getArray()];
+
+		$predicateCallable = static fn (AssertTag $assertTag): CallableType => new CallableType(
+			[new NativeParameterReflection('value', false, new MixedType(), PassedByReference::createNo(), false, null)],
+			new BooleanType(),
+			false,
+			assertions: Assertions::createFromAssertTags([$assertTag]),
+		);
+		yield [
+			'callable(mixed $value): ($value is int ? true : false)',
+			$predicateCallable(new AssertTag(AssertTag::IF_TRUE, new IntegerType(), new AssertTagParameter('$value', null, null), false, false, true)),
+		];
+		yield [
+			'callable(mixed $value): ($value is int ? bool : false)',
+			$predicateCallable(new AssertTag(AssertTag::IF_TRUE, new IntegerType(), new AssertTagParameter('$value', null, null), false, true, true)),
+		];
+		yield [
+			'callable(mixed $value): ($value is int ? true : bool)',
+			$predicateCallable(new AssertTag(AssertTag::IF_FALSE, new IntegerType(), new AssertTagParameter('$value', null, null), true, true, true)),
+		];
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->setOffsetValueType(null, new IntegerType());

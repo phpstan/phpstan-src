@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NewWorld;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -84,7 +85,9 @@ final class ArrayHandler implements ExprHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		foreach ($expr->items as $arrayItem) {
-			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
+			// the embedded item scope answers the rules' getType() asks — in the
+			// new world those must go through the fiber so stored results answer
+			$itemNodes[] = new LiteralArrayItem(NewWorld::isEnabled() ? $scope->toFiberScope() : $scope, $arrayItem);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
 			if ($arrayItem->key !== null) {
 				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());

@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -28,6 +29,10 @@ use function array_merge;
 final class ThrowHandler implements ExprHandler
 {
 
+	public function __construct(private DefaultNarrowingHelper $defaultNarrowingHelper)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Throw_;
@@ -41,8 +46,11 @@ final class ThrowHandler implements ExprHandler
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: true,
-			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $exprResult->getType(), $expr, false)]),
 			impurePoints: $exprResult->getImpurePoints(),
+			expr: $expr,
+			typeCallback: static fn (): Type => new NonAcceptingNeverType(),
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

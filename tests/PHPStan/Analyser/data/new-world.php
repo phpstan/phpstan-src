@@ -801,6 +801,79 @@ class Foo
 		}
 	}
 
+	/**
+	 * Statement-level condition handling goes through the conditions'
+	 * ExpressionResults (NodeScopeResolver getType sweep): elseif chains,
+	 * loop conditions and exits, foreach value/key, switch exhaustiveness.
+	 */
+	public function statementIfElseIfChain(bool $a, bool $b): void
+	{
+		if ($a) {
+			assertType('true', $a);
+		} elseif ($b) {
+			assertType('false', $a);
+			assertType('true', $b);
+		} else {
+			assertType('false', $b);
+		}
+	}
+
+	public function statementWhile(?int $i): void
+	{
+		while ($i) {
+			assertType('int<min, -1>|int<1, max>', $i);
+			$i = 0;
+		}
+		// the test config has polluteScopeWithLoopInitialAssignments=false,
+		// so the loop-exit merge keeps the tight 0|null
+		assertType('0|null', $i);
+	}
+
+	public function statementDoWhile(bool $b): void
+	{
+		do {
+			$x = 1;
+		} while ($b);
+		assertType('1', $x);
+	}
+
+	public function statementFor(bool $b): void
+	{
+		for ($j = 0; $b; $j++) {
+			assertType('true', $b);
+		}
+		assertType('int<0, max>', $j);
+	}
+
+	public function statementAlwaysTrueWhile(): void
+	{
+		$k = 0;
+		while (1) {
+			$k++;
+			if ($k) {
+				break;
+			}
+		}
+		assertType('1', $k);
+	}
+
+	/** @param non-empty-array<int, string> $items */
+	public function statementForeach(array $items): void
+	{
+		foreach ($items as $key => $value) {
+			assertType('int', $key);
+			assertType('string', $value);
+		}
+	}
+
+	public function statementSwitchDefault(int $i): void
+	{
+		switch ($i) {
+			default:
+				assertType('int', $i);
+		}
+	}
+
 	private function name(): string
 	{
 		return 'x';

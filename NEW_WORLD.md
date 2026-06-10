@@ -326,7 +326,7 @@ as factual comments at their call sites, not here.
 - [ ] StaticCallHandler
 - [ ] StaticPropertyFetchHandler
 - [x] TernaryHandler — typeCallback composes the branch results (each evaluated on the matching cond-narrowed scope; short ternary asks the cond on its truthy scope via getTypeOnScope); specifyTypesCallback rewrites into the old `(cond && if) || (!cond && else)` synthetic, processed through the migrated boolean handlers (adapter tier 4); branch scopes via the specify path; unlocked AssignHandler's Ternary conditional-holder block (cond result narrowing + getTruthyScope/getFalseyScope + adapter-priced branch types + entry resolver)
-- [ ] ThrowHandler
+- [x] ThrowHandler — typeCallback is the NonAcceptingNeverType constant; throw point takes the inner result's type; default narrowing callback
 - [ ] UnaryMinusHandler
 - [ ] UnaryPlusHandler
 - [x] VariableHandler — dynamic variable names bridge
@@ -572,6 +572,53 @@ as factual comments at their call sites, not here.
   BooleanAnd/BooleanOr rule tests green. Changed-line coverage: Ternary 88%,
   BooleanNot 85%, Assign 86%, DefaultNarrowingHelper 100% — gaps are defensive throws,
   braces, the FNSR=0-only branch and one tier-3 delegation line.
+- 2026-06-10 (NodeScopeResolver getType sweep): **statement-level `Scope::getType()`
+  asks replaced with ExpressionResult asks**, TDD'd under `disableOldWorld=true` with a
+  13-construct statement exerciser (if/elseif/else, while incl. always-true, do-while,
+  for, foreach, switch, const, unset, @var annotations). Per construct:
+  - If/elseif: next-arm scope = the elseif cond result's falsey scope.
+  - While: before-cond boolean and last-pass cond boolean from the cond results; the
+    loop-exit scope via the new `filterByFalseyValueUsingResult()` (apply path when the
+    cond result carries a specify callback, guarded `filterByFalseyValue` for unmigrated
+    conds / FNSR=0).
+  - Do-while: the cond is processed once (hoisted above the always-iterates check and
+    the DoWhileLoopConditionNode callback — rules now see cond sub-exprs first) and the
+    single result feeds the boolean, falsey scope, and throw/impure points.
+  - For: the last-cond result is captured (was discarded) and feeds always-iterates +
+    post-loop falsey filtering; `inferForLoopExpressions` count-pattern asks priced
+    through adapters.
+  - Foreach: `getForeachIterateeTypes()` computes the iteratee PHPDoc+native pair per
+    `$originalScope` (memoized result asks on the eval scope, `getTypeOnScope` on the
+    pollute-filtered one) and threads it through the NSR `enterForeach` helper, the
+    constant-array unroll, and new `MutatingScope::enterForeach`/`enterForeachKey`
+    signatures (no internal asks; no external callers existed); the post-loop dim-fetch/
+    key/value re-asks go through per-scope adapters; the traversable throw point takes
+    the iteratee type.
+  - Switch: exhaustiveness asks the cond result on the case-narrowed scope
+    (`getTypeOnScope`); per-case `Equal` synthetics stay with the equality leg.
+  - Const_/ClassConst: the value result's types; Unset_ dim-var via adapter;
+    `findEarlyTerminatingExpr` called-on types via adapter; `processStmtVarAnnotation`
+    and execution-end never-checks via adapters; AssignHandler by-ref array keys via
+    adapter; `MethodThrowPointHelper` takes a lazy return-type callback (FuncCall's
+    shape; MethodCall/StaticCall pass null = guarded bridge until their legs).
+  - `MutatingScope::specifyExpressionType`'s ArrayDimFetch parent-update reads the dim/
+    var/native types holder-first (`getTypeFromTrackedHolder`) — the plan's §C tier-1
+    resolution, hit via `enterForeachKey`'s dim-fetch holder assignment.
+  - `LiteralArrayItem` embeds fiber scopes in the new world (DuplicateKeys rule asks) —
+    the BooleanAndNode/BooleanOrNode lesson generalized: any handler-built virtual node
+    carrying a scope embeds `toFiberScope()`.
+  - ThrowHandler migrated en passant (constant never type).
+  Documented residue (raw asks that stay): rule-callback closures already receive
+  FiberScope (NSR:958); FNSR=0 branches (If cond ternaries); recursive by-ref
+  closure-use self-ask (ClosureHandler leg); by-ref args fallback (documented);
+  `createCallableParameters` type callbacks (task #18 — callers price them);
+  `filterBy*` over engine synthetics (`$arrayComparisonExpr`, switch case `Equal`,
+  maybe-empty foreach merge — the equality/BinaryOp leg).
+  Scoreboard: corpus 232/232 (+13 statement probes); meter exerciser green under the
+  guard and byte-identical under FNSR=0; nsrt at the known 6; `make phpstan` 204 =
+  parity (3 fresh findings fixed: redundant null check, unused truthy helper variant,
+  Scope-vs-MutatingScope on the end-node adapter); DefinedVariableRuleTest
+  testDynamicAccess failure confirmed pre-existing at HEAD.
 - **Known engine debt — `ExpressionResultStorage` memory retention**: every
   `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
   retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker

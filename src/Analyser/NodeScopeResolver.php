@@ -1111,7 +1111,7 @@ class NodeScopeResolver
 				}
 				$nodeCallback($node, $scope);
 			}, ExpressionContext::createTopLevel());
-			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope, $result->getType());
+			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope, $stmt, $storage, $result->getType());
 			$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 			if (
 				count($result->getImpurePoints()) === 0
@@ -1368,7 +1368,7 @@ class NodeScopeResolver
 					$lastElseIfConditionIsTrue = true;
 				}
 
-				$condScope = $condScope->filterByFalseyValue($elseif->cond);
+				$condScope = $condResult->getFalseyScope();
 				$scope = $condScope;
 			}
 
@@ -1431,6 +1431,7 @@ class NodeScopeResolver
 			);
 			$this->callNodeCallback($nodeCallback, new InForeachNode($stmt), $scope, $storage);
 			$originalScope = $scope;
+			[$iterateeType, $nativeIterateeType] = $this->getForeachIterateeTypes($condResult, $originalScope);
 			$bodyScope = $scope;
 
 			if ($stmt->keyVar instanceof Variable) {
@@ -1452,19 +1453,20 @@ class NodeScopeResolver
 				$storage = $originalStorage->duplicate();
 
 				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
-				$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($stmt, $originalScope, $originalStorage, $context);
+				[$iterateeType, $nativeIterateeType] = $this->getForeachIterateeTypes($condResult, $originalScope);
+				$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($stmt, $iterateeType, $nativeIterateeType, $originalScope, $originalStorage, $context);
 				if ($unrolledResult !== null) {
 					$bodyScope = $unrolledResult['bodyScope'];
 					$unrolledEndScope = $unrolledResult['endScope'];
 					$unrolledTotalKeys = $unrolledResult['totalKeys'];
 				} else {
-					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $nodeCallback);
+					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $iterateeType, $nativeIterateeType, $stmt, $nodeCallback);
 					$count = 0;
 					do {
 						$prevScope = $bodyScope;
 						$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 						$storage = $originalStorage->duplicate();
-						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
+						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $iterateeType, $nativeIterateeType, $stmt, $nodeCallback);
 						$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
 						$bodyScope = $bodyScopeResult->getScope();
 						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -1484,7 +1486,7 @@ class NodeScopeResolver
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 			$storage = $originalStorage;
-			$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
+			$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $iterateeType, $nativeIterateeType, $stmt, $nodeCallback);
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
@@ -1519,7 +1521,7 @@ class NodeScopeResolver
 				$finalScope = $unrolledEndScope;
 			}
 
-			$exprType = $scope->getType($stmt->expr);
+			$exprType = $condResult->getType();
 			$hasExpr = $scope->hasExpressionType($stmt->expr);
 			if (
 				count($breakExitPoints) === 0
@@ -1538,6 +1540,10 @@ class NodeScopeResolver
 				$arrayDimFetchLoopTypes = [];
 				$keyLoopTypes = [];
 				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
+					// the dim fetch and both loop variables are holder-tracked in these
+					// scopes (enterForeachKey assigns the dim fetch) — the adapter answers
+					// them without re-walking (NEW_WORLD.md §3.13)
+					$scopeWithIterableValueType = $scopeWithIterableValueType->toResultAwareScope([], $this, $stmt, $storage);
 					$dimFetchType = $scopeWithIterableValueType->getType($arrayExprDimFetch);
 					// Condition-based narrowings like `is_string($type)` apply to the value
 					// variable but not automatically to the array dim fetch, even though the
@@ -1561,6 +1567,7 @@ class NodeScopeResolver
 				$arrayDimFetchLoopNativeTypes = [];
 				$keyLoopNativeTypes = [];
 				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
+					$scopeWithIterableValueType = $scopeWithIterableValueType->toResultAwareScope([], $this, $stmt, $storage);
 					$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($arrayExprDimFetch);
 					if ($originalValueExpr !== null && $scopeWithIterableValueType->hasExpressionType($originalValueExpr)->yes()) {
 						$valueVarNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
@@ -1587,7 +1594,7 @@ class NodeScopeResolver
 						$newExprType = $newExprType->mapKeyType(static fn (Type $type): Type => $keyLoopType);
 					}
 
-					$nativeExprType = $scope->getNativeType($stmt->expr);
+					$nativeExprType = $condResult->getNativeType();
 					$newExprNativeType = $nativeExprType;
 					if ($valueTypeChanged) {
 						$newExprNativeType = $newExprNativeType->mapValueType(static fn (Type $type): Type => $arrayDimFetchLoopNativeType);
@@ -1635,7 +1642,7 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $finalScopeResult->getImpurePoints());
 			}
-			$traversableThrowPoint = $this->getTraversableForeachThrowPoint($scope, $stmt->expr);
+			$traversableThrowPoint = $this->getTraversableForeachThrowPoint($scope, $stmt->expr, $condResult->getType());
 			if ($traversableThrowPoint !== null) {
 				$throwPoints[] = $traversableThrowPoint;
 			}
@@ -1655,7 +1662,7 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$storage = $originalStorage->duplicate();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
-			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
+			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$condScope = $condResult->getFalseyScope();
 			if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
 				if (!$this->polluteScopeWithLoopInitialAssignments) {
@@ -1699,14 +1706,15 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($scope);
 			$bodyScopeMaybeRan = $bodyScope;
 			$storage = $originalStorage;
-			$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			$lastCondResult = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$bodyScope = $lastCondResult->getTruthyScope();
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
-			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
+			$finalScope = $this->filterByFalseyValueUsingResult($finalScopeResult->getScope(), $lastCondResult, $stmt->cond);
 
 			$alwaysIterates = false;
 			$neverIterates = false;
 			if ($context->isTopLevel()) {
-				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
+				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $lastCondResult->getType() : $lastCondResult->getNativeType())->toBoolean();
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 				$neverIterates = $condBooleanType->isFalse()->yes();
 			}
@@ -1802,9 +1810,11 @@ class NodeScopeResolver
 				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 			}
 
+			$condResult = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+
 			$alwaysIterates = false;
 			if ($context->isTopLevel()) {
-				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScope->getType($stmt->cond) : $bodyScope->getNativeType($stmt->cond))->toBoolean();
+				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 			}
 
@@ -1820,13 +1830,10 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			}
 			if (!$alwaysTerminating) {
-				$condResult = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$hasYield = $condResult->hasYield();
 				$throwPoints = $condResult->getThrowPoints();
 				$impurePoints = $condResult->getImpurePoints();
 				$finalScope = $condResult->getFalseyScope();
-			} else {
-				$this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			}
 
 			$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);
@@ -1870,12 +1877,11 @@ class NodeScopeResolver
 				foreach ($stmt->cond as $condExpr) {
 					$condResult = $this->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
 					$initScope = $condResult->getScope();
-					$condResultScope = $condResult->getScope();
 
 					// only the last condition expression is relevant whether the loop continues
 					// see https://www.php.net/manual/en/control-structures.for.php
 					if ($condExpr === $lastCondExpr) {
-						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
+						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
 					}
 
@@ -1924,10 +1930,12 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($initScope);
 
 			$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
+			$lastCondResult = null;
 			if ($lastCondExpr !== null) {
-				$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
-				$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
-				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
+				$lastCondResult = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$alwaysIterates = $alwaysIterates->and($lastCondResult->getType()->toBoolean()->isTrue());
+				$bodyScope = $lastCondResult->getTruthyScope();
+				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope, $storage);
 			}
 
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
@@ -1943,7 +1951,7 @@ class NodeScopeResolver
 			$finalScope = $finalScope->generalizeWith($loopScope);
 
 			if ($lastCondExpr !== null) {
-				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
+				$finalScope = $this->filterByFalseyValueUsingResult($finalScope, $lastCondResult, $lastCondExpr);
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
@@ -2049,7 +2057,7 @@ class NodeScopeResolver
 				}
 			}
 
-			$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;
+			$exhaustive = $condResult->getTypeOnScope($scopeForBranches) instanceof NeverType;
 
 			if (!$hasDefaultCase && !$exhaustive) {
 				$alwaysTerminating = false;
@@ -2302,7 +2310,7 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
-					$varType = $scope->getType($var->var);
+					$varType = $scope->toResultAwareScope([], $this, $stmt, $storage)->getType($var->var);
 					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 						$throwPoints = array_merge($throwPoints, $this->processExprNode(
 							$stmt,
@@ -2433,7 +2441,7 @@ class NodeScopeResolver
 				} else {
 					$constantName = new Name\FullyQualified($const->name->toString());
 				}
-				$scope = $scope->assignExpression(new ConstFetch($constantName), $scope->getType($const->value), $scope->getNativeType($const->value));
+				$scope = $scope->assignExpression(new ConstFetch($constantName), $constResult->getType(), $constResult->getNativeType());
 			}
 		} elseif ($stmt instanceof Node\Stmt\ClassConst) {
 			$hasYield = false;
@@ -2449,8 +2457,8 @@ class NodeScopeResolver
 				}
 				$scope = $scope->assignExpression(
 					new Expr\ClassConstFetch(new Name\FullyQualified($scope->getClassReflection()->getName()), $const->name),
-					$scope->getType($const->value),
-					$scope->getNativeType($const->value),
+					$constResult->getType(),
+					$constResult->getNativeType(),
 				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\EnumCase) {
@@ -2669,17 +2677,61 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope, Type $exprType): ?Expr
+	/**
+	 * The foreach iteratee's PHPDoc and native types on the given scope —
+	 * memoized result asks when the scope is the iteratee's own evaluation
+	 * scope, per-scope evaluation when it was filtered (e.g. by the
+	 * always-iterable comparison).
+	 *
+	 * @return array{Type, Type}
+	 */
+	private function getForeachIterateeTypes(ExpressionResult $condResult, MutatingScope $originalScope): array
+	{
+		if ($originalScope === $condResult->getScope()) {
+			return [$condResult->getType(), $condResult->getNativeType()];
+		}
+
+		$promotedScope = $originalScope->doNotTreatPhpDocTypesAsCertain();
+		if (!$promotedScope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		return [
+			$condResult->getTypeOnScope($originalScope),
+			$condResult->getTypeOnScope($promotedScope),
+		];
+	}
+
+	/**
+	 * Filters a scope by a condition's falseyness using the condition's own
+	 * ExpressionResult — for engine sites where the filtered scope is NOT the
+	 * result's scope (e.g. the post-body scope of a loop filtered by the
+	 * pre-body condition). Not-yet-migrated conditions take the guarded
+	 * old-world dispatcher (PHPSTAN_FNSR=0).
+	 */
+	private function filterByFalseyValueUsingResult(MutatingScope $scope, ExpressionResult $condResult, Expr $cond): MutatingScope
+	{
+		if ($condResult->hasSpecifiedTypesCallback()) {
+			return $scope->applySpecifiedTypes(
+				$condResult->getSpecifiedTypes($scope, TypeSpecifierContext::createFalsey()),
+				$condResult->getExprResultsForApply(),
+			);
+		}
+
+		return $scope->filterByFalseyValue($cond);
+	}
+
+	private function findEarlyTerminatingExpr(Expr $expr, MutatingScope $scope, Node\Stmt $stmt, ExpressionResultStorage $storage, Type $exprType): ?Expr
 	{
 		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
 			if (array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
 				if ($expr instanceof MethodCall) {
-					$methodCalledOnType = $scope->getType($expr->var);
+					$methodCalledOnType = $scope->toResultAwareScope([], $this, $stmt, $storage)->getType($expr->var);
 				} else {
 					if ($expr->class instanceof Name) {
 						$methodCalledOnType = $scope->resolveTypeByName($expr->class);
 					} else {
-						$methodCalledOnType = $scope->getType($expr->class);
+						$methodCalledOnType = $scope->toResultAwareScope([], $this, $stmt, $storage)->getType($expr->class);
 					}
 				}
 
@@ -4086,14 +4138,14 @@ class NodeScopeResolver
 				$scope = $scope->assignVariable(
 					$name,
 					$varTag->getType(),
-					$scope->getNativeType($variableNode),
+					$scope->toResultAwareScope([], $this, $stmt, $storage)->getNativeType($variableNode),
 					$certainty,
 				);
 			}
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
-			$originalType = $scope->getType($defaultExpr);
+			$originalType = $scope->toResultAwareScope([], $this, $stmt, $storage)->getType($defaultExpr);
 			$varTag = $variableLessTags[0];
 			if (!$originalType->equals($varTag->getType())) {
 				$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
@@ -4156,6 +4208,8 @@ class NodeScopeResolver
 	 */
 	private function tryProcessUnrolledConstantArrayForeach(
 		Foreach_ $stmt,
+		Type $iterateeType,
+		Type $nativeIterateeType,
 		MutatingScope $originalScope,
 		ExpressionResultStorage $originalStorage,
 		StatementContext $context,
@@ -4171,7 +4225,6 @@ class NodeScopeResolver
 			return null;
 		}
 
-		$iterateeType = $originalScope->getType($stmt->expr);
 		if (!$iterateeType->isConstantArray()->yes()) {
 			return null;
 		}
@@ -4197,7 +4250,6 @@ class NodeScopeResolver
 			return null;
 		}
 
-		$nativeIterateeType = $originalScope->getNativeType($stmt->expr);
 		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
 		$matchedNativeArrays = count($nativeConstantArrays) === count($constantArrays) ? $nativeConstantArrays : null;
 
@@ -4333,7 +4385,7 @@ class NodeScopeResolver
 				$prevLoopScope = $loopScope;
 				$iterStorage = $originalStorage->duplicate();
 				$iterBodyScope = $loopScope->mergeWith($endScope);
-				$iterBodyScope = $this->enterForeach($iterBodyScope, $iterStorage, $originalScope, $stmt, new NoopNodeCallback());
+				$iterBodyScope = $this->enterForeach($iterBodyScope, $iterStorage, $originalScope, $iterateeType, $nativeIterateeType, $stmt, new NoopNodeCallback());
 				$iterBodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
 				$loopScope = $iterBodyScopeResult->getScope();
 				foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -4358,9 +4410,8 @@ class NodeScopeResolver
 		return ['bodyScope' => $bodyScope, 'endScope' => $endScope, 'totalKeys' => $totalKeys];
 	}
 
-	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee): ?InternalThrowPoint
+	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee, Type $exprType): ?InternalThrowPoint
 	{
-		$exprType = $scope->getType($iteratee);
 		$traversableType = new ObjectType(Traversable::class);
 
 		if ($traversableType->isSuperTypeOf($exprType)->no()) {
@@ -4392,13 +4443,12 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function enterForeach(MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Foreach_ $stmt, callable $nodeCallback): MutatingScope
+	private function enterForeach(MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Type $iterateeType, Type $nativeIterateeType, Foreach_ $stmt, callable $nodeCallback): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 			$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
 
-		$iterateeType = $originalScope->getType($stmt->expr);
 		if (
 			($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))
 			&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
@@ -4407,6 +4457,8 @@ class NodeScopeResolver
 			$scope = $scope->enterForeach(
 				$originalScope,
 				$stmt->expr,
+				$iterateeType,
+				$nativeIterateeType,
 				$stmt->valueVar->name,
 				$keyVarName,
 				$stmt->byRef,
@@ -4428,7 +4480,7 @@ class NodeScopeResolver
 			if (
 				$stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 			) {
-				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $stmt->keyVar->name);
+				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $iterateeType, $nativeIterateeType, $stmt->keyVar->name);
 				$vars[] = $stmt->keyVar->name;
 			} elseif ($stmt->keyVar !== null) {
 				$scope = $this->processVirtualAssign(
@@ -4497,10 +4549,11 @@ class NodeScopeResolver
 			$args = $stmt->expr->getArgs();
 			if (count($args) >= 1) {
 				$arrayArg = $args[0]->value;
+				$arrayArgAdapterScope = $scope->toResultAwareScope([], $this, $stmt, $storage);
 				$scope = $scope->assignExpression(
 					new ArrayDimFetch($arrayArg, $stmt->valueVar),
-					$scope->getType($arrayArg)->getIterableValueType(),
-					$scope->getNativeType($arrayArg)->getIterableValueType(),
+					$arrayArgAdapterScope->getType($arrayArg)->getIterableValueType(),
+					$arrayArgAdapterScope->getNativeType($arrayArg)->getIterableValueType(),
 				);
 			}
 		}
@@ -4793,7 +4846,11 @@ class NodeScopeResolver
 				$statementResult = $executionEnd->getStatementResult();
 				$endNode = $executionEnd->getNode();
 				if ($endNode instanceof Node\Stmt\Expression) {
-					$exprType = $statementResult->getScope()->getType($endNode->expr);
+					$endNodeScope = $statementResult->getScope();
+					if (!$endNodeScope instanceof MutatingScope) {
+						throw new ShouldNotHappenException();
+					}
+					$exprType = $endNodeScope->toResultAwareScope([], $this, $endNode, new ExpressionResultStorage())->getType($endNode->expr);
 					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
 						continue;
 					}
@@ -5147,7 +5204,7 @@ class NodeScopeResolver
 		return $stmts;
 	}
 
-	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope
+	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope, ExpressionResultStorage $storage): MutatingScope
 	{
 		// infer $items[$i] type from for ($i = 0; $i < count($items); $i++) {...}
 
@@ -5178,12 +5235,13 @@ class NodeScopeResolver
 				&& $stmt->init[0]->var->name === $lastCondExpr->left->name
 			) {
 				$arrayArg = $lastCondExpr->right->getArgs()[0]->value;
-				$arrayType = $bodyScope->getType($arrayArg);
+				$arrayArgAdapterScope = $bodyScope->toResultAwareScope([], $this, $stmt, $storage);
+				$arrayType = $arrayArgAdapterScope->getType($arrayArg);
 				if ($arrayType->isList()->yes()) {
 					$bodyScope = $bodyScope->assignExpression(
 						new ArrayDimFetch($lastCondExpr->right->getArgs()[0]->value, $lastCondExpr->left),
 						$arrayType->getIterableValueType(),
-						$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
+						$arrayArgAdapterScope->getNativeType($arrayArg)->getIterableValueType(),
 					);
 				}
 			}
@@ -5203,12 +5261,13 @@ class NodeScopeResolver
 				&& $stmt->init[0]->var->name === $lastCondExpr->right->name
 			) {
 				$arrayArg = $lastCondExpr->left->getArgs()[0]->value;
-				$arrayType = $bodyScope->getType($arrayArg);
+				$arrayArgAdapterScope = $bodyScope->toResultAwareScope([], $this, $stmt, $storage);
+				$arrayType = $arrayArgAdapterScope->getType($arrayArg);
 				if ($arrayType->isList()->yes()) {
 					$bodyScope = $bodyScope->assignExpression(
 						new ArrayDimFetch($lastCondExpr->left->getArgs()[0]->value, $lastCondExpr->right),
 						$arrayType->getIterableValueType(),
-						$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
+						$arrayArgAdapterScope->getNativeType($arrayArg)->getIterableValueType(),
 					);
 				}
 			}

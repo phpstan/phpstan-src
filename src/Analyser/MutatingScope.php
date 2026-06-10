@@ -2463,10 +2463,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
-	public function enterForeach(self $originalScope, Expr $iteratee, string $valueName, ?string $keyName, bool $valueByRef): self
+	public function enterForeach(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef): self
 	{
-		$iterateeType = $originalScope->getType($iteratee);
-		$nativeIterateeType = $originalScope->getNativeType($iteratee);
 		$valueType = $originalScope->getIterableValueType($iterateeType);
 		$nativeValueType = $originalScope->getIterableValueType($nativeIterateeType);
 		$scope = $this->assignVariable(
@@ -2492,7 +2490,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			);
 		}
 		if ($keyName !== null) {
-			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
+			$scope = $scope->enterForeachKey($originalScope, $iteratee, $iterateeType, $nativeIterateeType, $keyName);
 
 			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 				$scope = $scope->assignExpression(
@@ -2506,11 +2504,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $scope;
 	}
 
-	public function enterForeachKey(self $originalScope, Expr $iteratee, string $keyName): self
+	public function enterForeachKey(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $keyName): self
 	{
-		$iterateeType = $originalScope->getType($iteratee);
-		$nativeIterateeType = $originalScope->getNativeType($iteratee);
-
 		$keyType = $originalScope->getIterableKeyType($iterateeType);
 		$nativeKeyType = $originalScope->getIterableKeyType($nativeIterateeType);
 
@@ -2857,6 +2852,43 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $scope->invalidateExpression($expr);
 	}
 
+	/**
+	 * Holder-first type read for internal engine bookkeeping (the ArrayDimFetch
+	 * parent-update below): a Yes-tracked expression answers from its holder
+	 * without the guarded resolveType walk — the dim and var of a tracked dim
+	 * fetch are typically holders in the very scope being updated. Anything
+	 * else takes the guarded bridge (PHPSTAN_FNSR=0).
+	 */
+	private function getTypeFromTrackedHolder(Expr $expr): Type
+	{
+		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
+			$exprString = $this->getNodeKey($expr);
+			if (
+				array_key_exists($exprString, $this->expressionTypes)
+				&& $this->hasExpressionType($expr)->yes()
+			) {
+				return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$exprString]->getType());
+			}
+		}
+
+		return $this->getType($expr);
+	}
+
+	private function getNativeTypeFromTrackedHolder(Expr $expr): Type
+	{
+		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
+			$exprString = $this->getNodeKey($expr);
+			if (
+				array_key_exists($exprString, $this->nativeExpressionTypes)
+				&& $this->hasExpressionType($expr)->yes()
+			) {
+				return TypeUtils::resolveLateResolvableTypes($this->nativeExpressionTypes[$exprString]->getType());
+			}
+		}
+
+		return $this->getNativeType($expr);
+	}
+
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
 		if ($expr instanceof Scalar) {
@@ -2890,9 +2922,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& !$expr->dim instanceof Expr\PostDec
 			&& !$expr->dim instanceof Expr\PostInc
 		) {
-			$dimType = $scope->getType($expr->dim)->toArrayKey();
+			$dimType = $scope->getTypeFromTrackedHolder($expr->dim)->toArrayKey();
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
-				$exprVarType = $scope->getType($expr->var);
+				$exprVarType = $scope->getTypeFromTrackedHolder($expr->var);
 				$isArray = $exprVarType->isArray();
 				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
 					$varType = $exprVarType;
@@ -2916,7 +2948,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					$scope = $scope->specifyExpressionType(
 						$expr->var,
 						$varType,
-						$scope->getNativeType($expr->var),
+						$scope->getNativeTypeFromTrackedHolder($expr->var),
 						$certainty,
 					);
 				}

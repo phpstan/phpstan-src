@@ -14,6 +14,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
@@ -31,14 +32,22 @@ final class MethodThrowPointHelper
 	{
 	}
 
+	/**
+	 * @param (callable(): Type)|null $returnTypeCallback lazily resolves the
+	 *        call's return type for the explicit-never and implicit-throws
+	 *        checks — mirrors FuncCallHandler's shape; null keeps the guarded
+	 *        legacy scope ask (PHPSTAN_FNSR=0) until the call handlers migrate
+	 */
 	public function getThrowPoint(
 		MethodReflection $methodReflection,
 		ParametersAcceptor $parametersAcceptor,
 		MethodCall|StaticCall $normalizedMethodCall,
 		MutatingScope $scope,
 		ExpressionContext $context,
+		?callable $returnTypeCallback = null,
 	): ?InternalThrowPoint
 	{
+		$returnTypeCallback ??= static fn (): Type => $scope->getType($normalizedMethodCall);
 		if ($normalizedMethodCall instanceof MethodCall) {
 			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
 				if (!$extension->isMethodSupported($methodReflection)) {
@@ -77,7 +86,7 @@ final class MethodThrowPointHelper
 
 		$throwType = $methodReflection->getThrowType();
 		if ($throwType === null) {
-			$returnType = $scope->getType($normalizedMethodCall);
+			$returnType = $returnTypeCallback();
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
@@ -88,7 +97,7 @@ final class MethodThrowPointHelper
 				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($normalizedMethodCall);
+			$methodReturnedType = $returnTypeCallback();
 			if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
 				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}

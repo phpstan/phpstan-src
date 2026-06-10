@@ -682,7 +682,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 				if ($assignedExpr instanceof Expr\Array_) {
-					$scope = $this->processArrayByRefItems($scope, $var->name, $assignedExpr, new Variable($var->name));
+					$scope = $this->processArrayByRefItems($nodeScopeResolver, $stmt, $storage, $scope, $var->name, $assignedExpr, new Variable($var->name));
 				}
 			} else {
 				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
@@ -1521,12 +1521,14 @@ final class AssignHandler implements ExprHandler
 		return $scope->hasVariableType($varNode->name)->negate();
 	}
 
-	private function processArrayByRefItems(MutatingScope $scope, string $rootVarName, Expr\Array_ $arrayExpr, Expr $parentExpr): MutatingScope
+	private function processArrayByRefItems(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, ExpressionResultStorage $storage, MutatingScope $scope, string $rootVarName, Expr\Array_ $arrayExpr, Expr $parentExpr): MutatingScope
 	{
 		$implicitIndex = 0;
 		foreach ($arrayExpr->items as $arrayItem) {
 			if ($arrayItem->key !== null) {
-				$keyType = $scope->getType($arrayItem->key)->toArrayKey();
+				// literal keys were just processed as part of the RHS — priced
+				// through the adapter (ResultAwareScope tier 4)
+				$keyType = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage)->getType($arrayItem->key)->toArrayKey();
 
 				if ($implicitIndex !== null) {
 					$keyValues = $keyType->getConstantScalarValues();
@@ -1552,7 +1554,7 @@ final class AssignHandler implements ExprHandler
 
 			if ($arrayItem->value instanceof Expr\Array_) {
 				$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
-				$scope = $this->processArrayByRefItems($scope, $rootVarName, $arrayItem->value, $dimFetchExpr);
+				$scope = $this->processArrayByRefItems($nodeScopeResolver, $stmt, $storage, $scope, $rootVarName, $arrayItem->value, $dimFetchExpr);
 			}
 
 			if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {

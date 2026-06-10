@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -17,6 +18,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
 /**
@@ -28,6 +30,7 @@ final class UnaryPlusHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -41,12 +44,31 @@ final class UnaryPlusHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 
+		// the InitializerExprTypeResolver callback asks the child result first
+		// (NEW_WORLD.md paragraph 3.12); anything else takes the guarded bridge
+		$typeCallback = function (Expr $e, MutatingScope $s) use ($exprResult): Type {
+			if (!$e instanceof UnaryPlus) {
+				throw new ShouldNotHappenException();
+			}
+
+			return $this->initializerExprTypeResolver->getUnaryPlusType($e->expr, static function (Expr $inner) use ($e, $exprResult, $s): Type {
+				if ($inner === $e->expr) {
+					return $exprResult->getTypeForScope($s);
+				}
+
+				return $s->getType($inner);
+			});
+		};
+
 		return new ExpressionResult(
 			$exprResult->getScope(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			expr: $expr,
+			typeCallback: $typeCallback,
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

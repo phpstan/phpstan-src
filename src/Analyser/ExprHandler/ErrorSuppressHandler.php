@@ -16,6 +16,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
 /**
@@ -24,6 +25,10 @@ use PHPStan\Type\Type;
 #[AutowiredService]
 final class ErrorSuppressHandler implements ExprHandler
 {
+
+	public function __construct(private TypeSpecifier $typeSpecifier)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -42,7 +47,34 @@ final class ErrorSuppressHandler implements ExprHandler
 			impurePoints: $exprResult->getImpurePoints(),
 			truthyScopeCallback: static fn (): MutatingScope => $exprResult->getTruthyScope(),
 			falseyScopeCallback: static fn (): MutatingScope => $exprResult->getFalseyScope(),
+			expr: $expr,
+			typeCallback: static fn (Expr $e, MutatingScope $s): Type => $exprResult->getTypeForScope($s),
+			specifyTypesCallback: $this->createSpecifyTypesCallback($nodeScopeResolver, $stmt, $exprResult),
 		);
+	}
+
+	/**
+	 * The suppressed expression's narrowing as-is; a not-yet-migrated inner
+	 * takes the old-world dispatcher with an unseeded adapter (the inner must
+	 * be evaluated on the ask scope, NEW_WORLD.md paragraph 3.13).
+	 *
+	 * @return callable(Expr, MutatingScope, TypeSpecifierContext): SpecifiedTypes
+	 */
+	private function createSpecifyTypesCallback(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, ExpressionResult $exprResult): callable
+	{
+		return function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $exprResult): SpecifiedTypes {
+			if (!$e instanceof ErrorSuppress) {
+				throw new ShouldNotHappenException();
+			}
+
+			if ($exprResult->hasSpecifiedTypesCallback()) {
+				return $exprResult->getSpecifiedTypes($s, $ctx)->setRootExpr($e);
+			}
+
+			$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+			return $this->typeSpecifier->specifyTypesInCondition($adapterScope, $e->expr, $ctx)->setRootExpr($e);
+		};
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

@@ -911,6 +911,30 @@ class Foo
 		assertType('int', ~$i);
 	}
 
+	public function printExpr(): void
+	{
+		assertType('1', print 'x');
+	}
+
+	public function cloneExpr(Holder $h): void
+	{
+		assertType(Holder::class, clone $h);
+	}
+
+	public function errorSuppress(?int $i): void
+	{
+		assertType('int|null', @$i);
+		if (@$i) {
+			assertType('int<min, -1>|int<1, max>', $i);
+		}
+	}
+
+	public function exitInTernary(bool $b): void
+	{
+		$b ? exit(1) : null;
+		assertType('false', $b);
+	}
+
 	private function name(): string
 	{
 		return 'x';

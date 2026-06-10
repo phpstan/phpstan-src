@@ -293,14 +293,14 @@ as factual comments at their call sites, not here.
 - [ ] CastHandler
 - [ ] CastStringHandler
 - [ ] ClassConstFetchHandler
-- [ ] CloneHandler
+- [x] CloneHandler — typeCallback intersects the inner result with object and maps through CloneTypeTraverser; default narrowing
 - [ ] ClosureHandler
 - [ ] CoalesceHandler
 - [x] ConstFetchHandler — typeCallback: literal true/false/null, holder-tracked runtime constants, ConstantResolver (all unguarded already); default narrowing
 - [ ] EmptyHandler
-- [ ] ErrorSuppressHandler
+- [x] ErrorSuppressHandler — full delegation to the inner result (type, narrowing, branch scopes); unseeded adapter for unmigrated inner
 - [ ] EvalHandler
-- [ ] ExitHandler
+- [x] ExitHandler — constant NonAcceptingNeverType typeCallback; default narrowing
 - [ ] FirstClassCallableFuncCallHandler
 - [ ] FirstClassCallableMethodCallHandler
 - [ ] FirstClassCallableNewHandler
@@ -320,7 +320,7 @@ as factual comments at their call sites, not here.
 - [x] PostIncHandler
 - [x] PreDecHandler
 - [x] PreIncHandler
-- [ ] PrintHandler
+- [x] PrintHandler — constant `1` typeCallback; default narrowing
 - [x] PropertyFetchHandler — one-level short-circuit propagation from a nullsafe var; dynamic names bridge
 - [x] ScalarHandler
 - [ ] StaticCallHandler

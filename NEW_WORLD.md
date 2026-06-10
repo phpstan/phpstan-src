@@ -295,7 +295,7 @@ as factual comments at their call sites, not here.
 - [x] ClassConstFetchHandler — §3.12 results-first class-const type (dynamic class expr via the class result); dynamic const names mixed; default narrowing
 - [x] CloneHandler — typeCallback intersects the inner result with object and maps through CloneTypeTraverser; default narrowing
 - [ ] ClosureHandler
-- [ ] CoalesceHandler
+- [x] CoalesceHandler — isset(left) processed once as a synthetic through the migrated IssetHandler (truthy applied, falsey replaced by the coalesce's own falsey narrowing — isset-falsey would unset the left and poison certainty); typeCallback via issetCheck on an unseeded adapter + the left result on the isset-truthy scope; UNSEEDED everywhere — the left result's memo is null-stripped by ensureNonNullability (§3.13 lesson #2 re-confirmed); TypeExpr tier in apply originals
 - [x] ConstFetchHandler — typeCallback: literal true/false/null, holder-tracked runtime constants, ConstantResolver (all unguarded already); default narrowing
 - [x] EmptyHandler — typeCallback via issetCheck on an unseeded adapter; specifyTypesCallback invokes the old body directly (the `!isset(X) || !X` synthetic routes through migrated handlers)
 - [x] ErrorSuppressHandler — full delegation to the inner result (type, narrowing, branch scopes); unseeded adapter for unmigrated inner

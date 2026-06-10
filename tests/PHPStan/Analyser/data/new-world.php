@@ -999,6 +999,19 @@ class Foo
 	}
 
 	/** @param array<string, int> $map */
+	public function coalesce(?int $i, array $map, string $k, ?string $maybe): void
+	{
+		assertType('int', $i ?? 5);
+		assertType("'fallback'|int", $map[$k] ?? 'fallback');
+		assertType('int|string|null', $maybe ?? $i);
+		$x = $i ?? 0;
+		assertType('int', $x);
+		if (($i ?? 0) === 5) {
+			assertType('5', $i);
+		}
+	}
+
+	/** @param array<string, int> $map */
 	public function emptyChecks(?int $i, array $map): void
 	{
 		assertType('bool', empty($i));

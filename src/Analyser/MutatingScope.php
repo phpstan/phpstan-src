@@ -36,6 +36,7 @@ use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
@@ -3610,6 +3611,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	private function tryResolveOriginalTypesForApply(Expr $expr, array $exprResults): ?array
 	{
+		if ($expr instanceof TypeExpr) {
+			return [$expr->getExprType(), $expr->getExprType()];
+		}
+
 		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
 			return null;
 		}

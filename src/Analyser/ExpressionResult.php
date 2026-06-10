@@ -148,6 +148,16 @@ final class ExpressionResult
 		return $this->getType();
 	}
 
+	public function hasTypeCallback(): bool
+	{
+		return $this->typeCallback !== null && $this->expr !== null;
+	}
+
+	public function hasSpecifiedTypesCallback(): bool
+	{
+		return $this->specifyTypesCallback !== null && $this->expr !== null;
+	}
+
 	public function getSpecifiedTypes(MutatingScope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		if ($this->expr === null || $this->specifyTypesCallback === null) {

@@ -10,6 +10,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -32,6 +33,7 @@ final class ScalarHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -43,6 +45,8 @@ final class ScalarHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$typeCallback = fn (Expr $e, MutatingScope $s): Type => $this->initializerExprTypeResolver->getType($e, InitializerExprContext::fromScope($s));
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: false,
@@ -50,7 +54,8 @@ final class ScalarHandler implements ExprHandler
 			throwPoints: [],
 			impurePoints: [],
 			expr: $expr,
-			typeCallback: fn (Expr $e, MutatingScope $s): Type => $this->initializerExprTypeResolver->getType($e, InitializerExprContext::fromScope($s)),
+			typeCallback: $typeCallback,
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $typeCallback($e, $s), $ctx),
 			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}

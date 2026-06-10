@@ -38,6 +38,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
 		private bool $fiber = false,
+		private bool $resultAware = false,
 	)
 	{
 	}
@@ -64,6 +65,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		$className = MutatingScope::class;
 		if ($this->fiber) {
 			$className = FiberScope::class;
+		} elseif ($this->resultAware) {
+			$className = ResultAwareScope::class;
 		}
 
 		return new $className(
@@ -116,6 +119,27 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->configPhpVersion,
 			$this->nodeCallback,
 			$this->constantResolver,
+			true,
+		);
+	}
+
+	public function toResultAwareFactory(): InternalScopeFactory
+	{
+		return new self(
+			$this->container,
+			$this->reflectionProvider,
+			$this->initializerExprTypeResolver,
+			$this->expressionTypeResolverExtensionRegistryProvider,
+			$this->exprPrinter,
+			$this->typeSpecifier,
+			$this->propertyReflectionFinder,
+			$this->parser,
+			$this->phpVersion,
+			$this->attributeReflectionFactory,
+			$this->configPhpVersion,
+			$this->nodeCallback,
+			$this->constantResolver,
+			false,
 			true,
 		);
 	}

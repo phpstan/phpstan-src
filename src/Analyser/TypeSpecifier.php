@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -87,13 +88,24 @@ final class TypeSpecifier
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
+		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
+			return (new SpecifiedTypes([], []))->setRootExpr($expr);
+		}
+
+		if ($scope instanceof ResultAwareScope) {
+			// new world: old-world narrowing code recursing with the adapter
+			// stays in the new world — resolved through ExpressionResults
+			return $scope->specifyTypesViaResults($expr, $context);
+		}
+
+		if ($scope instanceof FiberScope) {
+			// new world: rules asking for narrowing suspend for the ExpressionResult
+			return $scope->getExpressionResult($expr)->getSpecifiedTypes($scope->toMutatingScope(), $context);
+		}
+
 		$enableFnsr = getenv('PHPSTAN_FNSR');
 		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0' && NewWorld::disableOldWorld()) {
 			throw new ShouldNotHappenException('TypeSpecifier should not be used here. Ask ExpressionResult for SpecifiedTypes instead.');
-		}
-
-		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
-			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */

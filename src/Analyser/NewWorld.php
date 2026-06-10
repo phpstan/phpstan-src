@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use function getenv;
+use const PHP_VERSION_ID;
+
 /**
  * Transitional switch between the old world (multi-pass type resolution via
  * MutatingScope::resolveType + TypeSpecifier, PHP < 8.1 or PHPSTAN_FNSR=0)
@@ -11,6 +14,11 @@ namespace PHPStan\Analyser;
  */
 final class NewWorld
 {
+
+	public static function isEnabled(): bool
+	{
+		return PHP_VERSION_ID >= 80100 && getenv('PHPSTAN_FNSR') !== '0';
+	}
 
 	/**
 	 * The single switch for the guard exceptions in MutatingScope::getType()/

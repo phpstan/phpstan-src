@@ -53,6 +53,7 @@ final class AssignOpHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$rhsExprResult = null;
 		$assignResult = $this->assignHandler->processAssignVar(
 			$nodeScopeResolver,
 			$scope,
@@ -62,7 +63,7 @@ final class AssignOpHandler implements ExprHandler
 			$expr,
 			$nodeCallback,
 			$context,
-			static function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
+			static function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver, &$rhsExprResult): ExpressionResult {
 				$originalScope = $scope;
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$scope = $scope->filterByFalseyValue(
@@ -71,6 +72,7 @@ final class AssignOpHandler implements ExprHandler
 				}
 
 				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$rhsExprResult = $exprResult;
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$nodeScopeResolver->storeBeforeScope($storage, $expr, $originalScope);
 					$isAlwaysTerminating = $exprResult->isAlwaysTerminating() && $originalScope->getType($expr->var)->isNull()->yes();
@@ -80,10 +82,20 @@ final class AssignOpHandler implements ExprHandler
 						$isAlwaysTerminating,
 						$exprResult->getThrowPoints(),
 						$exprResult->getImpurePoints(),
+						expr: $expr,
 					);
 				}
 
-				return $exprResult;
+				// the assigned value of an AssignOp is the op result, not the right side —
+				// wrap so processAssignVar falls back to the (guarded) legacy type of $expr
+				return new ExpressionResult(
+					$exprResult->getScope(),
+					$exprResult->hasYield(),
+					$exprResult->isAlwaysTerminating(),
+					$exprResult->getThrowPoints(),
+					$exprResult->getImpurePoints(),
+					expr: $expr,
+				);
 			},
 			$expr instanceof Expr\AssignOp\Coalesce,
 		);
@@ -94,17 +106,17 @@ final class AssignOpHandler implements ExprHandler
 		$throwPoints = $assignResult->getThrowPoints();
 		$impurePoints = $assignResult->getImpurePoints();
 		if (
-			($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod) &&
-			!$scope->getType($expr->expr)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
+			($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod)
+			&& $rhsExprResult !== null
+			&& !$rhsExprResult->getType()->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
 		) {
 			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
 		}
 		if ($expr instanceof Expr\AssignOp\Concat) {
-			$exprResult = $storage->findResult($expr->expr);
-			if ($exprResult === null) {
+			if ($rhsExprResult === null) {
 				throw new ShouldNotHappenException();
 			}
-			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $exprResult->getType(), $scope);
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $rhsExprResult->getType(), $scope);
 			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 		}

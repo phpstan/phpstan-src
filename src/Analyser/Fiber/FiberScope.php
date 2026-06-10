@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use function array_pop;
 
@@ -55,15 +56,37 @@ final class FiberScope extends MutatingScope
 		);
 	}
 
-	/** @api */
-	public function getType(Expr $node): Type
+	/**
+	 * Suspends until the engine can deliver the ExpressionResult for the given
+	 * expression — immediately when already processed, after its processExprNode
+	 * finishes when not, or by processing it on demand when it is synthetic.
+	 *
+	 * @internal
+	 */
+	public function getExpressionResult(Expr $expr): ExpressionResult
 	{
 		/** @var ExpressionResult $result */
 		$result = Fiber::suspend(
-			new ExpressionResultForExprRequest($node, $this),
+			new ExpressionResultForExprRequest($expr, $this),
 		);
 
-		return $result->getTypeForScope($this);
+		return $result;
+	}
+
+	public function doNotTreatPhpDocTypesAsCertain(): Scope
+	{
+		$scope = parent::doNotTreatPhpDocTypesAsCertain();
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $scope->toFiberScope();
+	}
+
+	/** @api */
+	public function getType(Expr $node): Type
+	{
+		return $this->getExpressionResult($node)->getTypeForScope($this);
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -79,23 +102,13 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
-		/** @var ExpressionResult $result */
-		$result = Fiber::suspend(
-			new ExpressionResultForExprRequest($expr, $this),
-		);
-
-		return $result->getNativeType();
+		return $this->getExpressionResult($expr)->getNativeType();
 	}
 
 	public function getKeepVoidType(Expr $node): Type
 	{
-		/** @var ExpressionResult $result */
-		$result = Fiber::suspend(
-			new ExpressionResultForExprRequest($node, $this),
-		);
-
 		// keepVoid is a one-off we will solve separately; fall back to the regular type for now.
-		return $result->getTypeForScope($this);
+		return $this->getExpressionResult($node)->getTypeForScope($this);
 	}
 
 	public function filterByTruthyValue(Expr $expr): self

@@ -1148,11 +1148,15 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, new NoopExpressionNode($stmt->expr, $hasAssign), $scope, $storage);
 			}
 			$scope = $result->getScope();
-			$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
-				$scope,
-				$stmt->expr,
-				TypeSpecifierContext::createNull(),
-			));
+			if ($result->hasSpecifiedTypesCallback()) {
+				$scope = $scope->filterBySpecifiedTypes($result->getSpecifiedTypes($scope, TypeSpecifierContext::createNull()));
+			} else {
+				$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
+					$scope,
+					$stmt->expr,
+					TypeSpecifierContext::createNull(),
+				));
+			}
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
@@ -3716,12 +3720,12 @@ class NodeScopeResolver
 				}
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
 			} else {
-				$exprType = $scope->getType($arg->value);
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
 				if ($enterExpressionAssignForByRef) {
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				$exprType = $exprResult->getType();
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();

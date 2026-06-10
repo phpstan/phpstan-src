@@ -43,4 +43,6 @@ interface InternalScopeFactory
 
 	public function toMutatingFactory(): self;
 
+	public function toResultAwareFactory(): self;
+
 }

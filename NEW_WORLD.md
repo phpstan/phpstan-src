@@ -102,7 +102,14 @@ deliverable at every point along the way.
    `normalize()`, and supplies dim/var types for the `ArrayDimFetch` parent-update — all via
    `ExpressionResult::getType()`, honoring §3.3. Extension-produced `SpecifiedTypes` flow
    through with an empty map.
-8. **Two adapters, by execution context**:
+8. **The new world is cut away from the old world.** Callbacks contain *copied
+   and adjusted* code — they never delegate to `resolveType`/`specifyTypes`
+   (those must be deletable in 3.0). Duplication between the worlds is accepted.
+   `ResultAwareScope` is used **only at two sanctioned boundaries**: invoking
+   extensions, and `ParametersAcceptorSelector` (+ the TypeSpecifier
+   conditional-return/assert helpers until they are ported). It is *not* a
+   general bridge for running old-world handler bodies.
+9. **Two adapters, by execution context**:
    - **`FiberScope`** (exists): for *rule* node-callbacks, which run before the expression is
      processed. `getType()` suspends the fiber; the engine resumes it with the
      `ExpressionResult` at the end of `processExprNode`. Synthetic exprs are processed on
@@ -227,3 +234,20 @@ Status: ✅ done · 🔶 in progress · 🔧 mechanical · 🎯 design-sensitive
   `Assign` typeCallbacks; `echo '1';` green under guard; FNSR=0 parity restored (`891bad60ff`).
 - 2026-06-10: feasibility research (this document); decision: `NarrowingResult` envelope,
   `ResultAwareScope` adapter, tiered original-type resolution in `applySpecifiedTypes`.
+- 2026-06-10 (later): first three handlers fully migrated — `ScalarHandler`,
+  `AssignHandler` (value result threaded through the `processAssignVar` callback;
+  `hasTypeCallback()` contract; conditional-expression holders gated old-world-only
+  with a TODO), `FuncCallHandler` (`resolveTypeViaResults`/`specifyTypesViaResults`
+  copies; return-type + type-specifying extensions and `selectFromArgs` through
+  `ResultAwareScope`; throw-point never-detection via lazy return-type callback).
+  Supporting infra: `ResultAwareScope` (tiers: extensions → tracked → known results →
+  inline re-process → guarded bridge; derivation-safe via `pushInFunctionCall`
+  overrides), `NewWorld::isEnabled()`, `DefaultNarrowingHelper` (new-world copy of
+  default truthy/falsey narrowing), `TypeSpecifier::specifyTypesInCondition`
+  head-check for `ResultAwareScope` (recursion stays new-world) and `FiberScope`
+  (rules suspend for the result — un-guards `ImpossibleCheckTypeHelper`),
+  `FiberScope::doNotTreatPhpDocTypesAsCertain` fiber-safety, `processArgs`
+  callable-arg type from the result. **`NewWorldTypeInferenceTest` added**
+  (temporary; delete when the whole suite is green under the guard): 13 assertions
+  over scalars, assigns (incl. nested), params, and function calls (signature,
+  constant-folding extensions, nested calls) — green in both worlds.

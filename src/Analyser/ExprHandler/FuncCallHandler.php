@@ -18,6 +18,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransformer;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -32,6 +33,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -44,6 +46,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -89,6 +92,9 @@ final class FuncCallHandler implements ExprHandler
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private TypeSpecifier $typeSpecifier,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
@@ -111,18 +117,20 @@ final class FuncCallHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$nameResult = null;
 		if ($expr->name instanceof Expr) {
-			$nameType = $scope->getType($expr->name);
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameType = $nameResult->getType();
 			if (!$nameType->isCallable()->no()) {
+				$adapterScope = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
+					$adapterScope,
 					$expr->getArgs(),
-					$nameType->getCallableParametersAcceptors($scope),
+					$nameType->getCallableParametersAcceptors($adapterScope),
 					null,
 				);
 			}
 
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $nameResult->getScope();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
@@ -146,7 +154,7 @@ final class FuncCallHandler implements ExprHandler
 		} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-				$scope,
+				$scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage),
 				$expr->getArgs(),
 				$functionReflection->getVariants(),
 				$functionReflection->getNamedArgumentsVariants(),
@@ -318,7 +326,8 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($functionReflection !== null) {
-			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
+			$normalizedExprForThrowPoint = $normalizedExpr;
+			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context, fn (): Type => $this->resolveTypeViaResults($normalizedExprForThrowPoint, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage), $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage));
 			if ($functionThrowPoint !== null) {
 				$throwPoints[] = $functionThrowPoint;
 			}
@@ -571,6 +580,14 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
+		$typeCallback = function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt, $storage, $nameResult): Type {
+			if (!$e instanceof FuncCall) {
+				throw new ShouldNotHappenException();
+			}
+
+			return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage);
+		};
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
@@ -579,15 +596,238 @@ final class FuncCallHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: $typeCallback,
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt, $storage, $nameResult, $typeCallback): SpecifiedTypes {
+				if (!$e instanceof FuncCall) {
+					throw new ShouldNotHappenException();
+				}
+
+				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, static fn (): Type => $typeCallback($e, $s), $nodeScopeResolver, $stmt, $storage);
+			},
+			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}
 
+	/**
+	 * New-world copy of resolveType(): resolves the call's return type from
+	 * already-known ExpressionResults. ResultAwareScope is used only at the
+	 * sanctioned boundaries — extension invocations and ParametersAcceptorSelector.
+	 */
+	private function resolveTypeViaResults(
+		FuncCall $expr,
+		MutatingScope $scope,
+		?ExpressionResult $nameResult,
+		NodeScopeResolver $nodeScopeResolver,
+		Stmt $stmt,
+		ExpressionResultStorage $storage,
+	): Type
+	{
+		$adapterScope = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage);
+
+		if ($expr->name instanceof Expr) {
+			if ($nameResult === null) {
+				throw new ShouldNotHappenException();
+			}
+
+			$calledOnType = $nameResult->getTypeForScope($scope);
+			if ($calledOnType->isCallable()->no()) {
+				return new ErrorType();
+			}
+
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+				$adapterScope,
+				$expr->getArgs(),
+				$calledOnType->getCallableParametersAcceptors($adapterScope),
+				null,
+			);
+
+			$functionName = null;
+			if ($expr->name instanceof String_) {
+				/** @var non-empty-string $name */
+				$name = $expr->name->value;
+				$functionName = new Name($name);
+			} elseif (
+				$expr->name instanceof FuncCall
+				&& $expr->name->name instanceof Name
+				&& $expr->name->isFirstClassCallable()
+			) {
+				$functionName = $expr->name->name;
+			}
+
+			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr);
+			if ($normalizedNode !== null && $functionName !== null && $this->reflectionProvider->hasFunction($functionName, $scope)) {
+				$functionReflection = $this->reflectionProvider->getFunction($functionName, $scope);
+				$resolvedType = $this->getDynamicFunctionReturnType($adapterScope, $normalizedNode, $functionReflection);
+				if ($resolvedType !== null) {
+					return $resolvedType;
+				}
+			}
+
+			return $parametersAcceptor->getReturnType();
+		}
+
+		if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
+			return new ErrorType();
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+		if ($scope->nativeTypesPromoted) {
+			return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
+		}
+
+		if ($functionReflection->getName() === 'call_user_func') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArguments($expr, $adapterScope);
+			if ($result !== null) {
+				[, $innerFuncCall] = $result;
+
+				return $nodeScopeResolver->processExprNode($stmt, $innerFuncCall, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+			}
+		}
+
+		if ($functionReflection->getName() === 'call_user_func_array') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArrayArguments($expr, $adapterScope);
+			if ($result !== null) {
+				[, $innerFuncCall] = $result;
+
+				return $nodeScopeResolver->processExprNode($stmt, $innerFuncCall, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+			}
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$adapterScope,
+			$expr->getArgs(),
+			$functionReflection->getVariants(),
+			$functionReflection->getNamedArgumentsVariants(),
+		);
+		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr);
+		if ($normalizedNode !== null) {
+			if ($functionReflection->getName() === 'clone' && count($normalizedNode->getArgs()) > 0) {
+				$cloneType = $nodeScopeResolver->processExprNode($stmt, new Expr\Clone_($normalizedNode->getArgs()[0]->value), $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+				if (count($normalizedNode->getArgs()) === 2) {
+					$propertiesType = $adapterScope->getType($normalizedNode->getArgs()[1]->value);
+					if ($propertiesType->isConstantArray()->yes()) {
+						$constantArrays = $propertiesType->getConstantArrays();
+						if (count($constantArrays) === 1) {
+							$accessories = [];
+							foreach ($constantArrays[0]->getKeyTypes() as $keyType) {
+								$constantKeyTypes = $keyType->getConstantScalarValues();
+								if (count($constantKeyTypes) !== 1) {
+									return $cloneType;
+								}
+								$accessories[] = new HasPropertyType((string) $constantKeyTypes[0]);
+							}
+							if (count($accessories) > 0 && count($accessories) <= 16) {
+								return TypeCombinator::intersect($cloneType, ...$accessories);
+							}
+						}
+					}
+				}
+
+				return $cloneType;
+			}
+			$resolvedType = $this->getDynamicFunctionReturnType($adapterScope, $normalizedNode, $functionReflection);
+			if ($resolvedType !== null) {
+				return $resolvedType;
+			}
+		}
+
+		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
+	}
+
+	/**
+	 * New-world copy of specifyTypes(). Conditional-return-type and assert
+	 * narrowing still delegate to TypeSpecifier helpers (with the adapter) —
+	 * to be ported before the old world is deleted.
+	 *
+	 * @param callable(): Type $ownTypeCallback
+	 */
+	private function specifyTypesViaResults(
+		FuncCall $expr,
+		MutatingScope $scope,
+		TypeSpecifierContext $context,
+		?ExpressionResult $nameResult,
+		callable $ownTypeCallback,
+		NodeScopeResolver $nodeScopeResolver,
+		Stmt $stmt,
+		ExpressionResultStorage $storage,
+	): SpecifiedTypes
+	{
+		if (!$expr->name instanceof Name) {
+			// dynamic-name calls: guarded legacy bridge for now (PHPSTAN_FNSR=0)
+			return $this->typeSpecifier->specifyTypesInCondition($scope, $expr, $context);
+		}
+
+		$adapterScope = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage);
+
+		if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
+			// lazy create parametersAcceptor, as creation can be expensive
+			$parametersAcceptor = null;
+
+			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+			$normalizedExpr = $expr;
+			$args = $expr->getArgs();
+			if (count($args) > 0) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($adapterScope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+				$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
+			}
+
+			foreach ($this->typeSpecifier->getFunctionTypeSpecifyingExtensions() as $extension) {
+				if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
+					continue;
+				}
+
+				return $extension->specifyTypes($functionReflection, $normalizedExpr, $adapterScope, $context);
+			}
+
+			if (count($args) > 0) {
+				// TODO(new-world): port conditional-return-type narrowing off TypeSpecifier
+				$specifiedTypes = $this->typeSpecifier->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $adapterScope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+
+			$assertions = $functionReflection->getAsserts();
+			if ($assertions->getAll() !== []) {
+				$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($adapterScope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+
+				$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+					$type,
+					$parametersAcceptor->getResolvedTemplateTypeMap(),
+					$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+					TemplateTypeVariance::createInvariant(),
+				));
+				// TODO(new-world): port assert narrowing off TypeSpecifier
+				$specifiedTypes = $this->typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $adapterScope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+			}
+
+			// default narrowing with the purity gate mirroring TypeSpecifier::createForExpr()
+			$hasSideEffects = $functionReflection->hasSideEffects();
+			if ($hasSideEffects->yes() || (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no())) {
+				return (new SpecifiedTypes([], []))->setRootExpr($expr);
+			}
+
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $ownTypeCallback(), $context);
+		}
+
+		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	/**
+	 * @param callable(): Type $returnTypeCallback
+	 */
 	private function getFunctionThrowPoint(
 		FunctionReflection $functionReflection,
 		?ParametersAcceptor $parametersAcceptor,
 		FuncCall $normalizedFuncCall,
 		MutatingScope $scope,
 		ExpressionContext $context,
+		callable $returnTypeCallback,
+		MutatingScope $extensionScope,
 	): ?InternalThrowPoint
 	{
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
@@ -595,7 +835,7 @@ final class FuncCallHandler implements ExprHandler
 				continue;
 			}
 
-			$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
+			$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $extensionScope);
 			if ($throwType === null) {
 				return null;
 			}
@@ -605,7 +845,7 @@ final class FuncCallHandler implements ExprHandler
 
 		$throwType = $functionReflection->getThrowType();
 		if ($throwType === null) {
-			$returnType = $scope->getType($normalizedFuncCall);
+			$returnType = $returnTypeCallback();
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
@@ -633,7 +873,7 @@ final class FuncCallHandler implements ExprHandler
 				|| $requiredParameters > 0
 				|| count($normalizedFuncCall->getArgs()) > 0
 			) {
-				$functionReturnedType = $scope->getType($normalizedFuncCall);
+				$functionReturnedType = $returnTypeCallback();
 				if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
 					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);
 				}

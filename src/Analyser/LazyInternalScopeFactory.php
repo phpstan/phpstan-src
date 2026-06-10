@@ -52,6 +52,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		private Container $container,
 		private $nodeCallback,
 		private bool $fiber = false,
+		private bool $resultAware = false,
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
@@ -80,6 +81,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		$className = MutatingScope::class;
 		if ($this->fiber) {
 			$className = FiberScope::class;
+		} elseif ($this->resultAware) {
+			$className = ResultAwareScope::class;
 		}
 
 		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
@@ -136,6 +139,11 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	public function toMutatingFactory(): InternalScopeFactory
 	{
 		return new self($this->container, $this->nodeCallback, false);
+	}
+
+	public function toResultAwareFactory(): InternalScopeFactory
+	{
+		return new self($this->container, $this->nodeCallback, false, true);
 	}
 
 }

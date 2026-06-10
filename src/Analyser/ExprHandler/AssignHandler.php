@@ -28,9 +28,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NewWorld;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
@@ -97,6 +99,7 @@ final class AssignHandler implements ExprHandler
 		private ExprPrinter $exprPrinter,
 		private MatchHandler $matchHandler,
 		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -291,6 +294,7 @@ final class AssignHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$assignedExprResult = null;
 		$result = $this->processAssignVar(
 			$nodeScopeResolver,
 			$scope,
@@ -300,7 +304,7 @@ final class AssignHandler implements ExprHandler
 			$expr->expr,
 			$nodeCallback,
 			$context,
-			static function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
+			function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver, &$assignedExprResult): ExpressionResult {
 				$impurePoints = [];
 				if ($expr instanceof AssignRef) {
 					$referencedExpr = $expr->expr;
@@ -330,6 +334,7 @@ final class AssignHandler implements ExprHandler
 
 				$nodeScopeResolver->storeBeforeScope($storage, $expr, $scope);
 				$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$assignedExprResult = $result;
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -340,7 +345,20 @@ final class AssignHandler implements ExprHandler
 					$scope = $scope->exitExpressionAssign($expr->expr);
 				}
 
-				return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+				// the value of an assignment is its assigned value — delegate to its result
+				return new ExpressionResult(
+					$scope,
+					$hasYield,
+					$isAlwaysTerminating,
+					$throwPoints,
+					$impurePoints,
+					expr: $expr->expr,
+					typeCallback: static fn (Expr $e, MutatingScope $s): Type => $result->getTypeForScope($s),
+					specifyTypesCallback: $result->hasSpecifiedTypesCallback()
+						? static fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $result->getSpecifiedTypes($s, $ctx)
+						: null,
+					expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
+				);
 			},
 			true,
 		);
@@ -391,16 +409,61 @@ final class AssignHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
-			typeCallback: function (Expr $e, MutatingScope $s) use ($storage): Type {
-				/** @var Assign|AssignRef $e */
-				$assignedExprResult = $storage->findResult($e->expr);
+			typeCallback: static function (Expr $e, MutatingScope $s) use (&$assignedExprResult): Type {
 				if ($assignedExprResult === null) {
-					throw new ShouldNotHappenException();
+					// assignment shape whose value was not processed through the callback;
+					// guarded legacy bridge (works under PHPSTAN_FNSR=0)
+					return $s->getType($e);
 				}
+
 				return $assignedExprResult->getTypeForScope($s);
+			},
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use (&$assignedExprResult): SpecifiedTypes {
+				/** @var Assign|AssignRef $e */
+				return $this->specifyTypesForAssign($e, $s, $ctx, $assignedExprResult);
 			},
 			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
+	}
+
+	/**
+	 * New-world narrowing for assignments. The RHS-FuncCall special cases
+	 * (array_key_first/array_search/... conditional holders) and non-Variable
+	 * assignment targets still go through the guarded legacy path — they will
+	 * be ported together with the handlers they depend on.
+	 */
+	private function specifyTypesForAssign(Assign|AssignRef $expr, MutatingScope $scope, TypeSpecifierContext $context, ?ExpressionResult $assignedExprResult): SpecifiedTypes
+	{
+		if (
+			$expr instanceof AssignRef
+			|| $assignedExprResult === null
+			|| (
+				$expr->expr instanceof FuncCall
+				&& $expr->expr->name instanceof Name
+				&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last', 'array_search', 'array_find_key', 'array_rand'], true)
+			)
+		) {
+			// guarded legacy bridge (works under PHPSTAN_FNSR=0)
+			return $this->typeSpecifier->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr, $context);
+		}
+
+		if ($context->null()) {
+			if (!$assignedExprResult->hasSpecifiedTypesCallback()) {
+				// guarded legacy bridge for not-yet-migrated assigned values
+				return $this->typeSpecifier->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr, $context);
+			}
+
+			$specifiedTypes = $assignedExprResult->getSpecifiedTypes($scope->exitFirstLevelStatements(), $context)->setRootExpr($expr);
+
+			return $specifiedTypes->removeExpr($this->exprPrinter->printExpr($expr->var));
+		}
+
+		if ($expr->var instanceof Variable && is_string($expr->var->name)) {
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr->var, $assignedExprResult->getTypeForScope($scope), $context)->setRootExpr($expr);
+		}
+
+		// guarded legacy bridge
+		return $this->typeSpecifier->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr, $context);
 	}
 
 	/**
@@ -440,17 +503,17 @@ final class AssignHandler implements ExprHandler
 					$impurePoints[] = new ImpurePoint($scopeBeforeAssignEval, $var, 'superglobal', 'assign to superglobal variable', true);
 				}
 				$assignedExpr = $this->unwrapAssign($assignedExpr);
-				// A plain Assign's value is processed via processExprNode and stored,
-				// so its (possibly migrated) type comes from the ExpressionResult.
-				// AssignOp and other not-separately-processed values fall back to the
-				// legacy scope type (works under PHPSTAN_FNSR=0, guarded under FNSR=1).
-				$assignedExprResult = $storage->findResult($assignedExpr);
-				$type = $assignedExprResult !== null
-					? $assignedExprResult->getType()
+				// The callback result's typeCallback (when present) resolves the type of
+				// the assigned value — AssignHandler delegates it to the value's own
+				// ExpressionResult. Callers that don't supply one (AssignOp, virtual
+				// assigns) fall back to the guarded legacy scope type (PHPSTAN_FNSR=0).
+				$type = $result->hasTypeCallback()
+					? $result->getType()
 					: $scopeBeforeAssignEval->getType($assignedExpr);
 
+				// TODO(new-world): port conditional-expression holders to ExpressionResult-based narrowing
 				$conditionalExpressions = [];
-				if ($assignedExpr instanceof Ternary) {
+				if (!NewWorld::isEnabled() && $assignedExpr instanceof Ternary) {
 					$if = $assignedExpr->if;
 					if ($if === null) {
 						$if = $assignedExpr->cond;
@@ -474,7 +537,7 @@ final class AssignHandler implements ExprHandler
 					}
 				}
 
-				if ($assignedExpr instanceof Match_) {
+				if (!NewWorld::isEnabled() && $assignedExpr instanceof Match_) {
 					$conditionalExpressions = $this->mergeConditionalExpressions(
 						$conditionalExpressions,
 						$this->processMatchForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $assignedExpr),
@@ -482,7 +545,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$truthyType = TypeCombinator::removeFalsey($type);
-				if ($truthyType !== $type) {
+				if (!NewWorld::isEnabled() && $truthyType !== $type) {
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
@@ -493,7 +556,7 @@ final class AssignHandler implements ExprHandler
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 				}
 
-				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
+				foreach (NewWorld::isEnabled() ? [] : [null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
 					$falseyType = ConstantTypeHelper::getTypeFromValue($falseyScalar);
 					$withoutFalseyType = TypeCombinator::remove($type, $falseyType);
 					if (
@@ -529,8 +592,8 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
-				$assignedNativeType = $assignedExprResult !== null
-					? $assignedExprResult->getNativeType()
+				$assignedNativeType = $result->hasTypeCallback()
+					? $result->getNativeType()
 					: $scopeBeforeAssignEval->getNativeType($assignedExpr);
 				$scope = $scope->assignVariable($var->name, $type, $assignedNativeType, TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {

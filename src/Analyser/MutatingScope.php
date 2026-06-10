@@ -181,7 +181,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		protected InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry,
+		protected ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry,
 		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
@@ -249,6 +249,38 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function toMutatingScope(): self
 	{
 		return $this;
+	}
+
+	/**
+	 * @param array<string, ExpressionResult> $exprResults
+	 */
+	public function toResultAwareScope(array $exprResults, NodeScopeResolver $nodeScopeResolver, Node\Stmt $stmt, ExpressionResultStorage $storage): ResultAwareScope
+	{
+		$scope = $this->scopeFactory->toResultAwareFactory()->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+		if (!$scope instanceof ResultAwareScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		$scope->initializeResultAware($this, $exprResults, $nodeScopeResolver, $stmt, $storage);
+
+		return $scope;
 	}
 
 	/** @api */

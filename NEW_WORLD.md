@@ -426,6 +426,30 @@ as factual comments at their call sites, not here.
   `ExpressionTypeResolverExtension` tiers (no such extension in test config),
   and future-leg provisions (isset-certainty apply branch, TruthyFalsey
   context, nullsafe roots in migrated specify callbacks).
+- 2026-06-11 (whole-suite burn-down): **the full test suite finishes again** (the
+  hang was the premature pending-fiber flush poisoning stored results) and the
+  scoreboard is now measured suite-wide: 12843 tests, 25 -> ~10 failures.
+  Fixed, each with its own commit: FiberScope types resolve at the expression's
+  evaluation point narrowed by rule-applied filters (restores the old
+  preprocessScope contract; fixes dynamic-call name/param correlation and
+  chained-call asks; also fixes filterByFalseyValue delegating to
+  filterByTruthyValue); keepVoid bridges to the old world (regular results
+  store void as null — "(void) is used" errors were lost); per-scalar
+  conditional holders bridge through old-world equality (nullsafe subjects pin
+  non-null); function-call extension reads price at the call point (before the
+  call's own virtual mutations — array_shift saw the already-shifted arg);
+  native-type promotion mirrored into the specify-path adapter (PHPDoc tips
+  were lost); collectors collect before forwarding to rules (suspended rule
+  fibers deferred execution-end/return collection past the aggregate-node
+  snapshots) plus a class-boundary fiber flush before the Class*Nodes;
+  Ternary/Match conditional holders un-gated into mixed mode (isset-ternary
+  variable certainty); applySpecifiedTypes uses Yes-certainty holders only as
+  narrowing originals (Maybe holders carry "when defined" types — broke
+  FNSR=0 parity, found by bisect). Remaining failures are one designed-fix
+  family (passed-closure typing context through the adapter — see the task
+  notes; three heuristic attempts each traded fixes for breaks) + the
+  multi-assign precision improvement awaiting a mode-dependent-expectations
+  policy.
 - **Known engine debt — `ExpressionResultStorage` memory retention**: every
   `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
   retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker

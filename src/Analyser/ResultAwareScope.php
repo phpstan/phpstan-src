@@ -69,7 +69,8 @@ final class ResultAwareScope extends MutatingScope
 	public function toResultAwareScope(array $exprResults, NodeScopeResolver $nodeScopeResolver, Stmt $stmt, ExpressionResultStorage $storage): self
 	{
 		if ($this->plainScope === null) {
-			throw new ShouldNotHappenException();
+			// derived through an uncovered scope-mutation path — start fresh from this state
+			return parent::toResultAwareScope($exprResults, $nodeScopeResolver, $stmt, $storage);
 		}
 
 		// don't wrap an adapter in an adapter — merge the known results instead
@@ -110,7 +111,9 @@ final class ResultAwareScope extends MutatingScope
 		}
 
 		if ($this->plainScope === null || $this->nodeScopeResolver === null || $this->stmt === null || $this->resultStorage === null) {
-			throw new ShouldNotHappenException();
+			// derived through an uncovered scope-mutation path — degrade to the
+			// plain promoted scope (guarded legacy bridge, PHPSTAN_FNSR=0)
+			return parent::doNotTreatPhpDocTypesAsCertain();
 		}
 
 		$promotedPlainScope = $this->plainScope->doNotTreatPhpDocTypesAsCertain();
@@ -127,20 +130,35 @@ final class ResultAwareScope extends MutatingScope
 	}
 
 	/**
-	 * Resolves SpecifiedTypes for the given expr through ExpressionResults —
-	 * called from the head of TypeSpecifier::specifyTypesInCondition() so that
-	 * old-world narrowing code recursing with this scope stays in the new world.
+	 * The ExpressionResult for the given expr — a known child result, or the
+	 * expression processed on demand. Used by the head of
+	 * TypeSpecifier::specifyTypesInCondition() so that old-world narrowing code
+	 * recursing with this scope stays in the new world where possible.
 	 *
 	 * @internal
 	 */
-	public function specifyTypesViaResults(Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
+	public function getExpressionResultForExpr(Expr $expr): ExpressionResult
 	{
 		$key = $this->getNodeKey($expr);
 		if (array_key_exists($key, $this->exprResults)) {
-			return $this->exprResults[$key]->getSpecifiedTypes($this, $context);
+			return $this->exprResults[$key];
 		}
 
-		return $this->processSynthetic($expr)->getSpecifiedTypes($this, $context);
+		if ($this->plainScope === null || ($this->resultStorage !== null && array_key_exists($key, $this->resultStorage->syntheticsInFlight))) {
+			// no adapter context (derived through an uncovered scope-mutation path),
+			// or this expression is already being processed up the stack — return a
+			// callback-less result so the caller takes its guarded legacy bridge
+			return new ExpressionResult(
+				$this,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+				expr: $expr,
+			);
+		}
+
+		return $this->processSynthetic($expr);
 	}
 
 	/**
@@ -205,9 +223,13 @@ final class ResultAwareScope extends MutatingScope
 			return $this->exprResults[$key]->getTypeForScope($this);
 		}
 
-		if ($this->plainScope === null) {
-			// derived through a scope-mutation path that did not carry the adapter
-			// context — degrade to the guarded legacy bridge (PHPSTAN_FNSR=0)
+		if (
+			$this->plainScope === null
+			|| ($this->resultStorage !== null && array_key_exists($key, $this->resultStorage->syntheticsInFlight))
+		) {
+			// no adapter context, or this very expression is already being processed
+			// somewhere up the stack — degrade to the guarded legacy bridge
+			// (PHPSTAN_FNSR=0) instead of recursing
 			return parent::getType($node);
 		}
 
@@ -220,11 +242,14 @@ final class ResultAwareScope extends MutatingScope
 			throw new ShouldNotHappenException('ResultAwareScope is missing its adapter context.');
 		}
 
+		$storage = $this->resultStorage->duplicate();
+		$storage->syntheticsInFlight[$this->getNodeKey($expr)] = true;
+
 		return $this->nodeScopeResolver->processExprNode(
 			$this->stmt,
 			$expr,
 			$this->plainScope,
-			$this->resultStorage->duplicate(),
+			$storage,
 			new NoopNodeCallback(),
 			ExpressionContext::createDeep(),
 		);

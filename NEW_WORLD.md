@@ -210,6 +210,27 @@ Status: ✅ done · 🔶 in progress · 🔧 mechanical · 🎯 design-sensitive
     synthetic-condition ones (switch `:2023/2049`, foreach `:1462`, while `:1626`) become
     direct helper calls with results. (`findEarlyTerminatingExpr` already migrated.)
 
+## 5a. Working style
+
+- **TDD with the guard exceptions active**: when migrating a handler to the new
+  world, always start by flipping `NewWorld::disableOldWorld()` to `return true;`
+  (the committed state is `return false;` — mixed mode, everything green). Then
+  drive the work with `NewWorldTypeInferenceTest`:
+  1. add probes for the handler's constructs to `data/new-world.php` (or rely on
+     bridge probes already there) and run the test — **red**, the guard message
+     names the unmigrated handler;
+  2. implement `typeCallback`/`specifyTypesCallback` until the test progresses
+     past those constructs — the meter walks the data file in order, naming the
+     next unmigrated handler ("fix, rerun, next");
+  3. flip `disableOldWorld()` back to `return false;` and run the mixed-mode
+     scoreboard (nsrt `NodeScopeResolverTest` + `make phpstan`) to verify
+     whole-suite impact — `false` is also what gets committed.
+  Each condition and branch of new-world code gets a probing assertType test.
+- **No TODO markers in new-world code** — deferred functionality is implemented
+  immediately. Where something genuinely depends on a not-yet-migrated handler,
+  the code states that dependency as a fact (and bridges or skips), it doesn't
+  promise future work.
+
 ## 6. Migration mechanics
 
 - **Exercisers**: tiny files analysed with `bin/phpstan analyse -l 8 test.php --debug` under
@@ -251,3 +272,26 @@ Status: ✅ done · 🔶 in progress · 🔧 mechanical · 🎯 design-sensitive
   (temporary; delete when the whole suite is green under the guard): 13 assertions
   over scalars, assigns (incl. nested), params, and function calls (signature,
   constant-folding extensions, nested calls) — green in both worlds.
+- 2026-06-10 (TDD leg): **`MutatingScope::applySpecifiedTypes`** lands — the new-world
+  apply side. Original (pre-narrowing) types resolved in tiers (extension registry →
+  scope-tracked holders → caller-supplied ExpressionResults → guarded bridge); the
+  conditional-holder matching tail is shared with `filterBySpecifiedTypes` via an
+  extracted private method. `getTruthyScope`/`getFalseyScope` and the per-statement
+  createNull narrowing run on it. `VariableHandler` gets its own copied typeCallback
+  + default-narrowing specify callback; `TypeExpr`/`NativeTypeExpr` virtual handlers
+  migrate (their type is the wrapped type); synthetic fiber requests are processed on
+  the plain scope (a FiberScope would suspend from within — found via an infinite
+  loop in the asserts flow). FuncCall conditional-return + asserts narrowing are
+  **copied** into the handler (`*ViaResults`), no longer delegating to the
+  TypeSpecifier internals; the `@api` `create()`/`specifyTypesInCondition()` (with
+  adapter) remain the sanctioned entry points. Assign conditional-expression holders
+  (truthy/falsey projection + falsey-scalar equality holders) are ported with a
+  per-entry type resolver (assigned result → tracked holders → skip unpriceable
+  entries, e.g. conditional-return narrowing of inner call arguments); Ternary/Match
+  holders stay old-world until those handlers migrate. If/elseif condition types and
+  `processArgs` callable/impure-invalidation types come from ExpressionResults.
+  `NewWorldTypeInferenceTest`: **33 assertions green in both worlds**, including
+  `if`/`else` narrowing (`$v = 1; if ($v)` — the original exerciser), assign-in-if,
+  function asserts (`@phpstan-assert`), conditional return types, holder-driven
+  narrowing (`$len = strlen($s); if ($len)` → `$s` is `non-empty-string`), and
+  by-reference assignment.

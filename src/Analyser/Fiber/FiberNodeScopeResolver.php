@@ -10,6 +10,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
@@ -31,14 +32,22 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		ExpressionResultStorage $storage,
 	): void
 	{
+		if ($nodeCallback instanceof NoopNodeCallback) {
+			return;
+		}
+
 		if (Fiber::getCurrent() !== null) {
 			$nodeCallback($node, $scope->toFiberScope());
 			return;
 		}
 		if (count($storage->parkedFibers) > 0) {
 			$fiber = array_pop($storage->parkedFibers);
+			if ($fiber === null) {
+				throw new ShouldNotHappenException();
+			}
 			$request = $fiber->resume([$nodeCallback, $node, $scope]);
 		} else {
+			/** @var Fiber<mixed, ExpressionResult|array{callable(Node, Scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest> $fiber */
 			$fiber = new Fiber(static function () use ($node, $scope, $nodeCallback) {
 				while (true) { // @phpstan-ignore while.alwaysTrue
 					$nodeCallback($node, $scope->toFiberScope());
@@ -57,7 +66,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 	}
 
 	/**
-	 * @param Fiber<mixed, ExpressionResult|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest> $fiber
+	 * @param Fiber<mixed, ExpressionResult|array{callable(Node, Scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest> $fiber
 	 */
 	private function runFiberForNodeCallback(
 		ExpressionResultStorage $storage,
@@ -113,7 +122,8 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 			$result = $this->processExprNode(
 				new Node\Stmt\Expression($request->expr),
 				$request->expr,
-				$request->scope,
+				// process on the plain scope — a FiberScope would suspend from within
+				$request->scope->toMutatingScope(),
 				$storage,
 				static function (): void {
 				},

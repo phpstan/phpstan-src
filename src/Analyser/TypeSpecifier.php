@@ -95,12 +95,22 @@ final class TypeSpecifier
 		if ($scope instanceof ResultAwareScope) {
 			// new world: old-world narrowing code recursing with the adapter
 			// stays in the new world — resolved through ExpressionResults
-			return $scope->specifyTypesViaResults($expr, $context);
-		}
+			$result = $scope->getExpressionResultForExpr($expr);
+			if ($result->hasSpecifiedTypesCallback()) {
+				return $result->getSpecifiedTypes($scope, $context);
+			}
 
-		if ($scope instanceof FiberScope) {
+			// not-yet-migrated handler — fall through to the guarded old-world
+			// dispatcher, keeping the adapter so inner lookups stay unguarded
+		} elseif ($scope instanceof FiberScope) {
 			// new world: rules asking for narrowing suspend for the ExpressionResult
-			return $scope->getExpressionResult($expr)->getSpecifiedTypes($scope->toMutatingScope(), $context);
+			$result = $scope->getExpressionResult($expr);
+			if ($result->hasSpecifiedTypesCallback()) {
+				return $result->getSpecifiedTypes($scope->toMutatingScope(), $context);
+			}
+
+			// not-yet-migrated handler — guarded old-world bridge (PHPSTAN_FNSR=0)
+			$scope = $scope->toMutatingScope();
 		}
 
 		$enableFnsr = getenv('PHPSTAN_FNSR');

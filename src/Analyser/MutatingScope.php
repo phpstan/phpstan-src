@@ -3445,6 +3445,142 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
 		}
 
+		return $this->applySpecifiedExpressionsToConditionals($scope, $specifiedTypes, $specifiedExpressions);
+	}
+
+	/**
+	 * New-world replacement for filterBySpecifiedTypes(): applies SpecifiedTypes
+	 * without resolving expression types through the guarded Scope::getType().
+	 * Original (pre-narrowing) types are resolved in tiers: ExpressionTypeResolver
+	 * extensions, scope-tracked holders, ExpressionResults supplied by the caller,
+	 * guarded legacy bridge (PHPSTAN_FNSR=0).
+	 *
+	 * @param array<string, ExpressionResult> $exprResults
+	 */
+	public function applySpecifiedTypes(SpecifiedTypes $specifiedTypes, array $exprResults = []): self
+	{
+		$typeSpecifications = [];
+		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
+			$typeSpecifications[] = [
+				'sure' => true,
+				'exprString' => (string) $exprString,
+				'expr' => $expr,
+				'type' => $type,
+			];
+		}
+		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
+			$typeSpecifications[] = [
+				'sure' => false,
+				'exprString' => (string) $exprString,
+				'expr' => $expr,
+				'type' => $type,
+			];
+		}
+
+		usort($typeSpecifications, static function (array $a, array $b): int {
+			$length = strlen($a['exprString']) - strlen($b['exprString']);
+			if ($length !== 0) {
+				return $length;
+			}
+
+			return $b['sure'] - $a['sure']; // @phpstan-ignore minus.leftNonNumeric, minus.rightNonNumeric
+		});
+
+		$scope = $this;
+		$specifiedExpressions = [];
+		foreach ($typeSpecifications as $typeSpecification) {
+			$expr = $typeSpecification['expr'];
+			$type = $typeSpecification['type'];
+
+			if ($expr instanceof IssetExpr) {
+				$issetExpr = $expr;
+				$expr = $issetExpr->getExpr();
+
+				if ($typeSpecification['sure']) {
+					$scope = $scope->setExpressionCertainty(
+						$expr,
+						TrinaryLogic::createMaybe(),
+					);
+				} else {
+					$scope = $scope->unsetExpression($expr);
+				}
+
+				continue;
+			}
+
+			[$originalType, $originalNativeType] = $scope->resolveOriginalTypesForApply($expr, $exprResults);
+
+			if ($typeSpecification['sure']) {
+				if ($specifiedTypes->shouldOverwrite()) {
+					$scope = $scope->assignExpression($expr, $type, $type);
+					$newType = $type;
+				} elseif ($scope->isComplexUnionType($originalType)) {
+					// mirrors addTypeToExpression()
+					$newType = $originalType;
+				} else {
+					$newType = TypeCombinator::intersect($type, $originalType);
+					$newNativeType = $originalType->equals($originalNativeType) ? $newType : TypeCombinator::intersect($type, $originalNativeType);
+					$scope = $scope->specifyExpressionType($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+				}
+			} elseif ($type instanceof NeverType || $originalType instanceof NeverType || $scope->isComplexUnionType($originalType)) {
+				// mirrors removeTypeFromExpression()
+				$newType = $originalType;
+			} else {
+				$newType = TypeCombinator::remove($originalType, $type);
+				$scope = $scope->specifyExpressionType($expr, $newType, TypeCombinator::remove($originalNativeType, $type), TrinaryLogic::createYes());
+			}
+
+			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, TypeUtils::resolveLateResolvableTypes($newType));
+		}
+
+		return $this->applySpecifiedExpressionsToConditionals($scope, $specifiedTypes, $specifiedExpressions);
+	}
+
+	/**
+	 * @param array<string, ExpressionResult> $exprResults
+	 * @return array{Type, Type}
+	 */
+	private function resolveOriginalTypesForApply(Expr $expr, array $exprResults): array
+	{
+		foreach ($this->expressionTypeResolverExtensionRegistry->getExtensions() as $extension) {
+			$extensionType = $extension->getType($expr, $this);
+			if ($extensionType !== null) {
+				return [$extensionType, $extensionType];
+			}
+		}
+
+		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
+			$exprString = $this->getNodeKey($expr);
+			if (array_key_exists($exprString, $this->expressionTypes)) {
+				$nativeHolder = $this->nativeExpressionTypes[$exprString] ?? $this->expressionTypes[$exprString];
+
+				return [
+					TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$exprString]->getType()),
+					TypeUtils::resolveLateResolvableTypes($nativeHolder->getType()),
+				];
+			}
+
+			if (array_key_exists($exprString, $exprResults)) {
+				return [$exprResults[$exprString]->getType(), $exprResults[$exprString]->getNativeType()];
+			}
+		}
+
+		// guarded legacy bridge (works under PHPSTAN_FNSR=0)
+		return [$this->getType($expr), $this->getNativeType($expr)];
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $specifiedExpressions
+	 * @return static
+	 */
+	private function applySpecifiedExpressionsToConditionals(self $scope, SpecifiedTypes $specifiedTypes, array $specifiedExpressions): self
+	{
 		$conditions = [];
 		$originallySpecifiedExprStrings = $specifiedExpressions;
 		$prevSpecifiedCount = -1;

@@ -55,7 +55,7 @@ final class DefaultNarrowingHelper
 			$sureNotTypes[$this->exprPrinter->printExpr($originalExpr)] = [$originalExpr, $removedType];
 		}
 
-		return (new SpecifiedTypes([], $sureNotTypes))->setRootExpr($originalExpr);
+		return (new SpecifiedTypes(sureNotTypes: $sureNotTypes))->setRootExpr($originalExpr);
 	}
 
 }

@@ -76,6 +76,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use TypeError;
+use function array_key_exists;
 use function array_key_last;
 use function array_merge;
 use function array_pop;
@@ -373,8 +374,9 @@ final class AssignHandler implements ExprHandler
 		) {
 			$varName = $expr->var->name;
 			$refName = $expr->expr->name;
-			$type = $scope->getType($expr->var);
-			$nativeType = $scope->getNativeType($expr->var);
+			// the variable was just assigned the referenced value — its type is the value result's
+			$type = $assignedExprResult !== null ? $assignedExprResult->getType() : $scope->getType($expr->var);
+			$nativeType = $assignedExprResult !== null ? $assignedExprResult->getNativeType() : $scope->getNativeType($expr->var);
 
 			// When $varName is assigned, update $refName
 			$scope = $scope->assignExpression(
@@ -434,6 +436,11 @@ final class AssignHandler implements ExprHandler
 	 */
 	private function specifyTypesForAssign(Assign|AssignRef $expr, MutatingScope $scope, TypeSpecifierContext $context, ?ExpressionResult $assignedExprResult): SpecifiedTypes
 	{
+		if ($expr instanceof AssignRef && $assignedExprResult !== null) {
+			// the old world treats by-reference assignments with default narrowing
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $assignedExprResult->getTypeForScope($scope), $context);
+		}
+
 		if (
 			$expr instanceof AssignRef
 			|| $assignedExprResult === null
@@ -511,7 +518,8 @@ final class AssignHandler implements ExprHandler
 					? $result->getType()
 					: $scopeBeforeAssignEval->getType($assignedExpr);
 
-				// TODO(new-world): port conditional-expression holders to ExpressionResult-based narrowing
+				// Ternary/Match conditional-expression holders need the branch types from
+				// narrowed scopes — old world only until TernaryHandler/MatchHandler migrate
 				$conditionalExpressions = [];
 				if (!NewWorld::isEnabled() && $assignedExpr instanceof Ternary) {
 					$if = $assignedExpr->if;
@@ -544,19 +552,57 @@ final class AssignHandler implements ExprHandler
 					);
 				}
 
-				$truthyType = TypeCombinator::removeFalsey($type);
-				if (!NewWorld::isEnabled() && $truthyType !== $type) {
-					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
+				$assignedExprString = $scope->getNodeKey($assignedExpr);
+				$exprTypeResolver = null;
+				if (NewWorld::isEnabled()) {
+					// resolves entry expressions of the projected SpecifiedTypes:
+					// the assigned expression itself via its ExpressionResult,
+					// scope-tracked expressions via their holders, anything else
+					// through the guarded legacy bridge (PHPSTAN_FNSR=0)
+					$exprTypeResolver = static function (Expr $e, string $eString) use ($assignedExprString, $result, $scope, $nodeScopeResolver, $stmt, $storage): Type {
+						if ($eString === $assignedExprString && $result->hasTypeCallback()) {
+							return $result->getType();
+						}
+						if (array_key_exists($eString, $scope->expressionTypes)) {
+							return TypeUtils::resolveLateResolvableTypes($scope->expressionTypes[$eString]->getType());
+						}
 
-					$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
-					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+						// price sub-expressions of the assigned value (e.g. inner call
+						// arguments narrowed by conditional return types) through the
+						// adapter — its tiers and cycle guard fall back to the guarded
+						// legacy bridge for anything unresolvable (PHPSTAN_FNSR=0)
+						return $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage)->getType($e);
+					};
 				}
 
-				foreach (NewWorld::isEnabled() ? [] : [null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
+				$truthySpecifiedTypes = null;
+				$truthyType = TypeCombinator::removeFalsey($type);
+				if ($truthyType !== $type) {
+					if (NewWorld::isEnabled() && $result->hasSpecifiedTypesCallback()) {
+						$truthySpecifiedTypes = $result->getSpecifiedTypes($scope, TypeSpecifierContext::createTruthy());
+						$falseySpecifiedTypes = $result->getSpecifiedTypes($scope, TypeSpecifierContext::createFalsey());
+					} else {
+						// old world, or a not-yet-migrated assigned value — guarded bridge (PHPSTAN_FNSR=0)
+						$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
+						$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
+					}
+
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr, $exprTypeResolver);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr, $exprTypeResolver);
+
+					$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
+				}
+
+				// pure function calls (and any non-call value) may be remembered in holders;
+				// new-world purity is reflected by the truthy SpecifiedTypes being non-empty
+				$scalarHoldersAllowed = !NewWorld::isEnabled()
+					|| ($truthySpecifiedTypes !== null && (
+						!$assignedExpr instanceof FuncCall
+						|| count($truthySpecifiedTypes->getSureTypes()) + count($truthySpecifiedTypes->getSureNotTypes()) > 0
+					));
+				foreach ($scalarHoldersAllowed ? [null, false, 0, 0.0, '', '0', []] : [] as $falseyScalar) {
 					$falseyType = ConstantTypeHelper::getTypeFromValue($falseyScalar);
 					$withoutFalseyType = TypeCombinator::remove($type, $falseyType);
 					if (
@@ -580,15 +626,25 @@ final class AssignHandler implements ExprHandler
 						$astNode = new Node\Expr\Array_($falseyScalar);
 					}
 
-					$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
-					$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr);
+					if (NewWorld::isEnabled()) {
+						// `$assignedExpr !== <falsey scalar>` / `=== <falsey scalar>` narrowing,
+						// constructed directly (equality on a constant scalar removes/pins its type)
+						$notIdenticalSpecifiedTypes = new SpecifiedTypes(sureNotTypes: [$assignedExprString => [$assignedExpr, $falseyType]]);
+					} else {
+						$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
+						$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
+					}
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
 
-					$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
-					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+					if (NewWorld::isEnabled()) {
+						$identicalSpecifiedTypes = new SpecifiedTypes([$assignedExprString => [$assignedExpr, $falseyType]], []);
+					} else {
+						$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
+						$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
+					}
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
@@ -1153,7 +1209,13 @@ final class AssignHandler implements ExprHandler
 	 * @param ImpurePoint[] $rhsImpurePoints
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr): array
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @param (callable(Expr, string): Type)|null $exprTypeResolver
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr, ?callable $exprTypeResolver = null): array
 	{
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
 			if (!$this->isExprSafeToProjectThroughVariable($expr, $variableName, $rhsImpurePoints, $assignedExpr)) {
@@ -1168,7 +1230,7 @@ final class AssignHandler implements ExprHandler
 					$variableType,
 					$innerExpr,
 					$this->exprPrinter->printExpr($innerExpr),
-					$scope->getType($innerExpr),
+					$exprTypeResolver !== null ? $exprTypeResolver($innerExpr, $this->exprPrinter->printExpr($innerExpr)) : $scope->getType($innerExpr),
 					TrinaryLogic::createMaybe(),
 				);
 				continue;
@@ -1176,13 +1238,15 @@ final class AssignHandler implements ExprHandler
 
 			$exprString = (string) $exprString;
 
+			$entryExprType = $exprTypeResolver !== null ? $exprTypeResolver($expr, $exprString) : $scope->getType($expr);
+
 			$conditionalExpressions = $this->addConditionalExpressionHolder(
 				$conditionalExpressions,
 				$variableName,
 				$variableType,
 				$expr,
 				$exprString,
-				TypeCombinator::intersect($scope->getType($expr), $exprType),
+				TypeCombinator::intersect($entryExprType, $exprType),
 				TrinaryLogic::createYes(),
 			);
 		}
@@ -1195,7 +1259,13 @@ final class AssignHandler implements ExprHandler
 	 * @param ImpurePoint[] $rhsImpurePoints
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr): array
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @param (callable(Expr, string): Type)|null $exprTypeResolver
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr, ?callable $exprTypeResolver = null): array
 	{
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
 			if (!$this->isExprSafeToProjectThroughVariable($expr, $variableName, $rhsImpurePoints, $assignedExpr)) {
@@ -1218,13 +1288,15 @@ final class AssignHandler implements ExprHandler
 
 			$exprString = (string) $exprString;
 
+			$entryExprType = $exprTypeResolver !== null ? $exprTypeResolver($expr, $exprString) : $scope->getType($expr);
+
 			$conditionalExpressions = $this->addConditionalExpressionHolder(
 				$conditionalExpressions,
 				$variableName,
 				$variableType,
 				$expr,
 				$exprString,
-				TypeCombinator::remove($scope->getType($expr), $exprType),
+				TypeCombinator::remove($entryExprType, $exprType),
 				TrinaryLogic::createYes(),
 			);
 		}

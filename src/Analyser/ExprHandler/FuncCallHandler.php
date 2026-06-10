@@ -38,6 +38,7 @@ use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
@@ -46,6 +47,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -53,10 +55,13 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -70,9 +75,12 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use Throwable;
 use function array_filter;
+use function array_key_exists;
+use function array_last;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -82,6 +90,8 @@ use function in_array;
 use function is_string;
 use function sprintf;
 use function str_starts_with;
+use function strtolower;
+use function substr;
 
 /**
  * @implements ExprHandler<FuncCall>
@@ -122,7 +132,7 @@ final class FuncCallHandler implements ExprHandler
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$nameType = $nameResult->getType();
 			if (!$nameType->isCallable()->no()) {
-				$adapterScope = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage);
+				$adapterScope = $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$adapterScope,
 					$expr->getArgs(),
@@ -154,7 +164,7 @@ final class FuncCallHandler implements ExprHandler
 		} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-				$scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage),
+				$this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage),
 				$expr->getArgs(),
 				$functionReflection->getVariants(),
 				$functionReflection->getNamedArgumentsVariants(),
@@ -327,7 +337,7 @@ final class FuncCallHandler implements ExprHandler
 
 		if ($functionReflection !== null) {
 			$normalizedExprForThrowPoint = $normalizedExpr;
-			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context, fn (): Type => $this->resolveTypeViaResults($normalizedExprForThrowPoint, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage), $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage));
+			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context, fn (): Type => $this->resolveTypeViaResults($normalizedExprForThrowPoint, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage), $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage));
 			if ($functionThrowPoint !== null) {
 				$throwPoints[] = $functionThrowPoint;
 			}
@@ -610,6 +620,53 @@ final class FuncCallHandler implements ExprHandler
 	}
 
 	/**
+	 * Builds the ResultAwareScope for extension/selector invocations, seeded with
+	 * a self-result so that code asking about the call currently being resolved
+	 * (e.g. is_int()-family return type extensions going through
+	 * ImpossibleCheckTypeHelper) is answered from the call's own narrowing
+	 * instead of re-processing the call — which would recurse forever.
+	 */
+	private function createAdapterScope(
+		FuncCall $expr,
+		MutatingScope $scope,
+		?ExpressionResult $nameResult,
+		NodeScopeResolver $nodeScopeResolver,
+		Stmt $stmt,
+		ExpressionResultStorage $storage,
+	): MutatingScope
+	{
+		$selfResult = new ExpressionResult(
+			$scope,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+			expr: $expr,
+			typeCallback: function (Expr $e, MutatingScope $s) use ($nameResult, $nodeScopeResolver, $stmt, $storage): Type {
+				if (!$e instanceof FuncCall) {
+					throw new ShouldNotHappenException();
+				}
+
+				return $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage);
+			},
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nameResult, $nodeScopeResolver, $stmt, $storage): SpecifiedTypes {
+				if (!$e instanceof FuncCall) {
+					throw new ShouldNotHappenException();
+				}
+
+				return $this->specifyTypesViaResults($e, $s, $ctx, $nameResult, fn (): Type => $this->resolveTypeViaResults($e, $s, $nameResult, $nodeScopeResolver, $stmt, $storage), $nodeScopeResolver, $stmt, $storage);
+			},
+		);
+
+		$exprResults = [$scope->getNodeKey($expr) => $selfResult];
+		if ($nameResult !== null && $expr->name instanceof Expr) {
+			$exprResults[$scope->getNodeKey($expr->name)] = $nameResult;
+		}
+
+		return $scope->toResultAwareScope($exprResults, $nodeScopeResolver, $stmt, $storage);
+	}
+
+	/**
 	 * New-world copy of resolveType(): resolves the call's return type from
 	 * already-known ExpressionResults. ResultAwareScope is used only at the
 	 * sanctioned boundaries — extension invocations and ParametersAcceptorSelector.
@@ -623,7 +680,7 @@ final class FuncCallHandler implements ExprHandler
 		ExpressionResultStorage $storage,
 	): Type
 	{
-		$adapterScope = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage);
+		$adapterScope = $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage);
 
 		if ($expr->name instanceof Expr) {
 			if ($nameResult === null) {
@@ -758,7 +815,7 @@ final class FuncCallHandler implements ExprHandler
 			return $this->typeSpecifier->specifyTypesInCondition($scope, $expr, $context);
 		}
 
-		$adapterScope = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage);
+		$adapterScope = $this->createAdapterScope($expr, $scope, $nameResult, $nodeScopeResolver, $stmt, $storage);
 
 		if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			// lazy create parametersAcceptor, as creation can be expensive
@@ -781,8 +838,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 
 			if (count($args) > 0) {
-				// TODO(new-world): port conditional-return-type narrowing off TypeSpecifier
-				$specifiedTypes = $this->typeSpecifier->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $adapterScope);
+				$specifiedTypes = $this->specifyTypesFromConditionalReturnTypeViaResults($context, $expr, $parametersAcceptor, $adapterScope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -798,8 +854,7 @@ final class FuncCallHandler implements ExprHandler
 					$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 					TemplateTypeVariance::createInvariant(),
 				));
-				// TODO(new-world): port assert narrowing off TypeSpecifier
-				$specifiedTypes = $this->typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $adapterScope);
+				$specifiedTypes = $this->specifyTypesFromAssertsViaResults($context, $expr, $asserts, $parametersAcceptor, $adapterScope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -815,6 +870,228 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	/**
+	 * @param callable(): Type $returnTypeCallback
+	 */
+	/**
+	 * New-world copy of TypeSpecifier::specifyTypesFromConditionalReturnType().
+	 * The passed scope is a ResultAwareScope, which keeps the @api
+	 * TypeSpecifier::create()/specifyTypesInCondition() calls in the new world.
+	 */
+	private function specifyTypesFromConditionalReturnTypeViaResults(
+		TypeSpecifierContext $context,
+		Expr\CallLike $call,
+		?ParametersAcceptor $parametersAcceptor,
+		MutatingScope $scope,
+	): ?SpecifiedTypes
+	{
+		if (!$parametersAcceptor instanceof ResolvedFunctionVariant) {
+			return null;
+		}
+
+		$returnType = $parametersAcceptor->getOriginalParametersAcceptor()->getReturnType();
+		if (!$returnType instanceof ConditionalTypeForParameter) {
+			return null;
+		}
+
+		if ($context->true()) {
+			$leftType = new ConstantBooleanType(true);
+			$rightType = new ConstantBooleanType(false);
+		} elseif ($context->false()) {
+			$leftType = new ConstantBooleanType(false);
+			$rightType = new ConstantBooleanType(true);
+		} elseif ($context->null()) {
+			$leftType = new MixedType();
+			$rightType = new NeverType();
+		} else {
+			return null;
+		}
+
+		$argumentExpr = null;
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($call->getArgs() as $i => $arg) {
+			if ($arg->unpack) {
+				continue;
+			}
+
+			if ($arg->name !== null) {
+				$paramName = $arg->name->toString();
+			} elseif (isset($parameters[$i])) {
+				$paramName = $parameters[$i]->getName();
+			} else {
+				continue;
+			}
+
+			if ($returnType->getParameterName() !== '$' . $paramName) {
+				continue;
+			}
+
+			$argumentExpr = $arg->value;
+		}
+
+		if ($argumentExpr === null) {
+			return null;
+		}
+
+		$targetType = $returnType->getTarget();
+		$ifType = $returnType->getIf();
+		$elseType = $returnType->getElse();
+
+		if (
+			(
+				$argumentExpr instanceof Node\Scalar
+				|| ($argumentExpr instanceof Expr\ConstFetch && in_array(strtolower($argumentExpr->name->toString()), ['true', 'false', 'null'], true))
+			) && ($ifType instanceof NeverType || $elseType instanceof NeverType)
+		) {
+			return null;
+		}
+
+		if ($leftType->isSuperTypeOf($ifType)->yes() && $rightType->isSuperTypeOf($elseType)->yes()) {
+			$conditionContext = $returnType->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue();
+		} elseif ($leftType->isSuperTypeOf($elseType)->yes() && $rightType->isSuperTypeOf($ifType)->yes()) {
+			$conditionContext = $returnType->isNegated() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
+		} else {
+			return null;
+		}
+
+		$specifiedTypes = $this->typeSpecifier->create(
+			$argumentExpr,
+			$targetType,
+			$conditionContext,
+			$scope,
+		);
+
+		if ($targetType->isTrue()->yes() || $targetType->isFalse()->yes()) {
+			if ($targetType->isFalse()->yes()) {
+				$conditionContext = $conditionContext->negate();
+			}
+
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->specifyTypesInCondition($scope, $argumentExpr, $conditionContext));
+		}
+
+		return $specifiedTypes;
+	}
+
+	/**
+	 * New-world copy of TypeSpecifier::specifyTypesFromAsserts().
+	 */
+	private function specifyTypesFromAssertsViaResults(TypeSpecifierContext $context, Expr\CallLike $call, Assertions $assertions, ParametersAcceptor $parametersAcceptor, MutatingScope $scope): ?SpecifiedTypes
+	{
+		if ($context->null()) {
+			$asserts = $assertions->getAsserts();
+		} elseif ($context->true()) {
+			$asserts = $assertions->getAssertsIfTrue();
+		} elseif ($context->false()) {
+			$asserts = $assertions->getAssertsIfFalse();
+		} else {
+			throw new ShouldNotHappenException();
+		}
+
+		if (count($asserts) === 0) {
+			return null;
+		}
+
+		$argsMap = [];
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($call->getArgs() as $i => $arg) {
+			if ($arg->unpack) {
+				continue;
+			}
+
+			if ($arg->name !== null) {
+				$paramName = $arg->name->toString();
+			} elseif (isset($parameters[$i])) {
+				$paramName = $parameters[$i]->getName();
+			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
+				$lastParameter = array_last($parameters);
+				$paramName = $lastParameter->getName();
+			} else {
+				continue;
+			}
+
+			$argsMap[$paramName][] = $arg->value;
+		}
+		foreach ($parameters as $parameter) {
+			$name = $parameter->getName();
+			$defaultValue = $parameter->getDefaultValue();
+			if (isset($argsMap[$name]) || $defaultValue === null) {
+				continue;
+			}
+			$argsMap[$name][] = new TypeExpr($defaultValue);
+		}
+
+		if ($call instanceof MethodCall) {
+			$argsMap['this'] = [$call->var];
+		}
+
+		/** @var SpecifiedTypes|null $types */
+		$types = null;
+
+		foreach ($asserts as $assert) {
+			foreach ($argsMap[substr($assert->getParameter()->getParameterName(), 1)] ?? [] as $parameterExpr) {
+				$assertedType = TypeTraverser::map($assert->getType(), static function (Type $type, callable $traverse) use ($argsMap, $scope): Type {
+					if ($type instanceof ConditionalTypeForParameter) {
+						$parameterName = substr($type->getParameterName(), 1);
+						if (array_key_exists($parameterName, $argsMap)) {
+							$type = $traverse($type);
+							if ($type instanceof ConditionalTypeForParameter) {
+								$argType = TypeCombinator::union(...array_map(static fn (Expr $expr) => $scope->getType($expr), $argsMap[substr($type->getParameterName(), 1)]));
+								return $type->toConditional($argType);
+							}
+							return $type;
+						}
+					}
+
+					return $traverse($type);
+				});
+
+				$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
+
+				$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+				$containsUnresolvedTemplate = false;
+				TypeTraverser::map(
+					$assert->getOriginalType(),
+					static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate) {
+						if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
+							$resolvedType = $templateTypeMap->getType($type->getName());
+							if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
+								$containsUnresolvedTemplate = true;
+								return $type;
+							}
+						}
+
+						return $traverse($type);
+					},
+				);
+
+				$newTypes = $this->typeSpecifier->create(
+					$assertExpr,
+					$assertedType,
+					$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
+					$scope,
+				)->setRootExpr($containsUnresolvedTemplate || $assert->isEquality() ? $call : null);
+				$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
+
+				if (!$context->null() || (!$assertedType->isTrue()->yes() && !$assertedType->isFalse()->yes())) {
+					continue;
+				}
+
+				$subContext = $assertedType->isTrue()->yes() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
+				if ($assert->isNegated()) {
+					$subContext = $subContext->negate();
+				}
+
+				$types = $types->unionWith($this->typeSpecifier->specifyTypesInCondition(
+					$scope,
+					$assertExpr,
+					$subContext,
+				));
+			}
+		}
+
+		return $types;
 	}
 
 	/**

@@ -11,6 +11,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -20,6 +21,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -37,6 +39,7 @@ final class VariableHandler implements ExprHandler
 
 	public function __construct(
 		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -96,6 +99,25 @@ final class VariableHandler implements ExprHandler
 			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
 			$scope = $nameResult->getScope();
 		}
+		$typeCallback = static function (Expr $e, MutatingScope $s): Type {
+			if (!$e instanceof Variable) {
+				throw new ShouldNotHappenException();
+			}
+
+			if (is_string($e->name)) {
+				if ($s->hasVariableType($e->name)->no()) {
+					return new ErrorType();
+				}
+
+				return $s->getVariableType($e->name);
+			}
+
+			// dynamic variable names need per-constant-string equality narrowing,
+			// which requires the BinaryOp equality migration first — guarded
+			// legacy bridge until then (works under PHPSTAN_FNSR=0)
+			return $s->getType($e);
+		};
+
 		return new ExpressionResult(
 			$scope,
 			$hasYield,
@@ -105,7 +127,8 @@ final class VariableHandler implements ExprHandler
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
-			typeCallback: fn (Expr $e, MutatingScope $s): Type => $this->resolveType($s, $e),
+			typeCallback: $typeCallback,
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $typeCallback($e, $s), $ctx),
 			expressionTypeResolverExtensionRegistryProvider: $this->expressionTypeResolverExtensionRegistryProvider,
 		);
 	}

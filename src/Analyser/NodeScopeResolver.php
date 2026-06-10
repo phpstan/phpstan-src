@@ -180,6 +180,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function spl_object_id;
 use function sprintf;
 use function strtolower;
 use function trim;
@@ -1149,7 +1150,10 @@ class NodeScopeResolver
 			}
 			$scope = $result->getScope();
 			if ($result->hasSpecifiedTypesCallback()) {
-				$scope = $scope->filterBySpecifiedTypes($result->getSpecifiedTypes($scope, TypeSpecifierContext::createNull()));
+				$scope = $scope->applySpecifiedTypes(
+					$result->getSpecifiedTypes($scope, TypeSpecifierContext::createNull()),
+					[$scope->getNodeKey($stmt->expr) => $result],
+				);
 			} else {
 				$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
 					$scope,
@@ -1310,9 +1314,11 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $stmt->type, $scope, $storage);
 			}
 		} elseif ($stmt instanceof If_) {
-			$conditionType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
-			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$conditionType = (NewWorld::isEnabled()
+				? ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())
+				: ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond)))->toBoolean();
+			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$exitPoints = [];
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
@@ -1346,8 +1352,11 @@ class NodeScopeResolver
 			$condScope = $scope;
 			foreach ($stmt->elseifs as $elseif) {
 				$this->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
-				$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condScope->getType($elseif->cond) : $scope->getNativeType($elseif->cond))->toBoolean();
+				$elseIfCondScopeBefore = $condScope;
 				$condResult = $this->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$elseIfConditionType = (NewWorld::isEnabled()
+					? ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())
+					: ($this->treatPhpDocTypesAsCertain ? $elseIfCondScopeBefore->getType($elseif->cond) : $scope->getNativeType($elseif->cond)))->toBoolean();
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
 				$condScope = $condResult->getScope();
@@ -3537,6 +3546,7 @@ class NodeScopeResolver
 
 		$processingOrder = array_keys($args);
 		$hasReorderedArgs = false;
+		$argExprTypes = [];
 		foreach ($args as $arg) {
 			if ($arg->hasAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE)) {
 				$hasReorderedArgs = true;
@@ -3726,6 +3736,7 @@ class NodeScopeResolver
 				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
 				$exprType = $exprResult->getType();
+				$argExprTypes[spl_object_id($arg->value)] = $exprType;
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();
@@ -3828,7 +3839,9 @@ class NodeScopeResolver
 						$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 					}
 				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
-					$argType = $scope->getType($arg->value);
+					// by-value args were just processed — reuse the result type;
+					// by-ref args keep the guarded legacy bridge (PHPSTAN_FNSR=0)
+					$argType = $argExprTypes[spl_object_id($arg->value)] ?? $scope->getType($arg->value);
 					if (!$argType->isObject()->no()) {
 						$nakedReturnType = null;
 						if ($nakedMethodReflection !== null) {

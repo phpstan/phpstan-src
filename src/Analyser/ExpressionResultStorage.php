@@ -12,40 +12,34 @@ use SplObjectStorage;
 final class ExpressionResultStorage
 {
 
-	/** @var SplObjectStorage<Expr, Scope> */
-	private SplObjectStorage $scopes;
-
 	/** @var SplObjectStorage<Expr, ExpressionResult> */
 	private SplObjectStorage $results;
 
-	/** @var array<array{fiber: Fiber<mixed, ExpressionResult|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest>, request: ExpressionResultForExprRequest}> */
+	/** @var array<array{fiber: Fiber<mixed, ExpressionResult|array{callable(Node, Scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest>, request: ExpressionResultForExprRequest}> */
 	public array $pendingFibers = [];
 
-	/** @var list<Fiber<mixed, ExpressionResult|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest>> */
+	/** @var list<Fiber<mixed, ExpressionResult|array{callable(Node, Scope): void, Node, Scope}, null, ExpressionResultForExprRequest|ParkFiberRequest>> */
 	public array $parkedFibers = [];
+
+	/**
+	 * Expressions currently being processed on demand by ResultAwareScope —
+	 * descendants (which work on duplicates) detect ancestor cycles through this.
+	 *
+	 * @var array<string, true>
+	 */
+	public array $syntheticsInFlight = [];
 
 	public function __construct()
 	{
-		$this->scopes = new SplObjectStorage();
 		$this->results = new SplObjectStorage();
 	}
 
 	public function duplicate(): self
 	{
 		$new = new self();
-		$new->scopes->addAll($this->scopes);
 		$new->results->addAll($this->results);
+		$new->syntheticsInFlight = $this->syntheticsInFlight;
 		return $new;
-	}
-
-	public function storeBeforeScope(Expr $expr, Scope $scope): void
-	{
-		$this->scopes[$expr] = $scope;
-	}
-
-	public function findBeforeScope(Expr $expr): ?Scope
-	{
-		return $this->scopes[$expr] ?? null;
 	}
 
 	public function storeResult(Expr $expr, ExpressionResult $result): void

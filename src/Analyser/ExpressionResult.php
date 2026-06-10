@@ -131,7 +131,12 @@ final class ExpressionResult
 			return $this->cachedNativeType = $this->scope->getNativeType($this->expr);
 		}
 
-		return $this->cachedNativeType = TypeUtils::resolveLateResolvableTypes($this->getTypeByScope($this->scope->doNotTreatPhpDocTypesAsCertain()));
+		$promotedScope = $this->scope->doNotTreatPhpDocTypesAsCertain();
+		if (!$promotedScope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->cachedNativeType = TypeUtils::resolveLateResolvableTypes($this->getTypeByScope($promotedScope));
 	}
 
 	/**
@@ -173,18 +178,19 @@ final class ExpressionResult
 
 	public function getTruthyScope(): MutatingScope
 	{
+		if ($this->truthyScope !== null) {
+			return $this->truthyScope;
+		}
+
 		if ($this->specifyTypesCallback !== null && $this->expr !== null) {
-			return $this->scope->filterBySpecifiedTypes(
+			return $this->truthyScope = $this->scope->applySpecifiedTypes(
 				$this->getSpecifiedTypes($this->scope, TypeSpecifierContext::createTruthy()),
+				[$this->scope->getNodeKey($this->expr) => $this],
 			);
 		}
 
 		if ($this->truthyScopeCallback === null) {
 			return $this->scope;
-		}
-
-		if ($this->truthyScope !== null) {
-			return $this->truthyScope;
 		}
 
 		$callback = $this->truthyScopeCallback;
@@ -194,18 +200,19 @@ final class ExpressionResult
 
 	public function getFalseyScope(): MutatingScope
 	{
+		if ($this->falseyScope !== null) {
+			return $this->falseyScope;
+		}
+
 		if ($this->specifyTypesCallback !== null && $this->expr !== null) {
-			return $this->scope->filterBySpecifiedTypes(
+			return $this->falseyScope = $this->scope->applySpecifiedTypes(
 				$this->getSpecifiedTypes($this->scope, TypeSpecifierContext::createFalsey()),
+				[$this->scope->getNodeKey($this->expr) => $this],
 			);
 		}
 
 		if ($this->falseyScopeCallback === null) {
 			return $this->scope;
-		}
-
-		if ($this->falseyScope !== null) {
-			return $this->falseyScope;
 		}
 
 		$callback = $this->falseyScopeCallback;

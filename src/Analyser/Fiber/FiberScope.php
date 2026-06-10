@@ -131,22 +131,6 @@ final class FiberScope extends MutatingScope
 		return $scope;
 	}
 
-	private function preprocessScope(MutatingScope $scope): Scope
-	{
-		if ($this->nativeTypesPromoted) {
-			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
-		}
-
-		foreach ($this->truthyValueExprs as $expr) {
-			$scope = $scope->filterByTruthyValue($expr);
-		}
-		foreach ($this->falseyValueExprs as $expr) {
-			$scope = $scope->filterByFalseyValue($expr);
-		}
-
-		return $scope;
-	}
-
 	/**
 	 * @param MethodReflection|FunctionReflection|null $reflection
 	 */

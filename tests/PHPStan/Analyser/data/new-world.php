@@ -47,4 +47,96 @@ class Foo
 		assertType('float', $pi);
 	}
 
+	public function narrowingInIf(string $s): void
+	{
+		$v = 1;
+		if ($v) {
+			assertType('1', $v);
+		} else {
+			assertType('*NEVER*', $v);
+		}
+
+		$w = rand(0, 1);
+		assertType('int<0, 1>', $w);
+		if ($w) {
+			assertType('1', $w);
+		} else {
+			assertType('0', $w);
+		}
+
+		$len = strlen($s);
+		assertType('int<0, max>', $len);
+		if ($len) {
+			assertType('int<1, max>', $len);
+		} else {
+			assertType('0', $len);
+		}
+	}
+
+	public function assignInCondition(string $s): void
+	{
+		if ($len = strlen($s)) {
+			assertType('int<1, max>', $len);
+		} else {
+			assertType('0', $len);
+		}
+	}
+
+	public function functionAsserts(): void
+	{
+		$m = mixedValue();
+		assertType('mixed', $m);
+		assertInt($m);
+		assertType('int', $m);
+	}
+
+	public function conditionalReturnType(int $i): void
+	{
+		assertType('bool', isPositive($i));
+		if (isPositive($i)) {
+			assertType('int<1, max>', $i);
+		} else {
+			assertType('int<min, 0>', $i);
+		}
+	}
+
+	public function conditionalExpressionHolders(string $s): void
+	{
+		$len = strlen($s);
+		if ($len) {
+			assertType('non-empty-string', $s);
+			assertType('int<1, max>', $len);
+		} else {
+			assertType('\'\'', $s);
+			assertType('0', $len);
+		}
+	}
+
+	public function assignByReference(): void
+	{
+		$q = 1;
+		$r = &$q;
+		assertType('1', $r);
+	}
+
+}
+
+function mixedValue(): mixed
+{
+	return 1;
+}
+
+/**
+ * @phpstan-assert int $value
+ */
+function assertInt(mixed $value): void
+{
+}
+
+/**
+ * @return ($i is int<1, max> ? true : false)
+ */
+function isPositive(int $i): bool
+{
+	return $i >= 1;
 }

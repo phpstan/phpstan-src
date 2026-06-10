@@ -3557,7 +3557,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
 			$exprString = $this->getNodeKey($expr);
-			if (array_key_exists($exprString, $this->expressionTypes)) {
+			if (
+				array_key_exists($exprString, $this->expressionTypes)
+				// a Maybe-certainty holder carries the "when defined" type only;
+				// the original for narrowing math must match getType() semantics
+				// (a maybe-defined variable is still mixed)
+				&& $this->expressionTypes[$exprString]->getCertainty()->yes()
+			) {
 				$nativeHolder = $this->nativeExpressionTypes[$exprString] ?? $this->expressionTypes[$exprString];
 
 				return [

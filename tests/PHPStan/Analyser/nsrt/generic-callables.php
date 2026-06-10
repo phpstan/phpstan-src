@@ -78,3 +78,11 @@ function testNestedClosures(Closure $closure, string $str, int $int): void
 	$result = $closure1($int);
 	assertType('int|string', $result);
 }
+
+/**
+ * @param callable<T of object>(class-string<T> $class): list<T> $factory
+ */
+function templateOnlyInsideParameterType(callable $factory): void
+{
+	assertType('list<DateTimeImmutable>', $factory(\DateTimeImmutable::class));
+}

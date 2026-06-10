@@ -958,6 +958,29 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param array{a: int, b?: string} $shape
+	 * @param list<string> $list
+	 * @param array<string, int> $map
+	 */
+	public function arrayDimFetches(array $shape, array $list, array $map, int $i, string $k, ?Holder $maybe): void
+	{
+		assertType('int', $shape['a']);
+		assertType('string', $list[$i]);
+		assertType('int', $map[$k]);
+		assertType('int<min, -1>|int<1, max>', $map[$k] ?: 5);
+		if ($list[0] === 'x') {
+			assertType("'x'", $list[0]);
+		}
+		assertType('int|null', $maybe?->inner->count);
+		assertType('1', [1, 2][0]);
+	}
+
+	public function arrayAccessFetch(\ArrayObject $ao): void
+	{
+		assertType('mixed', $ao['key']);
+	}
+
 	public function equalityNarrowing(mixed $m, ?int $i, ?Holder $h, int $n): void
 	{
 		if ($i === null) {

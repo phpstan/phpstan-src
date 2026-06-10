@@ -2861,6 +2861,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	private function getTypeFromTrackedHolder(Expr $expr): Type
 	{
+		if ($expr instanceof Node\Scalar) {
+			return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($this));
+		}
+
 		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
 			$exprString = $this->getNodeKey($expr);
 			if (
@@ -2876,6 +2880,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private function getNativeTypeFromTrackedHolder(Expr $expr): Type
 	{
+		if ($expr instanceof Node\Scalar) {
+			return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($this));
+		}
+
 		if (!$expr instanceof Expr\Closure && !$expr instanceof Expr\ArrowFunction) {
 			$exprString = $this->getNodeKey($expr);
 			if (

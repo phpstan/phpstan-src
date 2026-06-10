@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -23,9 +24,12 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -34,6 +38,10 @@ use function array_merge;
 #[AutowiredService]
 final class ArrayDimFetchHandler implements ExprHandler
 {
+
+	public function __construct(private DefaultNarrowingHelper $defaultNarrowingHelper)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -86,8 +94,9 @@ final class ArrayDimFetchHandler implements ExprHandler
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
 				impurePoints: $varResult->getImpurePoints(),
-				truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+				expr: $expr,
+				typeCallback: static fn (): Type => new NeverType(),
+				specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 			);
 		}
 
@@ -97,7 +106,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 		$impurePoints = array_merge($dimResult->getImpurePoints(), $varResult->getImpurePoints());
 		$scope = $varResult->getScope();
 
-		$varType = $scope->getType($expr->var);
+		$varType = $varResult->getType();
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
 				$stmt,
@@ -109,14 +118,62 @@ final class ArrayDimFetchHandler implements ExprHandler
 			)->getThrowPoints());
 		}
 
+		// a nullsafe var that can be null short-circuits this fetch too; its
+		// handler already produced the null-union — propagate one level, no
+		// recursive chain walking (NEW_WORLD.md §3.10)
+		$isShortcircuited = static function (Expr $e, MutatingScope $s) use ($varResult): bool {
+			if (!$e instanceof ArrayDimFetch) {
+				throw new ShouldNotHappenException();
+			}
+
+			return ($e->var instanceof Expr\NullsafePropertyFetch || $e->var instanceof Expr\NullsafeMethodCall)
+				&& TypeCombinator::containsNull($varResult->getTypeForScope($s));
+		};
+		$typeCallback = static function (Expr $e, MutatingScope $s) use ($varResult, $dimResult, $isShortcircuited, $nodeScopeResolver, $stmt): Type {
+			if (!$e instanceof ArrayDimFetch || $e->dim === null) {
+				throw new ShouldNotHappenException();
+			}
+
+			$varTypeForFetch = $varResult->getTypeForScope($s);
+			if ($isShortcircuited($e, $s)) {
+				$varTypeForFetch = TypeCombinator::removeNull($varTypeForFetch);
+			}
+
+			if (
+				!$varTypeForFetch->isArray()->yes()
+				&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varTypeForFetch)->yes()
+			) {
+				// ArrayAccess: the offsetGet() synthetic, processed on demand
+				// (ResultAwareScope tier 4)
+				$fetchedType = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage())->getType(
+					new MethodCall(
+						new TypeExpr($varTypeForFetch),
+						new Identifier('offsetGet'),
+						[
+							new Arg($e->dim),
+						],
+					),
+				);
+			} else {
+				$fetchedType = $varTypeForFetch->getOffsetValueType($dimResult->getTypeForScope($s));
+			}
+
+			if ($isShortcircuited($e, $s)) {
+				return TypeCombinator::union($fetchedType, new NullType());
+			}
+
+			return $fetchedType;
+		};
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: $typeCallback,
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

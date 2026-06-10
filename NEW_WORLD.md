@@ -280,7 +280,7 @@ as factual comments at their call sites, not here.
 
 ### Expression handlers
 
-- [ ] ArrayDimFetchHandler
+- [x] ArrayDimFetchHandler — typeCallback composes var/dim results (offsetGet synthetic via unseeded adapter for ArrayAccess; one-level nullsafe short-circuit propagation per §3.10); write-context `$x[]` is NeverType; default narrowing; holder-first helpers gained a scalar tier for the parent-update dims
 - [x] ArrayHandler
 - [ ] ArrowFunctionHandler
 - [x] AssignHandler — Ternary/Match conditional-expression holders stay old-world until those handlers migrate

@@ -553,7 +553,9 @@ jobs:
         with:
           directory: "e2e"
 
-      - run: ../bashunit --version
+      - run: "bashunit --version"
+        with:
+          directory: "e2e"
 
       - name: "Test"
         run: ${{ matrix.script }}

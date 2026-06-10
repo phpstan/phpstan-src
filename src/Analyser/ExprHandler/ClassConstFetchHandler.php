@@ -10,6 +10,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -18,6 +19,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -31,6 +33,7 @@ final class ClassConstFetchHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -61,6 +64,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 
+		$classResult = null;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $classResult->getScope();
@@ -89,8 +93,30 @@ final class ClassConstFetchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: function (Expr $e, MutatingScope $s) use ($classResult): Type {
+				if (!$e instanceof ClassConstFetch) {
+					throw new ShouldNotHappenException();
+				}
+
+				if (!$e->name instanceof Identifier) {
+					return new MixedType();
+				}
+
+				return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
+					$e->class,
+					$e->name->name,
+					$s->isInClass() ? $s->getClassReflection() : null,
+					static function (Expr $inner) use ($e, $classResult, $s): Type {
+						if ($classResult !== null && $inner === $e->class) {
+							return $classResult->getTypeForScope($s);
+						}
+
+						return $s->getType($inner);
+					},
+				);
+			},
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

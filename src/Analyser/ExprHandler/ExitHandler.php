@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -27,6 +28,10 @@ use function array_merge;
 #[AutowiredService]
 final class ExitHandler implements ExprHandler
 {
+
+	public function __construct(private DefaultNarrowingHelper $defaultNarrowingHelper)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -57,6 +62,9 @@ final class ExitHandler implements ExprHandler
 			isAlwaysTerminating: true,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			expr: $expr,
+			typeCallback: static fn (): Type => new NonAcceptingNeverType(),
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

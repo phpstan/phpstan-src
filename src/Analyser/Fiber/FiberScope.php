@@ -138,13 +138,10 @@ final class FiberScope extends MutatingScope
 
 	public function getKeepVoidType(Expr $node): Type
 	{
-		// keepVoid is a one-off we will solve separately; fall back to the regular type for now.
-		$result = $this->getExpressionResult($node);
-		if ($this->truthyValueExprs === [] && $this->falseyValueExprs === []) {
-			return $result->getTypeForScope($this);
-		}
-
-		return $result->getTypeOnScope($this->filterByValueExprs($result->getScope()));
+		// keepVoid is a one-off we will solve separately — regular results store
+		// void as null, so falling back to them would silently lose the void.
+		// Guarded old-world bridge until then (PHPSTAN_FNSR=0).
+		return $this->toMutatingScope()->getKeepVoidType($node);
 	}
 
 	/**

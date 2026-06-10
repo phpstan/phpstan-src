@@ -626,23 +626,18 @@ final class AssignHandler implements ExprHandler
 						$astNode = new Node\Expr\Array_($falseyScalar);
 					}
 
-					if (NewWorld::isEnabled()) {
-						// `$assignedExpr !== <falsey scalar>` / `=== <falsey scalar>` narrowing,
-						// constructed directly (equality on a constant scalar removes/pins its type)
-						$notIdenticalSpecifiedTypes = new SpecifiedTypes(sureNotTypes: [$assignedExprString => [$assignedExpr, $falseyType]]);
-					} else {
-						$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
-						$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
-					}
+					// `$assignedExpr !== <falsey scalar>` / `=== <falsey scalar>` narrowing.
+					// Equality produces entries beyond the assigned expression itself
+					// (a nullsafe value pins its subject non-null, the shortcircuited
+					// variant gets its own key) — guarded old-world bridge until the
+					// equality migration (PHPSTAN_FNSR=0)
+					$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
+					$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
 
-					if (NewWorld::isEnabled()) {
-						$identicalSpecifiedTypes = new SpecifiedTypes([$assignedExprString => [$assignedExpr, $falseyType]], []);
-					} else {
-						$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
-						$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
-					}
+					$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
+					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $exprTypeResolver);
 				}

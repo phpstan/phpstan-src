@@ -290,8 +290,8 @@ as factual comments at their call sites, not here.
 - [x] BooleanAndHandler — typeCallback composes child results evaluated on the left-truthy scope (no re-walk, no `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH`, no flattened path in the new world); truthy scope incremental via `$rightResult->getTruthyScope()` (§3.13); falsey via specifyTypesCallback with per-base-seeded adapters
 - [x] BooleanNotHandler — typeCallback folds via the inner result; incremental branch scopes (truthy(!X) = X's falsey scope, §3.13); specifyTypesCallback negates the context onto the inner result (unseeded adapter for unmigrated inner)
 - [x] BooleanOrHandler — mirror of BooleanAndHandler (falsey scope incremental, truthy via specifyTypesCallback); `augmentBooleanOrTruthyWithConditionalHolders` priced through the adapters
-- [ ] CastHandler
-- [ ] CastStringHandler
+- [x] CastHandler — §3.12 results-first cast type (Unset_ cast → null); bool/int/double narrowing via the old comparison synthetics through an unseeded adapter
+- [x] CastStringHandler — §3.12 results-first cast type; narrowing via the `!= ''` synthetic through an unseeded adapter
 - [ ] ClassConstFetchHandler
 - [x] CloneHandler — typeCallback intersects the inner result with object and maps through CloneTypeTraverser; default narrowing
 - [ ] ClosureHandler
@@ -299,14 +299,14 @@ as factual comments at their call sites, not here.
 - [x] ConstFetchHandler — typeCallback: literal true/false/null, holder-tracked runtime constants, ConstantResolver (all unguarded already); default narrowing
 - [ ] EmptyHandler
 - [x] ErrorSuppressHandler — full delegation to the inner result (type, narrowing, branch scopes); unseeded adapter for unmigrated inner
-- [ ] EvalHandler
+- [x] EvalHandler — constant mixed typeCallback; default narrowing
 - [x] ExitHandler — constant NonAcceptingNeverType typeCallback; default narrowing
 - [ ] FirstClassCallableFuncCallHandler
 - [ ] FirstClassCallableMethodCallHandler
 - [ ] FirstClassCallableNewHandler
 - [ ] FirstClassCallableStaticCallHandler
 - [x] FuncCallHandler — dynamic-name calls bridge
-- [ ] IncludeHandler
+- [x] IncludeHandler — constant mixed typeCallback; default narrowing
 - [ ] InstanceofHandler
 - [ ] InterpolatedStringHandler
 - [ ] IssetHandler

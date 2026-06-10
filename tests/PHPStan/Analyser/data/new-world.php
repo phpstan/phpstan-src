@@ -935,6 +935,29 @@ class Foo
 		assertType('false', $b);
 	}
 
+	public function casts(?int $i, string $s): void
+	{
+		assertType("''|decimal-int-string", (string) $i);
+		assertType('int', (int) $s);
+		assertType('bool', (bool) $i);
+		assertType('float', (float) $i);
+		assertType('array{}|array{int}', (array) $i);
+		assertType('stdClass', (object) $i);
+		assertType('1', (int) true);
+		assertType("'5'", (string) 5);
+	}
+
+	/** cast narrowing via the old comparison synthetics through the adapter */
+	public function castNarrowing(?int $i, string $s): void
+	{
+		if ((bool) $i) {
+			assertType('int<min, -1>|int<1, max>', $i);
+		}
+		if ((string) $s) {
+			assertType("non-empty-string", $s);
+		}
+	}
+
 	private function name(): string
 	{
 		return 'x';

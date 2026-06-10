@@ -15,6 +15,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -23,6 +24,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
@@ -35,6 +37,8 @@ final class CastHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private TypeSpecifier $typeSpecifier,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -55,9 +59,67 @@ final class CastHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: $this->createTypeCallback($exprResult),
+			specifyTypesCallback: $this->createSpecifyTypesCallback($nodeScopeResolver, $stmt),
 		);
+	}
+
+	/**
+	 * @return callable(Expr, MutatingScope): Type
+	 */
+	private function createTypeCallback(ExpressionResult $exprResult): callable
+	{
+		return function (Expr $e, MutatingScope $s) use ($exprResult): Type {
+			if (!$e instanceof Cast) {
+				throw new ShouldNotHappenException();
+			}
+
+			if ($e instanceof Cast\Unset_) {
+				return new NullType();
+			}
+
+			return $this->initializerExprTypeResolver->getCastType($e, static function (Expr $inner) use ($e, $exprResult, $s): Type {
+				if ($inner === $e->expr) {
+					return $exprResult->getTypeForScope($s);
+				}
+
+				return $s->getType($inner);
+			});
+		};
+	}
+
+	/**
+	 * New-world copy of specifyTypes(): the old comparison synthetics, processed
+	 * through the migrated handlers on demand (ResultAwareScope tier 4,
+	 * unseeded — §3.13).
+	 *
+	 * @return callable(Expr, MutatingScope, TypeSpecifierContext): SpecifiedTypes
+	 */
+	private function createSpecifyTypesCallback(NodeScopeResolver $nodeScopeResolver, Stmt $stmt): callable
+	{
+		return function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+			if (!$e instanceof Cast) {
+				throw new ShouldNotHappenException();
+			}
+
+			$conditionExpr = null;
+			if ($e instanceof Cast\Bool_) {
+				$conditionExpr = new Equal($e->expr, new ConstFetch(new FullyQualified('true')));
+			} elseif ($e instanceof Cast\Int_) {
+				$conditionExpr = new NotEqual($e->expr, new Int_(0));
+			} elseif ($e instanceof Cast\Double) {
+				$conditionExpr = new NotEqual($e->expr, new Float_(0.0));
+			}
+
+			if ($conditionExpr === null) {
+				return $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx);
+			}
+
+			$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+			return $this->typeSpecifier->specifyTypesInCondition($adapterScope, $conditionExpr, $ctx)->setRootExpr($e);
+		};
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

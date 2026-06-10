@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -29,6 +30,10 @@ use PHPStan\Type\TypeTraverser;
 final class CloneHandler implements ExprHandler
 {
 
+	public function __construct(private DefaultNarrowingHelper $defaultNarrowingHelper)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Clone_;
@@ -44,6 +49,12 @@ final class CloneHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			expr: $expr,
+			typeCallback: static function (Expr $e, MutatingScope $s) use ($exprResult): Type {
+				$cloneType = TypeCombinator::intersect($exprResult->getTypeForScope($s), new ObjectWithoutClassType());
+				return TypeTraverser::map($cloneType, new CloneTypeTraverser());
+			},
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

@@ -6,22 +6,12 @@
   "storage.xml_storage_path": "tests/bench/storage",
   "report.generators": {
     "my-report": {
-      "generator": "expression",
-      "aggregate": [
-        "iteration_index"
-      ],
-      "expressions": {
-        "_mode": "mode(result_time_avg)"
-      },
-      "cols": [
-        "set",
-        "mem_peak",
-        "mode",
-        "rstdev",
-        "diff"
-      ],
-      "derivations": {
-        "diff": "if(min(table['_mode']) > 0, format('%.2fx', row['_mode'] / min(table['_mode'])), 'N/A')"
+      "extends": "aggregate",
+      "cols": {
+        "set": null,
+        "mem_peak": null,
+        "mode": null,
+        "rstdev": null
       }
     }
   }

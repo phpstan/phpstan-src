@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ExprHandler;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\MethodCall;
@@ -85,17 +86,29 @@ final class MethodCallHandler implements ExprHandler
 		}
 
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $closureCallScope ?? $scope, $storage, $nodeCallback, $context->enterDeep());
-		$hasYield = $varResult->hasYield();
-		$throwPoints = $varResult->getThrowPoints();
-		$impurePoints = $varResult->getImpurePoints();
-		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 		$scope = $varResult->getScope();
 		if (isset($closureCallScope)) {
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
 		}
+
+		return $this->processCallWithVarResult($nodeScopeResolver, $stmt, $expr, $varResult, $varResult->getType(), $scope, $storage, $nodeCallback, $context);
+	}
+
+	/**
+	 * The call part after the var was evaluated — NullsafeMethodCallHandler
+	 * reuses it with the subject narrowed non-null and the null stripped from
+	 * $calledOnType, avoiding a second evaluation of the var.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function processCallWithVarResult(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, MethodCall $expr, ExpressionResult $varResult, Type $calledOnType, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	{
+		$hasYield = $varResult->hasYield();
+		$throwPoints = $varResult->getThrowPoints();
+		$impurePoints = $varResult->getImpurePoints();
+		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 		$parametersAcceptor = null;
 		$methodReflection = null;
-		$calledOnType = $scope->getType($expr->var);
 		if ($expr->name instanceof Identifier) {
 			$methodName = $expr->name->name;
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
@@ -201,12 +214,11 @@ final class MethodCallHandler implements ExprHandler
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 
-		$calledOnType = $originalScope->getType($expr->var);
 		if (!$expr->name instanceof Identifier) {
 			return $result;
 		}
 		$methodName = $expr->name->name;
-		$methodReflection = $originalScope->getMethodReflection($calledOnType, $methodName);
+		$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 		if ($methodReflection === null) {
 			return $result;
 		}

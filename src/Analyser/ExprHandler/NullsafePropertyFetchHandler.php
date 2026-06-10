@@ -20,7 +20,6 @@ use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -30,7 +29,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NullType;
-use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
@@ -134,8 +132,27 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			}
 		}
 
-		// rules keep seeing the virtual plain fetch, as the old delegation provided;
-		// their getType() asks resolve from the stored result below
+		// rules see the virtual plain fetch as the old delegation provided, and their
+		// asks about the subject must answer the narrowed type while the fetch part is
+		// in flight — the old world re-evaluated the subject on the narrowed scope
+		$narrowedVarResult = new ExpressionResult(
+			$scope,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+			expr: $expr->var,
+			typeCallback: static function (Expr $e, MutatingScope $s) use ($varResult): Type {
+				$varType = $varResult->getTypeForScope($s);
+				if ($varType->isNull()->yes()) {
+					// an always-null subject is not narrowed (the call is reported instead)
+					return $varType;
+				}
+
+				return TypeCombinator::removeNull($varType);
+			},
+		);
+		$nodeScopeResolver->storeResult($storage, $expr->var, $narrowedVarResult);
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, $plainFetch, $scope, $storage, $context);
 		$plainResult = new ExpressionResult(
 			$scope,
@@ -148,6 +165,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 		$nodeScopeResolver->storeResult($storage, $plainFetch, $plainResult);
+		$nodeScopeResolver->storeResult($storage, $expr->var, $varResult);
 
 		$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 
@@ -180,58 +198,9 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			expr: $expr,
 			typeCallback: $typeCallback,
-			specifyTypesCallback: $this->createSpecifyTypesCallback($varResult),
+			specifyTypesCallback: $this->defaultNarrowingHelper->createNullsafeSpecifyCallback($expr, $varResult),
 			companionResults: [$scope->getNodeKey($plainFetch) => $plainResult],
 		);
-	}
-
-	/**
-	 * @return callable(Expr, MutatingScope, TypeSpecifierContext): SpecifiedTypes
-	 */
-	private function createSpecifyTypesCallback(ExpressionResult $varResult): callable
-	{
-		return function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($varResult): SpecifiedTypes {
-			if (!$e instanceof NullsafePropertyFetch) {
-				throw new ShouldNotHappenException();
-			}
-
-			if ($ctx->null()) {
-				return (new SpecifiedTypes([], []))->setRootExpr($e);
-			}
-
-			if (!$ctx->truthy()) {
-				$removedType = StaticTypeFactory::truthy();
-				$chainExecuted = false;
-			} elseif (!$ctx->falsey()) {
-				$removedType = StaticTypeFactory::falsey();
-				// a truthy result cannot have come from the short-circuit null
-				$chainExecuted = true;
-			} else {
-				return (new SpecifiedTypes([], []))->setRootExpr($e);
-			}
-
-			$sureNotTypes = [
-				$this->exprPrinter->printExpr($e) => [$e, $removedType],
-			];
-
-			$varType = $varResult->getTypeForScope($s);
-			$varCanBeNull = TypeCombinator::containsNull($varType);
-
-			if ($chainExecuted || !$varCanBeNull) {
-				// the plain-chain variant holds the same narrowing
-				$plain = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($e);
-				if ($plain !== $e) {
-					$sureNotTypes[$this->exprPrinter->printExpr($plain)] = [$plain, $removedType];
-				}
-			}
-
-			if ($chainExecuted && $varCanBeNull) {
-				// the chain executed, so the subject is not null
-				$sureNotTypes[$this->exprPrinter->printExpr($e->var)] = [$e->var, new NullType()];
-			}
-
-			return (new SpecifiedTypes([], $sureNotTypes))->setRootExpr($e);
-		};
 	}
 
 }

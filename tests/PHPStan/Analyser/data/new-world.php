@@ -303,6 +303,22 @@ class Foo
 		assertType('NewWorldTypeInference\\Holder|null', $maybe);
 	}
 
+	public function nullsafeMethodCalls(Holder $definite, ?Holder $maybe): void
+	{
+		assertType('int', $definite?->getCount());
+		assertType('int|null', $maybe?->getCount());
+
+		if ($maybe?->getCount()) {
+			assertType('NewWorldTypeInference\\Holder', $maybe);
+			assertType('int<min, -1>|int<1, max>', $maybe->getCount());
+		} else {
+			assertType('NewWorldTypeInference\\Holder|null', $maybe);
+		}
+
+		assertType('int|null', $maybe?->inner->getCount());
+		assertNativeType('int|null', $maybe?->getCount());
+	}
+
 	/**
 	 * @param array<int, Holder|null> $holders
 	 */
@@ -534,6 +550,11 @@ class Holder
 	public string $name = '';
 
 	public Holder $inner;
+
+	public function getCount(): int
+	{
+		return $this->count;
+	}
 
 	/** @var mixed */
 	public $untyped;

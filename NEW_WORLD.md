@@ -289,7 +289,7 @@ as factual comments at their call sites, not here.
 - [ ] MatchHandler
 - [ ] MethodCallHandler
 - [ ] NewHandler
-- [ ] NullsafeMethodCallHandler
+- [x] NullsafeMethodCallHandler — shares the §3.10 callback; call part reused via MethodCallHandler::processCallWithVarResult; call type bridges until MethodCallHandler migrates; impure calls gate result narrowing
 - [x] NullsafePropertyFetchHandler — emits the plain-chain dual key and the subject-not-null entry once, per §3.10; dynamic names bridge
 - [ ] PipeHandler
 - [x] PostDecHandler

@@ -301,17 +301,17 @@ as factual comments at their call sites, not here.
 - [x] ErrorSuppressHandler — full delegation to the inner result (type, narrowing, branch scopes); unseeded adapter for unmigrated inner
 - [x] EvalHandler — constant mixed typeCallback; default narrowing
 - [x] ExitHandler — constant NonAcceptingNeverType typeCallback; default narrowing
-- [ ] FirstClassCallableFuncCallHandler
-- [ ] FirstClassCallableMethodCallHandler
-- [ ] FirstClassCallableNewHandler
-- [ ] FirstClassCallableStaticCallHandler
+- [x] FirstClassCallableFuncCallHandler — typed in the NSR fast-path callback (reflection-based; dynamic-name/receiver asks via unseeded adapters; always-truthy Closure narrowing)
+- [x] FirstClassCallableMethodCallHandler — see FirstClassCallableFuncCallHandler
+- [x] FirstClassCallableNewHandler — see FirstClassCallableFuncCallHandler
+- [x] FirstClassCallableStaticCallHandler — see FirstClassCallableFuncCallHandler
 - [x] FuncCallHandler — dynamic-name calls bridge
 - [x] IncludeHandler — constant mixed typeCallback; default narrowing
 - [x] InstanceofHandler — typeCallback folds via the target/class results; specifyTypesCallback is the old create() math with an adapter seeded with the target and class results
 - [x] InterpolatedStringHandler — per-part results keyed by spl_object_id (each captured at its own evaluation point); concat folding via resolveConcatType; default narrowing
 - [x] IssetHandler — typeCallback via issetCheck on an unseeded adapter; specifyTypesCallback invokes the old body directly (BinaryOp precedent; the multi-isset And-chain synthetic routes through migrated handlers); ensureNonNullability asks priced via the askScopeFactory
 - [ ] MatchHandler
-- [ ] MethodCallHandler
+- [x] MethodCallHandler — typeCallback via resolveMethodCallTypeViaResults (receiver from its result, one-level nullsafe short-circuit, self-seeded adapter + per-arg companions from processArgs — passed closures keep their context memo); specifyTypesCallback = old body with unseeded adapter; lazy returnTypeCallback threaded into MethodThrowPointHelper
 - [ ] NewHandler
 - [x] NullsafeMethodCallHandler — shares the §3.10 callback; call part reused via MethodCallHandler::processCallWithVarResult; call type bridges until MethodCallHandler migrates; impure calls gate result narrowing
 - [x] NullsafePropertyFetchHandler — emits the plain-chain dual key and the subject-not-null entry once, per §3.10; dynamic names bridge
@@ -323,7 +323,7 @@ as factual comments at their call sites, not here.
 - [x] PrintHandler — constant `1` typeCallback; default narrowing
 - [x] PropertyFetchHandler — one-level short-circuit propagation from a nullsafe var; dynamic names bridge
 - [x] ScalarHandler
-- [ ] StaticCallHandler
+- [x] StaticCallHandler — mirror of MethodCallHandler (late-static-binding name resolution; class expr from its result)
 - [x] StaticPropertyFetchHandler — typeCallback mirrors PropertyFetch (native via reflection finder; class-expr via the class result; one-level nullsafe short-circuit; dynamic names bridge); default narrowing
 - [x] TernaryHandler — typeCallback composes the branch results (each evaluated on the matching cond-narrowed scope; short ternary asks the cond on its truthy scope via getTypeOnScope); specifyTypesCallback rewrites into the old `(cond && if) || (!cond && else)` synthetic, processed through the migrated boolean handlers (adapter tier 4); branch scopes via the specify path; unlocked AssignHandler's Ternary conditional-holder block (cond result narrowing + getTruthyScope/getFalseyScope + adapter-priced branch types + entry resolver)
 - [x] ThrowHandler — typeCallback is the NonAcceptingNeverType constant; throw point takes the inner result's type; default narrowing callback

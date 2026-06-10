@@ -998,6 +998,36 @@ class Foo
 		}
 	}
 
+	public function firstClassCallables(Holder $h): void
+	{
+		assertType('Closure(string): int<0, max>', strlen(...));
+		assertType('Closure(): int', $h->getCount(...));
+	}
+
+	public function methodAndStaticCalls(Holder $h, ?Holder $maybe): void
+	{
+		assertType('int', $h->getCount());
+		assertType('int|null', $maybe?->getCount());
+		if ($maybe?->getCount()) {
+			assertType(Holder::class, $maybe);
+		}
+	}
+
+	/**
+	 * A passed closure's parameter types come from the call context — the
+	 * per-arg companion results carry the context-aware memo into the call
+	 * handlers' adapters.
+	 */
+	public function passedClosureContext(): void
+	{
+		$mapped = array_map(static function ($s) {
+			assertType("'a'|'bb'", $s);
+
+			return strlen($s);
+		}, ['a', 'bb']);
+		assertType('array{1, 2}', $mapped);
+	}
+
 	public function staticPropertyFetches(): void
 	{
 		assertType('int', StaticHolder::$count);

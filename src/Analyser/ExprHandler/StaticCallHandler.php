@@ -36,11 +36,13 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
@@ -66,6 +68,7 @@ final class StaticCallHandler implements ExprHandler
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private ReflectionProvider $reflectionProvider,
+		private TypeSpecifier $typeSpecifier,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 	)
@@ -83,6 +86,7 @@ final class StaticCallHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$classResult = null;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $classResult->hasYield();
@@ -217,7 +221,15 @@ final class StaticCallHandler implements ExprHandler
 		$scopeFunction = $scope->getFunction();
 
 		if ($methodReflection !== null) {
-			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
+			$throwPointScope = $scope;
+			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint(
+				$methodReflection,
+				$parametersAcceptor,
+				$normalizedExpr,
+				$scope,
+				$context,
+				fn (): Type => $this->resolveStaticCallTypeViaResults($normalizedExpr, $throwPointScope, $classResult, $argsResult->getCompanionResults(), $nodeScopeResolver, $stmt),
+			);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
 			}
@@ -279,15 +291,124 @@ final class StaticCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
+		$argResults = $argsResult->getCompanionResults();
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: function (Expr $e, MutatingScope $s) use ($classResult, $argResults, $nodeScopeResolver, $stmt): Type {
+				if (!$e instanceof StaticCall) {
+					throw new ShouldNotHappenException();
+				}
+
+				return $this->resolveStaticCallTypeViaResults($e, $s, $classResult, $argResults, $nodeScopeResolver, $stmt);
+			},
+			// the old specifyTypes() body stays the single source (the BinaryOp
+			// precedent) — extensions, conditional return types and asserts
+			// resolve through an unseeded adapter
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$e instanceof StaticCall) {
+					throw new ShouldNotHappenException();
+				}
+
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->specifyTypes($this->typeSpecifier, $adapterScope, $e, $ctx);
+			},
 		);
+	}
+
+	/**
+	 * New-world copy of resolveType(): the class expression comes from its
+	 * ExpressionResult (one-level nullsafe short-circuit per NEW_WORLD.md
+	 * paragraph 3.10); args and dynamic-return extensions resolve through a
+	 * self-seeded adapter (the FuncCall precedent); dynamic names bridge.
+	 */
+/**
+	 * @param array<string, ExpressionResult> $argResults
+	 */
+	private function resolveStaticCallTypeViaResults(StaticCall $e, MutatingScope $s, ?ExpressionResult $classResult, array $argResults, NodeScopeResolver $nodeScopeResolver, Stmt $stmt): Type
+	{
+		if (!$e->name instanceof Identifier) {
+			// dynamic method names take the guarded legacy bridge (PHPSTAN_FNSR=0)
+			return $s->getType($e);
+		}
+
+		$isShortcircuited = false;
+		$classType = null;
+		if ($e->class instanceof Expr) {
+			if ($classResult === null) {
+				throw new ShouldNotHappenException();
+			}
+			$classType = $classResult->getTypeForScope($s);
+			$isShortcircuited = ($e->class instanceof Expr\NullsafePropertyFetch || $e->class instanceof Expr\NullsafeMethodCall)
+				&& TypeCombinator::containsNull($classType);
+			if ($isShortcircuited) {
+				$classType = TypeCombinator::removeNull($classType);
+			}
+		}
+
+		if ($s->nativeTypesPromoted) {
+			if ($e->class instanceof Name) {
+				$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($s, $e->class, $e->name);
+			} else {
+				$staticMethodCalledOnType = $classType;
+			}
+			$methodReflection = $s->getMethodReflection(
+				$staticMethodCalledOnType,
+				$e->name->name,
+			);
+			if ($methodReflection === null) {
+				$callType = new ErrorType();
+			} else {
+				$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+			}
+
+			return $isShortcircuited ? TypeCombinator::union($callType, new NullType()) : $callType;
+		}
+
+		if ($e->class instanceof Name) {
+			$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($s, $e->class, $e->name);
+		} else {
+			$staticMethodCalledOnType = $classType->getObjectTypeOrClassStringObjectType();
+		}
+
+		$storage = new ExpressionResultStorage();
+		$selfResult = new ExpressionResult(
+			$s,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+			expr: $e,
+			typeCallback: fn (Expr $innerExpr, MutatingScope $innerScope): Type => $this->resolveStaticCallTypeViaResults($e, $innerScope, $classResult, $argResults, $nodeScopeResolver, $stmt),
+			specifyTypesCallback: function (Expr $innerExpr, MutatingScope $innerScope, TypeSpecifierContext $innerContext) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$innerExpr instanceof StaticCall) {
+					throw new ShouldNotHappenException();
+				}
+
+				$innerAdapterScope = $innerScope->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->specifyTypes($this->typeSpecifier, $innerAdapterScope, $innerExpr, $innerContext);
+			},
+		);
+		$adapterScope = $s->toResultAwareScope($argResults + [$s->getNodeKey($e) => $selfResult], $nodeScopeResolver, $stmt, $storage);
+
+		$callType = $this->methodCallReturnTypeHelper->methodCallReturnType(
+			$adapterScope,
+			$staticMethodCalledOnType,
+			$e->name->toString(),
+			$e,
+		);
+		if ($callType === null) {
+			$callType = new ErrorType();
+		}
+
+		return $isShortcircuited ? TypeCombinator::union($callType, new NullType()) : $callType;
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

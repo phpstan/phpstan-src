@@ -19,6 +19,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -33,6 +34,7 @@ final class CastStringHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
@@ -60,9 +62,44 @@ final class CastStringHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: $this->createTypeCallback($exprResult),
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$e instanceof Cast\String_) {
+					throw new ShouldNotHappenException();
+				}
+
+				// the old synthetic, processed through the migrated handlers on
+				// demand (ResultAwareScope tier 4, unseeded — §3.13)
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->typeSpecifier->specifyTypesInCondition(
+					$adapterScope,
+					new NotEqual($e->expr, new String_('')),
+					$ctx,
+				)->setRootExpr($e);
+			},
 		);
+	}
+
+	/**
+	 * @return callable(Expr, MutatingScope): Type
+	 */
+	private function createTypeCallback(ExpressionResult $exprResult): callable
+	{
+		return function (Expr $e, MutatingScope $s) use ($exprResult): Type {
+			if (!$e instanceof Cast) {
+				throw new ShouldNotHappenException();
+			}
+
+			return $this->initializerExprTypeResolver->getCastType($e, static function (Expr $inner) use ($e, $exprResult, $s): Type {
+				if ($inner === $e->expr) {
+					return $exprResult->getTypeForScope($s);
+				}
+
+				return $s->getType($inner);
+			});
+		};
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

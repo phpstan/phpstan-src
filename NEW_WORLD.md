@@ -292,7 +292,7 @@ as factual comments at their call sites, not here.
 - [x] BooleanOrHandler — mirror of BooleanAndHandler (falsey scope incremental, truthy via specifyTypesCallback); `augmentBooleanOrTruthyWithConditionalHolders` priced through the adapters
 - [x] CastHandler — §3.12 results-first cast type (Unset_ cast → null); bool/int/double narrowing via the old comparison synthetics through an unseeded adapter
 - [x] CastStringHandler — §3.12 results-first cast type; narrowing via the `!= ''` synthetic through an unseeded adapter
-- [ ] ClassConstFetchHandler
+- [x] ClassConstFetchHandler — §3.12 results-first class-const type (dynamic class expr via the class result); dynamic const names mixed; default narrowing
 - [x] CloneHandler — typeCallback intersects the inner result with object and maps through CloneTypeTraverser; default narrowing
 - [ ] ClosureHandler
 - [ ] CoalesceHandler
@@ -308,7 +308,7 @@ as factual comments at their call sites, not here.
 - [x] FuncCallHandler — dynamic-name calls bridge
 - [x] IncludeHandler — constant mixed typeCallback; default narrowing
 - [ ] InstanceofHandler
-- [ ] InterpolatedStringHandler
+- [x] InterpolatedStringHandler — per-part results keyed by spl_object_id (each captured at its own evaluation point); concat folding via resolveConcatType; default narrowing
 - [ ] IssetHandler
 - [ ] MatchHandler
 - [ ] MethodCallHandler

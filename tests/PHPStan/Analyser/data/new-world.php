@@ -958,6 +958,15 @@ class Foo
 		}
 	}
 
+	public function classConstFetch(string $name, int $i): void
+	{
+		assertType("'CONST'", Holder::TEST_CONST);
+		assertType("'NewWorldTypeInference\\\\Holder'", Holder::class);
+		assertType('non-falsy-string', "prefix-{$name}");
+		assertType('lowercase-string&non-falsy-string', "n={$i}!");
+		assertType('non-empty-string', "{$name}{$i}");
+	}
+
 	private function name(): string
 	{
 		return 'x';
@@ -970,6 +979,8 @@ class Foo
 
 class Holder
 {
+
+	public const TEST_CONST = 'CONST';
 
 	public int $count = 0;
 

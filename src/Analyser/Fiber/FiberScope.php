@@ -12,12 +12,19 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
-use function array_pop;
 
 final class FiberScope extends MutatingScope
 {
 
-	/** @var Expr[] */
+	/**
+	 * Conditions this scope was filtered by *after* the node visit (rules call
+	 * `filterByTruthyValue` with synthetic conditions — e.g. one per possible
+	 * dynamic method name). Replayed onto each ExpressionResult's own scope in
+	 * getType(): the answer keeps the expression's evaluation-point semantics
+	 * and honors the rule's narrowing.
+	 *
+	 * @var Expr[]
+	 */
 	private array $truthyValueExprs = [];
 
 	/** @var Expr[] */
@@ -80,13 +87,27 @@ final class FiberScope extends MutatingScope
 			throw new ShouldNotHappenException();
 		}
 
-		return $scope->toFiberScope();
+		$fiberScope = $scope->toFiberScope();
+		$fiberScope->truthyValueExprs = $this->truthyValueExprs;
+		$fiberScope->falseyValueExprs = $this->falseyValueExprs;
+
+		return $fiberScope;
 	}
 
-	/** @api */
+	/**
+	 * The type at the expression's own evaluation point, narrowed by the
+	 * conditions this scope was filtered by since the node visit.
+	 *
+	 * @api
+	 */
 	public function getType(Expr $node): Type
 	{
-		return $this->getExpressionResult($node)->getTypeForScope($this);
+		$result = $this->getExpressionResult($node);
+		if ($this->truthyValueExprs === [] && $this->falseyValueExprs === []) {
+			return $result->getTypeForScope($this);
+		}
+
+		return $result->getTypeOnScope($this->filterByValueExprs($result->getScope()));
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -102,13 +123,45 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
-		return $this->getExpressionResult($expr)->getNativeType();
+		$result = $this->getExpressionResult($expr);
+		if ($this->truthyValueExprs === [] && $this->falseyValueExprs === []) {
+			return $result->getNativeType();
+		}
+
+		$promotedScope = $this->filterByValueExprs($result->getScope())->doNotTreatPhpDocTypesAsCertain();
+		if (!$promotedScope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $result->getTypeOnScope($promotedScope);
 	}
 
 	public function getKeepVoidType(Expr $node): Type
 	{
 		// keepVoid is a one-off we will solve separately; fall back to the regular type for now.
-		return $this->getExpressionResult($node)->getTypeForScope($this);
+		$result = $this->getExpressionResult($node);
+		if ($this->truthyValueExprs === [] && $this->falseyValueExprs === []) {
+			return $result->getTypeForScope($this);
+		}
+
+		return $result->getTypeOnScope($this->filterByValueExprs($result->getScope()));
+	}
+
+	/**
+	 * Replays the rule-applied filters onto the given (plain) scope — the
+	 * filtering runs through the guarded old-world machinery (PHPSTAN_FNSR=0)
+	 * until narrowing by arbitrary synthetic conditions migrates.
+	 */
+	private function filterByValueExprs(MutatingScope $scope): MutatingScope
+	{
+		foreach ($this->truthyValueExprs as $expr) {
+			$scope = $scope->filterByTruthyValue($expr);
+		}
+		foreach ($this->falseyValueExprs as $expr) {
+			$scope = $scope->filterByFalseyValue($expr);
+		}
+
+		return $scope;
 	}
 
 	public function filterByTruthyValue(Expr $expr): self
@@ -117,6 +170,7 @@ final class FiberScope extends MutatingScope
 		$scope = parent::filterByTruthyValue($expr);
 		$scope->truthyValueExprs = $this->truthyValueExprs;
 		$scope->truthyValueExprs[] = $expr;
+		$scope->falseyValueExprs = $this->falseyValueExprs;
 
 		return $scope;
 	}
@@ -124,7 +178,8 @@ final class FiberScope extends MutatingScope
 	public function filterByFalseyValue(Expr $expr): self
 	{
 		/** @var self $scope */
-		$scope = parent::filterByTruthyValue($expr);
+		$scope = parent::filterByFalseyValue($expr);
+		$scope->truthyValueExprs = $this->truthyValueExprs;
 		$scope->falseyValueExprs = $this->falseyValueExprs;
 		$scope->falseyValueExprs[] = $expr;
 
@@ -146,9 +201,6 @@ final class FiberScope extends MutatingScope
 
 	public function popInFunctionCall(): self
 	{
-		$stack = $this->inFunctionCallsStack;
-		array_pop($stack);
-
 		/** @var self $scope */
 		$scope = parent::popInFunctionCall();
 		$scope->truthyValueExprs = $this->truthyValueExprs;

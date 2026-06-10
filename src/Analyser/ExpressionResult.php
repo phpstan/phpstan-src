@@ -153,6 +153,19 @@ final class ExpressionResult
 		return $this->getType();
 	}
 
+	/**
+	 * Resolves the type on the given scope, honoring narrowing applied to it
+	 * *after* this expression was evaluated — rules filter their scope by a
+	 * synthetic condition and then ask for types (e.g. a dynamic method call
+	 * narrowed by each possible method name). Unlike `getTypeForScope()`,
+	 * nothing is memoized, and resolution runs on the plain variant of the
+	 * scope so the legacy bridges cannot suspend on this expression again.
+	 */
+	public function getTypeOnScope(MutatingScope $scope): Type
+	{
+		return TypeUtils::resolveLateResolvableTypes($this->getTypeByScope($scope->toMutatingScope()));
+	}
+
 	public function hasTypeCallback(): bool
 	{
 		return $this->typeCallback !== null && $this->expr !== null;

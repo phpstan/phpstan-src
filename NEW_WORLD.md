@@ -1,0 +1,229 @@
+# The New World: single-pass expression processing
+
+Working design document for the `resolve-type-rewrite` branch. This describes where the
+refactoring is going, why, what we gain, and the full inventory of code to build. It is a
+branch-lifetime document — delete before merging to the default branch.
+
+## 1. Motivation
+
+PHPStan currently traverses the AST of the same expression **multiple times**:
+
+1. **`NodeScopeResolver::processExprNode`** walks the expression to update the `Scope`
+   (assignments, narrowing side-effects, throw/impure points).
+2. **`MutatingScope::resolveType`** (via `ExprHandler::resolveType`) walks the expression
+   *again* to compute its `Type` — on whatever scope the caller happens to hold.
+3. **`TypeSpecifier::specifyTypesInCondition`** (via `ExprHandler::specifyTypes`) walks it
+   a *third* time to compute narrowing (`SpecifiedTypes`).
+
+Because pass 2 and 3 don't have the intermediate scopes that pass 1 computed, they have to
+**re-create them**, which means re-invoking the engine from inside type resolution. Concrete
+pathologies in today's code:
+
+- `BooleanAndHandler::resolveType` re-runs `processExprNode($expr->left)` on a **throwaway
+  `ExpressionResultStorage`** with a `NoopNodeCallback`, just to rebuild the truthy scope of
+  the left side so it can type the right side — even though `processExpr` four lines earlier
+  already processed the right side on exactly that scope. The cost is exponential on deep
+  boolean chains, which is the only reason `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH` and the
+  flattened-chain code paths exist.
+- `AssignHandler::unwrapAssign` manually walks through nested `$a = $b = 5` because resolving
+  the type via the scope can't follow the chain naturally.
+- `TypeSpecifier` is a condition-*rewriting* engine: handlers build **synthetic** expressions
+  (`new Identical(...)`, isset and-chains, cast comparisons, swapped `Smaller` nodes) and
+  re-enter the dispatcher, because narrowing logic can only talk to other narrowing logic
+  through "an expression + a scope".
+- `MutatingScope` keeps `truthyScopes`/`falseyScopes` caches and `FiberScope` keeps a
+  truthy/falsey expr replay list (`preprocessScope`) purely to paper over the fact that
+  narrowing is recomputed after the fact instead of being produced once, in place.
+
+**The fix: process each expression once.** After `processExprNode` finishes we have not just
+the updated `Scope` but also the expression's `Type` and its `SpecifiedTypes` — computed by
+the handler *at the moment it had all its children's results and the correct intermediate
+scopes in hand*.
+
+## 2. Old world vs. new world
+
+The old world keeps working on PHP < 8.1 until PHPStan 3.0, where it is mass-deleted.
+The new world requires PHP 8.1+ (Fibers).
+
+| Old world (deleted in 3.0) | New world |
+|---|---|
+| `MutatingScope::getType/getNativeType/resolveType` | `ExpressionResult::getType()/getNativeType()/getTypeForScope()` |
+| `ExprHandler::resolveType` | `typeCallback` wired in `processExpr` |
+| `TypeSpecifier::specifyTypesInCondition` dispatcher + `ExprHandler::specifyTypes` | `specifyTypesCallback` wired in `processExpr` |
+| `MutatingScope::filterBySpecifiedTypes` | `MutatingScope::applySpecifiedTypes` |
+| `filterByTruthyValue` / `filterByFalseyValue` (+ `truthyScopes` caches) | `applySpecifiedTypes($result->getSpecifiedTypes(...))` |
+| `ExpressionResult` legacy `truthyScopeCallback`/`falseyScopeCallback` | `getTruthyScope()`/`getFalseyScope()` reimplemented on the line above (accessors stay; ~31 engine call sites untouched) |
+| `FiberScope::preprocessScope` truthy/falsey replay | not needed — narrowing applied to real scopes |
+
+Enforcement: `MutatingScope::getType()/getNativeType()/getKeepVoidType()` and
+`TypeSpecifier::specifyTypesInCondition()` **throw** when `NewWorld::disableOldWorld()`
+returns `true` (and `PHPSTAN_FNSR` ≠ `0`, PHP 8.1+ — those conditions stay at the call
+sites). The old world stays fully functional under `PHPSTAN_FNSR=0` (PHP < 8.1 path).
+**The committed state is `return false;`** — mixed mode, everything green. Flipping the
+single literal to `return true;` is how a handler-migration leg starts: the guard then
+fails loudly wherever migration is incomplete, instead of commenting throws in four places.
+
+**The goal of this continuous refactoring: the whole test suite is green when the guard
+exceptions are set to not fire** (mixed mode — migrated handlers run their new-world
+callbacks, everything else takes the guarded legacy bridges). That bar means the rewrite
+pays off *before* it is finished: every migrated handler immediately delivers improved and
+more precise analysis across the whole test suite, not just in the new-world corpus. The
+guard-on mode is the forcing function and the progress meter; the mixed mode is the
+deliverable at every point along the way.
+
+## 3. Design decisions (settled)
+
+1. **`typeCallback: callable(Expr, MutatingScope): Type`** — one callback, mirroring PR #5224
+   (`b2ce1a0558`). `getType()` resolves on the result's own scope; `getNativeType()` on
+   `doNotTreatPhpDocTypesAsCertain()`; `getTypeForScope($scope)` picks the variant by
+   `$scope->nativeTypesPromoted`. No separate native/keepVoid callbacks; `getKeepVoidType`
+   is a one-off solved later.
+2. **Inside callbacks, `$scope->getType($child)` becomes `$childResult->getTypeForScope($s)`.**
+   `MutatingScope::getType()` must never be called from inside an `ExprHandler`.
+3. **Never reach into `ExpressionResultStorage` from handler logic.** Child results are
+   threaded through closures. Storage exists only as the fiber rendezvous (deliver results to
+   suspended rule callbacks) and the synthetic-node fallback. Every constructed
+   `ExpressionResult` carries its `expr` so `getType()` always works.
+4. **Hard-fail + guarded legacy bridge.** A result without a callback falls back to the
+   guarded `$scope->getType($expr)`: transparent under `PHPSTAN_FNSR=0` (validated parity vs
+   baseline on stress files), loud failure under the guard. This is what makes
+   handler-by-handler migration safe — the suite stays green on the legacy path while the
+   guard tells us exactly what to migrate next.
+5. **New code paths instead of nullable/optional params** on existing methods (no
+   `?Type $exprType` threading through `TypeSpecifier::create`; `SpecifiedTypes` stays
+   untouched — it is `@api` and extensions produce it forever).
+6. **Copy-and-adjust is sanctioned**: `resolveType` bodies are copied into `typeCallback`
+   (and `specifyTypes` into `specifyTypesCallback`) with the §3.2 substitution. Dual
+   maintenance until 3.0 is the accepted cost; mitigate by extracting pure `Type`-taking
+   helpers shared by both worlds.
+7. **`specifyTypesCallback` returns a new envelope object** (working name `NarrowingResult`):
+   `SpecifiedTypes` + `array<string, ExpressionResult>` (exprString → result). The map is the
+   "type oracle": it answers original (pre-narrowing) types in `applySpecifiedTypes` and
+   `normalize()`, and supplies dim/var types for the `ArrayDimFetch` parent-update — all via
+   `ExpressionResult::getType()`, honoring §3.3. Extension-produced `SpecifiedTypes` flow
+   through with an empty map.
+8. **Two adapters, by execution context**:
+   - **`FiberScope`** (exists): for *rule* node-callbacks, which run before the expression is
+     processed. `getType()` suspends the fiber; the engine resumes it with the
+     `ExpressionResult` at the end of `processExprNode`. Synthetic exprs are processed on
+     demand at end of traversal.
+   - **`ResultAwareScope`** (to build): for *extensions and old-world helper code invoked from
+     inside handler callbacks* — dynamic return type extensions, type-specifying extensions,
+     `ParametersAcceptorSelector::selectFromArgs`, `TypeSpecifier::create`, assert resolution.
+     These run mid-analysis where suspension is impossible *and unnecessary*: all children are
+     already processed. `getType()` resolves in tiers: extension registry → scope-tracked
+     holder → known-results map → inline re-process (`processExprNode` on a duplicated
+     storage with `NoopNodeCallback` — handles the synthetic exprs extensions love to build)
+     → guarded bridge.
+
+## 4. What we gain
+
+- **Performance**: one traversal instead of up to three. The `BooleanAnd::resolveType`
+  re-processing (and its depth cap), the `filterByTruthyValue` recomputation cascades, and the
+  `truthyScopes` cache layer all disappear. #5224 measured ~17% on a comparable consolidation.
+  Types are computed from already-known child types instead of re-walking subtrees.
+- **Correctness by construction**: a type is computed exactly where the right scope exists.
+  No more "which scope do I resolve this on" bugs; the right side of `&&` is typed on the
+  left-truthy scope because that is literally the scope it was processed on.
+- **Simplicity — hacks that delete themselves**:
+  - `unwrapAssign` (nested assigns flow through result delegation),
+  - `BooleanAndHandler::resolveType` re-walk + `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH` + flattened-chain workarounds,
+  - synthetic re-dispatch nodes inside `specifyTypes` bodies (`new Identical(...)`, isset chains),
+  - `AssignHandler`'s Ternary lookahead on `$storage->duplicate()`,
+  - `truthyScopes`/`falseyScopes` caches, `FiberScope::preprocessScope` replay,
+  - `storeBeforeScope`/`findBeforeScope` (already dead),
+  - in 3.0: all `resolveType`/`specifyTypes` methods, `MutatingScope::resolveType`,
+    the `TypeSpecifier` dispatcher, `filterBySpecifiedTypes`, `filterByTruthy/FalseyValue`.
+- **Extension compatibility preserved**: third-party extensions keep their signatures.
+  `Scope::getType` works inside extensions via `ResultAwareScope`/`FiberScope`;
+  `TypeSpecifier::specifyTypesInCondition` recursion works via an `instanceof` head-check
+  routing to the new world.
+
+## 5. Implementation inventory
+
+Status: ✅ done · 🔶 in progress · 🔧 mechanical · 🎯 design-sensitive
+
+### A. Core contracts
+1. ✅ `ExpressionResult::getType/getNativeType/getTypeForScope` + guarded bridge; results
+   stored per expr; fiber delivery moved to end of `processExprNode` (`storeResult`).
+2. 🎯 `NarrowingResult` envelope (§3.7) + result-based `normalize()`.
+3. 🔶 `expr:` on every `ExpressionResult` construction; memoize truthy/falsey applied scopes;
+   `getSpecifiedTypes` returns the envelope.
+
+### B. Adapters
+4. 🎯 `ResultAwareScope` + factory (§3.8) — unlocks call handlers and all extensions.
+5. 🔧 `TypeSpecifier::specifyTypesInCondition` head-check: `ResultAwareScope` → map/inline-process;
+   `FiberScope` → suspend. Un-guards `AssertFunctionTypeSpecifyingExtension`,
+   `InArrayFunctionTypeSpecifyingExtension`, `ImpossibleCheckTypeHelper:305`.
+6. 🔧 `FiberScope` gaps: `doNotTreatPhpDocTypesAsCertain()` override (today it escapes to a
+   plain promoted `MutatingScope`), `filterByTruthy/FalseyValue` → suspend + apply,
+   re-process request for `getScopeType` (maintainer).
+
+### C. applySpecifiedTypes
+7. 🎯 `MutatingScope::applySpecifiedTypes(NarrowingResult): self` — original types via tiers
+   (extensions → tracked holder → envelope result → bridge); intersect/remove math +
+   complex-union/`NeverType` early-outs stay centralized (extensions force sure/sureNot
+   semantics to survive); post-narrowing holders computed locally (kills `getScopeType` at
+   `MutatingScope:3412`); `IssetExpr` entries → existing certainty ops (already clean).
+8. 🔧 New-world path for the `ArrayDimFetch` parent-update in `specifyExpressionType`
+   (`MutatingScope:2860-2886`): dim/var types from the envelope map.
+9. 🔧 `ExpressionResult::getTruthyScope/getFalseyScope` reimplemented on #7 (+ memoization).
+
+### D. specifyTypesCallback producers
+10. 🔧 Leaf default narrowing helper (new path; copy-adjusted
+    `handleDefaultTruthyOrFalseyContext`/`createForExpr` taking the own type from the result).
+11. 🎯 Result-based entry points on `EqualityTypeSpecifyingHelper` (replacing its 7
+    `new Identical(...)` re-dispatches), `NonNullabilityHelper`, `NullsafeShortCircuitingHelper`,
+    `ConditionalExpressionHolderHelper`.
+12. 🔧 Compound handlers composing child envelopes at the scopes they were already processed
+    on: `BooleanNot/And/Or` (incl. flattened variants), `ErrorSuppress`, `Ternary`, `Coalesce`,
+    `Isset`/`Empty` (compose parts instead of building synthetic chains), `Instanceof`,
+    `BinaryOp` equality/comparisons, casts.
+13. 🔧 Call handlers: type-specifying extensions + conditional-return + asserts via the
+    adapter; `Assign`/`AssignOp` (createNull from RHS envelope, truthy/falsey via #10).
+
+### E. typeCallback producers
+14. ✅ `Scalar`, `Variable`, `Assign` (Assign re-threaded to avoid storage).
+15. 🔧 Trivial: `ConstFetch`, `Print`/`Exit`/`Throw` (fixed types), `Clone`, `ErrorSuppress`,
+    `Empty`/`Isset`/`Instanceof`/`BooleanNot` (booleans), 15 `Virtual/*` passthroughs.
+16. 🔧 `InitializerExprTypeResolver`-backed (it is **already `callable(Expr): Type`-
+    parameterized** — 82 occurrences): `BinaryOp`, casts, `UnaryMinus/Plus`, `BitwiseNot`,
+    `InterpolatedString`, `Array_`, `ClassConstFetch`.
+17. 🔧 Compound control flow: `BooleanAnd/Or`, `Ternary`, `Coalesce`, `Match` — children are
+    already processed per-branch; combine child results, delete the re-entry blocks.
+18. 🎯 Calls: `FuncCall`/`MethodCall`/`StaticCall`/`New_`/nullsafe — return type extensions +
+    generics inference (`selectFromArgs`) via the adapter; `PropertyFetch`/`StaticPropertyFetch`;
+    `Closure`/`ArrowFunction` (existing `ClosureTypeResolver`); `Pre/PostInc/Dec`, `AssignOp`,
+    `ArrayDimFetch`, `Yield`/`YieldFrom`, `Eval`, `Include`, `Pipe`.
+
+### F. Engine rewiring
+19. 🔶 `NodeScopeResolver` statements: 31 `scope->getType/getNativeType` sites → the result in
+    hand (`treatPhpDocTypesAsCertain ? getType : getNativeType` maps 1:1 onto
+    `getType()/getNativeType()`); `:1151` createNull → envelope; 9 `filterBy*` sites — the
+    synthetic-condition ones (switch `:2023/2049`, foreach `:1462`, while `:1626`) become
+    direct helper calls with results. (`findEarlyTerminatingExpr` already migrated.)
+
+## 6. Migration mechanics
+
+- **Exercisers**: tiny files analysed with `bin/phpstan analyse -l 8 test.php --debug` under
+  the guard. `echo '1';` (type slice, green), `$v = 1; if ($v) {} else {}` (narrowing slice).
+- **New-world test case** (`NewWorldTypeInferenceTest` + `data/new-world.php`): a temporary
+  `TypeInferenceTestCase` subclass asserting types for both migrated handlers and the bridges.
+  Its diagnostic value is **when the old world is cut off by the guard exceptions**: run it
+  with the guards active and the failures show exactly which handlers still need to implement
+  the new callbacks (the guard messages name the construct). In the mixed working state it
+  must stay fully green. **When the whole suite is green in mixed mode, the temporary test
+  case is deleted** — everything is covered by pre-existing tests.
+- **Parity discipline**: after each migration leg, `PHPSTAN_FNSR=0` runs must match baseline
+  (`git stash` + compare); the new-world result for migrated constructs must match the
+  old-world result.
+- **3.0 mass-deletion list**: everything in the left column of §2, the guard itself, and this
+  document.
+
+## 7. Status log
+
+- 2026-06-09: `ExprHandler` consolidation (resolveType + specifyTypes live in handlers);
+  guard commit; fiber delivery of `ExpressionResult` (`9cb1d353f0`); `Scalar`/`Variable`/
+  `Assign` typeCallbacks; `echo '1';` green under guard; FNSR=0 parity restored (`891bad60ff`).
+- 2026-06-10: feasibility research (this document); decision: `NarrowingResult` envelope,
+  `ResultAwareScope` adapter, tiered original-type resolution in `applySpecifiedTypes`.

@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
@@ -22,9 +23,11 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
@@ -40,6 +43,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -63,6 +67,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			),
 		];
 		$isAlwaysTerminating = false;
+		$classResult = null;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $classResult->hasYield();
@@ -80,14 +85,80 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$scope = $nameResult->getScope();
 		}
 
+		// a nullsafe class expr that can be null short-circuits this fetch too —
+		// propagate one level (NEW_WORLD.md paragraph 3.10)
+		$isShortcircuited = static function (Expr $e, MutatingScope $s) use ($classResult): bool {
+			if (!$e instanceof StaticPropertyFetch) {
+				throw new ShouldNotHappenException();
+			}
+
+			return $classResult !== null
+				&& ($e->class instanceof Expr\NullsafePropertyFetch || $e->class instanceof Expr\NullsafeMethodCall)
+				&& TypeCombinator::containsNull($classResult->getTypeForScope($s));
+		};
+		$typeCallback = function (Expr $e, MutatingScope $s) use ($classResult, $isShortcircuited): Type {
+			if (!$e instanceof StaticPropertyFetch) {
+				throw new ShouldNotHappenException();
+			}
+
+			if (!$e->name instanceof VarLikeIdentifier) {
+				// dynamic property names take the guarded legacy bridge (PHPSTAN_FNSR=0)
+				return $s->getType($e);
+			}
+
+			if ($s->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($e, $s);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+				if (!$propertyReflection->hasNativeType()) {
+					return new MixedType();
+				}
+
+				$nativeType = $propertyReflection->getNativeType();
+
+				if ($isShortcircuited($e, $s)) {
+					return TypeCombinator::union($nativeType, new NullType());
+				}
+
+				return $nativeType;
+			}
+
+			if ($e->class instanceof Name) {
+				$staticPropertyFetchedOnType = $s->resolveTypeByName($e->class);
+			} else {
+				if ($classResult === null) {
+					throw new ShouldNotHappenException();
+				}
+				$staticPropertyFetchedOnType = TypeCombinator::removeNull($classResult->getTypeForScope($s))->getObjectTypeOrClassStringObjectType();
+			}
+
+			$fetchType = $this->propertyFetchType(
+				$s,
+				$staticPropertyFetchedOnType,
+				$e->name->toString(),
+				$e,
+			);
+			if ($fetchType === null) {
+				$fetchType = new ErrorType();
+			}
+
+			if ($isShortcircuited($e, $s)) {
+				return TypeCombinator::union($fetchType, new NullType());
+			}
+
+			return $fetchType;
+		};
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: $typeCallback,
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
 	}
 

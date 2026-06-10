@@ -998,6 +998,15 @@ class Foo
 		}
 	}
 
+	public function staticPropertyFetches(): void
+	{
+		assertType('int', StaticHolder::$count);
+		assertType('string|null', StaticHolder::$name);
+		if (StaticHolder::$name !== null) {
+			assertType('string', StaticHolder::$name);
+		}
+	}
+
 	/** @param array<string, int> $map */
 	public function coalesce(?int $i, array $map, string $k, ?string $maybe): void
 	{
@@ -1154,6 +1163,15 @@ interface AssertingInterface
 	 * @phpstan-assert-if-true AssertedClass $this
 	 */
 	public function isA(): bool;
+
+}
+
+class StaticHolder
+{
+
+	public static int $count = 0;
+
+	public static ?string $name = null;
 
 }
 

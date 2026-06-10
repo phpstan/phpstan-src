@@ -11,6 +11,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -18,6 +19,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
@@ -33,6 +35,7 @@ final class ConstFetchHandler implements ExprHandler
 
 	public function __construct(
 		private ConstantResolver $constantResolver,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -52,9 +55,58 @@ final class ConstFetchHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: fn (Expr $e, MutatingScope $s): Type => $this->resolveConstFetchType($s, $e),
+			specifyTypesCallback: fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($e, $ctx),
 		);
+	}
+
+	/**
+	 * New-world copy of resolveType(): true/false/null literals, then
+	 * holder-tracked runtime constants, then the ConstantResolver — all
+	 * unguarded reads.
+	 */
+	private function resolveConstFetchType(MutatingScope $scope, Expr $expr): Type
+	{
+		if (!$expr instanceof ConstFetch) {
+			throw new ShouldNotHappenException();
+		}
+
+		$constName = (string) $expr->name;
+		$loweredConstName = strtolower($constName);
+		if ($loweredConstName === 'true') {
+			return new ConstantBooleanType(true);
+		} elseif ($loweredConstName === 'false') {
+			return new ConstantBooleanType(false);
+		} elseif ($loweredConstName === 'null') {
+			return new NullType();
+		}
+
+		$namespacedName = null;
+		if (!$expr->name->isFullyQualified() && $scope->getNamespace() !== null) {
+			$namespacedName = new FullyQualified([$scope->getNamespace(), $expr->name->toString()]);
+		}
+		$globalName = new FullyQualified($expr->name->toString());
+
+		foreach ([$namespacedName, $globalName] as $name) {
+			if ($name === null) {
+				continue;
+			}
+			$constFetch = new ConstFetch($name);
+			if ($scope->hasExpressionType($constFetch)->yes()) {
+				return $this->constantResolver->resolveConstantType(
+					$name->toString(),
+					$scope->expressionTypes[$scope->getNodeKey($constFetch)]->getType(),
+				);
+			}
+		}
+
+		$constantType = $this->constantResolver->resolveConstant($expr->name, $scope);
+		if ($constantType !== null) {
+			return $constantType;
+		}
+
+		return new ErrorType();
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

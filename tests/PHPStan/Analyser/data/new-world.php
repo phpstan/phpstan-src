@@ -874,6 +874,21 @@ class Foo
 		}
 	}
 
+	public function constFetchLiterals(bool $b): void
+	{
+		assertType('true', true);
+		assertType('false', false);
+		assertType('null', null);
+		assertType('2147483647|9223372036854775807', PHP_INT_MAX);
+		assertType('bool', $b && true);
+		assertType('bool', $b || false);
+		assertType('1', true ? 1 : 2);
+		assertType('2', false ?: 2);
+		if ($b !== false) {
+			assertType('true', $b);
+		}
+	}
+
 	private function name(): string
 	{
 		return 'x';

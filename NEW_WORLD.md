@@ -296,7 +296,7 @@ as factual comments at their call sites, not here.
 - [ ] CloneHandler
 - [ ] ClosureHandler
 - [ ] CoalesceHandler
-- [ ] ConstFetchHandler
+- [x] ConstFetchHandler — typeCallback: literal true/false/null, holder-tracked runtime constants, ConstantResolver (all unguarded already); default narrowing
 - [ ] EmptyHandler
 - [ ] ErrorSuppressHandler
 - [ ] EvalHandler

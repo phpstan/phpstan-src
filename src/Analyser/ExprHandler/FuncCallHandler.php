@@ -828,7 +828,15 @@ final class FuncCallHandler implements ExprHandler
 			return $this->typeSpecifier->specifyTypesInCondition($scope, $expr, $context);
 		}
 
-		$adapterScope = $this->createAdapterScope($expr, $callSiteScope, $nameResult, $nodeScopeResolver, $stmt, $storage);
+		$adapterBase = $callSiteScope;
+		if ($scope->nativeTypesPromoted) {
+			$promotedCallSiteScope = $callSiteScope->doNotTreatPhpDocTypesAsCertain();
+			if (!$promotedCallSiteScope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
+			$adapterBase = $promotedCallSiteScope;
+		}
+		$adapterScope = $this->createAdapterScope($expr, $adapterBase, $nameResult, $nodeScopeResolver, $stmt, $storage);
 
 		if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			// lazy create parametersAcceptor, as creation can be expensive

@@ -519,9 +519,10 @@ final class AssignHandler implements ExprHandler
 					: $scopeBeforeAssignEval->getType($assignedExpr);
 
 				// Ternary/Match conditional-expression holders need the branch types from
-				// narrowed scopes — old world only until TernaryHandler/MatchHandler migrate
+				// narrowed scopes — guarded old-world bridges until TernaryHandler/
+				// MatchHandler migrate (PHPSTAN_FNSR=0)
 				$conditionalExpressions = [];
-				if (!NewWorld::isEnabled() && $assignedExpr instanceof Ternary) {
+				if ($assignedExpr instanceof Ternary) {
 					$if = $assignedExpr->if;
 					if ($if === null) {
 						$if = $assignedExpr->cond;
@@ -545,7 +546,7 @@ final class AssignHandler implements ExprHandler
 					}
 				}
 
-				if (!NewWorld::isEnabled() && $assignedExpr instanceof Match_) {
+				if ($assignedExpr instanceof Match_) {
 					$conditionalExpressions = $this->mergeConditionalExpressions(
 						$conditionalExpressions,
 						$this->processMatchForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $assignedExpr),

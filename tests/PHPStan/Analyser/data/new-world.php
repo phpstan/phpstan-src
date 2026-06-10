@@ -700,6 +700,107 @@ class Foo
 		}
 	}
 
+	/**
+	 * Each ternary branch was evaluated on the matching cond-narrowed scope —
+	 * the result type composes from the branch results (no cond re-processing).
+	 */
+	public function ternaryBasics(bool $b, ?int $a): void
+	{
+		assertType('1|2', $b ? 1 : 2);
+		assertType("'x'|int<min, -1>|int<1, max>", $a ?: 'x');
+		assertType("'a'", 1 ? 'a' : 'b');
+		assertType("'b'", 0 ? 'a' : 'b');
+		assertType('int<min, -1>|int<1, max>', $a ? $a : 5);
+	}
+
+	/** ternary narrowing: the synthetic (cond && if) || (!cond && else) */
+	public function ternaryAsCondition(?bool $b, ?int $c): void
+	{
+		if ($b ? $c : 0) {
+			assertType('true', $b);
+			assertType('int<min, -1>|int<1, max>', $c);
+		}
+	}
+
+	public function ternaryStatementNullContext(bool $b): void
+	{
+		$b ? 1 : 2;
+		assertType('bool', $b);
+	}
+
+	/**
+	 * Conditional-expression holders projected from a ternary assignment:
+	 * pinning one boolean value pins the recorded cond narrowing.
+	 */
+	public function ternaryAssignConditionalHolders(mixed $m): void
+	{
+		$flag = $m instanceof Holder ? 1 : 0;
+		if ($flag === 1) {
+			assertType(Holder::class, $m);
+		} else {
+			assertType('mixed~'.Holder::class, $m);
+		}
+	}
+
+	public function booleanNotFolds(bool $b, ?int $a): void
+	{
+		assertType('false', !1);
+		assertType('true', !0);
+		assertType('bool', !$b);
+		if (!$a) {
+			assertType('0|null', $a);
+		} else {
+			assertType('int<min, -1>|int<1, max>', $a);
+		}
+		assertType('bool', !!$b);
+	}
+
+	/**
+	 * `!$i?->isA()` falsey = the nullsafe truthy scope: the plain call's
+	 * type-specifying extensions (assert-if-true) compose into the nullsafe
+	 * narrowing (bug-12866 regression).
+	 */
+	public function nullsafeAssertIfTrueNarrowing(?AssertingInterface $i): void
+	{
+		if (!$i?->isA()) {
+			return;
+		}
+
+		assertType(AssertedClass::class, $i);
+	}
+
+	public function ternaryShortFoldsAndNative(?int $a): void
+	{
+		assertType('1', 1 ?: 'x');
+		assertType("'x'", 0 ?: 'x');
+		assertNativeType("'x'|int<min, -1>|int<1, max>", $a ?: 'x');
+	}
+
+	public function ternaryShortAsCondition(?int $a, ?int $b): void
+	{
+		if ($a ?: $b) {
+			assertType('int|null', $a);
+		} else {
+			assertType('0|null', $a);
+			assertType('int|null', $b);
+		}
+	}
+
+	public function booleanNotStatementNullContext(bool $b): void
+	{
+		!$b;
+		assertType('bool', $b);
+	}
+
+	/** untracked compound entries in projected ternary-assign holders */
+	public function ternaryAssignUntrackedEntries(Holder $h): void
+	{
+		$flag = is_int($h->untyped) ? 1 : 0;
+		if ($flag === 1) {
+			assertType('int', $h->untyped);
+		}
+	}
+
 	private function name(): string
 	{
 		return 'x';
@@ -726,6 +827,26 @@ class Holder
 
 	/** @var mixed */
 	public $untyped;
+
+}
+
+interface AssertingInterface
+{
+
+	/**
+	 * @phpstan-assert-if-true AssertedClass $this
+	 */
+	public function isA(): bool;
+
+}
+
+class AssertedClass implements AssertingInterface
+{
+
+	public function isA(): bool
+	{
+		return true;
+	}
 
 }
 

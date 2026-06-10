@@ -191,7 +191,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			impurePoints: $plainResult->getImpurePoints(),
 			expr: $expr,
 			typeCallback: $typeCallback,
-			specifyTypesCallback: $this->defaultNarrowingHelper->createNullsafeSpecifyCallback($expr, $varResult, $resultNarrowingAllowed),
+			specifyTypesCallback: $this->defaultNarrowingHelper->createNullsafeSpecifyCallback($expr, $varResult, $resultNarrowingAllowed, $plainCall, $nodeScopeResolver, $stmt),
 			companionResults: [$scope->getNodeKey($plainCall) => $plainResult],
 		);
 	}

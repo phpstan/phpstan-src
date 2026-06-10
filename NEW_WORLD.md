@@ -288,7 +288,7 @@ as factual comments at their call sites, not here.
 - [ ] BinaryOpHandler — `typeCallback` done (Identical/NotIdentical bridge until the equality migration); `specifyTypesCallback` missing
 - [ ] BitwiseNotHandler
 - [x] BooleanAndHandler — typeCallback composes child results evaluated on the left-truthy scope (no re-walk, no `BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH`, no flattened path in the new world); truthy scope incremental via `$rightResult->getTruthyScope()` (§3.13); falsey via specifyTypesCallback with per-base-seeded adapters
-- [ ] BooleanNotHandler
+- [x] BooleanNotHandler — typeCallback folds via the inner result; incremental branch scopes (truthy(!X) = X's falsey scope, §3.13); specifyTypesCallback negates the context onto the inner result (unseeded adapter for unmigrated inner)
 - [x] BooleanOrHandler — mirror of BooleanAndHandler (falsey scope incremental, truthy via specifyTypesCallback); `augmentBooleanOrTruthyWithConditionalHolders` priced through the adapters
 - [ ] CastHandler
 - [ ] CastStringHandler
@@ -325,7 +325,7 @@ as factual comments at their call sites, not here.
 - [x] ScalarHandler
 - [ ] StaticCallHandler
 - [ ] StaticPropertyFetchHandler
-- [ ] TernaryHandler
+- [x] TernaryHandler — typeCallback composes the branch results (each evaluated on the matching cond-narrowed scope; short ternary asks the cond on its truthy scope via getTypeOnScope); specifyTypesCallback rewrites into the old `(cond && if) || (!cond && else)` synthetic, processed through the migrated boolean handlers (adapter tier 4); branch scopes via the specify path; unlocked AssignHandler's Ternary conditional-holder block (cond result narrowing + getTruthyScope/getFalseyScope + adapter-priced branch types + entry resolver)
 - [ ] ThrowHandler
 - [ ] UnaryMinusHandler
 - [ ] UnaryPlusHandler
@@ -546,6 +546,32 @@ as factual comments at their call sites, not here.
   ResultAwareScope 100% — remaining gaps are defensive throws, closure-closing braces,
   one fold return measured-missed under fibers (output proven by the meter), the
   truthy-and-false holder re-derivation pair, and `setAlwaysOverwriteTypes` propagation.
+- 2026-06-10 (ternary leg): **`TernaryHandler` + `BooleanNotHandler` migrated**, and the
+  AssignHandler Ternary conditional-holder block unlocked. The ternary typeCallback
+  composes the branch results — each was evaluated on the matching cond-narrowed scope,
+  so the old resolveType's cond re-processing on a throwaway storage dies; the short
+  ternary asks the cond on its truthy scope via `getTypeOnScope` (native asks promote the
+  truthy scope first). Narrowing rewrites into the old `(cond && if) || (!cond && else)`
+  synthetic and processes it through the *migrated* boolean handlers (unseeded adapter,
+  tier 4 — §3.13). BooleanNot: fold via the inner result, incremental swapped branch
+  scopes (truthy(!X) = X's falsey scope), context negation onto the inner result.
+  AssignHandler's Ternary holder block now takes the cond result's specify callback +
+  getTruthyScope/getFalseyScope, adapter-priced branch types, and an entry resolver
+  mirroring the assign one (FNSR=0 keeps the old block verbatim).
+  Found and fixed: the nullsafe specify callback never ran the plain call's
+  type-specifying extensions (`@phpstan-assert-if-true`, bug-12866) — the old synthetic
+  `BooleanAnd(var !== null, plainCall)` dispatch provided that; exposed by BooleanNot's
+  incremental falsey = nullsafe truthy. `createNullsafeSpecifyCallback` now composes the
+  plain call's narrowing through the dispatcher (adapter) when the chain executed —
+  until MethodCallHandler narrowing migrates.
+  Scoreboard: corpus 219/219 (25 new probes: ternary basics/folds/short-as-condition/
+  native, ternary-as-condition synthetic, assign holders incl. untracked entries,
+  statement null-ctx ×2, BooleanNot folds and branch narrowing, bug-12866 pin); meter
+  demo (8 dumps) green under disableOldWorld=true and byte-identical under FNSR=0;
+  nsrt at the known 6; make phpstan 204 = parity; CallMethods/Ternary/BooleanNot/
+  BooleanAnd/BooleanOr rule tests green. Changed-line coverage: Ternary 88%,
+  BooleanNot 85%, Assign 86%, DefaultNarrowingHelper 100% — gaps are defensive throws,
+  braces, the FNSR=0-only branch and one tier-3 delegation line.
 - **Known engine debt — `ExpressionResultStorage` memory retention**: every
   `ExpressionResult` (holding its after-scope, callbacks, memoized types) is
   retained for the whole file; `make phpstan` needs ~12.5 GB at 4G-per-worker

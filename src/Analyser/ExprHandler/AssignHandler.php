@@ -517,30 +517,61 @@ final class AssignHandler implements ExprHandler
 					: $scopeBeforeAssignEval->getType($assignedExpr);
 
 				// Ternary/Match conditional-expression holders need the branch types from
-				// narrowed scopes — guarded old-world bridges until TernaryHandler/
-				// MatchHandler migrate (PHPSTAN_FNSR=0)
+				// narrowed scopes — the cond's narrowing comes from its re-processed
+				// result, the branch types are priced through adapters on the filtered
+				// scopes (Match: guarded old-world bridge until MatchHandler migrates)
 				$conditionalExpressions = [];
 				if ($assignedExpr instanceof Ternary) {
 					$if = $assignedExpr->if;
 					if ($if === null) {
 						$if = $assignedExpr->cond;
 					}
-					$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
-					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
-					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
-					$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
-					$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
-					$truthyType = $truthyScope->getType($if);
-					$falseyType = $falsyScope->getType($assignedExpr->else);
+					$condResult = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep());
+					$condScope = $condResult->getScope();
+					if (NewWorld::isEnabled() && $condResult->hasSpecifiedTypesCallback()) {
+						$truthySpecifiedTypes = $condResult->getSpecifiedTypes($condScope, TypeSpecifierContext::createTruthy());
+						$falseySpecifiedTypes = $condResult->getSpecifiedTypes($condScope, TypeSpecifierContext::createFalsey());
+						$truthyScope = $condResult->getTruthyScope();
+						$falsyScope = $condResult->getFalseyScope();
+					} else {
+						// not-yet-migrated cond — guarded old-world dispatcher (PHPSTAN_FNSR=0)
+						$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
+						$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
+						$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
+						$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
+					}
+					if (NewWorld::isEnabled()) {
+						$truthyType = $truthyScope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage)->getType($if);
+						$falseyType = $falsyScope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage)->getType($assignedExpr->else);
+					} else {
+						$truthyType = $truthyScope->getType($if);
+						$falseyType = $falsyScope->getType($assignedExpr->else);
+					}
 
 					if (
 						$truthyType->isSuperTypeOf($falseyType)->no()
 						&& $falseyType->isSuperTypeOf($truthyType)->no()
 					) {
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+						$condExprTypeResolver = null;
+						if (NewWorld::isEnabled()) {
+							// resolves entry expressions of the projected cond
+							// SpecifiedTypes — same tiers as $exprTypeResolver below
+							$condExprString = $condScope->getNodeKey($assignedExpr->cond);
+							$condExprTypeResolver = static function (Expr $e, string $eString) use ($condExprString, $condResult, $condScope, $nodeScopeResolver, $stmt, $storage): Type {
+								if ($eString === $condExprString && $condResult->hasTypeCallback()) {
+									return $condResult->getType();
+								}
+								if (array_key_exists($eString, $condScope->expressionTypes)) {
+									return TypeUtils::resolveLateResolvableTypes($condScope->expressionTypes[$eString]->getType());
+								}
+
+								return $condScope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage)->getType($e);
+							};
+						}
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr, $condExprTypeResolver);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr, $condExprTypeResolver);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $condExprTypeResolver);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $condExprTypeResolver);
 					}
 				}
 

@@ -3,10 +3,14 @@
 namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -29,7 +33,10 @@ use PHPStan\Type\TypeCombinator;
 final class DefaultNarrowingHelper
 {
 
-	public function __construct(private ExprPrinter $exprPrinter)
+	public function __construct(
+		private ExprPrinter $exprPrinter,
+		private TypeSpecifier $typeSpecifier,
+	)
 	{
 	}
 
@@ -59,12 +66,18 @@ final class DefaultNarrowingHelper
 	 * plain-chain dual key (one structural getNullsafeShortcircuitedExpr call)
 	 * and, when the chain provably executed, a subject-not-null entry.
 	 *
+	 * When the chain executed and a plain call expr is supplied, the plain
+	 * call's own narrowing (method type-specifying extensions, asserts) is
+	 * composed in through the old-world dispatcher with an adapter — what the
+	 * old synthetic `BooleanAnd(var !== null, plainCall)` provided — until
+	 * MethodCallHandler's narrowing migrates.
+	 *
 	 * @param Expr\NullsafePropertyFetch|Expr\NullsafeMethodCall $expr
 	 * @return callable(Expr, MutatingScope, TypeSpecifierContext): SpecifiedTypes
 	 */
-	public function createNullsafeSpecifyCallback(Expr $expr, ExpressionResult $varResult, bool $resultNarrowingAllowed = true): callable
+	public function createNullsafeSpecifyCallback(Expr $expr, ExpressionResult $varResult, bool $resultNarrowingAllowed = true, ?Expr $plainCallExpr = null, ?NodeScopeResolver $nodeScopeResolver = null, ?Stmt $stmt = null): callable
 	{
-		return function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($varResult, $resultNarrowingAllowed): SpecifiedTypes {
+		return function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($varResult, $resultNarrowingAllowed, $plainCallExpr, $nodeScopeResolver, $stmt): SpecifiedTypes {
 			if (!$e instanceof Expr\NullsafePropertyFetch && !$e instanceof Expr\NullsafeMethodCall) {
 				throw new ShouldNotHappenException();
 			}
@@ -108,7 +121,16 @@ final class DefaultNarrowingHelper
 				$sureNotTypes[$this->exprPrinter->printExpr($e->var)] = [$e->var, new NullType()];
 			}
 
-			return (new SpecifiedTypes([], $sureNotTypes))->setRootExpr($e);
+			$types = (new SpecifiedTypes([], $sureNotTypes))->setRootExpr($e);
+
+			if ($chainExecuted && $plainCallExpr !== null && $nodeScopeResolver !== null && $stmt !== null) {
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+				$types = $types->unionWith(
+					$this->typeSpecifier->specifyTypesInCondition($adapterScope, $plainCallExpr, $ctx)->setRootExpr($e),
+				);
+			}
+
+			return $types;
 		};
 	}
 

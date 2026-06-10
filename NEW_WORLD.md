@@ -307,7 +307,7 @@ as factual comments at their call sites, not here.
 - [ ] FirstClassCallableStaticCallHandler
 - [x] FuncCallHandler — dynamic-name calls bridge
 - [x] IncludeHandler — constant mixed typeCallback; default narrowing
-- [ ] InstanceofHandler
+- [x] InstanceofHandler — typeCallback folds via the target/class results; specifyTypesCallback is the old create() math with an adapter seeded with the target and class results
 - [x] InterpolatedStringHandler — per-part results keyed by spl_object_id (each captured at its own evaluation point); concat folding via resolveConcatType; default narrowing
 - [ ] IssetHandler
 - [ ] MatchHandler

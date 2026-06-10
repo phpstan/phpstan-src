@@ -958,6 +958,35 @@ class Foo
 		}
 	}
 
+	public function instanceofChecks(mixed $m, Holder $h, object $o): void
+	{
+		assertType('bool', $m instanceof Holder);
+		assertType('true', $h instanceof Holder);
+		assertType('false', $h instanceof AssertedClass);
+		if ($m instanceof Holder && $o instanceof AssertingInterface) {
+			assertType(Holder::class, $m);
+			assertType(AssertingInterface::class, $o);
+		}
+		if ($m instanceof Holder || $m instanceof AssertedClass) {
+			assertType('NewWorldTypeInference\\AssertedClass|NewWorldTypeInference\\Holder', $m);
+		}
+		if (!($m instanceof Holder)) {
+			assertType('mixed~NewWorldTypeInference\\Holder', $m);
+		}
+		assertType('NewWorldTypeInference\\Holder|null', $m instanceof Holder ? $m : null);
+	}
+
+	/** @param class-string<Holder> $cls */
+	public function instanceofDynamic(mixed $m, string $cls, object $obj): void
+	{
+		if ($m instanceof $cls) {
+			assertType(Holder::class, $m);
+		}
+		if ($m instanceof $obj) {
+			assertType('object', $m);
+		}
+	}
+
 	public function classConstFetch(string $name, int $i): void
 	{
 		assertType("'CONST'", Holder::TEST_CONST);

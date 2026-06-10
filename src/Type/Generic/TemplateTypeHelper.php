@@ -131,6 +131,12 @@ final class TemplateTypeHelper
 			}
 
 			if ($type instanceof TemplateType) {
+				// templates declared by a callable<T>(...)/Closure<T>(...) type in the signature
+				// belong to the callable value, not to the entered function
+				if ($type->getScope()->equals(TemplateTypeScope::createWithAnonymousFunction())) {
+					return $traverse($type);
+				}
+
 				return $traverse($type->toArgument());
 			}
 

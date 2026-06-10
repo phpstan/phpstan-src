@@ -3822,7 +3822,6 @@ class NodeScopeResolver
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
 				$exprType = $exprResult->getType();
 				$argExprTypes[spl_object_id($arg->value)] = $exprType;
-				$argResults[$scope->getNodeKey($arg->value)] = $exprResult;
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();
@@ -3955,10 +3954,12 @@ class NodeScopeResolver
 			}
 		}
 
-		// not storing this, it's scope after processing all args; the per-arg
-		// results ride along so call handlers can seed their adapters — a passed
-		// closure's memoized type carries the parameter-type inference context
-		// that re-processing outside the call would lose
+		// not storing this, it's scope after processing all args; the closure/
+		// arrow-function argument wrappers ride along so call handlers can seed
+		// their adapters — a passed closure's type resolves on its context scope
+		// (the parameter-type inference), which re-processing outside the call
+		// would lose. Plain arguments re-resolve through the adapter tiers and
+		// are NOT retained (memory).
 		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, companionResults: $argResults);
 	}
 

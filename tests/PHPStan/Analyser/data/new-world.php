@@ -998,6 +998,15 @@ class Foo
 		}
 	}
 
+	/** @param class-string<Holder> $cls */
+	public function instantiations(string $cls): void
+	{
+		assertType(Holder::class, new Holder());
+		assertType(Holder::class, new $cls());
+		assertType('NewWorldTypeInference\\GenericBox<int>', new GenericBox(5));
+		assertType('NewWorldTypeInference\\GenericBox<string>', new GenericBox('s'));
+	}
+
 	public function firstClassCallables(Holder $h): void
 	{
 		assertType('Closure(string): int<0, max>', strlen(...));
@@ -1193,6 +1202,17 @@ interface AssertingInterface
 	 * @phpstan-assert-if-true AssertedClass $this
 	 */
 	public function isA(): bool;
+
+}
+
+/** @template T */
+class GenericBox
+{
+
+	/** @param T $value */
+	public function __construct(public mixed $value)
+	{
+	}
 
 }
 

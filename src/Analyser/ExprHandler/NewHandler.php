@@ -75,6 +75,7 @@ final class NewHandler implements ExprHandler
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private TypeSpecifier $typeSpecifier,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -100,7 +101,7 @@ final class NewHandler implements ExprHandler
 		if ($expr->class instanceof Name) {
 			$className = $scope->resolveName($expr->class);
 
-			[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, false);
+			[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage()), false);
 			$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 
 			if ($parametersAcceptor !== null) {
@@ -162,7 +163,9 @@ final class NewHandler implements ExprHandler
 			}
 		} else {
 			$isDynamic = true;
-			$objectClasses = $scope->getType($expr)->getObjectClassNames();
+			// the class expression is not processed yet — price the ask through
+			// an adapter (the self-type of a dynamic New is derived from it)
+			$objectClasses = $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage())->getType($expr->class)->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			if (count($objectClasses) === 1) {
 				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 				$className = $objectClasses[0];
@@ -181,7 +184,7 @@ final class NewHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
 
 			if ($className !== null) {
-				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, true);
+				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage()), true);
 				$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 			} else {
 				$impurePoints[] = new ImpurePoint(
@@ -215,12 +218,46 @@ final class NewHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 
+		$argResults = $argsResult->getCompanionResults();
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			expr: $expr,
+			typeCallback: function (Expr $e, MutatingScope $s) use ($argResults, $nodeScopeResolver, $stmt): Type {
+				if (!$e instanceof New_) {
+					throw new ShouldNotHappenException();
+				}
+
+				// exactInstantiation resolves constructor template inference and
+				// parent-construct chains with scope asks — priced through an
+				// adapter seeded with the per-arg companions (passed closures
+				// keep their context memo)
+				$adapterScope = $s->toResultAwareScope($argResults, $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				if ($e->class instanceof Name) {
+					return $this->exactInstantiation($adapterScope, $e, $e->class);
+				}
+				if ($e->class instanceof Node\Stmt\Class_) {
+					$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($e->class, $s);
+
+					return new ObjectType($anonymousClassReflection->getName());
+				}
+
+				return $adapterScope->getType($e->class)->getObjectTypeOrClassStringObjectType();
+			},
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$e instanceof New_) {
+					throw new ShouldNotHappenException();
+				}
+
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->specifyTypes($this->typeSpecifier, $adapterScope, $e, $ctx);
+			},
 		);
 	}
 

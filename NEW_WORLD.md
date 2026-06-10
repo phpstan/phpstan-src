@@ -312,7 +312,7 @@ as factual comments at their call sites, not here.
 - [x] IssetHandler — typeCallback via issetCheck on an unseeded adapter; specifyTypesCallback invokes the old body directly (BinaryOp precedent; the multi-isset And-chain synthetic routes through migrated handlers); ensureNonNullability asks priced via the askScopeFactory
 - [ ] MatchHandler
 - [x] MethodCallHandler — typeCallback via resolveMethodCallTypeViaResults (receiver from its result, one-level nullsafe short-circuit, self-seeded adapter + per-arg companions from processArgs — passed closures keep their context memo); specifyTypesCallback = old body with unseeded adapter; lazy returnTypeCallback threaded into MethodThrowPointHelper
-- [ ] NewHandler
+- [x] NewHandler — typeCallback via exactInstantiation on an adapter seeded with per-arg companions (constructor template inference; anonymous classes via reflection; dynamic class exprs); ctor selection pre-args priced through fresh-storage adapters (live-storage duplicate() is O(file) — the +38MB lesson); specifyTypesCallback = old body with unseeded adapter
 - [x] NullsafeMethodCallHandler — shares the §3.10 callback; call part reused via MethodCallHandler::processCallWithVarResult; call type bridges until MethodCallHandler migrates; impure calls gate result narrowing
 - [x] NullsafePropertyFetchHandler — emits the plain-chain dual key and the subject-not-null entry once, per §3.10; dynamic names bridge
 - [ ] PipeHandler

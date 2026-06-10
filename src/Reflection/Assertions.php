@@ -186,4 +186,12 @@ final class Assertions
 		return self::create($tags);
 	}
 
+	/**
+	 * @param AssertTag[] $assertTags
+	 */
+	public static function createFromAssertTags(array $assertTags): self
+	{
+		return self::create($assertTags);
+	}
+
 }

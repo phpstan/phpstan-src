@@ -56,6 +56,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -965,7 +966,18 @@ final class InitializerExprTypeResolver
 			}
 
 			$parameters = $variant->getParameters();
-			$assertions = $function !== null ? $function->getAsserts() : Assertions::createEmpty();
+			if ($function !== null) {
+				$assertions = $function->getAsserts();
+			} elseif ($variant instanceof CallableParametersAcceptor) {
+				$assertions = $variant->getAsserts();
+			} else {
+				$assertions = Assertions::createEmpty();
+			}
+
+			// a conditional return type referencing the function's own parameter,
+			// like @return ($value is int ? true : false) on is_int(),
+			// also becomes a type predicate of the resulting Closure
+			$assertions = CallableAssertionsHelper::withConditionalReturnPredicate($assertions, $variant);
 			$closureTypes[] = new ClosureType(
 				$parameters,
 				$returnType,

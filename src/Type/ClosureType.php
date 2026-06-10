@@ -49,6 +49,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
@@ -206,6 +207,9 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		foreach ($this->parameters as $parameter) {
 			$classes = array_merge($classes, $parameter->getType()->getReferencedClasses());
 		}
+		foreach ($this->assertions->getAll() as $assertTag) {
+			$classes = array_merge($classes, $assertTag->getType()->getReferencedClasses());
+		}
 
 		return array_merge($classes, $this->returnType->getReferencedClasses());
 	}
@@ -305,9 +309,13 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	private function describeCallable(): string
 	{
 		$printer = new Printer();
+		$assertedParameterNames = [];
+		foreach ($this->assertions->getAll() as $assertTag) {
+			$assertedParameterNames[$assertTag->getParameter()->getParameterName()] = true;
+		}
 		$selfWithoutParameterNames = new self(
 			array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
-				'',
+				array_key_exists('$' . $p->getName(), $assertedParameterNames) ? $p->getName() : '',
 				$p->getType(),
 				optional: $p->isOptional() && !$p->isVariadic(),
 				passedByReference: PassedByReference::createNo(),
@@ -687,6 +695,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType)->convertToLowerBoundTypes());
 		}
 
+		$typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($this, $parametersAcceptor));
+
 		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
 	}
 
@@ -695,6 +705,12 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		$references = $this->getReturnType()->getReferencedTemplateTypes(
 			$positionVariance->compose(TemplateTypeVariance::createCovariant()),
 		);
+
+		foreach ($this->assertions->getAll() as $assertTag) {
+			foreach ($assertTag->getType()->getReferencedTemplateTypes($positionVariance->compose(TemplateTypeVariance::createCovariant())) as $reference) {
+				$references[] = $reference;
+			}
+		}
 
 		$paramVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
 
@@ -737,7 +753,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
 			$this->mustUseReturnValue,
-			$this->assertions,
+			$this->assertions->mapTypes($cb),
 			$this->isStatic,
 		);
 	}
@@ -953,10 +969,13 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			);
 		}
 
+		$returnTypeNode = CallableAssertionsHelper::toConditionalReturnTypeNode($this->assertions, $this->parameters, $this->returnType)
+			?? $this->returnType->toPhpDocNode();
+
 		return new CallableTypeNode(
 			new IdentifierTypeNode('Closure'),
 			$parameters,
-			$this->returnType->toPhpDocNode(),
+			$returnTypeNode,
 			$templateTags,
 		);
 	}
@@ -976,6 +995,12 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 				return true;
 			}
 			if ($parameter->getClosureThisType() !== null && $parameter->getClosureThisType()->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+		}
+
+		foreach ($this->assertions->getAll() as $assertTag) {
+			if ($assertTag->getType()->hasTemplateOrLateResolvableType()) {
 				return true;
 			}
 		}

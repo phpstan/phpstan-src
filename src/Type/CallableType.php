@@ -72,6 +72,8 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	private TrinaryLogic $isPure;
 
+	private Assertions $assertions;
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -85,6 +87,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		private array $templateTags = [],
 		?TrinaryLogic $isPure = null,
+		?Assertions $assertions = null,
 	)
 	{
 		$this->parameters = $parameters ?? [];
@@ -93,6 +96,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->isPure = $isPure ?? TrinaryLogic::createMaybe();
+		$this->assertions = $assertions ?? Assertions::createEmpty();
 	}
 
 	/**
@@ -113,6 +117,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		$classes = [];
 		foreach ($this->parameters as $parameter) {
 			$classes = array_merge($classes, $parameter->getType()->getReferencedClasses());
+		}
+		foreach ($this->assertions->getAll() as $assertTag) {
+			$classes = array_merge($classes, $assertTag->getType()->getReferencedClasses());
 		}
 
 		return array_merge($classes, $this->returnType->getReferencedClasses());
@@ -242,6 +249,10 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return false;
 		}
 
+		if (!CallableAssertionsHelper::assertionsEqual($this->assertions, $type->assertions)) {
+			return false;
+		}
+
 		if (count($this->parameters) !== count($type->parameters)) {
 			return false;
 		}
@@ -324,9 +335,13 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			static fn (): string => 'callable',
 			function (): string {
 				$printer = new Printer();
+				$assertedParameterNames = [];
+				foreach ($this->assertions->getAll() as $assertTag) {
+					$assertedParameterNames[$assertTag->getParameter()->getParameterName()] = true;
+				}
 				$selfWithoutParameterNames = new self(
 					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
-						'',
+						array_key_exists('$' . $p->getName(), $assertedParameterNames) ? $p->getName() : '',
 						$p->getType(),
 						optional: $p->isOptional() && !$p->isVariadic(),
 						passedByReference: PassedByReference::createNo(),
@@ -339,6 +354,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$this->resolvedTemplateTypeMap,
 					$this->templateTags,
 					$this->isPure,
+					$this->assertions,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -401,7 +417,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function getAsserts(): Assertions
 	{
-		return Assertions::createEmpty();
+		return $this->assertions;
 	}
 
 	public function isStaticClosure(): TrinaryLogic
@@ -534,6 +550,8 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType)->convertToLowerBoundTypes());
 		}
 
+		$typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($this, $parametersAcceptor));
+
 		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
 	}
 
@@ -542,6 +560,12 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		$references = $this->getReturnType()->getReferencedTemplateTypes(
 			$positionVariance->compose(TemplateTypeVariance::createCovariant()),
 		);
+
+		foreach ($this->assertions->getAll() as $assertTag) {
+			foreach ($assertTag->getType()->getReferencedTemplateTypes($positionVariance->compose(TemplateTypeVariance::createCovariant())) as $reference) {
+				$references[] = $reference;
+			}
+		}
 
 		$paramVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
 
@@ -580,6 +604,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
+			$this->assertions->mapTypes($cb),
 		);
 	}
 
@@ -630,6 +655,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
+			$this->assertions,
 		);
 	}
 
@@ -809,10 +835,13 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			);
 		}
 
+		$returnTypeNode = CallableAssertionsHelper::toConditionalReturnTypeNode($this->assertions, $this->parameters, $this->returnType)
+			?? $this->returnType->toPhpDocNode();
+
 		return new CallableTypeNode(
 			new IdentifierTypeNode($this->isPure->yes() ? 'pure-callable' : 'callable'),
 			$parameters,
-			$this->returnType->toPhpDocNode(),
+			$returnTypeNode,
 			$templateTags,
 		);
 	}
@@ -832,6 +861,12 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 				return true;
 			}
 			if ($parameter->getClosureThisType() !== null && $parameter->getClosureThisType()->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+		}
+
+		foreach ($this->assertions->getAll() as $assertTag) {
+			if ($assertTag->getType()->hasTemplateOrLateResolvableType()) {
 				return true;
 			}
 		}

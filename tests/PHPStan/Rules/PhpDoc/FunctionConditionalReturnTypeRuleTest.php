@@ -68,4 +68,22 @@ class FunctionConditionalReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8609-function.php'], []);
 	}
 
+	public function testCallableTypePredicate(): void
+	{
+		$this->analyse([__DIR__ . '/data/callable-type-predicate-rule.php'], [
+			[
+				'Conditional return type references unknown parameter $valeu.',
+				16,
+			],
+			[
+				'Condition "int is int" in conditional return type is always true.',
+				24,
+			],
+			[
+				'Conditional return type references unknown parameter $value.',
+				32,
+			],
+		]);
+	}
+
 }

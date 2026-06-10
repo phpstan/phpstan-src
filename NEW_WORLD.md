@@ -297,7 +297,7 @@ as factual comments at their call sites, not here.
 - [ ] ClosureHandler
 - [ ] CoalesceHandler
 - [x] ConstFetchHandler — typeCallback: literal true/false/null, holder-tracked runtime constants, ConstantResolver (all unguarded already); default narrowing
-- [ ] EmptyHandler
+- [x] EmptyHandler — typeCallback via issetCheck on an unseeded adapter; specifyTypesCallback invokes the old body directly (the `!isset(X) || !X` synthetic routes through migrated handlers)
 - [x] ErrorSuppressHandler — full delegation to the inner result (type, narrowing, branch scopes); unseeded adapter for unmigrated inner
 - [x] EvalHandler — constant mixed typeCallback; default narrowing
 - [x] ExitHandler — constant NonAcceptingNeverType typeCallback; default narrowing
@@ -309,7 +309,7 @@ as factual comments at their call sites, not here.
 - [x] IncludeHandler — constant mixed typeCallback; default narrowing
 - [x] InstanceofHandler — typeCallback folds via the target/class results; specifyTypesCallback is the old create() math with an adapter seeded with the target and class results
 - [x] InterpolatedStringHandler — per-part results keyed by spl_object_id (each captured at its own evaluation point); concat folding via resolveConcatType; default narrowing
-- [ ] IssetHandler
+- [x] IssetHandler — typeCallback via issetCheck on an unseeded adapter; specifyTypesCallback invokes the old body directly (BinaryOp precedent; the multi-isset And-chain synthetic routes through migrated handlers); ensureNonNullability asks priced via the askScopeFactory
 - [ ] MatchHandler
 - [ ] MethodCallHandler
 - [ ] NewHandler

@@ -981,6 +981,37 @@ class Foo
 		assertType('mixed', $ao['key']);
 	}
 
+	/** @param array<string, int> $map */
+	public function issetChecks(?int $i, array $map, string $k): void
+	{
+		assertType('bool', isset($i));
+		if (isset($i)) {
+			assertType('int', $i);
+		} else {
+			assertType('null', $i);
+		}
+		if (isset($map[$k])) {
+			assertType('int', $map[$k]);
+		}
+		if (isset($i, $map[$k])) {
+			assertType('int', $i);
+		}
+	}
+
+	/** @param array<string, int> $map */
+	public function emptyChecks(?int $i, array $map): void
+	{
+		assertType('bool', empty($i));
+		if (empty($i)) {
+			assertType('0|null', $i);
+		} else {
+			assertType('int<min, -1>|int<1, max>', $i);
+		}
+		if (!empty($map)) {
+			assertType('non-empty-array<string, int>', $map);
+		}
+	}
+
 	public function equalityNarrowing(mixed $m, ?int $i, ?Holder $h, int $n): void
 	{
 		if ($i === null) {

@@ -32,6 +32,7 @@ final class EmptyHandler implements ExprHandler
 
 	public function __construct(
 		private NonNullabilityHelper $nonNullabilityHelper,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
@@ -85,7 +86,7 @@ final class EmptyHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->expr);
+		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->expr, static fn (MutatingScope $askedScope): MutatingScope => $askedScope->toResultAwareScope([], $nodeScopeResolver, $stmt, $storage));
 		$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$scope = $exprResult->getScope();
@@ -98,8 +99,49 @@ final class EmptyHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			expr: $expr,
+			typeCallback: static function (Expr $e, MutatingScope $s) use ($nodeScopeResolver, $stmt): Type {
+				if (!$e instanceof Expr\Empty_) {
+					throw new ShouldNotHappenException();
+				}
+
+				// issetCheck() walks the expression asking for types — priced
+				// through an unseeded adapter (ResultAwareScope tiers)
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+				$result = $adapterScope->issetCheck($e->expr, static function (Type $type): ?bool {
+					$isNull = $type->isNull();
+					$isFalsey = $type->toBoolean()->isFalse();
+					if ($isNull->maybe()) {
+						return null;
+					}
+					if ($isFalsey->maybe()) {
+						return null;
+					}
+
+					if ($isNull->yes()) {
+						return $isFalsey->no();
+					}
+
+					return !$isFalsey->yes();
+				});
+				if ($result === null) {
+					return new BooleanType();
+				}
+
+				return new ConstantBooleanType(!$result);
+			},
+			// the old specifyTypes() body stays the single source (the BinaryOp
+			// precedent) — its `!isset(X) || !X` synthetic routes through the
+			// migrated handlers via the adapter's synthetic processing
+			specifyTypesCallback: function (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx) use ($nodeScopeResolver, $stmt): SpecifiedTypes {
+				if (!$e instanceof Expr\Empty_) {
+					throw new ShouldNotHappenException();
+				}
+
+				$adapterScope = $s->toResultAwareScope([], $nodeScopeResolver, $stmt, new ExpressionResultStorage());
+
+				return $this->specifyTypes($this->typeSpecifier, $adapterScope, $e, $ctx);
+			},
 		);
 	}
 

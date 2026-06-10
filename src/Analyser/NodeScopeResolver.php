@@ -2798,10 +2798,9 @@ class NodeScopeResolver
 			}
 
 			$innerResult = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
-			// carry the original expr, not the virtual callable node — the virtual
-			// node's resolveType is intentionally mixed, the first-class-callable
-			// handlers resolve types for the original expr (guarded legacy bridge,
-			// PHPSTAN_FNSR=0, until those handlers migrate)
+			// carry the original expr, not the virtual callable node — first-class
+			// callables resolve from reflection; the two scope asks (dynamic
+			// function name, method receiver) go through an unseeded adapter
 			$result = new ExpressionResult(
 				$innerResult->getScope(),
 				hasYield: $innerResult->hasYield(),
@@ -2809,6 +2808,46 @@ class NodeScopeResolver
 				throwPoints: $innerResult->getThrowPoints(),
 				impurePoints: $innerResult->getImpurePoints(),
 				expr: $expr,
+				typeCallback: function (Expr $e, MutatingScope $s) use ($stmt): Type {
+					if ($e instanceof FuncCall && $e->name instanceof Expr) {
+						$callableType = $s->toResultAwareScope([], $this, $stmt, new ExpressionResultStorage())->getType($e->name);
+						if (!$callableType->isCallable()->yes()) {
+							return new ObjectType(Closure::class);
+						}
+
+						return $this->initializerExprTypeResolver->createFirstClassCallable(
+							null,
+							$callableType->getCallableParametersAcceptors($s),
+							$s->nativeTypesPromoted,
+						);
+					}
+
+					if ($e instanceof MethodCall) {
+						if (!$e->name instanceof Node\Identifier) {
+							return new ObjectType(Closure::class);
+						}
+
+						$varType = $s->toResultAwareScope([], $this, $stmt, new ExpressionResultStorage())->getType($e->var);
+						$method = $s->getMethodReflection($varType, $e->name->toString());
+						if ($method === null) {
+							return new ObjectType(Closure::class);
+						}
+
+						return $this->initializerExprTypeResolver->createFirstClassCallable(
+							$method,
+							$method->getVariants(),
+							$s->nativeTypesPromoted,
+						);
+					}
+
+					if (!$e instanceof Expr\CallLike) {
+						throw new ShouldNotHappenException();
+					}
+
+					return $this->initializerExprTypeResolver->getFirstClassCallableType($e, InitializerExprContext::fromScope($s), $s->nativeTypesPromoted);
+				},
+				// a first-class callable is always a truthy Closure — no narrowing
+				specifyTypesCallback: static fn (Expr $e, MutatingScope $s, TypeSpecifierContext $ctx): SpecifiedTypes => (new SpecifiedTypes([], []))->setRootExpr($e),
 			);
 			$this->storeResult($storage, $expr, $result);
 			return $result;
@@ -3587,6 +3626,7 @@ class NodeScopeResolver
 		$processingOrder = array_keys($args);
 		$hasReorderedArgs = false;
 		$argExprTypes = [];
+		$argResults = [];
 		foreach ($args as $arg) {
 			if ($arg->hasAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE)) {
 				$hasReorderedArgs = true;
@@ -3711,6 +3751,10 @@ class NodeScopeResolver
 				}
 
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
+				// callback-less companion: the guarded bridge resolves the closure
+				// on its context scope (the attribute-driven parameter inference) —
+				// new-world closure typing lands with the ClosureHandler migration
+				$argResults[$scope->getNodeKey($arg->value)] = new ExpressionResult($scopeToPass, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: [], expr: $arg->value);
 
 				$uses = [];
 				foreach ($arg->value->uses as $use) {
@@ -3769,6 +3813,7 @@ class NodeScopeResolver
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
 				}
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
+				$argResults[$scope->getNodeKey($arg->value)] = new ExpressionResult($scopeToPass, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: [], expr: $arg->value);
 			} else {
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
 				if ($enterExpressionAssignForByRef) {
@@ -3777,6 +3822,7 @@ class NodeScopeResolver
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
 				$exprType = $exprResult->getType();
 				$argExprTypes[spl_object_id($arg->value)] = $exprType;
+				$argResults[$scope->getNodeKey($arg->value)] = $exprResult;
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();
@@ -3909,8 +3955,11 @@ class NodeScopeResolver
 			}
 		}
 
-		// not storing this, it's scope after processing all args
-		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		// not storing this, it's scope after processing all args; the per-arg
+		// results ride along so call handlers can seed their adapters — a passed
+		// closure's memoized type carries the parameter-type inference context
+		// that re-processing outside the call would lose
+		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, companionResults: $argResults);
 	}
 
 	/**

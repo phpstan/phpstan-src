@@ -242,6 +242,14 @@ final class ExpressionResult
 	}
 
 	/**
+	 * @return array<string, ExpressionResult>
+	 */
+	public function getCompanionResults(): array
+	{
+		return $this->companionResults;
+	}
+
+	/**
 	 * Self + companions, keyed by node key — the pre-narrowing type sources
 	 * for applySpecifiedTypes().
 	 *

@@ -140,9 +140,12 @@ final class ClassStatementsGatherer
 
 	public function __invoke(Node $node, Scope $scope): void
 	{
+		// gather before forwarding: the inner callback (rules) may suspend the
+		// fiber, deferring the collection past the point where the class
+		// aggregate nodes snapshot the gathered data
+		$this->gatherNodes($node, $scope);
 		$nodeCallback = $this->nodeCallback;
 		$nodeCallback($node, $scope);
-		$this->gatherNodes($node, $scope);
 	}
 
 	private function gatherNodes(Node $node, Scope $scope): void

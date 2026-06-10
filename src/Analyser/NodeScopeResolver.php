@@ -801,35 +801,31 @@ class NodeScopeResolver
 			$executionEnds = [];
 			$functionImpurePoints = [];
 			$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
-				$nodeCallback($node, $scope);
-				if ($scope->getFunction() !== $functionScope->getFunction()) {
-					return;
-				}
-				if ($scope->isInAnonymousFunction()) {
-					return;
-				}
-				if ($node instanceof PropertyAssignNode) {
-					$functionImpurePoints[] = new ImpurePoint(
-						$scope,
-						$node,
-						'propertyAssign',
-						'property assignment',
-						true,
-					);
-					return;
-				}
-				if ($node instanceof ExecutionEndNode) {
-					$executionEnds[] = $node;
-					return;
-				}
-				if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-					$gatheredYieldStatements[] = $node;
-				}
-				if (!$node instanceof Return_) {
-					return;
+				// collect before forwarding: the inner callback (rules) may suspend
+				// the fiber, deferring anything after it past the point where the
+				// FunctionReturnStatementsNode below snapshots these arrays
+				if ($scope->getFunction() === $functionScope->getFunction() && !$scope->isInAnonymousFunction()) {
+					if ($node instanceof PropertyAssignNode) {
+						$functionImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
+					} elseif ($node instanceof ExecutionEndNode) {
+						$executionEnds[] = $node;
+					} else {
+						if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+							$gatheredYieldStatements[] = $node;
+						}
+						if ($node instanceof Return_) {
+							$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+						}
+					}
 				}
 
-				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+				$nodeCallback($node, $scope);
 			}, StatementContext::createTopLevel())->toPublic();
 
 			$this->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
@@ -950,44 +946,38 @@ class NodeScopeResolver
 				$executionEnds = [];
 				$methodImpurePoints = [];
 				$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
-					$nodeCallback($node, $scope);
-					if ($scope->getFunction() !== $methodScope->getFunction()) {
-						return;
-					}
-					if ($scope->isInAnonymousFunction()) {
-						return;
-					}
-					if ($node instanceof PropertyAssignNode) {
-						if (
-							$node->getPropertyFetch() instanceof Expr\PropertyFetch
-							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
-							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
-							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
-							&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
-						) {
-							return;
+					// collect before forwarding: the inner callback (rules) may suspend
+					// the fiber, deferring anything after it past the point where the
+					// MethodReturnStatementsNode below snapshots these arrays
+					if ($scope->getFunction() === $methodScope->getFunction() && !$scope->isInAnonymousFunction()) {
+						if ($node instanceof PropertyAssignNode) {
+							$isThisConstructorPropertyAssign = $node->getPropertyFetch() instanceof Expr\PropertyFetch
+								&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
+								&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
+								&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
+								&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null;
+							if (!$isThisConstructorPropertyAssign) {
+								$methodImpurePoints[] = new ImpurePoint(
+									$scope,
+									$node,
+									'propertyAssign',
+									'property assignment',
+									true,
+								);
+							}
+						} elseif ($node instanceof ExecutionEndNode) {
+							$executionEnds[] = $node;
+						} else {
+							if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+								$gatheredYieldStatements[] = $node;
+							}
+							if ($node instanceof Return_) {
+								$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+							}
 						}
-						$methodImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-						return;
-					}
-					if ($node instanceof ExecutionEndNode) {
-						$executionEnds[] = $node;
-						return;
-					}
-					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-						$gatheredYieldStatements[] = $node;
-					}
-					if (!$node instanceof Return_) {
-						return;
 					}
 
-					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+					$nodeCallback($node, $scope);
 				}, StatementContext::createTopLevel())->toPublic();
 
 				$methodReflection = $methodScope->getFunction();
@@ -3011,37 +3001,34 @@ class NodeScopeResolver
 		$closureImpurePoints = [];
 		$invalidateExpressions = [];
 		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
-			$nodeCallback($node, $scope);
-			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
-				return;
-			}
-			if ($node instanceof PropertyAssignNode) {
-				$closureImpurePoints[] = new ImpurePoint(
-					$scope,
-					$node,
-					'propertyAssign',
-					'property assignment',
-					true,
-				);
-				$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
-				return;
-			}
-			if ($node instanceof ExecutionEndNode) {
-				$executionEnds[] = $node;
-				return;
-			}
-			if ($node instanceof InvalidateExprNode) {
-				$invalidateExpressions[] = $node;
-				return;
-			}
-			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-				$gatheredYieldStatements[] = $node;
-			}
-			if (!$node instanceof Return_) {
-				return;
+			// collect before forwarding: the inner callback (rules) may suspend
+			// the fiber, deferring anything after it past the point where the
+			// ClosureReturnStatementsNode below snapshots these arrays
+			if ($scope->getAnonymousFunctionReflection() === $closureScope->getAnonymousFunctionReflection()) {
+				if ($node instanceof PropertyAssignNode) {
+					$closureImpurePoints[] = new ImpurePoint(
+						$scope,
+						$node,
+						'propertyAssign',
+						'property assignment',
+						true,
+					);
+					$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
+				} elseif ($node instanceof ExecutionEndNode) {
+					$executionEnds[] = $node;
+				} elseif ($node instanceof InvalidateExprNode) {
+					$invalidateExpressions[] = $node;
+				} else {
+					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+						$gatheredYieldStatements[] = $node;
+					}
+					if ($node instanceof Return_) {
+						$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+					}
+				}
 			}
 
-			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+			$nodeCallback($node, $scope);
 		};
 
 		if (count($byRefUses) === 0) {

@@ -11,6 +11,35 @@
  *   'constants'  => list of constant names valid for this parameter
  *   'exclusiveGroups' => (optional, bitmask only) groups of constants that are mutually exclusive
  */
+
+// All LIBXML_* option constants accepted in a libxml options/flags bitmask. PHP does not
+// validate which flags are meaningful for a given function, so the whole family is allowed
+// wherever a libxml bitmask is expected. See https://www.php.net/libxml.constants.php
+$libxmlOptions = [
+	'LIBXML_BIGLINES',
+	'LIBXML_COMPACT',
+	'LIBXML_DTDATTR',
+	'LIBXML_DTDLOAD',
+	'LIBXML_DTDVALID',
+	'LIBXML_HTML_NODEFDTD',
+	'LIBXML_HTML_NOIMPLIED',
+	'LIBXML_NOBLANKS',
+	'LIBXML_NOCDATA',
+	'LIBXML_NOEMPTYTAG',
+	'LIBXML_NOENT',
+	'LIBXML_NOERROR',
+	'LIBXML_NONET',
+	'LIBXML_NOWARNING',
+	'LIBXML_NOXMLDECL',
+	'LIBXML_NO_XXE',
+	'LIBXML_NSCLEAN',
+	'LIBXML_PARSEHUGE',
+	'LIBXML_PEDANTIC',
+	'LIBXML_RECOVER',
+	'LIBXML_SCHEMA_CREATE',
+	'LIBXML_XINCLUDE',
+];
+
 return [
 
 	// ————————————————————————————————————————————
@@ -1490,46 +1519,14 @@ return [
 	'simplexml_load_file' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'simplexml_load_string' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
@@ -1698,132 +1695,56 @@ return [
 	'DOMDocument::load' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::loadXML' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::loadHTML' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-				'LIBXML_HTML_NOIMPLIED',
-				'LIBXML_HTML_NODEFDTD',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::loadHTMLFile' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-				'LIBXML_HTML_NOIMPLIED',
-				'LIBXML_HTML_NODEFDTD',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::save' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOEMPTYTAG',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::saveXML' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOEMPTYTAG',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::schemaValidate' => [
 		'options' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_SCHEMA_CREATE',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'DOMDocument::schemaValidateSource' => [
 		'flags' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_SCHEMA_CREATE',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
@@ -1832,46 +1753,14 @@ return [
 	'XMLReader::open' => [
 		'flags' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 
 	'XMLReader::XML' => [
 		'flags' => [
 			'type' => 'bitmask',
-			'constants' => [
-				'LIBXML_NOENT',
-				'LIBXML_DTDLOAD',
-				'LIBXML_DTDATTR',
-				'LIBXML_DTDVALID',
-				'LIBXML_NOERROR',
-				'LIBXML_NOWARNING',
-				'LIBXML_NOBLANKS',
-				'LIBXML_XINCLUDE',
-				'LIBXML_NSCLEAN',
-				'LIBXML_NOCDATA',
-				'LIBXML_NONET',
-				'LIBXML_PEDANTIC',
-				'LIBXML_COMPACT',
-				'LIBXML_PARSEHUGE',
-				'LIBXML_BIGLINES',
-			],
+			'constants' => $libxmlOptions,
 		],
 	],
 

@@ -3861,9 +3861,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
 				) {
 					$guardIsSuperTypeOfTheirExpr = $guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType());
+					$theirExprIsSuperTypeOfGuard = $theirExpressionTypes[$guardExprString]->getType()->isSuperTypeOf($guardHolder->getType());
 
 					if (
 						$guardIsSuperTypeOfTheirExpr->yes()
+						|| $theirExprIsSuperTypeOfGuard->yes()
 						|| (
 							array_key_exists($exprString, $theirExpressionTypes)
 							&& $theirExpressionTypes[$exprString]->getCertainty()->yes()

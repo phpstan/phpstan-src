@@ -26,6 +26,7 @@ use function array_diff;
 use function array_key_exists;
 use function count;
 use function filemtime;
+use function filesize;
 use function in_array;
 use function is_file;
 use function memory_get_peak_usage;
@@ -351,7 +352,7 @@ final class FixerWorkerRunner
 			));
 		}
 
-		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
+		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files, static fn (string $file): int => (int) @filesize($file));
 		$mainScript = null;
 		if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
 			$mainScript = $_SERVER['argv'][0];

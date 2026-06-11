@@ -16,6 +16,7 @@ use function array_filter;
 use function array_unshift;
 use function array_values;
 use function count;
+use function filesize;
 use function function_exists;
 use function is_file;
 use function memory_get_peak_usage;
@@ -73,7 +74,7 @@ final class AnalyserRunner
 		}
 
 		if (!$debug && $allowParallel && function_exists('proc_open')) {
-			$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
+			$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files, static fn (string $file): int => (int) @filesize($file));
 
 			$mainScript = null;
 			if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {

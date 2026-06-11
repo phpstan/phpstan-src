@@ -515,6 +515,7 @@ final class ResultCacheManager
 			exportedNodes: $filteredExportedNodes,
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
+			upToDate: $filesToAnalyseCount === 0 && count($deletedFiles) === 0 && !$newFileAppeared,
 		);
 	}
 
@@ -708,7 +709,13 @@ final class ResultCacheManager
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
 
 		$saved = false;
-		if ($save !== false) {
+		if ($save !== false && $resultCache->isUpToDate()) {
+			// nothing changed since the cache was written - rewriting it would produce an identical file
+			$saved = true;
+			if ($output->isVeryVerbose()) {
+				$output->writeLineFormatted('Result cache was not saved because it is already up to date.');
+			}
+		} elseif ($save !== false) {
 			$projectExtensionFiles = [];
 			foreach ($resultCache->getProjectExtensionFiles() as $file => [$hash, $isAnalysed, $className]) {
 				if ($isAnalysed) {

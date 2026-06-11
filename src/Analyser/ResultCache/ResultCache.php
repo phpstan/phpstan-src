@@ -43,8 +43,18 @@ final class ResultCache
 		private array $exportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private bool $upToDate = false,
 	)
 	{
+	}
+
+	/**
+	 * Whether the cache on disk already matches the current state of the project
+	 * (no changed, new, or deleted files) so re-saving it can be skipped.
+	 */
+	public function isUpToDate(): bool
+	{
+		return $this->upToDate;
 	}
 
 	/**

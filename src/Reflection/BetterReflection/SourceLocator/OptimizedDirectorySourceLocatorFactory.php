@@ -6,6 +6,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileFinder;
+use PHPStan\Internal\FileHashing;
 use PHPStan\Php\PhpVersion;
 use function array_key_exists;
 use function array_keys;
@@ -32,7 +33,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		$files = $this->fileFinder->findFiles([$directory])->getFiles();
 		$fileHashes = [];
 		foreach ($files as $file) {
-			$hash = hash_file('sha256', $file);
+			$hash = hash_file(FileHashing::ALGORITHM, $file);
 			if ($hash === false) {
 				continue;
 			}
@@ -105,7 +106,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	{
 		$fileHashes = [];
 		foreach ($files as $file) {
-			$hash = hash_file('sha256', $file);
+			$hash = hash_file(FileHashing::ALGORITHM, $file);
 			if ($hash === false) {
 				continue;
 			}

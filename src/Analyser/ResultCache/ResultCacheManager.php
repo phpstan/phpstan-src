@@ -21,6 +21,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Internal\FileHashing;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -1206,7 +1207,7 @@ return [
 			return $this->fileHashes[$path];
 		}
 
-		$hash = hash_file('sha256', $path);
+		$hash = hash_file(FileHashing::ALGORITHM, $path);
 		if ($hash === false) {
 			throw new CouldNotReadFileException($path);
 		}

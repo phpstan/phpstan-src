@@ -14,6 +14,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Internal\FileHashing;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -344,7 +345,7 @@ final class FileTypeMapper
 				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
 				$filesWithHashes = [];
 				foreach ($files as $file) {
-					$newHash = hash_file('sha256', $file);
+					$newHash = hash_file(FileHashing::ALGORITHM, $file);
 					$filesWithHashes[$file] = $newHash;
 				}
 				$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
@@ -381,7 +382,7 @@ final class FileTypeMapper
 			[$nameScopeMap, $filesWithHashes] = $cached;
 			$useCache = true;
 			foreach ($filesWithHashes as $file => $hash) {
-				$newHash = @hash_file('sha256', $file);
+				$newHash = @hash_file(FileHashing::ALGORITHM, $file);
 				if ($newHash === false) {
 					$useCache = false;
 					break;

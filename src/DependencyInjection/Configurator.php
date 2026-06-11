@@ -11,6 +11,7 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Internal\FileHashing;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_keys;
 use function count;
@@ -106,7 +107,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			array_keys($this->dynamicParameters),
 			$this->configs,
 			PHP_VERSION_ID - PHP_RELEASE_VERSION,
-			is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
+			is_file($attributesPhp) ? hash_file(FileHashing::ALGORITHM, $attributesPhp) : 'attributes-missing',
 			NeonAdapter::CACHE_KEY,
 			$this->getAllConfigFilesHashes(),
 			var_export(TurboExtensionEnabler::isLoaded(), true),
@@ -242,7 +243,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	{
 		$hashes = [];
 		foreach ($this->allConfigFiles as $file) {
-			$hash = hash_file('sha256', $file);
+			$hash = hash_file(FileHashing::ALGORITHM, $file);
 
 			if ($hash === false) {
 				throw new CouldNotReadFileException($file);

@@ -11,6 +11,7 @@ use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\BytesHelper;
+use PHPStan\Internal\FileHashing;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
 use PHPStan\ShouldNotHappenException;
@@ -160,7 +161,7 @@ final class AnalyseApplication
 						continue;
 					}
 
-					$newHash = hash_file('sha256', $file);
+					$newHash = hash_file(FileHashing::ALGORITHM, $file);
 					if ($newHash === $hash) {
 						continue;
 					}

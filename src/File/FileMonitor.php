@@ -4,6 +4,7 @@ namespace PHPStan\File;
 
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Internal\FileHashing;
 use PHPStan\ShouldNotHappenException;
 use function array_diff;
 use function array_key_exists;
@@ -107,7 +108,7 @@ final class FileMonitor
 
 	private function getFileHash(string $filePath): string
 	{
-		$hash = hash_file('sha256', $filePath);
+		$hash = hash_file(FileHashing::ALGORITHM, $filePath);
 
 		if ($hash === false) {
 			throw new CouldNotReadFileException($filePath);

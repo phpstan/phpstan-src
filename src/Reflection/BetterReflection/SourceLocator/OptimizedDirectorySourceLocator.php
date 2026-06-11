@@ -17,6 +17,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Internal\FileHashing;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
@@ -51,7 +52,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	 */
 	private function getCacheKeys(string $file, Identifier $identifier): array
 	{
-		$fileHash = hash_file('sha256', $file);
+		$fileHash = hash_file(FileHashing::ALGORITHM, $file);
 		if ($fileHash === false) {
 			throw new CouldNotReadFileException($file);
 		}

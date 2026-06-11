@@ -59,6 +59,7 @@ final class YieldHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$throwPoints = [
 			InternalThrowPoint::createImplicit($scope, $expr),
 		];
@@ -89,6 +90,7 @@ final class YieldHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

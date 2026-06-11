@@ -53,6 +53,7 @@ final class PropertyFetchHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$scopeBeforeVar = $scope;
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$hasYield = $varResult->hasYield();
@@ -87,6 +88,7 @@ final class PropertyFetchHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

@@ -73,6 +73,7 @@ final class MethodCallHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$originalScope = $scope;
 		if (
 			($expr->var instanceof Expr\Closure || $expr->var instanceof Expr\ArrowFunction)
@@ -202,6 +203,7 @@ final class MethodCallHandler implements ExprHandler
 
 		$result = $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
@@ -230,6 +232,7 @@ final class MethodCallHandler implements ExprHandler
 				$scope = $scope->mergeInitializedProperties($calledMethodScope);
 				return $this->expressionResultFactory->create(
 					$scope,
+					beforeScope: $beforeScope,
 					hasYield: $result->hasYield(),
 					isAlwaysTerminating: $result->isAlwaysTerminating(),
 					throwPoints: $result->getThrowPoints(),

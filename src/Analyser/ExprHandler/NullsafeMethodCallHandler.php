@@ -86,6 +86,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$scopeBeforeNullsafe = $scope;
 		$varType = $scope->getType($expr->var);
 
@@ -119,6 +120,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: $exprResult->getThrowPoints(),

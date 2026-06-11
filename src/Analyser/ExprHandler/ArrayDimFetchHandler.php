@@ -81,12 +81,14 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		if ($expr->dim === null) {
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $varResult->getScope();
 
 			return $this->expressionResultFactory->create(
 				$scope,
+				beforeScope: $beforeScope,
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
@@ -116,6 +118,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

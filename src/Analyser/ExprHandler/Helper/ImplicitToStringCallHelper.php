@@ -39,6 +39,7 @@ final class ImplicitToStringCallHelper
 		if ($toStringMethod === null) {
 			return $this->expressionResultFactory->create(
 				$scope,
+				beforeScope: $scope,
 				hasYield: false,
 				isAlwaysTerminating: false,
 				throwPoints: [],
@@ -71,6 +72,7 @@ final class ImplicitToStringCallHelper
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $scope,
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: $throwPoints,

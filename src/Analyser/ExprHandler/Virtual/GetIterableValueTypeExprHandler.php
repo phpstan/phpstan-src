@@ -42,6 +42,7 @@ final class GetIterableValueTypeExprHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $scope,
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

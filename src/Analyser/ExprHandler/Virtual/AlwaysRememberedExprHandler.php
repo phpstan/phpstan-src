@@ -45,12 +45,14 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 		ExpressionContext $context,
 	): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$innerExpr = $expr->getExpr();
 		$innerResult = $nodeScopeResolver->processExprNode($stmt, $innerExpr, $scope, $storage, $nodeCallback, $context);
 		$scope = $innerResult->getScope();
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $innerResult->hasYield(),
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
 			throwPoints: $innerResult->getThrowPoints(),

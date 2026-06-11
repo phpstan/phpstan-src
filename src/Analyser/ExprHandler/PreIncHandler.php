@@ -104,17 +104,16 @@ final class PreIncHandler implements ExprHandler
 	{
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 
-		$scope = $nodeScopeResolver->processVirtualAssign(
-			$varResult->getScope(),
-			$storage,
-			$stmt,
-			$expr->var,
-			$expr,
-			$nodeCallback,
-		)->getScope();
-
 		return $this->expressionResultFactory->create(
-			$scope,
+			$nodeScopeResolver->processVirtualAssign(
+				$varResult->getScope(),
+				$storage,
+				$stmt,
+				$expr->var,
+				$expr,
+				$nodeCallback,
+			)->getScope(),
+			beforeScope: $scope,
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

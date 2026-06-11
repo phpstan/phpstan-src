@@ -56,6 +56,7 @@ final class AssignOpHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$assignResult = $this->assignHandler->processAssignVar(
 			$nodeScopeResolver,
 			$scope,
@@ -86,6 +87,7 @@ final class AssignOpHandler implements ExprHandler
 					$isAlwaysTerminating = $exprResult->isAlwaysTerminating() && $originalScope->getType($expr->var)->isNull()->yes();
 					return $this->expressionResultFactory->create(
 						$exprResult->getScope()->mergeWith($originalScope),
+						$originalScope,
 						$exprResult->hasYield(),
 						$isAlwaysTerminating,
 						$exprResult->getThrowPoints(),
@@ -117,6 +119,7 @@ final class AssignOpHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

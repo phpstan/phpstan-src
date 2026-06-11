@@ -13,6 +13,7 @@ interface ExpressionResultFactory
 	 */
 	public function create(
 		MutatingScope $scope,
+		MutatingScope $beforeScope,
 		bool $hasYield,
 		bool $isAlwaysTerminating,
 		array $throwPoints,

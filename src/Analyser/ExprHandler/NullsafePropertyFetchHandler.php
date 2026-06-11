@@ -86,6 +86,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureShallowNonNullability($scope, $scope, $expr->var);
 		$attributes = array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true]);
 		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
@@ -98,6 +99,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: $exprResult->getThrowPoints(),

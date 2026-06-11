@@ -40,6 +40,7 @@ final class ExitHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$kind = $expr->getAttribute('kind', Exit_::KIND_EXIT);
 		$identifier = $kind === Exit_::KIND_DIE ? 'die' : 'exit';
 		$impurePoints = [
@@ -58,6 +59,7 @@ final class ExitHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: true,
 			throwPoints: $throwPoints,

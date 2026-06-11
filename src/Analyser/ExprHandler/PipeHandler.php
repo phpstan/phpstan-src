@@ -91,6 +91,7 @@ final class PipeHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$callResult->getScope(),
+			beforeScope: $scope,
 			hasYield: $callResult->hasYield(),
 			isAlwaysTerminating: $callResult->isAlwaysTerminating(),
 			throwPoints: $callResult->getThrowPoints(),

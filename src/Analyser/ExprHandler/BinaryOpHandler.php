@@ -85,6 +85,7 @@ final class BinaryOpHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$beforeScope = $scope;
 		$leftResult = $nodeScopeResolver->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $leftResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
 		$throwPoints = array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints());
@@ -105,6 +106,7 @@ final class BinaryOpHandler implements ExprHandler
 
 		return $this->expressionResultFactory->create(
 			$scope,
+			beforeScope: $beforeScope,
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

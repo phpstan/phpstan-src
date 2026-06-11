@@ -9,6 +9,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
@@ -33,6 +34,7 @@ final class CastStringHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -54,7 +56,7 @@ final class CastStringHandler implements ExprHandler
 
 		$scope = $exprResult->getScope();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

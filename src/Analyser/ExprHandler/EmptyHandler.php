@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Empty_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
@@ -32,6 +33,7 @@ final class EmptyHandler implements ExprHandler
 
 	public function __construct(
 		private NonNullabilityHelper $nonNullabilityHelper,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -92,7 +94,7 @@ final class EmptyHandler implements ExprHandler
 		$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

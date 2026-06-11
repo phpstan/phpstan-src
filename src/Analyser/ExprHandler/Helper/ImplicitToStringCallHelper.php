@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -19,6 +20,7 @@ final class ImplicitToStringCallHelper
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -35,7 +37,7 @@ final class ImplicitToStringCallHelper
 			$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
 		}
 		if ($toStringMethod === null) {
-			return new ExpressionResult(
+			return $this->expressionResultFactory->create(
 				$scope,
 				hasYield: false,
 				isAlwaysTerminating: false,
@@ -67,7 +69,7 @@ final class ImplicitToStringCallHelper
 			}
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

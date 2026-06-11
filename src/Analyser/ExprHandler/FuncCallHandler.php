@@ -16,6 +16,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
@@ -102,6 +103,7 @@ final class FuncCallHandler implements ExprHandler
 		private bool $implicitThrows,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -591,7 +593,7 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->invalidateVolatileExpressions();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

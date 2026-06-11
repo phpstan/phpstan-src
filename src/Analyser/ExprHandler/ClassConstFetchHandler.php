@@ -8,6 +8,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -31,6 +32,7 @@ final class ClassConstFetchHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -83,7 +85,7 @@ final class ClassConstFetchHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

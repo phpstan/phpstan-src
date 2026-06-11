@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
@@ -84,6 +85,7 @@ final class NewHandler implements ExprHandler
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -230,7 +232,7 @@ final class NewHandler implements ExprHandler
 			$scope = $scope->invalidateVolatileExpressions();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\BitwiseNot;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -28,6 +29,7 @@ final class BitwiseNotHandler implements ExprHandler
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -41,7 +43,7 @@ final class BitwiseNotHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$exprResult->getScope(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

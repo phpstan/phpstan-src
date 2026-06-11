@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
@@ -28,6 +29,7 @@ final class ClosureHandler implements ExprHandler
 
 	public function __construct(
 		private ClosureTypeResolver $closureTypeResolver,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -42,7 +44,7 @@ final class ClosureHandler implements ExprHandler
 		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
 		$scope = $processClosureResult->applyByRefUseScope($processClosureResult->getScope());
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

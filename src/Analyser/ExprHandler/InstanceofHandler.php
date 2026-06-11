@@ -8,6 +8,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -38,6 +39,10 @@ use function strtolower;
 final class InstanceofHandler implements ExprHandler
 {
 
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Instanceof_;
@@ -60,7 +65,7 @@ final class InstanceofHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $classResult->isAlwaysTerminating();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

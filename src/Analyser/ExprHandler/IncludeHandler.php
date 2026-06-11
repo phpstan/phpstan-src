@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
@@ -30,6 +31,10 @@ use function in_array;
 final class IncludeHandler implements ExprHandler
 {
 
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Include_;
@@ -46,7 +51,7 @@ final class IncludeHandler implements ExprHandler
 		$identifier = in_array($expr->type, [Include_::TYPE_INCLUDE, Include_::TYPE_INCLUDE_ONCE], true) ? 'include' : 'require';
 		$scope = $exprResult->getScope()->afterExtractCall()->invalidateVolatileExpressions();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

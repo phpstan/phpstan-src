@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -29,6 +30,7 @@ final class OriginalPropertyTypeExprHandler implements ExprHandler
 
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -43,7 +45,7 @@ final class OriginalPropertyTypeExprHandler implements ExprHandler
 		// because this is a virtual node handler, the caller will only be interested in the type
 		// we don't need to process the inner expr
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

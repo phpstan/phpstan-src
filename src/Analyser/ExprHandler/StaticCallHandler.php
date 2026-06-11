@@ -14,6 +14,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
@@ -68,6 +69,7 @@ final class StaticCallHandler implements ExprHandler
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -286,7 +288,7 @@ final class StaticCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

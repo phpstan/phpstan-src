@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -24,6 +25,10 @@ use PHPStan\Type\Type;
 #[AutowiredService]
 final class AlwaysRememberedExprHandler implements ExprHandler
 {
+
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -44,7 +49,7 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 		$innerResult = $nodeScopeResolver->processExprNode($stmt, $innerExpr, $scope, $storage, $nodeCallback, $context);
 		$scope = $innerResult->getScope();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $innerResult->hasYield(),
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),

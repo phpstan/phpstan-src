@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\Fiber;
 
 use PhpParser\Node;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -150,6 +151,7 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ImplicitToStringCallHelper::class),
+			self::getContainer()->getByType(ExpressionResultFactory::class),
 		);
 	}
 

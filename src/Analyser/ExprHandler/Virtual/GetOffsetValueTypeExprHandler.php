@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -25,6 +26,10 @@ use PHPStan\Type\Type;
 final class GetOffsetValueTypeExprHandler implements ExprHandler
 {
 
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof GetOffsetValueTypeExpr;
@@ -35,7 +40,7 @@ final class GetOffsetValueTypeExprHandler implements ExprHandler
 		// because this is a virtual node handler, the caller will only be interested in the type
 		// we don't need to process the inner expr
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

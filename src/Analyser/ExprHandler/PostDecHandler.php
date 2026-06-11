@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\PreDec;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -25,6 +26,10 @@ use PHPStan\Type\Type;
 #[AutowiredService]
 final class PostDecHandler implements ExprHandler
 {
+
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -44,7 +49,7 @@ final class PostDecHandler implements ExprHandler
 			$nodeCallback,
 		)->getScope();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),

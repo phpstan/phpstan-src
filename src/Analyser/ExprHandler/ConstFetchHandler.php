@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -33,6 +34,7 @@ final class ConstFetchHandler implements ExprHandler
 
 	public function __construct(
 		private ConstantResolver $constantResolver,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -46,7 +48,7 @@ final class ConstFetchHandler implements ExprHandler
 	{
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

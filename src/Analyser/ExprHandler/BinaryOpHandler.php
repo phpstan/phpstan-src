@@ -14,6 +14,7 @@ use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\EqualityTypeSpecifyingHelper;
@@ -66,6 +67,7 @@ final class BinaryOpHandler implements ExprHandler
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExprPrinter $exprPrinter,
 		private EqualityTypeSpecifyingHelper $equalityTypeSpecifyingHelper,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -101,7 +103,7 @@ final class BinaryOpHandler implements ExprHandler
 		}
 		$scope = $rightResult->getScope();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),

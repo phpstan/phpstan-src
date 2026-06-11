@@ -25,6 +25,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
@@ -95,6 +96,7 @@ final class AssignHandler implements ExprHandler
 		private PhpVersion $phpVersion,
 		private ExprPrinter $exprPrinter,
 		private MatchHandler $matchHandler,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -298,7 +300,7 @@ final class AssignHandler implements ExprHandler
 			$expr->expr,
 			$nodeCallback,
 			$context,
-			static function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
+			function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
 				$impurePoints = [];
 				if ($expr instanceof AssignRef) {
 					$referencedExpr = $expr->expr;
@@ -338,7 +340,7 @@ final class AssignHandler implements ExprHandler
 					$scope = $scope->exitExpressionAssign($expr->expr);
 				}
 
-				return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+				return $this->expressionResultFactory->create($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
 			},
 			true,
 		);
@@ -380,7 +382,7 @@ final class AssignHandler implements ExprHandler
 			}
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
@@ -946,7 +948,7 @@ final class AssignHandler implements ExprHandler
 					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
 					$nodeCallback,
 					$context,
-					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+					fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
 					$enterExpressionAssign,
 				);
 				$scope = $result->getScope();
@@ -1038,7 +1040,7 @@ final class AssignHandler implements ExprHandler
 		}
 
 		// stored where processAssignVar is called
-		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		return $this->expressionResultFactory->create($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
 	}
 
 	private function createArrayDimFetchConditionalExpressionHolder(

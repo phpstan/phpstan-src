@@ -9,6 +9,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
@@ -33,6 +34,10 @@ use function is_string;
 #[AutowiredService]
 final class VariableHandler implements ExprHandler
 {
+
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -89,7 +94,7 @@ final class VariableHandler implements ExprHandler
 			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
 			$scope = $nameResult->getScope();
 		}
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			$hasYield,
 			$isAlwaysTerminating,

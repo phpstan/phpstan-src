@@ -16,6 +16,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -57,6 +58,7 @@ final class MatchHandler implements ExprHandler
 	public function __construct(
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -501,7 +503,7 @@ final class MatchHandler implements ExprHandler
 			$expr->cond = $expr->cond->getExpr();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

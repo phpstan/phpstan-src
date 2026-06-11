@@ -9,6 +9,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
@@ -40,6 +41,7 @@ final class PropertyFetchHandler implements ExprHandler
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -83,7 +85,7 @@ final class PropertyFetchHandler implements ExprHandler
 			}
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

@@ -847,6 +847,7 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ImplicitToStringCallHelper::class),
+			$container->getByType(ExpressionResultFactory::class),
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

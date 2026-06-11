@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -31,6 +32,10 @@ use function array_merge;
 #[AutowiredService]
 final class PipeHandler implements ExprHandler
 {
+
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -84,7 +89,7 @@ final class PipeHandler implements ExprHandler
 
 		$callResult = $nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$callResult->getScope(),
 			hasYield: $callResult->hasYield(),
 			isAlwaysTerminating: $callResult->isAlwaysTerminating(),

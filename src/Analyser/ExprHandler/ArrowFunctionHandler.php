@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
@@ -28,6 +29,7 @@ final class ArrowFunctionHandler implements ExprHandler
 
 	public function __construct(
 		private ClosureTypeResolver $closureTypeResolver,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -41,7 +43,7 @@ final class ArrowFunctionHandler implements ExprHandler
 	{
 		$result = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null);
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$result->getScope(),
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: false,

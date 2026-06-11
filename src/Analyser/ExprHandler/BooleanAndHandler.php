@@ -10,6 +10,7 @@ use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ConditionalExpressionHolderHelper;
@@ -44,6 +45,7 @@ final class BooleanAndHandler implements ExprHandler
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
 		private ConditionalExpressionHolderHelper $conditionalExpressionHolderHelper,
+		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
@@ -272,7 +274,7 @@ final class BooleanAndHandler implements ExprHandler
 
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftTruthyScope), $scope, $storage, $context);
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$leftMergedWithRightScope,
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),

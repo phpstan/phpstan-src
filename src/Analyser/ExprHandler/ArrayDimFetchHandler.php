@@ -11,6 +11,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
@@ -34,6 +35,10 @@ use function array_merge;
 #[AutowiredService]
 final class ArrayDimFetchHandler implements ExprHandler
 {
+
+	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -80,7 +85,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $varResult->getScope();
 
-			return new ExpressionResult(
+			return $this->expressionResultFactory->create(
 				$scope,
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
@@ -109,7 +114,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			)->getThrowPoints());
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),

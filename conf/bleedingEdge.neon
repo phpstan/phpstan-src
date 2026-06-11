@@ -20,3 +20,4 @@ parameters:
 		reportMethodPurityOverride: true
 		checkDynamicConstantNameValues: true
 		unusedLabel: true
+		duplicateCasesInSwitch: true

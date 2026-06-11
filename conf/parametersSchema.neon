@@ -49,6 +49,7 @@ parametersSchema:
 		reportMethodPurityOverride: bool()
 		checkDynamicConstantNameValues: bool()
 		unusedLabel: bool()
+		duplicateCasesInSwitch: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

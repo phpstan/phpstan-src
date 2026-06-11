@@ -14,6 +14,8 @@ conditionalTags:
 		phpstan.restrictedFunctionUsageExtension: %featureToggles.internalTag%
 	PHPStan\Rules\Classes\NewStaticInAbstractClassStaticMethodRule:
 		phpstan.rules.rule: %featureToggles.newStaticInAbstractClassStaticMethod%
+	PHPStan\Rules\Comparison\DuplicateCasesInSwitchRule:
+		phpstan.rules.rule: %featureToggles.duplicateCasesInSwitch%
 
 services:
 	-
@@ -27,3 +29,6 @@ services:
 
 	-
 		class: PHPStan\Rules\InternalTag\RestrictedInternalFunctionUsageExtension
+
+	-
+		class: PHPStan\Rules\Comparison\DuplicateCasesInSwitchRule

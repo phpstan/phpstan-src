@@ -6,12 +6,14 @@ use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
-use function array_chunk;
+use function array_values;
+use function ceil;
 use function count;
 use function floor;
 use function max;
 use function min;
 use function sprintf;
+use function usort;
 
 #[AutowiredService]
 final class Scheduler implements DiagnoseExtension
@@ -38,13 +40,30 @@ final class Scheduler implements DiagnoseExtension
 
 	/**
 	 * @param array<string> $files
+	 * @param callable(string): int $fileSizeCallback
 	 */
 	public function scheduleWork(
 		int $cpuCores,
 		array $files,
+		callable $fileSizeCallback,
 	): Schedule
 	{
-		$jobs = array_chunk($files, $this->jobSize);
+		// sort by size and deal files round-robin across jobs so every job mixes
+		// large and small files - chunking a sorted list would concentrate the
+		// heaviest files into a single job and create one long-running straggler
+		$fileSizes = [];
+		foreach ($files as $file) {
+			$fileSizes[$file] = $fileSizeCallback($file);
+		}
+		usort($files, static fn (string $a, string $b): int => $fileSizes[$b] <=> $fileSizes[$a]);
+
+		$numberOfJobs = (int) ceil(count($files) / $this->jobSize);
+		$stripedJobs = [];
+		foreach ($files as $i => $file) {
+			$stripedJobs[$i % $numberOfJobs][] = $file;
+		}
+
+		$jobs = array_values($stripedJobs);
 		$numberOfProcesses = min(
 			max((int) floor(count($jobs) / $this->minimumNumberOfJobsPerProcess), 1),
 			$cpuCores,

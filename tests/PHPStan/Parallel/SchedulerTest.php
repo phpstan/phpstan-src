@@ -5,8 +5,12 @@ namespace PHPStan\Parallel;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use function array_fill;
+use function array_keys;
 use function array_map;
+use function array_merge;
 use function count;
+use function sort;
+use function sprintf;
 
 class SchedulerTest extends TestCase
 {
@@ -21,7 +25,7 @@ class SchedulerTest extends TestCase
 				50,
 				115,
 				1,
-				[50, 50, 15],
+				[39, 38, 38],
 			],
 			[
 				16,
@@ -30,7 +34,7 @@ class SchedulerTest extends TestCase
 				30,
 				124,
 				5,
-				[30, 30, 30, 30, 4],
+				[25, 25, 25, 25, 24],
 			],
 			[
 				16,
@@ -39,7 +43,7 @@ class SchedulerTest extends TestCase
 				30,
 				124,
 				3,
-				[30, 30, 30, 30, 4],
+				[25, 25, 25, 25, 24],
 			],
 			[
 				16,
@@ -48,7 +52,7 @@ class SchedulerTest extends TestCase
 				10,
 				298,
 				16,
-				[10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 8],
+				[10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 9],
 			],
 			[
 				16,
@@ -57,7 +61,7 @@ class SchedulerTest extends TestCase
 				30,
 				124,
 				2,
-				[30, 30, 30, 30, 4],
+				[25, 25, 25, 25, 24],
 			],
 			[
 				16,
@@ -91,11 +95,57 @@ class SchedulerTest extends TestCase
 	{
 		$files = array_fill(0, $numberOfFiles, 'file.php');
 		$scheduler = new Scheduler($jobSize, $maximumNumberOfProcesses, $minimumNumberOfJobsPerProcess);
-		$schedule = $scheduler->scheduleWork($cpuCores, $files);
+		$schedule = $scheduler->scheduleWork($cpuCores, $files, static fn (string $file): int => 0);
 
 		$this->assertSame($expectedNumberOfProcesses, $schedule->getNumberOfProcesses());
 		$jobSizes = array_map(static fn (array $job): int => count($job), $schedule->getJobs());
 		$this->assertSame($expectedJobSizes, $jobSizes);
+	}
+
+	public function testHeaviestFilesAreSpreadAcrossJobs(): void
+	{
+		$fileSizes = [
+			'a.php' => 100,
+			'b.php' => 200,
+			'c.php' => 300,
+			'd.php' => 400,
+			'e.php' => 500,
+			'f.php' => 600,
+		];
+
+		$scheduler = new Scheduler(2, 16, 1);
+		$schedule = $scheduler->scheduleWork(16, array_keys($fileSizes), static fn (string $file): int => $fileSizes[$file] ?? 0);
+
+		// six files, job size 2 -> three jobs; the three heaviest files must not
+		// share a job, and every job pairs one heavy file with one light file
+		$this->assertSame([
+			['f.php', 'c.php'],
+			['e.php', 'b.php'],
+			['d.php', 'a.php'],
+		], $schedule->getJobs());
+	}
+
+	public function testEveryFileIsScheduledExactlyOnce(): void
+	{
+		$files = [];
+		$sizes = [];
+		for ($i = 0; $i < 47; $i++) {
+			$file = sprintf('file-%d.php', $i);
+			$files[] = $file;
+			$sizes[$file] = ($i * 37) % 1000;
+		}
+
+		$scheduler = new Scheduler(10, 16, 1);
+		$schedule = $scheduler->scheduleWork(16, $files, static fn (string $file): int => $sizes[$file]);
+
+		$scheduled = array_merge(...$schedule->getJobs());
+		sort($scheduled);
+		sort($files);
+		$this->assertSame($files, $scheduled);
+
+		foreach ($schedule->getJobs() as $job) {
+			$this->assertLessThanOrEqual(10, count($job));
+		}
 	}
 
 }

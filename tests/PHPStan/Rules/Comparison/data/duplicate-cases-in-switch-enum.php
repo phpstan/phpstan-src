@@ -38,4 +38,18 @@ class Foo
 		}
 	}
 
+	public function backedEnumCaseIsNotADuplicateOfItsBackingValue(Status|string $value): void
+	{
+		switch ($value) {
+			case 'active':
+				break;
+			case Status::Active:
+				break;
+			case Status::Inactive:
+				break;
+			case 'inactive':
+				break;
+		}
+	}
+
 }

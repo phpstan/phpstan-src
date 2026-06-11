@@ -64,6 +64,7 @@ class Container implements ContainerInterface
 				$instance = ($this->initializers[$className])($this, $arguments);
 
 				if ($lifecycle === Lifecycle::PERSISTENT) {
+					assertType('Bug14804\Lifecycle::PERSISTENT', $lifecycle);
 					assertType('$this(Bug14804\Container)', $this);
 
 					unset($this->initializers[$className]);

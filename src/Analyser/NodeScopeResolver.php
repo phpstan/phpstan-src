@@ -1341,7 +1341,6 @@ class NodeScopeResolver
 				$condResult = $this->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
-				$condScope = $condResult->getScope();
 				$branchScopeStatementResult = $this->processStmtNodesInternal($elseif, $elseif->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
 
 				if (
@@ -1371,7 +1370,7 @@ class NodeScopeResolver
 					$lastElseIfConditionIsTrue = true;
 				}
 
-				$condScope = $condScope->filterByFalseyValue($elseif->cond);
+				$condScope = $condResult->getFalseyScope();
 				$scope = $condScope;
 			}
 

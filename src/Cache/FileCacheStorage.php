@@ -13,10 +13,11 @@ use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Throwable;
 use function array_keys;
 use function closedir;
 use function dirname;
-use function error_get_last;
+use function file_get_contents;
 use function hash;
 use function is_dir;
 use function is_file;
@@ -24,19 +25,20 @@ use function opendir;
 use function readdir;
 use function rename;
 use function rmdir;
+use function serialize;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
 use function substr;
 use function uksort;
 use function unlink;
-use function var_export;
+use function unserialize;
 use const DIRECTORY_SEPARATOR;
 
 final class FileCacheStorage implements CacheStorage
 {
 
-	private const CACHED_CLEARED_VERSION = 'v2-new';
+	private const CACHED_CLEARED_VERSION = 'v3-serialized';
 
 	public function __construct(private string $directory)
 	{
@@ -49,17 +51,22 @@ final class FileCacheStorage implements CacheStorage
 	{
 		[,, $filePath] = $this->getFilePaths($key);
 
-		return (static function ($variableKey, $filePath) {
-			$cacheItem = @include $filePath;
-			if (!$cacheItem instanceof CacheItem) {
-				return null;
-			}
-			if (!$cacheItem->isVariableKeyValid($variableKey)) {
-				return null;
-			}
+		$contents = @file_get_contents($filePath);
+		if ($contents === false) {
+			return null;
+		}
 
-			return $cacheItem->getData();
-		})($variableKey, $filePath);
+		// entries written by older versions in the var_export/include format
+		// fail to unserialize and simply count as a cache miss
+		$cacheItem = @unserialize($contents);
+		if (!$cacheItem instanceof CacheItem) {
+			return null;
+		}
+		if (!$cacheItem->isVariableKeyValid($variableKey)) {
+			return null;
+		}
+
+		return $cacheItem->getData();
 	}
 
 	/**
@@ -74,16 +81,12 @@ final class FileCacheStorage implements CacheStorage
 		DirectoryCreator::ensureDirectoryExists($secondDirectory, 0777);
 
 		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
-		$errorBefore = error_get_last();
-		$exported = @var_export(new CacheItem($variableKey, $data), true);
-		$errorAfter = error_get_last();
-		if ($errorAfter !== null && $errorBefore !== $errorAfter) {
-			throw new ShouldNotHappenException(sprintf('Error occurred while saving item %s (%s) to cache: %s', $key, $variableKey, $errorAfter['message']));
+		try {
+			$serialized = serialize(new CacheItem($variableKey, $data));
+		} catch (Throwable $e) {
+			throw new ShouldNotHappenException(sprintf('Error occurred while saving item %s (%s) to cache: %s', $key, $variableKey, $e->getMessage()));
 		}
-		FileWriter::write(
-			$tmpPath,
-			"<?php declare(strict_types = 1);\n\n" . '// ' . $key . "\nreturn " . $exported . ';',
-		);
+		FileWriter::write($tmpPath, $serialized);
 
 		$renameSuccess = @rename($tmpPath, $path);
 		if ($renameSuccess) {
@@ -106,7 +109,9 @@ final class FileCacheStorage implements CacheStorage
 		$keyHash = hash('sha256', $key);
 		$firstDirectory = sprintf('%s/%s', $this->directory, substr($keyHash, 0, 2));
 		$secondDirectory = sprintf('%s/%s', $firstDirectory, substr($keyHash, 2, 2));
-		$filePath = sprintf('%s/%s.php', $secondDirectory, $keyHash);
+		// .dat, not .php: an older PHPStan version sharing the same tmpDir would
+		// include a .php cache file and echo the serialized payload to stdout
+		$filePath = sprintf('%s/%s.dat', $secondDirectory, $keyHash);
 
 		return [
 			$firstDirectory,
@@ -136,25 +141,13 @@ final class FileCacheStorage implements CacheStorage
 		$iterator = new RecursiveDirectoryIterator($this->directory);
 		$iterator->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
 		$files = new RecursiveIteratorIterator($iterator);
-		$beginFunction = sprintf(
-			"<?php declare(strict_types = 1);\n\n%s",
-			sprintf('// %s', 'variadic-function-'),
-		);
-		$beginMethod = sprintf(
-			"<?php declare(strict_types = 1);\n\n%s",
-			sprintf('// %s', 'variadic-method-'),
-		);
-		$beginNew = "<?php declare(strict_types = 1);\n\n//";
+		$serializedPrefix = sprintf('O:%d:"%s"', strlen(CacheItem::class), CacheItem::class);
 		$emptyDirectoriesToCheck = [];
 		foreach ($files as $file) {
 			try {
 				$path = $file->getPathname();
 				$contents = FileReader::read($path);
-				if (
-					!str_starts_with($contents, $beginFunction)
-					&& !str_starts_with($contents, $beginMethod)
-					&& str_starts_with($contents, $beginNew)
-				) {
+				if (str_starts_with($contents, $serializedPrefix)) {
 					continue;
 				}
 

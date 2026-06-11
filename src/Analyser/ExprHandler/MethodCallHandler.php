@@ -204,12 +204,11 @@ final class MethodCallHandler implements ExprHandler
 		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 
 		$calledOnType = $originalScope->getType($expr->var);
@@ -233,12 +232,11 @@ final class MethodCallHandler implements ExprHandler
 				return $this->expressionResultFactory->create(
 					$scope,
 					beforeScope: $beforeScope,
+					expr: $expr,
 					hasYield: $result->hasYield(),
 					isAlwaysTerminating: $result->isAlwaysTerminating(),
 					throwPoints: $result->getThrowPoints(),
 					impurePoints: $result->getImpurePoints(),
-					truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-					falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 				);
 			}
 		}

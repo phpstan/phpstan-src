@@ -60,6 +60,7 @@ final class ExitHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: $hasYield,
 			isAlwaysTerminating: true,
 			throwPoints: $throwPoints,

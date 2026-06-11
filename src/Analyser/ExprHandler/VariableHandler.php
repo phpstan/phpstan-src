@@ -98,6 +98,7 @@ final class VariableHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			$beforeScope,
+			$expr,
 			$hasYield,
 			$isAlwaysTerminating,
 			$throwPoints,

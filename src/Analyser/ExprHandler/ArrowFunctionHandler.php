@@ -46,6 +46,7 @@ final class ArrowFunctionHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$result->getScope(),
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: [],

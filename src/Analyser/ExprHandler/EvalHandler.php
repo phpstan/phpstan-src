@@ -53,6 +53,7 @@ final class EvalHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),

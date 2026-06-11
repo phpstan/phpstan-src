@@ -2,7 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\GenerateFactory;
+use PHPStan\Type\Type;
 
 #[GenerateFactory(interface: ExpressionResultFactory::class)]
 final class ExpressionResult
@@ -27,6 +29,7 @@ final class ExpressionResult
 	public function __construct(
 		private MutatingScope $scope,
 		private MutatingScope $beforeScope,
+		private Expr $expr,
 		private bool $hasYield,
 		private bool $isAlwaysTerminating,
 		private array $throwPoints,
@@ -42,11 +45,6 @@ final class ExpressionResult
 	public function getScope(): MutatingScope
 	{
 		return $this->scope;
-	}
-
-	public function getBeforeScope(): MutatingScope
-	{
-		return $this->beforeScope;
 	}
 
 	public function hasYield(): bool
@@ -72,37 +70,45 @@ final class ExpressionResult
 
 	public function getTruthyScope(): MutatingScope
 	{
-		if ($this->truthyScopeCallback === null) {
-			return $this->scope;
-		}
-
 		if ($this->truthyScope !== null) {
 			return $this->truthyScope;
 		}
 
+		if ($this->truthyScopeCallback === null) {
+			return $this->truthyScope = $this->scope->filterByTruthyValue($this->expr);
+		}
+
 		$callback = $this->truthyScopeCallback;
-		$this->truthyScope = $callback();
-		return $this->truthyScope;
+		return $this->truthyScope = $callback();
 	}
 
 	public function getFalseyScope(): MutatingScope
 	{
-		if ($this->falseyScopeCallback === null) {
-			return $this->scope;
-		}
-
 		if ($this->falseyScope !== null) {
 			return $this->falseyScope;
 		}
 
+		if ($this->falseyScopeCallback === null) {
+			return $this->falseyScope = $this->scope->filterByFalseyValue($this->expr);
+		}
+
 		$callback = $this->falseyScopeCallback;
-		$this->falseyScope = $callback();
-		return $this->falseyScope;
+		return $this->falseyScope = $callback();
 	}
 
 	public function isAlwaysTerminating(): bool
 	{
 		return $this->isAlwaysTerminating;
+	}
+
+	public function getType(): Type
+	{
+		return $this->beforeScope->getType($this->expr);
+	}
+
+	public function getNativeType(): Type
+	{
+		return $this->beforeScope->getNativeType($this->expr);
 	}
 
 }

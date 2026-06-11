@@ -43,6 +43,7 @@ final class GetIterableKeyTypeExprHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

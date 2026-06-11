@@ -50,6 +50,7 @@ final class PostDecHandler implements ExprHandler
 				$nodeCallback,
 			)->getScope(),
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

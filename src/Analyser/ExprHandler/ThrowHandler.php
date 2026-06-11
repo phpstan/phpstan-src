@@ -45,6 +45,7 @@ final class ThrowHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: false,
 			isAlwaysTerminating: true,
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),

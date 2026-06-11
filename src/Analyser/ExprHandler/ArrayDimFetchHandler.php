@@ -89,12 +89,11 @@ final class ArrayDimFetchHandler implements ExprHandler
 			return $this->expressionResultFactory->create(
 				$scope,
 				beforeScope: $beforeScope,
+				expr: $expr,
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
 				impurePoints: $varResult->getImpurePoints(),
-				truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			);
 		}
 
@@ -119,12 +118,11 @@ final class ArrayDimFetchHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

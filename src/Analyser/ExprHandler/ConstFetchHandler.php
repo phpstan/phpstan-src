@@ -51,12 +51,11 @@ final class ConstFetchHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

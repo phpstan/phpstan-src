@@ -91,6 +91,7 @@ final class YieldHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

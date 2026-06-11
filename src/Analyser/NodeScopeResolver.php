@@ -1358,9 +1358,9 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $stmt->type, $scope, $storage);
 			}
 		} elseif ($stmt instanceof If_) {
-			$conditionType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
-			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$conditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$exitPoints = [];
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
@@ -2834,18 +2834,17 @@ class NodeScopeResolver
 
 		if ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
-			return $this->expressionResultFactory->create($scope, beforeScope: $scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
+			return $this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
 		}
 
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 
@@ -3206,7 +3205,7 @@ class NodeScopeResolver
 		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope, $storage);
 		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
 
-		return $this->expressionResultFactory->create($scope, beforeScope: $scope, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints());
+		return $this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints());
 	}
 
 	/**
@@ -3926,7 +3925,7 @@ class NodeScopeResolver
 		}
 
 		// not storing this, it's scope after processing all args
-		return $this->expressionResultFactory->create($scope, $scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		return $this->expressionResultFactory->create($scope, $scope, $callLike, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
 	}
 
 	/**
@@ -4078,7 +4077,7 @@ class NodeScopeResolver
 			$assignedExpr,
 			new VirtualAssignNodeCallback($nodeCallback),
 			ExpressionContext::createDeep(),
-			fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($scope, beforeScope: $scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+			fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $assignedExpr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
 			false,
 		);
 	}

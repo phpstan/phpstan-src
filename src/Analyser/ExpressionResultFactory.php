@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
+
 interface ExpressionResultFactory
 {
 
@@ -14,6 +16,7 @@ interface ExpressionResultFactory
 	public function create(
 		MutatingScope $scope,
 		MutatingScope $beforeScope,
+		Expr $expr,
 		bool $hasYield,
 		bool $isAlwaysTerminating,
 		array $throwPoints,

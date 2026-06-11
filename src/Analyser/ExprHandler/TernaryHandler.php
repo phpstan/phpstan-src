@@ -153,12 +153,11 @@ final class TernaryHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$finalScope,
 			beforeScope: $scope,
+			expr: $expr,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $finalScope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $finalScope->filterByFalseyValue($expr),
 		);
 	}
 

@@ -53,12 +53,11 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: $innerResult->hasYield(),
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
 			throwPoints: $innerResult->getThrowPoints(),
 			impurePoints: $innerResult->getImpurePoints(),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($innerExpr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($innerExpr),
 		);
 	}
 

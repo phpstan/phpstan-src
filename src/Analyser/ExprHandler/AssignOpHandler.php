@@ -88,6 +88,7 @@ final class AssignOpHandler implements ExprHandler
 					return $this->expressionResultFactory->create(
 						$exprResult->getScope()->mergeWith($originalScope),
 						$originalScope,
+						$expr->expr,
 						$exprResult->hasYield(),
 						$isAlwaysTerminating,
 						$exprResult->getThrowPoints(),
@@ -120,12 +121,11 @@ final class AssignOpHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
+			expr: $expr,
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

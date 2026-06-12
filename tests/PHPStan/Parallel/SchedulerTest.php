@@ -117,12 +117,29 @@ class SchedulerTest extends TestCase
 		$schedule = $scheduler->scheduleWork(16, array_keys($fileSizes), static fn (string $file): int => $fileSizes[$file] ?? 0);
 
 		// six files, job size 2 -> three jobs; the three heaviest files must not
-		// share a job, and every job pairs one heavy file with one light file
+		// share a job, and every job pairs one heavy file with one light file,
+		// listed in input order
 		$this->assertSame([
-			['f.php', 'c.php'],
-			['e.php', 'b.php'],
-			['d.php', 'a.php'],
+			['c.php', 'f.php'],
+			['b.php', 'e.php'],
+			['a.php', 'd.php'],
 		], $schedule->getJobs());
+	}
+
+	public function testFilesWithinAJobKeepTheirInputOrder(): void
+	{
+		// a small file followed by a larger one - the size sort must only
+		// influence which job a file lands in, never the analysis order
+		// inside the job (analysis results can be sensitive to it)
+		$fileSizes = [
+			'bootstrap.php' => 327,
+			'src/Middleware.php' => 560,
+		];
+
+		$scheduler = new Scheduler(20, 16, 1);
+		$schedule = $scheduler->scheduleWork(16, array_keys($fileSizes), static fn (string $file): int => $fileSizes[$file] ?? 0);
+
+		$this->assertSame([['bootstrap.php', 'src/Middleware.php']], $schedule->getJobs());
 	}
 
 	public function testEveryFileIsScheduledExactlyOnce(): void

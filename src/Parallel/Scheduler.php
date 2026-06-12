@@ -52,8 +52,10 @@ final class Scheduler implements DiagnoseExtension
 		// large and small files - chunking a sorted list would concentrate the
 		// heaviest files into a single job and create one long-running straggler
 		$fileSizes = [];
-		foreach ($files as $file) {
+		$originalOrder = [];
+		foreach ($files as $i => $file) {
 			$fileSizes[$file] = $fileSizeCallback($file);
+			$originalOrder[$file] = $i;
 		}
 		usort($files, static fn (string $a, string $b): int => $fileSizes[$b] <=> $fileSizes[$a]);
 
@@ -62,6 +64,13 @@ final class Scheduler implements DiagnoseExtension
 		foreach ($files as $i => $file) {
 			$stripedJobs[$i % $numberOfJobs][] = $file;
 		}
+
+		// only the job composition should change, not the order in which files
+		// of a job get analysed - analysis results can be sensitive to it
+		foreach ($stripedJobs as &$stripedJob) {
+			usort($stripedJob, static fn (string $a, string $b): int => $originalOrder[$a] <=> $originalOrder[$b]);
+		}
+		unset($stripedJob);
 
 		$jobs = array_values($stripedJobs);
 		$numberOfProcesses = min(

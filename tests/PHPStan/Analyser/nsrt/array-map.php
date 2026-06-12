@@ -1,5 +1,4 @@
-<?php
-
+<?php // lint >= 8.1
 namespace ArrayMap;
 
 use function array_map;

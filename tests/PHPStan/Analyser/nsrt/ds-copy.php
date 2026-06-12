@@ -1,5 +1,4 @@
-<?php
-
+<?php // lint >= 8.1
 namespace DsCopy;
 
 use Ds\Collection;

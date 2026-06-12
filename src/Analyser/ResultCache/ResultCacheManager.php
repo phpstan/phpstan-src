@@ -1345,14 +1345,21 @@ return [
 
 		/** @var ResultCacheMetaExtension $extension */
 		foreach ($this->container->getServicesByTag(ResultCacheMetaExtension::EXTENSION_TAG) as $extension) {
-			if (array_key_exists($extension->getKey(), $meta)) {
+			try {
+				$key = $extension->getKey();
+				$hash = $extension->getHash();
+			} catch (Throwable $e) {
+				throw new ResultCacheMetaExtensionException($extension::class, $e);
+			}
+
+			if (array_key_exists($key, $meta)) {
 				throw new ShouldNotHappenException(sprintf(
 					'Duplicate ResultCacheMetaExtension with key "%s" found.',
-					$extension->getKey(),
+					$key,
 				));
 			}
 
-			$meta[$extension->getKey()] = $extension->getHash();
+			$meta[$key] = $hash;
 		}
 
 		ksort($meta);

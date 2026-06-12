@@ -50,6 +50,7 @@ parameters:
 		newOnNonObject: false
 		unnecessaryNullCoalesce: false
 		finiteTypesInHaystack: false
+		switchConditionAlwaysFalse: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

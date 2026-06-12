@@ -104,6 +104,7 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
+use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
@@ -2084,6 +2085,7 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $caseResult->getImpurePoints());
+					$this->callNodeCallback($nodeCallback, new SwitchConditionNode($stmt->cond, $caseNode->cond, $caseNode), $scopeForBranches, $storage);
 					$branchScope = $caseResult->getScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;

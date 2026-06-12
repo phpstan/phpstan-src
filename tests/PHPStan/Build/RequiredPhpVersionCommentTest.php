@@ -96,12 +96,15 @@ final class RequiredPhpVersionCommentTest extends TestCase
 			return;
 		}
 
+		$reasonLine = $visitor->getReasonLine();
+		self::assertNotNull($reasonLine);
 		self::assertGreaterThanOrEqual(
 			$requiredVersionId,
 			$guaranteedMinVersionId,
 			sprintf(
-				'Fixture uses %s which requires PHP %s. Add a `<?php // lint >= %s` comment on the first line so the fixture is skipped on older PHP versions in CI.',
+				'Fixture uses %s on line %d which requires PHP %s. Add a `<?php // lint >= %s` comment on the first line so the fixture is skipped on older PHP versions in CI.',
 				$visitor->getReason(),
+				$reasonLine,
 				$requiredVersion->getVersionString(),
 				$requiredVersion->getVersionString(),
 			),
@@ -147,6 +150,23 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		$traverser->traverse($ast);
 
 		self::assertSame($expectedVersionId, $visitor->getRequiredVersionId());
+	}
+
+	public function testReasonLine(): void
+	{
+		$code = "<?php\n\n\nenum Foo { case A; }";
+
+		$parser = (new ParserFactory())->createForNewestSupportedVersion();
+		$ast = $parser->parse($code);
+		self::assertNotNull($ast);
+
+		$visitor = new RequiredPhpVersionVisitor();
+		$traverser = new NodeTraverser($visitor);
+		$traverser->traverse($ast);
+
+		self::assertSame(80100, $visitor->getRequiredVersionId());
+		self::assertSame('enums', $visitor->getReason());
+		self::assertSame(4, $visitor->getReasonLine());
 	}
 
 	private static function guaranteedMinVersionId(string $code): int

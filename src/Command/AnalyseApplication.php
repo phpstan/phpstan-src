@@ -7,9 +7,7 @@ use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
-use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
-use PHPStan\Analyser\ResultCache\ResultCacheMetaExtensionException;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\BytesHelper;
@@ -88,15 +86,7 @@ final class AnalyseApplication
 			}
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
 		} else {
-			try {
-				$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
-			} catch (ResultCacheMetaExtensionException $e) {
-				if ($debug) {
-					throw $e->getPrevious() ?? $e;
-				}
-
-				return $this->createResultCacheMetaExtensionErrorResult($e, $defaultLevelUsed, $projectConfigFile);
-			}
+			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -199,37 +189,6 @@ final class AnalyseApplication
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$processedFiles,
-		);
-	}
-
-	private function createResultCacheMetaExtensionErrorResult(
-		ResultCacheMetaExtensionException $e,
-		bool $defaultLevelUsed,
-		?string $projectConfigFile,
-	): AnalysisResult
-	{
-		$previous = $e->getPrevious() ?? $e;
-		$internalError = new InternalError(
-			$previous->getMessage(),
-			sprintf('computing result cache metadata from %s', $e->getExtensionClass()),
-			InternalError::prepareTrace($previous),
-			$previous->getTraceAsString(),
-			shouldReportBug: false,
-		);
-
-		return new AnalysisResult(
-			[],
-			[],
-			[$internalError],
-			[],
-			[],
-			$defaultLevelUsed,
-			$projectConfigFile,
-			false,
-			memory_get_peak_usage(true),
-			false,
-			[],
-			[],
 		);
 	}
 

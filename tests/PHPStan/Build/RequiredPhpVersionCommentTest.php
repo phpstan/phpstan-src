@@ -83,6 +83,19 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		$requiredVersion = new PhpVersion($requiredVersionId);
 		$guaranteedMinVersionId = self::guaranteedMinVersionId($code);
 
+		// The `mixed` type is not a parse error on PHP < 8.0 - there it parses as a
+		// class type and is merely analysed differently. Fixtures that deliberately
+		// target old PHP via an upper-bound `// lint` constraint (e.g. to assert a
+		// version-specific function signature) may therefore use it; the author owns
+		// that choice. Parse-breaking features (enums, hooks, ...) are still rejected.
+		if (
+			$requiredVersionId === RequiredPhpVersionVisitor::PHP_8_0
+			&& self::hasUpperBoundLintConstraint($code)
+		) {
+			$this->expectNotToPerformAssertions();
+			return;
+		}
+
 		self::assertGreaterThanOrEqual(
 			$requiredVersionId,
 			$guaranteedMinVersionId,
@@ -101,6 +114,9 @@ final class RequiredPhpVersionCommentTest extends TestCase
 	public static function dataDetectedVersion(): iterable
 	{
 		yield 'plain code' => ['<?php function foo(): int { return 1; }', null];
+		yield 'mixed param type' => ['<?php function foo(mixed $x) {}', 80000];
+		yield 'mixed return type' => ['<?php function foo(): mixed {}', 80000];
+		yield 'mixed property type' => ['<?php class Foo { public mixed $x; }', 80000];
 		yield 'enum' => ['<?php enum Foo { case A; }', 80100];
 		yield 'readonly property' => ['<?php class Foo { public readonly int $x; }', 80100];
 		yield 'readonly promoted property' => ['<?php class Foo { public function __construct(public readonly int $x) {} }', 80100];
@@ -159,6 +175,16 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		}
 
 		return 0;
+	}
+
+	private static function hasUpperBoundLintConstraint(string $code): bool
+	{
+		$firstLine = strtok($code, "\n");
+		if ($firstLine === false) {
+			return false;
+		}
+
+		return preg_match('~//\s*lint\s*(<=|<)\s*[\d.]+~i', $firstLine) === 1;
 	}
 
 	private static function versionStringToId(string $version): int

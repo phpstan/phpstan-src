@@ -48,7 +48,6 @@ use function count;
 use function defined;
 use function escapeshellarg;
 use function get_class;
-use function getenv;
 use function http_build_query;
 use function ini_get;
 use function is_file;
@@ -269,7 +268,7 @@ final class FixerApplication
 			throw new FixerProcessException();
 		}
 
-		$env = getenv();
+		$env = Environment::getCleanedArray();
 		$env['PHPSTAN_PRO_TMP_DIR'] = $this->proTmpDir;
 		$forcedPort = $_SERVER['PHPSTAN_PRO_WEB_PORT'] ?? null;
 		if ($forcedPort !== null) {

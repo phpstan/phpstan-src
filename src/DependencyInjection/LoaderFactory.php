@@ -3,8 +3,8 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Loader;
+use PHPStan\Command\Environment;
 use PHPStan\File\FileHelper;
-use function getenv;
 
 final class LoaderFactory
 {
@@ -32,7 +32,7 @@ final class LoaderFactory
 		$loader->setParameters([
 			'rootDir' => $this->rootDir,
 			'currentWorkingDirectory' => $this->currentWorkingDirectory,
-			'env' => getenv(),
+			'env' => Environment::getCleanedArray(),
 		]);
 
 		return $loader;

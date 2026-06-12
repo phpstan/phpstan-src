@@ -96,10 +96,6 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		unset($staticParameters['env']['SHELL_VERBOSITY']);
 		// make sure invocations via blackfire use the same container
 		unset($staticParameters['env']['BLACKFIRE_AGENT_SOCKET']);
-		// prevent known sensitive parameter from being leaked, when container files committed in repositories
-		unset($staticParameters['env']['GITHUB_TOKEN']);
-		unset($staticParameters['env']['CI_JOB_TOKEN']); // gitlab
-		unset($staticParameters['env']['PRIVATE-TOKEN']); // gitlab
 
 		$containerKey = [
 			$staticParameters,

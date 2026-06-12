@@ -301,12 +301,6 @@ parameters:
 			path: src/PhpDoc/PhpDocNodeResolver.php
 
 		-
-			rawMessage: 'Method PHPStan\PhpDoc\ResolvedPhpDocBlock::getNameScope() should return PHPStan\Analyser\NameScope but returns PHPStan\Analyser\NameScope|null.'
-			identifier: return.type
-			count: 1
-			path: src/PhpDoc/ResolvedPhpDocBlock.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1

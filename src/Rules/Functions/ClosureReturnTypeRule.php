@@ -8,6 +8,8 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 /**
@@ -35,6 +37,7 @@ final class ClosureReturnTypeRule implements Rule
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$containsNull = TypeCombinator::containsNull($returnType);
 		$hasNativeTypehint = $node->getClosureExpr()->returnType !== null;
+		$nativeReturnType = $this->resolveNativeReturnType($node, $scope);
 
 		$messages = [];
 		foreach ($node->getReturnStatements() as $returnStatement) {
@@ -53,6 +56,7 @@ final class ClosureReturnTypeRule implements Rule
 				'Anonymous function should return %s but returns %s.',
 				'Anonymous function should never return but return statement found.',
 				$node->isGenerator(),
+				$nativeReturnType,
 			);
 
 			foreach ($returnMessages as $returnMessage) {
@@ -61,6 +65,16 @@ final class ClosureReturnTypeRule implements Rule
 		}
 
 		return $messages;
+	}
+
+	private function resolveNativeReturnType(ClosureReturnStatementsNode $node, Scope $scope): ?Type
+	{
+		$returnTypeNode = $node->getClosureExpr()->returnType;
+		if ($returnTypeNode === null) {
+			return null;
+		}
+
+		return ParserNodeTypeToPHPStanType::resolve($returnTypeNode, $scope->getClassReflection());
 	}
 
 }

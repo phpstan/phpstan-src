@@ -37,6 +37,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function array_map;
+use function assert;
 use function count;
 use function is_bool;
 use function substr;
@@ -444,6 +445,8 @@ final class ResolvedPhpDocBlock
 
 	private function getNameScope(): NameScope
 	{
+		assert($this->nameScope !== null);
+
 		return $this->nameScope;
 	}
 

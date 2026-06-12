@@ -12,6 +12,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
+use PHPStan\Type\Type;
 
 /**
  * @implements Rule<InArrowFunctionNode>
@@ -54,6 +56,8 @@ final class ArrowFunctionReturnTypeRule implements Rule
 			return [];
 		}
 
+		$nativeReturnType = $this->resolveNativeReturnType($node, $scope);
+
 		return $this->returnTypeCheck->checkReturnType(
 			$scope,
 			$returnType,
@@ -64,7 +68,18 @@ final class ArrowFunctionReturnTypeRule implements Rule
 			'Anonymous function should return %s but returns %s.',
 			'Anonymous function should never return but return statement found.',
 			$generatorType->isSuperTypeOf($returnType)->yes(),
+			$nativeReturnType,
 		);
+	}
+
+	private function resolveNativeReturnType(InArrowFunctionNode $node, Scope $scope): ?Type
+	{
+		$returnTypeNode = $node->getOriginalNode()->returnType;
+		if ($returnTypeNode === null) {
+			return null;
+		}
+
+		return ParserNodeTypeToPHPStanType::resolve($returnTypeNode, $scope->getClassReflection());
 	}
 
 }

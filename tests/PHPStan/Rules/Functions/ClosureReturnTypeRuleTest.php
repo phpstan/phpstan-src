@@ -149,4 +149,40 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13964.php'], []);
 	}
 
+	public function testBug9833(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9833-closure.php'], [
+			[
+				'Anonymous function should return array but returns null.',
+				6,
+			],
+			[
+				'Anonymous function should return int but returns null.',
+				16,
+			],
+		]);
+	}
+
+	public function testBug9833NonIgnorable(): void
+	{
+		$errors = $this->gatherAnalyserErrors([__DIR__ . '/data/bug-9833-closure.php']);
+
+		$errorsByLine = [];
+		foreach ($errors as $error) {
+			$line = $error->getLine();
+			if ($line === null) {
+				continue;
+			}
+			$errorsByLine[$line] = $error;
+		}
+
+		// Native array return type violated (return.type) → ignorable
+		$this->assertArrayHasKey(6, $errorsByLine);
+		$this->assertTrue($errorsByLine[6]->canBeIgnored());
+
+		// Native int return type violated (return.type) → ignorable
+		$this->assertArrayHasKey(16, $errorsByLine);
+		$this->assertTrue($errorsByLine[16]->canBeIgnored());
+	}
+
 }

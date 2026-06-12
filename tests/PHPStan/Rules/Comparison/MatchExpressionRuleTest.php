@@ -355,7 +355,13 @@ class MatchExpressionRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6407(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-6407.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6407.php'], [
+			[
+				'Match arm comparison between 4 and 4 is always true.',
+				60,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

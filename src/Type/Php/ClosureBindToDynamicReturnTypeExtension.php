@@ -34,13 +34,11 @@ final class ClosureBindToDynamicReturnTypeExtension implements DynamicMethodRetu
 			return null;
 		}
 
-		if ($closureType->isStaticClosure()->no()) {
-			return $closureType;
-		}
+		if ($closureType->isStaticClosure()->yes()) {
+			$args = $methodCall->getArgs();
+			$newThisIsNull = !isset($args[0]) || $scope->getType($args[0]->value)->isNull()->yes();
 
-		$args = $methodCall->getArgs();
-		if (isset($args[0]) && $scope->getType($args[0]->value)->isNull()->yes()) {
-			return $closureType;
+			return $newThisIsNull ? $closureType : new NullType();
 		}
 
 		return new BenevolentUnionType([$closureType, new NullType()]);

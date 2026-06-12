@@ -30,17 +30,19 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
 		$args = $methodCall->getArgs();
+		if (!isset($args[0])) {
+			return null;
+		}
+
 		$closureType = $scope->getType($args[0]->value);
 		if (!($closureType instanceof ClosureType)) {
 			return null;
 		}
 
-		if ($closureType->isStaticClosure()->no()) {
-			return $closureType;
-		}
+		if ($closureType->isStaticClosure()->yes()) {
+			$newThisIsNull = !isset($args[1]) || $scope->getType($args[1]->value)->isNull()->yes();
 
-		if (isset($args[1]) && $scope->getType($args[1]->value)->isNull()->yes()) {
-			return $closureType;
+			return $newThisIsNull ? $closureType : new NullType();
 		}
 
 		return new BenevolentUnionType([$closureType, new NullType()]);

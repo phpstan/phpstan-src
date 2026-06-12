@@ -1,5 +1,4 @@
-<?php
-
+<?php // lint >= 8.3
 namespace Bug13828;
 
 use function PHPStan\Testing\assertType;

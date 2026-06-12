@@ -1,5 +1,4 @@
-<?php
-
+<?php // lint >= 8.1
 namespace Bug13872;
 
 use function is_array;

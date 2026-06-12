@@ -40,4 +40,8 @@ interface ClassConstantReflection extends ClassMemberReflection, ConstantReflect
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock;
 
+	public function getInitializerExprType(): Type;
+
+	public function getTypeByStaticAccess(bool $isFinalClass): Type;
+
 }

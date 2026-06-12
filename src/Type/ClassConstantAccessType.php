@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use function count;
 
 final class ClassConstantAccessType implements CompoundType, LateResolvableType
 {
@@ -49,13 +50,44 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 		return !TypeUtils::containsTemplateType($this->type);
 	}
 
-	protected function getResult(): Type
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($this->type->hasConstant($this->constantName)->yes()) {
-			return $this->type->getConstant($this->constantName)->getValueType();
+			$valueType = $this->type->getConstant($this->constantName)->getValueType();
+			return $otherType->isSuperTypeOf($valueType);
 		}
 
-		return new ErrorType();
+		return $otherType->isSuperTypeOf($this->resolve());
+	}
+
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		if ($this->type->hasConstant($this->constantName)->yes()) {
+			$valueType = $this->type->getConstant($this->constantName)->getValueType();
+			return $acceptingType->accepts($valueType, $strictTypes);
+		}
+
+		$result = $this->resolve();
+
+		if ($result instanceof CompoundType) {
+			return $result->isAcceptedBy($acceptingType, $strictTypes);
+		}
+
+		return $acceptingType->accepts($result, $strictTypes);
+	}
+
+	protected function getResult(): Type
+	{
+		if (!$this->type->hasConstant($this->constantName)->yes()) {
+			return new ErrorType();
+		}
+
+		$constantReflection = $this->type->getConstant($this->constantName);
+
+		$classReflections = $this->type->getObjectClassReflections();
+		$isFinalClass = count($classReflections) === 1 && $classReflections[0]->isFinal();
+
+		return $constantReflection->getTypeByStaticAccess($isFinalClass);
 	}
 
 	/**
@@ -89,7 +121,7 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new ConstTypeNode(new ConstFetchNode('static', $this->constantName));
+		return new ConstTypeNode(new ConstFetchNode((string) $this->type->toPhpDocNode(), $this->constantName));
 	}
 
 }

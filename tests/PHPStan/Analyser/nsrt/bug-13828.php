@@ -22,8 +22,8 @@ class BarBaz extends FooBar
 
 function test(FooBar $foo, BarBaz $bar): void
 {
-	assertType("'foo'", $foo->test());
-	assertType("'bar'", $bar->test());
+	assertType('mixed', $foo->test());
+	assertType('mixed', $bar->test());
 }
 
 final class FinalFoo
@@ -146,7 +146,7 @@ class WithUntypedConstant
 
 function testUntypedConstant(WithUntypedConstant $foo): void
 {
-	assertType("'foo'", $foo->test());
+	assertType('mixed', $foo->test());
 }
 
 final class FinalChild extends FooBar
@@ -173,5 +173,88 @@ class WithFinalTypedConstant
 
 function testFinalTypedConstant(WithFinalTypedConstant $foo): void
 {
-	assertType('non-empty-string', $foo->test());
+	assertType("'foo'", $foo->test());
+}
+
+final class FinalClassWithNativeType
+{
+	const string FOO_BAR = 'foo';
+
+	/** @return static::FOO_BAR */
+	public function test(): string
+	{
+		return static::FOO_BAR;
+	}
+}
+
+function testFinalClassWithNativeType(FinalClassWithNativeType $foo): void
+{
+	assertType("'foo'", $foo->test());
+}
+
+final class FinalClassWithPhpDocType
+{
+	/** @var non-empty-string */
+	const FOO_BAR = 'foo';
+
+	/** @return static::FOO_BAR */
+	public function test(): string
+	{
+		return static::FOO_BAR;
+	}
+}
+
+function testFinalClassWithPhpDocType(FinalClassWithPhpDocType $foo): void
+{
+	assertType("'foo'", $foo->test());
+}
+
+final class FinalClassWithBothTypes
+{
+	/** @var non-empty-string */
+	const string FOO_BAR = 'foo';
+
+	/** @return static::FOO_BAR */
+	public function test(): string
+	{
+		return static::FOO_BAR;
+	}
+}
+
+function testFinalClassWithBothTypes(FinalClassWithBothTypes $foo): void
+{
+	assertType("'foo'", $foo->test());
+}
+
+class WithFinalPhpDocConstant
+{
+	/** @var non-empty-string */
+	final const FOO_BAR = 'foo';
+
+	/** @return static::FOO_BAR */
+	public function test(): string
+	{
+		return static::FOO_BAR;
+	}
+}
+
+function testFinalPhpDocConstant(WithFinalPhpDocConstant $foo): void
+{
+	assertType("'foo'", $foo->test());
+}
+
+class WithFinalNativeConstant
+{
+	final const string FOO_BAR = 'foo';
+
+	/** @return static::FOO_BAR */
+	public function test(): string
+	{
+		return static::FOO_BAR;
+	}
+}
+
+function testFinalNativeConstant(WithFinalNativeConstant $foo): void
+{
+	assertType("'foo'", $foo->test());
 }

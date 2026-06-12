@@ -2472,20 +2472,10 @@ final class InitializerExprTypeResolver
 			}
 
 			$constantReflection = $constantClassReflection->getConstant($constantName);
-			if (
-				!$constantClassReflection->isFinal()
-				&& !$constantReflection->isFinal()
-				&& !$constantReflection->hasPhpDocType()
-				&& !$constantReflection->hasNativeType()
-			) {
+			$constantType = $constantReflection->getTypeByStaticAccess($constantClassReflection->isFinal());
+			if ($constantType instanceof MixedType) {
 				unset($this->currentlyResolvingClassConstant[$resolvingName]);
-				return new MixedType();
-			}
-
-			if (!$constantClassReflection->isFinal()) {
-				$constantType = $constantReflection->getValueType();
-			} else {
-				$constantType = $this->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
+				return $constantType;
 			}
 
 			$nativeType = $constantReflection->getNativeType();

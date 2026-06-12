@@ -122,4 +122,14 @@ final class DummyClassConstantReflection implements ClassConstantReflection
 		return null;
 	}
 
+	public function getInitializerExprType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getTypeByStaticAccess(bool $isFinalClass): Type
+	{
+		return new MixedType();
+	}
+
 }

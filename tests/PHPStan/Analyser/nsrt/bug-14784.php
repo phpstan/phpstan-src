@@ -35,6 +35,6 @@ function doFoo(string $str): void
 	}
 
 	if (preg_match('/^(0|[1-9][0-9]*)$/', $str, $matches)) {
-		assertType("'0'|(non-falsy-string&numeric-string)", $matches[1]);
+		assertType("numeric-string", $matches[1]);
 	}
 }

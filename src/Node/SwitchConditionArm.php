@@ -40,9 +40,10 @@ final class SwitchConditionArm
 	}
 
 	/**
-	 * Whether this is the last `case` of the `switch` (no other `case` or
-	 * `default` follows it), in which case an always-true comparison is fine
-	 * because it does not make any subsequent case unreachable.
+	 * Whether this is the last non-default `case` of the `switch` (only a
+	 * `default` may follow it), in which case an always-true comparison is fine
+	 * because it does not make any subsequent `case` unreachable. A trailing
+	 * `default` is not considered a `case` it would make unreachable.
 	 */
 	public function isLast(): bool
 	{

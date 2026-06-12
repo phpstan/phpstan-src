@@ -29,6 +29,8 @@ trait FooTrait
 		switch (true) {
 			case $this->doBar3():
 				break;
+			case $this->doBar3():
+				break;
 			default:
 				break;
 		}

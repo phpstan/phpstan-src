@@ -1116,10 +1116,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7927.php');
-		$this->assertCount(3, $errors);
+		$this->assertCount(2, $errors);
 		$this->assertSame('Enum case Bug7927\Test::One does not have a value but the enum is backed with the "int" type.', $errors[0]->getMessage());
 		$this->assertSame('Enum case Bug7927\Test::Two does not have a value but the enum is backed with the "int" type.', $errors[1]->getMessage());
-		$this->assertSame('Switch condition comparison between Bug7927\Test::Two and Bug7927\Test::Two is always true.', $errors[2]->getMessage());
 	}
 
 	public static function getAdditionalConfigFiles(): array

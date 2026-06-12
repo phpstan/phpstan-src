@@ -88,11 +88,6 @@ class SwitchConditionRuleTest extends RuleTestCase
 				46,
 				$tipText,
 			],
-			[
-				'Switch condition comparison between SwitchConditionAlwaysTrue\Suit::Diamonds and SwitchConditionAlwaysTrue\Suit::Diamonds is always true.',
-				58,
-				$tipText,
-			],
 		]);
 	}
 

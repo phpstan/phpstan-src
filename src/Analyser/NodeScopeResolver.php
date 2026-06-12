@@ -177,7 +177,6 @@ use Traversable;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
-use function array_key_last;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -2079,7 +2078,12 @@ class NodeScopeResolver
 			$impurePoints = $condResult->getImpurePoints();
 			$fullCondExpr = null;
 			$switchConditionArms = [];
-			$lastCaseKey = array_key_last($stmt->cases);
+			$lastNonDefaultCaseKey = null;
+			foreach ($stmt->cases as $caseKey => $caseNode) {
+				if ($caseNode->cond !== null) {
+					$lastNonDefaultCaseKey = $caseKey;
+				}
+			}
 			foreach ($stmt->cases as $caseKey => $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
@@ -2093,7 +2097,7 @@ class NodeScopeResolver
 						$caseNode->cond,
 						$scopeForBranches,
 						$caseNode->cond->getStartLine(),
-						$caseKey === $lastCaseKey,
+						$caseKey === $lastNonDefaultCaseKey,
 					);
 					$branchScope = $caseResult->getScope()->filterByTruthyValue($condExpr);
 				} else {

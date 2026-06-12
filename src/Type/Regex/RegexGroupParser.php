@@ -560,6 +560,9 @@ final class RegexGroupParser
 				return $walkResult;
 			}
 
+			// literals accumulated before the alternation form a common prefix that has to be
+			// combined with every branch, e.g. "a(b|c)" yields "ab"|"ac", not "b"|"c"
+			$prefixLiterals = $walkResult->getOnlyLiterals();
 			$newLiterals = [];
 			$nonEmpty = TrinaryLogic::createYes();
 			$nonFalsy = TrinaryLogic::createYes();
@@ -583,12 +586,20 @@ final class RegexGroupParser
 					continue;
 				}
 
-				if (count($childResult->getOnlyLiterals() ?? []) > 0) {
-					foreach ($childResult->getOnlyLiterals() as $alternationLiterals) {
-						$newLiterals[] = $alternationLiterals;
-					}
-				} else {
+				$childLiterals = $childResult->getOnlyLiterals();
+				if ($prefixLiterals === null || $childLiterals === null || count($childLiterals) === 0) {
 					$newLiterals = null;
+					continue;
+				}
+
+				foreach ($childLiterals as $childLiteral) {
+					if ($prefixLiterals === []) {
+						$newLiterals[] = $childLiteral;
+					} else {
+						foreach ($prefixLiterals as $prefixLiteral) {
+							$newLiterals[] = $prefixLiteral . $childLiteral;
+						}
+					}
 				}
 			}
 

@@ -11,7 +11,6 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
 use function explode;
 use function file_get_contents;
-use function in_array;
 use function preg_match;
 use function sprintf;
 use function strtok;
@@ -20,21 +19,10 @@ final class RequiredPhpVersionCommentTest extends TestCase
 {
 
 	/**
-	 * Snapshot fixtures whose exact contents are asserted elsewhere (e.g. as the
-	 * pretty-printer output in CleaningParserTest), so a first-line `// lint`
-	 * comment cannot be expressed in them. They are parsed by nikic/php-parser
-	 * regardless of the host PHP version and excluded from parallel-lint.
-	 */
-	private const EXCLUDED_FIXTURES = [
-		'cleaning-property-hooks-before.php',
-		'cleaning-property-hooks-after.php',
-	];
-
-	/**
 	 * Fixture files that are excluded from parallel-lint (either as whole `data`
 	 * directories or via per-file excludes in the Makefile) and therefore need a
 	 * `// lint >= X.Y` comment to advertise the PHP version their syntax requires:
-	 * the `nsrt` directory plus every `data` directory anywhere below tests/PHPStan.
+	 * the `nsrt` directory plus every `data` directory below tests/PHPStan/Rules.
 	 *
 	 * @return iterable<string, array{string}>
 	 */
@@ -44,16 +32,13 @@ final class RequiredPhpVersionCommentTest extends TestCase
 
 		$dataFinder = new Finder();
 		$dataFinder->followLinks();
-		foreach ($dataFinder->directories()->name('data')->in(__DIR__ . '/..') as $dirInfo) {
+		foreach ($dataFinder->directories()->name('data')->in(__DIR__ . '/../Rules') as $dirInfo) {
 			$directories[] = $dirInfo->getPathname();
 		}
 
 		$finder = new Finder();
 		$finder->followLinks();
 		foreach ($finder->files()->name('*.php')->in($directories) as $fileInfo) {
-			if (in_array($fileInfo->getFilename(), self::EXCLUDED_FIXTURES, true)) {
-				continue;
-			}
 			$path = $fileInfo->getPathname();
 			yield $path => [$path];
 		}

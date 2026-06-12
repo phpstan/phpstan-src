@@ -28,7 +28,10 @@ final class RequiredPhpVersionCommentTest extends TestCase
 	 */
 	public static function dataFixtures(): iterable
 	{
-		$directories = [__DIR__ . '/../Analyser/nsrt'];
+		$directories = [
+			__DIR__ . '/../Analyser/data',
+			__DIR__ . '/../Analyser/nsrt',
+		];
 
 		$dataFinder = new Finder();
 		$dataFinder->followLinks();

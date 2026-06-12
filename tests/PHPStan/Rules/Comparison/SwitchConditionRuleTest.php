@@ -50,15 +50,15 @@ class SwitchConditionRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false.php'], [
 			[
-				'Switch condition comparison between int and 1 is always false.',
+				'Switch condition comparison between int<min, 0>|int<3, max> and 1 is always false.',
 				46,
 			],
 			[
-				'Switch condition comparison between mixed and true is always false.',
+				'Switch condition comparison between \'0\' and true is always false.',
 				107,
 			],
 			[
-				'Switch condition comparison between mixed and null is always false.',
+				'Switch condition comparison between \'0\' and null is always false.',
 				109,
 			],
 		]);
@@ -68,14 +68,37 @@ class SwitchConditionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false-enum.php'], [
 			[
-				'Switch condition comparison between SwitchConditionAlwaysFalseEnum\Status and SwitchConditionAlwaysFalseEnum\Status::Active is always false.',
+				'Switch condition comparison between SwitchConditionAlwaysFalseEnum\Status::Pending and SwitchConditionAlwaysFalseEnum\Status::Active is always false.',
 				24,
+			],
+		]);
+	}
+
+	public function testAlwaysTrue(): void
+	{
+		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
+		$this->analyse([__DIR__ . '/data/switch-condition-always-true.php'], [
+			[
+				'Switch condition comparison between SwitchConditionAlwaysTrue\Suit::Diamonds and SwitchConditionAlwaysTrue\Suit::Diamonds is always true.',
+				21,
+				$tipText,
+			],
+			[
+				'Switch condition comparison between 2 and 2 is always true.',
+				46,
+				$tipText,
+			],
+			[
+				'Switch condition comparison between SwitchConditionAlwaysTrue\Suit::Diamonds and SwitchConditionAlwaysTrue\Suit::Diamonds is always true.',
+				58,
+				$tipText,
 			],
 		]);
 	}
 
 	public function testImpossibleCases(): void
 	{
+		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false-impossible.php'], [
 			[
 				'Switch condition comparison between int and \'foo\' is always false.',
@@ -86,16 +109,17 @@ class SwitchConditionRuleTest extends RuleTestCase
 				22,
 			],
 			[
-				'Switch condition comparison between \'a\'|\'b\' and \'c\' is always false.',
-				39,
+				'Switch condition comparison between \'b\' and \'b\' is always true.',
+				37,
+				$tipText,
 			],
 			[
 				'Switch condition comparison between int<5, max> and 1 is always false.',
 				50,
 			],
 			[
-				'Switch condition comparison between \'a\'|\'b\' and string is always false.',
-				67,
+				'Switch condition comparison between *NEVER* and string is always false.',
+				66,
 			],
 		]);
 	}
@@ -118,6 +142,11 @@ class SwitchConditionRuleTest extends RuleTestCase
 			[
 				'Switch condition comparison between true and false is always false.',
 				21,
+			],
+			[
+				'Switch condition comparison between true and true is always true.',
+				30,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}

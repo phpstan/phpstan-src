@@ -37,51 +37,88 @@ final class SwitchConditionRule implements Rule
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$subject = $node->getSubject();
-		$caseCondition = $node->getCaseCondition();
-		$conditionExpr = new Equal($subject, $caseCondition);
+		$errors = [];
+		$nextCaseIsDeadForType = false;
+		$nextCaseIsDeadForNativeType = false;
 
-		$conditionType = $scope->getType($conditionExpr);
-		if (!$this->isConstantBoolean($conditionType)) {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
-			return [];
-		}
+		foreach ($node->getArms() as $arm) {
+			if (
+				$nextCaseIsDeadForNativeType
+				|| ($nextCaseIsDeadForType && $this->treatPhpDocTypesAsCertain)
+			) {
+				continue;
+			}
 
-		if (!$this->treatPhpDocTypesAsCertain) {
-			$conditionNativeType = $scope->getNativeType($conditionExpr);
-			if (!$this->isConstantBoolean($conditionNativeType)) {
+			$armScope = $arm->getScope();
+			$caseCondition = $arm->getCaseCondition();
+			$conditionExpr = new Equal($subject, $caseCondition);
+
+			$conditionType = $armScope->getType($conditionExpr);
+			if (!$this->isConstantBoolean($conditionType)) {
 				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
-				return [];
+				continue;
+			}
+			if ($conditionType->isTrue()->yes()) {
+				$nextCaseIsDeadForType = true;
+			}
+
+			if (!$this->treatPhpDocTypesAsCertain) {
+				$conditionNativeType = $armScope->getNativeType($conditionExpr);
+				if (!$this->isConstantBoolean($conditionNativeType)) {
+					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
+					continue;
+				}
+				if ($conditionNativeType->isTrue()->yes()) {
+					$nextCaseIsDeadForNativeType = true;
+				}
+			}
+
+			$subjectType = $armScope->getType($subject);
+			if ($this->isConstantBoolean($subjectType)) {
+				$caseConditionStandaloneType = $this->constantConditionRuleHelper->getBooleanType($armScope, $caseCondition);
+				if (!$this->isConstantBoolean($caseConditionStandaloneType)) {
+					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
+					continue;
+				}
+			}
+
+			if ($conditionType->isFalse()->yes()) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
+					'Switch condition comparison between %s and %s is always false.',
+					$subjectType->describe(VerbosityLevel::value()),
+					$armScope->getType($caseCondition)->describe(VerbosityLevel::value()),
+				))->line($arm->getLine())->identifier('switch.alwaysFalse');
+				$this->possiblyImpureTipHelper->addTip($armScope, $conditionExpr, $errorBuilder);
+				$ruleError = $errorBuilder->build();
+				if ($scope->isInTrait()) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $conditionExpr, false, $ruleError);
+				} else {
+					$errors[] = $ruleError;
+				}
+				continue;
+			}
+
+			if ($arm->isLast()) {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
+				continue;
+			}
+
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				'Switch condition comparison between %s and %s is always true.',
+				$subjectType->describe(VerbosityLevel::value()),
+				$armScope->getType($caseCondition)->describe(VerbosityLevel::value()),
+			))->line($arm->getLine())->identifier('switch.alwaysTrue')
+				->tip('Remove remaining cases below this one and this error will disappear too.');
+			$this->possiblyImpureTipHelper->addTip($armScope, $conditionExpr, $errorBuilder);
+			$ruleError = $errorBuilder->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $conditionExpr, true, $ruleError);
+			} else {
+				$errors[] = $ruleError;
 			}
 		}
 
-		$subjectType = $scope->getType($subject);
-		if ($this->isConstantBoolean($subjectType)) {
-			$caseConditionStandaloneType = $this->constantConditionRuleHelper->getBooleanType($scope, $caseCondition);
-			if (!$this->isConstantBoolean($caseConditionStandaloneType)) {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
-				return [];
-			}
-		}
-
-		if (!$conditionType->isFalse()->yes()) {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $conditionExpr);
-			return [];
-		}
-
-		$errorBuilder = RuleErrorBuilder::message(sprintf(
-			'Switch condition comparison between %s and %s is always false.',
-			$subjectType->describe(VerbosityLevel::value()),
-			$scope->getType($caseCondition)->describe(VerbosityLevel::value()),
-		))->line($caseCondition->getStartLine())->identifier('switch.alwaysFalse');
-		$this->possiblyImpureTipHelper->addTip($scope, $conditionExpr, $errorBuilder);
-		$ruleError = $errorBuilder->build();
-
-		if ($scope->isInTrait()) {
-			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $conditionExpr, false, $ruleError);
-			return [];
-		}
-
-		return [$ruleError];
+		return $errors;
 	}
 
 	private function isConstantBoolean(Type $type): bool

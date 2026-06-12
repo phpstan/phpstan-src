@@ -3,25 +3,28 @@
 namespace PHPStan\Node;
 
 use Override;
-use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeAbstract;
 
 /**
- * Virtual node emitted for every non-default `case` of a `switch`. It pairs the
- * switch subject with the case condition so rules can inspect the loose `==`
- * comparison the `switch` performs, using the scope captured at the case
- * condition (which already excludes the values matched by earlier cases).
+ * Virtual node emitted once per `switch` statement. It pairs the switch subject
+ * with each non-default `case` condition so rules can inspect the loose `==`
+ * comparison the `switch` performs, using the scope captured at each case
+ * (which already excludes the values matched by earlier cases).
  *
  * @api
  */
 final class SwitchConditionNode extends NodeAbstract implements VirtualNode
 {
 
+	/**
+	 * @param SwitchConditionArm[] $arms
+	 */
 	public function __construct(
 		private Expr $subject,
-		private Expr $caseCondition,
-		Node $originalNode,
+		private array $arms,
+		Switch_ $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
@@ -32,9 +35,12 @@ final class SwitchConditionNode extends NodeAbstract implements VirtualNode
 		return $this->subject;
 	}
 
-	public function getCaseCondition(): Expr
+	/**
+	 * @return SwitchConditionArm[]
+	 */
+	public function getArms(): array
 	{
-		return $this->caseCondition;
+		return $this->arms;
 	}
 
 	#[Override]

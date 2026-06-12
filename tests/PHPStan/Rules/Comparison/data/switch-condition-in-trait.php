@@ -23,6 +23,17 @@ trait FooTrait
 		}
 	}
 
+	public function doFoo3(): void
+	{
+		// always true
+		switch (true) {
+			case $this->doBar3():
+				break;
+			default:
+				break;
+		}
+	}
+
 }
 
 class Foo
@@ -40,6 +51,11 @@ class Foo
 
 	}
 
+	public function doBar3(): true
+	{
+
+	}
+
 }
 
 class FooAnother
@@ -53,6 +69,11 @@ class FooAnother
 	}
 
 	public function doBar2(): false
+	{
+
+	}
+
+	public function doBar3(): true
 	{
 
 	}

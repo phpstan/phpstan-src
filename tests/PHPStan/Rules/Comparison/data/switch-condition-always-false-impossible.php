@@ -61,7 +61,6 @@ class Foo
 	{
 		switch ($s) {
 			case 'a':
-				break;
 			case 'b':
 				break;
 			case $other:

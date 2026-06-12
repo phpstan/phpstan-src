@@ -104,6 +104,7 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
+use PHPStan\Node\SwitchConditionArm;
 use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Node\VariableAssignNode;
@@ -176,6 +177,7 @@ use Traversable;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
+use function array_key_last;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -2076,7 +2078,9 @@ class NodeScopeResolver
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
 			$fullCondExpr = null;
-			foreach ($stmt->cases as $caseNode) {
+			$switchConditionArms = [];
+			$lastCaseKey = array_key_last($stmt->cases);
+			foreach ($stmt->cases as $caseKey => $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
 					$fullCondExpr = $fullCondExpr === null ? $condExpr : new BooleanOr($fullCondExpr, $condExpr);
@@ -2085,7 +2089,12 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $caseResult->getImpurePoints());
-					$this->callNodeCallback($nodeCallback, new SwitchConditionNode($stmt->cond, $caseNode->cond, $caseNode), $scopeForBranches, $storage);
+					$switchConditionArms[] = new SwitchConditionArm(
+						$caseNode->cond,
+						$scopeForBranches,
+						$caseNode->cond->getStartLine(),
+						$caseKey === $lastCaseKey,
+					);
 					$branchScope = $caseResult->getScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
@@ -2121,6 +2130,10 @@ class NodeScopeResolver
 				} else {
 					$prevScope = $branchScope;
 				}
+			}
+
+			if ($switchConditionArms !== []) {
+				$this->callNodeCallback($nodeCallback, new SwitchConditionNode($stmt->cond, $switchConditionArms, $stmt), $scope, $storage);
 			}
 
 			$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;

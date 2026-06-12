@@ -23,6 +23,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Command\CommandHelper;
+use PHPStan\Command\Environment;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
@@ -42,7 +43,6 @@ use function array_unique;
 use function count;
 use function dirname;
 use function extension_loaded;
-use function getenv;
 use function implode;
 use function ini_get;
 use function is_array;
@@ -118,7 +118,7 @@ final class ContainerFactory
 			[
 				'rootDir' => $this->rootDirectory,
 				'currentWorkingDirectory' => $this->currentWorkingDirectory,
-				'env' => getenv(),
+				'env' => Environment::getCleanedArray(),
 			],
 		);
 
@@ -146,7 +146,7 @@ final class ContainerFactory
 			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
-			'env' => getenv(),
+			'env' => Environment::getCleanedArray(),
 		], $additionalParameters));
 		$configurator->addDynamicParameters([
 			'singleReflectionFile' => $singleReflectionFile,

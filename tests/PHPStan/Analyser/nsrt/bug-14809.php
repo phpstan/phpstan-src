@@ -24,4 +24,8 @@ function doFoo(string $s): void
 	if (preg_match('~(a(b|c))~', $s, $m)) {
 		assertType("array{non-falsy-string, 'ab'|'ac', 'b'|'c'}", $m);
 	}
+
+	if (preg_match('~((a|b)(b|c))~', $s, $m)) {
+		assertType("array{non-falsy-string, 'ab'|'ac'|'bb'|'bc', 'a'|'b', 'b'|'c'}", $m);
+	}
 }

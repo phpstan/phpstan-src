@@ -22,6 +22,6 @@ function doFoo(string $s): void
 
 	// guard: an alternation whose branches are all non-empty stays non-falsy
 	if (preg_match('~(a(b|c))~', $s, $m)) {
-		assertType("array{non-falsy-string, 'b'|'c', 'b'|'c'}", $m);
+		assertType("array{non-falsy-string, 'ab'|'ac', 'b'|'c'}", $m);
 	}
 }

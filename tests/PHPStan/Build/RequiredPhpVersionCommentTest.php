@@ -65,8 +65,7 @@ final class RequiredPhpVersionCommentTest extends TestCase
 			$requiredVersionId,
 			$guaranteedMinVersionId,
 			sprintf(
-				'%s uses %s which requires PHP %s. Add a "<?php // lint >= %s" comment on the first line so the fixture is skipped on older PHP versions in CI.',
-				$file,
+				'Fixture uses %s which requires PHP %s. Add a `<?php // lint >= %s` comment on the first line so the fixture is skipped on older PHP versions in CI.',
 				$visitor->getReason(),
 				$requiredVersion->getVersionString(),
 				$requiredVersion->getVersionString(),

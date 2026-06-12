@@ -179,9 +179,12 @@ final class TemplateTypeVariance
 			$result = $a->equals($b);
 			$reasons = [];
 			if (!$result) {
-				if (
+				$aIsSuperTypeOfB = $a->isSuperTypeOf($b);
+				if ($aIsSuperTypeOfB->yes() && $b->isSuperTypeOf($a)->yes()) {
+					$result = true;
+				} elseif (
 					$templateType->getScope()->getClassName() !== null
-					&& $a->isSuperTypeOf($b)->yes()
+					&& $aIsSuperTypeOfB->yes()
 				) {
 					$reasons[] = sprintf(
 						'Template type %s on class %s is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',

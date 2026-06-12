@@ -640,6 +640,26 @@ final class RegexGroupParser
 			return $literal === '';
 		}
 
+		// an alternation is maybe-empty if any of its branches is maybe-empty,
+		// and non-falsy only if every branch is non-falsy
+		if ($node->getId() === '#alternation') {
+			$maybeEmpty = false;
+			$allNonFalsy = true;
+			foreach ($node->getChildren() as $child) {
+				$childNonFalsy = false;
+				if ($this->isMaybeEmptyNode($child, $patternModifiers, $childNonFalsy)) {
+					$maybeEmpty = true;
+				}
+				$allNonFalsy = $allNonFalsy && $childNonFalsy;
+			}
+
+			if ($allNonFalsy) {
+				$isNonFalsy = true;
+			}
+
+			return $maybeEmpty;
+		}
+
 		foreach ($node->getChildren() as $child) {
 			if (!$this->isMaybeEmptyNode($child, $patternModifiers, $isNonFalsy)) {
 				return false;

@@ -1,5 +1,0 @@
-services:
-	-
-		class: PHPStan\Tests\ResultCache\ThrowingResultCacheMetaExtension
-		tags:
-			- phpstan.resultCacheMetaExtension

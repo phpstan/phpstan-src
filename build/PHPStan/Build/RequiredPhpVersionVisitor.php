@@ -18,6 +18,8 @@ use function strtolower;
 final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 {
 
+	public const PHP_8_0 = 80000;
+
 	private const PHP_8_1 = 80100;
 	private const PHP_8_2 = 80200;
 	private const PHP_8_3 = 80300;
@@ -112,28 +114,14 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		$this->checkStandaloneType($node);
+		$this->checkMixedType($node);
 
 		return null;
 	}
 
 	private function checkStandaloneType(Node $node): void
 	{
-		$type = null;
-		if (
-			$node instanceof Node\Param
-			|| $node instanceof Node\Stmt\Property
-			|| $node instanceof Node\Stmt\ClassConst
-		) {
-			$type = $node->type;
-		} elseif (
-			$node instanceof Node\Stmt\Function_
-			|| $node instanceof Node\Stmt\ClassMethod
-			|| $node instanceof Node\Expr\Closure
-			|| $node instanceof Node\Expr\ArrowFunction
-		) {
-			$type = $node->returnType;
-		}
-
+		$type = $this->getDeclaredType($node);
 		if (!$type instanceof Node\Identifier) {
 			return;
 		}
@@ -143,6 +131,42 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		$this->require(self::PHP_8_2, 'standalone "null", "false" or "true" types');
+	}
+
+	private function checkMixedType(Node $node): void
+	{
+		$type = $this->getDeclaredType($node);
+		if (!$type instanceof Node\Identifier) {
+			return;
+		}
+
+		if (strtolower($type->name) !== 'mixed') {
+			return;
+		}
+
+		$this->require(self::PHP_8_0, 'the mixed type');
+	}
+
+	private function getDeclaredType(Node $node): ?Node
+	{
+		if (
+			$node instanceof Node\Param
+			|| $node instanceof Node\Stmt\Property
+			|| $node instanceof Node\Stmt\ClassConst
+		) {
+			return $node->type;
+		}
+
+		if (
+			$node instanceof Node\Stmt\Function_
+			|| $node instanceof Node\Stmt\ClassMethod
+			|| $node instanceof Node\Expr\Closure
+			|| $node instanceof Node\Expr\ArrowFunction
+		) {
+			return $node->returnType;
+		}
+
+		return null;
 	}
 
 	private function require(int $versionId, string $reason): void

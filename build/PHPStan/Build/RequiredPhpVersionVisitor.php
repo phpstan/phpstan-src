@@ -30,6 +30,8 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 
 	private ?string $reason = null;
 
+	private ?int $reasonLine = null;
+
 	public function getRequiredVersionId(): ?int
 	{
 		return $this->requiredVersionId;
@@ -40,63 +42,68 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		return $this->reason;
 	}
 
+	public function getReasonLine(): ?int
+	{
+		return $this->reasonLine;
+	}
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt\Enum_) {
-			$this->require(self::PHP_8_1, 'enums');
+			$this->require(self::PHP_8_1, 'enums', $node);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Pipe) {
-			$this->require(self::PHP_8_5, 'the pipe operator');
+			$this->require(self::PHP_8_5, 'the pipe operator', $node);
 		}
 
 		if ($node instanceof Node\PropertyHook) {
-			$this->require(self::PHP_8_4, 'property hooks');
+			$this->require(self::PHP_8_4, 'property hooks', $node);
 		}
 
 		if ($node instanceof Node\IntersectionType) {
-			$this->require(self::PHP_8_1, 'pure intersection types');
+			$this->require(self::PHP_8_1, 'pure intersection types', $node);
 		}
 
 		if ($node instanceof Node\UnionType) {
 			foreach ($node->types as $innerType) {
 				if ($innerType instanceof Node\IntersectionType) {
-					$this->require(self::PHP_8_2, 'disjunctive normal form types');
+					$this->require(self::PHP_8_2, 'disjunctive normal form types', $innerType);
 				}
 				if (!($innerType instanceof Node\Identifier) || strtolower($innerType->name) !== 'true') {
 					continue;
 				}
 
-				$this->require(self::PHP_8_2, 'the standalone "true" type');
+				$this->require(self::PHP_8_2, 'the standalone "true" type', $innerType);
 			}
 		}
 
 		if ($node instanceof Node\Stmt\Class_ && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require(self::PHP_8_2, 'readonly classes');
+			$this->require(self::PHP_8_2, 'readonly classes', $node);
 		}
 
 		if ($node instanceof Node\Stmt\Property && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require(self::PHP_8_1, 'readonly properties');
+			$this->require(self::PHP_8_1, 'readonly properties', $node);
 		}
 
 		if ($node instanceof Node\Param && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require(self::PHP_8_1, 'readonly promoted properties');
+			$this->require(self::PHP_8_1, 'readonly promoted properties', $node);
 		}
 
 		if (
 			($node instanceof Node\Param || $node instanceof Node\Stmt\Property)
 			&& ($node->flags & Modifiers::VISIBILITY_SET_MASK) !== 0
 		) {
-			$this->require(self::PHP_8_4, 'asymmetric visibility');
+			$this->require(self::PHP_8_4, 'asymmetric visibility', $node);
 		}
 
 		if ($node instanceof Node\Stmt\ClassConst && $node->type !== null) {
-			$this->require(self::PHP_8_3, 'typed class constants');
+			$this->require(self::PHP_8_3, 'typed class constants', $node);
 		}
 
 		if ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Expr) {
-			$this->require(self::PHP_8_3, 'dynamic class constant fetch');
+			$this->require(self::PHP_8_3, 'dynamic class constant fetch', $node);
 		}
 
 		if (
@@ -107,7 +114,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		) {
 			foreach ($node->args as $arg) {
 				if ($arg instanceof Node\VariadicPlaceholder) {
-					$this->require(self::PHP_8_1, 'first-class callable syntax');
+					$this->require(self::PHP_8_1, 'first-class callable syntax', $arg);
 					break;
 				}
 			}
@@ -130,7 +137,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 			return;
 		}
 
-		$this->require(self::PHP_8_2, 'standalone "null", "false" or "true" types');
+		$this->require(self::PHP_8_2, 'standalone "null", "false" or "true" types', $type);
 	}
 
 	private function checkMixedType(Node $node): void
@@ -144,7 +151,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 			return;
 		}
 
-		$this->require(self::PHP_8_0, 'the mixed type');
+		$this->require(self::PHP_8_0, 'the mixed type', $type);
 	}
 
 	private function getDeclaredType(Node $node): ?Node
@@ -169,7 +176,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
-	private function require(int $versionId, string $reason): void
+	private function require(int $versionId, string $reason, Node $node): void
 	{
 		if ($this->requiredVersionId !== null && $this->requiredVersionId >= $versionId) {
 			return;
@@ -177,6 +184,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 
 		$this->requiredVersionId = $versionId;
 		$this->reason = $reason;
+		$this->reasonLine = $node->getStartLine();
 	}
 
 }

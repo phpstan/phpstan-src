@@ -69,65 +69,63 @@ use const PHP_VERSION_ID;
 class TypeCombinatorTest extends PHPStanTestCase
 {
 
-	public static function dataAddNull(): array
+	public static function dataAddNull(): Iterator
 	{
-		return [
-			[
-				new MixedType(),
-				MixedType::class,
-				'mixed',
-			],
-			[
-				new NullType(),
-				NullType::class,
-				'null',
-			],
-			[
-				new VoidType(),
-				UnionType::class,
-				'void|null',
-			],
-			[
+		yield [
+			new MixedType(),
+			MixedType::class,
+			'mixed',
+		];
+		yield [
+			new NullType(),
+			NullType::class,
+			'null',
+		];
+		yield [
+			new VoidType(),
+			UnionType::class,
+			'void|null',
+		];
+		yield [
+			new StringType(),
+			UnionType::class,
+			'string|null',
+		];
+		yield [
+			new UnionType([
 				new StringType(),
-				UnionType::class,
-				'string|null',
-			],
-			[
-				new UnionType([
-					new StringType(),
-					new IntegerType(),
-				]),
-				UnionType::class,
-				'int|string|null',
-			],
-			[
-				new UnionType([
-					new StringType(),
-					new IntegerType(),
-					new NullType(),
-				]),
-				UnionType::class,
-				'int|string|null',
-			],
-			[
+				new IntegerType(),
+			]),
+			UnionType::class,
+			'int|string|null',
+		];
+		yield [
+			new UnionType([
+				new StringType(),
+				new IntegerType(),
+				new NullType(),
+			]),
+			UnionType::class,
+			'int|string|null',
+		];
+		yield [
+			new IntersectionType([
+				new IterableType(new MixedType(), new StringType()),
+				new ObjectType('ArrayObject'),
+			]),
+			UnionType::class,
+			'(ArrayObject&iterable<string>)|null',
+		];
+		yield [
+			new UnionType([
 				new IntersectionType([
 					new IterableType(new MixedType(), new StringType()),
 					new ObjectType('ArrayObject'),
 				]),
-				UnionType::class,
-				'(ArrayObject&iterable<string>)|null',
-			],
-			[
-				new UnionType([
-					new IntersectionType([
-						new IterableType(new MixedType(), new StringType()),
-						new ObjectType('ArrayObject'),
-					]),
-					new NullType(),
-				]),
-				UnionType::class,
-				'(ArrayObject&iterable<string>)|null',
-			],
+				new NullType(),
+			]),
+			UnionType::class,
+			'(ArrayObject&iterable<string>)|null',
 		];
 	}
 
@@ -161,91 +159,88 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $result);
 	}
 
-	public static function dataRemoveNull(): array
+	public static function dataRemoveNull(): Iterator
 	{
 		$reflectionProvider = self::createReflectionProvider();
-
-		return [
-			[
-				new MixedType(),
-				MixedType::class,
-				'mixed',
-			],
-			[
-				new NullType(),
-				NeverType::class,
-				'*NEVER*',
-			],
-			[
-				new VoidType(),
-				VoidType::class,
-				'void',
-			],
-			[
+		yield [
+			new MixedType(),
+			MixedType::class,
+			'mixed',
+		];
+		yield [
+			new NullType(),
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			new VoidType(),
+			VoidType::class,
+			'void',
+		];
+		yield [
+			new StringType(),
+			StringType::class,
+			'string',
+		];
+		yield [
+			new UnionType([
 				new StringType(),
-				StringType::class,
-				'string',
-			],
-			[
-				new UnionType([
-					new StringType(),
-					new IntegerType(),
-					new NullType(),
-				]),
-				UnionType::class,
-				'int|string',
-			],
-			[
-				new UnionType([
-					new StringType(),
-					new IntegerType(),
-				]),
-				UnionType::class,
-				'int|string',
-			],
-			[
-				new UnionType([
-					new IntersectionType([
-						new IterableType(new MixedType(), new StringType()),
-						new ObjectType('ArrayObject'),
-					]),
-					new NullType(),
-				]),
-				IntersectionType::class,
-				'ArrayObject&iterable<string>',
-			],
-			[
+				new IntegerType(),
+				new NullType(),
+			]),
+			UnionType::class,
+			'int|string',
+		];
+		yield [
+			new UnionType([
+				new StringType(),
+				new IntegerType(),
+			]),
+			UnionType::class,
+			'int|string',
+		];
+		yield [
+			new UnionType([
 				new IntersectionType([
 					new IterableType(new MixedType(), new StringType()),
 					new ObjectType('ArrayObject'),
 				]),
-				IntersectionType::class,
-				'ArrayObject&iterable<string>',
-			],
-			[
-				new UnionType([
-					new ThisType($reflectionProvider->getClass(Exception::class)),
-					new NullType(),
-				]),
-				ThisType::class,
-				'$this(Exception)',
-			],
-			[
-				new UnionType([
-					new ThisType($reflectionProvider->getClass(Exception::class)),
-					new NullType(),
-				]),
-				ThisType::class,
-				'$this(Exception)',
-			],
-			[
-				new UnionType([
-					new IterableType(new MixedType(), new StringType()),
-					new NullType(),
-				]),
-				IterableType::class,
-				'iterable<string>',
-			],
+				new NullType(),
+			]),
+			IntersectionType::class,
+			'ArrayObject&iterable<string>',
+		];
+		yield [
+			new IntersectionType([
+				new IterableType(new MixedType(), new StringType()),
+				new ObjectType('ArrayObject'),
+			]),
+			IntersectionType::class,
+			'ArrayObject&iterable<string>',
+		];
+		yield [
+			new UnionType([
+				new ThisType($reflectionProvider->getClass(Exception::class)),
+				new NullType(),
+			]),
+			ThisType::class,
+			'$this(Exception)',
+		];
+		yield [
+			new UnionType([
+				new ThisType($reflectionProvider->getClass(Exception::class)),
+				new NullType(),
+			]),
+			ThisType::class,
+			'$this(Exception)',
+		];
+		yield [
+			new UnionType([
+				new IterableType(new MixedType(), new StringType()),
+				new NullType(),
+			]),
+			IterableType::class,
+			'iterable<string>',
 		];
 	}
 
@@ -5074,507 +5069,505 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
-	public static function dataRemove(): array
+	public static function dataRemove(): Iterator
 	{
-		return [
-			[
+		yield [
+			new ConstantBooleanType(true),
+			new ConstantBooleanType(true),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new UnionType([
+				new IntegerType(),
 				new ConstantBooleanType(true),
-				new ConstantBooleanType(true),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new UnionType([
-					new IntegerType(),
-					new ConstantBooleanType(true),
-				]),
-				new ConstantBooleanType(true),
-				IntegerType::class,
-				'int',
-			],
-			[
-				new UnionType([
-					new ObjectType('Foo'),
-					new ObjectType('Bar'),
-				]),
+			]),
+			new ConstantBooleanType(true),
+			IntegerType::class,
+			'int',
+		];
+		yield [
+			new UnionType([
 				new ObjectType('Foo'),
-				ObjectType::class,
-				'Bar',
-			],
-			[
-				new UnionType([
-					new ObjectType('Foo'),
-					new ObjectType('Bar'),
-					new ObjectType('Baz'),
-				]),
+				new ObjectType('Bar'),
+			]),
+			new ObjectType('Foo'),
+			ObjectType::class,
+			'Bar',
+		];
+		yield [
+			new UnionType([
 				new ObjectType('Foo'),
-				UnionType::class,
-				'Bar|Baz',
-			],
-			[
-				new UnionType([
-					new ArrayType(new MixedType(), new StringType()),
-					new ArrayType(new MixedType(), new IntegerType()),
-					new ObjectType('ArrayObject'),
-				]),
+				new ObjectType('Bar'),
+				new ObjectType('Baz'),
+			]),
+			new ObjectType('Foo'),
+			UnionType::class,
+			'Bar|Baz',
+		];
+		yield [
+			new UnionType([
+				new ArrayType(new MixedType(), new StringType()),
 				new ArrayType(new MixedType(), new IntegerType()),
-				UnionType::class,
-				'array<string>|ArrayObject',
-			],
-			[
+				new ObjectType('ArrayObject'),
+			]),
+			new ArrayType(new MixedType(), new IntegerType()),
+			UnionType::class,
+			'array<string>|ArrayObject',
+		];
+		yield [
+			new ConstantBooleanType(true),
+			new ConstantBooleanType(false),
+			ConstantBooleanType::class,
+			'true',
+		];
+		yield [
+			new ConstantBooleanType(false),
+			new ConstantBooleanType(true),
+			ConstantBooleanType::class,
+			'false',
+		];
+		yield [
+			new ConstantBooleanType(true),
+			new BooleanType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new ConstantBooleanType(false),
+			new BooleanType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new BooleanType(),
+			new ConstantBooleanType(true),
+			ConstantBooleanType::class,
+			'false',
+		];
+		yield [
+			new BooleanType(),
+			new ConstantBooleanType(false),
+			ConstantBooleanType::class,
+			'true',
+		];
+		yield [
+			new BooleanType(),
+			new BooleanType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			StaticTypeFactory::falsey(),
+			StaticTypeFactory::falsey(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			StaticTypeFactory::truthy(),
+			StaticTypeFactory::truthy(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			StaticTypeFactory::truthy(),
+			StaticTypeFactory::falsey(),
+			MixedType::class,
+			'mixed~(0|0.0|\'\'|\'0\'|array{}|false|null)',
+		];
+		yield [
+			StaticTypeFactory::falsey(),
+			StaticTypeFactory::truthy(),
+			UnionType::class,
+			'0|0.0|\'\'|\'0\'|array{}|false|null',
+		];
+		yield [
+			new BooleanType(),
+			StaticTypeFactory::falsey(),
+			ConstantBooleanType::class,
+			'true',
+		];
+		yield [
+			new BooleanType(),
+			StaticTypeFactory::truthy(),
+			ConstantBooleanType::class,
+			'false',
+		];
+		yield [
+			new UnionType([
 				new ConstantBooleanType(true),
-				new ConstantBooleanType(false),
-				ConstantBooleanType::class,
-				'true',
-			],
-			[
-				new ConstantBooleanType(false),
-				new ConstantBooleanType(true),
-				ConstantBooleanType::class,
-				'false',
-			],
-			[
-				new ConstantBooleanType(true),
-				new BooleanType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new ConstantBooleanType(false),
-				new BooleanType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new BooleanType(),
-				new ConstantBooleanType(true),
-				ConstantBooleanType::class,
-				'false',
-			],
-			[
-				new BooleanType(),
-				new ConstantBooleanType(false),
-				ConstantBooleanType::class,
-				'true',
-			],
-			[
-				new BooleanType(),
-				new BooleanType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				StaticTypeFactory::falsey(),
-				StaticTypeFactory::falsey(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				StaticTypeFactory::truthy(),
-				StaticTypeFactory::truthy(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				StaticTypeFactory::truthy(),
-				StaticTypeFactory::falsey(),
-				MixedType::class,
-				'mixed~(0|0.0|\'\'|\'0\'|array{}|false|null)',
-			],
-			[
-				StaticTypeFactory::falsey(),
-				StaticTypeFactory::truthy(),
-				UnionType::class,
-				'0|0.0|\'\'|\'0\'|array{}|false|null',
-			],
-			[
-				new BooleanType(),
-				StaticTypeFactory::falsey(),
-				ConstantBooleanType::class,
-				'true',
-			],
-			[
-				new BooleanType(),
-				StaticTypeFactory::truthy(),
-				ConstantBooleanType::class,
-				'false',
-			],
-			[
-				new UnionType([
-					new ConstantBooleanType(true),
-					new IntegerType(),
-				]),
-				new BooleanType(),
-				IntegerType::class,
-				'int',
-			],
-			[
-				new UnionType([
-					new ConstantBooleanType(false),
-					new IntegerType(),
-				]),
-				new BooleanType(),
-				IntegerType::class,
-				'int',
-			],
-			[
-				new UnionType([
-					new BooleanType(),
-					new IntegerType(),
-				]),
-				new ConstantBooleanType(true),
-				UnionType::class,
-				'int|false',
-			],
-			[
-				new UnionType([
-					new BooleanType(),
-					new IntegerType(),
-				]),
-				new ConstantBooleanType(false),
-				UnionType::class,
-				'int|true',
-			],
-			[
-				new UnionType([
-					new StringType(),
-					new IntegerType(),
-					new NullType(),
-				]),
-				new UnionType([
-					new NullType(),
-					new StringType(),
-				]),
-				IntegerType::class,
-				'int',
-			],
-			[
-				new IterableType(new MixedType(), new MixedType()),
-				new ArrayType(new MixedType(), new MixedType()),
-				ObjectType::class,
-				'Traversable<mixed, mixed>',
-			],
-			[
-				new IterableType(new MixedType(), new MixedType()),
-				new ObjectType(Traversable::class),
-				ArrayType::class,
-				'array',
-			],
-			[
-				new IterableType(new MixedType(), new MixedType()),
-				new ObjectType(Iterator::class),
-				IterableType::class,
-				'iterable',
-			],
-			[
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new StringType(),
-				IntegerType::class,
-				'int',
-			],
-			[
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new IntegerType(),
-				StringType::class,
-				'string',
-			],
-			[
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new ConstantStringType('foo'),
-				UnionType::class,
-				'(int|string)',
-			],
-			[
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new ConstantIntegerType(1),
-				UnionType::class,
-				'(int<min, 0>|int<2, max>|string)',
-			],
-			[
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new UnionType([new IntegerType(), new StringType()]),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new ArrayType(new MixedType(), new MixedType()),
+			]),
+			new BooleanType(),
+			IntegerType::class,
+			'int',
+		];
+		yield [
+			new UnionType([
+				new ConstantBooleanType(false),
+				new IntegerType(),
+			]),
+			new BooleanType(),
+			IntegerType::class,
+			'int',
+		];
+		yield [
+			new UnionType([
+				new BooleanType(),
+				new IntegerType(),
+			]),
+			new ConstantBooleanType(true),
+			UnionType::class,
+			'int|false',
+		];
+		yield [
+			new UnionType([
+				new BooleanType(),
+				new IntegerType(),
+			]),
+			new ConstantBooleanType(false),
+			UnionType::class,
+			'int|true',
+		];
+		yield [
+			new UnionType([
+				new StringType(),
+				new IntegerType(),
+				new NullType(),
+			]),
+			new UnionType([
+				new NullType(),
+				new StringType(),
+			]),
+			IntegerType::class,
+			'int',
+		];
+		yield [
+			new IterableType(new MixedType(), new MixedType()),
+			new ArrayType(new MixedType(), new MixedType()),
+			ObjectType::class,
+			'Traversable<mixed, mixed>',
+		];
+		yield [
+			new IterableType(new MixedType(), new MixedType()),
+			new ObjectType(Traversable::class),
+			ArrayType::class,
+			'array',
+		];
+		yield [
+			new IterableType(new MixedType(), new MixedType()),
+			new ObjectType(Iterator::class),
+			IterableType::class,
+			'iterable',
+		];
+		yield [
+			new BenevolentUnionType([new IntegerType(), new StringType()]),
+			new StringType(),
+			IntegerType::class,
+			'int',
+		];
+		yield [
+			new BenevolentUnionType([new IntegerType(), new StringType()]),
+			new IntegerType(),
+			StringType::class,
+			'string',
+		];
+		yield [
+			new BenevolentUnionType([new IntegerType(), new StringType()]),
+			new ConstantStringType('foo'),
+			UnionType::class,
+			'(int|string)',
+		];
+		yield [
+			new BenevolentUnionType([new IntegerType(), new StringType()]),
+			new ConstantIntegerType(1),
+			UnionType::class,
+			'(int<min, 0>|int<2, max>|string)',
+		];
+		yield [
+			new BenevolentUnionType([new IntegerType(), new StringType()]),
+			new UnionType([new IntegerType(), new StringType()]),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new ArrayType(new MixedType(), new MixedType()),
+			new ConstantArrayType([], []),
+			IntersectionType::class,
+			'non-empty-array',
+		];
+		yield [
+			TypeCombinator::union(
 				new ConstantArrayType([], []),
-				IntersectionType::class,
-				'non-empty-array',
-			],
-			[
-				TypeCombinator::union(
-					new ConstantArrayType([], []),
-					new ConstantArrayType([
-						new ConstantIntegerType(0),
-					], [
-						new StringType(),
-					]),
-				),
-				new ConstantArrayType([], []),
-				ConstantArrayType::class,
-				'array{string}',
-			],
-			[
-				new IntersectionType([
-					new ArrayType(new MixedType(), new MixedType()),
-					new NonEmptyArrayType(),
+				new ConstantArrayType([
+					new ConstantIntegerType(0),
+				], [
+					new StringType(),
 				]),
-				new NonEmptyArrayType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
+			),
+			new ConstantArrayType([], []),
+			ConstantArrayType::class,
+			'array{string}',
+		];
+		yield [
+			new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
 				new NonEmptyArrayType(),
-				ConstantArrayType::class,
-				'array{}',
-			],
-			[
+			]),
+			new NonEmptyArrayType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new ArrayType(new MixedType(), new MixedType()),
+			new NonEmptyArrayType(),
+			ConstantArrayType::class,
+			'array{}',
+		];
+		yield [
+			new ArrayType(new MixedType(), new MixedType()),
+			new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
-				new IntersectionType([
-					new ArrayType(new MixedType(), new MixedType()),
-					new HasOffsetType(new ConstantStringType('foo')),
-				]),
-				ArrayType::class,
-				'array',
-			],
-			[
-				new MixedType(),
-				new IntegerType(),
-				MixedType::class,
-				'mixed~int',
-			],
-			[
-				new MixedType(subtractedType: new IntegerType()),
-				new IntegerType(),
-				MixedType::class,
-				'mixed~int',
-			],
-			[
-				new MixedType(subtractedType: new IntegerType()),
-				new StringType(),
-				MixedType::class,
-				'mixed~(int|string)',
-			],
-			[
-				new MixedType(false),
-				new MixedType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new MixedType(subtractedType: new StringType()),
-				new MixedType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new MixedType(false),
-				new MixedType(subtractedType: new StringType()),
-				StringType::class,
-				'string',
-			],
-			[
-				new MixedType(subtractedType: new StringType()),
-				new NeverType(),
-				MixedType::class,
-				'mixed~string',
-			],
-			[
-				new ObjectType('Exception'),
-				new ObjectType('InvalidArgumentException'),
-				ObjectType::class,
-				'Exception~InvalidArgumentException',
-			],
-			[
-				new ObjectType('Exception', new ObjectType('InvalidArgumentException')),
-				new ObjectType('LengthException'),
-				ObjectType::class,
-				'Exception~(InvalidArgumentException|LengthException)',
-			],
-			[
-				new ObjectType('Exception'),
-				new ObjectType('Throwable'),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new ObjectType('Exception', new ObjectType('InvalidArgumentException')),
-				new ObjectType('InvalidArgumentException'),
-				ObjectType::class,
-				'Exception~InvalidArgumentException',
-			],
-			[
-				IntegerRangeType::fromInterval(3, 7),
-				IntegerRangeType::fromInterval(2, 4),
-				IntegerRangeType::class,
-				'int<5, 7>',
-			],
-			[
-				IntegerRangeType::fromInterval(3, 7),
-				IntegerRangeType::fromInterval(3, 4),
-				IntegerRangeType::class,
-				'int<5, 7>',
-			],
-			[
-				IntegerRangeType::fromInterval(3, 7),
-				IntegerRangeType::fromInterval(5, 7),
-				IntegerRangeType::class,
-				'int<3, 4>',
-			],
-			[
-				IntegerRangeType::fromInterval(3, 7),
-				new ConstantIntegerType(3),
-				IntegerRangeType::class,
-				'int<4, 7>',
-			],
-			[
-				new IntegerType(),
-				IntegerRangeType::fromInterval(null, 7),
-				IntegerRangeType::class,
-				'int<8, max>',
-			],
-			[
-				IntegerRangeType::fromInterval(0, 2),
-				IntegerRangeType::fromInterval(-1, 3),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				IntegerRangeType::fromInterval(0, 2),
-				IntegerRangeType::fromInterval(0, 3),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				IntegerRangeType::fromInterval(0, 2),
-				IntegerRangeType::fromInterval(-1, 2),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				IntegerRangeType::fromInterval(0, 2),
-				new IntegerType(),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
+				new HasOffsetType(new ConstantStringType('foo')),
+			]),
+			ArrayType::class,
+			'array',
+		];
+		yield [
+			new MixedType(),
+			new IntegerType(),
+			MixedType::class,
+			'mixed~int',
+		];
+		yield [
+			new MixedType(subtractedType: new IntegerType()),
+			new IntegerType(),
+			MixedType::class,
+			'mixed~int',
+		];
+		yield [
+			new MixedType(subtractedType: new IntegerType()),
+			new StringType(),
+			MixedType::class,
+			'mixed~(int|string)',
+		];
+		yield [
+			new MixedType(false),
+			new MixedType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new MixedType(subtractedType: new StringType()),
+			new MixedType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new MixedType(false),
+			new MixedType(subtractedType: new StringType()),
+			StringType::class,
+			'string',
+		];
+		yield [
+			new MixedType(subtractedType: new StringType()),
+			new NeverType(),
+			MixedType::class,
+			'mixed~string',
+		];
+		yield [
+			new ObjectType('Exception'),
+			new ObjectType('InvalidArgumentException'),
+			ObjectType::class,
+			'Exception~InvalidArgumentException',
+		];
+		yield [
+			new ObjectType('Exception', new ObjectType('InvalidArgumentException')),
+			new ObjectType('LengthException'),
+			ObjectType::class,
+			'Exception~(InvalidArgumentException|LengthException)',
+		];
+		yield [
+			new ObjectType('Exception'),
+			new ObjectType('Throwable'),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new ObjectType('Exception', new ObjectType('InvalidArgumentException')),
+			new ObjectType('InvalidArgumentException'),
+			ObjectType::class,
+			'Exception~InvalidArgumentException',
+		];
+		yield [
+			IntegerRangeType::fromInterval(3, 7),
+			IntegerRangeType::fromInterval(2, 4),
+			IntegerRangeType::class,
+			'int<5, 7>',
+		];
+		yield [
+			IntegerRangeType::fromInterval(3, 7),
+			IntegerRangeType::fromInterval(3, 4),
+			IntegerRangeType::class,
+			'int<5, 7>',
+		];
+		yield [
+			IntegerRangeType::fromInterval(3, 7),
+			IntegerRangeType::fromInterval(5, 7),
+			IntegerRangeType::class,
+			'int<3, 4>',
+		];
+		yield [
+			IntegerRangeType::fromInterval(3, 7),
+			new ConstantIntegerType(3),
+			IntegerRangeType::class,
+			'int<4, 7>',
+		];
+		yield [
+			new IntegerType(),
+			IntegerRangeType::fromInterval(null, 7),
+			IntegerRangeType::class,
+			'int<8, max>',
+		];
+		yield [
+			IntegerRangeType::fromInterval(0, 2),
+			IntegerRangeType::fromInterval(-1, 3),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			IntegerRangeType::fromInterval(0, 2),
+			IntegerRangeType::fromInterval(0, 3),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			IntegerRangeType::fromInterval(0, 2),
+			IntegerRangeType::fromInterval(-1, 2),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			IntegerRangeType::fromInterval(0, 2),
+			new IntegerType(),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			IntegerRangeType::fromInterval(null, 1),
+			IntegerRangeType::fromInterval(4, null),
+			IntegerRangeType::class,
+			'int<min, 1>',
+		];
+		yield [
+			IntegerRangeType::fromInterval(1, null),
+			IntegerRangeType::fromInterval(null, -4),
+			IntegerRangeType::class,
+			'int<1, max>',
+		];
+		yield [
+			new UnionType([
+				IntegerRangeType::fromInterval(3, null),
 				IntegerRangeType::fromInterval(null, 1),
-				IntegerRangeType::fromInterval(4, null),
-				IntegerRangeType::class,
-				'int<min, 1>',
-			],
-			[
-				IntegerRangeType::fromInterval(1, null),
-				IntegerRangeType::fromInterval(null, -4),
-				IntegerRangeType::class,
-				'int<1, max>',
-			],
-			[
-				new UnionType([
-					IntegerRangeType::fromInterval(3, null),
-					IntegerRangeType::fromInterval(null, 1),
-				]),
-				IntegerRangeType::fromInterval(4, null),
-				UnionType::class,
-				'3|int<min, 1>',
-			],
-			[
-				new ConstantArrayType([
-					new ConstantIntegerType(0),
-					new ConstantIntegerType(1),
-				], [
-					new StringType(),
-					new StringType(),
-				], [2]),
-				new HasOffsetType(new ConstantIntegerType(1)),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new ConstantArrayType([
-					new ConstantIntegerType(0),
-					new ConstantIntegerType(1),
-				], [
-					new StringType(),
-					new StringType(),
-				], [2], [1]),
-				new HasOffsetType(new ConstantIntegerType(1)),
-				ConstantArrayType::class,
-				'array{string}',
-			],
-			[
-				new ConstantArrayType([
-					new ConstantIntegerType(0),
-					new ConstantIntegerType(1),
-				], [
-					new StringType(),
-					new StringType(),
-				], [2], [1]),
-				new HasOffsetType(new ConstantIntegerType(0)),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new MixedType(),
-				new NeverType(),
-				MixedType::class,
-				'mixed',
-			],
-			[
-				new ObjectWithoutClassType(),
-				new NeverType(),
-				ObjectWithoutClassType::class,
-				'object',
-			],
-			[
-				new ObjectType(stdClass::class),
-				new NeverType(),
-				ObjectType::class,
-				'stdClass',
-			],
-			[
-				TemplateTypeFactory::create(
-					TemplateTypeScope::createWithClass('Foo'),
-					'T',
-					new BooleanType(),
-					TemplateTypeVariance::createInvariant(),
-				),
-				new ConstantBooleanType(false),
-				TemplateMixedType::class, // should be TemplateConstantBooleanType
-				'T (class Foo, parameter)', // should be T of true
-			],
-			[
-				new ObjectShapeType(['foo' => new IntegerType()], []),
-				new HasPropertyType('foo'),
-				NeverType::class,
-				'*NEVER*=implicit',
-			],
-			[
-				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
-				new HasPropertyType('foo'),
-				ObjectShapeType::class,
-				'object{}',
-			],
-			[
-				new ObjectShapeType(['foo' => new IntegerType()], []),
-				new HasPropertyType('bar'),
-				ObjectShapeType::class,
-				'object{foo: int}',
-			],
-			[
-				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
-				new HasPropertyType('bar'),
-				ObjectShapeType::class,
-				'object{foo?: int}',
-			],
-			[
-				new IntersectionType([new ArrayType(new StringType(), new StringType()), new OversizedArrayType()]),
-				new ConstantArrayType([], []),
-				IntersectionType::class,
-				'non-empty-array<string, string>&oversized-array',
-			],
+			]),
+			IntegerRangeType::fromInterval(4, null),
+			UnionType::class,
+			'3|int<min, 1>',
+		];
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new StringType(),
+				new StringType(),
+			], [2]),
+			new HasOffsetType(new ConstantIntegerType(1)),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new StringType(),
+				new StringType(),
+			], [2], [1]),
+			new HasOffsetType(new ConstantIntegerType(1)),
+			ConstantArrayType::class,
+			'array{string}',
+		];
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new StringType(),
+				new StringType(),
+			], [2], [1]),
+			new HasOffsetType(new ConstantIntegerType(0)),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new MixedType(),
+			new NeverType(),
+			MixedType::class,
+			'mixed',
+		];
+		yield [
+			new ObjectWithoutClassType(),
+			new NeverType(),
+			ObjectWithoutClassType::class,
+			'object',
+		];
+		yield [
+			new ObjectType(stdClass::class),
+			new NeverType(),
+			ObjectType::class,
+			'stdClass',
+		];
+		yield [
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Foo'),
+				'T',
+				new BooleanType(),
+				TemplateTypeVariance::createInvariant(),
+			),
+			new ConstantBooleanType(false),
+			TemplateMixedType::class, // should be TemplateConstantBooleanType
+			'T (class Foo, parameter)', // should be T of true
+		];
+		yield [
+			new ObjectShapeType(['foo' => new IntegerType()], []),
+			new HasPropertyType('foo'),
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+			new HasPropertyType('foo'),
+			ObjectShapeType::class,
+			'object{}',
+		];
+		yield [
+			new ObjectShapeType(['foo' => new IntegerType()], []),
+			new HasPropertyType('bar'),
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+			new HasPropertyType('bar'),
+			ObjectShapeType::class,
+			'object{foo?: int}',
+		];
+		yield [
+			new IntersectionType([new ArrayType(new StringType(), new StringType()), new OversizedArrayType()]),
+			new ConstantArrayType([], []),
+			IntersectionType::class,
+			'non-empty-array<string, string>&oversized-array',
 		];
 	}
 

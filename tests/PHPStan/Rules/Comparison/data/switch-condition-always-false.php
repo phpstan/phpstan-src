@@ -97,7 +97,10 @@ class Foo
 		}
 	}
 
-	public function boolAndNullCases(mixed $m): void
+	/**
+	 * @param mixed $m
+	 */
+	public function boolAndNullCases($m): void
 	{
 		switch ($m) {
 			case true:
@@ -137,7 +140,10 @@ class Foo
 		}
 	}
 
-	public function looseEquality(mixed $m): void
+	/**
+	 * @param mixed $m
+	 */
+	public function looseEquality($m): void
 	{
 		switch ($m) {
 			case 1:

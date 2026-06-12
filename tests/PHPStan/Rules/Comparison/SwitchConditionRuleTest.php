@@ -55,11 +55,11 @@ class SwitchConditionRuleTest extends RuleTestCase
 			],
 			[
 				'Switch condition comparison between \'0\' and true is always false.',
-				107,
+				110,
 			],
 			[
 				'Switch condition comparison between \'0\' and null is always false.',
-				109,
+				112,
 			],
 		]);
 	}

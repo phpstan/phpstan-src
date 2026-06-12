@@ -28,4 +28,12 @@ function doFoo(string $s): void
 	if (preg_match('~((a|b)(b|c))~', $s, $m)) {
 		assertType("array{non-falsy-string, 'ab'|'ac'|'bb'|'bc', 'a'|'b', 'b'|'c'}", $m);
 	}
+
+	if (preg_match('~((b|c)d)~', $s, $m)) {
+		assertType("array{non-falsy-string, 'bd'|'cd', 'b'|'c'}", $m);
+	}
+
+	if (preg_match('~(a(b|c)d)~', $s, $m)) {
+		assertType("array{non-falsy-string, 'abd'|'acd', 'b'|'c'}", $m);
+	}
 }

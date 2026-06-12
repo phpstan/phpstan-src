@@ -2080,9 +2080,11 @@ class NodeScopeResolver
 			$switchConditionArms = [];
 			$lastNonDefaultCaseKey = null;
 			foreach ($stmt->cases as $caseKey => $caseNode) {
-				if ($caseNode->cond !== null) {
-					$lastNonDefaultCaseKey = $caseKey;
+				if ($caseNode->cond === null) {
+					continue;
 				}
+
+				$lastNonDefaultCaseKey = $caseKey;
 			}
 			foreach ($stmt->cases as $caseKey => $caseNode) {
 				if ($caseNode->cond !== null) {

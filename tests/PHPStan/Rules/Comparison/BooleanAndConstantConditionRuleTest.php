@@ -6,6 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -451,6 +452,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8555.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14807(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

@@ -1513,9 +1513,9 @@ class ConstantArrayType implements Type
 					return $stringKeyType;
 				}
 
-				$builder->setOffsetValueType($stringKeyType, $valueType, $this->isOptionalKey($i));
+				$builder->setOffsetValueType($stringKeyType, $valueType, $this->isOptionalKey($i) || count($stringKeyType->getConstantScalarTypes()) > 1);
 			} else {
-				$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i));
+				$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i) || count($keyType->getConstantScalarTypes()) > 1);
 			}
 		}
 
@@ -1541,10 +1541,11 @@ class ConstantArrayType implements Type
 
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
+			$offsetType = $valueType->toArrayKey();
 			$builder->setOffsetValueType(
-				$valueType->toArrayKey(),
+				$offsetType,
 				$keyType,
-				$this->isOptionalKey($i),
+				$this->isOptionalKey($i) || count($offsetType->getConstantScalarTypes()) > 1,
 			);
 		}
 

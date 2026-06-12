@@ -2,7 +2,7 @@
 
 namespace Bug5639;
 
-if (\version_compare(\PHP_VERSION, '7.0', '<'))
+if (\version_compare(\PHP_VERSION, '7.0', '<')) // @phpstan-ignore function.impossibleType
 {
 	class Foo extends \Exception {
 		function __toString(): string {

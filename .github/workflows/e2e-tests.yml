@@ -459,6 +459,10 @@ jobs:
               composer install
               ../../bin/phpstan analyze test.php --level=0
           - script: |
+              cd e2e/version-compare-phpversionid
+              composer install
+              ../../bin/phpstan analyze narrow-phpversionid-on-version-compare.php --level=0
+          - script: |
               cd e2e/bug13425
               timeout 15 ../bashunit -a exit_code "1" "../../bin/phpstan analyze src/ plugins/"
           - script: |

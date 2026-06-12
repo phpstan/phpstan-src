@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
@@ -40,9 +41,15 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 		}
 
 		if ($closureType->isStaticClosure()->yes()) {
-			$newThisIsNull = !isset($args[1]) || $scope->getType($args[1]->value)->isNull()->yes();
+			$newThisIsNull = isset($args[1]) ? $scope->getType($args[1]->value)->isNull() : TrinaryLogic::createYes();
+			if ($newThisIsNull->yes()) {
+				return $closureType;
+			}
+			if ($newThisIsNull->no()) {
+				return new NullType();
+			}
 
-			return $newThisIsNull ? $closureType : new NullType();
+			return new BenevolentUnionType([$closureType, new NullType()]);
 		}
 
 		return new BenevolentUnionType([$closureType, new NullType()]);

@@ -43,4 +43,4 @@ $boundMaybe = $foo->bindTo($maybeNull);
 assertType('((Closure(): void)|null)', $boundMaybe);
 
 $staticBoundMaybe = $static->bindTo($maybeNull);
-assertType('null', $staticBoundMaybe);
+assertType('((static-Closure(): void)|null)', $staticBoundMaybe);

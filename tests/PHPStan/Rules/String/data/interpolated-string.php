@@ -1,0 +1,23 @@
+<?php // lint >= 8.2
+
+namespace Bug8744Traits;
+
+class Test
+{
+    public function getMethod()
+    {
+        return 'foo';
+    }
+}
+
+const foo = 'bar';
+$foo = 'foo';
+$bar = 'bar';
+$array = ['baz'];
+var_dump("${foo}");
+var_dump("${(foo)}");
+var_dump("${$foo}");
+var_dump("${array[0]}");
+
+$object = new Test();
+var_dump("${$object->getMethod()}");

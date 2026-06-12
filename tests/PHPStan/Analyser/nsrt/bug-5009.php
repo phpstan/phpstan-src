@@ -26,16 +26,16 @@ assertType('Closure(): void', $bound2);
 
 $static = static function (): void {};
 $boundStatic = $static->bindTo($newThis);
-assertType('((Closure(): void)|null)', $boundStatic);
+assertType('((static-Closure(): void)|null)', $boundStatic);
 
 $boundStaticNull = $static->bindTo(null);
-assertType('Closure(): void', $boundStaticNull);
+assertType('static-Closure(): void', $boundStaticNull);
 
 $staticBound2 = Closure::bind($static, $newThis);
-assertType('((Closure(): void)|null)', $staticBound2);
+assertType('((static-Closure(): void)|null)', $staticBound2);
 
 $staticBoundNull = Closure::bind($static, null);
-assertType('Closure(): void', $staticBoundNull);
+assertType('static-Closure(): void', $staticBoundNull);
 
 /** @var \stdClass|null $maybeNull */
 $maybeNull = null;
@@ -43,4 +43,4 @@ $boundMaybe = $foo->bindTo($maybeNull);
 assertType('Closure(): void', $boundMaybe);
 
 $staticBoundMaybe = $static->bindTo($maybeNull);
-assertType('((Closure(): void)|null)', $staticBoundMaybe);
+assertType('((static-Closure(): void)|null)', $staticBoundMaybe);

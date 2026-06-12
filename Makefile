@@ -98,7 +98,6 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/virtual-hooked-properties.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-12281.php \
 		--exclude tests/PHPStan/Rules/Traits/data/bug-12281.php \
-		--exclude tests/PHPStan/Rules/Classes/data/invalid-hooked-properties.php \
 		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-before.php \
 		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-after.php \
 		--exclude tests/PHPStan/Rules/Properties/data/abstract-private-property-hook.php \

@@ -15,7 +15,7 @@ class ArrayFlipUnionValues
 	/** @param array{0: 'a'|'b', 1: 'b'|'c'} $a */
 	public function overlappingUnion(array $a): void
 	{
-		assertType("non-empty-array<'a'|'b'|'c', 0|1>", array_flip($a));
+		assertType("non-empty-array{a?: 0, b?: 0|1, c?: 1}", array_flip($a));
 	}
 
 	/** @param array{0: 'a'|'b', 1: 'c'} $a */
@@ -30,7 +30,7 @@ class ArrayFillKeysUnionValues
 	/** @param array{0: 'a'|'b', 1: 'b'|'c'} $a */
 	public function overlappingUnion(array $a): void
 	{
-		assertType("non-empty-array<'a'|'b'|'c', 'x'>", array_fill_keys($a, 'x'));
+		assertType("non-empty-array{a?: 'x', b?: 'x', c?: 'x'}", array_fill_keys($a, 'x'));
 	}
 
 	/** @param array{0: 'a'|'b'|'c', 1: 'a'|'b'|'c', 2: 'a'|'b'|'c'} $a */

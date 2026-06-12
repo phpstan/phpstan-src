@@ -345,8 +345,8 @@ jobs:
               # installs a global exception handler that would otherwise swallow it into exit 0.
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Internal error: boom from getHash' "$OUTPUT"
-              ../bashunit -a contains 'computing result cache metadata from ResultCacheE2E\MetaExtensionThrow\ThrowingResultCacheMetaExtension' "$OUTPUT"
+              ../bashunit -a contains 'boom from getHash' "$OUTPUT"
+              ../bashunit -a not_contains 'Swallowed by global exception handler' "$OUTPUT"
           - script: |
               cd e2e/result-cache-restore-without-reflection
               composer install

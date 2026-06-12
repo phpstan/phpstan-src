@@ -1,4 +1,4 @@
-<?php declare(strict_types = 0);
+<?php declare(strict_types = 0); // lint >= 8.0
 
 namespace Bug9146NonStrict;
 

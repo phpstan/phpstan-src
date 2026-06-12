@@ -3,12 +3,13 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use function define;
 use function defined;
 
 /**
- * @extends RuleTestCase<SwitchConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class SwitchConditionRuleTest extends RuleTestCase
 {
@@ -17,19 +18,23 @@ class SwitchConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new SwitchConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new SwitchConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						$this->treatPhpDocTypesAsCertain,
+					),
 					$this->treatPhpDocTypesAsCertain,
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 			),
-			new PossiblyImpureTipHelper(true),
-			self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
-			$this->treatPhpDocTypesAsCertain,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -102,6 +107,17 @@ class SwitchConditionRuleTest extends RuleTestCase
 			[
 				'Switch condition comparison between int and \'foo\' is always false.',
 				11,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/switch-condition-in-trait.php'], [
+			[
+				'Switch condition comparison between true and false is always false.',
+				21,
 			],
 		]);
 	}

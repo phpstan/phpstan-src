@@ -2014,7 +2014,7 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $caseResult->getImpurePoints());
-					$branchScope = $caseResult->getTruthyScope()->filterByTruthyValue($condExpr);
+					$branchScope = $caseResult->getScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
 					$fullCondExpr = null;

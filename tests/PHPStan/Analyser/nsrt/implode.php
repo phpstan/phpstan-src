@@ -110,6 +110,17 @@ class Foo
 		assertType('string', implode('', $arr));
 	}
 
+	public function bug5521() {
+		// https://github.com/phpstan/phpstan/issues/5521
+		// A single-element array drops the separator entirely, so the result
+		// is just the (empty) single value, not a non-empty-string.
+		$foo = [null];
+		assertType("''", implode(',', $foo));
+
+		$bar = [''];
+		assertType("''", implode(',', $bar));
+	}
+
 	/** @param array{'a', 'b', ...<int, string>} $unsealed */
 	public function unsealedConstArrEmptySeparator($unsealed) {
 		// Empty separator + a possibly-empty unsealed value type leaves no

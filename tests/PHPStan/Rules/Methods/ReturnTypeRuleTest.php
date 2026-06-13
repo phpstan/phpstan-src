@@ -372,6 +372,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2676.php'], []);
 	}
 
+	public function testBug2955(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2955.php'], [
+			[
+				'Method Bug2955Method\Factory::makeWrong() should return stdClass but returns Bug2955Method\Foo.',
+				32,
+			],
+		]);
+	}
+
 	public function testBug2885(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2885.php'], []);

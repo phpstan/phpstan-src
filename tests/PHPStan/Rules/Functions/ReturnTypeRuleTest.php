@@ -123,6 +123,23 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2955(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-2955.php'], [
+			[
+				'Function Bug2955\returnsWrongClass() should return stdClass but returns Bug2955\Foo.',
+				40,
+			],
+			[
+				'Function Bug2955\notPinnedByIsA() should return T of object but returns Bug2955\Foo.',
+				53,
+				'Type Bug2955\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 	public function testBug5706(): void
 	{
 		$this->checkExplicitMixed = false;

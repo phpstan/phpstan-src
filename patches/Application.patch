@@ -1,0 +1,11 @@
+--- Application.php
++++ Application.php
+@@ -169,7 +169,7 @@ class Application implements ResetInterface
+             $this->configureIO($input, $output);
+
+             $exitCode = $this->doRun($input, $output);
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             if (!$this->catchExceptions) {
+                 throw $e;
+             }

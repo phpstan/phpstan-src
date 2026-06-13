@@ -144,7 +144,8 @@
 				"patches/Resolver.patch"
 			],
 			"symfony/console": [
-				"patches/OutputFormatter.patch"
+				"patches/OutputFormatter.patch",
+				"patches/Application.patch"
 			]
 		}
 	},

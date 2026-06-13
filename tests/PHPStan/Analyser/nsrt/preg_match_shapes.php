@@ -236,10 +236,10 @@ function doFoo(string $row): void
 		assertType("array{non-falsy-string, 'ab', 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)$~', $row, $matches) === 1) {
-		assertType("array{0: non-falsy-string, 1: non-falsy-string, 2?: 'b'}", $matches);
+		assertType("array{0: non-falsy-string, 1: 'a'|'ab', 2?: 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType("list{0: string, 1?: non-falsy-string, 2?: 'b'}", $matches);
+		assertType("list{0: string, 1?: 'a'|'ab', 2?: 'b'}", $matches);
 	}
 }
 
@@ -612,19 +612,19 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/Price: (a|bc?)/', $s, $matches)) {
-		assertType("array{non-falsy-string, non-falsy-string}", $matches);
+		assertType("array{non-falsy-string, 'a'|'b'|'bc'}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('/Price: (?<named>a|bc?)/', $s, $matches)) {
-		assertType("array{0: non-falsy-string, named: non-falsy-string, 1: non-falsy-string}", $matches);
+		assertType("array{0: non-falsy-string, named: 'a'|'b'|'bc', 1: 'a'|'b'|'bc'}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('/Price: (a|0c?)/', $s, $matches)) {
-		assertType("array{non-falsy-string, non-empty-string}", $matches);
+		assertType("array{non-falsy-string, '0'|'0c'|'a'}", $matches);
 	}
 };
 

@@ -23,6 +23,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
+use function array_pop;
 use function array_values;
 use function count;
 use function in_array;
@@ -43,6 +44,10 @@ final class RegexGroupParser
 	private const NOT_SUPPORTED_MODIFIERS = [
 		'J', // rare modifier too complicated to support
 	];
+
+	// upper bound on the number of constant string literals enumerated from a group,
+	// to avoid combinatorial explosion from nested optional/bounded quantifications
+	private const LITERALS_LIMIT = 100;
 
 	private static ?Parser $parser = null;
 
@@ -473,6 +478,7 @@ final class RegexGroupParser
 	): RegexGroupWalkResult
 	{
 		$children = $ast->getChildren();
+		$quantifiedLiterals = null;
 
 		if (
 			$ast->getId() === '#concatenation'
@@ -506,7 +512,7 @@ final class RegexGroupParser
 				}
 			}
 		} elseif ($ast->getId() === '#quantification') {
-			[$min] = $this->getQuantificationRange($ast);
+			[$min, $max] = $this->getQuantificationRange($ast);
 
 			if ($min === 0) {
 				$walkResult = $walkResult->inOptionalQuantification(true);
@@ -520,6 +526,10 @@ final class RegexGroupParser
 					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				}
 			}
+
+			// "a?" yields 'a'|'', "a{1,2}" yields 'a'|'aa', etc. so a bounded quantification
+			// over constant literals can be combined with the surrounding literals
+			$quantifiedLiterals = $this->getQuantifiedLiterals($ast, $min, $max, $inClass, $patternModifiers, $walkResult);
 
 			$walkResult = $walkResult->onlyLiterals(null);
 		} elseif ($ast->getId() === '#class' && $walkResult->getOnlyLiterals() !== null) {
@@ -626,7 +636,106 @@ final class RegexGroupParser
 			);
 		}
 
+		if ($ast->getId() === '#quantification') {
+			// the bottom walk above nulls the literals via the quantifier token,
+			// so restore the literals enumerated up-front for bounded quantifications
+			$walkResult = $walkResult->onlyLiterals($quantifiedLiterals);
+		}
+
 		return $walkResult;
+	}
+
+	/**
+	 * Enumerate the constant strings a bounded quantification (like "a?", "a{2}", "a{1,3}")
+	 * produces, combined with the literals accumulated so far. Returns null when the result
+	 * cannot be enumerated (unbounded quantifier, non-literal atom, or too many combinations).
+	 *
+	 * @return array<string>|null
+	 */
+	private function getQuantifiedLiterals(TreeNode $ast, ?int $min, ?int $max, bool $inClass, string $patternModifiers, RegexGroupWalkResult $walkResult): ?array
+	{
+		$prefixLiterals = $walkResult->getOnlyLiterals();
+		if ($prefixLiterals === null || $min === null || $max === null) {
+			return null;
+		}
+
+		// walk the quantified atom standalone (everything but the trailing quantifier token);
+		// the atom itself is not optional, so reset the flag to let concatenations accumulate literals
+		$atomChildren = $ast->getChildren();
+		array_pop($atomChildren);
+
+		$atomResult = $walkResult->onlyLiterals([])->inOptionalQuantification(false);
+		foreach ($atomChildren as $atomChild) {
+			$atomResult = $this->walkGroupAst($atomChild, $inClass, $patternModifiers, $atomResult);
+		}
+
+		$atomLiterals = $atomResult->getOnlyLiterals();
+		if ($atomLiterals === null) {
+			return null;
+		}
+
+		$repeatedLiterals = $this->repeatLiterals($atomLiterals, $min, $max);
+		if ($repeatedLiterals === null) {
+			return null;
+		}
+
+		$newLiterals = [];
+		foreach ($repeatedLiterals as $repeatedLiteral) {
+			if ($prefixLiterals === []) {
+				$newLiterals[] = $repeatedLiteral;
+			} else {
+				foreach ($prefixLiterals as $prefixLiteral) {
+					$newLiterals[] = $prefixLiteral . $repeatedLiteral;
+				}
+			}
+
+			if (count($newLiterals) > self::LITERALS_LIMIT) {
+				return null;
+			}
+		}
+
+		return $newLiterals;
+	}
+
+	/**
+	 * @param array<string> $literals
+	 * @return array<string>|null
+	 */
+	private function repeatLiterals(array $literals, int $min, int $max): ?array
+	{
+		$collected = [];
+		if ($min === 0) {
+			$collected[''] = '';
+		}
+
+		$current = [''];
+		for ($k = 1; $k <= $max; $k++) {
+			$next = [];
+			foreach ($current as $prefix) {
+				foreach ($literals as $literal) {
+					$next[] = $prefix . $literal;
+				}
+
+				if (count($next) > self::LITERALS_LIMIT) {
+					return null;
+				}
+			}
+			$current = $next;
+
+			if ($k < $min) {
+				continue;
+			}
+
+			foreach ($current as $value) {
+				$collected[$value] = $value;
+			}
+
+			if (count($collected) > self::LITERALS_LIMIT) {
+				return null;
+			}
+		}
+
+		return array_values($collected);
 	}
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool

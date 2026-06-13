@@ -5,8 +5,10 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function define;
 use function defined;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -64,6 +66,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleEnum(): void
 	{
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false-enum.php'], [
@@ -74,6 +77,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testAlwaysTrue(): void
 	{
 		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
@@ -91,6 +95,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testImpossibleCases(): void
 	{
 		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
@@ -122,6 +127,13 @@ class SwitchConditionRuleTest extends RuleTestCase
 	public function testDoNotTreatPhpDocTypesAsCertain(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
+
+		if (PHP_VERSION_ID < 80000) {
+			// Before PHP 8.0 a non-numeric string loosely equals 0, so int == 'foo' is not always false.
+			$this->analyse([__DIR__ . '/data/switch-condition-always-false-native.php'], []);
+			return;
+		}
+
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false-native.php'], [
 			[
 				'Switch condition comparison between int and \'foo\' is always false.',

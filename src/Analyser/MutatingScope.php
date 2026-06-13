@@ -4816,7 +4816,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$constantTypes = [];
 		foreach ($this->expressionTypes as $exprString => $typeHolder) {
 			$expr = $typeHolder->getExpr();
-			if (!$expr instanceof ConstFetch) {
+			if (!$expr instanceof ConstFetch && !$expr instanceof Expr\ClassConstFetch) {
 				continue;
 			}
 			$constantTypes[$exprString] = $typeHolder;
@@ -4851,7 +4851,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$constantTypes = [];
 		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
 			$expr = $typeHolder->getExpr();
-			if (!$expr instanceof ConstFetch) {
+			if (!$expr instanceof ConstFetch && !$expr instanceof Expr\ClassConstFetch) {
 				continue;
 			}
 			$constantTypes[$exprString] = $typeHolder;

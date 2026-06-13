@@ -1219,6 +1219,19 @@ class NodeScopeResolver
 			});
 
 			$this->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, $context);
+			foreach ($stmt->stmts as $classLikeStmt) {
+				if (!$classLikeStmt instanceof Node\Stmt\ClassConst || !$classLikeStmt->isPublic()) {
+					continue;
+				}
+
+				foreach ($classLikeStmt->consts as $const) {
+					$scope = $scope->assignExpression(
+						new Expr\ClassConstFetch(new Name\FullyQualified($classReflection->getName()), $const->name),
+						$classScope->getType($const->value),
+						$classScope->getNativeType($const->value),
+					);
+				}
+			}
 			$this->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
 			$this->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 			$this->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
@@ -2450,10 +2463,17 @@ class NodeScopeResolver
 				if ($scope->getClassReflection() === null) {
 					throw new ShouldNotHappenException();
 				}
+				$constType = $scope->getType($const->value);
+				$constNativeType = $scope->getNativeType($const->value);
 				$scope = $scope->assignExpression(
 					new Expr\ClassConstFetch(new Name\FullyQualified($scope->getClassReflection()->getName()), $const->name),
-					$scope->getType($const->value),
-					$scope->getNativeType($const->value),
+					$constType,
+					$constNativeType,
+				);
+				$scope = $scope->assignExpression(
+					new Expr\ClassConstFetch(new Name('self'), $const->name),
+					$constType,
+					$constNativeType,
 				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\EnumCase) {

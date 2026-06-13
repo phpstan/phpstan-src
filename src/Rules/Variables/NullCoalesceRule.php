@@ -4,10 +4,14 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Expr>
@@ -16,7 +20,11 @@ use PHPStan\Type\Type;
 final class NullCoalesceRule implements Rule
 {
 
-	public function __construct(private IssetCheck $issetCheck)
+	public function __construct(
+		private IssetCheck $issetCheck,
+		#[AutowiredParameter(ref: '%featureToggles.unnecessaryNullCoalesce%')]
+		private bool $unnecessaryNullCoalesce,
+	)
 	{
 	}
 
@@ -41,18 +49,50 @@ final class NullCoalesceRule implements Rule
 		};
 
 		if ($node instanceof Node\Expr\BinaryOp\Coalesce) {
-			$error = $this->issetCheck->check($node->left, $scope, 'on left side of ??', 'nullCoalesce', $typeMessageCallback);
+			$left = $node->left;
+			$right = $node->right;
+			$operator = '??';
 		} elseif ($node instanceof Node\Expr\AssignOp\Coalesce) {
-			$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=', 'nullCoalesce', $typeMessageCallback);
+			$left = $node->var;
+			$right = $node->expr;
+			$operator = '??=';
 		} else {
 			return [];
 		}
 
-		if ($error === null) {
-			return [];
+		$error = $this->issetCheck->check($left, $scope, sprintf('on left side of %s', $operator), 'nullCoalesce', $typeMessageCallback);
+		if ($error !== null) {
+			return [$error];
 		}
 
-		return [$error];
+		$unnecessaryError = $this->checkUnnecessaryNullCoalesce($left, $right, $operator, $scope);
+		if ($unnecessaryError !== null) {
+			return [$unnecessaryError];
+		}
+
+		return [];
+	}
+
+	private function checkUnnecessaryNullCoalesce(Node\Expr $left, Node\Expr $right, string $operator, Scope $scope): ?IdentifierRuleError
+	{
+		if (!$this->unnecessaryNullCoalesce) {
+			return null;
+		}
+
+		if (!$scope->getType($right)->isNull()->yes()) {
+			return null;
+		}
+
+		// The coalesce only changes the result when the left side is undefined.
+		// If the left side is always set, `?? null` (or `??= null`) never changes
+		// anything, so the whole coalesce is redundant.
+		if ($scope->toMutatingScope()->issetCheck($left, static fn (): bool => true) !== true) {
+			return null;
+		}
+
+		return RuleErrorBuilder::message(
+			sprintf('Coalesce operator %s is unnecessary because the left side is always set and the right side is null.', $operator),
+		)->identifier('nullCoalesce.unnecessary')->build();
 	}
 
 }

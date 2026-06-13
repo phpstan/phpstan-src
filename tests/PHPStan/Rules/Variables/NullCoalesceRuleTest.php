@@ -23,7 +23,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
-		));
+		), true);
 	}
 
 	public function testCoalesceRule(): void
@@ -388,6 +388,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], [
 			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				21,
+			],
+			[
 				'Variable $x1 on left side of ?? always exists and is always null.',
 				22,
 			],
@@ -448,6 +452,44 @@ class NullCoalesceRuleTest extends RuleTestCase
 			[
 				'Property Bug14459Hooked\DtoHooked::$policyholderId (stdClass) on left side of ?? is not nullable.',
 				21,
+			],
+		]);
+	}
+
+	public function testBug4337(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4337.php'], [
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				37,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				42,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				47,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				53,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				58,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				63,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				69,
+			],
+			[
+				'Coalesce operator ??= is unnecessary because the left side is always set and the right side is null.',
+				75,
 			],
 		]);
 	}

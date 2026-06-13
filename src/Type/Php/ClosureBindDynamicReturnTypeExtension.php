@@ -7,8 +7,11 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
@@ -27,12 +30,29 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		$closureType = $scope->getType($methodCall->getArgs()[0]->value);
+		$args = $methodCall->getArgs();
+		if (!isset($args[0])) {
+			return null;
+		}
+
+		$closureType = $scope->getType($args[0]->value);
 		if (!($closureType instanceof ClosureType)) {
 			return null;
 		}
 
-		return $closureType;
+		if ($closureType->isStaticClosure()->yes()) {
+			$newThisIsNull = isset($args[1]) ? $scope->getType($args[1]->value)->isNull() : TrinaryLogic::createYes();
+			if ($newThisIsNull->yes()) {
+				return $closureType;
+			}
+			if ($newThisIsNull->no()) {
+				return new NullType();
+			}
+
+			return new BenevolentUnionType([$closureType, new NullType()]);
+		}
+
+		return new BenevolentUnionType([$closureType, new NullType()]);
 	}
 
 }

@@ -987,6 +987,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14720.php'], []);
 	}
 
+	public function testBug2579(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-2579.php'], [
+			[
+				'Call to an undefined method Bug2579Methods\A1::bar().',
+				30,
+			],
+			[
+				'Call to an undefined method Bug2579Methods\B1::foo().',
+				31,
+			],
+		]);
+	}
+
 	public function testClosureBind(): void
 	{
 		$this->checkThisOnly = false;

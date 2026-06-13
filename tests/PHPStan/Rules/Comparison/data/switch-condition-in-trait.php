@@ -43,17 +43,26 @@ class Foo
 
 	use FooTrait;
 
-	public function doBar(): false
+	/**
+	 * @return false
+	 */
+	public function doBar(): bool
 	{
 
 	}
 
-	public function doBar2(): false
+	/**
+	 * @return false
+	 */
+	public function doBar2(): bool
 	{
 
 	}
 
-	public function doBar3(): true
+	/**
+	 * @return true
+	 */
+	public function doBar3(): bool
 	{
 
 	}
@@ -70,12 +79,18 @@ class FooAnother
 
 	}
 
-	public function doBar2(): false
+	/**
+	 * @return false
+	 */
+	public function doBar2(): bool
 	{
 
 	}
 
-	public function doBar3(): true
+	/**
+	 * @return true
+	 */
+	public function doBar3(): bool
 	{
 
 	}

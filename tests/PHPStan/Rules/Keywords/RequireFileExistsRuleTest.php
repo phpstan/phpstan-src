@@ -2,13 +2,13 @@
 
 namespace PHPStan\Rules\Keywords;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function get_include_path;
 use function implode;
 use function realpath;
 use function set_include_path;
-use const DIRECTORY_SEPARATOR;
 use const PATH_SEPARATOR;
 
 /**
@@ -21,7 +21,10 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RequireFileExistsRule($this->currentWorkingDirectory);
+		return new RequireFileExistsRule(
+			$this->currentWorkingDirectory,
+			self::getContainer()->getByType(ExprPrinter::class),
+		);
 	}
 
 	public static function getAdditionalConfigFiles(): array
@@ -130,8 +133,16 @@ class RequireFileExistsRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Path in require_once() "' . __DIR__ . DIRECTORY_SEPARATOR . 'data/../bug-12203-sure-does-not-exist.php" is not a file or it does not exist.',
+				"Path in require_once() __DIR__ . '/../bug-12203-sure-does-not-exist.php' is not a file or it does not exist.",
 				6,
+			],
+			[
+				"Path in require_once() __DIR__ . '/' . \$path . '/' . \$file is not a file or it does not exist.",
+				10,
+			],
+			[
+				'Path in require_once() __DIR__ . "{$path}/{$file}" is not a file or it does not exist.',
+				12,
 			],
 		]);
 	}

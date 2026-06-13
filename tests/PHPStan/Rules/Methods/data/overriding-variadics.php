@@ -61,7 +61,7 @@ class YetAnotherTranslator implements ITranslator
 class ReflectionClass extends \ReflectionClass
 {
 
-	public function newInstance($arg = null, ...$args)
+	public function newInstance($arg = null, ...$args): object
 	{
 
 	}

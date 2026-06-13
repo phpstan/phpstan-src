@@ -1735,7 +1735,7 @@ return [
 	],
 
 	'DOMDocument::schemaValidate' => [
-		'options' => [
+		'flags' => [
 			'type' => 'bitmask',
 			'constants' => $libxmlOptions,
 		],

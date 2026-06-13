@@ -15,3 +15,12 @@
      /**
       * Retrieves a node specified by name
       * @link https://php.net/manual/en/domnamednodemap.getnameditem.php
+@@ -1779,7 +1787,7 @@
+      * A <classname>DOMNamedNodeMap</classname> containing the attributes of this node (if it is a <classname>DOMElement</classname>) or NULL otherwise.
+      * @link https://php.net/manual/en/class.domnode.php#domnode.props.attributes
+      */
+-    #[LanguageLevelTypeAware(['8.1' => 'DOMNamedNodeMap|null'], default: '')]
++    #[LanguageLevelTypeAware(['8.1' => 'DOMNamedNodeMap'], default: '')]
+     public $attributes;
+
+     /**

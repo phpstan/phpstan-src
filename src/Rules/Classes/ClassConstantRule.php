@@ -67,16 +67,17 @@ final class ClassConstantRule implements Rule
 				$constantNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
 
-			$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringName($scope, $node->name);
-			if ($nonStringableNameType !== null) {
-				$className = $node->class instanceof Name
-					? $scope->resolveName($node->class)
-					: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
+			$className = $node->class instanceof Name
+				? $scope->resolveName($node->class)
+				: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
 
-				$errors[] = RuleErrorBuilder::message(sprintf('Class constant name for %s must be a string, but %s was given.', $className, $nonStringableNameType->describe(VerbosityLevel::precise())))
-					->identifier('classConstant.nameNotString')
-					->build();
-			}
+			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringName(
+				$scope,
+				$node->name,
+				'Class constant name for %s must be a string, but %s was given.',
+				[$className],
+				'classConstant.nameNotString',
+			));
 		}
 
 		foreach ($constantNameScopes as $constantName => $constantScope) {

@@ -67,20 +67,19 @@ final class AccessStaticPropertiesCheck
 		} else {
 			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
 
-			$nonStringableNameType = $write ? null : $this->nonStringableDynamicAccessCheck->checkStringCastableName($scope, $node->name);
-			if ($nonStringableNameType !== null) {
+			if (!$write) {
 				$className = $node->class instanceof Name
 					? $scope->resolveName($node->class)
 					: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
 
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringCastableName(
+					$scope,
+					$node->name,
 					'Static property name for %s must be a string, but %s was given.',
-					$className,
-					$nonStringableNameType->describe(VerbosityLevel::precise()),
-				))
-					->line($node->name->getStartLine())
-					->identifier('staticProperty.nameNotString')
-					->build();
+					[$className],
+					'staticProperty.nameNotString',
+					$node->name->getStartLine(),
+				));
 			}
 		}
 

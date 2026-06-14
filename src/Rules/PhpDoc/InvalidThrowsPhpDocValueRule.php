@@ -71,11 +71,7 @@ final class InvalidThrowsPhpDocValueRule implements Rule
 		}
 
 		$phpDocThrowsType = $resolvedPhpDoc->getThrowsTag()->getType();
-		if ($phpDocThrowsType->isVoid()->yes()) {
-			return [];
-		}
-
-		if ($this->isThrowsValid($phpDocThrowsType, false)) {
+		if ($this->isThrowsValid($phpDocThrowsType)) {
 			return [];
 		}
 
@@ -87,32 +83,31 @@ final class InvalidThrowsPhpDocValueRule implements Rule
 		];
 	}
 
-	/**
-	 * @param bool $voidAllowed whether `void` is an acceptable type here; only true inside
-	 *                          the branches of a conditional `@throws` type
-	 */
-	private function isThrowsValid(Type $phpDocThrowsType, bool $voidAllowed): bool
+	private function isThrowsValid(Type $phpDocThrowsType): bool
 	{
-		if ($voidAllowed && $phpDocThrowsType->isVoid()->yes()) {
+		// `void` standalone means "does not throw" and is a valid @throws type (it is
+		// likewise allowed as a branch of a conditional throws type). As a union member
+		// such as Throwable|void it is rejected in the UnionType handling below.
+		if ($phpDocThrowsType->isVoid()->yes()) {
 			return true;
 		}
 
 		// Conditional @throws types like ($x is 0 ? Exception : void) are valid as long
 		// as both branches are valid throws types (a Throwable subtype or void).
 		if ($phpDocThrowsType instanceof ConditionalType) {
-			return $this->isThrowsValid($phpDocThrowsType->getIf(), true)
-				&& $this->isThrowsValid($phpDocThrowsType->getElse(), true);
+			return $this->isThrowsValid($phpDocThrowsType->getIf())
+				&& $this->isThrowsValid($phpDocThrowsType->getElse());
 		}
 
 		if ($phpDocThrowsType instanceof ConditionalTypeForParameter) {
-			return $this->isThrowsValid($phpDocThrowsType->getIf(), true)
-				&& $this->isThrowsValid($phpDocThrowsType->getElse(), true);
+			return $this->isThrowsValid($phpDocThrowsType->getIf())
+				&& $this->isThrowsValid($phpDocThrowsType->getElse());
 		}
 
 		$throwType = new ObjectType(Throwable::class);
 		if ($phpDocThrowsType instanceof UnionType) {
 			foreach ($phpDocThrowsType->getTypes() as $innerType) {
-				if (!$this->isThrowsValid($innerType, $voidAllowed)) {
+				if ($innerType->isVoid()->yes() || !$this->isThrowsValid($innerType)) {
 					return false;
 				}
 			}

@@ -28,11 +28,11 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum given\\.$#"
+			rawMessage: 'Parameter #2 $reflection of method PHPStan\Reflection\ClassReflectionFactory::create() expects ReflectionClass, PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum given.'
 			count: 1
 			path: ../src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
-			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum given\\.$#"
+			rawMessage: 'Parameter #2 $reflection of method PHPStan\Reflection\ClassReflectionFactory::create() expects ReflectionClass, PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum given.'
 			count: 1
 			path: ../src/Analyser/NodeScopeResolver.php

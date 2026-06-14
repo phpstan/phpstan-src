@@ -117,3 +117,27 @@ function inlineThrows()
 	/** @throws \stdClass */
 	$i = 1;
 }
+
+/**
+ * @param int $x
+ * @throws ($x is 0 ? \Exception : void)
+ */
+function conditionalThrows($x)
+{
+}
+
+/**
+ * @param int $x
+ * @throws ($x is 0 ? \Exception : \RuntimeException)
+ */
+function conditionalThrowsBothBranches($x)
+{
+}
+
+/**
+ * @param int $x
+ * @throws ($x is 0 ? \stdClass : void)
+ */
+function conditionalThrowsInvalidBranch($x)
+{
+}

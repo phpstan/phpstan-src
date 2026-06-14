@@ -10,6 +10,8 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ConditionalType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -73,7 +75,7 @@ final class InvalidThrowsPhpDocValueRule implements Rule
 			return [];
 		}
 
-		if ($this->isThrowsValid($phpDocThrowsType)) {
+		if ($this->isThrowsValid($phpDocThrowsType, false)) {
 			return [];
 		}
 
@@ -85,12 +87,32 @@ final class InvalidThrowsPhpDocValueRule implements Rule
 		];
 	}
 
-	private function isThrowsValid(Type $phpDocThrowsType): bool
+	/**
+	 * @param bool $voidAllowed whether `void` is an acceptable type here; only true inside
+	 *                          the branches of a conditional `@throws` type
+	 */
+	private function isThrowsValid(Type $phpDocThrowsType, bool $voidAllowed): bool
 	{
+		if ($voidAllowed && $phpDocThrowsType->isVoid()->yes()) {
+			return true;
+		}
+
+		// Conditional @throws types like ($x is 0 ? Exception : void) are valid as long
+		// as both branches are valid throws types (a Throwable subtype or void).
+		if ($phpDocThrowsType instanceof ConditionalType) {
+			return $this->isThrowsValid($phpDocThrowsType->getIf(), true)
+				&& $this->isThrowsValid($phpDocThrowsType->getElse(), true);
+		}
+
+		if ($phpDocThrowsType instanceof ConditionalTypeForParameter) {
+			return $this->isThrowsValid($phpDocThrowsType->getIf(), true)
+				&& $this->isThrowsValid($phpDocThrowsType->getElse(), true);
+		}
+
 		$throwType = new ObjectType(Throwable::class);
 		if ($phpDocThrowsType instanceof UnionType) {
 			foreach ($phpDocThrowsType->getTypes() as $innerType) {
-				if (!$this->isThrowsValid($innerType)) {
+				if (!$this->isThrowsValid($innerType, $voidAllowed)) {
 					return false;
 				}
 			}

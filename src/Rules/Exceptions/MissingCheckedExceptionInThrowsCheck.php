@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
+use PHPStan\Analyser\ConditionalThrowTypeResolver;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -41,11 +42,15 @@ final class MissingCheckedExceptionInThrowsCheck
 				continue;
 			}
 
+			// Conditional @throws types like ($x is 0 ? Exception : void) are resolved
+			// against the parameter variables narrowed in the scope of the throw point.
+			$resolvedThrowType = ConditionalThrowTypeResolver::resolveForScope($throwType, $throwPoint->getScope());
+
 			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
 				if ($throwPointType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 					continue;
 				}
-				if ($throwType->isSuperTypeOf($throwPointType)->yes()) {
+				if ($resolvedThrowType->isSuperTypeOf($throwPointType)->yes()) {
 					continue;
 				}
 

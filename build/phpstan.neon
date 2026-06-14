@@ -79,6 +79,10 @@ parameters:
 		- '#Variable property access on PhpParser\\Node#'
 		-
 			identifier: shipmonk.deadMethod
+			message: '#^Unused .*?::__construct#' # likely used in DIC
+			reportUnmatched: false
+		-
+			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?Factory::create#' # likely used in DIC
 			reportUnmatched: false
 		-

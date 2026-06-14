@@ -59,7 +59,6 @@ use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_key_first;
 use function array_map;
-use function base64_decode;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -145,8 +144,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		if ($reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000) {
-			$enumAdapter = base64_decode('UEhQU3RhblxCZXR0ZXJSZWZsZWN0aW9uXFJlZmxlY3Rpb25cQWRhcHRlclxSZWZsZWN0aW9uRW51bQ==', true);
-			$adaptedClass = new $enumAdapter($reflectionClass);
+			$adaptedClass = new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum($reflectionClass);
 		} else {
 			$adaptedClass = new ReflectionClass($reflectionClass);
 		}

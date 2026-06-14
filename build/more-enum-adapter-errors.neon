@@ -26,3 +26,13 @@ parameters:
 			rawMessage: 'Asserted type PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum for $this->getNativeReflection() with type PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass can never happen.'
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
+
+		-
+			rawMessage: 'Parameter #2 $reflection of method PHPStan\Reflection\ClassReflectionFactory::create() expects ReflectionClass, PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum given.'
+			count: 1
+			path: ../src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			rawMessage: 'Parameter #2 $reflection of method PHPStan\Reflection\ClassReflectionFactory::create() expects ReflectionClass, PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum given.'
+			count: 1
+			path: ../src/Analyser/NodeScopeResolver.php

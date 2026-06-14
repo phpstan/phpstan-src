@@ -70,7 +70,7 @@ final class NonNullabilityHelper
 			$exprToSpecify,
 			$exprTypeWithoutNull,
 			TypeCombinator::removeNull($nativeType),
-			TrinaryLogic::createYes(),
+			$certainty,
 		);
 
 		return new EnsuredNonNullabilityResult(

@@ -2653,7 +2653,7 @@ class NodeScopeResolver
 
 		if ($expr instanceof ArrayDimFetch) {
 			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
-		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
+		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch || $expr instanceof Expr\NullsafeMethodCall) {
 			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch && $expr->class instanceof Expr) {
 			$scope = $this->lookForExpressionCallback($scope, $expr->class, $callback);

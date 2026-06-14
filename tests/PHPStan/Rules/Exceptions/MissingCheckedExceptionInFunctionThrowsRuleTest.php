@@ -52,4 +52,35 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConditionalThrows(): void
+	{
+		require_once __DIR__ . '/data/conditional-throws-function.php';
+		$this->analyse([__DIR__ . '/data/conditional-throws-function.php'], [
+			[
+				'Function ConditionalThrowsFunction\callsZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				23,
+			],
+			[
+				'Function ConditionalThrowsFunction\callsUnknown() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				35,
+			],
+			[
+				'Function ConditionalThrowsFunction\lookupString() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				68,
+			],
+			[
+				'Function ConditionalThrowsFunction\lookupUnknown() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				77,
+			],
+			[
+				'Function ConditionalThrowsFunction\nestedCallsOuterZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				97,
+			],
+			[
+				'Function ConditionalThrowsFunction\nestedCallsInnerZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				103,
+			],
+		]);
+	}
+
 }

@@ -55,6 +55,16 @@ class InstantiationRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container,
 			),
+			new RuleLevelHelper(
+				$reflectionProvider,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: $this->checkExplicitMixed,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			new ConsistentConstructorHelper(),
 			discoveringSymbolsTip: true,
 		);
@@ -680,6 +690,36 @@ class InstantiationRuleTest extends RuleTestCase
 	public function testBug14499(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14499.php'], []);
+	}
+
+	public function testInstantiationWithNonObjectType(): void
+	{
+		$this->analyse([__DIR__ . '/data/instantiation-non-object.php'], [
+			[
+				'Cannot instantiate class using int.',
+				31,
+			],
+			[
+				'Cannot instantiate class using int.',
+				35,
+			],
+			[
+				'Cannot instantiate class using float.',
+				36,
+			],
+			[
+				'Cannot instantiate class using bool.',
+				37,
+			],
+			[
+				'Cannot instantiate class using int|string.',
+				38,
+			],
+			[
+				'Cannot instantiate class using array<int, string>.',
+				44,
+			],
+		]);
 	}
 
 }

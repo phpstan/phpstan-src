@@ -53,6 +53,16 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container,
 			),
+			new RuleLevelHelper(
+				$reflectionProvider,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			new ConsistentConstructorHelper(),
 			discoveringSymbolsTip: true,
 		);

@@ -24,8 +24,15 @@ use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -48,6 +55,7 @@ final class InstantiationRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $check,
 		private ClassNameCheck $classCheck,
+		private RuleLevelHelper $ruleLevelHelper,
 		private ConsistentConstructorHelper $consistentConstructorHelper,
 		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
@@ -62,11 +70,49 @@ final class InstantiationRule implements Rule
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
+		if ($node->class instanceof Node\Expr) {
+			$errors = $this->checkClassNameExprType($node->class, $scope);
+			if ($errors !== []) {
+				return $errors;
+			}
+		}
+
 		$errors = [];
 		foreach ($this->getClassNames($node, $scope) as [$class, $isName]) {
 			$errors = array_merge($errors, $this->checkClassName($class, $isName, $node, $scope));
 		}
 		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkClassNameExprType(Node\Expr $class, Scope $scope): array
+	{
+		$acceptedType = new UnionType([new StringType(), new ObjectWithoutClassType()]);
+		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$class,
+			'',
+			static fn (Type $type): bool => $acceptedType->isSuperTypeOf($type)->yes(),
+		);
+
+		$foundType = $typeResult->getType();
+		if ($foundType instanceof ErrorType) {
+			// Unknown classes and mixed are reported elsewhere (e.g. "Instantiated class X not found.").
+			return [];
+		}
+
+		if ($acceptedType->isSuperTypeOf($foundType)->yes()) {
+			return [];
+		}
+
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Cannot instantiate class using %s.',
+				$foundType->describe(VerbosityLevel::typeOnly()),
+			))->identifier('new.nonObject')->build(),
+		];
 	}
 
 	/**

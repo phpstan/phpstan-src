@@ -58,6 +58,20 @@ class Service
 
 }
 
+class Service2 extends Service
+{
+
+	public function inverse(int $y): float
+	{
+		if ($y === 0) {
+			throw new Exception('Division by zero.');
+		}
+
+		return 1 / $y;
+	}
+
+}
+
 class Caller
 {
 
@@ -107,6 +121,18 @@ class Caller
 	public function lookupString(Service $service): void
 	{
 		$service->lookup('foo');
+	}
+
+	/** @throws void */
+	public function inheritedMethodCallZero(Service2 $service): void
+	{
+		$service->inverse(0);
+	}
+
+	/** @throws void */
+	public function inheritedMethodCallNonZero(Service2 $service): void
+	{
+		$service->inverse(7);
 	}
 
 }

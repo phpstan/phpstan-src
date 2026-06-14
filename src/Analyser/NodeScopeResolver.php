@@ -174,7 +174,6 @@ use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_values;
-use function base64_decode;
 use function count;
 use function in_array;
 use function is_array;
@@ -2621,7 +2620,7 @@ class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 
-		$enumAdapter = base64_decode('UEhQU3RhblxCZXR0ZXJSZWZsZWN0aW9uXFJlZmxlY3Rpb25cQWRhcHRlclxSZWZsZWN0aW9uRW51bQ==', true);
+		$enumAdapter = \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum::class;
 
 		return $this->classReflectionFactory->create(
 			$betterReflectionClass->getName(),

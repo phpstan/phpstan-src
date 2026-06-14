@@ -3787,6 +3787,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	): array
 	{
 		$newVariableTypes = $ourExpressionTypes;
+
+		// When our-branch type is a subtype of their-branch type, the union
+		// absorbs it (merged === their). Such a variable is a poor *guard* —
+		// asserting its our-branch type later wouldn't reliably select this
+		// branch — but it remains a valid conditional *target*, so only exclude
+		// it from guard selection instead of dropping it entirely.
+		$guardsToExclude = [];
 		foreach ($theirExpressionTypes as $exprString => $holder) {
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
@@ -3804,7 +3811,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
-			unset($newVariableTypes[$exprString]);
+			$guardsToExclude[$exprString] = true;
 		}
 
 		$typeGuards = [];
@@ -3816,6 +3823,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			if (array_key_exists($exprString, $guardsToExclude)) {
 				continue;
 			}
 

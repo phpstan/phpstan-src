@@ -173,10 +173,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				69,
 			],
 			[
-				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float.',
-				83,
-			],
-			[
 				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float|int|string.',
 				97,
 			],

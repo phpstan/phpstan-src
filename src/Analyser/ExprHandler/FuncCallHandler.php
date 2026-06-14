@@ -336,7 +336,6 @@ final class FuncCallHandler implements ExprHandler
 		if (
 			$functionReflection !== null
 			&& $this->rememberPossiblyImpureFunctionValues
-			&& $parametersAcceptor !== null
 			&& $functionReflection->hasSideEffects()->maybe()
 			&& !$functionReflection->isBuiltin()
 		) {

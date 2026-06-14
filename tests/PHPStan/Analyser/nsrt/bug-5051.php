@@ -49,7 +49,7 @@ class HelloWorld
 
 		if ($update) {
 			assertType('10', $data);
-			assertType('bool', $foo);
+			assertType('true', $foo);
 		} else {
 			assertType('1|2|3', $data);
 			assertType('bool', $foo);

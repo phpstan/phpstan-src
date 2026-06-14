@@ -136,4 +136,9 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInFileExists(): void
+	{
+		$this->analyse([__DIR__ . '/data/include-in-file-exists.php'], []);
+	}
+
 }

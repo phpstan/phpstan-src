@@ -3,7 +3,10 @@
 namespace PHPStan\Rules\Keywords;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Include_;
+use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -41,6 +44,10 @@ final class RequireFileExistsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->isInFileExists($node, $scope)) {
+			return [];
+		}
+
 		$errors = [];
 		$paths = $this->resolveFilePaths($node, $scope);
 
@@ -138,6 +145,21 @@ final class RequireFileExistsRule implements Rule
 		}
 
 		return $paths;
+	}
+
+	private function isInFileExists(Include_ $node, Scope $scope): bool
+	{
+		foreach (['file_exists', 'is_file'] as $funcName) {
+			$expr = new FuncCall(new FullyQualified($funcName), [
+				new Arg($node->expr),
+			]);
+
+			if ($scope->getType($expr)->isTrue()->yes()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

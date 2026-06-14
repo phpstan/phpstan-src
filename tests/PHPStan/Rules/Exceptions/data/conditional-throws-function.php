@@ -43,3 +43,36 @@ function callsRange(int $x): void
 {
 	inverse($x);
 }
+
+/**
+ * @template TKey of int|string
+ * @param TKey $key
+ * @throws (TKey is int ? void : Exception)
+ */
+function lookup($key): void
+{
+	if (is_string($key)) {
+		throw new Exception('String keys are not supported.');
+	}
+}
+
+/** @throws void */
+function lookupInt(): void
+{
+	lookup(1);
+}
+
+/** @throws void */
+function lookupString(): void
+{
+	lookup('foo');
+}
+
+/**
+ * @param int|string $key
+ * @throws void
+ */
+function lookupUnknown($key): void
+{
+	lookup($key);
+}

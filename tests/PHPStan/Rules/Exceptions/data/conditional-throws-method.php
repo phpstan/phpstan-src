@@ -44,6 +44,18 @@ class Service
 		}
 	}
 
+	/**
+	 * @template TKey of int|string
+	 * @param TKey $key
+	 * @throws (TKey is int ? void : Exception)
+	 */
+	public function lookup($key): void
+	{
+		if (is_string($key)) {
+			throw new Exception('String keys are not supported.');
+		}
+	}
+
 }
 
 class Caller
@@ -83,6 +95,18 @@ class Caller
 	public function constructorNonZero(): void
 	{
 		new Service(7);
+	}
+
+	/** @throws void */
+	public function lookupInt(Service $service): void
+	{
+		$service->lookup(1);
+	}
+
+	/** @throws void */
+	public function lookupString(Service $service): void
+	{
+		$service->lookup('foo');
 	}
 
 }

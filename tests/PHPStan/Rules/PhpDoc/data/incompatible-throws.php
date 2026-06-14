@@ -141,3 +141,21 @@ function conditionalThrowsBothBranches($x)
 function conditionalThrowsInvalidBranch($x)
 {
 }
+
+/**
+ * @template TKey of int|string
+ * @param TKey $key
+ * @throws (TKey is int ? void : \Exception)
+ */
+function conditionalThrowsForTemplate($key)
+{
+}
+
+/**
+ * @template TKey of int|string
+ * @param TKey $key
+ * @throws (TKey is int ? void : \stdClass)
+ */
+function conditionalThrowsForTemplateInvalidBranch($key)
+{
+}

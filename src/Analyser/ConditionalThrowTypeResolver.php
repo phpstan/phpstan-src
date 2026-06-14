@@ -4,8 +4,11 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Variable;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
@@ -15,13 +18,14 @@ use function count;
 use function substr;
 
 /**
- * Resolves conditional `@throws` types like `($x is 0 ? Exception : void)`.
+ * Resolves conditional `@throws` types like `($x is 0 ? Exception : void)` and
+ * `(TKey is int ? void : Exception)`.
  *
- * The same `ConditionalTypeForParameter` representation used for conditional
- * return types is resolved here against either the arguments passed at a call
- * site (so callers see whether the call throws) or against the parameter
- * variables inside the function body (so the body's throw points are matched
- * against the declared `@throws` type).
+ * The same `ConditionalTypeForParameter` and `ConditionalType` representations
+ * used for conditional return types are resolved here against either the
+ * arguments passed at a call site (so callers see whether the call throws) or
+ * against the parameter variables inside the function body (so the body's throw
+ * points are matched against the declared `@throws` type).
  */
 final class ConditionalThrowTypeResolver
 {
@@ -40,7 +44,22 @@ final class ConditionalThrowTypeResolver
 			return $throwType;
 		}
 
-		return self::resolve($throwType, self::getPassedArgs($parametersAcceptor, $args, $scope));
+		// ConditionalTypeForParameter (e.g. ($x is 0 ? Exception : void)) is resolved
+		// against the argument types passed at the call site.
+		$throwType = self::mapConditionalTypesForParameter($throwType, self::getPassedArgs($parametersAcceptor, $args, $scope));
+
+		// ConditionalType whose subject is a template type (e.g. (TKey is int ? void : Exception))
+		// is resolved against the template types inferred from the call site.
+		if ($parametersAcceptor instanceof ExtendedParametersAcceptor) {
+			$throwType = TemplateTypeHelper::resolveTemplateTypes(
+				$throwType,
+				$parametersAcceptor->getResolvedTemplateTypeMap(),
+				$parametersAcceptor->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createCovariant(),
+			);
+		}
+
+		return TypeUtils::resolveLateResolvableTypes($throwType, false);
 	}
 
 	public static function resolveForScope(Type $throwType, Scope $scope): Type
@@ -59,19 +78,25 @@ final class ConditionalThrowTypeResolver
 			$passedArgs[$parameterName] = $scope->getType(new Variable($variableName));
 		}
 
-		return self::resolve($throwType, $passedArgs);
+		$throwType = self::mapConditionalTypesForParameter($throwType, $passedArgs);
+
+		// A ConditionalType whose subject is a template type cannot be resolved to a single
+		// branch inside the function body (the template is not bound to a concrete type there),
+		// so it is conservatively collapsed to the union of its branches — the broadest set of
+		// exceptions the declaration permits — rather than left as a Maybe-certain conditional.
+		return TypeUtils::resolveLateResolvableTypes($throwType, true);
 	}
 
 	/**
 	 * @param array<string, Type> $passedArgs
 	 */
-	private static function resolve(Type $throwType, array $passedArgs): Type
+	private static function mapConditionalTypesForParameter(Type $throwType, array $passedArgs): Type
 	{
 		if ($passedArgs === []) {
 			return $throwType;
 		}
 
-		$resolved = TypeTraverser::map($throwType, static function (Type $type, callable $traverse) use ($passedArgs): Type {
+		return TypeTraverser::map($throwType, static function (Type $type, callable $traverse) use ($passedArgs): Type {
 			if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $passedArgs)) {
 				$type = $traverse($type);
 				if ($type instanceof ConditionalTypeForParameter) {
@@ -83,8 +108,6 @@ final class ConditionalThrowTypeResolver
 
 			return $traverse($type);
 		});
-
-		return TypeUtils::resolveLateResolvableTypes($resolved, false);
 	}
 
 	/**

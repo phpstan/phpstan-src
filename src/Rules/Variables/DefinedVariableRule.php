@@ -13,7 +13,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function in_array;
 use function is_string;
@@ -54,15 +53,13 @@ final class DefinedVariableRule implements Rule
 				$variableNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
 
-			$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringCastableName($scope, $node->name);
-			if ($nonStringableNameType !== null) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Variable variable name must be a string, but %s was given.',
-					$nonStringableNameType->describe(VerbosityLevel::precise()),
-				))
-					->identifier('variable.nameNotString')
-					->build();
-			}
+			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringCastableName(
+				$scope,
+				$node->name,
+				'Variable variable name must be a string, but %s was given.',
+				[],
+				'variable.nameNotString',
+			));
 		}
 
 		foreach ($variableNameScopes as $name => $variableScope) {

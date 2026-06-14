@@ -17,7 +17,6 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
@@ -55,21 +54,18 @@ final class CallStaticMethodsRule implements Rule
 				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
 
-			$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringName($scope, $node->name);
-			if ($nonStringableNameType !== null) {
-				$className = $node->class instanceof Name
-					? $scope->resolveName($node->class)
-					: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
+			$className = $node->class instanceof Name
+				? $scope->resolveName($node->class)
+				: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
 
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Method name for %s must be a string, but %s was given.',
-					$className,
-					$nonStringableNameType->describe(VerbosityLevel::precise()),
-				))
-					->line($node->name->getStartLine())
-					->identifier('staticMethod.nameNotString')
-					->build();
-			}
+			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringName(
+				$scope,
+				$node->name,
+				'Method name for %s must be a string, but %s was given.',
+				[$className],
+				'staticMethod.nameNotString',
+				$node->name->getStartLine(),
+			));
 		}
 
 		foreach ($methodNameScopes as $methodName => $methodScope) {

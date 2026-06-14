@@ -57,7 +57,7 @@ final class DefinedVariableRule implements Rule
 				$scope,
 				$node->name,
 				'Variable variable name must be a string, but %s was given.',
-				[],
+				null,
 				'variable.nameNotString',
 			));
 		}

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\ClassConstFetch;
-use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
@@ -67,15 +66,11 @@ final class ClassConstantRule implements Rule
 				$constantNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
 
-			$className = $node->class instanceof Name
-				? $scope->resolveName($node->class)
-				: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
-
 			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringName(
 				$scope,
 				$node->name,
 				'Class constant name for %s must be a string, but %s was given.',
-				[$className],
+				$node->class,
 				'classConstant.nameNotString',
 			));
 		}

@@ -57,6 +57,8 @@ final class InstantiationRule implements Rule
 		private ClassNameCheck $classCheck,
 		private RuleLevelHelper $ruleLevelHelper,
 		private ConsistentConstructorHelper $consistentConstructorHelper,
+		#[AutowiredParameter(ref: '%featureToggles.newOnNonObject%')]
+		private bool $newOnNonObject,
 		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
@@ -70,7 +72,7 @@ final class InstantiationRule implements Rule
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
-		if ($node->class instanceof Node\Expr) {
+		if ($this->newOnNonObject && $node->class instanceof Node\Expr) {
 			$errors = $this->checkClassNameExprType($node->class, $scope);
 			if ($errors !== []) {
 				return $errors;

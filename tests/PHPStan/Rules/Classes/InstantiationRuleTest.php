@@ -66,6 +66,7 @@ class InstantiationRuleTest extends RuleTestCase
 				discoveringSymbolsTip: true,
 			),
 			new ConsistentConstructorHelper(),
+			newOnNonObject: true,
 			discoveringSymbolsTip: true,
 		);
 	}

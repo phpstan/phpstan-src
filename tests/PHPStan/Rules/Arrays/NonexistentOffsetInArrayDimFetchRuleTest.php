@@ -282,7 +282,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3782.php'], [
 			[
-				'Cannot access offset (int|string) on $this(Bug3782\HelloWorld)|(ArrayAccess&Bug3782\HelloWorld).',
+				'Cannot access offset (int|string) on $this(Bug3782\HelloWorld)|(Bug3782\HelloWorld&ArrayAccess).',
 				11,
 			],
 		]);

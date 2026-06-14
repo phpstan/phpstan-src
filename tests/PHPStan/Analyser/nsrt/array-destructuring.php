@@ -134,7 +134,7 @@ function (\stdClass $obj) {
     assertType('int', $dateArray['d']);
     assertType('lowercase-string&uppercase-string', $intArrayForRewritingFirstElement[0]);
     assertType('int', $intArrayForRewritingFirstElement[1]);
-    assertType('ArrayAccess&stdClass', $obj);
+    assertType('stdClass&ArrayAccess', $obj);
     assertType('stdClass', $newArray['newKey']);
     assertType('true', $assocKey);
     assertType('\'foo\'', $assocFoo);

@@ -20,13 +20,13 @@ final class UnionTypeHelper
 	 * @param list<T> $types
 	 * @return list<T>
 	 */
-	public static function sortTypes(array $types): array
+	public static function sortTypes(array $types, bool $sortClassesBeforeInterfaces = false): array
 	{
 		if (count($types) > 1024) {
 			return $types;
 		}
 
-		usort($types, static function (Type $a, Type $b): int {
+		usort($types, static function (Type $a, Type $b) use ($sortClassesBeforeInterfaces): int {
 			if ($a instanceof NullType) {
 				return 1;
 			} elseif ($b instanceof NullType) {
@@ -119,6 +119,21 @@ final class UnionTypeHelper
 
 			if ($a->isString()->yes() && $b->isString()->yes()) {
 				return self::compareStrings($a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise()));
+			}
+
+			if ($sortClassesBeforeInterfaces) {
+				$aClassReflections = $a->getObjectClassReflections();
+				$bClassReflections = $b->getObjectClassReflections();
+				if (count($aClassReflections) === 1 && count($bClassReflections) === 1) {
+					$aIsInterface = $aClassReflections[0]->isInterface();
+					$bIsInterface = $bClassReflections[0]->isInterface();
+					if (!$aIsInterface && $bIsInterface) {
+						return -1;
+					}
+					if ($aIsInterface && !$bIsInterface) {
+						return 1;
+					}
+				}
 			}
 
 			return self::compareStrings($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));

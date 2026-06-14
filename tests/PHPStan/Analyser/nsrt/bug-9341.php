@@ -17,9 +17,9 @@ trait MyTrait
 		if (!is_a($class, MyInterface::class, true)) {
 			return false;
 		}
-		assertType('class-string<Bug9341\MyInterface&static(Bug9341\MyAbstractBase)>', $class);
+		assertType('class-string<static(Bug9341\MyAbstractBase)&Bug9341\MyInterface>', $class);
 		$fileObject = new $class();
-		assertType('Bug9341\MyInterface&static(Bug9341\MyAbstractBase)', $fileObject);
+		assertType('static(Bug9341\MyAbstractBase)&Bug9341\MyInterface', $fileObject);
 		return $fileObject;
 	}
 }

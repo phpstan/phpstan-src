@@ -142,7 +142,7 @@ class IntersectionType implements CompoundType
 			return $this->types;
 		}
 
-		$this->types = UnionTypeHelper::sortTypes($this->types);
+		$this->types = UnionTypeHelper::sortTypes($this->types, true);
 		$this->sortedTypes = true;
 
 		return $this->types;

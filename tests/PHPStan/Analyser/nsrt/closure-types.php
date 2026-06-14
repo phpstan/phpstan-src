@@ -55,7 +55,7 @@ class Foo
 		}
 
 		(function () {
-			assertType('DateTimeInterface&stdClass', $this);
+			assertType('stdClass&DateTimeInterface', $this);
 		})->call($foo);
 	}
 
@@ -64,7 +64,7 @@ class Foo
 			return;
 		}
 
-		(fn () => assertType('DateTimeInterface&stdClass', $this))->call($foo);
+		(fn () => assertType('stdClass&DateTimeInterface', $this))->call($foo);
 	}
 
 }

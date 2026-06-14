@@ -50,7 +50,7 @@ class Foo
 			return;
 		}
 
-		assertType('(Bug7344\Female&Bug7344\IsEntity)|(Bug7344\IsEntity&Bug7344\Male)', $maleOrFemale);
+		assertType('(Bug7344\Female&Bug7344\IsEntity)|(Bug7344\Male&Bug7344\IsEntity)', $maleOrFemale);
 		assertType('int', $maleOrFemale->getModel());
 	}
 }

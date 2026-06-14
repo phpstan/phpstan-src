@@ -21,7 +21,7 @@ class Collection {}
 class SubCollection extends Collection {
     /** @param TKey $key */
 	public function __construct($key) {
-		assertType('TKey of Bug6649\Bar&Bug6649\Foo (class Bug6649\SubCollection, argument)', $key);
+		assertType('TKey of Bug6649\Foo&Bug6649\Bar (class Bug6649\SubCollection, argument)', $key);
 	}
 
 	public static function test(): void {

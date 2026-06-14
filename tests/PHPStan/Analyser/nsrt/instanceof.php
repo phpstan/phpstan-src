@@ -45,7 +45,7 @@ class Foo extends BarParent
 										assertType('InstanceOfNamespace\Foo', $self);
 										assertType('static(InstanceOfNamespace\Foo)', $static);
 										assertType('static(InstanceOfNamespace\Foo)', clone $static);
-										assertType('InstanceOfNamespace\BarInterface&InstanceOfNamespace\Foo', $intersected);
+										assertType('InstanceOfNamespace\Foo&InstanceOfNamespace\BarInterface', $intersected);
 										assertType('$this(InstanceOfNamespace\Foo)&InstanceOfNamespace\BarInterface', $this);
 										assertType('InstanceOfNamespace\BarParent', $parent);
 									}
@@ -107,7 +107,7 @@ class Foo extends BarParent
 		}
 
 		if ($subject instanceof $intersection) {
-			assertType('InstanceOfNamespace\BarInterface&InstanceOfNamespace\Foo', $subject);
+			assertType('InstanceOfNamespace\Foo&InstanceOfNamespace\BarInterface', $subject);
 			assertType('bool', $subject instanceof $intersection);
 			assertType('true', $subject instanceof BarInterface);
 			assertType('true', $subject instanceof Foo);
@@ -200,7 +200,7 @@ class Foo extends BarParent
 		}
 
 		if ($instance instanceof $classString) {
-			assertType('InstanceOfNamespace\BarInterface&InstanceOfNamespace\Foo', $instance);
+			assertType('InstanceOfNamespace\Foo&InstanceOfNamespace\BarInterface', $instance);
 			assertType('bool', $instance instanceof $classString);
 		} else {
 			assertType('InstanceOfNamespace\BarInterface', $instance);

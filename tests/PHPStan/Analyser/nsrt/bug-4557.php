@@ -39,7 +39,7 @@ class Bar extends Foo
 	public function doBar(): void
 	{
 		$mock = $this->createMock(\stdClass::class);
-		assertType('Bug4557\\MockObject&stdClass', $mock);
+		assertType('stdClass&Bug4557\\MockObject', $mock);
 	}
 
 	/** @return T */

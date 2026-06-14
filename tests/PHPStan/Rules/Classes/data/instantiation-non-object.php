@@ -12,6 +12,7 @@ class Foo
 }
 
 /**
+ * @param int|string $intOrString
  * @param class-string $classString
  * @param class-string<Foo> $classStringOfFoo
  */
@@ -21,7 +22,7 @@ function doFoo(
 	int $int,
 	float $float,
 	bool $bool,
-	int|string $intOrString,
+	$intOrString,
 	string $classString,
 	string $classStringOfFoo,
 	Foo $foo

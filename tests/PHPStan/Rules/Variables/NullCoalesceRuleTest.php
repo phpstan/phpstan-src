@@ -399,7 +399,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 			22,
 		];
 
-
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], $errors);
 	}
 

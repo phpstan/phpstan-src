@@ -144,8 +144,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		if ($reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000) {
-			$enumAdapter = \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum::class;
-			$adaptedClass = new $enumAdapter($reflectionClass);
+			$adaptedClass = new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum($reflectionClass);
 		} else {
 			$adaptedClass = new ReflectionClass($reflectionClass);
 		}

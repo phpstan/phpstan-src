@@ -2620,11 +2620,11 @@ class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 
-		$enumAdapter = \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum::class;
-
 		return $this->classReflectionFactory->create(
 			$betterReflectionClass->getName(),
-			$betterReflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000 ? new $enumAdapter($betterReflectionClass) : new ReflectionClass($betterReflectionClass),
+			$betterReflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000
+				? new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum($betterReflectionClass)
+				: new ReflectionClass($betterReflectionClass),
 			null,
 			null,
 			null,

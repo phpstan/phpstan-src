@@ -498,6 +498,30 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12179(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12179.php'], [
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				8,
+			],
+		]);
+	}
+
+	public function testBug9966(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9966.php'], [
+			[
+				'Offset \'key1\' on array{key1: string, key2: string|null, key3?: string, key4?: string|null} on left side of ?? always exists and is not nullable.',
+				9,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				12,
+			],
+		]);
+	}
+
 	public function testBug14393(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14393.php'], [

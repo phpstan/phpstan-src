@@ -18,6 +18,7 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -39,12 +40,11 @@ final class AccessPropertiesCheck
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private PhpVersion $phpVersion,
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 		#[AutowiredParameter]
 		private bool $reportMagicProperties,
 		#[AutowiredParameter]
 		private bool $checkDynamicProperties,
-		#[AutowiredParameter(ref: '%featureToggles.checkNonStringableDynamicAccess%')]
-		private bool $checkNonStringableDynamicAccess,
 	)
 	{
 	}
@@ -60,24 +60,11 @@ final class AccessPropertiesCheck
 		} else {
 			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
 
-			if (!$write && $this->checkNonStringableDynamicAccess) {
-				$nameTypeResult = $this->ruleLevelHelper->findTypeToCheck(
-					$scope,
-					$node->name,
-					'',
-					static fn (Type $type) => !$type->toString() instanceof ErrorType && $type->toString()->isString()->yes(),
-				);
-				$nameType = $nameTypeResult->getType();
-				if (
-					!$nameType instanceof ErrorType
-					&& (
-						$nameType->toString() instanceof ErrorType
-						|| !$nameType->toString()->isString()->yes()
-					)
-				) {
-					$originalNameType = $scope->getType($node->name);
+			if (!$write) {
+				$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringCastableName($scope, $node->name);
+				if ($nonStringableNameType !== null) {
 					$className = $scope->getType($node->var)->describe(VerbosityLevel::typeOnly());
-					$errors[] = RuleErrorBuilder::message(sprintf('Property name for %s must be a string, but %s was given.', $className, $originalNameType->describe(VerbosityLevel::precise())))
+					$errors[] = RuleErrorBuilder::message(sprintf('Property name for %s must be a string, but %s was given.', $className, $nonStringableNameType->describe(VerbosityLevel::precise())))
 						->line($node->name->getStartLine())
 						->identifier('property.nameNotString')
 						->build();

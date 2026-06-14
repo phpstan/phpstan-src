@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -60,6 +61,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
 			),
+			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 		);
 	}
 
@@ -3615,6 +3617,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				23,
 			],
 			[
+				'Method name for $this(MethodsDynamicCall\Foo) must be a string, but object was given.',
+				25,
+			],
+			[
 				'Call to an undefined method MethodsDynamicCall\Foo::doBar().',
 				26,
 			],
@@ -3633,6 +3639,32 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $n of method MethodsDynamicCall\Foo::doFoo() expects int, string given.',
 				55,
+			],
+		]);
+	}
+
+	public function testDynamicMethodName(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/dynamic-method-name.php'], [
+			[
+				'Method name for $this(DynamicMethodName\Foo) must be a string, but $this(DynamicMethodName\Foo) was given.',
+				16,
+			],
+			[
+				'Method name for $this(DynamicMethodName\Foo) must be a string, but object was given.',
+				17,
+			],
+			[
+				'Method name for $this(DynamicMethodName\Foo) must be a string, but Stringable was given.',
+				18,
+			],
+			[
+				'Method name for $this(DynamicMethodName\Foo) must be a string, but int was given.',
+				19,
 			],
 		]);
 	}

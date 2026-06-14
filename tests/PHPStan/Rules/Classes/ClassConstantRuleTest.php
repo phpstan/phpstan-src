@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -25,18 +26,19 @@ class ClassConstantRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$container = self::getContainer();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: true,
+			checkImplicitMixed: true,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new ClassConstantRule(
 			$reflectionProvider,
-			new RuleLevelHelper(
-				$reflectionProvider,
-				checkNullables: true,
-				checkThisOnly: false,
-				checkUnionTypes: true,
-				checkExplicitMixed: true,
-				checkImplicitMixed: true,
-				checkBenevolentUnionTypes: false,
-				discoveringSymbolsTip: true,
-			),
+			$ruleLevelHelper,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
 				new ClassForbiddenNameCheck($container),
@@ -44,7 +46,7 @@ class ClassConstantRuleTest extends RuleTestCase
 				$container,
 			),
 			new PhpVersion($this->phpVersion),
-			checkNonStringableDynamicAccess: true,
+			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 		);
 	}
 

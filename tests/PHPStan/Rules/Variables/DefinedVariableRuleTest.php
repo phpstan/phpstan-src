@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -21,9 +23,24 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	private bool $polluteScopeWithAlwaysIterableForeach;
 
+	private bool $checkNonStringableDynamicAccess = false;
+
 	protected function getRule(): Rule
 	{
 		return new DefinedVariableRule(
+			new NonStringableDynamicAccessCheck(
+				new RuleLevelHelper(
+					self::createReflectionProvider(),
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: false,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+				$this->checkNonStringableDynamicAccess,
+			),
 			$this->cliArgumentsVariablesRegistered,
 			$this->checkMaybeUndefinedVariables,
 		);
@@ -1697,6 +1714,33 @@ class DefinedVariableRuleTest extends RuleTestCase
 			[
 				'Undefined variable: $x',
 				96,
+			],
+		]);
+	}
+
+	public function testVariableVariableName(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->checkNonStringableDynamicAccess = true;
+		$this->analyse([__DIR__ . '/data/variable-variable-name.php'], [
+			[
+				'Variable variable name must be a string, but $this(VariableVariableName\Greeter) was given.',
+				12,
+			],
+			[
+				'Variable variable name must be a string, but array was given.',
+				25,
+			],
+			[
+				'Variable variable name must be a string, but object was given.',
+				26,
+			],
+			[
+				'Variable variable name must be a string, but $this(VariableVariableName\Greeter) was given.',
+				27,
 			],
 		]);
 	}

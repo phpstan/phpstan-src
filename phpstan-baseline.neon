@@ -235,8 +235,20 @@ parameters:
 			path: src/DependencyInjection/ContainerFactory.php
 
 		-
+			rawMessage: 'Method name for Nette\Schema\Elements\AnyOf|Nette\Schema\Elements\Structure|Nette\Schema\Elements\Type must be a string, but array|Nette\DI\Definitions\Definition|Nette\DI\Definitions\Reference|string|null was given.'
+			identifier: method.nameNotString
+			count: 1
+			path: src/DependencyInjection/ContainerFactory.php
+
+		-
 			rawMessage: Variable static method call on Nette\Schema\Expect.
 			identifier: staticMethod.dynamicName
+			count: 1
+			path: src/DependencyInjection/ContainerFactory.php
+
+		-
+			rawMessage: 'Method name for Nette\Schema\Expect must be a string, but array|Nette\DI\Definitions\Definition|Nette\DI\Definitions\Reference|string|null was given.'
+			identifier: staticMethod.nameNotString
 			count: 1
 			path: src/DependencyInjection/ContainerFactory.php
 

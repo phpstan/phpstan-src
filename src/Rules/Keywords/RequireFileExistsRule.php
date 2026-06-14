@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Keywords;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Name\FullyQualified;
@@ -11,10 +12,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\FileHelper;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantStringType;
 use function array_merge;
 use function dirname;
 use function explode;
@@ -33,6 +36,7 @@ final class RequireFileExistsRule implements Rule
 	public function __construct(
 		#[AutowiredParameter]
 		private string $currentWorkingDirectory,
+		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
@@ -49,14 +53,23 @@ final class RequireFileExistsRule implements Rule
 		}
 
 		$errors = [];
-		$paths = $this->resolveFilePaths($node, $scope);
+		$usedMagicDirFallback = false;
+		$paths = $this->resolveFilePaths($node->expr, $scope, $usedMagicDirFallback);
 
 		foreach ($paths as $path) {
+			$path = $path->getValue();
+
 			if ($this->doesFileExist($path, $scope)) {
 				continue;
 			}
 
-			$errors[] = $this->getErrorMessage($node, $path);
+			if ($usedMagicDirFallback) {
+				$pathExpr = $this->exprPrinter->printExpr($node->expr);
+			} else {
+				$pathExpr = '"' . $path . '"';
+			}
+
+			$errors[] = $this->getErrorMessage($node, $pathExpr);
 		}
 
 		return $errors;
@@ -97,7 +110,7 @@ final class RequireFileExistsRule implements Rule
 
 	private function getErrorMessage(Include_ $node, string $filePath): IdentifierRuleError
 	{
-		$message = 'Path in %s() "%s" is not a file or it does not exist.';
+		$message = 'Path in %s() %s is not a file or it does not exist.';
 
 		switch ($node->type) {
 			case Include_::TYPE_REQUIRE:
@@ -132,18 +145,33 @@ final class RequireFileExistsRule implements Rule
 	}
 
 	/**
-	 * @return array<string>
+	 * @return list<ConstantStringType>
 	 */
-	private function resolveFilePaths(Include_ $node, Scope $scope): array
+	private function resolveFilePaths(Expr $expr, Scope $scope, bool &$magicDirFallback): array
 	{
-		$paths = [];
-		$type = $scope->getType($node->expr);
-		$constantStrings = $type->getConstantStrings();
+		$magicDirFallback = false;
 
-		foreach ($constantStrings as $constantString) {
-			$paths[] = $constantString->getValue();
+		if (!$expr instanceof Expr\BinaryOp\Concat) {
+			return $scope->getType($expr)->getConstantStrings();
 		}
 
+		if ($expr->left instanceof Node\Scalar\MagicConst\Dir) {
+			$magicDirFallback = true;
+
+			$paths = [];
+			foreach ($scope->getType($expr->right)->getConstantStrings() as $constantString) {
+				$paths[] = new ConstantStringType(dirname($scope->getFile()) . $constantString->getValue());
+			}
+			return $paths;
+		}
+
+		$paths = [];
+		$rightPaths = $this->resolveFilePaths($expr->right, $scope, $magicDirFallback);
+		foreach ($this->resolveFilePaths($expr->left, $scope, $magicDirFallback) as $left) {
+			foreach ($rightPaths as $rightPath) {
+				$paths[] = new ConstantStringType($left->getValue() . $rightPath->getValue());
+			}
+		}
 		return $paths;
 	}
 

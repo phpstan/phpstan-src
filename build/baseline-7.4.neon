@@ -77,13 +77,3 @@ parameters:
 			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$constantNodes\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
-
-		-
-			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum given\\.$#"
-			count: 1
-			path: ../src/Reflection/BetterReflection/BetterReflectionProvider.php
-
-		-
-			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum given\\.$#"
-			count: 1
-			path: ../src/Analyser/NodeScopeResolver.php

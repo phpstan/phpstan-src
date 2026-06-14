@@ -3584,7 +3584,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->inFirstLevelStatement;
 	}
 
-	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
+	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false, bool $createConditionalDefinedness = false): self
 	{
 		if ($otherScope === null || $this === $otherScope) {
 			return $this;
@@ -3618,6 +3618,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$ourExpressionTypes,
 			$mergedExpressionTypes,
 		);
+		if ($createConditionalDefinedness) {
+			$conditionalExpressions = $this->createConditionalDefinednessExpressions(
+				$conditionalExpressions,
+				$ourExpressionTypes,
+				$theirExpressionTypes,
+				$mergedExpressionTypes,
+			);
+			$conditionalExpressions = $this->createConditionalDefinednessExpressions(
+				$conditionalExpressions,
+				$theirExpressionTypes,
+				$ourExpressionTypes,
+				$mergedExpressionTypes,
+			);
+		}
 
 		$filter = static function (ExpressionTypeHolder $expressionTypeHolder) {
 			if ($expressionTypeHolder->getCertainty()->yes()) {
@@ -3895,6 +3909,96 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));
 				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 			}
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * Records that a variable defined only in our branch is defined again
+	 * whenever the same branch condition holds — so a later `if` reusing that
+	 * condition does not report the variable as possibly undefined.
+	 *
+	 * The branch condition is reconstructed from the expressions that the
+	 * condition narrowed in our branch:
+	 * - "type guards": expressions defined in both branches whose type in our
+	 *   branch differs from the merged type (e.g. `$s` narrowed to `'banana'`
+	 *   by `$s === 'banana'`, or an array gaining a `hasOffset` accessory), and
+	 * - "existence guards": expressions made certain (Yes) in our branch but not
+	 *   in the other one (e.g. `$a['x']` made certain by `isset($a['x'])`).
+	 *
+	 * All guards are combined into a single condition, so re-establishing only
+	 * part of it later (`if ($a && $b)` then `if ($a)`) does not wrongly imply
+	 * the variable is defined. At least one type guard is required, which keeps
+	 * out spurious guards produced when the other branch's scope tracks nothing
+	 * for an expression (e.g. an untracked superglobal access).
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, ExpressionTypeHolder> $ourExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $theirExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function createConditionalDefinednessExpressions(
+		array $conditionalExpressions,
+		array $ourExpressionTypes,
+		array $theirExpressionTypes,
+		array $mergedExpressionTypes,
+	): array
+	{
+		$guards = [];
+		$hasTypeGuard = false;
+		$newlyDefined = [];
+		foreach ($ourExpressionTypes as $exprString => $holder) {
+			if ($holder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+				continue;
+			}
+
+			$theirHolder = $theirExpressionTypes[$exprString] ?? null;
+			if ($theirHolder === null || !$theirHolder->getCertainty()->yes()) {
+				$guards[$exprString] = $holder;
+
+				$expr = $holder->getExpr();
+				if (
+					$theirHolder === null
+					&& $expr instanceof Variable
+					&& is_string($expr->name)
+					&& !$this->isGlobalVariable($expr->name)
+				) {
+					$newlyDefined[$exprString] = $holder;
+				}
+
+				continue;
+			}
+
+			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
+				continue;
+			}
+
+			$guards[$exprString] = $holder;
+			$hasTypeGuard = true;
+		}
+
+		if (!$hasTypeGuard || count($newlyDefined) === 0) {
+			return $conditionalExpressions;
+		}
+
+		foreach ($newlyDefined as $exprString => $holder) {
+			$variableGuards = $guards;
+			unset($variableGuards[$exprString]);
+
+			if (count($variableGuards) === 0) {
+				continue;
+			}
+
+			$conditionalExpression = new ConditionalExpressionHolder($variableGuards, $holder);
+			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
 		return $conditionalExpressions;

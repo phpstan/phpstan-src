@@ -1311,6 +1311,13 @@ class NodeScopeResolver
 			$alwaysTerminating = true;
 			$hasYield = $condResult->hasYield();
 
+			// Only a deterministic (side-effect-free) condition guarantees that a
+			// later `if` with the same condition picks the same branch, so that a
+			// variable defined here is defined there too. Elseif chains rebind the
+			// condition and are left to the regular per-branch tracking.
+			$createConditionalDefinedness = count($condResult->getImpurePoints()) === 0
+				&& count($stmt->elseifs) === 0;
+
 			$branchScopeStatementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
 
 			if (!$conditionType->isTrue()->no()) {
@@ -1375,7 +1382,7 @@ class NodeScopeResolver
 
 			if ($stmt->else === null) {
 				if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
-					$finalScope = $scope->mergeWith($finalScope, true);
+					$finalScope = $scope->mergeWith($finalScope, true, $createConditionalDefinedness);
 					$alwaysTerminating = false;
 				}
 			} else {
@@ -1387,7 +1394,7 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
 					$branchScope = $branchScopeStatementResult->getScope();
-					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope, true);
+					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope, true, $createConditionalDefinedness);
 					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
 					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
 						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());

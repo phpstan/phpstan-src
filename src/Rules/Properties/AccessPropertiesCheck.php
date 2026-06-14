@@ -61,14 +61,12 @@ final class AccessPropertiesCheck
 			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
 
 			if (!$write) {
-				$className = $scope->getType($node->var)->describe(VerbosityLevel::typeOnly());
 				$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringCastableName(
 					$scope,
 					$node->name,
 					'Property name for %s must be a string, but %s was given.',
-					[$className],
+					$node->var,
 					'property.nameNotString',
-					$node->name->getStartLine(),
 				));
 			}
 		}

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -35,10 +36,10 @@ final class NonStringableDynamicAccessCheck
 	 * property and static property names) objects implementing __toString are
 	 * accepted.
 	 *
-	 * @param list<string> $messageArgs sprintf arguments preceding the offending name type
+	 * @param Name|Expr|null $classNode the node whose name/type fills the leading `%s` placeholder, or null when the message has none
 	 * @return list<IdentifierRuleError>
 	 */
-	public function checkStringCastableName(Scope $scope, Expr $name, string $messageFormat, array $messageArgs, string $identifier, ?int $line = null): array
+	public function checkStringCastableName(Scope $scope, Expr $name, string $messageFormat, $classNode, string $identifier): array
 	{
 		if (!$this->checkNonStringableDynamicAccess) {
 			return [];
@@ -55,7 +56,7 @@ final class NonStringableDynamicAccessCheck
 			!$nameType instanceof ErrorType
 			&& ($nameType->toString() instanceof ErrorType || !$nameType->toString()->isString()->yes())
 		) {
-			return [$this->buildError($scope->getType($name), $messageFormat, $messageArgs, $identifier, $line)];
+			return [$this->buildError($scope, $name, $scope->getType($name), $messageFormat, $classNode, $identifier)];
 		}
 
 		return [];
@@ -65,10 +66,10 @@ final class NonStringableDynamicAccessCheck
 	 * For names that must be actual strings (method, static method and class
 	 * constant names) objects implementing __toString are not accepted.
 	 *
-	 * @param list<string> $messageArgs sprintf arguments preceding the offending name type
+	 * @param Name|Expr|null $classNode the node whose name/type fills the leading `%s` placeholder, or null when the message has none
 	 * @return list<IdentifierRuleError>
 	 */
-	public function checkStringName(Scope $scope, Expr $name, string $messageFormat, array $messageArgs, string $identifier, ?int $line = null): array
+	public function checkStringName(Scope $scope, Expr $name, string $messageFormat, $classNode, string $identifier): array
 	{
 		if (!$this->checkNonStringableDynamicAccess) {
 			return [];
@@ -82,25 +83,29 @@ final class NonStringableDynamicAccessCheck
 		)->getType();
 
 		if (!$nameType instanceof ErrorType && !$nameType->isString()->yes()) {
-			return [$this->buildError($nameType, $messageFormat, $messageArgs, $identifier, $line)];
+			return [$this->buildError($scope, $name, $nameType, $messageFormat, $classNode, $identifier)];
 		}
 
 		return [];
 	}
 
 	/**
-	 * @param list<string> $messageArgs
+	 * @param Name|Expr|null $classNode
 	 */
-	private function buildError(Type $nameType, string $messageFormat, array $messageArgs, string $identifier, ?int $line): IdentifierRuleError
+	private function buildError(Scope $scope, Expr $name, Type $nameType, string $messageFormat, $classNode, string $identifier): IdentifierRuleError
 	{
-		$messageArgs[] = $nameType->describe(VerbosityLevel::precise());
-		$builder = RuleErrorBuilder::message(sprintf($messageFormat, ...$messageArgs))
-			->identifier($identifier);
-		if ($line !== null) {
-			$builder->line($line);
+		$messageArgs = [];
+		if ($classNode !== null) {
+			$messageArgs[] = $classNode instanceof Name
+				? $scope->resolveName($classNode)
+				: $scope->getType($classNode)->describe(VerbosityLevel::typeOnly());
 		}
+		$messageArgs[] = $nameType->describe(VerbosityLevel::precise());
 
-		return $builder->build();
+		return RuleErrorBuilder::message(sprintf($messageFormat, ...$messageArgs))
+			->line($name->getStartLine())
+			->identifier($identifier)
+			->build();
 	}
 
 }

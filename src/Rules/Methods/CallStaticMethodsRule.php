@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
@@ -17,7 +16,6 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
 
@@ -54,17 +52,12 @@ final class CallStaticMethodsRule implements Rule
 				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
 
-			$className = $node->class instanceof Name
-				? $scope->resolveName($node->class)
-				: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
-
 			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringName(
 				$scope,
 				$node->name,
 				'Method name for %s must be a string, but %s was given.',
-				[$className],
+				$node->class,
 				'staticMethod.nameNotString',
-				$node->name->getStartLine(),
 			));
 		}
 

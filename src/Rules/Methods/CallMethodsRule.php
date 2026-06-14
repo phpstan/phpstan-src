@@ -16,7 +16,6 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 
 /**
@@ -56,9 +55,8 @@ final class CallMethodsRule implements Rule
 				$scope,
 				$node->name,
 				'Method name for %s must be a string, but %s was given.',
-				[$scope->getType($node->var)->describe(VerbosityLevel::typeOnly())],
+				$node->var,
 				'method.nameNotString',
-				$node->name->getStartLine(),
 			));
 		}
 

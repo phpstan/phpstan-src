@@ -18,4 +18,13 @@ class Foo
 		assertType('string|false', base64_decode($string, true));
 	}
 
+	public function constantInput(): void
+	{
+		assertType("'Hello world'", base64_decode('SGVsbG8gd29ybGQ='));
+		assertType("'Hello world'", base64_decode('SGVsbG8gd29ybGQ=', false));
+		assertType("'Hello world'", base64_decode('SGVsbG8gd29ybGQ=', true));
+		assertType('false', base64_decode('not valid base64 @@@', true));
+		assertType('string', base64_decode('not valid base64 @@@', false));
+	}
+
 }

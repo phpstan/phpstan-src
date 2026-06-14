@@ -165,10 +165,10 @@ assertType('array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int
 assertType('array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}|false', $lstat);
 assertType('array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}|false', $fstat);
 assertType('array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}', $fileObjectStat);
-assertType('string', $base64DecodeWithoutStrict);
-assertType('string', $base64DecodeWithStrictDisabled);
-assertType('string|false', $base64DecodeWithStrictEnabled);
-assertType('string', $base64DecodeDefault);
+assertType("''", $base64DecodeWithoutStrict);
+assertType("''", $base64DecodeWithStrictDisabled);
+assertType("''", $base64DecodeWithStrictEnabled);
+assertType("''", $base64DecodeDefault);
 assertType('(string|false)', $base64DecodeBenevolent);
 assertType('*ERROR*', $strWordCountWithoutParameters);
 assertType('*ERROR*', $strWordCountWithTooManyParams);

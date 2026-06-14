@@ -67,6 +67,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof Node\UnionType) {
+			$this->require(self::PHP_8_0, 'union types', $node);
 			foreach ($node->types as $innerType) {
 				if ($innerType instanceof Node\IntersectionType) {
 					$this->require(self::PHP_8_2, 'disjunctive normal form types', $innerType);

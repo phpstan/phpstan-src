@@ -123,6 +123,9 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		yield 'enum' => ['<?php enum Foo { case A; }', 80100];
 		yield 'readonly property' => ['<?php class Foo { public readonly int $x; }', 80100];
 		yield 'readonly promoted property' => ['<?php class Foo { public function __construct(public readonly int $x) {} }', 80100];
+		yield 'union type' => ['<?php function foo(A|B $x) {}', 80000];
+		yield 'union return type' => ['<?php function foo(): A|B {}', 80000];
+		yield 'nullable union type' => ['<?php function foo(A|null $x) {}', 80000];
 		yield 'intersection type' => ['<?php function foo(A&B $x) {}', 80100];
 		yield 'first-class callable' => ['<?php strlen(...);', 80100];
 		yield 'readonly class' => ['<?php readonly class Foo {}', 80200];

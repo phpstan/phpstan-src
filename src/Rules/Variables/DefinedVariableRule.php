@@ -10,8 +10,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function in_array;
 use function is_string;
@@ -25,6 +27,7 @@ final class DefinedVariableRule implements Rule
 {
 
 	public function __construct(
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 		#[AutowiredParameter]
 		private bool $cliArgumentsVariablesRegistered,
 		#[AutowiredParameter]
@@ -49,6 +52,16 @@ final class DefinedVariableRule implements Rule
 			foreach ($nameType->getConstantStrings() as $constantString) {
 				$name = $constantString->getValue();
 				$variableNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
+
+			$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringCastableName($scope, $node->name);
+			if ($nonStringableNameType !== null) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Variable variable name must be a string, but %s was given.',
+					$nonStringableNameType->describe(VerbosityLevel::precise()),
+				))
+					->identifier('variable.nameNotString')
+					->build();
 			}
 		}
 

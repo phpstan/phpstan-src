@@ -14,8 +14,12 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Expr\MethodCall>
@@ -27,6 +31,7 @@ final class CallMethodsRule implements Rule
 	public function __construct(
 		private MethodCallCheck $methodCallCheck,
 		private FunctionCallParametersCheck $parametersCheck,
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 	)
 	{
 	}
@@ -47,6 +52,18 @@ final class CallMethodsRule implements Rule
 			foreach ($nameType->getConstantStrings() as $constantString) {
 				$name = $constantString->getValue();
 				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
+
+			$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringName($scope, $node->name);
+			if ($nonStringableNameType !== null) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Method name for %s must be a string, but %s was given.',
+					$scope->getType($node->var)->describe(VerbosityLevel::typeOnly()),
+					$nonStringableNameType->describe(VerbosityLevel::precise()),
+				))
+					->line($node->name->getStartLine())
+					->identifier('method.nameNotString')
+					->build();
 			}
 		}
 

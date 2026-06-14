@@ -7,6 +7,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -23,19 +24,20 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new AccessStaticPropertiesRule(
 			new AccessStaticPropertiesCheck(
 				$reflectionProvider,
-				new RuleLevelHelper(
-					$reflectionProvider,
-					checkNullables: true,
-					checkThisOnly: false,
-					checkUnionTypes: true,
-					checkExplicitMixed: false,
-					checkImplicitMixed: false,
-					checkBenevolentUnionTypes: false,
-					discoveringSymbolsTip: true,
-				),
+				$ruleLevelHelper,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 					new ClassForbiddenNameCheck(self::getContainer()->getExtensionsCollection(ForbiddenClassNameExtension::class)),
@@ -43,6 +45,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 					self::getContainer()->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
 				new PhpVersion(PHP_VERSION_ID),
+				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 				discoveringSymbolsTip: true,
 			),
 		);
@@ -298,6 +301,24 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	public function testClassExists(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-properties-class-exists.php'], []);
+	}
+
+	public function testDynamicStaticPropertyName(): void
+	{
+		$this->analyse([__DIR__ . '/data/dynamic-static-property-name.php'], [
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object was given.',
+				14,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but array was given.',
+				15,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object was given.',
+				21,
+			],
+		]);
 	}
 
 	public function testBug5143(): void

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
@@ -14,7 +15,10 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
 
@@ -28,6 +32,7 @@ final class CallStaticMethodsRule implements Rule
 	public function __construct(
 		private StaticMethodCallCheck $methodCallCheck,
 		private FunctionCallParametersCheck $parametersCheck,
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 	)
 	{
 	}
@@ -48,6 +53,22 @@ final class CallStaticMethodsRule implements Rule
 			foreach ($nameType->getConstantStrings() as $constantString) {
 				$name = $constantString->getValue();
 				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
+
+			$nonStringableNameType = $this->nonStringableDynamicAccessCheck->checkStringName($scope, $node->name);
+			if ($nonStringableNameType !== null) {
+				$className = $node->class instanceof Name
+					? $scope->resolveName($node->class)
+					: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Method name for %s must be a string, but %s was given.',
+					$className,
+					$nonStringableNameType->describe(VerbosityLevel::precise()),
+				))
+					->line($node->name->getStartLine())
+					->identifier('staticMethod.nameNotString')
+					->build();
 			}
 		}
 

@@ -328,7 +328,13 @@ final class MethodCallHandler implements ExprHandler
 				));
 				$specifiedTypes = $typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
-					return $specifiedTypes;
+					// Asserts narrow the arguments, but the call expression itself
+					// must still be remembered as truthy/falsey so that re-evaluating
+					// it in the same branch keeps the narrowed result. Keep the
+					// asserts' root expression.
+					return $specifiedTypes
+						->unionWith($typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope))
+						->setRootExpr($specifiedTypes->getRootExpr());
 				}
 			}
 		}

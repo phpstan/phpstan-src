@@ -123,7 +123,9 @@ function noKeyVar(array $arguments): void
 		}
 	}
 
-	assertType('array<int|string, mixed>', $arguments);
+	// Even without a key variable, every element is guaranteed to be a string
+	// after the loop, so the value type is narrowed.
+	assertType('array<int|string, string>', $arguments);
 }
 
 /**

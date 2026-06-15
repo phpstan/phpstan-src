@@ -37,6 +37,8 @@ final class RequireFileExistsRule implements Rule
 		#[AutowiredParameter]
 		private string $currentWorkingDirectory,
 		private ExprPrinter $exprPrinter,
+		#[AutowiredParameter(ref: '%featureToggles.magicDirInInclude%')]
+		private bool $checkMagicDirInInclude,
 	)
 	{
 	}
@@ -150,6 +152,10 @@ final class RequireFileExistsRule implements Rule
 	private function resolveFilePaths(Expr $expr, Scope $scope, bool &$magicDirFallback): array
 	{
 		$magicDirFallback = false;
+
+		if (!$this->checkMagicDirInInclude) {
+			return $scope->getType($expr)->getConstantStrings();
+		}
 
 		if (!$expr instanceof Expr\BinaryOp\Concat) {
 			return $scope->getType($expr)->getConstantStrings();

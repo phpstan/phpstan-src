@@ -24,6 +24,7 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		return new RequireFileExistsRule(
 			$this->currentWorkingDirectory,
 			self::getContainer()->getByType(ExprPrinter::class),
+			true,
 		);
 	}
 

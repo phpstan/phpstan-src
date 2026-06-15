@@ -45,6 +45,7 @@ parametersSchema:
 		reportNestedTooWideType: bool()
 		assignToByRefForeachExpr: bool()
 		curlSetOptArrayTypes: bool()
+		magicDirInInclude: bool()
 		checkDateIntervalConstructor: bool()
 		reportMethodPurityOverride: bool()
 		checkDynamicConstantNameValues: bool()

@@ -43,6 +43,7 @@ parameters:
 		reportNestedTooWideType: false
 		assignToByRefForeachExpr: false
 		curlSetOptArrayTypes: false
+		magicDirInInclude: false
 		checkDateIntervalConstructor: false
 		reportMethodPurityOverride: false
 		checkDynamicConstantNameValues: false

@@ -18,6 +18,14 @@ if ($var === 'foo' || $var === 'bar' || $var === 'buz') {
 	echo 'ok';
 }
 
+if ('foo' === $var || 'bar' === $var) {
+	echo 'ok';
+}
+
+if ('foo' === $var || $var === 'bar') {
+	echo 'ok';
+}
+
 if ($var === 'foo' || $var === 'bar' || $var2 === 'buz') {
 	echo 'no';
 }

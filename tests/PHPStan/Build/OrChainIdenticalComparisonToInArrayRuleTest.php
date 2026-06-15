@@ -38,6 +38,14 @@ final class OrChainIdenticalComparisonToInArrayRuleTest extends RuleTestCase
 				'This chain of identical comparisons can be simplified using in_array().',
 				17,
 			],
+			[
+				'This chain of identical comparisons can be simplified using in_array().',
+				21,
+			],
+			[
+				'This chain of identical comparisons can be simplified using in_array().',
+				25,
+			],
 		]);
 	}
 

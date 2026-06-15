@@ -18,6 +18,14 @@ if (\in_array($var, ['foo', 'bar', 'buz'], true)) {
 	echo 'ok';
 }
 
+if (\in_array($var, ['foo', 'bar'], true)) {
+	echo 'ok';
+}
+
+if (\in_array($var, ['foo', 'bar'], true)) {
+	echo 'ok';
+}
+
 if ($var === 'foo' || $var === 'bar' || $var2 === 'buz') {
 	echo 'no';
 }

@@ -936,10 +936,6 @@ final class FuncCallHandler implements ExprHandler
 					));
 					$specifiedTypes = $typeSpecifier->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
-						// Asserts narrow the arguments, but the call expression itself
-						// must still be remembered as truthy/falsey so that re-evaluating
-						// it in the same branch (e.g. `if (is_readable($p)) require $p;`)
-						// keeps the narrowed result. Keep the asserts' root expression.
 						return $specifiedTypes
 							->unionWith($typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope))
 							->setRootExpr($specifiedTypes->getRootExpr());

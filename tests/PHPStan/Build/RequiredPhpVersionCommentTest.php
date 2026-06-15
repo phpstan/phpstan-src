@@ -122,6 +122,10 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		yield 'mixed property type' => ['<?php class Foo { public mixed $x; }', 80000];
 		yield 'enum' => ['<?php enum Foo { case A; }', 80100];
 		yield 'readonly property' => ['<?php class Foo { public readonly int $x; }', 80100];
+		yield 'promoted property' => ['<?php class Foo { public function __construct(public int $x) {} }', 80000];
+		yield 'promoted property protected' => ['<?php class Foo { public function __construct(protected int $x) {} }', 80000];
+		yield 'promoted property private' => ['<?php class Foo { public function __construct(private int $x) {} }', 80000];
+		yield 'non-promoted parameter' => ['<?php class Foo { public function __construct(int $x) {} }', null];
 		yield 'readonly promoted property' => ['<?php class Foo { public function __construct(public readonly int $x) {} }', 80100];
 		yield 'union type' => ['<?php function foo(A|B $x) {}', 80000];
 		yield 'union return type' => ['<?php function foo(): A|B {}', 80000];

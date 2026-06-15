@@ -88,6 +88,10 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 			$this->require(self::PHP_8_1, 'readonly properties', $node);
 		}
 
+		if ($node instanceof Node\Param && $node->flags !== 0) {
+			$this->require(self::PHP_8_0, 'promoted properties', $node);
+		}
+
 		if ($node instanceof Node\Param && ($node->flags & Modifiers::READONLY) !== 0) {
 			$this->require(self::PHP_8_1, 'readonly promoted properties', $node);
 		}

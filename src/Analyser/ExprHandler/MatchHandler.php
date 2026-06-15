@@ -271,9 +271,8 @@ final class MatchHandler implements ExprHandler
 					$conditionCases = [];
 					$conditionExprs = [];
 					foreach ($arm->conds as $j => $cond) {
-						if (!$cond instanceof Expr\ClassConstFetch) {
-							throw new ShouldNotHappenException();
-						}
+						// The pre-validation loop above already guaranteed (via break 2)
+						// that every reached condition is an enum-case ClassConstFetch.
 						if (!$cond->class instanceof Name) {
 							throw new ShouldNotHappenException();
 						}

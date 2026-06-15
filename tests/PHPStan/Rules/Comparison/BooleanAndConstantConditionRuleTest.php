@@ -458,8 +458,8 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/self-contradiction.php'], [
 			[
 				'Result of && is always false.',
-				25
-			]
+				25,
+			],
 		]);
 	}
 

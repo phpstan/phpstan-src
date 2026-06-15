@@ -145,3 +145,19 @@ function byRefKeyless(array $list): void
 
 	assertType('list<string>', $list);
 }
+
+/**
+ * @param array<int|string, array{int}> $a
+ */
+function keyedWithDestructuredValue(array $a): void
+{
+	// The value is destructured, so there is no value variable to track, but a key
+	// variable is still present. Key narrowing must keep working through the key path.
+	foreach ($a as $k => [$v]) {
+		if (!is_int($k)) {
+			return;
+		}
+	}
+
+	assertType('array<int, array{int}>', $a);
+}

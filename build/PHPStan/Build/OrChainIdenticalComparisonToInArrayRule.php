@@ -136,7 +136,7 @@ final class OrChainIdenticalComparisonToInArrayRule implements Rule
 	 */
 	private function getSubjectAndValue(Identical $comparison): ?array
 	{
-		if (self::isSubjectNode($comparison->left) && !self::isSubjectNode($comparison->left)) {
+		if (self::isSubjectNode($comparison->left) && !self::isSubjectNode($comparison->right)) {
 			return ['subject' => $comparison->right, 'value' => $comparison->left];
 		}
 

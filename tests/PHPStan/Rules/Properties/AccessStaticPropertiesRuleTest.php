@@ -305,15 +305,23 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/dynamic-static-property-name.php'], [
 			[
 				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object was given.',
-				14,
+				19,
 			],
 			[
 				'Static property name for DynamicStaticPropertyName\Foo must be a string, but array was given.',
-				15,
+				20,
 			],
 			[
 				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object was given.',
-				21,
+				26,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object|string was given.',
+				31,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but int|object was given.',
+				32,
 			],
 		]);
 	}

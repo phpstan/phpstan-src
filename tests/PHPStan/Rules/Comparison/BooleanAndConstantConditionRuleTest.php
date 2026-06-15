@@ -452,6 +452,17 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8555.php'], []);
 	}
 
+	public function testSelfContradiction(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/self-contradiction.php'], [
+			[
+				'Result of && is always false.',
+				25
+			]
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14807(): void
 	{

@@ -16,6 +16,7 @@ parameters:
 		reportNestedTooWideType: false # tmp
 		assignToByRefForeachExpr: true
 		curlSetOptArrayTypes: true
+		magicDirInInclude: true
 		checkDateIntervalConstructor: true
 		reportMethodPurityOverride: true
 		checkDynamicConstantNameValues: true

@@ -350,6 +350,13 @@ final class ImpossibleCheckTypeHelper
 			}
 		}
 		foreach ($sureTypes as $sureType) {
+			if ($sureType[0] === $node) {
+				// The check's own truthiness carries no information about
+				// whether the check is redundant; the informative narrowing
+				// lives in the argument entries.
+				continue;
+			}
+
 			if (self::isSpecified($typeSpecifierScope, $node, $sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
@@ -384,6 +391,13 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		foreach ($sureNotTypes as $sureNotType) {
+			if ($sureNotType[0] === $node) {
+				// The check's own truthiness carries no information about
+				// whether the check is redundant; the informative narrowing
+				// lives in the argument entries.
+				continue;
+			}
+
 			if (self::isSpecified($typeSpecifierScope, $node, $sureNotType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;

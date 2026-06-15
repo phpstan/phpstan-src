@@ -33,6 +33,19 @@ use const PATH_SEPARATOR;
 final class RequireFileExistsRule implements Rule
 {
 
+	/**
+	 * Functions that, when they return true, guarantee the path exists on the
+	 * filesystem, so guarding a require/include with them suppresses the error.
+	 */
+	private const FILE_EXISTENCE_FUNCTIONS = [
+		'file_exists',
+		'is_file',
+		'is_readable',
+		'is_writable',
+		'is_writeable',
+		'is_executable',
+	];
+
 	public function __construct(
 		#[AutowiredParameter]
 		private string $currentWorkingDirectory,
@@ -183,7 +196,7 @@ final class RequireFileExistsRule implements Rule
 
 	private function isInFileExists(Include_ $node, Scope $scope): bool
 	{
-		foreach (['file_exists', 'is_file'] as $funcName) {
+		foreach (self::FILE_EXISTENCE_FUNCTIONS as $funcName) {
 			$expr = new FuncCall(new FullyQualified($funcName), [
 				new Arg($node->expr),
 			]);

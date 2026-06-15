@@ -505,6 +505,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
 				8,
 			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				24,
+			],
 		]);
 	}
 

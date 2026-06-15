@@ -109,29 +109,39 @@ final class BooleanAndHandler implements ExprHandler
 			$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
 		}
 		if ($context->false()) {
-			$leftTypesForHolders = $leftTypes;
-			$rightTypesForHolders = $rightTypes;
+			// Consequent (holder) narrowings projected by each holder: these must be
+			// the genuine falsey narrowing of the arm. When that is empty, the arm
+			// has no sound falsey narrowing and must not contribute a consequent.
+			$leftHolderTypes = $leftTypes;
+			$rightHolderTypes = $rightTypes;
 			// In a mixed truthy-and-false context, re-derive empty holders from the falsey narrowing.
 			if ($context->truthy()) {
-				if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
-					$leftTypesForHolders = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
+				if ($leftHolderTypes->getSureTypes() === [] && $leftHolderTypes->getSureNotTypes() === []) {
+					$leftHolderTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 				}
-				if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
-					$rightTypesForHolders = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
+				if ($rightHolderTypes->getSureTypes() === [] && $rightHolderTypes->getSureNotTypes() === []) {
+					$rightHolderTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
 				}
 			}
-			// For arms still empty (e.g. isset() on an array dim fetch), derive conditions
-			// from the truthy narrowing instead, swapping sure/sureNot types.
-			if ($leftTypesForHolders->getSureTypes() === [] && $leftTypesForHolders->getSureNotTypes() === []) {
+			// Condition (antecedent) narrowings: when an arm has no falsey narrowing
+			// (e.g. isset() on an array dim fetch), derive the condition from the truthy
+			// narrowing by swapping sure/sureNot types. This swap is only sound for the
+			// antecedent — processBooleanConditionalTypes inverts it back to the truthy
+			// narrowing. It must NOT feed the consequent: inverting a comparison's truthy
+			// narrowing (e.g. `$a === $b` narrowing `$a` to `$b`'s broad type) would
+			// over-narrow the consequent (see regression for `$x === $nonConstantString`).
+			$leftCondTypes = $leftHolderTypes;
+			$rightCondTypes = $rightHolderTypes;
+			if ($leftCondTypes->getSureTypes() === [] && $leftCondTypes->getSureNotTypes() === []) {
 				$truthyLeftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
 				if ($this->allExpressionsTrackable($truthyLeftTypes)) {
-					$leftTypesForHolders = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
+					$leftCondTypes = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
 				}
 			}
-			if ($rightTypesForHolders->getSureTypes() === [] && $rightTypesForHolders->getSureNotTypes() === []) {
+			if ($rightCondTypes->getSureTypes() === [] && $rightCondTypes->getSureNotTypes() === []) {
 				$truthyRightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
 				if ($this->allExpressionsTrackable($truthyRightTypes)) {
-					$rightTypesForHolders = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
+					$rightCondTypes = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
 				}
 			}
 			$result = new SpecifiedTypes(
@@ -142,10 +152,10 @@ final class BooleanAndHandler implements ExprHandler
 				$result = $result->setAlwaysOverwriteTypes();
 			}
 			return $result->setNewConditionalExpressionHolders($this->conditionalExpressionHolderHelper->mergeConditionalHolders([
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, false, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, false, true, $scope, $expr->left),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftTypesForHolders, $rightTypesForHolders, true, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightTypesForHolders, $leftTypesForHolders, true, true, $scope, $expr->left),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, false, true, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, false, true, $scope, $expr->left),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, true, true, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, true, true, $scope, $expr->left),
 			]))->setRootExpr($expr);
 		}
 

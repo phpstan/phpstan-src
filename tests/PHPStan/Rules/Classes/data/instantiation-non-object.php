@@ -13,6 +13,7 @@ class Foo
 
 /**
  * @param int|string $intOrString
+ * @param int|float $intOrFloat
  * @param class-string $classString
  * @param class-string<Foo> $classStringOfFoo
  */
@@ -23,6 +24,8 @@ function doFoo(
 	float $float,
 	bool $bool,
 	$intOrString,
+	$intOrFloat,
+	?string $nullableString,
 	string $classString,
 	string $classStringOfFoo,
 	Foo $foo
@@ -37,6 +40,8 @@ function doFoo(
 	new $float;
 	new $bool;
 	new $intOrString;
+	new $intOrFloat;
+	new $nullableString;
 	new $classString;
 	new $classStringOfFoo;
 	new $foo;

@@ -690,27 +690,35 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instantiation-non-object.php'], [
 			[
 				'Cannot instantiate class using int.',
-				32,
+				35,
 			],
 			[
 				'Cannot instantiate class using int.',
-				36,
-			],
-			[
-				'Cannot instantiate class using float.',
-				37,
-			],
-			[
-				'Cannot instantiate class using bool.',
-				38,
-			],
-			[
-				'Cannot instantiate class using int|string.',
 				39,
 			],
 			[
+				'Cannot instantiate class using float.',
+				40,
+			],
+			[
+				'Cannot instantiate class using bool.',
+				41,
+			],
+			[
+				'Cannot instantiate class using int|string.',
+				42,
+			],
+			[
+				'Cannot instantiate class using float|int.',
+				43,
+			],
+			[
+				'Cannot instantiate class using string|null.',
+				44,
+			],
+			[
 				'Cannot instantiate class using array<int, string>.',
-				45,
+				50,
 			],
 		]);
 	}

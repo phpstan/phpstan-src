@@ -380,7 +380,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 				}
 
 				if (!$isFinal || $type instanceof ThisType) {
-					return $traverse($type);
+					return RecursionGuard::run($type, static fn () => $traverse($type));
 				}
 
 				return $traverse($type->getStaticObjectType());

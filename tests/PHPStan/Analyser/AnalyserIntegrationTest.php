@@ -1593,6 +1593,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNotEmpty($errors);
 	}
 
+	public function testPr5880(): void
+	{
+		// endless loop
+		$errors = $this->runAnalyse(__DIR__ . '/data/pr-5880.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Call to an undefined method (T of PR5880EndlessRecursion\A = PR5880EndlessRecursion\A|PR5880EndlessRecursion\B)|T of PR5880EndlessRecursion\B = PR5880EndlessRecursion\A|PR5880EndlessRecursion\B::a().', $errors[0]->getMessage());
+	}
+
 	public function testBug14707(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14707.php');

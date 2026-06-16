@@ -86,13 +86,13 @@ final class FileExcluder
 	{
 		$file = $this->fileHelper->normalizePath($file);
 
+		if (isset($this->literalAnalyseFilesExcludes[$file])) {
+			return true;
+		}
 		foreach ($this->literalAnalyseDirectoryExcludes as $exclude) {
 			if (str_starts_with($file, $exclude)) {
 				return true;
 			}
-		}
-		if (isset($this->literalAnalyseFilesExcludes[$file])) {
-			return true;
 		}
 		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
 			if (fnmatch($exclude, $file, $this->fnmatchFlags)) {

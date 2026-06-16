@@ -232,35 +232,30 @@ class RunCommand extends Command
 		$output->writeln(sprintf('Starting analysis of %s', $hash));
 		$process = new ProcessPromise($loop, implode(' ', $commandArray));
 		$startTime = microtime(true);
-		return $process->run()->then(
-			static function (string $stdout) use ($hash, $output, $startTime) {
-				try {
-					$json = Json::decode($stdout, Json::FORCE_ARRAY);
-				} catch (Throwable $e) {
-					printf("Error in analysis of %s: %s\n", $hash, $stdout);
-					throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));
-				}
-
-				$errors = [];
-				foreach ($json['files'] as ['messages' => $messages]) {
-					foreach ($messages as $message) {
-						$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
-						if (strpos($messageText, 'Internal error') !== false) {
-							throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
-						}
-						$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
-					}
-				}
-
-				$elapsedTime = microtime(true) - $startTime;
-				$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
-
-				return $errors;
-			},
-			static function (Throwable $throwable) use ($hash, $output) {
-				$output->writeln(sprintf('Analysis of %s errored %s', $hash, $throwable->getMessage()));
+		return $process->run()->then(static function (string $stdout) use ($hash, $output, $startTime) {
+			try {
+				$json = Json::decode($stdout, Json::FORCE_ARRAY);
+			} catch (Throwable $e) {
+				echo $stdout . "\n";
+				throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));
 			}
-		);
+
+			$errors = [];
+			foreach ($json['files'] as ['messages' => $messages]) {
+				foreach ($messages as $message) {
+					$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
+					if (strpos($messageText, 'Internal error') !== false) {
+						throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
+					}
+					$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
+				}
+			}
+
+			$elapsedTime = microtime(true) - $startTime;
+			$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
+
+			return $errors;
+		});
 	}
 
 	private function loadPlaygroundCache(): PlaygroundCache

@@ -15,7 +15,7 @@ class PostGeneratorTest extends TestCase
 {
 
 	/**
-	 * @return iterable<array{string, list<PlaygroundResultTab>, list<PlaygroundResultTab>, BotComment[], string|null}>
+	 * @return iterable<array{string, list<PlaygroundResultTab>, list<PlaygroundResultTab>, BotComment[], string|null, string|null}>
 	 */
 	static public function dataGeneratePosts(): iterable
 	{

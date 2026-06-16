@@ -2,6 +2,7 @@
 
 namespace PHPStan\IssueBot\Playground;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use function count;
 
@@ -11,7 +12,7 @@ class TabCreatorTest extends TestCase
 	/**
 	 * @return array<array{array<int, list<PlaygroundError>>, list<PlaygroundResultTab>}>
 	 */
-	public function dataCreate(): array
+	static public function dataCreate(): array
 	{
 		return [
 			[
@@ -108,11 +109,11 @@ class TabCreatorTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider dataCreate
 	 * @param array<int, list<PlaygroundError>> $versionedErrors
 	 * @param list<PlaygroundResultTab> $expectedTabs
 	 * @return void
 	 */
+	#[DataProvider('dataCreate')]
 	public function testCreate(array $versionedErrors, array $expectedTabs): void
 	{
 		$tabCreator = new TabCreator();

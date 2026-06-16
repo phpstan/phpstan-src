@@ -223,6 +223,7 @@ class RunCommand extends Command
 			'analyse',
 			'--error-format',
 			'json',
+			'--debug',
 			'--no-progress',
 			'-c',
 			escapeshellarg($neonPath),

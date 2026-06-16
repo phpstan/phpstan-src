@@ -236,7 +236,7 @@ class RunCommand extends Command
 			try {
 				$json = Json::decode($stdout, Json::FORCE_ARRAY);
 			} catch (Throwable $e) {
-				$output->writeln(sprintf('Error in analysis of %s: %s', $hash, $stdout));
+				printf("Error in analysis of %s: %s\n", $hash, $stdout);
 				throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));
 			}
 

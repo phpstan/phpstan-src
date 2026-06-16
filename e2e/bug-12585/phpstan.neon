@@ -1,0 +1,10 @@
+parameters:
+	level: 8
+	paths:
+		- src
+
+services:
+	-
+		class: Bug12585\EloquentBuilderRelationParameterExtension
+		tags:
+			- phpstan.methodParameterClosureTypeExtension

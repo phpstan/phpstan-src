@@ -292,6 +292,10 @@ jobs:
               composer install
               ../../bin/phpstan
           - script: |
+              cd e2e/bug-12585
+              composer install
+              ../../bin/phpstan
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv

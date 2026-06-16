@@ -463,6 +463,15 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 			[
 				'Result of && is always false.',
 				51,
+			],
+			[
+				'Result of && is always false.',
+				77,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Result of && is always false.',
+				103,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

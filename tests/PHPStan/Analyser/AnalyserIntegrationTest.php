@@ -1593,6 +1593,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNotEmpty($errors);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testPr5880(): void
 	{
 		// endless loop

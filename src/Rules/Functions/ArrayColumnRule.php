@@ -11,6 +11,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Php\ArrayColumnHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -27,6 +28,7 @@ final class ArrayColumnRule implements Rule
 
 	public function __construct(
 		private readonly ReflectionProvider $reflectionProvider,
+		private readonly ArrayColumnHelper $arrayColumnHelper,
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly bool $treatPhpDocTypesAsCertainTip,
 	)
@@ -95,26 +97,19 @@ final class ArrayColumnRule implements Rule
 	{
 		$checkedValueType = $this->treatPhpDocTypesAsCertain ? $valueType : $nativeValueType;
 
-		// array_column() reads object properties (never ArrayAccess offsets), so
-		// only check when the elements are definitely objects. Array elements use
-		// offset access, scalars never have the member - leave those to other rules.
-		if (!$checkedValueType->isObject()->yes()) {
+		$columnType = $scope->getType($columnExpr);
+		$missingProperties = $this->arrayColumnHelper->findMissingObjectProperties($checkedValueType, $columnType);
+		if ($missingProperties === []) {
 			return [];
 		}
 
-		$columnType = $scope->getType($columnExpr);
-		$propertyNames = $columnType->getConstantStrings();
-		if ($propertyNames === []) {
-			return [];
+		$nativeMissingPropertyNames = [];
+		foreach ($this->arrayColumnHelper->findMissingObjectProperties($nativeValueType, $columnType) as $nativeMissingProperty) {
+			$nativeMissingPropertyNames[$nativeMissingProperty->getValue()] = true;
 		}
 
 		$errors = [];
-		foreach ($propertyNames as $propertyNameType) {
-			$propertyName = $propertyNameType->getValue();
-			if (!$this->isPropertyMissing($checkedValueType, $propertyName)) {
-				continue;
-			}
-
+		foreach ($missingProperties as $propertyNameType) {
 			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'Parameter %s of function array_column expects a valid property name, %s given, but %s does not have such property.',
 				$parameter,
@@ -122,41 +117,18 @@ final class ArrayColumnRule implements Rule
 				$checkedValueType->describe(VerbosityLevel::typeOnly()),
 			))->identifier('arrayColumn.property');
 
-			if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {
-				if (!$nativeValueType->isObject()->yes() || !$this->isPropertyMissing($nativeValueType, $propertyName)) {
-					$errorBuilder->treatPhpDocTypesAsCertainTip();
-				}
+			if (
+				$this->treatPhpDocTypesAsCertain
+				&& $this->treatPhpDocTypesAsCertainTip
+				&& !isset($nativeMissingPropertyNames[$propertyNameType->getValue()])
+			) {
+				$errorBuilder->treatPhpDocTypesAsCertainTip();
 			}
 
 			$errors[] = $errorBuilder->build();
 		}
 
 		return $errors;
-	}
-
-	private function isPropertyMissing(Type $valueType, string $propertyName): bool
-	{
-		$classReflections = $valueType->getObjectClassReflections();
-		if ($classReflections === []) {
-			return false;
-		}
-
-		foreach ($classReflections as $classReflection) {
-			if ($classReflection->isEnum()) {
-				return false;
-			}
-			if ($classReflection->hasInstanceProperty($propertyName)) {
-				return false;
-			}
-			if ($classReflection->allowsDynamicProperties()) {
-				return false;
-			}
-			if ($classReflection->hasNativeMethod('__isset') && $classReflection->hasNativeMethod('__get')) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 }

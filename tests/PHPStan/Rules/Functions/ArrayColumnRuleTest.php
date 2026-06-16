@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Php\ArrayColumnHelper;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -16,6 +17,7 @@ class ArrayColumnRuleTest extends RuleTestCase
 	{
 		return new ArrayColumnRule(
 			self::createReflectionProvider(),
+			self::getContainer()->getByType(ArrayColumnHelper::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			true,
 		);

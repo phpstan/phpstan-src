@@ -481,6 +481,11 @@ final class AnalyseCommand extends Command
 		$errorFormatter = $container->getService($errorFormatterServiceName);
 
 		if (count($internalErrorsTuples) > 0) {
+			foreach ($internalErrorsTuples as [$internalError]) {
+				$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
+				$inceptionResult->getStdOutput()->writeLineFormatted('');
+			}
+
 			$analysisResult = new AnalysisResult(
 				array_values($internalFileSpecificErrors),
 				array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors),

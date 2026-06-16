@@ -223,7 +223,6 @@ class RunCommand extends Command
 			'analyse',
 			'--error-format',
 			'json',
-			'--debug',
 			'--no-progress',
 			'-c',
 			escapeshellarg($neonPath),
@@ -237,7 +236,7 @@ class RunCommand extends Command
 			try {
 				$json = Json::decode($stdout, Json::FORCE_ARRAY);
 			} catch (Throwable $e) {
-				$output->writeln($stdout);
+				$output->writeln(sprintf('Error in analysis of %s: %s', $hash, $stdout));
 				throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));
 			}
 

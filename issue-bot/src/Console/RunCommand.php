@@ -57,6 +57,10 @@ class RunCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
+		set_exception_handler(static function (\Throwable $e): void {
+			fwrite(STDERR, 'Swallowed by global exception handler: ' . $e->getMessage() . "\n");
+		});
+
 		$phpVersion = (int) $input->getArgument('phpVersion');
 		$commaSeparatedPlaygroundHashes = $input->getArgument('playgroundHashes');
 		$playgroundHashes = explode(',', $commaSeparatedPlaygroundHashes);

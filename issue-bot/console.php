@@ -28,6 +28,10 @@ use function exec;
 use function implode;
 
 (static function (): void {
+	set_exception_handler(static function (\Throwable $e): void {
+		fwrite(STDERR, 'Swallowed by global exception handler: ' . $e->getMessage() . "\n");
+	});
+	
 	$token = $_SERVER['GITHUB_PAT'] ?? 'unknown';
 
 	$phpstanSrcCommitBefore = $_SERVER['PHPSTAN_SRC_COMMIT_BEFORE'] ?? 'unknown';

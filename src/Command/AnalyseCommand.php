@@ -500,6 +500,7 @@ final class AnalyseCommand extends Command
 
 			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
+			$errorOutput->writeLineFormatted('internal errors '. implode("\n", array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors)));
 			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
 			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
 			$errorOutput->writeLineFormatted('   to get all reported errors.');

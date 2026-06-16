@@ -2755,6 +2755,11 @@ class NodeScopeResolver
 				$newExpr = new FunctionCallableNode($expr->name, $expr);
 			} elseif ($expr instanceof MethodCall) {
 				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr);
+			} elseif ($expr instanceof Expr\NullsafeMethodCall) {
+				// $foo?->bar(...) is a fatal error in PHP ("Cannot combine nullsafe
+				// operator with Closure creation"), but it must not crash the analyser.
+				$methodCall = new MethodCall($expr->var, $expr->name, $expr->args, $expr->getAttributes());
+				$newExpr = new MethodCallableNode($expr->var, $expr->name, $methodCall);
 			} elseif ($expr instanceof StaticCall) {
 				$newExpr = new StaticMethodCallableNode($expr->class, $expr->name, $expr);
 			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {

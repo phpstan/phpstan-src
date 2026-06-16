@@ -123,7 +123,7 @@ class DownloadCommand extends Command
 			if (count($phpVersionHashes) === 0) {
 				continue;
 			}
-			$chunkSize = (int) ceil(count($phpVersionHashes) / 20);
+			$chunkSize = (int) ceil(count($phpVersionHashes) / 10);
 			if ($chunkSize < 1) {
 				throw new Exception('Chunk size less than 1');
 			}

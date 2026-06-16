@@ -482,8 +482,8 @@ final class AnalyseCommand extends Command
 
 		if (count($internalErrorsTuples) > 0) {
 			foreach ($internalErrorsTuples as [$internalError]) {
-				$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
-				$inceptionResult->getStdOutput()->writeLineFormatted('');
+				$errorOutput->writeLineFormatted($internalError->getMessage());
+				$errorOutput->writeLineFormatted('');
 			}
 
 			$analysisResult = new AnalysisResult(

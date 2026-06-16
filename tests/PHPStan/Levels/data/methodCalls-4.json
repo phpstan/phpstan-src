@@ -1,0 +1,17 @@
+[
+    {
+        "message": "Method Levels\\MethodCalls\\Foo::doFoo() calls itself on every code path, leading to infinite recursion.",
+        "line": 10,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\MethodCalls\\Bar::doBar() calls itself on every code path, leading to infinite recursion.",
+        "line": 25,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\MethodCalls\\ExtraArguments::doFoo() calls itself on every code path, leading to infinite recursion.",
+        "line": 236,
+        "ignorable": true
+    }
+]

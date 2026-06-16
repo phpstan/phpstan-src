@@ -29,7 +29,7 @@ final class FileExcluder
 	/**
 	 * Files to exclude from analysing
 	 *
-	 * @var string[]
+	 * @var array<string, true>
 	 */
 	private array $literalAnalyseFilesExcludes = [];
 
@@ -63,7 +63,7 @@ final class FileExcluder
 				$this->fnmatchAnalyseExcludes[] = $normalized;
 			} else {
 				if (is_file($normalized)) {
-					$this->literalAnalyseFilesExcludes[] = $normalized;
+					$this->literalAnalyseFilesExcludes[$normalized] = true;
 				} elseif (is_dir($normalized)) {
 					if (!$trailingDirSeparator) {
 						$normalized .= DIRECTORY_SEPARATOR;
@@ -91,10 +91,8 @@ final class FileExcluder
 				return true;
 			}
 		}
-		foreach ($this->literalAnalyseFilesExcludes as $exclude) {
-			if ($file === $exclude) {
-				return true;
-			}
+		if (isset($this->literalAnalyseFilesExcludes[$file])) {
+			return true;
 		}
 		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
 			if (fnmatch($exclude, $file, $this->fnmatchFlags)) {

@@ -258,7 +258,7 @@ class RunCommand extends Command
 				return $errors;
 			},
 			static function (Throwable $throwable) use ($hash, $output) {
-				$output->writeln(sprintf('Analysis of %s errored %.2f s', $hash, $throwable->getMessage()));
+				$output->writeln(sprintf('Analysis of %s errored %s', $hash, $throwable->getMessage()));
 			}
 		);
 	}

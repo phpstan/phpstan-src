@@ -481,11 +481,6 @@ final class AnalyseCommand extends Command
 		$errorFormatter = $container->getService($errorFormatterServiceName);
 
 		if (count($internalErrorsTuples) > 0) {
-			foreach ($internalErrorsTuples as [$internalError]) {
-				$errorOutput->writeLineFormatted($internalError->getMessage());
-				$errorOutput->writeLineFormatted('');
-			}
-
 			$analysisResult = new AnalysisResult(
 				array_values($internalFileSpecificErrors),
 				array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors),
@@ -505,7 +500,6 @@ final class AnalyseCommand extends Command
 
 			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
-			$errorOutput->writeLineFormatted('internal errors '. implode("\n", array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors)));
 			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
 			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
 			$errorOutput->writeLineFormatted('   to get all reported errors.');

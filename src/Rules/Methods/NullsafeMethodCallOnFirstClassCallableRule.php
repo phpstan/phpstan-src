@@ -5,20 +5,20 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Node\NullsafeFirstClassCallableNode;
+use PHPStan\Node\NullsafeMethodCallOnFirstClassCallableNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements Rule<NullsafeFirstClassCallableNode>
+ * @implements Rule<NullsafeMethodCallOnFirstClassCallableNode>
  */
 #[RegisteredRule(level: 0)]
-final class NullsafeFirstClassCallableRule implements Rule
+final class NullsafeMethodCallOnFirstClassCallableRule implements Rule
 {
 
 	public function getNodeType(): string
 	{
-		return NullsafeFirstClassCallableNode::class;
+		return NullsafeMethodCallOnFirstClassCallableNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

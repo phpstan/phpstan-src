@@ -7,14 +7,14 @@ use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<NullsafeFirstClassCallableRule>
+ * @extends RuleTestCase<NullsafeMethodCallOnFirstClassCallableRule>
  */
-class NullsafeFirstClassCallableRuleTest extends RuleTestCase
+class NullsafeMethodCallOnFirstClassCallableRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new NullsafeFirstClassCallableRule();
+		return new NullsafeMethodCallOnFirstClassCallableRule();
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

@@ -13,7 +13,7 @@ use PhpParser\Node\Identifier;
  *
  * @api
  */
-final class NullsafeFirstClassCallableNode extends Expr implements VirtualNode
+final class NullsafeMethodCallOnFirstClassCallableNode extends Expr implements VirtualNode
 {
 
 	public function __construct(

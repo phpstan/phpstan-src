@@ -32,7 +32,7 @@ use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\MethodCallableNode;
-use PHPStan\Node\NullsafeFirstClassCallableNode;
+use PHPStan\Node\NullsafeMethodCallOnFirstClassCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
 use function preg_match;
@@ -184,7 +184,7 @@ final class Printer extends Standard
 		return sprintf('__phpstanMethodCallable(%s)', $this->p($expr->getOriginalNode()));
 	}
 
-	protected function pPHPStan_Node_NullsafeFirstClassCallableNode(NullsafeFirstClassCallableNode $expr): string // phpcs:ignore
+	protected function pPHPStan_Node_NullsafeFirstClassCallableNode(NullsafeMethodCallOnFirstClassCallableNode $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanNullsafeFirstClassCallable(%s)', $this->p($expr->getOriginalNode()));
 	}

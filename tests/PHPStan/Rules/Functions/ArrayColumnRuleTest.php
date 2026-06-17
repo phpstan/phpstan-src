@@ -72,6 +72,11 @@ class ArrayColumnRuleTest extends RuleTestCase
 				"Parameter #2 \$column_key of function array_column expects a valid property name, 'wrong_key' given, but ArrayColumnRuleTest\\NonFinalObject does not have such property.",
 				108,
 			],
+			[
+				"Parameter #2 \$column_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject|ArrayColumnRuleTest\\NonFinalObject does not have such property.",
+				119,
+				$tipText,
+			],
 		]);
 	}
 

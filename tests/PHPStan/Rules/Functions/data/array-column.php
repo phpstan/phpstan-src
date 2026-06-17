@@ -108,3 +108,13 @@ function bug5101(): void
 	array_column($ar, 'wrong_key');
 	array_column($ar, 'key');
 }
+
+/**
+ * @param array<NonFinalObject|FinalObject> $union
+ */
+function unionElements(array $union): void
+{
+	array_column($union, 'key'); // exists on NonFinalObject
+	array_column($union, 'id'); // exists on FinalObject
+	array_column($union, 'missing'); // exists on neither
+}

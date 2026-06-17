@@ -1276,6 +1276,14 @@ final class TypeNodeResolver
 			}
 
 			$constantName = $constExpr->name;
+			if (strtolower($constantName) === 'class') {
+				if ($isStatic) {
+					return new GenericClassStringType(new StaticType($classReflection));
+				}
+
+				return new ConstantStringType($classReflection->getName(), true);
+			}
+
 			if (!$classReflection->hasConstant($constantName)) {
 				return new ErrorType();
 			}
@@ -1380,6 +1388,14 @@ final class TypeNodeResolver
 			}
 
 			$constantName = $constExpr->name;
+			if (strtolower($constantName) === 'class') {
+				if ($isStatic) {
+					return new GenericClassStringType(new StaticType($classReflection));
+				}
+
+				return new ConstantStringType($classReflection->getName(), true);
+			}
+
 			if (Strings::contains($constantName, '*')) {
 				// convert * into .*? and escape everything else so the constants can be matched against the pattern
 				$pattern = '{^' . str_replace('\\*', '.*?', preg_quote($constantName)) . '$}D';

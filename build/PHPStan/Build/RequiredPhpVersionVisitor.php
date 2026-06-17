@@ -125,6 +125,10 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 			}
 		}
 
+		if ($node instanceof Node\Arg && $node->name !== null) {
+			$this->require(self::PHP_8_0, 'named arguments', $node);
+		}
+
 		$this->checkStandaloneType($node);
 		$this->checkMixedType($node);
 

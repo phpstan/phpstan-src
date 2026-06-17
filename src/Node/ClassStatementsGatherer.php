@@ -180,13 +180,7 @@ final class ClassStatementsGatherer
 			return;
 		}
 		if ($node instanceof MethodCallableNode || $node instanceof StaticMethodCallableNode) {
-			$originalNode = $node->getOriginalNode();
-			if ($originalNode instanceof Expr\NullsafeMethodCall) {
-				// $foo?->bar(...) is a fatal error in PHP, but it must not crash the
-				// analyser; collect it as a regular method call.
-				$originalNode = new MethodCall($originalNode->var, $originalNode->name, $originalNode->args, $originalNode->getAttributes());
-			}
-			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($originalNode, $scope);
+			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node->getOriginalNode(), $scope);
 			return;
 		}
 		if ($node instanceof MethodReturnStatementsNode) {

@@ -7,15 +7,19 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 
 /**
+ * Represents `$foo?->bar(...)` - combining the nullsafe operator with the
+ * first-class callable syntax. This is a fatal error in PHP ("Cannot combine
+ * nullsafe operator with Closure creation"), reported by NullsafeFirstClassCallableRule.
+ *
  * @api
  */
-final class MethodCallableNode extends Expr implements VirtualNode
+final class NullsafeFirstClassCallableNode extends Expr implements VirtualNode
 {
 
 	public function __construct(
 		private Expr $var,
 		private Identifier|Expr $name,
-		private Expr\MethodCall $originalNode,
+		private Expr\NullsafeMethodCall $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
@@ -34,7 +38,7 @@ final class MethodCallableNode extends Expr implements VirtualNode
 		return $this->name;
 	}
 
-	public function getOriginalNode(): Expr\MethodCall
+	public function getOriginalNode(): Expr\NullsafeMethodCall
 	{
 		return $this->originalNode;
 	}
@@ -42,7 +46,7 @@ final class MethodCallableNode extends Expr implements VirtualNode
 	#[Override]
 	public function getType(): string
 	{
-		return 'PHPStan_Node_MethodCallableNode';
+		return 'PHPStan_Node_NullsafeFirstClassCallableNode';
 	}
 
 	/**

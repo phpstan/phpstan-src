@@ -21,6 +21,7 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\MethodCallableNode;
+use PHPStan\Node\NullsafeFirstClassCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -484,6 +485,10 @@ final class DependencyResolver
 			}
 		} elseif ($node instanceof MethodCallableNode) {
 			foreach ($this->resolveDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope)->getReflections() as $dependency) {
+				$dependenciesReflections[] = $dependency;
+			}
+		} elseif ($node instanceof NullsafeFirstClassCallableNode) {
+			foreach ($this->resolveDependencies(new Node\Expr\NullsafeMethodCall($node->getVar(), $node->getName()), $scope)->getReflections() as $dependency) {
 				$dependenciesReflections[] = $dependency;
 			}
 		} elseif ($node instanceof FunctionCallableNode) {

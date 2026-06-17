@@ -94,6 +94,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
 				impurePoints: $varResult->getImpurePoints(),
+				containsNullsafe: $varResult->containsNullsafe(),
 			);
 		}
 
@@ -123,6 +124,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			containsNullsafe: $varResult->containsNullsafe(),
 		);
 	}
 

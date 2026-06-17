@@ -126,6 +126,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			containsNullsafe: true,
 		);
 	}
 

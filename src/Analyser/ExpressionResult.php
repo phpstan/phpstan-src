@@ -34,6 +34,7 @@ final class ExpressionResult
 		private bool $isAlwaysTerminating,
 		private array $throwPoints,
 		private array $impurePoints,
+		private bool $containsNullsafe = false,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
 	)
@@ -55,6 +56,17 @@ final class ExpressionResult
 	public function hasYield(): bool
 	{
 		return $this->hasYield;
+	}
+
+	/**
+	 * Whether this expression's chain contains a nullsafe operator (?->). A
+	 * fetch/call on a receiver whose chain short-circuits propagates null,
+	 * which a plain nullable receiver (e.g. a nullable variable) does not -
+	 * this flag is what tells them apart.
+	 */
+	public function containsNullsafe(): bool
+	{
+		return $this->containsNullsafe;
 	}
 
 	/**

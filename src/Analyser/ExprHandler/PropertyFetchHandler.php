@@ -94,6 +94,7 @@ final class PropertyFetchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			containsNullsafe: $varResult->containsNullsafe(),
 		);
 	}
 

@@ -66,6 +66,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			),
 		];
 		$isAlwaysTerminating = false;
+		$containsNullsafe = false;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $classResult->hasYield();
@@ -73,6 +74,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$impurePoints = $classResult->getImpurePoints();
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			$scope = $classResult->getScope();
+			$containsNullsafe = $classResult->containsNullsafe();
 		}
 		if (!$expr->name instanceof VarLikeIdentifier) {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
@@ -91,6 +93,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			containsNullsafe: $containsNullsafe,
 		);
 	}
 

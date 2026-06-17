@@ -103,8 +103,8 @@ final class VariableHandler implements ExprHandler
 			$isAlwaysTerminating,
 			$throwPoints,
 			$impurePoints,
-			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

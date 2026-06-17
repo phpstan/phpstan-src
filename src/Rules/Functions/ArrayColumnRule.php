@@ -46,6 +46,12 @@ final class ArrayColumnRule implements Rule
 			return [];
 		}
 
+		// array_column() requires at least the array and the column key - bail
+		// out before the more expensive reflection lookups below.
+		if (count($node->getArgs()) < 2) {
+			return [];
+		}
+
 		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}

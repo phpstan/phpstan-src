@@ -21,6 +21,7 @@ interface ExpressionResultFactory
 		bool $isAlwaysTerminating,
 		array $throwPoints,
 		array $impurePoints,
+		bool $containsNullsafe = false,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
 	): ExpressionResult;

@@ -88,6 +88,7 @@ final class StaticCallHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$containsNullsafe = false;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $classResult->hasYield();
@@ -96,6 +97,7 @@ final class StaticCallHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 
 			$scope = $classResult->getScope();
+			$containsNullsafe = $classResult->containsNullsafe();
 		}
 
 		$parametersAcceptor = null;
@@ -299,6 +301,7 @@ final class StaticCallHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			containsNullsafe: $containsNullsafe,
 		);
 	}
 

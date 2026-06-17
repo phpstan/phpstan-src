@@ -30,32 +30,47 @@ class ArrayColumnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array-column.php'], [
 			[
 				"Parameter #2 \$column_key of function array_column expects a valid property name, 'wrong_key' given, but ArrayColumnRuleTest\\NonFinalObject does not have such property.",
-				64,
+				72,
 				$tipText,
 			],
 			[
 				"Parameter #2 \$column_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
-				68,
+				76,
 				$tipText,
 			],
 			[
 				"Parameter #3 \$index_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
-				70,
+				78,
 				$tipText,
 			],
 			[
 				"Parameter #2 \$column_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
-				71,
+				79,
 				$tipText,
 			],
 			[
 				"Parameter #3 \$index_key of function array_column expects a valid property name, 'missing2' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
-				71,
+				79,
+				$tipText,
+			],
+			[
+				"Parameter #2 \$column_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\Suit does not have such property.",
+				87,
+				$tipText,
+			],
+			[
+				"Parameter #2 \$column_key of function array_column expects a valid property name, 'value' given, but ArrayColumnRuleTest\\PureSuit does not have such property.",
+				93,
+				$tipText,
+			],
+			[
+				"Parameter #2 \$column_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\PureSuit does not have such property.",
+				94,
 				$tipText,
 			],
 			[
 				"Parameter #2 \$column_key of function array_column expects a valid property name, 'wrong_key' given, but ArrayColumnRuleTest\\NonFinalObject does not have such property.",
-				96,
+				108,
 			],
 		]);
 	}

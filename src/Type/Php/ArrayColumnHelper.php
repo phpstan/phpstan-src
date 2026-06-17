@@ -198,7 +198,15 @@ final class ArrayColumnHelper
 
 		foreach ($classReflections as $classReflection) {
 			if ($classReflection->isEnum()) {
-				return false;
+				// Enum cases expose the read-only `name` property, and backed
+				// enums additionally expose `value`. Any other name is missing.
+				if ($propertyName === 'name') {
+					return false;
+				}
+				if ($propertyName === 'value' && $classReflection->isBackedEnum()) {
+					return false;
+				}
+				continue;
 			}
 			if ($classReflection->hasInstanceProperty($propertyName)) {
 				return false;

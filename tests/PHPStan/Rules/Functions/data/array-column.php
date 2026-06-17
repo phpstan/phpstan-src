@@ -49,6 +49,13 @@ enum Suit: string
 
 }
 
+enum PureSuit
+{
+
+	case Hearts;
+
+}
+
 /**
  * @param NonFinalObject[] $a
  * @param FinalObject[] $b
@@ -57,8 +64,9 @@ enum Suit: string
  * @param Suit[] $e
  * @param array<array<string, int>> $f
  * @param list<FinalObject|array<string, int>> $g
+ * @param PureSuit[] $h
  */
-function test(array $a, array $b, array $c, array $d, array $e, array $f, array $g): void
+function test(array $a, array $b, array $c, array $d, array $e, array $f, array $g, array $h): void
 {
 	array_column($a, 'key');
 	array_column($a, 'wrong_key');
@@ -80,6 +88,10 @@ function test(array $a, array $b, array $c, array $d, array $e, array $f, array 
 
 	array_column($f, 'col');
 	array_column($g, 'missing');
+
+	array_column($h, 'name');
+	array_column($h, 'value');
+	array_column($h, 'missing');
 }
 
 /**

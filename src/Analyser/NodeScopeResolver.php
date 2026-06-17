@@ -2759,9 +2759,8 @@ class NodeScopeResolver
 				// $foo?->bar(...) is a fatal error in PHP ("Cannot combine nullsafe
 				// operator with Closure creation"), but it must not crash the analyser.
 				// It is treated as a regular method-call first-class callable and the
-				// error is reported by MethodCallableRule via the nullsafe flag.
-				$methodCall = new MethodCall($expr->var, $expr->name, $expr->args, $expr->getAttributes());
-				$newExpr = new MethodCallableNode($expr->var, $expr->name, $methodCall, true);
+				// error is reported by MethodCallableRule via MethodCallableNode::isNullsafe().
+				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr);
 			} elseif ($expr instanceof StaticCall) {
 				$newExpr = new StaticMethodCallableNode($expr->class, $expr->name, $expr);
 			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {

@@ -15,8 +15,7 @@ final class MethodCallableNode extends Expr implements VirtualNode
 	public function __construct(
 		private Expr $var,
 		private Identifier|Expr $name,
-		private Expr\MethodCall $originalNode,
-		private bool $nullsafe = false,
+		private Expr\MethodCall|Expr\NullsafeMethodCall $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
@@ -35,7 +34,7 @@ final class MethodCallableNode extends Expr implements VirtualNode
 		return $this->name;
 	}
 
-	public function getOriginalNode(): Expr\MethodCall
+	public function getOriginalNode(): Expr\MethodCall|Expr\NullsafeMethodCall
 	{
 		return $this->originalNode;
 	}
@@ -46,7 +45,7 @@ final class MethodCallableNode extends Expr implements VirtualNode
 	 */
 	public function isNullsafe(): bool
 	{
-		return $this->nullsafe;
+		return $this->originalNode instanceof Expr\NullsafeMethodCall;
 	}
 
 	#[Override]

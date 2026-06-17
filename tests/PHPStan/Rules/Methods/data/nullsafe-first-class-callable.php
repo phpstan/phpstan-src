@@ -20,6 +20,12 @@ function test(?Foo $foo): void
 	$foo?->doFoo(...);
 }
 
+function testDynamic(?Foo $foo, string $method): void
+{
+	// dynamic method name - also a fatal error in PHP
+	$foo?->{$method}(...);
+}
+
 
 class HelloWorld
 {

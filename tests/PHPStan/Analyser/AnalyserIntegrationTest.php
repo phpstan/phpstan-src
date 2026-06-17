@@ -1614,9 +1614,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9746.php');
 		$this->assertCount(2, $errors);
 		$this->assertSame('Call to method Bug9746\HelloWorld::sayHello() on a separate line has no effect.', $errors[0]->getMessage());
-		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame(11, $errors[0]->getLine());
 		$this->assertSame('Cannot combine nullsafe operator with Closure creation.', $errors[1]->getMessage());
-		$this->assertSame(9, $errors[1]->getLine());
+		$this->assertSame(11, $errors[1]->getLine());
 	}
 
 	/**

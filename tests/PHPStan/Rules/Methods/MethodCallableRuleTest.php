@@ -65,7 +65,7 @@ class MethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-callable-nullsafe.php'], [
 			[
 				'Cannot combine nullsafe operator with Closure creation.',
-				18,
+				20,
 			],
 		]);
 	}

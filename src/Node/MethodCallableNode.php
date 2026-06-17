@@ -39,15 +39,6 @@ final class MethodCallableNode extends Expr implements VirtualNode
 		return $this->originalNode;
 	}
 
-	/**
-	 * Whether the original expression combined the nullsafe operator with the
-	 * first-class callable syntax (`$foo?->bar(...)`), which is a fatal error in PHP.
-	 */
-	public function isNullsafe(): bool
-	{
-		return $this->originalNode instanceof Expr\NullsafeMethodCall;
-	}
-
 	#[Override]
 	public function getType(): string
 	{

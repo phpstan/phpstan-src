@@ -37,7 +37,7 @@ final class MethodCallableRule implements Rule
 			];
 		}
 
-		if ($node->isNullsafe()) {
+		if ($node->getOriginalNode() instanceof Node\Expr\NullsafeMethodCall) {
 			return [
 				RuleErrorBuilder::message('Cannot combine nullsafe operator with Closure creation.')
 					->nonIgnorable()

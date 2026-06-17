@@ -1,0 +1,101 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+#
+# DRAFT — patch (PR-affected lines only) coverage gate via shipmonk/coverage-guard.
+# See https://github.com/shipmonk-rnd/coverage-guard
+#
+# Only runs on pull_request: it gates the lines the PR changed, so it has no
+# meaning on push to a maintained branch.
+
+name: "Patch coverage"
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
+      - 'issue-bot/**'
+
+concurrency:
+  group: patch-coverage-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  patch-coverage:
+    name: "Patch coverage"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      # fetch-depth: 0 so the merge-base of base..head is present locally.
+      # ref: head.sha checks out the *real* PR head (NOT the refs/pull/N/merge
+      # commit) so the line numbers in the coverage report and in the diff
+      # below refer to the same tree. See the PR description for why this
+      # sidesteps GitHub's merge-commit/conflict handling entirely.
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
+        with:
+          coverage: "pcov"
+          php-version: "8.3"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-file: development
+          ini-values: memory_limit=-1
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          working-directory: "tests/"
+
+      # coverage-guard is not yet a dependency; install it ad-hoc for the gate.
+      # If we decide to keep this, move it into require-dev instead.
+      - name: "Install coverage-guard"
+        run: composer require --dev shipmonk/coverage-guard --ignore-platform-reqs
+
+      # Mirror the proven-green coverage step from `make infection` /
+      # the mutation-testing job (paratest + pcov over the whole suite), but
+      # emit clover so coverage-guard can read it. paratest merges the
+      # per-worker coverage for us, so no `coverage-guard merge` step is needed.
+      - name: "Tests with coverage"
+        run: |
+          php -d pcov.enabled=1 tests/vendor/bin/paratest \
+            --runner WrapperRunner \
+            --passthru-php="'-d' 'pcov.enabled=1'" \
+            --coverage-clover=coverage/clover.xml
+
+      # GitHub's own "Files changed" diff is the three-dot diff between the
+      # base branch tip and the PR head (git diff base...head == diff from
+      # merge-base(base, head) to head). It performs NO merge, so it is
+      # independent of whether the PR conflicts with base. The "+" line
+      # numbers are in head's coordinate system, matching the coverage report
+      # collected on the head checkout above.
+      - name: "Compute PR diff"
+        run: |
+          git diff \
+            "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" \
+            > changes.patch
+          echo "----- changed files -----"
+          git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
+
+      - name: "Check patch coverage"
+        run: vendor/bin/coverage-guard check coverage/clover.xml --patch changes.patch
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: patch-coverage
+          path: |
+            coverage/clover.xml
+            changes.patch

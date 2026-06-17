@@ -7,35 +7,71 @@ namespace Bug12902;
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
-class NarrowsNativeConstantValue
-{
-	private readonly int|float $i;
-
-	public function __construct()
+// Since PHP 8.5, "clone with" can reinitialize any readonly property, so the value
+// assigned in the constructor is no longer remembered in other methods.
+if (PHP_VERSION_ID >= 80500) {
+	class NarrowsNativeConstantValueCloneWith
 	{
-		$this->i = 1;
+		private readonly int|float $i;
+
+		public function __construct()
+		{
+			$this->i = 1;
+		}
+
+		public function doFoo(): void
+		{
+			assertType('float|int', $this->i);
+			assertNativeType('float|int', $this->i);
+		}
 	}
 
-	public function doFoo(): void
-	{
-		assertType('1', $this->i);
-		assertNativeType('1', $this->i);
+	class NarrowsNativeReadonlyUnionCloneWith {
+		private readonly int|float $i;
+
+		public function __construct()
+		{
+			$this->i = getInt();
+			assertType('int', $this->i);
+			assertNativeType('int', $this->i);
+		}
+
+		public function doFoo(): void {
+			assertType('float|int', $this->i);
+			assertNativeType('float|int', $this->i);
+		}
 	}
-}
-
-class NarrowsNativeReadonlyUnion {
-	private readonly int|float $i;
-
-	public function __construct()
+} else {
+	class NarrowsNativeConstantValue
 	{
-		$this->i = getInt();
-		assertType('int', $this->i);
-		assertNativeType('int', $this->i);
+		private readonly int|float $i;
+
+		public function __construct()
+		{
+			$this->i = 1;
+		}
+
+		public function doFoo(): void
+		{
+			assertType('1', $this->i);
+			assertNativeType('1', $this->i);
+		}
 	}
 
-	public function doFoo(): void {
-		assertType('int', $this->i);
-		assertNativeType('int', $this->i);
+	class NarrowsNativeReadonlyUnion {
+		private readonly int|float $i;
+
+		public function __construct()
+		{
+			$this->i = getInt();
+			assertType('int', $this->i);
+			assertNativeType('int', $this->i);
+		}
+
+		public function doFoo(): void {
+			assertType('int', $this->i);
+			assertNativeType('int', $this->i);
+		}
 	}
 }
 

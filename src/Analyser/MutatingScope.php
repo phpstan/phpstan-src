@@ -307,6 +307,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	private function rememberConstructorExpressions(array $currentExpressionTypes): array
 	{
+		// Since PHP 8.5, "clone with" can reinitialize any readonly property, so the value
+		// assigned in the constructor is no longer guaranteed to hold in other methods
+		// (where $this might be a clone-modified instance). Don't remember readonly
+		// properties then so they widen back to their declared type.
+		$cloneWithCanReinitializeReadonly = !$this->getPhpVersion()->supportsCloneWith()->no();
+
 		$expressionTypes = [];
 		foreach ($currentExpressionTypes as $exprString => $expressionTypeHolder) {
 			$expr = $expressionTypeHolder->getExpr();
@@ -319,7 +325,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					continue;
 				}
 			} elseif ($expr instanceof PropertyFetch) {
-				if (!$this->isReadonlyPropertyFetch($expr, true)) {
+				if ($cloneWithCanReinitializeReadonly || !$this->isReadonlyPropertyFetch($expr, true)) {
 					continue;
 				}
 			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {

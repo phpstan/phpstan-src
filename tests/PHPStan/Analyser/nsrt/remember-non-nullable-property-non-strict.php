@@ -69,17 +69,35 @@ function getIntOrFloatOrNull(): null|int|float {
 	return 1;
 }
 
-class NarrowsNativeUnion {
-	private readonly int|float $i;
+// Since PHP 8.5, "clone with" can reinitialize any readonly property, so the value
+// assigned in the constructor is no longer remembered in other methods.
+if (PHP_VERSION_ID >= 80500) {
+	class NarrowsNativeUnionCloneWith {
+		private readonly int|float $i;
 
-	public function __construct()
-	{
-		$this->i = getInt();
+		public function __construct()
+		{
+			$this->i = getInt();
+		}
+
+		public function doFoo(): void {
+			assertType('float|int', $this->i);
+			assertNativeType('float|int', $this->i);
+		}
 	}
+} else {
+	class NarrowsNativeUnion {
+		private readonly int|float $i;
 
-	public function doFoo(): void {
-		assertType('int', $this->i);
-		assertNativeType('int', $this->i);
+		public function __construct()
+		{
+			$this->i = getInt();
+		}
+
+		public function doFoo(): void {
+			assertType('int', $this->i);
+			assertNativeType('int', $this->i);
+		}
 	}
 }
 

@@ -118,3 +118,16 @@ function unionElements(array $union): void
 	array_column($union, 'id'); // exists on FinalObject
 	array_column($union, 'missing'); // exists on neither
 }
+
+class HelloWorld
+{
+
+	/**
+	 * @param list<\DateTimeImmutable> $dates
+	 */
+	public function bug9671(array $dates): void
+	{
+		array_column($dates, 'Price');
+	}
+
+}

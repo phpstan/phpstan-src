@@ -77,6 +77,11 @@ class ArrayColumnRuleTest extends RuleTestCase
 				119,
 				$tipText,
 			],
+			[
+				"Parameter #2 \$column_key of function array_column expects a valid property name, 'Price' given, but DateTimeImmutable does not have such property.",
+				130,
+				$tipText,
+			],
 		]);
 	}
 

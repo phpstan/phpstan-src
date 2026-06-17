@@ -1612,13 +1612,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// first-class callable NullsafeMethodCall used to crash with an internal error
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9746.php');
-		$this->assertCount(3, $errors);
-		$this->assertSame('Function Bug9746Integration\test() returns void but does not have any side effects.', $errors[0]->getMessage());
-		$this->assertSame(15, $errors[0]->getLine());
-		$this->assertSame('Call to method Bug9746Integration\Foo::doFoo() on a separate line has no effect.', $errors[1]->getMessage());
-		$this->assertSame(18, $errors[1]->getLine());
-		$this->assertSame('Cannot call method doFoo() on Bug9746Integration\Foo|null.', $errors[2]->getMessage());
-		$this->assertSame(18, $errors[2]->getLine());
+		$this->assertCount(2, $errors);
+		$this->assertSame('Call to method Bug9746\HelloWorld::sayHello() on a separate line has no effect.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame('Cannot combine nullsafe operator with Closure creation.', $errors[1]->getMessage());
+		$this->assertSame(9, $errors[1]->getLine());
 	}
 
 	/**

@@ -37,6 +37,15 @@ final class MethodCallableRule implements Rule
 			];
 		}
 
+		if ($node->isNullsafe()) {
+			return [
+				RuleErrorBuilder::message('Cannot combine nullsafe operator with Closure creation.')
+					->nonIgnorable()
+					->identifier('nullsafe.firstClassCallable')
+					->build(),
+			];
+		}
+
 		$methodName = $node->getName();
 		if (!$methodName instanceof Node\Identifier) {
 			return [];

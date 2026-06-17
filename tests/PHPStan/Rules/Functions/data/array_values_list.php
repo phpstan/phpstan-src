@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 /** @var list<int> $list */
 $list = [1, 2, 3];

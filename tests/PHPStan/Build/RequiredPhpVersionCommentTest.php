@@ -132,6 +132,13 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		yield 'nullable union type' => ['<?php function foo(A|null $x) {}', 80000];
 		yield 'intersection type' => ['<?php function foo(A&B $x) {}', 80100];
 		yield 'first-class callable' => ['<?php strlen(...);', 80100];
+		yield 'named argument in function call' => ['<?php str_repeat(string: "a", times: 2);', 80000];
+		yield 'named argument in method call' => ['<?php $foo->bar(baz: 1);', 80000];
+		yield 'named argument in nullsafe method call' => ['<?php $foo?->bar(baz: 1);', 80000];
+		yield 'named argument in static call' => ['<?php Foo::bar(baz: 1);', 80000];
+		yield 'named argument in new' => ['<?php new Foo(bar: 1);', 80000];
+		yield 'named argument in attribute' => ['<?php #[Foo(bar: 1)] class C {}', 80000];
+		yield 'positional argument only' => ['<?php str_repeat("a", 2);', null];
 		yield 'readonly class' => ['<?php readonly class Foo {}', 80200];
 		yield 'standalone null type' => ['<?php function foo(): null { return null; }', 80200];
 		yield 'standalone false type' => ['<?php function foo(): false { return false; }', 80200];

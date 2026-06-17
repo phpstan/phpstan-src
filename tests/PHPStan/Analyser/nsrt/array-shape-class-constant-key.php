@@ -58,6 +58,12 @@ class Child extends Base
 		return [parent::class => 1];
 	}
 
+	/** @return array{static::class: int} */
+	public static function staticKey(): array
+	{
+		return [static::class => 1];
+	}
+
 	/** @return static::class */
 	public static function staticClassConstant(): string
 	{
@@ -73,5 +79,6 @@ function test(): void
 	assertType('array{\'ArrayShapeClassConstantKey\\\\Test\', int}', Test::inTuple());
 	assertType('array{ArrayShapeClassConstantKey\\FinalTest: int}', FinalTest::staticInFinal());
 	assertType('array{ArrayShapeClassConstantKey\\Base: int}', Child::parentKey());
+	assertType('non-empty-array<class-string<ArrayShapeClassConstantKey\\Child>, int>', Child::staticKey());
 	assertType('class-string<ArrayShapeClassConstantKey\\Child>', Child::staticClassConstant());
 }

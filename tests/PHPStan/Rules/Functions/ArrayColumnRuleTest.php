@@ -82,6 +82,21 @@ class ArrayColumnRuleTest extends RuleTestCase
 				130,
 				$tipText,
 			],
+			[
+				"Parameter #2 \$column_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
+				140,
+				$tipText,
+			],
+			[
+				"Parameter #3 \$index_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
+				141,
+				$tipText,
+			],
+			[
+				"Parameter #3 \$index_key of function array_column expects a valid property name, 'missing' given, but ArrayColumnRuleTest\\FinalObject does not have such property.",
+				142,
+				$tipText,
+			],
 		]);
 	}
 

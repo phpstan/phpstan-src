@@ -131,3 +131,13 @@ class HelloWorld
 	}
 
 }
+
+/**
+ * @param FinalObject[] $b
+ */
+function namedArguments(array $b): void
+{
+	array_column($b, column_key: 'missing');
+	array_column($b, index_key: 'missing', column_key: 'name');
+	array_column(array: $b, column_key: 'name', index_key: 'missing');
+}

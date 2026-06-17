@@ -21,7 +21,6 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\MethodCallableNode;
-use PHPStan\Node\NullsafeFirstClassCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;

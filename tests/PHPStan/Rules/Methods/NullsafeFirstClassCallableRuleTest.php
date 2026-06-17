@@ -25,6 +25,10 @@ class NullsafeFirstClassCallableRuleTest extends RuleTestCase
 				'Cannot combine nullsafe operator with Closure creation.',
 				20,
 			],
+			[
+				'Cannot combine nullsafe operator with Closure creation.',
+				28,
+			],
 		]);
 	}
 

@@ -19,3 +19,12 @@ function test(?Foo $foo): void
 	// fatal error in PHP: "Cannot combine nullsafe operator with Closure creation"
 	$foo?->doFoo(...);
 }
+
+
+class HelloWorld
+{
+	public function sayHello(?self $self): void
+	{
+		$self?->sayHello(...);
+	}
+}

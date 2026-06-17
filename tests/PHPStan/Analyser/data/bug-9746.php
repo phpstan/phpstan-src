@@ -1,19 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Bug9746Integration;
+namespace Bug9746;
 
-class Foo
+class HelloWorld
 {
-
-	public function doFoo(): int
+	public function sayHello(?self $self): void
 	{
-		return 1;
+		$self?->sayHello(...);
 	}
-
-}
-
-function test(?Foo $foo): void
-{
-	// $x?->method(...) is a fatal error in PHP, but PHPStan must not crash on it.
-	$foo?->doFoo(...);
 }

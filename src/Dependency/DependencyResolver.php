@@ -487,10 +487,6 @@ final class DependencyResolver
 			foreach ($this->resolveDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope)->getReflections() as $dependency) {
 				$dependenciesReflections[] = $dependency;
 			}
-		} elseif ($node instanceof NullsafeFirstClassCallableNode) {
-			foreach ($this->resolveDependencies(new Node\Expr\NullsafeMethodCall($node->getVar(), $node->getName()), $scope)->getReflections() as $dependency) {
-				$dependenciesReflections[] = $dependency;
-			}
 		} elseif ($node instanceof FunctionCallableNode) {
 			foreach ($this->resolveDependencies(new Node\Expr\FuncCall($node->getName()), $scope)->getReflections() as $dependency) {
 				$dependenciesReflections[] = $dependency;

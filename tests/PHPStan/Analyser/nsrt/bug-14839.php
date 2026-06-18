@@ -26,8 +26,10 @@ function test(Foo $foo, Bar $bar, \UnitEnum $u, \BackedEnum $b): void
 {
 	assertType("'A'|'B'", $foo->name);
 	assertType("'A'|'B'", $bar->name);
+	assertType("'a'|'b'", $bar->value);
 	assertType('non-falsy-string', $u->name);
 	assertType('non-falsy-string', $b->name);
+	// `value` stays as its native `int|string`: unlike a case name, a backing value may legitimately be "" or "0".
 	assertType('int|string', $b->value);
 }
 

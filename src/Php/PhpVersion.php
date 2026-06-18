@@ -106,6 +106,21 @@ final class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsNativeMixed(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
+	public function supportsTrueFalseNullStandaloneType(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
+	public function supportsPipeOperator(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
 	public function deprecatesRequiredParameterAfterOptional(): bool
 	{
 		return $this->versionId >= 80000;

@@ -89,7 +89,7 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		// version-specific function signature) may therefore use it; the author owns
 		// that choice. Parse-breaking features (enums, hooks, ...) are still rejected.
 		if (
-			requiredVersionId === 80000
+			$requiredVersionId === 80000
 			&& self::hasUpperBoundLintConstraint($code)
 		) {
 			$this->expectNotToPerformAssertions();

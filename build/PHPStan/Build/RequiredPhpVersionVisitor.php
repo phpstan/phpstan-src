@@ -43,64 +43,64 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt\Enum_) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsEnums()), 'enums', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsEnums(), 'enums', $node);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Pipe) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsPipeOperator()), 'the pipe operator', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPipeOperator(), 'the pipe operator', $node);
 		}
 
 		if ($node instanceof Node\PropertyHook) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsPropertyHooks()), 'property hooks', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPropertyHooks(), 'property hooks', $node);
 		}
 
 		if ($node instanceof Node\IntersectionType) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsPureIntersectionTypes()), 'pure intersection types', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPureIntersectionTypes(), 'pure intersection types', $node);
 		}
 
 		if ($node instanceof Node\UnionType) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeUnionTypes()), 'union types', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeUnionTypes(), 'union types', $node);
 			foreach ($node->types as $innerType) {
 				if ($innerType instanceof Node\IntersectionType) {
-					$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsDisjunctiveNormalForm()), 'disjunctive normal form types', $innerType);
+					$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsDisjunctiveNormalForm(), 'disjunctive normal form types', $innerType);
 				}
 				if (!($innerType instanceof Node\Identifier) || strtolower($innerType->name) !== 'true') {
 					continue;
 				}
 
-				$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType()), 'the standalone "true" type', $innerType);
+				$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType(), 'the standalone "true" type', $innerType);
 			}
 		}
 
 		if ($node instanceof Node\Stmt\Class_ && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyClasses()), 'readonly classes', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyClasses(), 'readonly classes', $node);
 		}
 
 		if ($node instanceof Node\Stmt\Property && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties()), 'readonly properties', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties(), 'readonly properties', $node);
 		}
 
 		if ($node instanceof Node\Param && $node->flags !== 0) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsPromotedProperties()), 'promoted properties', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPromotedProperties(), 'promoted properties', $node);
 		}
 
 		if ($node instanceof Node\Param && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties()), 'readonly promoted properties', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties(), 'readonly promoted properties', $node);
 		}
 
 		if (
 			($node instanceof Node\Param || $node instanceof Node\Stmt\Property)
 			&& ($node->flags & Modifiers::VISIBILITY_SET_MASK) !== 0
 		) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsAsymmetricVisibility()), 'asymmetric visibility', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsAsymmetricVisibility(), 'asymmetric visibility', $node);
 		}
 
 		if ($node instanceof Node\Stmt\ClassConst && $node->type !== null) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeTypesInClassConstants()), 'typed class constants', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeTypesInClassConstants(), 'typed class constants', $node);
 		}
 
 		if ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Expr) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsDynamicClassConstantFetch()), 'dynamic class constant fetch', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsDynamicClassConstantFetch(), 'dynamic class constant fetch', $node);
 		}
 
 		if (
@@ -111,14 +111,14 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		) {
 			foreach ($node->args as $arg) {
 				if ($arg instanceof Node\VariadicPlaceholder) {
-					$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsFirstClassCallables()),'first-class callable syntax', $arg);
+					$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsFirstClassCallables(), 'first-class callable syntax', $arg);
 					break;
 				}
 			}
 		}
 
 		if ($node instanceof Node\Arg && $node->name !== null) {
-			$this->require($this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsNamedArguments()), 'named arguments', $node);
+			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsNamedArguments(), 'named arguments', $node);
 		}
 
 		$this->checkStandaloneType($node);
@@ -139,7 +139,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		$this->require(
-			$this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType()),
+			fn(PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType(),
 			'standalone "null", "false" or "true" types',
 			$type
 		);
@@ -157,9 +157,10 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		$this->require(
-			$this->findPhpVersion(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeMixed()),
+			fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeMixed(),
 			'the mixed type',
-			$type);
+			$type
+		);
 	}
 
 	private function getDeclaredType(Node $node): ?Node
@@ -184,8 +185,13 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
-	private function require(int $versionId, string $reason, Node $node): void
+	/**
+	 * @param callable(PhpVersion $phpVersion): bool $callable
+	 */
+	private function require(callable $callable, string $reason, Node $node): void
 	{
+		$versionId = $this->findPhpVersion($callable);
+
 		if ($this->requiredVersionId !== null && $this->requiredVersionId >= $versionId) {
 			return;
 		}
@@ -196,9 +202,10 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @param callable(PhpVersion $phpversion):bool $callable
+	 * @param callable(PhpVersion $phpVersion): bool $callable
 	 */
-	private function findPhpVersion(callable $callable):int {
+	private function findPhpVersion(callable $callable): int
+	{
 		$phpVersionIds = [
 			new PhpVersion(70400),
 			new PhpVersion(80000),

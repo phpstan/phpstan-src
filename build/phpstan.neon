@@ -42,7 +42,6 @@ parameters:
 			- 'PHPStan\ShouldNotHappenException'
 			- 'Symfony\Component\Console\Exception\InvalidArgumentException'
 			- 'PHPStan\BetterReflection\SourceLocator\Exception\InvalidFileLocation'
-			- 'PHPStan\BetterReflection\SourceLocator\Exception\InvalidArgumentException'
 			- 'Symfony\Component\Finder\Exception\DirectoryNotFoundException'
 			- 'InvalidArgumentException'
 			- 'PHPStan\DependencyInjection\ParameterNotFoundException'
@@ -68,7 +67,6 @@ parameters:
 			- 'PHPStan\Reflection\MissingStaticAccessorInstanceException'
 			- 'LogicException'
 			- 'Error'
-			- 'PHPStan\Analyser\Generator\TrampolineException'
 		check:
 			missingCheckedExceptionInThrows: true
 			tooWideThrowType: true

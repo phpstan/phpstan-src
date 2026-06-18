@@ -206,6 +206,9 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
+	/** @var array<string, bool> className(string) => whether its readonly properties can be reinitialized via PHP 8.5 "clone with" */
+	private array $classReadonlyPropertiesCloneWithReinitialization = [];
+
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -1041,7 +1044,9 @@ class NodeScopeResolver
 					}
 
 					if ($finalScope !== null) {
-						$scope = $finalScope->rememberConstructorScope();
+						$scope = $finalScope->rememberConstructorScope(
+							$this->classReadonlyPropertiesCloneWithReinitialization[$classReflection->getName()] ?? true,
+						);
 					}
 
 				}
@@ -1196,6 +1201,8 @@ class NodeScopeResolver
 			} else {
 				throw new ShouldNotHappenException();
 			}
+
+			$this->classReadonlyPropertiesCloneWithReinitialization[$classReflection->getName()] = $this->classReadonlyPropertiesCanBeReinitializedByCloneWith($classReflection, $stmt);
 
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $storage, $classStatementsGatherer);
@@ -2621,6 +2628,46 @@ class NodeScopeResolver
 		}
 
 		return $defaultClassReflection;
+	}
+
+	/**
+	 * Whether the readonly properties of the given class could be reinitialized via the PHP 8.5
+	 * "clone with" syntax, which would make their constructor-narrowed types unsound in other methods.
+	 *
+	 * A readonly property can only be reinitialized by "clone with" from within its declaring class
+	 * scope, so a final class that contains no "clone with" expression keeps the narrowed types of its
+	 * own readonly properties. Enums are never affected because they cannot be cloned. Everything else
+	 * is treated conservatively.
+	 */
+	private function classReadonlyPropertiesCanBeReinitializedByCloneWith(ClassReflection $classReflection, Node\Stmt\ClassLike $classNode): bool
+	{
+		// enums cannot be cloned, so "clone with" can never reinitialize their properties
+		if ($classReflection->isEnum()) {
+			return false;
+		}
+
+		// for non-final classes a subclass we cannot see might introduce "clone with", so stay conservative.
+		// isFinalByKeyword() is used on purpose: it does not resolve the class PHPDoc (which would happen
+		// too early here and break lazy generics resolution), and "clone with" precision only matters for
+		// classes that are final at the language level anyway.
+		if (!$classReflection->isFinalByKeyword()) {
+			return true;
+		}
+
+		// trait bodies are not part of $classNode, so we cannot rule out a "clone with" in there
+		if (count($classNode->getTraitUses()) > 0) {
+			return true;
+		}
+
+		$cloneWithCall = (new NodeFinder())->findFirst(
+			$classNode->stmts,
+			static fn (Node $node): bool => $node instanceof FuncCall
+				&& $node->name instanceof Name
+				&& $node->name->toLowerString() === 'clone'
+				&& count($node->getArgs()) === 2,
+		);
+
+		return $cloneWithCall !== null;
 	}
 
 	private function createAstClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection

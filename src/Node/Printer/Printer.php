@@ -21,7 +21,6 @@ use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
-use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -140,11 +139,6 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_ExistingArrayDimFetch(ExistingArrayDimFetch $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanExistingArrayDimFetch(%s, %s)', $this->p($expr->getVar()), $this->p($expr->getDim()));
-	}
-
-	protected function pPHPStan_Node_OriginalPropertyTypeExpr(OriginalPropertyTypeExpr $expr): string // phpcs:ignore
-	{
-		return sprintf('__phpstanOriginalPropertyType(%s)', $this->p($expr->getPropertyFetch()));
 	}
 
 	protected function pPHPStan_Node_SetOffsetValueTypeExpr(SetOffsetValueTypeExpr $expr): string // phpcs:ignore

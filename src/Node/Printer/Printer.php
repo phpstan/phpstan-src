@@ -14,7 +14,6 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
-use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
@@ -123,11 +122,6 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_GetIterableValueTypeExpr(GetIterableValueTypeExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanGetIterableValueType(%s)', $this->p($expr->getExpr()));
-	}
-
-	protected function pPHPStan_Node_GetIterableKeyTypeExpr(GetIterableKeyTypeExpr $expr): string // phpcs:ignore
-	{
-		return sprintf('__phpstanGetIterableKeyType(%s)', $this->p($expr->getExpr()));
 	}
 
 	protected function pPHPStan_Node_ExistingArrayDimFetch(ExistingArrayDimFetch $expr): string // phpcs:ignore

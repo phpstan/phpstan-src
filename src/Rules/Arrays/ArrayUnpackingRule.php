@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\ArrayItem;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -40,7 +40,10 @@ final class ArrayUnpackingRule implements Rule
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			new GetIterableKeyTypeExpr($node->value),
+			new NativeTypeExpr(
+				$scope->getIterableKeyType($scope->getType($node->value)),
+				$scope->getIterableKeyType($scope->getNativeType($node->value)),
+			),
 			'',
 			static fn (Type $type): bool => $type->isString()->no(),
 		);

@@ -41,22 +41,22 @@ parameters:
 			rawMessage: Right side of || is always false.
 			identifier: booleanAnd.alwaysFalse
 			count: 1
-			path: src/Reflection/Php/PhpClassReflectionExtension.php
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
 			rawMessage: If condition is always true.
 			identifier: booleanAnd.alwaysFalse
 			count: 1
-			path: src/Reflection/Php/PhpClassReflectionExtension.php
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
 			rawMessage: Result of && is always false.
 			identifier: booleanAnd.alwaysFalse
 			count: 1
-			path: src/Reflection/Php/PhpClassReflectionExtension.php
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
 			rawMessage: 'Strict comparison using === between class-string and ''UnitEnum'' will always evaluate to false.'
 			identifier: notIdentical.alwaysTrue
 			count: 1
-			path: src/Reflection/Php/PhpClassReflectionExtension.php
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php

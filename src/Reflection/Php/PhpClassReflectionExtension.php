@@ -206,8 +206,6 @@ final class PhpClassReflectionExtension
 			));
 		}
 
-		// The magic `name` and `value` properties on enums are synthesized by BetterReflection.
-		// `name` is declared on the `UnitEnum` interface (and inherited by `BackedEnum`); `value` on `BackedEnum`.
 		$isUnitEnumInterfaceNameProperty = $this->phpVersion->supportsEnums()
 			&& $propertyName === 'name'
 			&& $declaringClassName === 'UnitEnum';
@@ -236,10 +234,6 @@ final class PhpClassReflectionExtension
 					$phpDocType = TypeCombinator::union(...$types);
 					$nativeType = new MixedType();
 				} else {
-					// Accessed only through the `UnitEnum`/`BackedEnum` interface (or a template bound by it),
-					// so the concrete case names are unknown. Enum case names are valid PHP labels, so they
-					// can never be empty or "0", hence non-falsy-string. (The `value` of a backed enum is left
-					// as its native `int|string`, since a backing value may legitimately be "" or "0".)
 					$phpDocType = TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType());
 					$nativeType = new StringType();
 				}

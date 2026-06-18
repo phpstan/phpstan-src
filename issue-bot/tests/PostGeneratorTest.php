@@ -6,6 +6,7 @@ use PHPStan\IssueBot\Comment\BotComment;
 use PHPStan\IssueBot\Playground\PlaygroundError;
 use PHPStan\IssueBot\Playground\PlaygroundExample;
 use PHPStan\IssueBot\Playground\PlaygroundResultTab;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
@@ -14,9 +15,9 @@ class PostGeneratorTest extends TestCase
 {
 
 	/**
-	 * @return iterable<array{string, list<PlaygroundResultTab>, list<PlaygroundResultTab>, BotComment[], string|null}>
+	 * @return iterable<array{string, list<PlaygroundResultTab>, list<PlaygroundResultTab>, BotComment[], string|null, string|null}>
 	 */
-	public function dataGeneratePosts(): iterable
+	static public function dataGeneratePosts(): iterable
 	{
 		$diff = '@@ @@
 -1: abc
@@ -99,11 +100,11 @@ class PostGeneratorTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider dataGeneratePosts
 	 * @param list<PlaygroundResultTab> $originalTabs
 	 * @param list<PlaygroundResultTab> $currentTabs
 	 * @param BotComment[] $botComments
 	 */
+	#[DataProvider('dataGeneratePosts')]
 	public function testGeneratePosts(
 		string $hash,
 		array $originalTabs,

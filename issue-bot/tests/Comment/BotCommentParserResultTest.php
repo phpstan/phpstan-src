@@ -6,6 +6,7 @@ use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Parser\MarkdownParser;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class BotCommentParserResultTest extends TestCase
@@ -14,7 +15,7 @@ class BotCommentParserResultTest extends TestCase
 	/**
 	 * @return iterable<array{string, string, string}>
 	 */
-	public function dataParse(): iterable
+	static public function dataParse(): iterable
 	{
 		yield [
 			'@foobar After [the latest commit to dev-master](https://github.com/phpstan/phpstan-src/commit/abc123), PHPStan now reports different result with your [code snippet](https://phpstan.org/r/74c3b0af-5a87-47e7-907a-9ea6fbb1c396):
@@ -32,9 +33,7 @@ class BotCommentParserResultTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataParse
-	 */
+	#[DataProvider('dataParse')]
 	public function testParse(string $text, string $expectedHash, string $expectedDiff): void
 	{
 		$markdownEnvironment = new Environment();

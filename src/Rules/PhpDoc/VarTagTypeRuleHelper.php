@@ -8,7 +8,7 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -78,7 +78,7 @@ final class VarTagTypeRuleHelper
 					$dimExpr = $arrayItem->key;
 				}
 
-				$itemErrors = $this->checkVarType($scope, $arrayItem->value, new GetOffsetValueTypeExpr($expr, $dimExpr), $varTags, $assignedVariables);
+				$itemErrors = $this->checkVarType($scope, $arrayItem->value, new TypeExpr($scope->getType($expr)->getOffsetValueType($scope->getType($dimExpr))), $varTags, $assignedVariables);
 				foreach ($itemErrors as $error) {
 					$errors[] = $error;
 				}

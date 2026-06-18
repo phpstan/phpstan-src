@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -105,6 +106,7 @@ final class PhpClassReflectionExtension
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 		private bool $inferPrivatePropertyTypeFromConstructor,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -360,6 +362,7 @@ final class PhpClassReflectionExtension
 
 		if (
 			$phpDocType === null
+			&& $this->phpVersion->supportsEnums()
 			&& $propertyName === 'name'
 			&& $declaringClassName === 'UnitEnum'
 		) {

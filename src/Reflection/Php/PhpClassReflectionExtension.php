@@ -38,6 +38,7 @@ use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -51,6 +52,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -354,6 +356,15 @@ final class PhpClassReflectionExtension
 				$propertyReflection->getName(),
 				$declaringClassReflection->getConstructor(),
 			);
+		}
+
+		if (
+			$phpDocType === null
+			&& $propertyName === 'name'
+			&& $declaringClassName === 'UnitEnum'
+		) {
+			// enum case names are valid PHP labels, so they can never be empty or "0"
+			$phpDocType = TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType());
 		}
 
 		$nativeType = TypehintHelper::decideTypeFromReflection($propertyReflection->getType(), selfClass: $declaringClassReflection);

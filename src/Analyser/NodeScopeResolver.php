@@ -77,8 +77,8 @@ use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
-use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -1493,7 +1493,11 @@ class NodeScopeResolver
 			$bodyScope = $scope;
 
 			if ($stmt->keyVar instanceof Variable) {
-				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->keyVar, new GetIterableKeyTypeExpr($stmt->expr)), $originalScope, $storage);
+				$keyTypeExpr = new NativeTypeExpr(
+					$originalScope->getIterableKeyType($originalScope->getType($stmt->expr)),
+					$originalScope->getIterableKeyType($originalScope->getNativeType($stmt->expr)),
+				);
+				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->keyVar, $keyTypeExpr), $originalScope, $storage);
 			}
 
 			if ($stmt->valueVar instanceof Variable) {
@@ -4513,7 +4517,10 @@ class NodeScopeResolver
 					$storage,
 					$stmt,
 					$stmt->keyVar,
-					new GetIterableKeyTypeExpr($stmt->expr),
+					new NativeTypeExpr(
+						$originalScope->getIterableKeyType($iterateeType),
+						$originalScope->getIterableKeyType($originalScope->getNativeType($stmt->expr)),
+					),
 					$nodeCallback,
 				)->getScope();
 				$vars = array_merge($vars, $this->getAssignedVariables($stmt->keyVar));

@@ -28,8 +28,8 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
-use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -2560,7 +2560,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope = $scope->assignExpression(
 				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetExistingOffsetValueTypeExpr(
 					$iteratee,
-					new GetIterableKeyTypeExpr($iteratee),
+					new NativeTypeExpr(
+						$originalScope->getIterableKeyType($iterateeType),
+						$originalScope->getIterableKeyType($nativeIterateeType),
+					),
 					new Variable($valueName),
 				)),
 				$valueType,

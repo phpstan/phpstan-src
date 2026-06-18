@@ -38,25 +38,21 @@ parameters:
 			path: ../src/Analyser/NodeScopeResolver.php
 
 		-
-			rawMessage: Right side of || is always false.
-			identifier: booleanAnd.alwaysFalse
+			rawMessage: 'Right side of || is always false.'
 			count: 1
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
-			rawMessage: If condition is always true.
-			identifier: booleanAnd.alwaysFalse
+			rawMessage: 'If condition is always true.'
 			count: 1
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
-			rawMessage: Result of && is always false.
-			identifier: booleanAnd.alwaysFalse
+			rawMessage: 'Result of && is always false.'
 			count: 1
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
 			rawMessage: 'Strict comparison using === between class-string and ''UnitEnum'' will always evaluate to false.'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php

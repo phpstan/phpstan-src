@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
@@ -279,7 +278,11 @@ final class WrongVariableNameInVarTagRule implements Rule
 				$errors[] = $error;
 			}
 		}
-		foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $valueVar, new GetIterableValueTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
+		$valueTypeExpr = new NativeTypeExpr(
+			$scope->getIterableValueType($scope->getScopeType($iterateeExpr)),
+			$scope->getIterableValueType($scope->getScopeNativeType($iterateeExpr)),
+		);
+		foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $valueVar, $valueTypeExpr, $varTags, $variableNames) as $error) {
 			$errors[] = $error;
 		}
 

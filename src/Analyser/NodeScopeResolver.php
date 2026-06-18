@@ -77,7 +77,6 @@ use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
-use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
@@ -1501,9 +1500,16 @@ class NodeScopeResolver
 			}
 
 			if ($stmt->valueVar instanceof Variable) {
-				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->valueVar, new GetIterableValueTypeExpr($stmt->expr)), $originalScope, $storage);
+				$valueTypeExpr = new NativeTypeExpr(
+					$originalScope->getIterableValueType($originalScope->getType($stmt->expr)),
+					$originalScope->getIterableValueType($originalScope->getNativeType($stmt->expr)),
+				);
+				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->valueVar, $valueTypeExpr), $originalScope, $storage);
 			} elseif ($stmt->valueVar instanceof List_) {
-				$virtualAssign = new Assign($stmt->valueVar, new GetIterableValueTypeExpr($stmt->expr));
+				$virtualAssign = new Assign($stmt->valueVar, new NativeTypeExpr(
+					$originalScope->getIterableValueType($originalScope->getType($stmt->expr)),
+					$originalScope->getIterableValueType($originalScope->getNativeType($stmt->expr)),
+				));
 				$virtualAssign->setAttributes($stmt->valueVar->getAttributes());
 				$this->callNodeCallback($nodeCallback, $virtualAssign, $scope, $storage);
 			}
@@ -4502,7 +4508,10 @@ class NodeScopeResolver
 				$storage,
 				$stmt,
 				$stmt->valueVar,
-				new GetIterableValueTypeExpr($stmt->expr),
+				new NativeTypeExpr(
+					$originalScope->getIterableValueType($iterateeType),
+					$originalScope->getIterableValueType($originalScope->getNativeType($stmt->expr)),
+				),
 				$nodeCallback,
 			)->getScope();
 			$vars = $this->getAssignedVariables($stmt->valueVar);

@@ -53,4 +53,15 @@ class ReflectionClass
     public function getAttributes(?string $name = null, int $flags = 0)
     {
     }
+
+	/**
+	 * @phpstan-assert-if-true class-string<\UnitEnum> $this->name
+	 * @phpstan-assert-if-true class-string<\UnitEnum> $this->getName()
+	 * @phpstan-assert-if-true ReflectionClass<UnitEnum> $this
+	 * @return (T is \UnitEnum ? true: false)
+	 */
+	public function isEnum(): bool
+	{
+	}
+
 }

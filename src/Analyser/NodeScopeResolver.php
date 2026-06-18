@@ -111,6 +111,7 @@ use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
+use PHPStan\Parser\ClosureUseByRefAssignmentsVisitor;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
@@ -2933,6 +2934,11 @@ class NodeScopeResolver
 		$callableParameters = $this->createCallableParameters($scope, $expr, $closureCallArgs, $passedToType);
 		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $closureCallArgs, $nativePassedToType);
 
+		$enclosingByRefAssignedExprs = $expr->getAttribute(ClosureUseByRefAssignmentsVisitor::ATTRIBUTE_NAME);
+		if (!is_array($enclosingByRefAssignedExprs)) {
+			$enclosingByRefAssignedExprs = [];
+		}
+
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
 			if ($use->byRef) {
@@ -2968,6 +2974,18 @@ class NodeScopeResolver
 						}
 					}
 					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType, TrinaryLogic::createYes());
+				}
+
+				if (
+					is_string($use->var->name)
+					&& isset($enclosingByRefAssignedExprs[$use->var->name])
+				) {
+					$scope = $this->widenByRefUseFromEnclosingAssignments(
+						$scope,
+						$expr,
+						$use->var->name,
+						$enclosingByRefAssignedExprs[$use->var->name],
+					);
 				}
 			}
 			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context);
@@ -3093,6 +3111,46 @@ class NodeScopeResolver
 		), $closureScope, $storage);
 
 		return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $closureResultScope, $byRefUses);
+	}
+
+	/**
+	 * A variable captured by reference shares storage with the enclosing variable and the
+	 * closure may run at any time, so inside the closure body the variable can hold any value
+	 * the enclosing variable is ever assigned. Widen the seeded type with those assignments.
+	 *
+	 * @param Expr[] $assignedExprs
+	 */
+	private function widenByRefUseFromEnclosingAssignments(
+		MutatingScope $scope,
+		Expr\Closure $closure,
+		string $variableName,
+		array $assignedExprs,
+	): MutatingScope
+	{
+		$alreadyDefined = $scope->hasVariableType($variableName)->yes();
+
+		$type = $alreadyDefined ? $scope->getVariableType($variableName) : new NullType();
+		$nativeType = $alreadyDefined ? $scope->getNativeType(new Expr\Variable($variableName)) : new NullType();
+		$changed = false;
+
+		foreach ($assignedExprs as $assignedExpr) {
+			// The closure's own value when it is assigned to the captured variable is already
+			// handled precisely via the right-side-assign context; skip it to avoid recursing
+			// into the closure type we are currently resolving.
+			if ($assignedExpr === $closure) {
+				continue;
+			}
+
+			$type = TypeCombinator::union($type, $scope->getType($assignedExpr));
+			$nativeType = TypeCombinator::union($nativeType, $scope->getNativeType($assignedExpr));
+			$changed = true;
+		}
+
+		if (!$changed) {
+			return $scope;
+		}
+
+		return $scope->assignVariable($variableName, $type, $nativeType, TrinaryLogic::createYes());
 	}
 
 	/**

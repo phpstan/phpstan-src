@@ -3,6 +3,7 @@
 namespace PHPStan\Php;
 
 use IteratorAggregate;
+use Override;
 use Traversable;
 use function floor;
 
@@ -24,6 +25,7 @@ final class PhpMinorVersionIterator implements IteratorAggregate
 		$this->currentVersion = $startVersion;
 	}
 
+	#[Override]
 	public function getIterator(): Traversable
 	{
 		yield $this->currentVersion;

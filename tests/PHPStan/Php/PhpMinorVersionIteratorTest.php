@@ -47,7 +47,6 @@ class PhpMinorVersionIteratorTest extends TestCase
 		$this->assertSame(70300, $arr[2]->getVersionId());
 	}
 
-	// test which is expected to fail, when PHP9 is supported
 	public function testPhp9Overflow(): void
 	{
 		$this->expectException(ShouldNotHappenException::class);

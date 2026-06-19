@@ -18,6 +18,7 @@ final class PhpMinorVersionIterator implements IteratorAggregate
 
 	private PhpVersion $currentVersion;
 
+	/** @api */
 	public function __construct(
 		PhpVersion $startVersion,
 		private PhpVersion $endVersion,

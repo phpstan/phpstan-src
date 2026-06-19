@@ -2,8 +2,10 @@
 
 namespace PHPStan\Php;
 
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 use function iterator_to_array;
+use const PHP_VERSION_ID;
 
 class PhpMinorVersionIteratorTest extends TestCase
 {
@@ -45,11 +47,29 @@ class PhpMinorVersionIteratorTest extends TestCase
 		$this->assertSame(70300, $arr[2]->getVersionId());
 	}
 
+	// test which is expected to fail, when PHP9 is supported
+	public function testPhp9Overflow(): void
+	{
+		$this->expectException(ShouldNotHappenException::class);
+
+		new PhpMinorVersionIterator(new PhpVersion(80900), new PhpVersion(90200));
+	}
+
 	public function testThrowsBeforePhp5(): void
 	{
-		$this->expectException(\PHPStan\ShouldNotHappenException::class);
+		$this->expectException(ShouldNotHappenException::class);
 
 		new PhpMinorVersionIterator(new PhpVersion(40100), new PhpVersion(70300));
+	}
+
+	public function testSupportsCIVersionId(): void
+	{
+		$versionIterator = new PhpMinorVersionIterator(new PhpVersion(PHP_VERSION_ID), new PhpVersion(PHP_VERSION_ID));
+		$it = $versionIterator->getIterator();
+		$arr = iterator_to_array($it);
+
+		$this->assertCount(1, $arr);
+		$this->assertSame(PHP_VERSION_ID, $arr[0]->getVersionId());
 	}
 
 }

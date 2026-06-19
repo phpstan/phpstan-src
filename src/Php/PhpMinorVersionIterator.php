@@ -4,6 +4,7 @@ namespace PHPStan\Php;
 
 use IteratorAggregate;
 use Override;
+use PHPStan\ShouldNotHappenException;
 use Traversable;
 use function floor;
 
@@ -22,8 +23,15 @@ final class PhpMinorVersionIterator implements IteratorAggregate
 		private PhpVersion $endVersion,
 	)
 	{
-		if ($startVersion->getMajorVersionId() < 5) {
-			throw new \PHPStan\ShouldNotHappenException();
+		if ($startVersion->getMajorVersionId() < 5
+			|| $startVersion->getMajorVersionId() > 8
+		) {
+			throw new ShouldNotHappenException();
+		}
+		if ($endVersion->getMajorVersionId() < 5
+			|| $endVersion->getMajorVersionId() > 8
+		) {
+			throw new ShouldNotHappenException();
 		}
 
 		$this->currentVersion = $startVersion;

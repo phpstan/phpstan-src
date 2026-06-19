@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace Bug11281;
 
@@ -12,14 +14,14 @@ function hello2(string $values): void
 		$values = array_map(static function ($item) {
 			return Hello::fromObject($item);
 		}, $values);
-		assertType('array<' . Hello::class . '>', $values);
+		assertType('array<Bug11281\Hello>', $values);
 	} catch (\Throwable) {
 		$hasError = true;
 	}
 	if (!$hasError) {
 		// The successful try-branch proves $values is array<Hello>; the
 		// pre-assignment mixed must not make the merged type collapse to mixed.
-		assertType('array<' . Hello::class . '>', $values);
+		assertType('array<Bug11281\Hello>', $values);
 	}
 }
 

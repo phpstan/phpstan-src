@@ -23,16 +23,19 @@ final class PhpMinorVersionIterator implements IteratorAggregate
 		private PhpVersion $endVersion,
 	)
 	{
-		if ($startVersion->getMajorVersionId() < 5
+		if (
+			$startVersion->getMajorVersionId() < 5
 			|| $startVersion->getMajorVersionId() > 8
 		) {
 			throw new ShouldNotHappenException();
 		}
-		if ($endVersion->getMajorVersionId() < 5
+		if (
+			$endVersion->getMajorVersionId() < 5
 			|| $endVersion->getMajorVersionId() > 8
 		) {
 			throw new ShouldNotHappenException();
 		}
+
 		if ($startVersion->getVersionId() > $this->endVersion->getVersionId()
 		) {
 			throw new ShouldNotHappenException();

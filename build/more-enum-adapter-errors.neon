@@ -36,3 +36,23 @@ parameters:
 			rawMessage: 'Parameter #2 $reflection of method PHPStan\Reflection\ClassReflectionFactory::create() expects ReflectionClass, PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum given.'
 			count: 1
 			path: ../src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Right side of || is always false.'
+			count: 1
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			rawMessage: 'If condition is always true.'
+			count: 1
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			rawMessage: 'Result of && is always false.'
+			count: 1
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			rawMessage: 'Strict comparison using === between class-string and ''UnitEnum'' will always evaluate to false.'
+			count: 1
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php

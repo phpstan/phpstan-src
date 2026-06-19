@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -38,6 +39,8 @@ use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -51,6 +54,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -103,6 +107,7 @@ final class PhpClassReflectionExtension
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 		private bool $inferPrivatePropertyTypeFromConstructor,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -202,32 +207,46 @@ final class PhpClassReflectionExtension
 			));
 		}
 
-		if ($declaringClassReflection->isEnum()) {
+		$isUnitEnumInterfaceNameProperty = $this->phpVersion->supportsEnums()
+			&& $propertyName === 'name'
+			&& $declaringClassName === 'UnitEnum';
+
+		if ($declaringClassReflection->isEnum() || $isUnitEnumInterfaceNameProperty) {
 			if (
 				$propertyName === 'name'
 				|| ($declaringClassReflection->isBackedEnum() && $propertyName === 'value')
 			) {
-				$types = [];
-				foreach ($classReflection->getEnumCases() as $name => $case) {
-					if ($propertyName === 'name') {
-						$types[] = new ConstantStringType($name);
-						continue;
+				if ($declaringClassReflection->isEnum()) {
+					$types = [];
+					foreach ($classReflection->getEnumCases() as $name => $case) {
+						if ($propertyName === 'name') {
+							$types[] = new ConstantStringType($name);
+							continue;
+						}
+
+						$value = $case->getBackingValueType();
+						if ($value === null) {
+							throw new ShouldNotHappenException();
+						}
+
+						$types[] = $value;
 					}
 
-					$value = $case->getBackingValueType();
-					if ($value === null) {
-						throw new ShouldNotHappenException();
-					}
-
-					$types[] = $value;
+					$phpDocType = TypeCombinator::union(...$types);
+					$nativeType = new MixedType();
+				} else {
+					$phpDocType = TypeCombinator::intersect(
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+						new AccessoryDecimalIntegerStringType(inverse: true),
+					);
+					$nativeType = new StringType();
 				}
-
-				$phpDocType = TypeCombinator::union(...$types);
 
 				return new PhpPropertyReflection(
 					$declaringClassReflection,
 					null,
-					new MixedType(),
+					$nativeType,
 					$phpDocType,
 					$phpDocType,
 					$classReflection->getNativeReflection()->getProperty($propertyName),

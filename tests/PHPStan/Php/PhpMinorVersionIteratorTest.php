@@ -61,6 +61,13 @@ class PhpMinorVersionIteratorTest extends TestCase
 		new PhpMinorVersionIterator(new PhpVersion(40100), new PhpVersion(70300));
 	}
 
+	public function testStartEndSanity(): void
+	{
+		$this->expectException(ShouldNotHappenException::class);
+
+		new PhpMinorVersionIterator(new PhpVersion(80100), new PhpVersion(70300));
+	}
+
 	public function testSupportsCIVersionId(): void
 	{
 		$versionIterator = new PhpMinorVersionIterator(new PhpVersion(PHP_VERSION_ID), new PhpVersion(PHP_VERSION_ID));

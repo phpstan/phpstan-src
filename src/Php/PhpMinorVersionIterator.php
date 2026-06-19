@@ -33,6 +33,10 @@ final class PhpMinorVersionIterator implements IteratorAggregate
 		) {
 			throw new ShouldNotHappenException();
 		}
+		if ($startVersion->getVersionId() > $this->endVersion->getVersionId()
+		) {
+			throw new ShouldNotHappenException();
+		}
 
 		$this->currentVersion = $startVersion;
 	}

@@ -76,3 +76,35 @@ function lookupUnknown($key): void
 {
 	lookup($key);
 }
+
+/**
+ * @param int $x
+ * @param int $y
+ * @throws ($x is 0 ? Exception : ($y is 0 ? Exception : void))
+ */
+function nestedInverse(int $x, int $y): float
+{
+	if ($x === 0 || $y === 0) {
+		throw new Exception('Division by zero.');
+	}
+
+	return 1 / ($x * $y);
+}
+
+/** @throws void */
+function nestedCallsOuterZero(): void
+{
+	nestedInverse(0, 5);
+}
+
+/** @throws void */
+function nestedCallsInnerZero(): void
+{
+	nestedInverse(3, 0);
+}
+
+/** @throws void */
+function nestedCallsNonZero(): void
+{
+	nestedInverse(3, 5);
+}

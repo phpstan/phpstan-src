@@ -159,3 +159,21 @@ function conditionalThrowsForTemplate($key)
 function conditionalThrowsForTemplateInvalidBranch($key)
 {
 }
+
+/**
+ * @param int $x
+ * @param int $y
+ * @throws ($x is 0 ? \Exception : ($y is 0 ? \RuntimeException : void))
+ */
+function nestedConditionalThrows($x, $y)
+{
+}
+
+/**
+ * @param int $x
+ * @param int $y
+ * @throws ($x is 0 ? \Exception : ($y is 0 ? \stdClass : void))
+ */
+function nestedConditionalThrowsInvalidBranch($x, $y)
+{
+}

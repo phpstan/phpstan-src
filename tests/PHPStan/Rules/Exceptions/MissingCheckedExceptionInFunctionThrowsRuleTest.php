@@ -72,6 +72,14 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 				'Function ConditionalThrowsFunction\lookupUnknown() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
 				77,
 			],
+			[
+				'Function ConditionalThrowsFunction\nestedCallsOuterZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				97,
+			],
+			[
+				'Function ConditionalThrowsFunction\nestedCallsInnerZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				103,
+			],
 		]);
 	}
 

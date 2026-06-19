@@ -238,7 +238,7 @@ final class PhpClassReflectionExtension
 					$phpDocType = TypeCombinator::intersect(
 						new StringType(),
 						new AccessoryNonFalsyStringType(),
-						new AccessoryDecimalIntegerStringType(true),
+						new AccessoryDecimalIntegerStringType(inverse: true),
 					);
 					$nativeType = new StringType();
 				}

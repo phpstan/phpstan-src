@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Php\PhpMinorVersionIterator;
 use PHPStan\Php\PhpVersion;
 use function in_array;
 use function strtolower;
@@ -206,17 +207,12 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 	 */
 	private function findPhpVersion(callable $callable): int
 	{
-		$phpVersionIds = [
+		$minorVersionIterator = new PhpMinorVersionIterator(
 			new PhpVersion(70400),
-			new PhpVersion(80000),
-			new PhpVersion(80100),
-			new PhpVersion(80200),
-			new PhpVersion(80300),
-			new PhpVersion(80400),
 			new PhpVersion(80500)
-		];
+		);
 
-		foreach($phpVersionIds as $phpVersion) {
+		foreach($minorVersionIterator as $phpVersion) {
 			if ($callable($phpVersion)) {
 				return $phpVersion->getVersionId();
 			}

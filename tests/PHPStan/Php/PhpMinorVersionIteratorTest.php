@@ -45,4 +45,11 @@ class PhpMinorVersionIteratorTest extends TestCase
 		$this->assertSame(70300, $arr[2]->getVersionId());
 	}
 
+	public function testThrowsBeforePhp5(): void
+	{
+		$this->expectException(\PHPStan\ShouldNotHappenException::class);
+
+		new PhpMinorVersionIterator(new PhpVersion(40100), new PhpVersion(70300));
+	}
+
 }

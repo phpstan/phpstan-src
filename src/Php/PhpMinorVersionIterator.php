@@ -22,6 +22,10 @@ final class PhpMinorVersionIterator implements IteratorAggregate
 		private PhpVersion $endVersion,
 	)
 	{
+		if ($startVersion->getMajorVersionId() < 5) {
+			throw new \PHPStan\ShouldNotHappenException();
+		}
+
 		$this->currentVersion = $startVersion;
 	}
 

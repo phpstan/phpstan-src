@@ -39,6 +39,7 @@ use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -234,7 +235,11 @@ final class PhpClassReflectionExtension
 					$phpDocType = TypeCombinator::union(...$types);
 					$nativeType = new MixedType();
 				} else {
-					$phpDocType = TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType());
+					$phpDocType = TypeCombinator::intersect(
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+						new AccessoryDecimalIntegerStringType(true),
+					);
 					$nativeType = new StringType();
 				}
 

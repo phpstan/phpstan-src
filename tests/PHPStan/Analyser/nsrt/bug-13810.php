@@ -43,3 +43,26 @@ function doFooBar(): void
 	assertType('Closure(mixed): bool', $isSupported);
 	$isSupported('foo');
 }
+
+class HelloWorld
+{
+	public function setValue(mixed $value): void
+	{
+		/** @var ?callable $isSupported */
+		static $isSupported = null;
+		$isSupported ??= function(mixed $arg) use (&$isSupported): bool {
+			if (is_array($arg)) {
+				foreach($arg as $value) {
+					if (!$isSupported($value)) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return is_string($arg);
+		};
+		if (!$isSupported($value)) {
+			throw new InvalidArgumentException('only strings/string arrays are supported');
+		}
+	}
+}

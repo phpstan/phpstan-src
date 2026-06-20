@@ -48,6 +48,7 @@ parameters:
 		reportMethodPurityOverride: false
 		checkDynamicConstantNameValues: false
 		unusedLabel: false
+		arrayColumnObjectArrays: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

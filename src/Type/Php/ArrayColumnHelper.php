@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -148,6 +149,77 @@ final class ArrayColumnHelper
 		}
 
 		return $builder->getArray();
+	}
+
+	/**
+	 * Returns the property names from $columnType that the objects contained in
+	 * $iterableValueType certainly lack, so that reading them via array_column()
+	 * would yield nothing.
+	 *
+	 * Unlike the type-inference path (getOffsetOrProperty), this resolves
+	 * properties at the ClassReflection level so that concrete and non-final
+	 * element classes are reported - matching how AccessPropertiesRule reports
+	 * direct property fetches.
+	 *
+	 * @return list<ConstantStringType>
+	 */
+	public function findMissingObjectProperties(Type $iterableValueType, Type $columnType): array
+	{
+		// array_column() reads object properties (never ArrayAccess offsets), so
+		// only check when the elements are definitely objects. Array elements use
+		// offset access, scalars never have the member - leave those to other rules.
+		if (!$iterableValueType->isObject()->yes()) {
+			return [];
+		}
+
+		$propertyNameTypes = $columnType->getConstantStrings();
+		if ($propertyNameTypes === []) {
+			return [];
+		}
+
+		$missing = [];
+		foreach ($propertyNameTypes as $propertyNameType) {
+			if (!$this->isObjectPropertyMissing($iterableValueType, $propertyNameType->getValue())) {
+				continue;
+			}
+
+			$missing[] = $propertyNameType;
+		}
+
+		return $missing;
+	}
+
+	private function isObjectPropertyMissing(Type $iterableValueType, string $propertyName): bool
+	{
+		$classReflections = $iterableValueType->getObjectClassReflections();
+		if ($classReflections === []) {
+			return false;
+		}
+
+		foreach ($classReflections as $classReflection) {
+			if ($classReflection->isEnum()) {
+				// Enum cases expose the read-only `name` property, and backed
+				// enums additionally expose `value`. Any other name is missing.
+				if ($propertyName === 'name') {
+					return false;
+				}
+				if ($propertyName === 'value' && $classReflection->isBackedEnum()) {
+					return false;
+				}
+				continue;
+			}
+			if ($classReflection->hasInstanceProperty($propertyName)) {
+				return false;
+			}
+			if ($classReflection->allowsDynamicProperties()) {
+				return false;
+			}
+			if ($classReflection->hasNativeMethod('__isset') && $classReflection->hasNativeMethod('__get')) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -136,4 +136,9 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-throws-9497.php'], []);
+	}
+
 }

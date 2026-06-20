@@ -4235,4 +4235,17 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14808.php'], []);
 	}
 
+	public function testCallMethodOnNullableProperty(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/method-call-nullable-property.php'], [
+			[
+				'Cannot call method doWork() on MethodCallNullableProperty\Service|null.',
+				21,
+			],
+		]);
+	}
+
 }

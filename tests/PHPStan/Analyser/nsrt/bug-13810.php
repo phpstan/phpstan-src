@@ -28,3 +28,16 @@ function doBar($isSupported): void
 	assertType('mixed~null', $isSupported);
 	$isSupported('foo');
 }
+
+function doFooBar(): void
+{
+	$isSupported = null;
+	assertType('null', $isSupported);
+	$isSupported ??= function (mixed $arg) use (&$isSupported): bool {
+		assertType('Closure(mixed): bool', $isSupported);
+		return $isSupported($arg);
+	};
+
+	assertType('Closure(mixed): bool', $isSupported);
+	$isSupported('foo');
+}

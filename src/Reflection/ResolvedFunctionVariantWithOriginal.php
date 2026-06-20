@@ -201,6 +201,19 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		return $this->parametersAcceptor->getNativeReturnType();
 	}
 
+	public function resolveConditionalTypes(Type $type): Type
+	{
+		return TypeUtils::resolveLateResolvableTypes(
+			TemplateTypeHelper::resolveTemplateTypes(
+				$this->resolveConditionalTypesForParameter($type),
+				$this->resolvedTemplateTypeMap,
+				$this->callSiteVarianceMap,
+				TemplateTypeVariance::createCovariant(),
+			),
+			false,
+		);
+	}
+
 	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance): Type
 	{
 		$references = $type->getReferencedTemplateTypes($positionVariance);

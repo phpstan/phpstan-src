@@ -4,17 +4,14 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Variable;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\ConditionalTypeForParameter;
-use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
-use function array_last;
-use function count;
 use function substr;
 
 /**
@@ -31,6 +28,17 @@ final class ConditionalThrowTypeResolver
 {
 
 	/**
+	 * Resolves a conditional `@throws` type against a call site. A `ResolvedFunctionVariant`
+	 * already holds the call's bound arguments and inferred template types and knows how to
+	 * resolve a conditional type the same way it resolves a conditional return type — both
+	 * `ConditionalTypeForParameter` (e.g. `($x is 0 ? Exception : void)`) and `ConditionalType`
+	 * whose subject is a template type (e.g. `(TKey is int ? void : Exception)`).
+	 *
+	 * `ParametersAcceptorSelector::selectFromArgs()` only resolves the variant when the return
+	 * or parameter types are conditional/generic — it does not know about the throws type — so
+	 * when the throws type is the only conditional one, the variant is resolved here from the
+	 * passed arguments via `GenericParametersAcceptorResolver`.
+	 *
 	 * @param Arg[] $args
 	 */
 	public static function resolveForCall(
@@ -44,22 +52,24 @@ final class ConditionalThrowTypeResolver
 			return $throwType;
 		}
 
-		// ConditionalTypeForParameter (e.g. ($x is 0 ? Exception : void)) is resolved
-		// against the argument types passed at the call site.
-		$throwType = self::mapConditionalTypesForParameter($throwType, self::getPassedArgs($parametersAcceptor, $args, $scope));
+		// selectFromArgs() may hand back a variant that is not bound to this call's arguments
+		// (either an unresolved acceptor, or a method variant whose passedArgs are empty),
+		// so always resolve from this call's argument types against the original acceptor.
+		$originalAcceptor = $parametersAcceptor instanceof ResolvedFunctionVariant
+			? $parametersAcceptor->getOriginalParametersAcceptor()
+			: $parametersAcceptor;
 
-		// ConditionalType whose subject is a template type (e.g. (TKey is int ? void : Exception))
-		// is resolved against the template types inferred from the call site.
-		if ($parametersAcceptor instanceof ExtendedParametersAcceptor) {
-			$throwType = TemplateTypeHelper::resolveTemplateTypes(
-				$throwType,
-				$parametersAcceptor->getResolvedTemplateTypeMap(),
-				$parametersAcceptor->getCallSiteVarianceMap(),
-				TemplateTypeVariance::createCovariant(),
-			);
+		$argTypes = [];
+		foreach ($args as $i => $arg) {
+			$argTypes[$arg->name !== null ? $arg->name->toString() : $i] = $scope->getType($arg->value);
 		}
 
-		return TypeUtils::resolveLateResolvableTypes($throwType, false);
+		$resolvedAcceptor = GenericParametersAcceptorResolver::resolve($argTypes, $originalAcceptor);
+		if (!$resolvedAcceptor instanceof ResolvedFunctionVariant) {
+			return $throwType;
+		}
+
+		return $resolvedAcceptor->resolveConditionalTypes($throwType);
 	}
 
 	public static function resolveForScope(Type $throwType, Scope $scope): Type
@@ -125,52 +135,6 @@ final class ConditionalThrowTypeResolver
 		});
 
 		return $names;
-	}
-
-	/**
-	 * @param Arg[] $args
-	 * @return array<string, Type>
-	 */
-	private static function getPassedArgs(ParametersAcceptor $parametersAcceptor, array $args, Scope $scope): array
-	{
-		$parameters = $parametersAcceptor->getParameters();
-
-		$namedArgTypes = [];
-		$i = 0;
-		foreach ($args as $arg) {
-			if ($arg->unpack) {
-				// unpacked arguments cannot be reliably mapped to a single parameter
-				$i++;
-				continue;
-			}
-
-			if ($arg->name !== null) {
-				$namedArgTypes[$arg->name->toString()] = $scope->getType($arg->value);
-				continue;
-			}
-
-			if (isset($parameters[$i])) {
-				$namedArgTypes[$parameters[$i]->getName()] = $scope->getType($arg->value);
-			} elseif (count($parameters) > 0) {
-				$lastParameter = array_last($parameters);
-				if ($lastParameter->isVariadic()) {
-					$namedArgTypes[$lastParameter->getName()] = $scope->getType($arg->value);
-				}
-			}
-
-			$i++;
-		}
-
-		$passedArgs = [];
-		foreach ($parameters as $parameter) {
-			if (array_key_exists($parameter->getName(), $namedArgTypes)) {
-				$passedArgs['$' . $parameter->getName()] = $namedArgTypes[$parameter->getName()];
-			} elseif ($parameter->getDefaultValue() !== null) {
-				$passedArgs['$' . $parameter->getName()] = $parameter->getDefaultValue();
-			}
-		}
-
-		return $passedArgs;
 	}
 
 }

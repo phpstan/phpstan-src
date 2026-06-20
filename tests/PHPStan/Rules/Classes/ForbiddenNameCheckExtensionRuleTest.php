@@ -24,20 +24,21 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$container = self::getContainer();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new InstantiationRule(
 			$container,
 			$reflectionProvider,
 			new FunctionCallParametersCheck(
-				new RuleLevelHelper(
-					$reflectionProvider,
-					checkNullables: true,
-					checkThisOnly: false,
-					checkUnionTypes: true,
-					checkExplicitMixed: false,
-					checkImplicitMixed: false,
-					checkBenevolentUnionTypes: false,
-					discoveringSymbolsTip: true,
-				),
+				$ruleLevelHelper,
 				new NullsafeCheck(),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
@@ -53,7 +54,9 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container,
 			),
+			$ruleLevelHelper,
 			new ConsistentConstructorHelper(),
+			newOnNonObject: true,
 			discoveringSymbolsTip: true,
 		);
 	}

@@ -26,20 +26,21 @@ class InstantiationRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$container = self::getContainer();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: $this->checkExplicitMixed,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new InstantiationRule(
 			$container,
 			$reflectionProvider,
 			new FunctionCallParametersCheck(
-				new RuleLevelHelper(
-					$reflectionProvider,
-					checkNullables: true,
-					checkThisOnly: false,
-					checkUnionTypes: true,
-					checkExplicitMixed: $this->checkExplicitMixed,
-					checkImplicitMixed: false,
-					checkBenevolentUnionTypes: false,
-					discoveringSymbolsTip: true,
-				),
+				$ruleLevelHelper,
 				new NullsafeCheck(),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
@@ -55,7 +56,9 @@ class InstantiationRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container,
 			),
+			$ruleLevelHelper,
 			new ConsistentConstructorHelper(),
+			newOnNonObject: true,
 			discoveringSymbolsTip: true,
 		);
 	}
@@ -680,6 +683,44 @@ class InstantiationRuleTest extends RuleTestCase
 	public function testBug14499(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14499.php'], []);
+	}
+
+	public function testInstantiationWithNonObjectType(): void
+	{
+		$this->analyse([__DIR__ . '/data/instantiation-non-object.php'], [
+			[
+				'Cannot instantiate class using int.',
+				35,
+			],
+			[
+				'Cannot instantiate class using int.',
+				39,
+			],
+			[
+				'Cannot instantiate class using float.',
+				40,
+			],
+			[
+				'Cannot instantiate class using bool.',
+				41,
+			],
+			[
+				'Cannot instantiate class using int|string.',
+				42,
+			],
+			[
+				'Cannot instantiate class using float|int.',
+				43,
+			],
+			[
+				'Cannot instantiate class using string|null.',
+				44,
+			],
+			[
+				'Cannot instantiate class using array<int, string>.',
+				50,
+			],
+		]);
 	}
 
 }

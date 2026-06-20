@@ -68,4 +68,19 @@ class HelloWorld
 			assertType('null', $value);
 		}
 	}
+
+	/**
+	 * Boolean-flag guard variant: assigning null to a ?string absorbs into
+	 * string|null, so $cwd must re-narrow to null under the repeated flag check.
+	 */
+	public function testBooleanFlag(?string $cwd, bool $initialClone = false): void
+	{
+		if ($initialClone) {
+			$cwd = null;
+		}
+
+		if ($initialClone) {
+			assertType('null', $cwd);
+		}
+	}
 }

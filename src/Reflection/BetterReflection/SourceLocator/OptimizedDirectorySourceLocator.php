@@ -112,6 +112,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 		if ($identifier->isClass()) {
 			$fetchedClassNode = null;
+			$fetchedFile = null;
 			foreach ($files as $file) {
 				$fetchedClassNodes = $this->fileNodesFetcher->fetchNodes($file)->getClassNodes();
 
@@ -121,13 +122,10 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 				/** @var FetchedNode<Node\Stmt\ClassLike> $fetchedClassNode */
 				$fetchedClassNode = current($fetchedClassNodes[$identifierName]);
+				$fetchedFile = $file;
 			}
 
-			if ($fetchedClassNode === null) {
-				return null;
-			}
-
-			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($fetchedFile, $identifier);
 			$classReflection = $this->nodeToReflection($reflector, $fetchedClassNode);
 			$this->cache->save($reflectionCacheKey, $variableCacheKey, $classReflection->exportToCache());
 

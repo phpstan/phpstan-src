@@ -4,9 +4,22 @@ namespace Bug13810;
 
 use function PHPStan\Testing\assertType;
 
-function test(): void
+function doFoo(): void
 {
 	static $isSupported;
+	assertType('mixed', $isSupported);
+	$isSupported ??= function (mixed $arg) use (&$isSupported): bool {
+		assertType('Closure(mixed): bool', $isSupported);
+		return $isSupported($arg);
+	};
+
+	assertType('mixed~null', $isSupported);
+	$isSupported('foo');
+}
+
+function doBar($isSupported): void
+{
+	assertType('mixed', $isSupported);
 	$isSupported ??= function (mixed $arg) use (&$isSupported): bool {
 		assertType('Closure(mixed): bool', $isSupported);
 		return $isSupported($arg);

@@ -240,22 +240,43 @@ class RunCommand extends Command
 				throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));
 			}
 
-			$errors = [];
-			foreach ($json['files'] as ['messages' => $messages]) {
-				foreach ($messages as $message) {
-					$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
-					if (strpos($messageText, 'Internal error') !== false) {
-						throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
-					}
-					$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
-				}
-			}
+			$errors = self::extractErrors($json, $hash);
 
 			$elapsedTime = microtime(true) - $startTime;
 			$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
 
 			return $errors;
 		});
+	}
+
+	/**
+	 * @param mixed[] $json
+	 * @return list<PlaygroundError>
+	 */
+	public static function extractErrors(array $json, string $hash): array
+	{
+		$errors = [];
+		foreach ($json['files'] ?? [] as $file) {
+			foreach ($file['messages'] as $message) {
+				$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
+				if (strpos($messageText, 'Internal error') !== false) {
+					throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
+				}
+				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
+			}
+		}
+
+		// Top-level (non-file) errors: a parallel worker crashing (e.g. out of
+		// memory), a bootstrap failure, etc. PHPStan reports these in $json['errors']
+		// with file_errors === 0, so without recording them here the analysis looks
+		// like it produced zero errors and any expected output silently disappears
+		// from the diff. Record them so they are visible.
+		foreach ($json['errors'] ?? [] as $genericError) {
+			$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', (string) $genericError);
+			$errors[] = new PlaygroundError(-1, $messageText, null);
+		}
+
+		return $errors;
 	}
 
 	private function loadPlaygroundCache(): PlaygroundCache

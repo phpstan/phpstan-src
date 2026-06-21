@@ -87,3 +87,48 @@ function doNever()
 	yield 1;
 	yield from doFoo();
 }
+
+/**
+ * @return \Generator|null
+ */
+function doNullableGenerator()
+{
+	yield 1;
+	yield from doFoo();
+}
+
+/**
+ * @return \Iterator|float
+ */
+function doIteratorFloat()
+{
+	yield 1;
+	yield from doFoo();
+}
+
+/**
+ * @return \Traversable|null
+ */
+function doNullableTraversable()
+{
+	yield 1;
+	yield from doFoo();
+}
+
+/**
+ * @return iterable|null
+ */
+function doNullableIterable()
+{
+	yield 1;
+	yield from doFoo();
+}
+
+/**
+ * @return string|null
+ */
+function doNullableString()
+{
+	yield 1;
+	yield from doFoo();
+}

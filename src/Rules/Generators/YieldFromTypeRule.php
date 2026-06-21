@@ -81,6 +81,8 @@ final class YieldFromTypeRule implements Rule
 			return [];
 		}
 
+		$returnType = GeneratorReturnTypeHelper::getGeneratorType($returnType);
+
 		$messages = [];
 		$acceptsKey = $this->ruleLevelHelper->accepts($returnType->getIterableKeyType(), $exprType->getIterableKeyType(), $scope->isDeclareStrictTypes());
 		if (!$acceptsKey->result) {
@@ -115,7 +117,7 @@ final class YieldFromTypeRule implements Rule
 			return $messages;
 		}
 
-		$currentReturnType = $scopeFunction->getReturnType();
+		$currentReturnType = GeneratorReturnTypeHelper::getGeneratorType($scopeFunction->getReturnType());
 		$exprSendType = $exprType->getTemplateType(Generator::class, 'TSend');
 		$thisSendType = $currentReturnType->getTemplateType(Generator::class, 'TSend');
 		if ($exprSendType instanceof ErrorType || $thisSendType instanceof ErrorType) {

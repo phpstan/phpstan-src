@@ -87,4 +87,22 @@ class YieldTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-yield-oversized-self-rejection.php'], []);
 	}
 
+	public function testBug6190(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6190.php'], [
+			[
+				'Generator expects value type Bug6190\Food, int given.',
+				21,
+			],
+			[
+				'Generator expects value type Bug6190\Food, string given.',
+				30,
+			],
+			[
+				'Generator expects key type int, string given.',
+				38,
+			],
+		]);
+	}
+
 }

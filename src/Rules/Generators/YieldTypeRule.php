@@ -48,6 +48,8 @@ final class YieldTypeRule implements Rule
 			return [];
 		}
 
+		$returnType = GeneratorReturnTypeHelper::getGeneratorType($returnType);
+
 		if ($node->key === null) {
 			$keyType = new IntegerType();
 		} else {

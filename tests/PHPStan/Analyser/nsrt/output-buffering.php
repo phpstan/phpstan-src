@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 function noBuffer(): void
 {
-	assertType('int', ob_get_level());
+	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_contents());
 	assertType('string|false', ob_get_clean());
 	assertType('string|false', ob_get_flush());
@@ -91,7 +91,7 @@ function conditional(bool $cond): void
 	if ($cond) {
 		ob_start();
 	}
-	assertType('int', ob_get_level());
+	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_contents());
 }
 
@@ -115,7 +115,7 @@ function levelNarrowedToConstInt(): void
 
 function levelNarrowedToRegularInt(): void
 {
-	assertType('int', ob_get_level());
+	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
 }
 

@@ -699,10 +699,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
-				"Strict comparison using === between *NEVER* and 'ccc' will always evaluate to false.",
-				38,
-			],
-			[
 				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
 				46,
 				'Remove remaining cases below this one and this error will disappear too.',
@@ -730,10 +726,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
 				36,
-			],
-			[
-				"Strict comparison using === between *NEVER* and 'ccc' will always evaluate to false.",
-				38,
 			],
 			[
 				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
@@ -1271,6 +1263,24 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between string and null will always evaluate to false.',
 				29,
+			],
+		]);
+	}
+
+	public function testBug14281(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14281.php'], [
+			[
+				'Strict comparison using === between null and null will always evaluate to true.',
+				15,
+			],
+			[
+				'Strict comparison using === between 0 and null will always evaluate to false.',
+				16,
+			],
+			[
+				'Strict comparison using !== between int and int will always evaluate to false.',
+				25,
 			],
 		]);
 	}

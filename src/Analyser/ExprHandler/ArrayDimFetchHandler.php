@@ -47,6 +47,13 @@ final class ArrayDimFetchHandler implements ExprHandler
 		}
 
 		$offsetAccessibleType = $scope->getType($expr->var);
+		if ($offsetAccessibleType instanceof NeverType) {
+			// never is a subtype of everything (including ArrayAccess), so without
+			// this short-circuit the fetch would be resolved through offsetGet() and
+			// produce an *ERROR* type instead of the expected never.
+			return $offsetAccessibleType;
+		}
+
 		if (
 			!$offsetAccessibleType->isArray()->yes()
 			&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()

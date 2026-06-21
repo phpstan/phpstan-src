@@ -52,6 +52,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -77,6 +78,7 @@ use function array_values;
 use function count;
 use function in_array;
 use function is_string;
+use function max;
 use function sprintf;
 use function str_starts_with;
 
@@ -570,6 +572,22 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
+		if ($functionReflection !== null) {
+			$outputBufferDelta = match ($functionReflection->getName()) {
+				'ob_start' => 1,
+				'ob_get_clean', 'ob_get_flush', 'ob_end_clean', 'ob_end_flush' => -1,
+				default => 0,
+			};
+			if ($outputBufferDelta !== 0) {
+				$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
+				$scope = $scope->assignExpression(
+					$obGetLevelCall,
+					$this->adjustOutputBufferLevel($scope->getType($obGetLevelCall), $outputBufferDelta),
+					$this->adjustOutputBufferLevel($scope->getNativeType($obGetLevelCall), $outputBufferDelta),
+				);
+			}
+		}
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
@@ -640,6 +658,18 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return null;
+	}
+
+	private function adjustOutputBufferLevel(Type $current, int $delta): Type
+	{
+		$min = 0;
+		if ($current instanceof IntegerRangeType) {
+			$min = $current->getMin() ?? 0;
+		} elseif ($current instanceof ConstantIntegerType) {
+			$min = $current->getValue();
+		}
+
+		return IntegerRangeType::createAllGreaterThanOrEqualTo(max(0, $min + $delta));
 	}
 
 	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type

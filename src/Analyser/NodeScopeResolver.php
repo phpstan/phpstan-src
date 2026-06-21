@@ -2983,7 +2983,7 @@ class NodeScopeResolver
 		}
 
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
-		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
+		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses, true);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
 			throw new ShouldNotHappenException();

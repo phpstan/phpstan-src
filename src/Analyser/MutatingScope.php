@@ -40,6 +40,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ClosureUseByRefReassignmentVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -4062,6 +4063,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		self $closureScope,
 		?self $prevScope,
 		array $byRefUses,
+		bool $generalizeByRefType = false,
 	): self
 	{
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
@@ -4086,6 +4088,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 
 			$variableType = $closureScope->getVariableType($variableName);
+
+			if (
+				$generalizeByRefType
+				&& $use->getAttribute(ClosureUseByRefReassignmentVisitor::ATTRIBUTE_NAME) === true
+			) {
+				$variableType = $variableType->generalize(GeneralizePrecision::lessSpecific());
+			}
 
 			if ($prevScope !== null) {
 				$prevVariableType = $prevScope->getVariableType($variableName);

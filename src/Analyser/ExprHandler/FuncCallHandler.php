@@ -6,6 +6,7 @@ use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -52,6 +53,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -568,6 +570,31 @@ final class FuncCallHandler implements ExprHandler
 			&& str_starts_with($functionReflection->getName(), 'openssl')
 		) {
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
+		}
+
+		if ($functionReflection !== null) {
+			$functionName = $functionReflection->getName();
+			if ($functionName === 'ob_start') {
+				$outputBufferDelta = 1;
+			} elseif (in_array($functionName, ['ob_get_clean', 'ob_get_flush', 'ob_end_clean', 'ob_end_flush'], true)) {
+				$outputBufferDelta = -1;
+			} else {
+				$outputBufferDelta = 0;
+			}
+			if ($outputBufferDelta !== 0) {
+				$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
+				$scope = $scope->assignExpression(
+					$obGetLevelCall,
+					$scope->getType(new BinaryOp\Plus(
+						new TypeExpr($scope->getType($obGetLevelCall)),
+						new TypeExpr(new ConstantIntegerType($outputBufferDelta)),
+					)),
+					$scope->getType(new BinaryOp\Plus(
+						new TypeExpr($scope->getNativeType($obGetLevelCall)),
+						new TypeExpr(new ConstantIntegerType($outputBufferDelta)),
+					)),
+				);
+			}
 		}
 
 		return new ExpressionResult(

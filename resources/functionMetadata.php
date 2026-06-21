@@ -1547,7 +1547,7 @@ return [
 	'ob_get_clean' => ['hasSideEffects' => true],
 	'ob_get_contents' => ['hasSideEffects' => true],
 	'ob_get_length' => ['hasSideEffects' => true],
-	'ob_get_level' => ['hasSideEffects' => true],
+	'ob_get_level' => ['hasSideEffects' => false],
 	'ob_get_status' => ['hasSideEffects' => true],
 	'ob_iconv_handler' => ['hasSideEffects' => false],
 	'ob_list_handlers' => ['hasSideEffects' => true],

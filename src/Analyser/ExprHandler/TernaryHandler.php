@@ -103,6 +103,7 @@ final class TernaryHandler implements ExprHandler
 		$ternaryCondResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$throwPoints = $ternaryCondResult->getThrowPoints();
 		$impurePoints = $ternaryCondResult->getImpurePoints();
+		$hasYield = $ternaryCondResult->hasYield();
 		$ifTrueScope = $ternaryCondResult->getTruthyScope();
 		$ifFalseScope = $ternaryCondResult->getFalseyScope();
 		$ifTrueType = null;
@@ -111,17 +112,20 @@ final class TernaryHandler implements ExprHandler
 			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
+			$hasYield = $hasYield || $elseResult->hasYield();
 			$ifFalseScope = $elseResult->getScope();
 		} else {
 			$ifResult = $nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
+			$hasYield = $hasYield || $ifResult->hasYield();
 			$ifTrueScope = $ifResult->getScope();
 			$ifTrueType = $ifTrueScope->getType($expr->if);
 
 			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
+			$hasYield = $hasYield || $elseResult->hasYield();
 			$ifFalseScope = $elseResult->getScope();
 		}
 
@@ -146,7 +150,7 @@ final class TernaryHandler implements ExprHandler
 
 		return new ExpressionResult(
 			$finalScope,
-			hasYield: $ternaryCondResult->hasYield(),
+			hasYield: $hasYield,
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,

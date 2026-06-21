@@ -386,4 +386,10 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5681.php'], []);
 	}
 
+	public function testBug4100(): void
+	{
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/bug-4100.php'], []);
+	}
+
 }

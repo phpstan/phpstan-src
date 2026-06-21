@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Parser\YieldFindingVisitor;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
@@ -22,7 +23,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_reverse;
-use function is_array;
 use function is_string;
 use function strtolower;
 
@@ -271,43 +271,17 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 
 	public function isGenerator(): bool
 	{
-		return $this->nodeIsOrContainsYield($this->functionLike);
+		$stmts = $this->functionLike->getStmts();
+		if ($stmts === null) {
+			return false;
+		}
+
+		return YieldFindingVisitor::findInNodes($stmts) !== [];
 	}
 
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->acceptsNamedArguments);
-	}
-
-	private function nodeIsOrContainsYield(Node $node): bool
-	{
-		if ($node instanceof Node\Expr\Yield_) {
-			return true;
-		}
-
-		if ($node instanceof Node\Expr\YieldFrom) {
-			return true;
-		}
-
-		foreach ($node->getSubNodeNames() as $nodeName) {
-			$nodeProperty = $node->$nodeName;
-
-			if ($nodeProperty instanceof Node && $this->nodeIsOrContainsYield($nodeProperty)) {
-				return true;
-			}
-
-			if (!is_array($nodeProperty)) {
-				continue;
-			}
-
-			foreach ($nodeProperty as $nodePropertyArrayItem) {
-				if ($nodePropertyArrayItem instanceof Node && $this->nodeIsOrContainsYield($nodePropertyArrayItem)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	public function getAsserts(): Assertions

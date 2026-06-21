@@ -115,6 +115,7 @@ use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\YieldFindingVisitor;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -551,6 +552,11 @@ class NodeScopeResolver
 			|| $parentNode instanceof PropertyHookStatementNode
 			|| $parentNode instanceof Expr\Closure;
 
+		// A `yield` anywhere in the body makes the function a generator, even when the
+		// `yield` is unreachable. $hasYield only tracks reachable yields, so it cannot be
+		// used to decide whether a missing return is acceptable for a generator.
+		$bodyHasYield = $shouldCheckLastStatement && YieldFindingVisitor::findInNodes($stmts) !== [];
+
 		foreach ($stmts as $i => $stmt) {
 			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
 				continue;
@@ -617,7 +623,7 @@ class NodeScopeResolver
 							$endStatement->getStatement(),
 							(new InternalStatementResult(
 								$endStatementResult->getScope(),
-								$hasYield,
+								$hasYield || $bodyHasYield,
 								$endStatementResult->isAlwaysTerminating(),
 								$endStatementResult->getExitPoints(),
 								$endStatementResult->getThrowPoints(),
@@ -631,7 +637,7 @@ class NodeScopeResolver
 						$stmt,
 						(new InternalStatementResult(
 							$scope,
-							$hasYield,
+							$hasYield || $bodyHasYield,
 							$statementResult->isAlwaysTerminating(),
 							$statementResult->getExitPoints(),
 							$statementResult->getThrowPoints(),
@@ -805,10 +811,10 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, new InFunctionNode($functionReflection, $stmt), $functionScope, $storage);
 
 			$gatheredReturnStatements = [];
-			$gatheredYieldStatements = [];
+			$gatheredYieldStatements = YieldFindingVisitor::findInNodes($stmt->stmts);
 			$executionEnds = [];
 			$functionImpurePoints = [];
-			$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
+			$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$executionEnds, &$functionImpurePoints): void {
 				$nodeCallback($node, $scope);
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
@@ -829,9 +835,6 @@ class NodeScopeResolver
 				if ($node instanceof ExecutionEndNode) {
 					$executionEnds[] = $node;
 					return;
-				}
-				if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-					$gatheredYieldStatements[] = $node;
 				}
 				if (!$node instanceof Return_) {
 					return;
@@ -954,10 +957,10 @@ class NodeScopeResolver
 
 			if ($stmt->stmts !== null) {
 				$gatheredReturnStatements = [];
-				$gatheredYieldStatements = [];
+				$gatheredYieldStatements = YieldFindingVisitor::findInNodes($stmt->stmts);
 				$executionEnds = [];
 				$methodImpurePoints = [];
-				$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
+				$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$executionEnds, &$methodImpurePoints): void {
 					$nodeCallback($node, $scope);
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
@@ -987,9 +990,6 @@ class NodeScopeResolver
 					if ($node instanceof ExecutionEndNode) {
 						$executionEnds[] = $node;
 						return;
-					}
-					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-						$gatheredYieldStatements[] = $node;
 					}
 					if (!$node instanceof Return_) {
 						return;
@@ -2993,10 +2993,10 @@ class NodeScopeResolver
 
 		$executionEnds = [];
 		$gatheredReturnStatements = [];
-		$gatheredYieldStatements = [];
+		$gatheredYieldStatements = YieldFindingVisitor::findInNodes($expr->stmts);
 		$closureImpurePoints = [];
 		$invalidateExpressions = [];
-		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
+		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
 			$nodeCallback($node, $scope);
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 				return;
@@ -3019,9 +3019,6 @@ class NodeScopeResolver
 			if ($node instanceof InvalidateExprNode) {
 				$invalidateExpressions[] = $node;
 				return;
-			}
-			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-				$gatheredYieldStatements[] = $node;
 			}
 			if (!$node instanceof Return_) {
 				return;

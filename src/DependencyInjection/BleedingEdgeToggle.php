@@ -2,9 +2,6 @@
 
 namespace PHPStan\DependencyInjection;
 
-use Generator;
-use PHPStan\ShouldNotHappenException;
-
 final class BleedingEdgeToggle
 {
 
@@ -36,13 +33,7 @@ final class BleedingEdgeToggle
 		$backup = self::$bleedingEdge;
 		self::$bleedingEdge = $bleedingEdge;
 		try {
-			$result = $callback();
-
-			if ($result instanceof Generator) {
-				throw new ShouldNotHappenException('callback is not allowed to yield, to prevent leaking the toggle into unrelated tests.');
-			}
-
-			return $result;
+			return $callback();
 		} finally {
 			self::$bleedingEdge = $backup;
 		}

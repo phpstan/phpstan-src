@@ -91,6 +91,51 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12224.php'], []);
 	}
 
+	public function testBug11101(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11101.php'], [
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				8,
+			],
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				9,
+			],
+			[
+				'Call to function array_reduce() on a separate line has no effect.',
+				10,
+			],
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				13,
+			],
+			[
+				'Call to function preg_replace_callback() on a separate line has no effect.',
+				14,
+			],
+			[
+				'Call to function preg_replace_callback_array() on a separate line has no effect.',
+				15,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug11101Php84(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11101-php84.php'], [
+			[
+				'Call to function array_any() on a separate line has no effect.',
+				8,
+			],
+			[
+				'Call to function array_all() on a separate line has no effect.',
+				9,
+			],
+		]);
+	}
+
 	public function testBug4455(): void
 	{
 		require_once __DIR__ . '/data/bug-4455.php';

@@ -1726,6 +1726,18 @@ class NodeScopeResolver
 				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 				$neverIterates = $condBooleanType->isFalse()->yes();
+
+				// When every non-terminating path through the body keeps the loop condition
+				// satisfied (e.g. the boundary iteration always returns or throws), the loop can
+				// never exit normally, so the code after it is unreachable.
+				if (
+					!$alwaysIterates
+					&& $beforeCondBooleanType->isTrue()->yes()
+					&& !$finalScopeResult->isAlwaysTerminating()
+					&& $finalScopeResult->getScope()->getType($stmt->cond)->toBoolean()->isTrue()->yes()
+				) {
+					$alwaysIterates = true;
+				}
 			}
 			if (!$alwaysIterates) {
 				foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -1957,6 +1969,20 @@ class NodeScopeResolver
 			foreach ($stmt->loop as $loopExpr) {
 				$loopScope = $this->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
+
+			// When every non-terminating path through the body keeps the loop condition
+			// satisfied (e.g. the boundary iteration always returns or throws), the loop can
+			// never exit normally, so the code after it is unreachable.
+			if (
+				$context->isTopLevel()
+				&& $lastCondExpr !== null
+				&& $isIterableAtLeastOnce->yes()
+				&& !$finalScopeResult->isAlwaysTerminating()
+				&& $loopScope->getType($lastCondExpr)->toBoolean()->isTrue()->yes()
+			) {
+				$alwaysIterates = TrinaryLogic::createYes();
+			}
+
 			$finalScope = $finalScope->generalizeWith($loopScope);
 
 			if ($lastCondExpr !== null) {

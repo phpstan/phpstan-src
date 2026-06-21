@@ -2,21 +2,19 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
-use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Testing\PHPStanBleedingEdgeToggleTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 use const PHP_INT_MAX;
 
-class ConstantArrayTypeBuilderTest extends PHPStanTestCase
+class ConstantArrayTypeBuilderTest extends PHPStanBleedingEdgeToggleTestCase
 {
 
 	public function testOptionalKeysNextAutoIndex(): void
@@ -326,9 +324,12 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 	public function testGetArraySealedEmptyStaysConstantArrayType(): void
 	{
-		$array = BleedingEdgeToggle::withBleedingEdge(true, static fn (): Type => ConstantArrayTypeBuilder::createEmpty()->getArray());
-		$this->assertInstanceOf(ConstantArrayType::class, $array);
-		$this->assertSame('array{}', $array->describe(VerbosityLevel::precise()));
+		self::withBleedingEdge(true, function (): void {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$array = $builder->getArray();
+			$this->assertInstanceOf(ConstantArrayType::class, $array);
+			$this->assertSame('array{}', $array->describe(VerbosityLevel::precise()));
+		});
 	}
 
 	public function testGetArrayEmptyWithRealUnsealedCollapsesToArrayType(): void

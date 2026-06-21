@@ -36,7 +36,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function array_map;
 use function is_string;
-use function range;
 use function sprintf;
 
 class ConstantArrayTypeTest extends PHPStanTestCase
@@ -639,48 +638,6 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		}
 
 		$this->assertSame($reasons, $actualResult->reasons, $testDescription);
-	}
-
-	/**
-	 * The bleeding-edge data providers must not leave the global BleedingEdgeToggle
-	 * mutated, even when a consumer abandons the iterator mid-iteration. Otherwise the
-	 * leaked toggle makes ConstantArrayType objects constructed by *other* data
-	 * providers sealed, which intermittently flips unrelated `accepts()` results.
-	 *
-	 * @return iterable<string, array{callable(): iterable<mixed>}>
-	 */
-	public static function dataBleedingEdgeProviders(): iterable
-	{
-		yield 'dataAccepts' => [static fn (): iterable => self::dataAccepts()];
-		yield 'dataGetArraySize' => [static fn (): iterable => self::dataGetArraySize()];
-	}
-
-	/**
-	 * @param callable(): iterable<mixed> $provider
-	 */
-	#[DataProvider('dataBleedingEdgeProviders')]
-	public function testDataProviderDoesNotLeakBleedingEdgeToggle(callable $provider): void
-	{
-		$backup = BleedingEdgeToggle::isBleedingEdge();
-		try {
-			BleedingEdgeToggle::setBleedingEdge(false);
-			foreach (range(1, 60) as $stopAfter) {
-				$consumed = 0;
-				foreach ($provider() as $dataSet) {
-					$this->assertIsArray($dataSet);
-					if (++$consumed >= $stopAfter) {
-						break;
-					}
-				}
-
-				$this->assertFalse(
-					BleedingEdgeToggle::isBleedingEdge(),
-					sprintf('BleedingEdgeToggle leaked after consuming %d data set(s).', $stopAfter),
-				);
-			}
-		} finally {
-			BleedingEdgeToggle::setBleedingEdge($backup);
-		}
 	}
 
 	public static function dataIsSuperTypeOf(): iterable

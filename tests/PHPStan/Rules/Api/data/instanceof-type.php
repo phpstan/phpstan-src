@@ -3,6 +3,7 @@
 namespace ApiInstanceofType;
 
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\SimultaneousTypeTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
@@ -40,6 +41,15 @@ class Foo
 		if ($a instanceof GenericObjectType) {
 
 		}
+
+		$type = SimultaneousTypeTraverser::map($type, $type, function (Type $left, Type $right, callable $traverse): Type {
+			if ($left instanceof TypeWithClassName) {
+				return $left;
+			}
+
+			return $traverse($left, $right);
+		});
+
 	}
 
 }

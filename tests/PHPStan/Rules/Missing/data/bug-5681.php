@@ -37,9 +37,3 @@ function (bool $condition): Generator {
 		throw new Exception();
 	}
 };
-
-function (bool $condition): Generator {
-	if ($condition) {
-		throw yield 1;
-	}
-};

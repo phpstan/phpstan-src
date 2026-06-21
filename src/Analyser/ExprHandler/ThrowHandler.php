@@ -39,7 +39,7 @@ final class ThrowHandler implements ExprHandler
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $exprResult->hasYield(),
+			hasYield: false,
 			isAlwaysTerminating: true,
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),
 			impurePoints: $exprResult->getImpurePoints(),

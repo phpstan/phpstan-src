@@ -665,17 +665,16 @@ final class FuncCallHandler implements ExprHandler
 
 	private function adjustOutputBufferLevel(MutatingScope $scope, Type $current, int $delta): Type
 	{
-		// ob_get_level() is always >= 0, so an otherwise-unknown level is treated
-		// as int<0, max>. Computing the new level through `+ $delta` preserves the
-		// upper bound of integer ranges and works across unions of those.
-		$nonNegative = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
-		$current = TypeCombinator::intersect($current, $nonNegative);
+		// Computing the new level through `+ $delta` preserves the upper bound of
+		// integer ranges and works across unions of those. ob_get_level() is typed
+		// as int<0, max>, so the input is already >= 0; a closing call's `- 1` is
+		// floored back to int<0, max> afterwards.
 		$shifted = $scope->getType(new BinaryOp\Plus(
 			new TypeExpr($current),
 			new TypeExpr(new ConstantIntegerType($delta)),
 		));
 
-		return TypeCombinator::intersect($shifted, $nonNegative);
+		return TypeCombinator::intersect($shifted, IntegerRangeType::createAllGreaterThanOrEqualTo(0));
 	}
 
 	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type

@@ -6,6 +6,7 @@ use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -78,7 +79,6 @@ use function array_values;
 use function count;
 use function in_array;
 use function is_string;
-use function max;
 use function sprintf;
 use function str_starts_with;
 
@@ -585,8 +585,8 @@ final class FuncCallHandler implements ExprHandler
 				$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
 				$scope = $scope->assignExpression(
 					$obGetLevelCall,
-					$this->adjustOutputBufferLevel($scope->getType($obGetLevelCall), $outputBufferDelta),
-					$this->adjustOutputBufferLevel($scope->getNativeType($obGetLevelCall), $outputBufferDelta),
+					$this->adjustOutputBufferLevel($scope, $scope->getType($obGetLevelCall), $outputBufferDelta),
+					$this->adjustOutputBufferLevel($scope, $scope->getNativeType($obGetLevelCall), $outputBufferDelta),
 				);
 			}
 		}
@@ -663,16 +663,19 @@ final class FuncCallHandler implements ExprHandler
 		return null;
 	}
 
-	private function adjustOutputBufferLevel(Type $current, int $delta): Type
+	private function adjustOutputBufferLevel(MutatingScope $scope, Type $current, int $delta): Type
 	{
-		$min = 0;
-		if ($current instanceof IntegerRangeType) {
-			$min = $current->getMin() ?? 0;
-		} elseif ($current instanceof ConstantIntegerType) {
-			$min = $current->getValue();
-		}
+		// ob_get_level() is always >= 0, so an otherwise-unknown level is treated
+		// as int<0, max>. Computing the new level through `+ $delta` preserves the
+		// upper bound of integer ranges and works across unions of those.
+		$nonNegative = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
+		$current = TypeCombinator::intersect($current, $nonNegative);
+		$shifted = $scope->getType(new BinaryOp\Plus(
+			new TypeExpr($current),
+			new TypeExpr(new ConstantIntegerType($delta)),
+		));
 
-		return IntegerRangeType::createAllGreaterThanOrEqualTo(max(0, $min + $delta));
+		return TypeCombinator::intersect($shifted, $nonNegative);
 	}
 
 	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type

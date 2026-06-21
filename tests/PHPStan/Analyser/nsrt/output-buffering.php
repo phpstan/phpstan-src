@@ -108,8 +108,8 @@ function levelNarrowedToConstInt(): void
 	if (ob_get_level() === 2) {
 		assertType('2', ob_get_level());
 		assertType('string', ob_get_clean());
-		// closing call decrements the const-int level
-		assertType('int<1, max>', ob_get_level());
+		// closing call decrements the const-int level, keeping it exact
+		assertType('1', ob_get_level());
 	}
 }
 
@@ -132,5 +132,15 @@ function levelNarrowedToZeroConstInt(): void
 	if (ob_get_level() === 0) {
 		assertType('0', ob_get_level());
 		assertType('string|false', ob_get_clean());
+	}
+}
+
+function levelNarrowedToBoundedIntRange(): void
+{
+	if (ob_get_level() >= 2 && ob_get_level() <= 5) {
+		assertType('int<2, 5>', ob_get_level());
+		assertType('string', ob_get_clean());
+		// closing call shifts the whole range down, preserving the upper bound
+		assertType('int<1, 4>', ob_get_level());
 	}
 }

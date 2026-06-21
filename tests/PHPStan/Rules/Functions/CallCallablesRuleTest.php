@@ -429,4 +429,9 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/maybe-not-callable.php'], $errors);
 	}
 
+	public function testBug13810(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13810.php'], []);
+	}
+
 }

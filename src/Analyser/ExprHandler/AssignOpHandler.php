@@ -29,6 +29,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_merge;
 use function get_class;
+use function is_string;
 use function sprintf;
 
 /**
@@ -68,6 +69,13 @@ final class AssignOpHandler implements ExprHandler
 					$scope = $scope->filterByFalseyValue(
 						new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
 					);
+
+					if ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
+						$context = $context->enterRightSideAssign(
+							$expr->var->name,
+							$expr->expr,
+						);
+					}
 				}
 
 				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());

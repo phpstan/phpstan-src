@@ -5,7 +5,7 @@ namespace PHPStan\Type\Constant;
 use Closure;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDoc\TypeStringResolver;
-use PHPStan\Testing\PHPStanBleedingEdgeToggleTestCase;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
@@ -39,7 +39,7 @@ use function is_string;
 use function range;
 use function sprintf;
 
-class ConstantArrayTypeTest extends PHPStanBleedingEdgeToggleTestCase
+class ConstantArrayTypeTest extends PHPStanTestCase
 {
 
 	public static function dataAccepts(): iterable
@@ -424,7 +424,7 @@ class ConstantArrayTypeTest extends PHPStanBleedingEdgeToggleTestCase
 		// state is never held across a yield boundary - data providers are evaluated
 		// lazily and may be abandoned mid-iteration, which would otherwise leak the
 		// toggle into unrelated tests.
-		yield from self::withBleedingEdge(false, static fn (): array => [
+		yield from BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
 				new ConstantArrayType([], []),
@@ -454,7 +454,7 @@ class ConstantArrayTypeTest extends PHPStanBleedingEdgeToggleTestCase
 			],
 		]);
 
-		yield from self::withBleedingEdge(true, static fn (): array => [
+		yield from BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
 			// empty array (sealed) does not accept extra keys
 			[
 				new ConstantArrayType([], []),
@@ -1037,7 +1037,7 @@ class ConstantArrayTypeTest extends PHPStanBleedingEdgeToggleTestCase
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
 	{
-		[$type, $otherType] = self::withBleedingEdge(true, static function () use ($type, $otherType): array {
+		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($type, $otherType): array {
 			$resolver = self::getContainer()->getByType(TypeStringResolver::class);
 			if (is_string($type)) {
 				$type = $resolver->resolve($type, null);
@@ -1656,7 +1656,7 @@ class ConstantArrayTypeTest extends PHPStanBleedingEdgeToggleTestCase
 			// Build the toggle-dependent data sets eagerly and restore the global
 			// BleedingEdgeToggle before yielding, so it never leaks across a yield
 			// boundary into unrelated tests when this provider is abandoned early.
-			yield from self::withBleedingEdge($bleedingEdge, static function (): array {
+			yield from BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): array {
 				$cases = [];
 
 				$cases[] = [

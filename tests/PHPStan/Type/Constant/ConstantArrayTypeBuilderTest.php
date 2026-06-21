@@ -2,7 +2,8 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Testing\PHPStanBleedingEdgeToggleTestCase;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
@@ -14,7 +15,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 use const PHP_INT_MAX;
 
-class ConstantArrayTypeBuilderTest extends PHPStanBleedingEdgeToggleTestCase
+class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 {
 
 	public function testOptionalKeysNextAutoIndex(): void
@@ -324,7 +325,7 @@ class ConstantArrayTypeBuilderTest extends PHPStanBleedingEdgeToggleTestCase
 
 	public function testGetArraySealedEmptyStaysConstantArrayType(): void
 	{
-		self::withBleedingEdge(true, function (): void {
+		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$array = $builder->getArray();
 			$this->assertInstanceOf(ConstantArrayType::class, $array);

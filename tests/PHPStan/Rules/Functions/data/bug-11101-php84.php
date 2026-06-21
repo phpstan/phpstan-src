@@ -21,3 +21,13 @@ function doBar(array $array): void
 		return true;
 	});
 }
+
+function maybeImpure(array $array): void
+{
+	$cb = rand(0,1) ? 'is_string' : function ($v) {
+		echo $v;
+		return true;
+	};
+	array_any($array, $cb);
+
+}

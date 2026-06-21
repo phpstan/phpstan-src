@@ -133,6 +133,10 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function array_all() on a separate line has no effect.',
 				9,
 			],
+			[
+				'Call to function array_any() on a separate line has no effect.',
+				31,
+			],
 		]);
 	}
 

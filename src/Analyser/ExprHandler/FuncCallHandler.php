@@ -585,8 +585,14 @@ final class FuncCallHandler implements ExprHandler
 				$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
 				$scope = $scope->assignExpression(
 					$obGetLevelCall,
-					$this->adjustOutputBufferLevel($scope, $scope->getType($obGetLevelCall), $outputBufferDelta),
-					$this->adjustOutputBufferLevel($scope, $scope->getNativeType($obGetLevelCall), $outputBufferDelta),
+					$scope->getType(new BinaryOp\Plus(
+						new TypeExpr($scope->getType($obGetLevelCall)),
+						new TypeExpr(new ConstantIntegerType($outputBufferDelta)),
+					)),
+					$scope->getType(new BinaryOp\Plus(
+						new TypeExpr($scope->getNativeType($obGetLevelCall)),
+						new TypeExpr(new ConstantIntegerType($outputBufferDelta)),
+					)),
 				);
 			}
 		}
@@ -661,20 +667,6 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return null;
-	}
-
-	private function adjustOutputBufferLevel(MutatingScope $scope, Type $current, int $delta): Type
-	{
-		// Computing the new level through `+ $delta` preserves the upper bound of
-		// integer ranges and works across unions of those. ob_get_level() is typed
-		// as int<0, max>, so the input is already >= 0; a closing call's `- 1` is
-		// floored back to int<0, max> afterwards.
-		$shifted = $scope->getType(new BinaryOp\Plus(
-			new TypeExpr($current),
-			new TypeExpr(new ConstantIntegerType($delta)),
-		));
-
-		return TypeCombinator::intersect($shifted, IntegerRangeType::createAllGreaterThanOrEqualTo(0));
 	}
 
 	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type

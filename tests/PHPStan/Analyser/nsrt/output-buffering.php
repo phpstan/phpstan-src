@@ -127,6 +127,17 @@ function levelNarrowedToIntRange(): void
 	}
 }
 
+function levelNarrowedToUnionInt(): void
+{
+	if (ob_get_level() === 1 || ob_get_level() === 3) {
+		assertType('1|3', ob_get_level());
+		assertType('string', ob_get_contents());
+		ob_start();
+		assertType('2|4', ob_get_level());
+		assertType('string', ob_get_contents());
+	}
+}
+
 function levelNarrowedToZeroConstInt(): void
 {
 	if (ob_get_level() === 0) {

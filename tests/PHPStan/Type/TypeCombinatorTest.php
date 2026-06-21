@@ -45,6 +45,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
+use PHPStan\Type\Generic\TemplateBooleanType;
 use PHPStan\Type\Generic\TemplateIntersectionType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateObjectType;
@@ -6227,8 +6228,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					TemplateTypeVariance::createInvariant(),
 				),
 				new ConstantBooleanType(false),
-				TemplateMixedType::class, // should be TemplateConstantBooleanType
-				'T (class Foo, parameter)', // should be T of true
+				TemplateBooleanType::class,
+				'T of true (class Foo, parameter)',
 			],
 			[
 				new ObjectShapeType(['foo' => new IntegerType()], []),

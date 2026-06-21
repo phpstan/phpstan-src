@@ -573,11 +573,14 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($functionReflection !== null) {
-			$outputBufferDelta = match ($functionReflection->getName()) {
-				'ob_start' => 1,
-				'ob_get_clean', 'ob_get_flush', 'ob_end_clean', 'ob_end_flush' => -1,
-				default => 0,
-			};
+			$functionName = $functionReflection->getName();
+			if ($functionName === 'ob_start') {
+				$outputBufferDelta = 1;
+			} elseif (in_array($functionName, ['ob_get_clean', 'ob_get_flush', 'ob_end_clean', 'ob_end_flush'], true)) {
+				$outputBufferDelta = -1;
+			} else {
+				$outputBufferDelta = 0;
+			}
 			if ($outputBufferDelta !== 0) {
 				$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
 				$scope = $scope->assignExpression(

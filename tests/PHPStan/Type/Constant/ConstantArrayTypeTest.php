@@ -43,15 +43,8 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataAcceptsWithoutBleedingEdge(): array
 	{
-		// The provider returns one big array instead of yielding: a generator data provider
-		// is evaluated lazily and may be abandoned mid-iteration, which is how the global
-		// BleedingEdgeToggle previously leaked across a `yield`. Returning an array runs the
-		// whole provider to completion synchronously, so the toggle is always restored.
-		//
-		// Build the legacy (unsealed) array shapes under an explicit toggle value. These
-		// data sets must not depend on the ambient global BleedingEdgeToggle: a previously
-		// created bleeding-edge container in the same worker may have left it set, which
-		// would seal these shapes at construction time and intermittently flip results.
+		// Build the unsealed shapes under an explicit toggle and return one array (no `yield`),
+		// so the toggle is never held across a suspension point and cannot leak into other tests.
 		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
@@ -460,9 +453,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataAcceptsWithBleedingEdge(): array
 	{
-		// Build the sealed array shapes under the bleeding-edge toggle. As above, the data
-		// sets are produced eagerly inside the callback so the toggle is restored before
-		// returning and never leaks across a `yield`.
+		// Build the sealed shapes under the bleeding-edge toggle, same no-`yield` rationale as above.
 		return BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
 			// empty array (sealed) does not accept extra keys
 			[
@@ -653,15 +644,8 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataIsSuperTypeOfWithoutBleedingEdge(): array
 	{
-		// The provider returns one big array instead of yielding: a generator data provider
-		// is evaluated lazily and may be abandoned mid-iteration, which is how the global
-		// BleedingEdgeToggle previously leaked across a `yield`. Returning an array runs the
-		// whole provider to completion synchronously, so the toggle is always restored.
-		//
-		// Build the legacy (unsealed) array shapes under an explicit toggle value. These
-		// data sets must not depend on the ambient global BleedingEdgeToggle: a previously
-		// created bleeding-edge container in the same worker may have left it set, which
-		// would seal these shapes at construction time and intermittently flip results.
+		// Build the unsealed shapes under an explicit toggle and return one array (no `yield`),
+		// so the toggle is never held across a suspension point and cannot leak into other tests.
 		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
@@ -955,9 +939,8 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataIsSuperTypeOfWithBleedingEdge(): array
 	{
-		// definite sealedness tests (bleeding edge). These are passed as type strings and
-		// resolved (under an explicit toggle) inside the test method, so they carry no
-		// pre-constructed objects and do not depend on the ambient toggle here.
+		// definite sealedness tests (bleeding edge), passed as type strings resolved under an
+		// explicit toggle in the test method, so they carry no toggle-dependent objects here.
 		return [
 			// both sealed, same keys, compatible values
 			['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
@@ -1638,9 +1621,8 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataGetArraySize(): iterable
 	{
-		// The provider accumulates into one array and returns it instead of yielding, so the
-		// global BleedingEdgeToggle is never held across a `yield` and can never leak into
-		// unrelated tests when the provider is abandoned mid-iteration.
+		// Accumulate into one array and return it (no `yield`), so the toggle is never held
+		// across a suspension point and cannot leak into other tests.
 		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 
 		$cases = [];

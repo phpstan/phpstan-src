@@ -172,29 +172,34 @@ final class ContainerFactory
 	public static function postInitializeContainer(Container $container): void
 	{
 		$containerId = spl_object_id($container);
-		if ($containerId === self::$lastInitializedContainerId) {
-			return;
+
+		// Populating BetterReflection wires up global static state in the BetterReflection
+		// facade, so it only needs to run once per container. The remaining global state below
+		// (static accessors, caches, feature toggles) can be mutated by other containers,
+		// tests or data providers in the meantime, so it must be re-applied on every call -
+		// even when returning to a container that was already populated. Otherwise unrelated
+		// tests sharing the same container leak global state into each other.
+		if ($containerId !== self::$lastInitializedContainerId) {
+			self::$lastInitializedContainerId = $containerId;
+
+			/** @var SourceLocator $sourceLocator */
+			$sourceLocator = $container->getService('betterReflectionSourceLocator');
+
+			/** @var Reflector $reflector */
+			$reflector = $container->getService('betterReflectionReflector');
+
+			/** @var Parser $phpParser */
+			$phpParser = $container->getService('phpParserDecorator');
+
+			BetterReflection::populate(
+				$container->getByType(PhpVersion::class)->getVersionId(),
+				$sourceLocator,
+				$reflector,
+				$phpParser,
+				$container->getByType(PhpStormStubsSourceStubber::class),
+				$container->getByType(Printer::class),
+			);
 		}
-
-		self::$lastInitializedContainerId = $containerId;
-
-		/** @var SourceLocator $sourceLocator */
-		$sourceLocator = $container->getService('betterReflectionSourceLocator');
-
-		/** @var Reflector $reflector */
-		$reflector = $container->getService('betterReflectionReflector');
-
-		/** @var Parser $phpParser */
-		$phpParser = $container->getService('phpParserDecorator');
-
-		BetterReflection::populate(
-			$container->getByType(PhpVersion::class)->getVersionId(),
-			$sourceLocator,
-			$reflector,
-			$phpParser,
-			$container->getByType(PhpStormStubsSourceStubber::class),
-			$container->getByType(Printer::class),
-		);
 
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
 		PhpVersionStaticAccessor::registerInstance($container->getByType(PhpVersion::class));

@@ -41,7 +41,7 @@ use function sprintf;
 class ConstantArrayTypeTest extends PHPStanTestCase
 {
 
-	public static function dataAccepts(): iterable
+	public static function dataAcceptsWithoutBleedingEdge(): array
 	{
 		// The provider returns one big array instead of yielding: a generator data provider
 		// is evaluated lazily and may be abandoned mid-iteration, which is how the global
@@ -52,7 +52,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		// data sets must not depend on the ambient global BleedingEdgeToggle: a previously
 		// created bleeding-edge container in the same worker may have left it set, which
 		// would seal these shapes at construction time and intermittently flip results.
-		$unsealed = BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
+		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
 				new ConstantArrayType([], []),
@@ -456,8 +456,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				[],
 			],
 		]);
+	}
 
-		$sealed = BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
+	public static function dataAcceptsWithBleedingEdge(): array
+	{
+		// Build the sealed array shapes under the bleeding-edge toggle. As above, the data
+		// sets are produced eagerly inside the callback so the toggle is restored before
+		// returning and never leaks across a `yield`.
+		return BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
 			// empty array (sealed) does not accept extra keys
 			[
 				new ConstantArrayType([], []),
@@ -622,14 +628,13 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				[],
 			],
 		]);
-
-		return [...$unsealed, ...$sealed];
 	}
 
 	/**
 	 * @param array<string>|null $reasons
 	 */
-	#[DataProvider('dataAccepts')]
+	#[DataProvider('dataAcceptsWithoutBleedingEdge')]
+	#[DataProvider('dataAcceptsWithBleedingEdge')]
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult, ?array $reasons = null): void
 	{
 		$actualResult = $type->accepts($otherType, true);
@@ -646,7 +651,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame($reasons, $actualResult->reasons, $testDescription);
 	}
 
-	public static function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOfWithoutBleedingEdge(): array
 	{
 		// The provider returns one big array instead of yielding: a generator data provider
 		// is evaluated lazily and may be abandoned mid-iteration, which is how the global
@@ -657,7 +662,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		// data sets must not depend on the ambient global BleedingEdgeToggle: a previously
 		// created bleeding-edge container in the same worker may have left it set, which
 		// would seal these shapes at construction time and intermittently flip results.
-		$unsealed = BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
+		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
 				new ConstantArrayType([], []),
@@ -946,11 +951,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 		]);
+	}
 
+	public static function dataIsSuperTypeOfWithBleedingEdge(): array
+	{
 		// definite sealedness tests (bleeding edge). These are passed as type strings and
 		// resolved (under an explicit toggle) inside the test method, so they carry no
 		// pre-constructed objects and do not depend on the ambient toggle here.
-		$sealed = [
+		return [
 			// both sealed, same keys, compatible values
 			['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
 
@@ -1005,15 +1013,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			// sealed vs unsealed where sealed fits unsealed's extras
 			['array{a: int}', 'array{...<string, int>}', TrinaryLogic::createMaybe()],
 		];
-
-		return [...$unsealed, ...$sealed];
 	}
 
 	/**
 	 * @param ConstantArrayType|string $type
 	 * @param Type|string $otherType
 	 */
-	#[DataProvider('dataIsSuperTypeOf')]
+	#[DataProvider('dataIsSuperTypeOfWithoutBleedingEdge')]
+	#[DataProvider('dataIsSuperTypeOfWithBleedingEdge')]
 	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
 	{
 		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($type, $otherType): array {
@@ -1629,55 +1636,42 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		}
 	}
 
-	public static function dataGetArraySize(): iterable
+	public static function dataGetArraySizeWithoutBleedingEdge(): array
 	{
 		// The provider returns one big array instead of yielding, so the global
 		// BleedingEdgeToggle is never held across a `yield` and can never leak into
 		// unrelated tests when the provider is abandoned early.
-		$data = [];
-
-		foreach ([false, true] as $bleedingEdge) {
-			// Build the toggle-dependent data sets eagerly under an explicit toggle value.
-			$group = BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): array {
-				$cases = [];
-
-				$cases[] = [
-					new ConstantArrayType([], []),
-					new ConstantIntegerType(0),
-				];
-
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				$cases[] = [
-					$builder->getArray(),
-					new ConstantIntegerType(0),
-				];
-
-				$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-				$cases[] = [
-					$builder->getArray(),
-					IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-				];
-
-				$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-				$cases[] = [
-					$builder->getArray(),
-					IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-				];
-
-				$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-				$cases[] = [
-					$builder->getArray(),
-					IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-				];
-
-				return $cases;
-			});
-
-			$data = [...$data, ...$group];
-		}
-
-		$data = [...$data, ...BleedingEdgeToggle::withBleedingEdge(false, static function (): array {
+		return BleedingEdgeToggle::withBleedingEdge(false, static function (): array {
 			$cases = [];
+
+			$cases[] = [
+				new ConstantArrayType([], []),
+				new ConstantIntegerType(0),
+			];
+
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$cases[] = [
+				$builder->getArray(),
+				new ConstantIntegerType(0),
+			];
+
+			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+			];
+
+			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
@@ -1698,12 +1692,49 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			];
 
 			return $cases;
-		})];
-
-		return $data;
+		});
 	}
 
-	#[DataProvider('dataGetArraySize')]
+	public static function dataGetArraySizeWithBleedingEdge(): array
+	{
+		return BleedingEdgeToggle::withBleedingEdge(true, static function (): array {
+			$cases = [];
+
+			$cases[] = [
+				new ConstantArrayType([], []),
+				new ConstantIntegerType(0),
+			];
+
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$cases[] = [
+				$builder->getArray(),
+				new ConstantIntegerType(0),
+			];
+
+			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+			];
+
+			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			return $cases;
+		});
+	}
+
+	#[DataProvider('dataGetArraySizeWithoutBleedingEdge')]
+	#[DataProvider('dataGetArraySizeWithBleedingEdge')]
 	public function testGetArraySize(Type $constantArray, Type $expectedSize): void
 	{
 		$this->assertSame($expectedSize->describe(VerbosityLevel::precise()), $constantArray->getArraySize()->describe(VerbosityLevel::precise()));

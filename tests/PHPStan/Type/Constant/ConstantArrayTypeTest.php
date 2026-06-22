@@ -1006,8 +1006,13 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsSuperTypeOfWithBleedingEdge')]
 	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
 	{
-		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($type, $otherType): array {
-			$resolver = self::getContainer()->getByType(TypeStringResolver::class);
+		// Fetch the resolver - and thereby build the container - *before* entering the
+		// bleeding-edge window. Building a container resets the global BleedingEdgeToggle to
+		// the container's config value (ContainerFactory), which would otherwise clobber the
+		// toggle set below and make the type strings resolve to legacy (non-sealed) shapes.
+		$resolver = self::getContainer()->getByType(TypeStringResolver::class);
+
+		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($resolver, $type, $otherType): array {
 			if (is_string($type)) {
 				$type = $resolver->resolve($type, null);
 			}

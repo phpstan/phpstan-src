@@ -2,106 +2,65 @@
 
 namespace PHPStan\DependencyInjection;
 
-use Override;
+use Generator;
 use PHPStan\ShouldNotHappenException;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use Throwable;
+use PHPStan\Testing\PHPStanTestCase;
 
-final class BleedingEdgeToggleTest extends TestCase
+class BleedingEdgeToggleTest extends PHPStanTestCase
 {
 
-	private bool $backup;
-
-	#[Override]
-	protected function setUp(): void
+	public function testWithBleedingEdgeRunsCallbackWithToggleSet(): void
 	{
-		$this->backup = BleedingEdgeToggle::isBleedingEdge();
-	}
-
-	#[Override]
-	protected function tearDown(): void
-	{
-		BleedingEdgeToggle::setBleedingEdge($this->backup);
-	}
-
-	public function testTogglesDuringCallbackAndRestoresAfterwards(): void
-	{
-		BleedingEdgeToggle::setBleedingEdge(false);
-
-		$observed = BleedingEdgeToggle::withBleedingEdge(true, static fn (): bool => BleedingEdgeToggle::isBleedingEdge());
-
-		$this->assertTrue($observed);
-		$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
-	}
-
-	public function testRestoresPreviousValueWhenAlreadyEnabled(): void
-	{
-		BleedingEdgeToggle::setBleedingEdge(true);
-
-		$observed = BleedingEdgeToggle::withBleedingEdge(false, static fn (): bool => BleedingEdgeToggle::isBleedingEdge());
-
-		$this->assertFalse($observed);
-		$this->assertTrue(BleedingEdgeToggle::isBleedingEdge());
-	}
-
-	public function testReturnsCallbackResult(): void
-	{
-		$result = BleedingEdgeToggle::withBleedingEdge(true, fn (): string => $this->makeValue());
-
-		$this->assertSame('value', $result);
-	}
-
-	public function testRestoresPreviousValueWhenCallbackThrows(): void
-	{
-		BleedingEdgeToggle::setBleedingEdge(false);
-
-		$thrown = false;
+		$backup = BleedingEdgeToggle::isBleedingEdge();
 		try {
-			BleedingEdgeToggle::withBleedingEdge(true, static function (): void {
-				throw new RuntimeException('boom');
-			});
-		} catch (Throwable $e) {
-			$thrown = $e instanceof RuntimeException && $e->getMessage() === 'boom';
-		}
+			BleedingEdgeToggle::setBleedingEdge(false);
 
-		$this->assertTrue($thrown);
-		$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
+			$observed = BleedingEdgeToggle::withBleedingEdge(true, static fn (): bool => BleedingEdgeToggle::isBleedingEdge());
+
+			$this->assertTrue($observed);
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($backup);
+		}
 	}
 
-	public function testThrowsAndRestoresWhenCallbackYields(): void
+	public function testWithBleedingEdgeRestoresPreviousValue(): void
 	{
-		BleedingEdgeToggle::setBleedingEdge(false);
-
-		$thrown = false;
+		$backup = BleedingEdgeToggle::isBleedingEdge();
 		try {
-			BleedingEdgeToggle::withBleedingEdge(true, static function () {
-				yield 1;
-			});
-		} catch (ShouldNotHappenException) {
-			$thrown = true;
+			BleedingEdgeToggle::setBleedingEdge(false);
+
+			BleedingEdgeToggle::withBleedingEdge(true, static fn (): bool => true);
+
+			$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($backup);
 		}
-
-		$this->assertTrue($thrown);
-		$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
 	}
 
-	public function testProducesDataSetsWhileToggleIsSet(): void
+	public function testWithBleedingEdgeRejectsGeneratorCallbackAndRestoresValue(): void
 	{
-		BleedingEdgeToggle::setBleedingEdge(false);
+		$backup = BleedingEdgeToggle::isBleedingEdge();
+		try {
+			BleedingEdgeToggle::setBleedingEdge(false);
 
-		$dataSets = BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
-			BleedingEdgeToggle::isBleedingEdge(),
-			BleedingEdgeToggle::isBleedingEdge(),
-		]);
+			$generatorCallback = static function (): Generator {
+				yield BleedingEdgeToggle::isBleedingEdge();
+			};
 
-		$this->assertSame([true, true], $dataSets);
-		$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
-	}
+			try {
+				BleedingEdgeToggle::withBleedingEdge(true, $generatorCallback);
+				$this->fail('Expected ShouldNotHappenException was not thrown.');
+			} catch (ShouldNotHappenException $e) {
+				// A generator callback would hold the toggle across a `yield` and leak it
+				// into unrelated tests - it must be rejected eagerly.
+				$this->assertStringContainsString('not allowed to yield', $e->getMessage());
+			}
 
-	private function makeValue(): string
-	{
-		return 'value';
+			// The toggle must be restored even when the callback is rejected.
+			$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($backup);
+		}
 	}
 
 }

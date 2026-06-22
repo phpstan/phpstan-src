@@ -10,6 +10,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -325,12 +326,9 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 	public function testGetArraySealedEmptyStaysConstantArrayType(): void
 	{
-		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			$array = $builder->getArray();
-			$this->assertInstanceOf(ConstantArrayType::class, $array);
-			$this->assertSame('array{}', $array->describe(VerbosityLevel::precise()));
-		});
+		$array = BleedingEdgeToggle::withBleedingEdge(true, static fn (): Type => ConstantArrayTypeBuilder::createEmpty()->getArray());
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+		$this->assertSame('array{}', $array->describe(VerbosityLevel::precise()));
 	}
 
 	public function testGetArrayEmptyWithRealUnsealedCollapsesToArrayType(): void

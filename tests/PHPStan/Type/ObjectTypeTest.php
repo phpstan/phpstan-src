@@ -23,6 +23,7 @@ use InvalidArgumentException;
 use Iterator;
 use LogicException;
 use ObjectTypeEnums\FooEnum;
+use Override;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -50,6 +51,18 @@ use const PHP_VERSION_ID;
 
 class ObjectTypeTest extends PHPStanTestCase
 {
+
+	#[Override]
+	protected function setUp(): void
+	{
+		// Re-register the default (runtime) container as the global static reflection
+		// provider before every test. Without this, a container configured with a
+		// different PhpVersion - registered by another test - can leak in and make the
+		// version-dependent Closure data sets (which depend on whether dynamic
+		// properties are still allowed) flaky.
+		// See https://github.com/phpstan/phpstan/issues/14860
+		self::getContainer();
+	}
 
 	public static function dataIsIterable(): array
 	{

@@ -14,6 +14,7 @@ use Exception;
 use InvalidArgumentException;
 use Iterator;
 use ObjectShapesAcceptance\ClassWithFooIntProperty;
+use Override;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Generics\FunctionsAssertType\C;
@@ -72,6 +73,17 @@ use const PHP_VERSION_ID;
 
 class TypeCombinatorTest extends PHPStanTestCase
 {
+
+	#[Override]
+	protected function setUp(): void
+	{
+		// Re-register the default (runtime) container as the global static reflection
+		// provider before every test. Without this, a container configured with a
+		// different PhpVersion - registered by another test - can leak in and make the
+		// version-dependent data sets (e.g. dynamic-property handling of final classes)
+		// flaky. See https://github.com/phpstan/phpstan/issues/14860
+		self::getContainer();
+	}
 
 	public static function dataAddNull(): array
 	{

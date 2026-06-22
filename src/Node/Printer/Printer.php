@@ -44,6 +44,9 @@ use function sprintf;
 final class Printer extends Standard
 {
 
+	/** Matches member names that can be written as a bareword (`$obj->name`) instead of `$obj->{'name'}`. */
+	public const BAREWORD_NAME_REGEX = '/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/';
+
 	/**
 	 * Normalize curly-brace member access with a constant string name to the
 	 * bareword form, so that e.g. `$obj->{'n'}` and `$obj->n` (or `$obj->{'n'}()`
@@ -55,7 +58,7 @@ final class Printer extends Standard
 	{
 		if (
 			$node instanceof String_
-			&& preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $node->value) === 1
+			&& preg_match(self::BAREWORD_NAME_REGEX, $node->value) === 1
 		) {
 			return $node->value;
 		}

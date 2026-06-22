@@ -21,6 +21,7 @@ use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
@@ -38,6 +39,7 @@ use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\Parser;
@@ -126,6 +128,7 @@ use function is_array;
 use function is_string;
 use function ltrim;
 use function md5;
+use function preg_match;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
@@ -921,7 +924,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return '$' . $node->name;
 		}
 
-		$key = $this->exprPrinter->printExpr($node);
+		$key = $this->exprPrinter->printExpr($this->normalizeConstantMemberNames($node));
 		$attributes = $node->getAttributes();
 		if (
 			$node instanceof Node\FunctionLike
@@ -940,6 +943,80 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $key;
+	}
+
+	/**
+	 * Rewrites dynamic member names (`$obj->$name`, `$obj->{$name}()`, `Foo::${$name}`, ...)
+	 * that resolve to a single constant string into their bareword form, so that they
+	 * produce the same expression key as if the member had been accessed directly.
+	 * Together with Printer::pObjectProperty (which normalizes constant-string literals)
+	 * this makes `$obj->$n`, `$obj->{'n'}` and `$obj->n` interchangeable for type tracking.
+	 */
+	private function normalizeConstantMemberNames(Expr $node): Expr
+	{
+		if ($node instanceof PropertyFetch || $node instanceof Expr\NullsafePropertyFetch) {
+			$var = $this->normalizeConstantMemberNames($node->var);
+			$name = $node->name instanceof Expr ? $this->normalizeConstantMemberName($node->name) : $node->name;
+			if ($var === $node->var && $name === $node->name) {
+				return $node;
+			}
+
+			return $node instanceof PropertyFetch
+				? new PropertyFetch($var, $name)
+				: new Expr\NullsafePropertyFetch($var, $name);
+		}
+
+		if ($node instanceof MethodCall || $node instanceof Expr\NullsafeMethodCall) {
+			$var = $this->normalizeConstantMemberNames($node->var);
+			$name = $node->name instanceof Expr ? $this->normalizeConstantMemberName($node->name) : $node->name;
+			if ($var === $node->var && $name === $node->name) {
+				return $node;
+			}
+
+			return $node instanceof MethodCall
+				? new MethodCall($var, $name, $node->args)
+				: new Expr\NullsafeMethodCall($var, $name, $node->args);
+		}
+
+		if ($node instanceof Expr\StaticPropertyFetch && $node->name instanceof Expr) {
+			$name = $this->normalizeConstantMemberName($node->name);
+			if ($name === $node->name) {
+				return $node;
+			}
+
+			return new Expr\StaticPropertyFetch($node->class, $name);
+		}
+
+		if ($node instanceof Expr\StaticCall && $node->name instanceof Expr) {
+			$name = $this->normalizeConstantMemberName($node->name);
+			if ($name === $node->name) {
+				return $node;
+			}
+
+			return new Expr\StaticCall($node->class, $name, $node->args);
+		}
+
+		return $node;
+	}
+
+	/**
+	 * Returns the bareword (or quoted) name node when $nameExpr resolves to a single
+	 * constant string, otherwise $nameExpr unchanged. The bareword is produced as a
+	 * VarLikeIdentifier so it is accepted by every member-access node constructor.
+	 */
+	private function normalizeConstantMemberName(Expr $nameExpr): Expr|VarLikeIdentifier
+	{
+		$constantStrings = $this->getType($nameExpr)->getConstantStrings();
+		if (count($constantStrings) !== 1) {
+			return $nameExpr;
+		}
+
+		$value = $constantStrings[0]->getValue();
+		if (preg_match(Printer::BAREWORD_NAME_REGEX, $value) !== 1) {
+			return new String_($value);
+		}
+
+		return new VarLikeIdentifier($value);
 	}
 
 	public function getClosureScopeCacheKey(): string

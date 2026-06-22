@@ -43,11 +43,16 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataAccepts(): iterable
 	{
+		// The provider returns one big array instead of yielding: a generator data provider
+		// is evaluated lazily and may be abandoned mid-iteration, which is how the global
+		// BleedingEdgeToggle previously leaked across a `yield`. Returning an array runs the
+		// whole provider to completion synchronously, so the toggle is always restored.
+		//
 		// Build the legacy (unsealed) array shapes under an explicit toggle value. These
 		// data sets must not depend on the ambient global BleedingEdgeToggle: a previously
 		// created bleeding-edge container in the same worker may have left it set, which
 		// would seal these shapes at construction time and intermittently flip results.
-		yield from BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
+		$unsealed = BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
 				new ConstantArrayType([], []),
@@ -452,7 +457,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			],
 		]);
 
-		yield from BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
+		$sealed = BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
 			// empty array (sealed) does not accept extra keys
 			[
 				new ConstantArrayType([], []),
@@ -617,6 +622,8 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				[],
 			],
 		]);
+
+		return [...$unsealed, ...$sealed];
 	}
 
 	/**
@@ -641,11 +648,16 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataIsSuperTypeOf(): iterable
 	{
+		// The provider returns one big array instead of yielding: a generator data provider
+		// is evaluated lazily and may be abandoned mid-iteration, which is how the global
+		// BleedingEdgeToggle previously leaked across a `yield`. Returning an array runs the
+		// whole provider to completion synchronously, so the toggle is always restored.
+		//
 		// Build the legacy (unsealed) array shapes under an explicit toggle value. These
 		// data sets must not depend on the ambient global BleedingEdgeToggle: a previously
 		// created bleeding-edge container in the same worker may have left it set, which
 		// would seal these shapes at construction time and intermittently flip results.
-		yield from BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
+		$unsealed = BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantArrayType([], []),
 				new ConstantArrayType([], []),
@@ -935,61 +947,66 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			],
 		]);
 
-		// definite sealedness tests (bleeding edge)
+		// definite sealedness tests (bleeding edge). These are passed as type strings and
+		// resolved (under an explicit toggle) inside the test method, so they carry no
+		// pre-constructed objects and do not depend on the ambient toggle here.
+		$sealed = [
+			// both sealed, same keys, compatible values
+			['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
 
-		// both sealed, same keys, compatible values
-		yield ['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
+			// both sealed, bigger vs smaller (subset) — sealed requires exact keys
+			['array{a: int, b: string}', 'array{a: int}', TrinaryLogic::createNo()],
+			['array{a: int}', 'array{a: int, b: string}', TrinaryLogic::createNo()],
 
-		// both sealed, bigger vs smaller (subset) — sealed requires exact keys
-		yield ['array{a: int, b: string}', 'array{a: int}', TrinaryLogic::createNo()];
-		yield ['array{a: int}', 'array{a: int, b: string}', TrinaryLogic::createNo()];
+			// both sealed, narrower value
+			['array{a: int}', 'array{a: int<0, max>}', TrinaryLogic::createYes()],
+			['array{a: int<0, max>}', 'array{a: int}', TrinaryLogic::createMaybe()],
 
-		// both sealed, narrower value
-		yield ['array{a: int}', 'array{a: int<0, max>}', TrinaryLogic::createYes()];
-		yield ['array{a: int<0, max>}', 'array{a: int}', TrinaryLogic::createMaybe()];
+			// both sealed, optional key in left only
+			['array{a: int, b?: string}', 'array{a: int}', TrinaryLogic::createYes()],
+			['array{a: int, b?: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
 
-		// both sealed, optional key in left only
-		yield ['array{a: int, b?: string}', 'array{a: int}', TrinaryLogic::createYes()];
-		yield ['array{a: int, b?: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
+			// both unsealed, compatible known keys + compatible unsealed
+			['array{a: int, ...}', 'array{a: int<0, max>, ...}', TrinaryLogic::createYes()],
+			['array{a: int<0, max>, ...}', 'array{a: int, ...}', TrinaryLogic::createMaybe()],
 
-		// both unsealed, compatible known keys + compatible unsealed
-		yield ['array{a: int, ...}', 'array{a: int<0, max>, ...}', TrinaryLogic::createYes()];
-		yield ['array{a: int<0, max>, ...}', 'array{a: int, ...}', TrinaryLogic::createMaybe()];
+			// both unsealed, bigger known on right (right's extra fits left's unsealed extras)
+			['array{a: int, ...}', 'array{a: int, b: string, ...}', TrinaryLogic::createYes()],
 
-		// both unsealed, bigger known on right (right's extra fits left's unsealed extras)
-		yield ['array{a: int, ...}', 'array{a: int, b: string, ...}', TrinaryLogic::createYes()];
+			// both unsealed, right has known key left doesn't require; left's unsealed must cover
+			['array{a: int, ...<string, string>}', 'array{a: int, b: int, ...<string, string>}', TrinaryLogic::createNo()],
+			['array{a: int, ...<string, string>}', 'array{a: int, b: non-empty-string, ...<string, string>}', TrinaryLogic::createYes()],
 
-		// both unsealed, right has known key left doesn't require; left's unsealed must cover
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, b: int, ...<string, string>}', TrinaryLogic::createNo()];
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, b: non-empty-string, ...<string, string>}', TrinaryLogic::createYes()];
+			// both unsealed, narrower unsealed value on right
+			['array{a: int, ...<string, string>}', 'array{a: int, ...<string, non-empty-string>}', TrinaryLogic::createYes()],
+			['array{a: int, ...<string, non-empty-string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createMaybe()],
 
-		// both unsealed, narrower unsealed value on right
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, ...<string, non-empty-string>}', TrinaryLogic::createYes()];
-		yield ['array{a: int, ...<string, non-empty-string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createMaybe()];
+			// both unsealed, narrower unsealed key on right (array-key ⊃ string)
+			['array{a: int, ...<array-key, string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createYes()],
+			['array{a: int, ...<string, string>}', 'array{a: int, ...<array-key, string>}', TrinaryLogic::createMaybe()],
 
-		// both unsealed, narrower unsealed key on right (array-key ⊃ string)
-		yield ['array{a: int, ...<array-key, string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createYes()];
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, ...<array-key, string>}', TrinaryLogic::createMaybe()];
+			// both unsealed, incompatible unsealed key types
+			['array{...<int, string>}', 'array{...<string, string>}', TrinaryLogic::createNo()],
 
-		// both unsealed, incompatible unsealed key types
-		yield ['array{...<int, string>}', 'array{...<string, string>}', TrinaryLogic::createNo()];
+			// both unsealed, incompatible unsealed value types
+			['array{...<int, string>}', 'array{...<int, int>}', TrinaryLogic::createNo()],
 
-		// both unsealed, incompatible unsealed value types
-		yield ['array{...<int, string>}', 'array{...<int, int>}', TrinaryLogic::createNo()];
+			// unsealed vs sealed — sealed's extras must fit unsealed's unsealed
+			['array{a: int, ...}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
+			['array{a: int, ...<string, int>}', 'array{a: int, b: string}', TrinaryLogic::createNo()],
 
-		// unsealed vs sealed — sealed's extras must fit unsealed's unsealed
-		yield ['array{a: int, ...}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
-		yield ['array{a: int, ...<string, int>}', 'array{a: int, b: string}', TrinaryLogic::createNo()];
+			// sealed vs unsealed — unsealed might have extras sealed doesn't allow
+			['array{a: int}', 'array{a: int, ...}', TrinaryLogic::createMaybe()],
+			['array{a: int, b: string}', 'array{a: int<0, max>, ...}', TrinaryLogic::createMaybe()],
 
-		// sealed vs unsealed — unsealed might have extras sealed doesn't allow
-		yield ['array{a: int}', 'array{a: int, ...}', TrinaryLogic::createMaybe()];
-		yield ['array{a: int, b: string}', 'array{a: int<0, max>, ...}', TrinaryLogic::createMaybe()];
+			// sealed vs unsealed where sealed's keys can't be in unsealed's extras
+			['array{a: int}', 'array{...<int, int>}', TrinaryLogic::createNo()],
 
-		// sealed vs unsealed where sealed's keys can't be in unsealed's extras
-		yield ['array{a: int}', 'array{...<int, int>}', TrinaryLogic::createNo()];
+			// sealed vs unsealed where sealed fits unsealed's extras
+			['array{a: int}', 'array{...<string, int>}', TrinaryLogic::createMaybe()],
+		];
 
-		// sealed vs unsealed where sealed fits unsealed's extras
-		yield ['array{a: int}', 'array{...<string, int>}', TrinaryLogic::createMaybe()];
+		return [...$unsealed, ...$sealed];
 	}
 
 	/**
@@ -1614,11 +1631,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataGetArraySize(): iterable
 	{
+		// The provider returns one big array instead of yielding, so the global
+		// BleedingEdgeToggle is never held across a `yield` and can never leak into
+		// unrelated tests when the provider is abandoned early.
+		$data = [];
+
 		foreach ([false, true] as $bleedingEdge) {
-			// Build the toggle-dependent data sets eagerly and restore the global
-			// BleedingEdgeToggle before yielding, so it never leaks across a yield
-			// boundary into unrelated tests when this provider is abandoned early.
-			yield from BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): array {
+			// Build the toggle-dependent data sets eagerly under an explicit toggle value.
+			$group = BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): array {
 				$cases = [];
 
 				$cases[] = [
@@ -1652,25 +1672,35 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 				return $cases;
 			});
+
+			$data = [...$data, ...$group];
 		}
 
-		$builder = ConstantArrayTypeBuilder::createEmpty();
-		$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-		yield [
-			$builder->getArray(),
-			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-		];
-		$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-		yield [
-			$builder->getArray(),
-			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-		];
+		$data = [...$data, ...BleedingEdgeToggle::withBleedingEdge(false, static function (): array {
+			$cases = [];
 
-		$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-		yield [
-			$builder->getArray(),
-			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-		];
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+			];
+			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			return $cases;
+		})];
+
+		return $data;
 	}
 
 	#[DataProvider('dataGetArraySize')]

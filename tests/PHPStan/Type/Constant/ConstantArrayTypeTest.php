@@ -418,201 +418,204 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			TrinaryLogic::createMaybe(),
 		];
 
-		yield from BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
-			[
-				new ConstantArrayType([], []),
-				new ConstantArrayType([], []),
-				TrinaryLogic::createYes(),
-			],
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+		BleedingEdgeToggle::setBleedingEdge(false);
 
-			// empty array (with unknown sealedness) does not accept extra keys
-			[
-				new ConstantArrayType([], []),
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				TrinaryLogic::createNo(),
-				[],
-			],
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([], []),
+			TrinaryLogic::createYes(),
+		];
 
-			// non-empty array (with unknown sealedness) accepts extra keys
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				new ConstantArrayType([
-					new ConstantStringType('a'),
-					new ConstantStringType('b'),
-				], [
-					new StringType(),
-					new IntegerType(),
-				]),
-				TrinaryLogic::createYes(),
-				[],
-			],
-		]);
+		// empty array (with unknown sealedness) does not accept extra keys
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			TrinaryLogic::createNo(),
+			[],
+		];
 
-		yield from BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
-			// empty array (sealed) does not accept extra keys
-			[
-				new ConstantArrayType([], []),
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				TrinaryLogic::createNo(),
-				[],
-			],
+		// non-empty array (with unknown sealedness) accepts extra keys
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			]),
+			TrinaryLogic::createYes(),
+			[],
+		];
 
-			// non-empty array (sealed) does not accept extra keys
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				new ConstantArrayType([
-					new ConstantStringType('a'),
-					new ConstantStringType('b'),
-				], [
-					new StringType(),
-					new IntegerType(),
-				]),
-				TrinaryLogic::createNo(),
-				['Sealed array shape does not accept array with extra key \'b\'.'],
-			],
+		BleedingEdgeToggle::setBleedingEdge(true);
 
-			// sealed array does not accept general array
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+		// empty array (sealed) does not accept extra keys
+		yield [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			TrinaryLogic::createNo(),
+			[],
+		];
+
+		// non-empty array (sealed) does not accept extra keys
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new IntegerType(),
+			]),
+			TrinaryLogic::createNo(),
+			['Sealed array shape does not accept array with extra key \'b\'.'],
+		];
+
+		// sealed array does not accept general array
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new ArrayType(new StringType(), new StringType()),
+			TrinaryLogic::createNo(),
+			['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
+		];
+
+		// sealed array does not accept unsealed array
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new ObjectType(stdClass::class)]),
+			TrinaryLogic::createNo(),
+			['Sealed array shape does not accept unsealed array shape.'],
+		];
+
+		// unsealed array accepts compatible general array
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+			new IntersectionType([
 				new ArrayType(new StringType(), new StringType()),
-				TrinaryLogic::createNo(),
-				['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
-			],
+				new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
+			]),
+			TrinaryLogic::createYes(),
+			[],
+		];
 
-			// sealed array does not accept unsealed array
+		// unsealed array does not accept incompatible general array (the error is in the keys already)
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()], unsealed: [new StringType(), new StringType()]),
+			new IntersectionType([
+				new ArrayType(new StringType(), new StringType()),
+				new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
+			]),
+			TrinaryLogic::createNo(),
+			[],
+		];
+
+		// unsealed array does not accept incompatible general array (integer vs. string unsealed values)
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
+			new IntersectionType([
+				new ArrayType(new StringType(), new StringType()),
+				new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
+			]),
+			TrinaryLogic::createNo(),
+			[],
+		];
+
+		// unsealed array must check extra keys against its own unsealed types
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new StringType(),
+			]),
+			TrinaryLogic::createYes(),
+			[],
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantIntegerType(10),
+			], [
+				new StringType(),
+				new StringType(),
+			]),
+			TrinaryLogic::createYes(),
+			[],
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new StringType(),
+			]),
+			TrinaryLogic::createNo(),
 			[
+				'Unsealed array key type int does not accept extra key type \'b\'.',
+			],
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new StringType(),
+				new StringType(),
+			]),
+			TrinaryLogic::createNo(),
+			[
+				'Unsealed array value type int does not accept extra offset \'b\' with value type string.',
+			],
+		];
+
+		// unsealed array must check the other array unsealed types
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+			TrinaryLogic::createYes(),
+			[],
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+			TrinaryLogic::createNo(),
+			[
+				'Unsealed array key type string does not accept unsealed array key type int.',
+			],
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
+			TrinaryLogic::createNo(),
+			[
+				'Unsealed array value type string does not accept unsealed array value type int.',
+			],
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+			new UnionType([
 				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new ObjectType(stdClass::class)]),
-				TrinaryLogic::createNo(),
-				['Sealed array shape does not accept unsealed array shape.'],
-			],
+				new StringType(),
+			]),
+			TrinaryLogic::createMaybe(),
+			[],
+		];
 
-			// unsealed array accepts compatible general array
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-				new IntersectionType([
-					new ArrayType(new StringType(), new StringType()),
-					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
-				]),
-				TrinaryLogic::createYes(),
-				[],
-			],
-
-			// unsealed array does not accept incompatible general array (the error is in the keys already)
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()], unsealed: [new StringType(), new StringType()]),
-				new IntersectionType([
-					new ArrayType(new StringType(), new StringType()),
-					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
-				]),
-				TrinaryLogic::createNo(),
-				[],
-			],
-
-			// unsealed array does not accept incompatible general array (integer vs. string unsealed values)
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
-				new IntersectionType([
-					new ArrayType(new StringType(), new StringType()),
-					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
-				]),
-				TrinaryLogic::createNo(),
-				[],
-			],
-
-			// unsealed array must check extra keys against its own unsealed types
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-				new ConstantArrayType([
-					new ConstantStringType('a'),
-					new ConstantStringType('b'),
-				], [
-					new StringType(),
-					new StringType(),
-				]),
-				TrinaryLogic::createYes(),
-				[],
-			],
-
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
-				new ConstantArrayType([
-					new ConstantStringType('a'),
-					new ConstantIntegerType(10),
-				], [
-					new StringType(),
-					new StringType(),
-				]),
-				TrinaryLogic::createYes(),
-				[],
-			],
-
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
-				new ConstantArrayType([
-					new ConstantStringType('a'),
-					new ConstantStringType('b'),
-				], [
-					new StringType(),
-					new StringType(),
-				]),
-				TrinaryLogic::createNo(),
-				[
-					'Unsealed array key type int does not accept extra key type \'b\'.',
-				],
-			],
-
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
-				new ConstantArrayType([
-					new ConstantStringType('a'),
-					new ConstantStringType('b'),
-				], [
-					new StringType(),
-					new StringType(),
-				]),
-				TrinaryLogic::createNo(),
-				[
-					'Unsealed array value type int does not accept extra offset \'b\' with value type string.',
-				],
-			],
-
-			// unsealed array must check the other array unsealed types
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-				TrinaryLogic::createYes(),
-				[],
-			],
-
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
-				TrinaryLogic::createNo(),
-				[
-					'Unsealed array key type string does not accept unsealed array key type int.',
-				],
-			],
-
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
-				TrinaryLogic::createNo(),
-				[
-					'Unsealed array value type string does not accept unsealed array value type int.',
-				],
-			],
-
-			[
-				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				new UnionType([
-					new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-					new StringType(),
-				]),
-				TrinaryLogic::createMaybe(),
-				[],
-			],
-		]);
+		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
 	}
 
 	/**
@@ -989,17 +992,19 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
 	{
-		$resolver = self::getContainer()->getByType(TypeStringResolver::class);
-		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($type, $otherType, $resolver): array {
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+		BleedingEdgeToggle::setBleedingEdge(true);
+		try {
+			$resolver = self::getContainer()->getByType(TypeStringResolver::class);
 			if (is_string($type)) {
 				$type = $resolver->resolve($type, null);
 			}
 			if (is_string($otherType)) {
 				$otherType = $resolver->resolve($otherType, null);
 			}
-
-			return [$type, $otherType];
-		});
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		}
 
 		$actualResult = $type->isSuperTypeOf($otherType);
 		$this->assertSame(
@@ -1546,109 +1551,118 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public function testEqualsTreatsLegacyNullAndSealedMarkerAsEqual(): void
 	{
-		// Pre-bleeding-edge construction leaves the unsealed slot null
-		// (`isUnsealed()` answers `Maybe`).
-		$legacyNull = BleedingEdgeToggle::withBleedingEdge(false, static fn (): ConstantArrayType => new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()]));
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 
-		// Bleeding-edge construction seeds the `[NeverType, NeverType]`
-		// sealed marker (`isUnsealed()` answers `No`).
-		$sealedMarker = BleedingEdgeToggle::withBleedingEdge(true, static fn (): ConstantArrayType => new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()]));
+		try {
+			// Pre-bleeding-edge construction leaves the unsealed slot null
+			// (`isUnsealed()` answers `Maybe`).
+			BleedingEdgeToggle::setBleedingEdge(false);
+			$legacyNull = new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()]);
 
-		// Both represent the same sealed shape, so they must compare
-		// equal in both directions — this mismatch is what made the
-		// `TypeToPhpDocNode` round-trip fail under old PHPUnit (data
-		// providers run before the container enables bleeding edge).
-		$this->assertTrue($legacyNull->equals($sealedMarker), 'legacy-null should equal sealed-marker');
-		$this->assertTrue($sealedMarker->equals($legacyNull), 'sealed-marker should equal legacy-null');
+			// Bleeding-edge construction seeds the `[NeverType, NeverType]`
+			// sealed marker (`isUnsealed()` answers `No`).
+			BleedingEdgeToggle::setBleedingEdge(true);
+			$sealedMarker = new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()]);
+
+			// Both represent the same sealed shape, so they must compare
+			// equal in both directions — this mismatch is what made the
+			// `TypeToPhpDocNode` round-trip fail under old PHPUnit (data
+			// providers run before the container enables bleeding edge).
+			$this->assertTrue($legacyNull->equals($sealedMarker), 'legacy-null should equal sealed-marker');
+			$this->assertTrue($sealedMarker->equals($legacyNull), 'sealed-marker should equal legacy-null');
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		}
 	}
 
 	public function testSealedness(): void
 	{
-		$array = BleedingEdgeToggle::withBleedingEdge(false, static fn (): Type => ConstantArrayTypeBuilder::createEmpty()->getArray());
-		$this->assertInstanceOf(ConstantArrayType::class, $array);
-		$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isSealed()->describe());
-		$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isUnsealed()->describe());
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 
-		[$array, $unsealedArray] = BleedingEdgeToggle::withBleedingEdge(true, static function (): array {
-			$array = ConstantArrayTypeBuilder::createEmpty()->getArray();
+		BleedingEdgeToggle::setBleedingEdge(false);
+
+		try {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$array = $builder->getArray();
+			$this->assertInstanceOf(ConstantArrayType::class, $array);
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isSealed()->describe());
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isUnsealed()->describe());
+
+			BleedingEdgeToggle::setBleedingEdge(true);
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$array = $builder->getArray();
+			$this->assertInstanceOf(ConstantArrayType::class, $array);
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $array->isSealed()->describe());
+			$this->assertSame(TrinaryLogic::createNo()->describe(), $array->isUnsealed()->describe());
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$builder->makeUnsealed(new IntegerType(), new StringType());
-
-			return [$array, $builder->getArray()];
-		});
-		$this->assertInstanceOf(ConstantArrayType::class, $array);
-		$this->assertSame(TrinaryLogic::createYes()->describe(), $array->isSealed()->describe());
-		$this->assertSame(TrinaryLogic::createNo()->describe(), $array->isUnsealed()->describe());
-
-		// No known keys + real unsealed extras now collapses to a general ArrayType
-		// (see ConstantArrayTypeBuilder::getArray).
-		$this->assertInstanceOf(ArrayType::class, $unsealedArray);
-		$this->assertSame('array<int, string>', $unsealedArray->describe(VerbosityLevel::precise()));
+			$array = $builder->getArray();
+			// No known keys + real unsealed extras now collapses to a general ArrayType
+			// (see ConstantArrayTypeBuilder::getArray).
+			$this->assertInstanceOf(ArrayType::class, $array);
+			$this->assertSame('array<int, string>', $array->describe(VerbosityLevel::precise()));
+		} finally {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+		}
 	}
 
 	public static function dataGetArraySize(): iterable
 	{
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+
 		foreach ([false, true] as $bleedingEdge) {
-			yield from BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): array {
-				$data = [];
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdge);
 
-				$data[] = [
-					new ConstantArrayType([], []),
-					new ConstantIntegerType(0),
-				];
-
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				$data[] = [
-					$builder->getArray(),
-					new ConstantIntegerType(0),
-				];
-
-				$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-				$data[] = [
-					$builder->getArray(),
-					IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-				];
-
-				$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-				$data[] = [
-					$builder->getArray(),
-					IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-				];
-
-				$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-				$data[] = [
-					$builder->getArray(),
-					IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-				];
-
-				return $data;
-			});
-		}
-
-		yield from BleedingEdgeToggle::withBleedingEdge(true, static function (): array {
-			$data = [];
+			yield [
+				new ConstantArrayType([], []),
+				new ConstantIntegerType(0),
+			];
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
+			yield [
+				$builder->getArray(),
+				new ConstantIntegerType(0),
+			];
+
 			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-			$data[] = [
+			yield [
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 			];
+
 			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-			$data[] = [
+			yield [
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 			];
 
 			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-			$data[] = [
+			yield [
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 			];
+		}
 
-			return $data;
-		});
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
+		yield [
+			$builder->getArray(),
+			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+		];
+		$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
+		yield [
+			$builder->getArray(),
+			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+		];
+
+		$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
+		yield [
+			$builder->getArray(),
+			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+		];
+
+		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
 	}
 
 	#[DataProvider('dataGetArraySize')]

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Node\Printer;
 
+use Override;
+use PhpParser\Node;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanAndNode;
@@ -31,6 +34,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
+use function preg_match;
 use function sprintf;
 
 /**
@@ -39,6 +43,25 @@ use function sprintf;
 #[AutowiredService(as: Printer::class)]
 final class Printer extends Standard
 {
+
+	/**
+	 * Normalize curly-brace member access with a constant string name to the
+	 * bareword form, so that e.g. `$obj->{'n'}` and `$obj->n` (or `$obj->{'n'}()`
+	 * and `$obj->n()`) produce identical expression keys and are treated as the
+	 * same member by the analyser.
+	 */
+	#[Override]
+	protected function pObjectProperty(Node $node): string
+	{
+		if (
+			$node instanceof String_
+			&& preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $node->value) === 1
+		) {
+			return $node->value;
+		}
+
+		return parent::pObjectProperty($node);
+	}
 
 	protected function pPHPStan_Node_TypeExpr(TypeExpr $expr): string // phpcs:ignore
 	{

@@ -451,4 +451,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4100(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-4100.php'], [
+			[
+				'Function Bug4100ReturnType\returnsStringWithNestedGenerator() should return int but returns string.',
+				12,
+			],
+		]);
+	}
+
 }

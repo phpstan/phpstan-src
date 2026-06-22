@@ -3226,18 +3226,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 		string $expectedTypeDescription,
 	): void
 	{
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
-		foreach ($types as $i => $type) {
-			BleedingEdgeToggle::setBleedingEdge(true);
-			if (!is_string($type)) {
-				continue;
+		$types = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($types, $typeStringResolver): array {
+			foreach ($types as $i => $type) {
+				if (!is_string($type)) {
+					continue;
+				}
+
+				$types[$i] = $typeStringResolver->resolve($type, null);
 			}
 
-			$types[$i] = $typeStringResolver->resolve($type, null);
-		}
-
-		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+			return $types;
+		});
 		$actualType = TypeCombinator::union(...$types);
 		$this->assertSame(
 			$expectedTypeDescription,
@@ -3276,18 +3276,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 	): void
 	{
 		$types = array_reverse($types);
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
-		foreach ($types as $i => $type) {
-			BleedingEdgeToggle::setBleedingEdge(true);
-			if (!is_string($type)) {
-				continue;
+		$types = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($types, $typeStringResolver): array {
+			foreach ($types as $i => $type) {
+				if (!is_string($type)) {
+					continue;
+				}
+
+				$types[$i] = $typeStringResolver->resolve($type, null);
 			}
 
-			$types[$i] = $typeStringResolver->resolve($type, null);
-		}
-
-		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+			return $types;
+		});
 
 		$actualType = TypeCombinator::union(...$types);
 		$this->assertSame(
@@ -5640,18 +5640,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 		string $expectedTypeDescription,
 	): void
 	{
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
-		foreach ($types as $i => $type) {
-			BleedingEdgeToggle::setBleedingEdge(true);
-			if (!is_string($type)) {
-				continue;
+		$types = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($types, $typeStringResolver): array {
+			foreach ($types as $i => $type) {
+				if (!is_string($type)) {
+					continue;
+				}
+
+				$types[$i] = $typeStringResolver->resolve($type, null);
 			}
 
-			$types[$i] = $typeStringResolver->resolve($type, null);
-		}
-
-		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+			return $types;
+		});
 
 		$actualType = TypeCombinator::intersect(...$types);
 		$this->assertSame(
@@ -5676,18 +5676,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 		string $expectedTypeDescription,
 	): void
 	{
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
-		foreach ($types as $i => $type) {
-			BleedingEdgeToggle::setBleedingEdge(true);
-			if (!is_string($type)) {
-				continue;
+		$types = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($types, $typeStringResolver): array {
+			foreach ($types as $i => $type) {
+				if (!is_string($type)) {
+					continue;
+				}
+
+				$types[$i] = $typeStringResolver->resolve($type, null);
 			}
 
-			$types[$i] = $typeStringResolver->resolve($type, null);
-		}
-
-		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+			return $types;
+		});
 
 		$actualType = TypeCombinator::intersect(...array_reverse($types));
 		$this->assertSame(

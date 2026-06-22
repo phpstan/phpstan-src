@@ -39,6 +39,46 @@ class HelloWorld
 
 }
 
+class WithUnionName
+{
+
+	public int $a = 0;
+
+	public int $b = 0;
+
+	public static int $sa = 0;
+
+	public static int $sb = 0;
+
+	public function assignThroughUnionName(bool $c): void
+	{
+		$this->a = 3;
+		assertType('3', $this->a);
+		$name = $c ? 'a' : 'b';
+		// the write may target either member, so neither keeps its narrowed type
+		$this->$name = 5;
+		assertType('int', $this->a);
+		assertType('int', $this->b);
+	}
+
+	public function assignThroughUnionNameStatic(bool $c): void
+	{
+		self::$sa = 3;
+		assertType('3', self::$sa);
+		$name = $c ? 'sa' : 'sb';
+		self::$$name = 5;
+		assertType('int', self::$sa);
+		assertType('int', self::$sb);
+	}
+
+	public function readThroughUnionName(bool $c): void
+	{
+		$name = $c ? 'a' : 'b';
+		assertType('int', $this->$name);
+	}
+
+}
+
 class WithNullable
 {
 

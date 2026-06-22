@@ -1019,6 +1019,49 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return new VarLikeIdentifier($value);
 	}
 
+	/**
+	 * When a member is assigned through a dynamic name that resolves to a union of
+	 * constant strings (`$obj->$name = ...` / `Foo::$$name = ...` with `$name` of type
+	 * `'a'|'b'`), the write may have targeted any of those members, so any narrowing
+	 * previously held for each of them is no longer valid. Returns one concrete member
+	 * fetch per possible constant-string name so the caller can invalidate them.
+	 *
+	 * The single-constant case is already handled by getNodeKey() normalization (the
+	 * key collapses to the bareword form, so invalidateExpression($expr) reaches it),
+	 * and is intentionally excluded here.
+	 *
+	 * @return list<Expr>
+	 */
+	private function constantMemberNameFetches(Expr $expr): array
+	{
+		if ($expr instanceof PropertyFetch || $expr instanceof Expr\StaticPropertyFetch) {
+			$nameExpr = $expr->name;
+		} else {
+			return [];
+		}
+
+		if (!$nameExpr instanceof Expr) {
+			return [];
+		}
+
+		$constantStrings = $this->getType($nameExpr)->getConstantStrings();
+		if (count($constantStrings) < 2) {
+			return [];
+		}
+
+		$fetches = [];
+		foreach ($constantStrings as $constantString) {
+			$name = preg_match(Printer::BAREWORD_NAME_REGEX, $constantString->getValue()) === 1
+				? new VarLikeIdentifier($constantString->getValue())
+				: new String_($constantString->getValue());
+			$fetches[] = $expr instanceof PropertyFetch
+				? new PropertyFetch($expr->var, $name)
+				: new Expr\StaticPropertyFetch($expr->class, $name);
+		}
+
+		return $fetches;
+	}
+
 	public function getClosureScopeCacheKey(): string
 	{
 		$parts = [];
@@ -2998,6 +3041,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope = $this->invalidateExpression($expr);
 		} elseif ($expr instanceof Variable) {
 			$scope = $this->invalidateExpression($expr);
+		}
+
+		foreach ($this->constantMemberNameFetches($expr) as $memberFetch) {
+			$scope = $scope->invalidateExpression($memberFetch);
 		}
 
 		return $scope->specifyExpressionType($expr, $type, $nativeType, TrinaryLogic::createYes());

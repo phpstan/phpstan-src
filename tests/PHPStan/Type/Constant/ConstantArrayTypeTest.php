@@ -1636,13 +1636,16 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		}
 	}
 
-	public static function dataGetArraySizeWithoutBleedingEdge(): array
+	public static function dataGetArraySize(): iterable
 	{
-		// The provider returns one big array instead of yielding, so the global
-		// BleedingEdgeToggle is never held across a `yield` and can never leak into
-		// unrelated tests when the provider is abandoned early.
-		return BleedingEdgeToggle::withBleedingEdge(false, static function (): array {
-			$cases = [];
+		// The provider accumulates into one array and returns it instead of yielding, so the
+		// global BleedingEdgeToggle is never held across a `yield` and can never leak into
+		// unrelated tests when the provider is abandoned mid-iteration.
+		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
+
+		$cases = [];
+		foreach ([false, true] as $bleedingEdge) {
+			BleedingEdgeToggle::setBleedingEdge($bleedingEdge);
 
 			$cases[] = [
 				new ConstantArrayType([], []),
@@ -1672,69 +1675,32 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 			];
+		}
 
-			return $cases;
-		});
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
+		$cases[] = [
+			$builder->getArray(),
+			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+		];
+		$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
+		$cases[] = [
+			$builder->getArray(),
+			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+		];
+
+		$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
+		$cases[] = [
+			$builder->getArray(),
+			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+		];
+
+		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+
+		return $cases;
 	}
 
-	public static function dataGetArraySizeWithBleedingEdge(): array
-	{
-		return BleedingEdgeToggle::withBleedingEdge(true, static function (): array {
-			$cases = [];
-
-			$cases[] = [
-				new ConstantArrayType([], []),
-				new ConstantIntegerType(0),
-			];
-
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			$cases[] = [
-				$builder->getArray(),
-				new ConstantIntegerType(0),
-			];
-
-			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-			];
-
-			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-			];
-
-			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-			];
-
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-			];
-			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-			];
-
-			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-			];
-
-			return $cases;
-		});
-	}
-
-	#[DataProvider('dataGetArraySizeWithoutBleedingEdge')]
-	#[DataProvider('dataGetArraySizeWithBleedingEdge')]
+	#[DataProvider('dataGetArraySize')]
 	public function testGetArraySize(Type $constantArray, Type $expectedSize): void
 	{
 		$this->assertSame($expectedSize->describe(VerbosityLevel::precise()), $constantArray->getArraySize()->describe(VerbosityLevel::precise()));

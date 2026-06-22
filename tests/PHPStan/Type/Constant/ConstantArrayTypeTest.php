@@ -1673,24 +1673,6 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 			];
 
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-			];
-			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-			];
-
-			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-			$cases[] = [
-				$builder->getArray(),
-				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
-			];
-
 			return $cases;
 		});
 	}
@@ -1717,6 +1699,24 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 			];
 
+			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
+			];
+
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
+			$cases[] = [
+				$builder->getArray(),
+				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+			];
 			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
 			$cases[] = [
 				$builder->getArray(),

@@ -41,587 +41,591 @@ use function sprintf;
 class ConstantArrayTypeTest extends PHPStanTestCase
 {
 
-	public static function dataAccepts(): iterable
+	public static function dataAcceptsWithoutBleedingEdge(): array
 	{
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([new ConstantIntegerType(7)], [new ConstantIntegerType(2)]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(7)]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ArrayType(new IntegerType(), new IntegerType()),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ArrayType(new StringType(), new StringType()),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ArrayType(new MixedType(), new MixedType()),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new IterableType(new MixedType(), new IntegerType()),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('foo')], [new CallableType()]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
-			new ConstantArrayType([new ConstantStringType('foo'), new ConstantStringType('bar')], [new StringType(), new StringType()]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
-			new ConstantArrayType([new ConstantStringType('bar')], [new StringType()]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
-			new ConstantArrayType([new ConstantStringType('foo')], [new ConstantStringType('bar')]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			TypeCombinator::union(
-				new ConstantArrayType([
-					new ConstantStringType('name'),
-				], [
-					new StringType(),
-				]),
-				new ConstantArrayType([
-					new ConstantStringType('name'),
-					new ConstantStringType('color'),
-				], [
-					new StringType(),
-					new StringType(),
-				]),
-			),
-			new ConstantArrayType([
-				new ConstantStringType('name'),
-				new ConstantStringType('color'),
-				new ConstantStringType('year'),
-			], [
-				new StringType(),
-				new StringType(),
-				new IntegerType(),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('name'),
-				new ConstantStringType('color'),
-				new ConstantStringType('year'),
-			], [
-				new StringType(),
-				new StringType(),
-				new IntegerType(),
-			]),
-			new MixedType(),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			TypeCombinator::union(
+		// Build the unsealed shapes under an explicit toggle and return one array (no `yield`),
+		// so the toggle is never held across a suspension point and cannot leak into other tests.
+		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
+			[
 				new ConstantArrayType([], []),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([new ConstantIntegerType(7)], [new ConstantIntegerType(2)]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(7)]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ArrayType(new IntegerType(), new IntegerType()),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new IterableType(new MixedType(), new IntegerType()),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('foo')], [new CallableType()]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+				new ConstantArrayType([new ConstantStringType('foo'), new ConstantStringType('bar')], [new StringType(), new StringType()]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+				new ConstantArrayType([new ConstantStringType('bar')], [new StringType()]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
+				new ConstantArrayType([new ConstantStringType('foo')], [new ConstantStringType('bar')]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				TypeCombinator::union(
+					new ConstantArrayType([
+						new ConstantStringType('name'),
+					], [
+						new StringType(),
+					]),
+					new ConstantArrayType([
+						new ConstantStringType('name'),
+						new ConstantStringType('color'),
+					], [
+						new StringType(),
+						new StringType(),
+					]),
+				),
+				new ConstantArrayType([
+					new ConstantStringType('name'),
+					new ConstantStringType('color'),
+					new ConstantStringType('year'),
+				], [
+					new StringType(),
+					new StringType(),
+					new IntegerType(),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('name'),
+					new ConstantStringType('color'),
+					new ConstantStringType('year'),
+				], [
+					new StringType(),
+					new StringType(),
+					new IntegerType(),
+				]),
+				new MixedType(),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				TypeCombinator::union(
+					new ConstantArrayType([], []),
+					new ConstantArrayType([
+						new ConstantStringType('name'),
+						new ConstantStringType('color'),
+					], [
+						new StringType(),
+						new StringType(),
+					]),
+				),
+				new ConstantArrayType([
+					new ConstantStringType('surname'),
+				], [
+					new StringType(),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				], optionalKeys: [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('test'),
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('test'),
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				], optionalKeys: [1]),
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('test'),
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('limit'),
+				], [
+					new IntegerType(),
+				], optionalKeys: [0]),
+				new ConstantArrayType([
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('limit'),
+				], [
+					new IntegerType(),
+				], [0]),
+				new ConstantArrayType([
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new StringType(),
+					new StringType(),
+				], optionalKeys: [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('test'),
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
 				new ConstantArrayType([
 					new ConstantStringType('name'),
 					new ConstantStringType('color'),
 				], [
 					new StringType(),
 					new StringType(),
+				], optionalKeys: [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('color'),
+				], [
+					new ConstantStringType('test'),
 				]),
-			),
-			new ConstantArrayType([
-				new ConstantStringType('surname'),
-			], [
-				new StringType(),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			], optionalKeys: [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('test'),
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('test'),
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			], optionalKeys: [1]),
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('test'),
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('limit'),
-			], [
-				new IntegerType(),
-			], optionalKeys: [0]),
-			new ConstantArrayType([
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('limit'),
-			], [
-				new IntegerType(),
-			], [0]),
-			new ConstantArrayType([
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new StringType(),
-				new StringType(),
-			], optionalKeys: [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('test'),
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('name'),
-				new ConstantStringType('color'),
-			], [
-				new StringType(),
-				new StringType(),
-			], optionalKeys: [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('color'),
-			], [
-				new ConstantStringType('test'),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('name'),
-				new ConstantStringType('color'),
-			], [
-				new StringType(),
-				new StringType(),
-			], optionalKeys: [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('sound'),
-			], [
-				new ConstantStringType('test'),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new StringType(),
-				new StringType(),
-			], optionalKeys: [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new ConstantStringType('s'),
-				new ConstantStringType('m'),
-			], optionalKeys: [0, 1]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			], optionalKeys: [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('sorton'),
-				new ConstantStringType('limit'),
-			], [
-				new ConstantStringType('test'),
-				new ConstantStringType('true'),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([], []),
-			new NeverType(),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new NeverType(),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
-			new IntersectionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType(new ConstantStringType('test')),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('test')], [new StringType()]),
-			new IntersectionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetValueType(new ConstantStringType('test'), new StringType()),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
-			new UnionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType(new ConstantStringType('test')),
-			]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('test')], [new StringType()]),
-			new UnionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetValueType(new ConstantStringType('test'), new StringType()),
-			]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
-			new IntersectionType([
-				new UnionType([new ArrayType(new MixedType(), new MixedType()), new IterableType(new MixedType(), new MixedType())]),
-				new HasOffsetType(new ConstantStringType('test')),
-			]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
-		BleedingEdgeToggle::setBleedingEdge(false);
-
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createYes(),
-		];
-
-		// empty array (with unknown sealedness) does not accept extra keys
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			TrinaryLogic::createNo(),
-			[],
-		];
-
-		// non-empty array (with unknown sealedness) accepts extra keys
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			]),
-			TrinaryLogic::createYes(),
-			[],
-		];
-
-		BleedingEdgeToggle::setBleedingEdge(true);
-
-		// empty array (sealed) does not accept extra keys
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			TrinaryLogic::createNo(),
-			[],
-		];
-
-		// non-empty array (sealed) does not accept extra keys
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			]),
-			TrinaryLogic::createNo(),
-			['Sealed array shape does not accept array with extra key \'b\'.'],
-		];
-
-		// sealed array does not accept general array
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			new ArrayType(new StringType(), new StringType()),
-			TrinaryLogic::createNo(),
-			['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
-		];
-
-		// sealed array does not accept unsealed array
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new ObjectType(stdClass::class)]),
-			TrinaryLogic::createNo(),
-			['Sealed array shape does not accept unsealed array shape.'],
-		];
-
-		// unsealed array accepts compatible general array
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-			new IntersectionType([
-				new ArrayType(new StringType(), new StringType()),
-				new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
-			]),
-			TrinaryLogic::createYes(),
-			[],
-		];
-
-		// unsealed array does not accept incompatible general array (the error is in the keys already)
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()], unsealed: [new StringType(), new StringType()]),
-			new IntersectionType([
-				new ArrayType(new StringType(), new StringType()),
-				new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
-			]),
-			TrinaryLogic::createNo(),
-			[],
-		];
-
-		// unsealed array does not accept incompatible general array (integer vs. string unsealed values)
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
-			new IntersectionType([
-				new ArrayType(new StringType(), new StringType()),
-				new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
-			]),
-			TrinaryLogic::createNo(),
-			[],
-		];
-
-		// unsealed array must check extra keys against its own unsealed types
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new StringType(),
-				new StringType(),
-			]),
-			TrinaryLogic::createYes(),
-			[],
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantIntegerType(10),
-			], [
-				new StringType(),
-				new StringType(),
-			]),
-			TrinaryLogic::createYes(),
-			[],
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new StringType(),
-				new StringType(),
-			]),
-			TrinaryLogic::createNo(),
-			[
-				'Unsealed array key type int does not accept extra key type \'b\'.',
+				TrinaryLogic::createYes(),
 			],
-		];
 
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new StringType(),
-				new StringType(),
-			]),
-			TrinaryLogic::createNo(),
 			[
-				'Unsealed array value type int does not accept extra offset \'b\' with value type string.',
+				new ConstantArrayType([
+					new ConstantStringType('name'),
+					new ConstantStringType('color'),
+				], [
+					new StringType(),
+					new StringType(),
+				], optionalKeys: [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('sound'),
+				], [
+					new ConstantStringType('test'),
+				]),
+				TrinaryLogic::createYes(),
 			],
-		];
 
-		// unsealed array must check the other array unsealed types
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-			TrinaryLogic::createYes(),
-			[],
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
-			TrinaryLogic::createNo(),
 			[
-				'Unsealed array key type string does not accept unsealed array key type int.',
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new StringType(),
+					new StringType(),
+				], optionalKeys: [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new ConstantStringType('s'),
+					new ConstantStringType('m'),
+				], optionalKeys: [0, 1]),
+				TrinaryLogic::createYes(),
 			],
-		];
 
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
-			TrinaryLogic::createNo(),
 			[
-				'Unsealed array value type string does not accept unsealed array value type int.',
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				], optionalKeys: [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('sorton'),
+					new ConstantStringType('limit'),
+				], [
+					new ConstantStringType('test'),
+					new ConstantStringType('true'),
+				]),
+				TrinaryLogic::createNo(),
 			],
-		];
 
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			new UnionType([
+			[
+				new ConstantArrayType([], []),
+				new NeverType(),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new NeverType(),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetType(new ConstantStringType('test')),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('test')], [new StringType()]),
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetValueType(new ConstantStringType('test'), new StringType()),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetType(new ConstantStringType('test')),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('test')], [new StringType()]),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetValueType(new ConstantStringType('test'), new StringType()),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
+				new IntersectionType([
+					new UnionType([new ArrayType(new MixedType(), new MixedType()), new IterableType(new MixedType(), new MixedType())]),
+					new HasOffsetType(new ConstantStringType('test')),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+
+			// empty array (with unknown sealedness) does not accept extra keys
+			[
+				new ConstantArrayType([], []),
 				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-				new StringType(),
-			]),
-			TrinaryLogic::createMaybe(),
-			[],
-		];
+				TrinaryLogic::createNo(),
+				[],
+			],
 
-		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+			// non-empty array (with unknown sealedness) accepts extra keys
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				]),
+				TrinaryLogic::createYes(),
+				[],
+			],
+		]);
+	}
+
+	public static function dataAcceptsWithBleedingEdge(): array
+	{
+		// Build the sealed shapes under the bleeding-edge toggle, same no-`yield` rationale as above.
+		return BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
+			// empty array (sealed) does not accept extra keys
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				TrinaryLogic::createNo(),
+				[],
+			],
+
+			// non-empty array (sealed) does not accept extra keys
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				]),
+				TrinaryLogic::createNo(),
+				['Sealed array shape does not accept array with extra key \'b\'.'],
+			],
+
+			// sealed array does not accept general array
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createNo(),
+				['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
+			],
+
+			// sealed array does not accept unsealed array
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new ObjectType(stdClass::class)]),
+				TrinaryLogic::createNo(),
+				['Sealed array shape does not accept unsealed array shape.'],
+			],
+
+			// unsealed array accepts compatible general array
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+				new IntersectionType([
+					new ArrayType(new StringType(), new StringType()),
+					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
+				]),
+				TrinaryLogic::createYes(),
+				[],
+			],
+
+			// unsealed array does not accept incompatible general array (the error is in the keys already)
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()], unsealed: [new StringType(), new StringType()]),
+				new IntersectionType([
+					new ArrayType(new StringType(), new StringType()),
+					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
+				]),
+				TrinaryLogic::createNo(),
+				[],
+			],
+
+			// unsealed array does not accept incompatible general array (integer vs. string unsealed values)
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
+				new IntersectionType([
+					new ArrayType(new StringType(), new StringType()),
+					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
+				]),
+				TrinaryLogic::createNo(),
+				[],
+			],
+
+			// unsealed array must check extra keys against its own unsealed types
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new StringType(),
+				]),
+				TrinaryLogic::createYes(),
+				[],
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantIntegerType(10),
+				], [
+					new StringType(),
+					new StringType(),
+				]),
+				TrinaryLogic::createYes(),
+				[],
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new StringType(),
+				]),
+				TrinaryLogic::createNo(),
+				[
+					'Unsealed array key type int does not accept extra key type \'b\'.',
+				],
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new StringType(),
+				]),
+				TrinaryLogic::createNo(),
+				[
+					'Unsealed array value type int does not accept extra offset \'b\' with value type string.',
+				],
+			],
+
+			// unsealed array must check the other array unsealed types
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+				TrinaryLogic::createYes(),
+				[],
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+				TrinaryLogic::createNo(),
+				[
+					'Unsealed array key type string does not accept unsealed array key type int.',
+				],
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new StringType()]),
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new IntegerType()]),
+				TrinaryLogic::createNo(),
+				[
+					'Unsealed array value type string does not accept unsealed array value type int.',
+				],
+			],
+
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new UnionType([
+					new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+					new StringType(),
+				]),
+				TrinaryLogic::createMaybe(),
+				[],
+			],
+		]);
 	}
 
 	/**
 	 * @param array<string>|null $reasons
 	 */
-	#[DataProvider('dataAccepts')]
+	#[DataProvider('dataAcceptsWithoutBleedingEdge')]
+	#[DataProvider('dataAcceptsWithBleedingEdge')]
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult, ?array $reasons = null): void
 	{
 		$actualResult = $type->accepts($otherType, true);
@@ -638,373 +642,386 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame($reasons, $actualResult->reasons, $testDescription);
 	}
 
-	public static function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOfWithoutBleedingEdge(): array
 	{
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createYes(),
+		// Build the unsealed shapes under an explicit toggle and return one array (no `yield`),
+		// so the toggle is never held across a suspension point and cannot leak into other tests.
+		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([new ConstantIntegerType(7)], [new ConstantIntegerType(2)]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(7)]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ArrayType(new IntegerType(), new IntegerType()),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([], []),
+				new IterableType(new MixedType(false), new MixedType(true)),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0, 1]),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				], [1], [0]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0, 1]),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new StringType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0, 1]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0, 1]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new StringType(),
+				]),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+					new ConstantStringType('bar'),
+				], [
+					new IntegerType(),
+					new IntegerType(),
+				], [2], [0, 1]),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				], [1], [0]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				]),
+				new ConstantArrayType([
+					new ConstantStringType('foo'),
+				], [
+					new IntegerType(),
+				], [1], [0]),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new IntegerType(),
+					new UnionType([new IntegerType(), new NullType()]),
+				]),
+				new ArrayType(new StringType(), new MixedType()),
+				TrinaryLogic::createMaybe(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new IntegerType(),
+					new UnionType([new IntegerType(), new NullType()]),
+				]),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createNo(),
+			],
+
+			[
+				new ConstantArrayType([
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+				], [
+					new IntegerType(),
+					new UnionType([new IntegerType(), new NullType()]),
+				]),
+				new ArrayType(new StringType(), new MixedType()),
+				TrinaryLogic::createNo(),
+			],
+
+			// empty array (with unknown sealedness) does not accept extra keys
+			[
+				new ConstantArrayType([], []),
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				TrinaryLogic::createNo(),
+			],
+
+			// non-empty array (with unknown sealedness) accepts extra keys
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				]),
+				TrinaryLogic::createYes(),
+			],
+		]);
+	}
+
+	public static function dataIsSuperTypeOfWithBleedingEdge(): array
+	{
+		// definite sealedness tests (bleeding edge), passed as type strings resolved under an
+		// explicit toggle in the test method, so they carry no toggle-dependent objects here.
+		return [
+			// both sealed, same keys, compatible values
+			['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
+
+			// both sealed, bigger vs smaller (subset) — sealed requires exact keys
+			['array{a: int, b: string}', 'array{a: int}', TrinaryLogic::createNo()],
+			['array{a: int}', 'array{a: int, b: string}', TrinaryLogic::createNo()],
+
+			// both sealed, narrower value
+			['array{a: int}', 'array{a: int<0, max>}', TrinaryLogic::createYes()],
+			['array{a: int<0, max>}', 'array{a: int}', TrinaryLogic::createMaybe()],
+
+			// both sealed, optional key in left only
+			['array{a: int, b?: string}', 'array{a: int}', TrinaryLogic::createYes()],
+			['array{a: int, b?: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
+
+			// both unsealed, compatible known keys + compatible unsealed
+			['array{a: int, ...}', 'array{a: int<0, max>, ...}', TrinaryLogic::createYes()],
+			['array{a: int<0, max>, ...}', 'array{a: int, ...}', TrinaryLogic::createMaybe()],
+
+			// both unsealed, bigger known on right (right's extra fits left's unsealed extras)
+			['array{a: int, ...}', 'array{a: int, b: string, ...}', TrinaryLogic::createYes()],
+
+			// both unsealed, right has known key left doesn't require; left's unsealed must cover
+			['array{a: int, ...<string, string>}', 'array{a: int, b: int, ...<string, string>}', TrinaryLogic::createNo()],
+			['array{a: int, ...<string, string>}', 'array{a: int, b: non-empty-string, ...<string, string>}', TrinaryLogic::createYes()],
+
+			// both unsealed, narrower unsealed value on right
+			['array{a: int, ...<string, string>}', 'array{a: int, ...<string, non-empty-string>}', TrinaryLogic::createYes()],
+			['array{a: int, ...<string, non-empty-string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createMaybe()],
+
+			// both unsealed, narrower unsealed key on right (array-key ⊃ string)
+			['array{a: int, ...<array-key, string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createYes()],
+			['array{a: int, ...<string, string>}', 'array{a: int, ...<array-key, string>}', TrinaryLogic::createMaybe()],
+
+			// both unsealed, incompatible unsealed key types
+			['array{...<int, string>}', 'array{...<string, string>}', TrinaryLogic::createNo()],
+
+			// both unsealed, incompatible unsealed value types
+			['array{...<int, string>}', 'array{...<int, int>}', TrinaryLogic::createNo()],
+
+			// unsealed vs sealed — sealed's extras must fit unsealed's unsealed
+			['array{a: int, ...}', 'array{a: int, b: string}', TrinaryLogic::createYes()],
+			['array{a: int, ...<string, int>}', 'array{a: int, b: string}', TrinaryLogic::createNo()],
+
+			// sealed vs unsealed — unsealed might have extras sealed doesn't allow
+			['array{a: int}', 'array{a: int, ...}', TrinaryLogic::createMaybe()],
+			['array{a: int, b: string}', 'array{a: int<0, max>, ...}', TrinaryLogic::createMaybe()],
+
+			// sealed vs unsealed where sealed's keys can't be in unsealed's extras
+			['array{a: int}', 'array{...<int, int>}', TrinaryLogic::createNo()],
+
+			// sealed vs unsealed where sealed fits unsealed's extras
+			['array{a: int}', 'array{...<string, int>}', TrinaryLogic::createMaybe()],
 		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([new ConstantIntegerType(7)], [new ConstantIntegerType(2)]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(7)]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ArrayType(new IntegerType(), new IntegerType()),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ArrayType(new StringType(), new StringType()),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
-			new ArrayType(new MixedType(), new MixedType()),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([], []),
-			new IterableType(new MixedType(false), new MixedType(true)),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0, 1]),
-			new ConstantArrayType([], []),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			], [1], [0]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0, 1]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new StringType(),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0, 1]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0, 1]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new StringType(),
-			]),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-				new ConstantStringType('bar'),
-			], [
-				new IntegerType(),
-				new IntegerType(),
-			], [2], [0, 1]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			], [1], [0]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('foo'),
-			], [
-				new IntegerType(),
-			], [1], [0]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new IntegerType(),
-				new UnionType([new IntegerType(), new NullType()]),
-			]),
-			new ArrayType(new StringType(), new MixedType()),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new IntegerType(),
-				new UnionType([new IntegerType(), new NullType()]),
-			]),
-			new ArrayType(new StringType(), new StringType()),
-			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new ConstantArrayType([
-				new ConstantIntegerType(1),
-				new ConstantIntegerType(2),
-			], [
-				new IntegerType(),
-				new UnionType([new IntegerType(), new NullType()]),
-			]),
-			new ArrayType(new StringType(), new MixedType()),
-			TrinaryLogic::createNo(),
-		];
-
-		// empty array (with unknown sealedness) does not accept extra keys
-		yield [
-			new ConstantArrayType([], []),
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			TrinaryLogic::createNo(),
-		];
-
-		// non-empty array (with unknown sealedness) accepts extra keys
-		yield [
-			new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-			], [
-				new StringType(),
-				new IntegerType(),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		// definite sealedness tests (bleeding edge)
-
-		// both sealed, same keys, compatible values
-		yield ['array{a: int, b: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
-
-		// both sealed, bigger vs smaller (subset) — sealed requires exact keys
-		yield ['array{a: int, b: string}', 'array{a: int}', TrinaryLogic::createNo()];
-		yield ['array{a: int}', 'array{a: int, b: string}', TrinaryLogic::createNo()];
-
-		// both sealed, narrower value
-		yield ['array{a: int}', 'array{a: int<0, max>}', TrinaryLogic::createYes()];
-		yield ['array{a: int<0, max>}', 'array{a: int}', TrinaryLogic::createMaybe()];
-
-		// both sealed, optional key in left only
-		yield ['array{a: int, b?: string}', 'array{a: int}', TrinaryLogic::createYes()];
-		yield ['array{a: int, b?: string}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
-
-		// both unsealed, compatible known keys + compatible unsealed
-		yield ['array{a: int, ...}', 'array{a: int<0, max>, ...}', TrinaryLogic::createYes()];
-		yield ['array{a: int<0, max>, ...}', 'array{a: int, ...}', TrinaryLogic::createMaybe()];
-
-		// both unsealed, bigger known on right (right's extra fits left's unsealed extras)
-		yield ['array{a: int, ...}', 'array{a: int, b: string, ...}', TrinaryLogic::createYes()];
-
-		// both unsealed, right has known key left doesn't require; left's unsealed must cover
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, b: int, ...<string, string>}', TrinaryLogic::createNo()];
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, b: non-empty-string, ...<string, string>}', TrinaryLogic::createYes()];
-
-		// both unsealed, narrower unsealed value on right
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, ...<string, non-empty-string>}', TrinaryLogic::createYes()];
-		yield ['array{a: int, ...<string, non-empty-string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createMaybe()];
-
-		// both unsealed, narrower unsealed key on right (array-key ⊃ string)
-		yield ['array{a: int, ...<array-key, string>}', 'array{a: int, ...<string, string>}', TrinaryLogic::createYes()];
-		yield ['array{a: int, ...<string, string>}', 'array{a: int, ...<array-key, string>}', TrinaryLogic::createMaybe()];
-
-		// both unsealed, incompatible unsealed key types
-		yield ['array{...<int, string>}', 'array{...<string, string>}', TrinaryLogic::createNo()];
-
-		// both unsealed, incompatible unsealed value types
-		yield ['array{...<int, string>}', 'array{...<int, int>}', TrinaryLogic::createNo()];
-
-		// unsealed vs sealed — sealed's extras must fit unsealed's unsealed
-		yield ['array{a: int, ...}', 'array{a: int, b: string}', TrinaryLogic::createYes()];
-		yield ['array{a: int, ...<string, int>}', 'array{a: int, b: string}', TrinaryLogic::createNo()];
-
-		// sealed vs unsealed — unsealed might have extras sealed doesn't allow
-		yield ['array{a: int}', 'array{a: int, ...}', TrinaryLogic::createMaybe()];
-		yield ['array{a: int, b: string}', 'array{a: int<0, max>, ...}', TrinaryLogic::createMaybe()];
-
-		// sealed vs unsealed where sealed's keys can't be in unsealed's extras
-		yield ['array{a: int}', 'array{...<int, int>}', TrinaryLogic::createNo()];
-
-		// sealed vs unsealed where sealed fits unsealed's extras
-		yield ['array{a: int}', 'array{...<string, int>}', TrinaryLogic::createMaybe()];
 	}
 
 	/**
 	 * @param ConstantArrayType|string $type
 	 * @param Type|string $otherType
 	 */
-	#[DataProvider('dataIsSuperTypeOf')]
+	#[DataProvider('dataIsSuperTypeOfWithoutBleedingEdge')]
+	#[DataProvider('dataIsSuperTypeOfWithBleedingEdge')]
 	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
 	{
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
-		BleedingEdgeToggle::setBleedingEdge(true);
-		try {
-			$resolver = self::getContainer()->getByType(TypeStringResolver::class);
+		// Fetch the resolver - and thereby build the container - *before* entering the
+		// bleeding-edge window. Building a container resets the global BleedingEdgeToggle to
+		// the container's config value (ContainerFactory), which would otherwise clobber the
+		// toggle set below and make the type strings resolve to legacy (non-sealed) shapes.
+		$resolver = self::getContainer()->getByType(TypeStringResolver::class);
+
+		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($resolver, $type, $otherType): array {
 			if (is_string($type)) {
 				$type = $resolver->resolve($type, null);
 			}
 			if (is_string($otherType)) {
 				$otherType = $resolver->resolve($otherType, null);
 			}
-		} finally {
-			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
-		}
+
+			return [$type, $otherType];
+		});
 
 		$actualResult = $type->isSuperTypeOf($otherType);
 		$this->assertSame(
@@ -1609,36 +1626,39 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public static function dataGetArraySize(): iterable
 	{
+		// Accumulate into one array and return it (no `yield`), so the toggle is never held
+		// across a suspension point and cannot leak into other tests.
 		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
 
+		$cases = [];
 		foreach ([false, true] as $bleedingEdge) {
 			BleedingEdgeToggle::setBleedingEdge($bleedingEdge);
 
-			yield [
+			$cases[] = [
 				new ConstantArrayType([], []),
 				new ConstantIntegerType(0),
 			];
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
-			yield [
+			$cases[] = [
 				$builder->getArray(),
 				new ConstantIntegerType(0),
 			];
 
 			$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-			yield [
+			$cases[] = [
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 			];
 
 			$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-			yield [
+			$cases[] = [
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 			];
 
 			$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-			yield [
+			$cases[] = [
 				$builder->getArray(),
 				IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 			];
@@ -1646,23 +1666,25 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->makeUnsealed(new IntegerType(), new ObjectType(stdClass::class));
-		yield [
+		$cases[] = [
 			$builder->getArray(),
 			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 		];
 		$builder->setOffsetValueType(new ConstantIntegerType(0), new ObjectType(stdClass::class));
-		yield [
+		$cases[] = [
 			$builder->getArray(),
 			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 		];
 
 		$builder->setOffsetValueType(new ConstantIntegerType(1), new ObjectType(stdClass::class), true);
-		yield [
+		$cases[] = [
 			$builder->getArray(),
 			IntegerRangeType::createAllGreaterThanOrEqualTo(1),
 		];
 
 		BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
+
+		return $cases;
 	}
 
 	#[DataProvider('dataGetArraySize')]

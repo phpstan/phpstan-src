@@ -5,8 +5,6 @@ namespace PHPStan\Type\Accessory;
 use Closure;
 use DateInterval;
 use Override;
-use PHPStan\DependencyInjection\ContainerFactory;
-use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
@@ -20,9 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
-use function file_put_contents;
 use function sprintf;
-use function sys_get_temp_dir;
 use const PHP_VERSION_ID;
 
 class HasPropertyTypeTest extends PHPStanTestCase

@@ -176,6 +176,13 @@ final class TemplateTypeVariance
 		}
 
 		if ($this->invariant()) {
+			if ($a instanceof TemplateType && $b instanceof TemplateType
+				&& $a->getScope()->equals($b->getScope())
+				&& $a->getName() === $b->getName()
+			) {
+				return IsSuperTypeOfResult::createYes();
+			}
+
 			$result = $a->equals($b);
 			$reasons = [];
 			if (!$result) {

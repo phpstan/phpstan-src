@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use Override;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactoryFactory;
 use PHPStan\Analyser\Error;
@@ -39,6 +40,24 @@ abstract class PHPStanTestCase extends TestCase
 {
 
 	use PHPStanTestCaseTrait;
+
+	/**
+	 * Re-register the runtime container as the global static reflection provider before
+	 * every test. Enable this in tests that construct Type objects directly and assert
+	 * PHP-version-dependent reflection results, so a foreign PhpVersion leaked by another
+	 * test can't flake them. See https://github.com/phpstan/phpstan/issues/14860
+	 */
+	protected bool $reinitializeContainerBeforeEachTest = false;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		if (!$this->reinitializeContainerBeforeEachTest) {
+			return;
+		}
+
+		self::getContainer();
+	}
 
 	public static function getParser(): Parser
 	{

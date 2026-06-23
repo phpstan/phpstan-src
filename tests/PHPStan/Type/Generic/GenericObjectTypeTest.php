@@ -6,7 +6,6 @@ use DateTime;
 use DateTimeInterface;
 use Exception;
 use Iterator;
-use Override;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntegerType;
@@ -33,14 +32,10 @@ use const PHP_VERSION_ID;
 class GenericObjectTypeTest extends PHPStanTestCase
 {
 
-	#[Override]
-	protected function setUp(): void
-	{
-		// Pin the runtime container so a foreign PhpVersion leaked by another test
-		// can't flake the version-dependent data sets (reflected variance of built-in
-		// generics). See https://github.com/phpstan/phpstan/issues/14860
-		self::getContainer();
-	}
+	// Pin the runtime container so a foreign PhpVersion leaked by another test
+	// can't flake the version-dependent data sets (reflected variance of built-in
+	// generics). See https://github.com/phpstan/phpstan/issues/14860
+	protected bool $reinitializeContainerBeforeEachTest = true;
 
 	public static function dataIsSuperTypeOf(): array
 	{

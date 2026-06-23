@@ -14,7 +14,6 @@ use Exception;
 use InvalidArgumentException;
 use Iterator;
 use ObjectShapesAcceptance\ClassWithFooIntProperty;
-use Override;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Generics\FunctionsAssertType\C;
@@ -74,14 +73,10 @@ use const PHP_VERSION_ID;
 class TypeCombinatorTest extends PHPStanTestCase
 {
 
-	#[Override]
-	protected function setUp(): void
-	{
-		// Pin the runtime container so a foreign PhpVersion leaked by another test
-		// can't flake the version-dependent data sets (dynamic-property handling of
-		// final classes). See https://github.com/phpstan/phpstan/issues/14860
-		self::getContainer();
-	}
+	// Pin the runtime container so a foreign PhpVersion leaked by another test
+	// can't flake the version-dependent data sets (dynamic-property handling of
+	// final classes). See https://github.com/phpstan/phpstan/issues/14860
+	protected bool $reinitializeContainerBeforeEachTest = true;
 
 	public static function dataAddNull(): array
 	{

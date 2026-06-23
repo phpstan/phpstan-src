@@ -4,7 +4,6 @@ namespace PHPStan\Type\Accessory;
 
 use Closure;
 use DateInterval;
-use Override;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
@@ -24,14 +23,10 @@ use const PHP_VERSION_ID;
 class HasPropertyTypeTest extends PHPStanTestCase
 {
 
-	#[Override]
-	protected function setUp(): void
-	{
-		// Pin the runtime container so a foreign PhpVersion leaked by another test
-		// can't flake the version-dependent Closure data set below.
-		// See https://github.com/phpstan/phpstan/issues/14860
-		self::getContainer();
-	}
+	// Pin the runtime container so a foreign PhpVersion leaked by another test
+	// can't flake the version-dependent Closure data set below.
+	// See https://github.com/phpstan/phpstan/issues/14860
+	protected bool $reinitializeContainerBeforeEachTest = true;
 
 	public static function dataIsSuperTypeOf(): array
 	{

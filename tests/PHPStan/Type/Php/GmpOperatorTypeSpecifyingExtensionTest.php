@@ -24,6 +24,7 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 	#[Override]
 	protected function setUp(): void
 	{
+		parent::setUp();
 		$this->extension = new GmpOperatorTypeSpecifyingExtension();
 	}
 

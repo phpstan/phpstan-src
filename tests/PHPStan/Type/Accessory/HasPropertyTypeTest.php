@@ -27,11 +27,9 @@ class HasPropertyTypeTest extends PHPStanTestCase
 	#[Override]
 	protected function setUp(): void
 	{
-		// Re-register the default (runtime) container as the global static reflection
-		// provider before every test. Without this, a container configured with a
-		// different PhpVersion - registered by another test (e.g. through its data
-		// provider) - can leak in and make the version-dependent Closure data set
-		// below flaky. See https://github.com/phpstan/phpstan/issues/14860
+		// Pin the runtime container so a foreign PhpVersion leaked by another test
+		// can't flake the version-dependent Closure data set below.
+		// See https://github.com/phpstan/phpstan/issues/14860
 		self::getContainer();
 	}
 

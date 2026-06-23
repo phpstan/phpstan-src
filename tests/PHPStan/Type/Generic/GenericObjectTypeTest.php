@@ -36,12 +36,9 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	#[Override]
 	protected function setUp(): void
 	{
-		// Re-register the default (runtime) container as the global static reflection
-		// provider before every test. Without this, a container configured with a
-		// different PhpVersion - registered by another test - can leak in and make the
-		// version-dependent data sets (which depend on the reflected, version-specific
-		// variance of built-in generics) flaky.
-		// See https://github.com/phpstan/phpstan/issues/14860
+		// Pin the runtime container so a foreign PhpVersion leaked by another test
+		// can't flake the version-dependent data sets (reflected variance of built-in
+		// generics). See https://github.com/phpstan/phpstan/issues/14860
 		self::getContainer();
 	}
 

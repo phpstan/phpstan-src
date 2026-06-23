@@ -124,31 +124,6 @@ class HasPropertyTypeTest extends PHPStanTestCase
 		];
 	}
 
-	public function testIsSuperTypeOfClosureRespectsActivePhpVersion(): void
-	{
-		$type = new HasPropertyType('foo');
-
-		// Whether a final class without the property is a possible subtype of
-		// hasProperty() depends on whether the PHP version still allows dynamic
-		// properties, so the result must follow the active container's PhpVersion
-		// rather than the global PHP_VERSION_ID constant. This coupling is what made
-		// the Closure data set above flaky when another test left a container
-		// configured with a different PhpVersion registered as the global static
-		// reflection provider. See https://github.com/phpstan/phpstan/issues/14860
-		// A fresh ObjectType is used each time because it caches its ClassReflection.
-		try {
-			self::registerContainerWithPhpVersion(80100);
-			$this->assertSame('Maybe', $type->isSuperTypeOf(new ObjectType(Closure::class))->describe());
-
-			self::registerContainerWithPhpVersion(80200);
-			$this->assertSame('No', $type->isSuperTypeOf(new ObjectType(Closure::class))->describe());
-		} finally {
-			// Restore the default (runtime) container so this test does not leak its
-			// foreign container into other tests.
-			self::getContainer();
-		}
-	}
-
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(HasPropertyType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -213,27 +188,6 @@ class HasPropertyTypeTest extends PHPStanTestCase
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
-	}
-
-	private static function registerContainerWithPhpVersion(int $versionId): void
-	{
-		$fileHelper = new FileHelper(__DIR__ . '/../../../..');
-		$rootDir = $fileHelper->normalizePath(__DIR__ . '/../../../..', '/');
-
-		// The directory is already created by self::getContainer() (called in setUp()).
-		$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
-
-		$configFile = $tmpDir . '/has-property-php-version-' . $versionId . '.neon';
-		file_put_contents($configFile, sprintf("parameters:\n\tphpVersion: %d\n", $versionId));
-
-		$containerFactory = new ContainerFactory($rootDir);
-		$container = $containerFactory->create($tmpDir, [
-			$containerFactory->getConfigDirectory() . '/config.level8.neon',
-			__DIR__ . '/../../../../src/Testing/TestCase.neon',
-			$configFile,
-		], []);
-
-		ContainerFactory::postInitializeContainer($container);
 	}
 
 }

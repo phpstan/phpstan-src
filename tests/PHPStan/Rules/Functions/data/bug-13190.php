@@ -53,3 +53,31 @@ function inbox($to_box): Box
 		return new BoxImpl($to_box);
 	}
 }
+
+/**
+ * @implements Box<int>
+ */
+final class IntBox implements Box
+{
+	#[\Override]
+	public function toInner(): int
+	{
+		return 0;
+	}
+}
+
+/**
+ * @template T
+ *
+ * @param T|Box<T> $to_box
+ *
+ * @return Box<T>
+ */
+function inbox_concrete_impl($to_box): Box
+{
+	if ($to_box instanceof IntBox) {
+		return $to_box;
+	} else {
+		return new BoxImpl($to_box);
+	}
+}

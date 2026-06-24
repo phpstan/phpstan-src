@@ -339,6 +339,17 @@ class IntersectionType implements CompoundType
 			if ($isSuperType->no()) {
 				return $isSuperType->toAcceptsResult();
 			}
+
+			// A TemplateType member accepts eagerly, so lazyMaxMin's Yes may come solely from it.
+			// A Maybe from the holistic isSuperTypeOf means no member is a definite subtype, so
+			// when a TemplateType member is present the eager Yes is untrustworthy - trust the Maybe.
+			if ($isSuperType->maybe()) {
+				foreach ($this->types as $innerType) {
+					if ($innerType instanceof TemplateType) {
+						return $isSuperType->toAcceptsResult();
+					}
+				}
+			}
 		}
 
 		if ($this->isOversizedArray()->yes()) {

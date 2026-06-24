@@ -12,13 +12,24 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class NullsafePropertyFetchRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain;
+
 	protected function getRule(): Rule
 	{
-		return new NullsafePropertyFetchRule();
+		return new NullsafePropertyFetchRule(
+			$this->treatPhpDocTypesAsCertain,
+			true,
+		);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch-rule.php'], [
 			[
 				'Using nullsafe property access on non-nullable type Exception. Use -> instead.',
@@ -29,34 +40,40 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 
 	public function testBug6020(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7109(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7109.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5172(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5172.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7980(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7980.php'], []);
 	}
 
 	public function testBug8517(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8517.php'], []);
 	}
 
 	public function testBug14150(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-14150-nullsafe.php'], [
 			[
 				'Using nullsafe property access on non-nullable type $this(Bug14150NullsafeProperty\HelloWorld). Use -> instead.',
@@ -65,6 +82,18 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 			[
 				'Using nullsafe property access on non-nullable type $this(Bug14150NullsafeProperty\HelloWorld). Use -> instead.',
 				27,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
+	public function testBug14150WithoutCertainPhpDocTypes(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-14150-nullsafe.php'], [
+			[
+				'Using nullsafe property access on non-nullable type $this(Bug14150NullsafeProperty\HelloWorld). Use -> instead.',
+				20,
 			],
 		]);
 	}
@@ -72,12 +101,14 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug9105(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9105.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug6922(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6922.php'], []);
 	}
 

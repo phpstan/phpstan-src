@@ -19,6 +19,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 	#[Override]
 	protected function setUp(): void
 	{
+		parent::setUp();
 		foreach (AgentDetector::ENV_VARS as $var) {
 			$this->originalEnvVars[$var] = getenv($var);
 			putenv($var);

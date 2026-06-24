@@ -23,6 +23,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	#[Override]
 	protected function setUp(): void
 	{
+		parent::setUp();
 		putenv('GITHUB_ACTIONS');
 
 		$this->terminalEmulator = getenv('TERMINAL_EMULATOR');

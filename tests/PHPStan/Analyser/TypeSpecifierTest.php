@@ -61,6 +61,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 	#[Override]
 	protected function setUp(): void
 	{
+		parent::setUp();
 		$reflectionProvider = self::createReflectionProvider();
 		$this->printer = new Printer();
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');

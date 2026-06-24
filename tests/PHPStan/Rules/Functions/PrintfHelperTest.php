@@ -15,6 +15,7 @@ class PrintfHelperTest extends PHPStanTestCase
 	#[Override]
 	protected function setUp(): void
 	{
+		parent::setUp();
 		$this->printf = new PrintfHelper(new PhpVersion(PHP_VERSION_ID));
 	}
 

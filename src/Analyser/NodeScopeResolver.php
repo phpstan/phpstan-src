@@ -1739,9 +1739,18 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($scope);
 			$bodyScopeMaybeRan = $bodyScope;
 			$storage = $originalStorage;
-			$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			$condExprResult = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$bodyScope = $condExprResult->getTruthyScope();
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
+			if ($this->exprContainsSideEffect($stmt->cond)) {
+				// A condition with side effects (e.g. `while (--$x > 0)`) mutates its variables as
+				// part of being evaluated. filterByFalseyValue() only narrows, it does not re-apply
+				// those side effects, so it can collapse a variable to never type by contradicting
+				// its not-yet-mutated value. Recover such variables from the loop-condition falsey
+				// scope, which applied the side effects exactly once.
+				$finalScope = $finalScope->restoreNeverTypesFrom($condExprResult->getFalseyScope());
+			}
 
 			$alwaysIterates = false;
 			$neverIterates = false;
@@ -1964,9 +1973,11 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($initScope);
 
 			$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
+			$lastCondExprResult = null;
 			if ($lastCondExpr !== null) {
 				$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
-				$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+				$lastCondExprResult = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$bodyScope = $lastCondExprResult->getTruthyScope();
 				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
 			}
 
@@ -1984,6 +1995,9 @@ class NodeScopeResolver
 
 			if ($lastCondExpr !== null) {
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
+				if ($this->exprContainsSideEffect($lastCondExpr)) {
+					$finalScope = $finalScope->restoreNeverTypesFrom($lastCondExprResult->getFalseyScope());
+				}
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
@@ -5168,6 +5182,17 @@ class NodeScopeResolver
 			$isPassedUnreachableStatement = true;
 		}
 		return $stmts;
+	}
+
+	private function exprContainsSideEffect(Expr $expr): bool
+	{
+		return (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Expr\PreInc
+			|| $node instanceof Expr\PreDec
+			|| $node instanceof Expr\PostInc
+			|| $node instanceof Expr\PostDec
+			|| $node instanceof Expr\Assign
+			|| $node instanceof Expr\AssignOp
+			|| $node instanceof Expr\AssignRef) !== null;
 	}
 
 	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope

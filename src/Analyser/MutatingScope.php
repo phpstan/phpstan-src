@@ -3252,6 +3252,59 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * Recovers expressions that were collapsed to never type because a side-effecting condition
+	 * (e.g. the `--$x > 0` of a `while` loop) was narrowed by filterByFalseyValue() without
+	 * re-applying its side effects. Their corrected type is taken from the loop-condition falsey
+	 * scope, where the side effects were applied exactly once.
+	 */
+	public function restoreNeverTypesFrom(self $other): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$changed = false;
+		foreach ($expressionTypes as $exprString => $holder) {
+			if (!$holder->getType() instanceof NeverType) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $other->expressionTypes)) {
+				continue;
+			}
+			$otherHolder = $other->expressionTypes[$exprString];
+			if ($otherHolder->getType() instanceof NeverType) {
+				continue;
+			}
+			$expressionTypes[$exprString] = $otherHolder;
+			if (array_key_exists($exprString, $other->nativeExpressionTypes)) {
+				$nativeExpressionTypes[$exprString] = $other->nativeExpressionTypes[$exprString];
+			}
+			$changed = true;
+		}
+
+		if (!$changed) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
+	/**
 	 * @return static
 	 */
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self

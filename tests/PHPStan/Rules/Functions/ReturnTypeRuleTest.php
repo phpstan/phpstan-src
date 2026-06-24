@@ -451,11 +451,34 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug13190TemplateGeneric(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		// A raw TemplateType value returned as its generic application must not be a false positive.
+		$this->analyse([__DIR__ . '/data/bug-13190-template-generic.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug13190(): void
 	{
 		$this->checkNullables = true;
 		$this->checkExplicitMixed = false;
-		$this->analyse([__DIR__ . '/data/bug-13190.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13190.php'], [
+			[
+				'Function Bug13190\inbox() should return Bug13190\Box<T> but returns (Bug13190\Box&T)|Bug13190\Box<T>.',
+				51,
+			],
+			[
+				'Function Bug13190\inbox_concrete_impl() should return Bug13190\Box<T> but returns (Bug13190\Box<T>&Bug13190\IntBox)|(Bug13190\IntBox&T).',
+				79,
+			],
+			[
+				'Function Bug13190\inbox_concrete_impl() should return Bug13190\Box<T> but returns Bug13190\BoxImpl<Bug13190\Box<T>|T of mixed>.',
+				81,
+			],
+		]);
 	}
 
 }

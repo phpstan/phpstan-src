@@ -5,6 +5,9 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PHPStan\File\FileReader;
 use function array_key_first;
+use function clearstatcache;
+use function filemtime;
+use function filesize;
 use function strlen;
 
 final class CachedParser implements Parser
@@ -37,6 +40,20 @@ final class CachedParser implements Parser
 	private array $parsedByString = [];
 
 	/**
+	 * parseFile() is called once per class using a trait, so the same file
+	 * is read from disk over and over (one hot trait file was read 94,000
+	 * times in a cold run of a large Laravel project). Memoizing the contents
+	 * by path skips those redundant reads; the total memoized source size is
+	 * bounded the same way as the AST cache above.
+	 */
+	private const MEMOIZED_SOURCE_BYTES_LIMIT = 524_288;
+
+	/** @var array<string, array{int, int, string}> path => [mtime, size, source code] */
+	private array $cachedSourceByFile = [];
+
+	private int $memoizedSourceBytes = 0;
+
+	/**
 	 * The AST of a parsed file takes up roughly 50-60x more memory than the
 	 * source code itself, so alongside the entry count limit, the total source
 	 * size of the cached ASTs is capped by $cachedSourceBytesMax (0 = unlimited)
@@ -59,7 +76,7 @@ final class CachedParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		$sourceCode = FileReader::read($file);
+		$sourceCode = $this->readFile($file);
 		$isCached = isset($this->cachedNodesByString[$sourceCode]);
 		if ($isCached && !isset($this->parsedByString[$sourceCode])) {
 			return $this->markRecentlyUsed($sourceCode);
@@ -98,6 +115,61 @@ final class CachedParser implements Parser
 		$this->parsedByString[$sourceCode] = true;
 
 		return $nodes;
+	}
+
+	/**
+	 * Read a file's contents, memoized by path and keyed by mtime; clearstatcache
+	 * keeps this correct when a file changes between calls in a long-running
+	 * process (PHPStan Pro, fixer worker). Bounded by MEMOIZED_SOURCE_BYTES_LIMIT
+	 * with least-recently-used eviction.
+	 */
+	private function readFile(string $file): string
+	{
+		// mtime alone has one-second granularity, so a same-second edit could be
+		// served stale in a long-running process (PHPStan Pro, fixer worker);
+		// keying by size as well catches edits that change the length. filesize()
+		// is served from PHP's stat cache populated by filemtime(), so it costs
+		// no extra syscall.
+		clearstatcache(true, $file);
+		$mtime = @filemtime($file);
+		$size = @filesize($file);
+		if ($mtime === false || $size === false) {
+			return FileReader::read($file);
+		}
+
+		if (
+			isset($this->cachedSourceByFile[$file])
+			&& $this->cachedSourceByFile[$file][0] === $mtime
+			&& $this->cachedSourceByFile[$file][1] === $size
+		) {
+			$entry = $this->cachedSourceByFile[$file];
+			unset($this->cachedSourceByFile[$file]);
+			$this->cachedSourceByFile[$file] = $entry;
+
+			return $entry[2];
+		}
+
+		$sourceCode = FileReader::read($file);
+		$incomingBytes = strlen($sourceCode);
+		if ($incomingBytes <= self::MEMOIZED_SOURCE_BYTES_LIMIT) {
+			if (isset($this->cachedSourceByFile[$file])) {
+				// stale entry for this path (mtime or size changed)
+				$this->memoizedSourceBytes -= strlen($this->cachedSourceByFile[$file][2]);
+				unset($this->cachedSourceByFile[$file]);
+			}
+			while ($this->memoizedSourceBytes + $incomingBytes > self::MEMOIZED_SOURCE_BYTES_LIMIT) {
+				$oldestPath = array_key_first($this->cachedSourceByFile);
+				if ($oldestPath === null) {
+					break;
+				}
+				$this->memoizedSourceBytes -= strlen($this->cachedSourceByFile[$oldestPath][2]);
+				unset($this->cachedSourceByFile[$oldestPath]);
+			}
+			$this->cachedSourceByFile[$file] = [$mtime, $size, $sourceCode];
+			$this->memoizedSourceBytes += $incomingBytes;
+		}
+
+		return $sourceCode;
 	}
 
 	/**

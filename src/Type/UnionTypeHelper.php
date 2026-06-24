@@ -7,6 +7,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use function count;
 use function strcasecmp;
 use function usort;
@@ -119,6 +120,18 @@ final class UnionTypeHelper
 
 			if ($a->isString()->yes() && $b->isString()->yes()) {
 				return self::compareStrings($a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise()));
+			}
+
+			// Enum cases would otherwise fall through to describe(), the documented "never sort via
+			// describe()" anti-pattern and the dominant cost of sorting a large-enum union (re-sorted
+			// per arm of a match/switch). className.'::'.caseName is the describe(typeOnly) string for
+			// an enum case (enums are never generic), so the order is identical without the
+			// VerbosityLevel dispatch and sprintf. Same key as IntersectionType::getFiniteTypes().
+			if ($a instanceof EnumCaseObjectType && $b instanceof EnumCaseObjectType) {
+				return self::compareStrings(
+					$a->getClassName() . '::' . $a->getEnumCaseName(),
+					$b->getClassName() . '::' . $b->getEnumCaseName(),
+				);
 			}
 
 			return self::compareStrings($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));

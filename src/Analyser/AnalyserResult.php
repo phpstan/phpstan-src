@@ -27,6 +27,7 @@ final class AnalyserResult
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<string>>|null $usedTraitDependencies
+	 * @param array<string, array<string>>|null $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param list<string> $processedFiles
 	 */
@@ -41,6 +42,7 @@ final class AnalyserResult
 		private array $collectedData,
 		private ?array $dependencies,
 		private ?array $usedTraitDependencies,
+		private ?array $packageDependencies,
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
@@ -151,6 +153,14 @@ final class AnalyserResult
 	public function getUsedTraitDependencies(): ?array
 	{
 		return $this->usedTraitDependencies;
+	}
+
+	/**
+	 * @return array<string, array<string>>|null
+	 */
+	public function getPackageDependencies(): ?array
+	{
+		return $this->packageDependencies;
 	}
 
 	/**

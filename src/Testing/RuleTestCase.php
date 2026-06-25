@@ -18,6 +18,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -136,6 +137,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$nodeScopeResolver,
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
+				self::getContainer()->getByType(PackageDependencyResolver::class),
 				new IgnoreErrorExtensionProvider(self::getContainer()),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),

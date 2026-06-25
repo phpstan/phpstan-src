@@ -74,6 +74,7 @@ final class Analyser
 		$reachedInternalErrorsCountLimit = false;
 		$dependencies = [];
 		$usedTraitDependencies = [];
+		$packageDependencies = [];
 		$exportedNodes = [];
 		$allProcessedFiles = [];
 		foreach ($files as $file) {
@@ -101,6 +102,7 @@ final class Analyser
 				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 				$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
+				$packageDependencies[$file] = $fileAnalyserResult->getPackageDependencies();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
 				if (count($fileExportedNodes) > 0) {
@@ -142,6 +144,7 @@ final class Analyser
 			collectedData: $collectedData,
 			dependencies: $internalErrorsCount === 0 ? $dependencies : null,
 			usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
+			packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
 			peakMemoryUsageBytes: memory_get_peak_usage(true),

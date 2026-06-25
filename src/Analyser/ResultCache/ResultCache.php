@@ -24,6 +24,7 @@ final class ResultCache
 	 * @param CollectorData $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<string>> $usedTraitDependencies
+	 * @param array<string, array<string>> $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
@@ -40,6 +41,7 @@ final class ResultCache
 		private array $collectedData,
 		private array $dependencies,
 		private array $usedTraitDependencies,
+		private array $packageDependencies,
 		private array $exportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
@@ -127,6 +129,14 @@ final class ResultCache
 	public function getUsedTraitDependencies(): array
 	{
 		return $this->usedTraitDependencies;
+	}
+
+	/**
+	 * @return array<string, array<string>>
+	 */
+	public function getPackageDependencies(): array
+	{
+		return $this->packageDependencies;
 	}
 
 	/**

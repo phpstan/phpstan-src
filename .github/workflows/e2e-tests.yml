@@ -189,7 +189,7 @@ jobs:
               patch -b src/Generated/Foo.php < patch.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because the metadata do not match: projectConfig, scannedFiles' "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because the metadata do not match: scannedFiles' "$OUTPUT"
               ../bashunit -a contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-traits

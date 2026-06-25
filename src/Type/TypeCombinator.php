@@ -41,7 +41,9 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
+use function is_bool;
 use function is_int;
+use function is_string;
 use function sprintf;
 use function usort;
 use const PHP_INT_MAX;
@@ -1498,6 +1500,77 @@ final class TypeCombinator
 		return array_merge($newArrays, $arraysToProcess);
 	}
 
+	/**
+	 * Fast path for intersect(): the intersection of two unions whose members are all
+	 * disjoint constant scalars is their value-keyed set intersection. Returns null when
+	 * either union has a member that is not safe to compare by value, in which case the
+	 * caller falls back to the general A & (B|C) distribution.
+	 */
+	private static function intersectConstScalarUnions(UnionType $a, UnionType $b): ?Type
+	{
+		$membersA = self::constScalarUnionMembers($a);
+		$membersB = self::constScalarUnionMembers($b);
+		if ($membersA === null || $membersB === null) {
+			return null;
+		}
+
+		$common = [];
+		foreach ($membersA as $key => $member) {
+			if (!array_key_exists($key, $membersB)) {
+				continue;
+			}
+
+			$common[] = $member;
+		}
+
+		if ($common === []) {
+			return new NeverType();
+		}
+
+		return self::union(...$common);
+	}
+
+	/**
+	 * Keys a union's members by value for the constant-scalar fast path in intersect().
+	 *
+	 * Returns a value-key => member map, or null if any member is not a constant scalar
+	 * that is safe to compare by value alone. Class-string constant strings are excluded
+	 * (the class-string flag is not captured by the value), and floats are excluded
+	 * (-0.0 / NAN comparison quirks). Two members are interchangeable iff they share a key.
+	 *
+	 * @return array<string, Type>|null
+	 */
+	private static function constScalarUnionMembers(UnionType $union): ?array
+	{
+		$members = [];
+		foreach ($union->getTypes() as $member) {
+			if ($member->isNull()->yes()) {
+				$members['null'] = $member;
+				continue;
+			}
+
+			$values = $member->getConstantScalarValues();
+			if (count($values) !== 1) {
+				return null;
+			}
+
+			$value = $values[0];
+			if (is_int($value)) {
+				$key = 'i:' . $value;
+			} elseif (is_bool($value)) {
+				$key = $value ? 'b:1' : 'b:0';
+			} elseif (is_string($value) && $member->isClassString()->no()) {
+				$key = 's:' . $value;
+			} else {
+				return null;
+			}
+
+			$members[$key] = $member;
+		}
+
+		return $members;
+	}
+
 	public static function intersect(Type ...$types): Type
 	{
 		$typesCount = count($types);
@@ -1513,6 +1586,22 @@ final class TypeCombinator
 		foreach ($types as $type) {
 			if ($type instanceof NeverType && !$type->isExplicit()) {
 				return $type;
+			}
+		}
+
+		// Fast path: the intersection of two plain unions whose members are all
+		// disjoint constant scalars is their value-keyed set intersection (O(n)),
+		// avoiding the O(n*m) `A & (B|C)` distribution + union rebuild below.
+		// Restricted to the exact UnionType class so BenevolentUnionType and the
+		// template union types keep their dedicated handling.
+		if (
+			$typesCount === 2
+			&& get_class($types[0]) === UnionType::class
+			&& get_class($types[1]) === UnionType::class
+		) {
+			$constScalarIntersection = self::intersectConstScalarUnions($types[0], $types[1]);
+			if ($constScalarIntersection !== null) {
+				return $constScalarIntersection;
 			}
 		}
 

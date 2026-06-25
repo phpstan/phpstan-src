@@ -5632,6 +5632,62 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ConstantArrayType::class,
 			'array{a: int}',
 		];
+
+		// intersection of two constant-scalar unions (constant-union fast path)
+		yield [
+			[
+				'0|1|2|3',
+				'2|3|4|5',
+			],
+			UnionType::class,
+			'2|3',
+		];
+
+		yield [
+			[
+				"'a'|'b'|'c'",
+				"'b'|'c'|'d'",
+			],
+			UnionType::class,
+			"'b'|'c'",
+		];
+
+		yield [
+			[
+				'1|2',
+				'3|4',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+
+		yield [
+			[
+				'0|1',
+				'1|2',
+			],
+			ConstantIntegerType::class,
+			'1',
+		];
+
+		yield [
+			[
+				"0|1|'a'|'b'|null",
+				"1|2|'a'|'c'|null",
+			],
+			UnionType::class,
+			"1|'a'|null",
+		];
+
+		// a non-constant member makes the fast path bail to the normal distribution
+		yield [
+			[
+				'0|1|2|non-empty-string',
+				'1|2',
+			],
+			UnionType::class,
+			'1|2',
+		];
 	}
 
 	/**

@@ -41,7 +41,9 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
+use function is_bool;
 use function is_int;
+use function is_string;
 use function sprintf;
 use function usort;
 use const PHP_INT_MAX;
@@ -1498,6 +1500,98 @@ final class TypeCombinator
 		return array_merge($newArrays, $arraysToProcess);
 	}
 
+	/**
+	 * Fast path for intersect(): the intersection of two unions whose members are all
+	 * finite, mutually-disjoint values (constant scalars and/or enum cases) is their
+	 * identity-keyed set intersection. Returns null when either union has a member that is
+	 * not such a value, in which case the caller falls back to the general A & (B|C)
+	 * distribution.
+	 */
+	private static function intersectFiniteUnions(UnionType $a, UnionType $b): ?Type
+	{
+		$membersA = self::finiteUnionMembers($a);
+		if ($membersA === null) {
+			return null;
+		}
+
+		$membersB = self::finiteUnionMembers($b);
+		if ($membersB === null) {
+			return null;
+		}
+
+		$common = [];
+		foreach ($membersA as $key => $member) {
+			if (!array_key_exists($key, $membersB)) {
+				continue;
+			}
+
+			$common[] = $member;
+		}
+
+		if ($common === []) {
+			return new NeverType();
+		}
+
+		return self::union(...$common);
+	}
+
+	/**
+	 * Keys a union's members by identity for the finite-union fast path in intersect().
+	 *
+	 * Handles constant scalars and enum cases: each stands for one concrete value, so two
+	 * members are interchangeable iff they share a key and are otherwise disjoint. Returns
+	 * null if any member is not such a value. Class-string constant strings are excluded
+	 * (the class-string flag is not captured by the value) and floats are excluded (-0.0 /
+	 * NAN comparison quirks). Enum cases are keyed by class + case name, the identity
+	 * EnumCaseObjectType::equals() compares.
+	 *
+	 * @return array<string, Type>|null
+	 */
+	private static function finiteUnionMembers(UnionType $union): ?array
+	{
+		$members = [];
+		foreach ($union->getTypes() as $member) {
+			$enumCase = $member->getEnumCaseObject();
+			if ($member->isNull()->yes()) {
+				$key = 'null';
+			} elseif ($enumCase !== null) {
+				// getEnumCaseObject() also returns the case for a refined member - an
+				// intersection like $this & Enum::C, a whole single-case enum, or an enum
+				// subtracted to one case - none of which are a bare EnumCaseObjectType.
+				// Only a bare case is safe to key by class + case name; for the rest,
+				// EnumCaseObjectType::equals() is false (it requires an EnumCaseObjectType),
+				// so bail to the slow path rather than collapse the refinement.
+				if (!$enumCase->equals($member)) {
+					return null;
+				}
+
+				// Key by class + case name, the identity EnumCaseObjectType::equals() compares
+				// (describe() would also fold in a subtracted type, which equals() ignores).
+				$key = 'enum:' . $enumCase->getClassName() . '::' . $enumCase->getEnumCaseName();
+			} else {
+				$values = $member->getConstantScalarValues();
+				if (count($values) !== 1) {
+					return null;
+				}
+
+				$value = $values[0];
+				if (is_int($value)) {
+					$key = 'i:' . $value;
+				} elseif (is_bool($value)) {
+					$key = $value ? 'b:1' : 'b:0';
+				} elseif (is_string($value) && $member->isClassString()->no()) {
+					$key = 's:' . $value;
+				} else {
+					return null;
+				}
+			}
+
+			$members[$key] = $member;
+		}
+
+		return $members;
+	}
+
 	public static function intersect(Type ...$types): Type
 	{
 		$typesCount = count($types);
@@ -1513,6 +1607,22 @@ final class TypeCombinator
 		foreach ($types as $type) {
 			if ($type instanceof NeverType && !$type->isExplicit()) {
 				return $type;
+			}
+		}
+
+		// Fast path: the intersection of two plain unions whose members are all finite,
+		// mutually-disjoint values (constant scalars and/or enum cases) is their
+		// identity-keyed set intersection (O(n)), avoiding the O(n*m) `A & (B|C)`
+		// distribution + union rebuild below. Restricted to the exact UnionType class so
+		// BenevolentUnionType and the template union types keep their dedicated handling.
+		if (
+			$typesCount === 2
+			&& get_class($types[0]) === UnionType::class
+			&& get_class($types[1]) === UnionType::class
+		) {
+			$finiteIntersection = self::intersectFiniteUnions($types[0], $types[1]);
+			if ($finiteIntersection !== null) {
+				return $finiteIntersection;
 			}
 		}
 

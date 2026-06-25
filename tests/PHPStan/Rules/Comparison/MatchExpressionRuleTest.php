@@ -21,17 +21,53 @@ class MatchExpressionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new MatchExpressionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->treatPhpDocTypesAsCertain,
-					),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 			),
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new FunctionCallConstantConditionRule(),
 			new ConstantConditionInTraitRule(),
 		]);
 	}
@@ -307,7 +343,16 @@ class MatchExpressionRuleTest extends RuleTestCase
 	public function testBug8937(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-8937.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-8937.php'], [
+			[
+				'Call to function is_array() with array will always evaluate to true.',
+				23,
+			],
+			[
+				'Call to function is_array() with non-empty-array<string> will always evaluate to true.',
+				24,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

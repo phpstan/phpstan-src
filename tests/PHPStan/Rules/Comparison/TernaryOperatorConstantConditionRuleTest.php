@@ -21,18 +21,54 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new TernaryOperatorConstantConditionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->treatPhpDocTypesAsCertain,
-					),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				true,
 			),
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new FunctionCallConstantConditionRule(),
 			new ConstantConditionInTraitRule(),
 		]);
 	}

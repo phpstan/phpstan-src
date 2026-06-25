@@ -24,6 +24,7 @@ final class TernaryOperatorConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -65,6 +66,10 @@ final class TernaryOperatorConstantConditionRule implements Rule
 				'Ternary operator condition is always %s.',
 				$exprType->getValue() ? 'true' : 'false',
 			)))->identifier(sprintf('ternary.always%s', $exprType->getValue() ? 'True' : 'False'))->build();
+			if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->cond)) {
+				$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->cond, $exprType->getValue(), $ruleError);
+				return [];
+			}
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->cond, $exprType->getValue(), $ruleError);
 				return [];
@@ -73,7 +78,11 @@ final class TernaryOperatorConstantConditionRule implements Rule
 			return [$ruleError];
 		}
 
-		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
+		if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->cond)) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $node->cond);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
+		}
 		return [];
 	}
 

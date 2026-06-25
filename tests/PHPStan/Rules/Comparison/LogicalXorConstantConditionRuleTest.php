@@ -19,19 +19,55 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new LogicalXorConstantConditionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->shouldTreatPhpDocTypesAsCertain(),
-					),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->shouldTreatPhpDocTypesAsCertain(),
 				false,
 				true,
 			),
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->shouldTreatPhpDocTypesAsCertain(),
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				false,
+				true,
+			),
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->shouldTreatPhpDocTypesAsCertain(),
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				false,
+				true,
+			),
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->shouldTreatPhpDocTypesAsCertain(),
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				false,
+				true,
+			),
+			new FunctionCallConstantConditionRule(),
 			new ConstantConditionInTraitRule(),
 		]);
 	}

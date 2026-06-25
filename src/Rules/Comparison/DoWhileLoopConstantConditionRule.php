@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
@@ -28,6 +29,7 @@ final class DoWhileLoopConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -44,23 +46,24 @@ final class DoWhileLoopConstantConditionRule implements Rule
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->getCond());
+		$isTypeCheckCandidate = $this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->getCond());
 		if ($exprType instanceof ConstantBooleanType) {
 			if ($exprType->getValue()) {
 				if ($node->hasYield()) {
-					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->getCond());
+					$this->emitNoError($scope, $node->getCond(), $isTypeCheckCandidate);
 					return [];
 				}
 				foreach ($node->getExitPoints() as $exitPoint) {
 					$statement = $exitPoint->getStatement();
 					if (!$statement instanceof Continue_) {
-						$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->getCond());
+						$this->emitNoError($scope, $node->getCond(), $isTypeCheckCandidate);
 						return [];
 					}
 					if (!$statement->num instanceof Int_) {
 						continue;
 					}
 					if ($statement->num->value > 1) {
-						$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->getCond());
+						$this->emitNoError($scope, $node->getCond(), $isTypeCheckCandidate);
 						return [];
 					}
 				}
@@ -68,7 +71,7 @@ final class DoWhileLoopConstantConditionRule implements Rule
 				foreach ($node->getExitPoints() as $exitPoint) {
 					$statement = $exitPoint->getStatement();
 					if ($statement instanceof Break_) {
-						$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->getCond());
+						$this->emitNoError($scope, $node->getCond(), $isTypeCheckCandidate);
 						return [];
 					}
 				}
@@ -99,6 +102,10 @@ final class DoWhileLoopConstantConditionRule implements Rule
 				->line($node->getCond()->getStartLine())
 				->identifier(sprintf('doWhile.always%s', $exprType->getValue() ? 'True' : 'False'))
 				->build();
+			if ($isTypeCheckCandidate) {
+				$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->getCond(), $exprType->getValue(), $ruleError);
+				return [];
+			}
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->getCond(), $exprType->getValue(), $ruleError);
 				return [];
@@ -107,8 +114,21 @@ final class DoWhileLoopConstantConditionRule implements Rule
 			return [$ruleError];
 		}
 
-		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->getCond());
+		$this->emitNoError($scope, $node->getCond(), $isTypeCheckCandidate);
 		return [];
+	}
+
+	private function emitNoError(
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		Expr $cond,
+		bool $isTypeCheckCandidate,
+	): void
+	{
+		if ($isTypeCheckCandidate) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $cond);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $cond);
+		}
 	}
 
 }

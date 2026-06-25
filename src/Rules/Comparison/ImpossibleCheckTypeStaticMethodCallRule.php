@@ -27,6 +27,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -47,6 +48,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 		if (!$node->name instanceof Node\Identifier) {
 			return [];
 		}
+		$methodName = $node->name->name;
 
 		$reasons = [];
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node, $reasons);
@@ -54,6 +56,8 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
+
+		$this->functionCallConstantConditionHelper->emitImpossibleCheckReported($scope, $node);
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
 			if ($reasons !== []) {
@@ -78,7 +82,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 		};
 
 		if (!$isAlways) {
-			$method = $this->getMethod($node->class, $node->name->name, $scope);
+			$method = $this->getMethod($node->class, $methodName, $scope);
 
 			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Call to static method %s::%s()%s will always evaluate to false.',
@@ -101,7 +105,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 			return [];
 		}
 
-		$method = $this->getMethod($node->class, $node->name->name, $scope);
+		$method = $this->getMethod($node->class, $methodName, $scope);
 		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 			'Call to static method %s::%s()%s will always evaluate to true.',
 			$method->getDeclaringClass()->getDisplayName(),

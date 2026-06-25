@@ -28,6 +28,7 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -71,16 +72,25 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 		}
 		$originalNode = $node->getOriginalNode();
 		$exprType = $this->helper->getBooleanType($scope, $originalNode->cond);
+		$isTypeCheckCandidate = $this->functionCallConstantConditionHelper->isTypeCheckCandidate($originalNode->cond);
 		if ($exprType->isTrue()->yes()) {
 			if ($node->hasYield()) {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
+				if ($isTypeCheckCandidate) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $originalNode->cond);
+				} else {
+					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
+				}
 				return [];
 			}
 
 			$ref = $scope->getFunction() ?? $scope->getAnonymousFunctionReflection();
 
 			if ($ref !== null && $ref->getReturnType() instanceof NeverType) {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
+				if ($isTypeCheckCandidate) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $originalNode->cond);
+				} else {
+					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
+				}
 				return [];
 			}
 
@@ -105,6 +115,10 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 			$ruleError = $addTip(RuleErrorBuilder::message('While loop condition is always true.'))->line($originalNode->cond->getStartLine())
 				->identifier('while.alwaysTrue')
 				->build();
+			if ($isTypeCheckCandidate) {
+				$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $originalNode->cond, true, $ruleError);
+				return [];
+			}
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode->cond, true, $ruleError);
 				return [];
@@ -113,7 +127,11 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 			return [$ruleError];
 		}
 
-		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
+		if ($isTypeCheckCandidate) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $originalNode->cond);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
+		}
 		return [];
 	}
 

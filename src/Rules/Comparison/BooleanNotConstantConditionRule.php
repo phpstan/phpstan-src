@@ -25,6 +25,7 @@ final class BooleanNotConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -78,6 +79,10 @@ final class BooleanNotConstantConditionRule implements Rule
 				$errorBuilder->identifier(sprintf('booleanNot.always%s', $exprType->getValue() ? 'False' : 'True'));
 
 				$ruleError = $errorBuilder->build();
+				if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->expr)) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->expr, !$exprType->getValue(), $ruleError);
+					return [];
+				}
 				if ($scope->isInTrait()) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->expr, !$exprType->getValue(), $ruleError);
 					return [];
@@ -87,7 +92,11 @@ final class BooleanNotConstantConditionRule implements Rule
 			}
 		}
 
-		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->expr);
+		if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->expr)) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $node->expr);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->expr);
+		}
 		return [];
 	}
 

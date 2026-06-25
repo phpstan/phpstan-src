@@ -3,8 +3,6 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -15,14 +13,13 @@ final class ConstantConditionRuleHelper
 {
 
 	public function __construct(
-		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
 
-	private function shouldSkip(Scope $scope, Expr $expr): bool
+	private function shouldSkip(Expr $expr): bool
 	{
 		if (
 			$expr instanceof Expr\BinaryOp\Equal
@@ -50,25 +47,12 @@ final class ConstantConditionRuleHelper
 			return true;
 		}
 
-		if (
-			(
-				$expr instanceof FuncCall
-				|| $expr instanceof MethodCall
-				|| $expr instanceof Expr\StaticCall
-			) && !$expr->isFirstClassCallable()
-		) {
-			$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $expr);
-			if ($isAlways !== null) {
-				return true;
-			}
-		}
-
 		return false;
 	}
 
 	public function getBooleanType(Scope $scope, Expr $expr): BooleanType
 	{
-		if ($this->shouldSkip($scope, $expr)) {
+		if ($this->shouldSkip($expr)) {
 			return new BooleanType();
 		}
 
@@ -81,7 +65,7 @@ final class ConstantConditionRuleHelper
 
 	public function getNativeBooleanType(Scope $scope, Expr $expr): BooleanType
 	{
-		if ($this->shouldSkip($scope, $expr)) {
+		if ($this->shouldSkip($expr)) {
 			return new BooleanType();
 		}
 

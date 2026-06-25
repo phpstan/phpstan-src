@@ -19,18 +19,54 @@ class WhileLoopAlwaysFalseConditionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new WhileLoopAlwaysFalseConditionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->shouldTreatPhpDocTypesAsCertain(),
-					),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->shouldTreatPhpDocTypesAsCertain(),
 				true,
 			),
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->shouldTreatPhpDocTypesAsCertain(),
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->shouldTreatPhpDocTypesAsCertain(),
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->shouldTreatPhpDocTypesAsCertain(),
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				true,
+				true,
+			),
+			new FunctionCallConstantConditionRule(),
 			new ConstantConditionInTraitRule(),
 		]);
 	}

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\LogicalXor;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
@@ -26,6 +27,7 @@ final class LogicalXorConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -77,16 +79,18 @@ final class LogicalXorConstantConditionRule implements Rule
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
 				$ruleError = $errorBuilder->build();
-				if ($isInTrait) {
+				if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->left)) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->left, $leftType->getValue(), $ruleError);
+				} elseif ($isInTrait) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->left, $leftType->getValue(), $ruleError);
 				} else {
 					$errors[] = $ruleError;
 				}
 			} else {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->left);
+				$this->emitNoError($scope, $node->left);
 			}
 		} else {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->left);
+			$this->emitNoError($scope, $node->left);
 		}
 
 		$rightType = $this->helper->getBooleanType($scope, $node->right);
@@ -124,19 +128,33 @@ final class LogicalXorConstantConditionRule implements Rule
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
 				$ruleError = $errorBuilder->build();
-				if ($isInTrait) {
+				if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->right)) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->right, $rightType->getValue(), $ruleError);
+				} elseif ($isInTrait) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->right, $rightType->getValue(), $ruleError);
 				} else {
 					$errors[] = $ruleError;
 				}
 			} else {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->right);
+				$this->emitNoError($scope, $node->right);
 			}
 		} else {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->right);
+			$this->emitNoError($scope, $node->right);
 		}
 
 		return $errors;
+	}
+
+	private function emitNoError(
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		Expr $expr,
+	): void
+	{
+		if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($expr)) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $expr);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $expr);
+		}
 	}
 
 }

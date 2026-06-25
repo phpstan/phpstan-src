@@ -21,18 +21,54 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new IfConstantConditionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->treatPhpDocTypesAsCertain,
-					),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				true,
 			),
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+				true,
+			),
+			new FunctionCallConstantConditionRule(),
 			new ConstantConditionInTraitRule(),
 		]);
 	}
@@ -54,6 +90,10 @@ class IfConstantConditionRuleTest extends RuleTestCase
 			[
 				'If condition is always false.',
 				45,
+			],
+			[
+				'Call to function is_object() with object will always evaluate to true.',
+				93,
 			],
 			[
 				'If condition is always true.',
@@ -114,6 +154,11 @@ class IfConstantConditionRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-4043.php'], [
+			[
+				'Call to function assert() with true will always evaluate to true.',
+				13,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 			[
 				'If condition is always false.',
 				43,
@@ -258,6 +303,22 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6211.php'], [
 			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				34,
+			],
+			[
+				'Call to function method_exists() with \'Bug6211\\\\Hell\' and \'test\' will always evaluate to true.',
+				39,
+			],
+			[
+				'Call to function method_exists() with Bug6211\Bar and \'realMethod\' will always evaluate to true.',
+				62,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				87,
+			],
+			[
 				'If condition is always true.',
 				93,
 			],
@@ -266,8 +327,29 @@ class IfConstantConditionRuleTest extends RuleTestCase
 				100,
 			],
 			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				106,
+			],
+			[
+				'Call to function method_exists() with Bug6211\Hell and \'test\' will always evaluate to true.',
+				107,
+			],
+			[
 				'If condition is always true.',
 				114,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				120,
+			],
+			[
+				'Call to function property_exists() with Bug6211\Baz and \'realProp\' will always evaluate to true.',
+				121,
+			],
+			[
+				'Call to function method_exists() with class-string<Bug6211\Foo> and \'test\' will always evaluate to true.',
+				136,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}
@@ -285,6 +367,23 @@ class IfConstantConditionRuleTest extends RuleTestCase
 			[
 				'If condition is always true.',
 				23,
+			],
+		]);
+	}
+
+	public function testConstantConditionFunctionCall(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/constant-condition-function-call.php'], [
+			[
+				// type-check call: owned by the ImpossibleCheckType rule, reported only once
+				'Call to function is_int() with int will always evaluate to true.',
+				13,
+			],
+			[
+				// non-type-check, always-truthy return: reported by the constant-condition rule
+				'If condition is always true.',
+				19,
 			],
 		]);
 	}

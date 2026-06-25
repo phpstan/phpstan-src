@@ -57,15 +57,6 @@ final class VerbosityLevel
 	{
 	}
 
-	/**
-	 * @param self::* $value
-	 */
-	private static function create(int $value): self
-	{
-		self::$registry[$value] ??= new self($value);
-		return self::$registry[$value];
-	}
-
 	/** @return self::* */
 	public function getLevelValue(): int
 	{
@@ -75,19 +66,19 @@ final class VerbosityLevel
 	/** @api */
 	public static function typeOnly(): self
 	{
-		return self::create(self::TYPE_ONLY);
+		return self::$registry[self::TYPE_ONLY] ??= new self(self::TYPE_ONLY);
 	}
 
 	/** @api */
 	public static function value(): self
 	{
-		return self::create(self::VALUE);
+		return self::$registry[self::VALUE] ??= new self(self::VALUE);
 	}
 
 	/** @api */
 	public static function precise(): self
 	{
-		return self::create(self::PRECISE);
+		return self::$registry[self::PRECISE] ??= new self(self::PRECISE);
 	}
 
 	/**
@@ -97,7 +88,7 @@ final class VerbosityLevel
 	 */
 	public static function cache(): self
 	{
-		return self::create(self::CACHE);
+		return  self::$registry[self::CACHE] ??= new self(self::CACHE);
 	}
 
 	public function isTypeOnly(): bool

@@ -1502,14 +1502,15 @@ final class TypeCombinator
 
 	/**
 	 * Fast path for intersect(): the intersection of two unions whose members are all
-	 * disjoint constant scalars is their value-keyed set intersection. Returns null when
-	 * either union has a member that is not safe to compare by value, in which case the
-	 * caller falls back to the general A & (B|C) distribution.
+	 * finite, mutually-disjoint values (constant scalars and/or enum cases) is their
+	 * identity-keyed set intersection. Returns null when either union has a member that is
+	 * not such a value, in which case the caller falls back to the general A & (B|C)
+	 * distribution.
 	 */
-	private static function intersectConstScalarUnions(UnionType $a, UnionType $b): ?Type
+	private static function intersectFiniteUnions(UnionType $a, UnionType $b): ?Type
 	{
-		$membersA = self::constScalarUnionMembers($a);
-		$membersB = self::constScalarUnionMembers($b);
+		$membersA = self::finiteUnionMembers($a);
+		$membersB = self::finiteUnionMembers($b);
 		if ($membersA === null || $membersB === null) {
 			return null;
 		}
@@ -1531,38 +1532,44 @@ final class TypeCombinator
 	}
 
 	/**
-	 * Keys a union's members by value for the constant-scalar fast path in intersect().
+	 * Keys a union's members by identity for the finite-union fast path in intersect().
 	 *
-	 * Returns a value-key => member map, or null if any member is not a constant scalar
-	 * that is safe to compare by value alone. Class-string constant strings are excluded
-	 * (the class-string flag is not captured by the value), and floats are excluded
-	 * (-0.0 / NAN comparison quirks). Two members are interchangeable iff they share a key.
+	 * Handles constant scalars and enum cases: each stands for one concrete value, so two
+	 * members are interchangeable iff they share a key and are otherwise disjoint. Returns
+	 * null if any member is not such a value. Class-string constant strings are excluded
+	 * (the class-string flag is not captured by the value) and floats are excluded (-0.0 /
+	 * NAN comparison quirks). Enum cases are keyed by class + case name, the identity
+	 * EnumCaseObjectType::equals() compares.
 	 *
 	 * @return array<string, Type>|null
 	 */
-	private static function constScalarUnionMembers(UnionType $union): ?array
+	private static function finiteUnionMembers(UnionType $union): ?array
 	{
 		$members = [];
 		foreach ($union->getTypes() as $member) {
+			$enumCase = $member->getEnumCaseObject();
 			if ($member->isNull()->yes()) {
-				$members['null'] = $member;
-				continue;
-			}
-
-			$values = $member->getConstantScalarValues();
-			if (count($values) !== 1) {
-				return null;
-			}
-
-			$value = $values[0];
-			if (is_int($value)) {
-				$key = 'i:' . $value;
-			} elseif (is_bool($value)) {
-				$key = $value ? 'b:1' : 'b:0';
-			} elseif (is_string($value) && $member->isClassString()->no()) {
-				$key = 's:' . $value;
+				$key = 'null';
+			} elseif ($enumCase !== null) {
+				// Key by class + case name, the identity EnumCaseObjectType::equals() uses.
+				// describe() would also fold in a subtracted type, which equals() ignores.
+				$key = 'enum:' . $enumCase->getClassName() . '::' . $enumCase->getEnumCaseName();
 			} else {
-				return null;
+				$values = $member->getConstantScalarValues();
+				if (count($values) !== 1) {
+					return null;
+				}
+
+				$value = $values[0];
+				if (is_int($value)) {
+					$key = 'i:' . $value;
+				} elseif (is_bool($value)) {
+					$key = $value ? 'b:1' : 'b:0';
+				} elseif (is_string($value) && $member->isClassString()->no()) {
+					$key = 's:' . $value;
+				} else {
+					return null;
+				}
 			}
 
 			$members[$key] = $member;
@@ -1589,19 +1596,19 @@ final class TypeCombinator
 			}
 		}
 
-		// Fast path: the intersection of two plain unions whose members are all
-		// disjoint constant scalars is their value-keyed set intersection (O(n)),
-		// avoiding the O(n*m) `A & (B|C)` distribution + union rebuild below.
-		// Restricted to the exact UnionType class so BenevolentUnionType and the
-		// template union types keep their dedicated handling.
+		// Fast path: the intersection of two plain unions whose members are all finite,
+		// mutually-disjoint values (constant scalars and/or enum cases) is their
+		// identity-keyed set intersection (O(n)), avoiding the O(n*m) `A & (B|C)`
+		// distribution + union rebuild below. Restricted to the exact UnionType class so
+		// BenevolentUnionType and the template union types keep their dedicated handling.
 		if (
 			$typesCount === 2
 			&& get_class($types[0]) === UnionType::class
 			&& get_class($types[1]) === UnionType::class
 		) {
-			$constScalarIntersection = self::intersectConstScalarUnions($types[0], $types[1]);
-			if ($constScalarIntersection !== null) {
-				return $constScalarIntersection;
+			$finiteIntersection = self::intersectFiniteUnions($types[0], $types[1]);
+			if ($finiteIntersection !== null) {
+				return $finiteIntersection;
 			}
 		}
 

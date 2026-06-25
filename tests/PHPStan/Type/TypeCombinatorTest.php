@@ -5688,6 +5688,77 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'1|2',
 		];
+
+		// finite-union fast path: enum-case unions
+		yield [
+			[
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+					new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+				]),
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+					new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'TWO'),
+				]),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\TestEnum::ONE|PHPStan\Fixture\TestEnum::TWO',
+		];
+
+		// finite-union fast path: mixed constant scalars + enum cases
+		yield [
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+				]),
+				new UnionType([
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				]),
+			],
+			UnionType::class,
+			'1|PHPStan\Fixture\TestEnum::ONE',
+		];
+
+		// a backed enum case (TestEnum::TWO = 2) must not be conflated with the integer 2
+		yield [
+			[
+				new UnionType([
+					new ConstantIntegerType(2),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+				]),
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+				]),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::TWO',
+		];
+
+		// a constant string '0'/'1' must not be conflated with the integer 0/1
+		yield [
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantStringType('0'),
+					new ConstantIntegerType(1),
+					new ConstantStringType('1'),
+				]),
+				new UnionType([
+					new ConstantStringType('0'),
+					new ConstantIntegerType(1),
+				]),
+			],
+			UnionType::class,
+			"1|'0'",
+		];
 	}
 
 	/**

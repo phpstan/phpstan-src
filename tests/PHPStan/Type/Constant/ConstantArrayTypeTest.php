@@ -1594,18 +1594,15 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public function testSealedness(): void
 	{
-		$bleedingEdgeBackup = BleedingEdgeToggle::isBleedingEdge();
-
-		BleedingEdgeToggle::setBleedingEdge(false);
-
-		try {
+		BleedingEdgeToggle::withBleedingEdge(false, function () {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$array = $builder->getArray();
 			$this->assertInstanceOf(ConstantArrayType::class, $array);
 			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isSealed()->describe());
 			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isUnsealed()->describe());
+		});
 
-			BleedingEdgeToggle::setBleedingEdge(true);
+		BleedingEdgeToggle::withBleedingEdge(true, function () {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$array = $builder->getArray();
 			$this->assertInstanceOf(ConstantArrayType::class, $array);
@@ -1619,9 +1616,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			// (see ConstantArrayTypeBuilder::getArray).
 			$this->assertInstanceOf(ArrayType::class, $array);
 			$this->assertSame('array<int, string>', $array->describe(VerbosityLevel::precise()));
-		} finally {
-			BleedingEdgeToggle::setBleedingEdge($bleedingEdgeBackup);
-		}
+		});
 	}
 
 	public static function dataGetArraySize(): iterable

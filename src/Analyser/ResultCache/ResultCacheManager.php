@@ -10,6 +10,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
+use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Container;
@@ -61,7 +62,7 @@ use const PHP_VERSION_ID;
 final class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v12-linesToIgnore';
+	private const CACHE_VERSION = 'v13-packageDependencies';
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
@@ -86,6 +87,7 @@ final class ResultCacheManager
 		private FileFinder $scanFileFinder,
 		private StubFilesProvider $stubFilesProvider,
 		private FileHelper $fileHelper,
+		private PackageDependencyResolver $packageDependencyResolver,
 		#[AutowiredParameter(ref: '%resultCachePath%')]
 		private string $cacheFilePath,
 		#[AutowiredParameter]
@@ -145,6 +147,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -166,6 +169,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -189,6 +193,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -216,6 +221,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -240,6 +246,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -247,27 +254,58 @@ final class ResultCacheManager
 		}
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
+		$packageDependencies = $data['packageDependencies'] ?? [];
+		$packageSeededFiles = [];
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
-			if ($output->isVeryVerbose()) {
-				$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
-				$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
+			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
+
+			// If the metadata differ ONLY in the Composer lock/installed files, the generated container
+			// and analysis are unchanged except for code coming from packages whose version actually
+			// changed. Re-analyse just the files depending on a changed package instead of everything;
+			// the existing incremental loop below then propagates to their dependents on signature change.
+			// Any other meta difference, or an undetermined change set, falls back to a full re-analysis.
+			$changedPackages = array_diff($diffs, ['composerLocks', 'composerInstalled']) === []
+				? $this->packageDependencyResolver->getChangedComposerPackages($data['meta'], $meta)
+				: null;
+
+			if ($changedPackages === null || $changedPackages === []) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
+				}
+				return new ResultCache(
+					filesToAnalyse: $allAnalysedFiles,
+					fullAnalysis: true,
+					lastFullAnalysisTime: time(),
+					meta: $meta,
+					errors: [],
+					locallyIgnoredErrors: [],
+					linesToIgnore: [],
+					unmatchedLineIgnores: [],
+					collectedData: [],
+					dependencies: [],
+					usedTraitDependencies: [],
+					packageDependencies: [],
+					exportedNodes: [],
+					projectExtensionFiles: [],
+					currentFileHashes: $currentFileHashes,
+				);
 			}
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $meta,
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
-			);
+
+			if ($output->isVeryVerbose()) {
+				$output->writeLineFormatted(sprintf(
+					'Composer packages changed (%s); re-analysing only the files depending on them.',
+					implode(', ', $changedPackages),
+				));
+			}
+			$changedPackagesLookup = array_fill_keys($changedPackages, true);
+			foreach ($packageDependencies as $packageDependentFile => $filePackages) {
+				foreach ($filePackages as $filePackage) {
+					if (isset($changedPackagesLookup[$filePackage])) {
+						$packageSeededFiles[] = $packageDependentFile;
+						break;
+					}
+				}
+			}
 		}
 
 		$daysOldForSkip = $this->skipResultCacheIfOlderThanDays;
@@ -289,6 +327,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -319,6 +358,7 @@ final class ResultCacheManager
 					collectedData: [],
 					dependencies: [],
 					usedTraitDependencies: [],
+					packageDependencies: [],
 					exportedNodes: [],
 					projectExtensionFiles: [],
 					currentFileHashes: $currentFileHashes,
@@ -345,6 +385,7 @@ final class ResultCacheManager
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				projectExtensionFiles: [],
 				currentFileHashes: $currentFileHashes,
@@ -483,6 +524,13 @@ final class ResultCacheManager
 			}
 		}
 
+		foreach ($packageSeededFiles as $packageSeededFile) {
+			if (!is_file($packageSeededFile)) {
+				continue;
+			}
+			$filesToAnalyse[] = $packageSeededFile;
+		}
+
 		$filesToAnalyse = array_unique($filesToAnalyse);
 		$filesToAnalyseCount = count($filesToAnalyse);
 
@@ -512,6 +560,7 @@ final class ResultCacheManager
 			collectedData: $filteredCollectedData,
 			dependencies: $invertedDependenciesToReturn,
 			usedTraitDependencies: $invertedUsedTraitDependenciesToReturn,
+			packageDependencies: $packageDependencies,
 			exportedNodes: $filteredExportedNodes,
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
@@ -542,6 +591,16 @@ final class ResultCacheManager
 	 */
 	private function getMetaKeyDifferences(array $cachedMeta, array $currentMeta): array
 	{
+		// Normalize projectConfig the same way isMetaDifferent() does: the cached value is a
+		// Neon-encoded string while the current one is a raw array, so a plain === would always
+		// report projectConfig as different.
+		$projectConfig = $currentMeta['projectConfig'];
+		if ($projectConfig !== null) {
+			ksort($currentMeta['projectConfig']);
+
+			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
+		}
+
 		$diffs = [];
 		foreach ($cachedMeta as $key => $value) {
 			if (!array_key_exists($key, $currentMeta)) {
@@ -624,7 +683,7 @@ final class ResultCacheManager
 		if ($projectConfigArray !== null) {
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $packageDependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -640,6 +699,12 @@ final class ResultCacheManager
 			if ($usedTraitDependencies === null) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because of error in used trait dependencies.');
+				}
+				return false;
+			}
+			if ($packageDependencies === null) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted('Result cache was not saved because of error in package dependencies.');
 				}
 				return false;
 			}
@@ -672,7 +737,7 @@ final class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -688,7 +753,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getPackageDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -703,6 +768,7 @@ final class ResultCacheManager
 		$collectedDataByFile = $this->mergeCollectedData($resultCache, $freshCollectedDataByFile);
 		$dependencies = $this->mergeDependencies($resultCache->getDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getDependencies());
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
+		$packageDependencies = $this->mergePackageDependencies($resultCache->getPackageDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getPackageDependencies());
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
@@ -729,7 +795,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $exportedNodes, $projectExtensionFiles);
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles);
 		}
 
 		$flatErrors = [];
@@ -757,6 +823,7 @@ final class ResultCacheManager
 			collectedData: $collectedDataByFile,
 			dependencies: $dependencies,
 			usedTraitDependencies: $usedTraitDependencies,
+			packageDependencies: $packageDependencies,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
@@ -900,6 +967,44 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * @param array<string, array<string>> $resultCachePackageDependencies
+	 * @param string[] $filesToAnalyse
+	 * @param array<string, array<string>>|null $freshPackageDependencies
+	 * @return array<string, array<string>>|null
+	 */
+	private function mergePackageDependencies(array $resultCachePackageDependencies, array $filesToAnalyse, ?array $freshPackageDependencies): ?array
+	{
+		if ($freshPackageDependencies === null) {
+			return null;
+		}
+
+		$newPackageDependencies = $resultCachePackageDependencies;
+		foreach ($filesToAnalyse as $file) {
+			if (array_key_exists($file, $this->fileReplacements)) {
+				unset($newPackageDependencies[$file]);
+				$file = $this->fileReplacements[$file];
+			}
+			if (!array_key_exists($file, $freshPackageDependencies)) {
+				unset($newPackageDependencies[$file]);
+				continue;
+			}
+
+			$newPackageDependencies[$file] = $freshPackageDependencies[$file];
+		}
+
+		return $newPackageDependencies;
+	}
+
+	/**
+	 * Project package names whose installed version/reference changed between two metadata snapshots,
+	 * or null if the change set cannot be reliably determined (then the caller falls back to a full
+	 * re-analysis rather than risk under-invalidation).
+	 *
+	 * @param mixed[] $cachedMeta
+	 * @param mixed[] $currentMeta
+	 * @return list<string>|null
+	 */
+	/**
 	 * @param array<string, LinesToIgnore> $freshLinesToIgnore
 	 * @return array<string, LinesToIgnore>
 	 */
@@ -953,6 +1058,7 @@ final class ResultCacheManager
 	 * @param array<string, array<string, list<CollectedData>>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<string>> $usedTraitDependencies
+	 * @param array<string, array<string>> $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
@@ -967,6 +1073,7 @@ final class ResultCacheManager
 		array $collectedData,
 		array $dependencies,
 		array $usedTraitDependencies,
+		array $packageDependencies,
 		array $exportedNodes,
 		array $projectExtensionFiles,
 		array $currentFileHashes,
@@ -1060,6 +1167,7 @@ return [
 	'unmatchedLineIgnores' => " . var_export($unmatchedLineIgnores, true) . ",
 	'collectedDataCallback' => static function (): array { return " . var_export($collectedData, true) . "; },
 	'dependencies' => " . var_export($invertedDependencies, true) . ",
+	'packageDependencies' => " . var_export($packageDependencies, true) . ",
 	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . '; },
 ];
 ',

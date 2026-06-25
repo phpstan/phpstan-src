@@ -66,6 +66,7 @@ final class AnalyserRunner
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),

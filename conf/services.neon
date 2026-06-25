@@ -57,6 +57,11 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor
 
 	-
+		class: PHPStan\Dependency\PackageDependencyResolver
+		arguments:
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+
+	-
 		class: PHPStan\Reflection\Php\PhpClassReflectionExtension
 		arguments:
 			parser: @defaultAnalysisParser

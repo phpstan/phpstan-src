@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\FileNode;
@@ -57,6 +58,7 @@ final class FileAnalyser
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
+		private PackageDependencyResolver $packageDependencyResolver,
 		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
@@ -92,6 +94,7 @@ final class FileAnalyser
 
 		$fileDependencies = [];
 		$usedTraitFileDependencies = [];
+		$filePackageDependencies = [];
 		$exportedNodes = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
@@ -111,6 +114,7 @@ final class FileAnalyser
 					$this->ignoreErrorExtensionProvider->getExtensions(),
 					$this->parser,
 					$this->dependencyResolver,
+					$this->packageDependencyResolver,
 					$this->ruleErrorTransformer,
 					$processedFiles,
 				);
@@ -125,6 +129,7 @@ final class FileAnalyser
 				$fileCollectedData = $nodeCallback->getFileCollectedData();
 				$fileDependencies = $nodeCallback->getFileDependencies();
 				$usedTraitFileDependencies = $nodeCallback->getUsedTraitFileDependencies();
+				$filePackageDependencies = $nodeCallback->getPackageDependencies();
 				$exportedNodes = $nodeCallback->getExportedNodes();
 				$linesToIgnore = $nodeCallback->getLinesToIgnore();
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();
@@ -243,6 +248,7 @@ final class FileAnalyser
 			$fileCollectedData,
 			array_values(array_unique($fileDependencies)),
 			array_values(array_unique($usedTraitFileDependencies)),
+			array_values(array_unique($filePackageDependencies)),
 			$exportedNodes,
 			$linesToIgnore,
 			$unmatchedLineIgnores,

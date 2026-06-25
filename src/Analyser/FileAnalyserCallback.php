@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\InClassNode;
@@ -40,6 +41,9 @@ final class FileAnalyserCallback
 	/** @var array<string> */
 	private array $usedTraitFileDependencies = [];
 
+	/** @var array<string> */
+	private array $filePackageDependencies = [];
+
 	/** @var list<RootExportedNode> */
 	private array $exportedNodes = [];
 
@@ -69,6 +73,7 @@ final class FileAnalyserCallback
 		private array $ignoreErrorExtensions,
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
+		private PackageDependencyResolver $packageDependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private array $processedFiles,
 	)
@@ -215,6 +220,9 @@ final class FileAnalyserCallback
 			foreach ($dependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
 				$this->fileDependencies[] = $dependentFile;
 			}
+			foreach ($dependencies->getPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver) as $package) {
+				$this->filePackageDependencies[] = $package;
+			}
 			if ($dependencies->getExportedNode() !== null) {
 				$this->exportedNodes[] = $dependencies->getExportedNode();
 			}
@@ -233,6 +241,9 @@ final class FileAnalyserCallback
 		$usedTraitDependencies = $this->dependencyResolver->resolveUsedTraitDependencies($node);
 		foreach ($usedTraitDependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
 			$this->usedTraitFileDependencies[] = $dependentFile;
+		}
+		foreach ($usedTraitDependencies->getPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver) as $package) {
+			$this->filePackageDependencies[] = $package;
 		}
 	}
 
@@ -272,6 +283,14 @@ final class FileAnalyserCallback
 	public function getFileDependencies(): array
 	{
 		return $this->fileDependencies;
+	}
+
+	/**
+	 * @return array<string>
+	 */
+	public function getPackageDependencies(): array
+	{
+		return $this->filePackageDependencies;
 	}
 
 	/**

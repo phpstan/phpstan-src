@@ -119,6 +119,7 @@ final class AnalyseApplication
 					collectedData: $intermediateAnalyserResult->getCollectedData(),
 					dependencies: $intermediateAnalyserResult->getDependencies(),
 					usedTraitDependencies: $intermediateAnalyserResult->getUsedTraitDependencies(),
+					packageDependencies: $intermediateAnalyserResult->getPackageDependencies(),
 					exportedNodes: $intermediateAnalyserResult->getExportedNodes(),
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
@@ -241,6 +242,7 @@ final class AnalyseApplication
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
@@ -328,6 +330,10 @@ final class AnalyseApplication
 		if ($analyserResult->getUsedTraitDependencies() !== null) {
 			$usedTraitDependencies = $this->switchTmpFileInDependencies($analyserResult->getUsedTraitDependencies(), $insteadOfFile, $tmpFile);
 		}
+		$packageDependencies = null;
+		if ($analyserResult->getPackageDependencies() !== null) {
+			$packageDependencies = $this->switchTmpFileInDependencies($analyserResult->getPackageDependencies(), $insteadOfFile, $tmpFile);
+		}
 
 		$exportedNodes = [];
 		foreach ($analyserResult->getExportedNodes() as $file => $fileExportedNodes) {
@@ -349,6 +355,7 @@ final class AnalyseApplication
 			collectedData: $newCollectedData,
 			dependencies: $dependencies,
 			usedTraitDependencies: $usedTraitDependencies,
+			packageDependencies: $packageDependencies,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),

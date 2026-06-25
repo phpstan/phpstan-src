@@ -128,6 +128,7 @@ final class WorkerRunner
 					'collectedData' => [],
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => [],
+					'packageDependencies' => [],
 					'exportedNodes' => [],
 					'files' => [],
 					'internalErrorsCount' => 1,
@@ -157,6 +158,7 @@ final class WorkerRunner
 			$collectedData = [];
 			$dependencies = [];
 			$usedTraitDependencies = [];
+			$packageDependencies = [];
 			$exportedNodes = [];
 			$processedFiles = [];
 			foreach ($files as $file) {
@@ -172,6 +174,7 @@ final class WorkerRunner
 					$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
+					$packageDependencies[$file] = $fileAnalyserResult->getPackageDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					$processedFiles = array_merge($processedFiles, $fileAnalyserResult->getProcessedFiles());
 					foreach ($fileErrors as $fileError) {
@@ -213,6 +216,7 @@ final class WorkerRunner
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,
 					'usedTraitDependencies' => $usedTraitDependencies,
+					'packageDependencies' => $packageDependencies,
 					'exportedNodes' => $exportedNodes,
 					'files' => $files,
 					'processedFiles' => $processedFiles,

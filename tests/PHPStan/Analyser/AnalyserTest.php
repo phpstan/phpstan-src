@@ -12,6 +12,7 @@ use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
+use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\Nette\NetteContainer;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
@@ -846,6 +847,7 @@ class AnalyserTest extends PHPStanTestCase
 				new IgnoreLexer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
+			new PackageDependencyResolver([], $fileHelper),
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),

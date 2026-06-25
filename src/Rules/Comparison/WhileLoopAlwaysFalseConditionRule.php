@@ -24,6 +24,7 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -65,6 +66,10 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 			$ruleError = $addTip(RuleErrorBuilder::message('While loop condition is always false.'))->line($node->cond->getStartLine())
 				->identifier('while.alwaysFalse')
 				->build();
+			if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->cond)) {
+				$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->cond, false, $ruleError);
+				return [];
+			}
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->cond, false, $ruleError);
 				return [];
@@ -73,7 +78,11 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 			return [$ruleError];
 		}
 
-		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
+		if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->cond)) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $node->cond);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
+		}
 		return [];
 	}
 

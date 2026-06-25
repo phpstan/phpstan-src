@@ -21,6 +21,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 			),
 			new PossiblyImpureTipHelper(true),
 			self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 			true,
 			false,
 			true,

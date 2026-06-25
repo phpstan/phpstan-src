@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
@@ -34,6 +35,7 @@ final class MatchExpressionRule implements Rule
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -67,14 +69,16 @@ final class MatchExpressionRule implements Rule
 			}
 			foreach ($armConditions as $armCondition) {
 				$armConditionScope = $armCondition->getScope();
+				$rawCondition = $armCondition->getCondition();
+				$isTypeCheckCandidate = $this->functionCallConstantConditionHelper->isTypeCheckCandidate($rawCondition);
 				$armConditionExpr = new Node\Expr\BinaryOp\Identical(
 					$matchCondition,
-					$armCondition->getCondition(),
+					$rawCondition,
 				);
 
 				$armConditionResult = $armConditionScope->getType($armConditionExpr);
 				if (!$armConditionResult instanceof ConstantBooleanType) {
-					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $armConditionExpr);
+					$this->emitNoError($scope, $armConditionExpr, $rawCondition, $isTypeCheckCandidate);
 					continue;
 				}
 				if ($armConditionResult->getValue()) {
@@ -84,7 +88,7 @@ final class MatchExpressionRule implements Rule
 				if (!$this->treatPhpDocTypesAsCertain) {
 					$armConditionNativeResult = $armConditionScope->getNativeType($armConditionExpr);
 					if (!$armConditionNativeResult instanceof ConstantBooleanType) {
-						$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $armConditionExpr);
+						$this->emitNoError($scope, $armConditionExpr, $rawCondition, $isTypeCheckCandidate);
 						continue;
 					}
 					if ($armConditionNativeResult->getValue()) {
@@ -93,9 +97,9 @@ final class MatchExpressionRule implements Rule
 				}
 
 				if ($matchConditionType instanceof ConstantBooleanType) {
-					$armConditionStandaloneResult = $this->constantConditionRuleHelper->getBooleanType($armConditionScope, $armCondition->getCondition());
+					$armConditionStandaloneResult = $this->constantConditionRuleHelper->getBooleanType($armConditionScope, $rawCondition);
 					if (!$armConditionStandaloneResult instanceof ConstantBooleanType) {
-						$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $armConditionExpr);
+						$this->emitNoError($scope, $armConditionExpr, $rawCondition, $isTypeCheckCandidate);
 						continue;
 					}
 				}
@@ -105,11 +109,15 @@ final class MatchExpressionRule implements Rule
 					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'Match arm comparison between %s and %s is always false.',
 						$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
-						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
+						$armConditionScope->getType($rawCondition)->describe(VerbosityLevel::value()),
 					))->line($armLine)->identifier('match.alwaysFalse');
 					$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
 					$ruleError = $errorBuilder->build();
-					if ($scope->isInTrait()) {
+					if ($isTypeCheckCandidate) {
+						// the constant-ness of a type-check call is owned by the
+						// ImpossibleCheckType* rules; defer and deduplicate against them
+						$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $rawCondition, false, $ruleError);
+					} elseif ($scope->isInTrait()) {
 						$this->constantConditionInTraitHelper->emitError(self::class, $scope, $armConditionExpr, false, $ruleError);
 					} else {
 						$errors[] = $ruleError;
@@ -118,14 +126,14 @@ final class MatchExpressionRule implements Rule
 				}
 
 				if ($i === $armsCount - 1) {
-					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $armConditionExpr);
+					$this->emitNoError($scope, $armConditionExpr, $rawCondition, $isTypeCheckCandidate);
 					continue;
 				}
 
 				$message = sprintf(
 					'Match arm comparison between %s and %s is always true.',
 					$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
-					$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
+					$armConditionScope->getType($rawCondition)->describe(VerbosityLevel::value()),
 				);
 				$errorBuilder = RuleErrorBuilder::message($message)
 					->line($armLine)
@@ -133,7 +141,9 @@ final class MatchExpressionRule implements Rule
 					->tip('Remove remaining cases below this one and this error will disappear too.');
 				$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
 				$ruleError = $errorBuilder->build();
-				if ($scope->isInTrait()) {
+				if ($isTypeCheckCandidate) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $rawCondition, true, $ruleError);
+				} elseif ($scope->isInTrait()) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $armConditionExpr, true, $ruleError);
 				} else {
 					$errors[] = $ruleError;
@@ -165,6 +175,20 @@ final class MatchExpressionRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	private function emitNoError(
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		Expr $armConditionExpr,
+		Expr $rawCondition,
+		bool $isTypeCheckCandidate,
+	): void
+	{
+		if ($isTypeCheckCandidate) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $rawCondition);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $armConditionExpr);
+		}
 	}
 
 	private function isUnhandledMatchErrorCaught(Node $node): bool

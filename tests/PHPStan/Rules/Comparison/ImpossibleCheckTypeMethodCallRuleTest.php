@@ -30,6 +30,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				$this->reportAlwaysTrueInLastCondition,
 				true,

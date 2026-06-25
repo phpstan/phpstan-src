@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\RuleErrorTransformer;
@@ -17,7 +20,7 @@ use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 #[AutowiredService]
-final class ConstantConditionInTraitHelper
+final class FunctionCallConstantConditionHelper
 {
 
 	public function __construct(
@@ -33,21 +36,32 @@ final class ConstantConditionInTraitHelper
 	}
 
 	/**
+	 * Whether the condition is a function/method/static call that the
+	 * ImpossibleCheckType* rules might own. For these the constant-condition
+	 * reporting is deferred to FunctionCallConstantConditionRule, which
+	 * deduplicates against ImpossibleCheckTypeReportedCollector markers.
+	 */
+	public function isTypeCheckCandidate(Expr $expr): bool
+	{
+		return (
+			$expr instanceof FuncCall
+			|| $expr instanceof MethodCall
+			|| $expr instanceof StaticCall
+		) && !$expr->isFirstClassCallable();
+	}
+
+	/**
 	 * @param class-string<Rule<covariant Node>> $ruleName
 	 */
-	public function emitNoError(
+	public function emitFunctionCallNoError(
 		string $ruleName,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		Expr $expr,
 	): void
 	{
-		if (!$scope->isInTrait()) {
-			return;
-		}
-
-		$scope->emitCollectedData(ConstantConditionInTraitCollector::class, [
+		$scope->emitCollectedData(FunctionCallConstantConditionCollector::class, [
 			$ruleName,
-			$scope->getTraitReflection()->getName(),
+			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$this->exprString($expr),
 			null,
 		]);
@@ -56,7 +70,7 @@ final class ConstantConditionInTraitHelper
 	/**
 	 * @param class-string<Rule<covariant Node>> $ruleName
 	 */
-	public function emitError(
+	public function emitFunctionCallError(
 		string $ruleName,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		Expr $expr,
@@ -65,19 +79,25 @@ final class ConstantConditionInTraitHelper
 	): void
 	{
 		if ($ruleError instanceof FixableNodeRuleError) {
-			throw new ShouldNotHappenException('Fixable errors are not supported by ConstantConditionInTraitHelper.');
+			throw new ShouldNotHappenException('Fixable errors are not supported by FunctionCallConstantConditionHelper.');
 		}
 
-		if (!$scope->isInTrait()) {
-			return;
-		}
-
-		$scope->emitCollectedData(ConstantConditionInTraitCollector::class, [
+		$scope->emitCollectedData(FunctionCallConstantConditionCollector::class, [
 			$ruleName,
-			$scope->getTraitReflection()->getName(),
+			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$this->exprString($expr),
 			$value,
 			$this->ruleErrorTransformer->transform($ruleError, $scope, [], $expr),
+		]);
+	}
+
+	public function emitImpossibleCheckReported(
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		Expr $expr,
+	): void
+	{
+		$scope->emitCollectedData(ImpossibleCheckTypeReportedCollector::class, [
+			$this->exprString($expr),
 		]);
 	}
 

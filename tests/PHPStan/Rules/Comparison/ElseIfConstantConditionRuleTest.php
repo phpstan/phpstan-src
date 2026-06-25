@@ -24,19 +24,55 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new ElseIfConstantConditionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->treatPhpDocTypesAsCertain,
-					),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				$this->reportAlwaysTrueInLastCondition,
 				true,
 			),
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
+			),
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
+			),
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
+			),
+			new FunctionCallConstantConditionRule(),
 			new ConstantConditionInTraitRule(),
 		]);
 	}

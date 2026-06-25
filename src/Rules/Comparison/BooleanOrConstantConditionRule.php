@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
@@ -27,6 +28,7 @@ final class BooleanOrConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -87,16 +89,18 @@ final class BooleanOrConstantConditionRule implements Rule
 				}
 				$ruleError = $errorBuilder->build();
 				$hasLeftOrRightError = true;
-				if ($isInTrait) {
+				if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($originalNode->left)) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $originalNode->left, $leftType->getValue(), $ruleError);
+				} elseif ($isInTrait) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode->left, $leftType->getValue(), $ruleError);
 				} else {
 					$messages[] = $ruleError;
 				}
 			} else {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->left);
+				$this->emitNoError($scope, $originalNode->left);
 			}
 		} else {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->left);
+			$this->emitNoError($scope, $originalNode->left);
 		}
 
 		$rightScope = $node->getRightScope();
@@ -140,16 +144,18 @@ final class BooleanOrConstantConditionRule implements Rule
 				}
 				$ruleError = $errorBuilder->build();
 				$hasLeftOrRightError = true;
-				if ($isInTrait) {
+				if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($originalNode->right)) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $originalNode->right, $rightType->getValue(), $ruleError);
+				} elseif ($isInTrait) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode->right, $rightType->getValue(), $ruleError);
 				} else {
 					$messages[] = $ruleError;
 				}
 			} else {
-				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->right);
+				$this->emitNoError($scope, $originalNode->right);
 			}
 		} else {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->right);
+			$this->emitNoError($scope, $originalNode->right);
 		}
 
 		if (count($messages) === 0 && !$hasLeftOrRightError && !$scope->isInFirstLevelStatement()) {
@@ -201,6 +207,18 @@ final class BooleanOrConstantConditionRule implements Rule
 		}
 
 		return $messages;
+	}
+
+	private function emitNoError(
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		Expr $expr,
+	): void
+	{
+		if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($expr)) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $expr);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $expr);
+		}
 	}
 
 }

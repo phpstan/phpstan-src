@@ -25,6 +25,7 @@ final class ElseIfConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -79,6 +80,10 @@ final class ElseIfConstantConditionRule implements Rule
 				$errorBuilder->identifier(sprintf('elseif.always%s', $exprType->getValue() ? 'True' : 'False'));
 
 				$ruleError = $errorBuilder->build();
+				if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->cond)) {
+					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $node->cond, $exprType->getValue(), $ruleError);
+					return [];
+				}
 				if ($scope->isInTrait()) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->cond, $exprType->getValue(), $ruleError);
 					return [];
@@ -88,7 +93,11 @@ final class ElseIfConstantConditionRule implements Rule
 			}
 		}
 
-		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
+		if ($this->functionCallConstantConditionHelper->isTypeCheckCandidate($node->cond)) {
+			$this->functionCallConstantConditionHelper->emitFunctionCallNoError(self::class, $scope, $node->cond);
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
+		}
 		return [];
 	}
 

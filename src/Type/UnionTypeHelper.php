@@ -7,6 +7,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use function count;
 use function strcasecmp;
 use function usort;
@@ -96,6 +97,20 @@ final class UnionTypeHelper
 				return self::compareStrings($a->getValue(), $b->getValue());
 			}
 
+			if ($a instanceof EnumCaseObjectType && $b instanceof EnumCaseObjectType) {
+				return self::compareStrings(
+					$a->getClassName() . '::' . $a->getEnumCaseName(),
+					$b->getClassName() . '::' . $b->getEnumCaseName(),
+				);
+			}
+
+			if (
+				($a instanceof CallableType || $a instanceof ClosureType)
+				&& ($b instanceof CallableType || $b instanceof ClosureType)
+			) {
+				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
+			}
+
 			if ($a->isConstantArray()->yes() && $b->isConstantArray()->yes()) {
 				if ($a->isIterableAtLeastOnce()->no()) {
 					if ($b->isIterableAtLeastOnce()->no()) {
@@ -107,13 +122,6 @@ final class UnionTypeHelper
 					return 1;
 				}
 
-				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
-			}
-
-			if (
-				($a instanceof CallableType || $a instanceof ClosureType)
-				&& ($b instanceof CallableType || $b instanceof ClosureType)
-			) {
 				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 			}
 

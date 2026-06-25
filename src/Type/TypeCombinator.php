@@ -1510,8 +1510,12 @@ final class TypeCombinator
 	private static function intersectFiniteUnions(UnionType $a, UnionType $b): ?Type
 	{
 		$membersA = self::finiteUnionMembers($a);
+		if ($membersA === null) {
+			return null;
+		}
+
 		$membersB = self::finiteUnionMembers($b);
-		if ($membersA === null || $membersB === null) {
+		if ($membersB === null) {
 			return null;
 		}
 
@@ -1551,8 +1555,18 @@ final class TypeCombinator
 			if ($member->isNull()->yes()) {
 				$key = 'null';
 			} elseif ($enumCase !== null) {
-				// Key by class + case name, the identity EnumCaseObjectType::equals() uses.
-				// describe() would also fold in a subtracted type, which equals() ignores.
+				// getEnumCaseObject() also returns the case for a refined member - an
+				// intersection like $this & Enum::C, a whole single-case enum, or an enum
+				// subtracted to one case - none of which are a bare EnumCaseObjectType.
+				// Only a bare case is safe to key by class + case name; for the rest,
+				// EnumCaseObjectType::equals() is false (it requires an EnumCaseObjectType),
+				// so bail to the slow path rather than collapse the refinement.
+				if (!$enumCase->equals($member)) {
+					return null;
+				}
+
+				// Key by class + case name, the identity EnumCaseObjectType::equals() compares
+				// (describe() would also fold in a subtracted type, which equals() ignores).
 				$key = 'enum:' . $enumCase->getClassName() . '::' . $enumCase->getEnumCaseName();
 			} else {
 				$values = $member->getConstantScalarValues();

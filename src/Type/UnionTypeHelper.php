@@ -97,6 +97,20 @@ final class UnionTypeHelper
 				return self::compareStrings($a->getValue(), $b->getValue());
 			}
 
+			if ($a instanceof EnumCaseObjectType && $b instanceof EnumCaseObjectType) {
+				return self::compareStrings(
+					$a->getClassName() . '::' . $a->getEnumCaseName(),
+					$b->getClassName() . '::' . $b->getEnumCaseName(),
+				);
+			}
+
+			if (
+				($a instanceof CallableType || $a instanceof ClosureType)
+				&& ($b instanceof CallableType || $b instanceof ClosureType)
+			) {
+				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
+			}
+
 			if ($a->isConstantArray()->yes() && $b->isConstantArray()->yes()) {
 				if ($a->isIterableAtLeastOnce()->no()) {
 					if ($b->isIterableAtLeastOnce()->no()) {
@@ -111,27 +125,8 @@ final class UnionTypeHelper
 				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 			}
 
-			if (
-				($a instanceof CallableType || $a instanceof ClosureType)
-				&& ($b instanceof CallableType || $b instanceof ClosureType)
-			) {
-				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
-			}
-
 			if ($a->isString()->yes() && $b->isString()->yes()) {
 				return self::compareStrings($a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise()));
-			}
-
-			// Enum cases would otherwise fall through to describe(), the documented "never sort via
-			// describe()" anti-pattern and the dominant cost of sorting a large-enum union (re-sorted
-			// per arm of a match/switch). className.'::'.caseName is the describe(typeOnly) string for
-			// an enum case (enums are never generic), so the order is identical without the
-			// VerbosityLevel dispatch and sprintf. Same key as IntersectionType::getFiniteTypes().
-			if ($a instanceof EnumCaseObjectType && $b instanceof EnumCaseObjectType) {
-				return self::compareStrings(
-					$a->getClassName() . '::' . $a->getEnumCaseName(),
-					$b->getClassName() . '::' . $b->getEnumCaseName(),
-				);
 			}
 
 			return self::compareStrings($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));

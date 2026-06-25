@@ -1609,8 +1609,13 @@ final class TypeCombinator
 		$newTypes = [];
 		$hasOffsetValueTypeCount = 0;
 		$typesCount = count($types);
+		$typesNeedSorting = false;
 		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
+
+			if ($type instanceof SubtractableType || $type instanceof ConstantArrayType) {
+				$typesNeedSorting = true;
+			}
 
 			if ($type instanceof IntersectionType && !$type instanceof TemplateType) {
 				// transform A & (B & C) to A & B & C
@@ -1629,24 +1634,26 @@ final class TypeCombinator
 			$typesCount = count($types);
 		}
 
-		usort($types, static function (Type $a, Type $b): int {
-			// move subtractables with subtracts before those without to avoid losing them in the union logic
-			if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
-				return -1;
-			}
-			if ($b instanceof SubtractableType && $b->getSubtractedType() !== null) {
-				return 1;
-			}
+		if ($typesNeedSorting) {
+			usort($types, static function (Type $a, Type $b): int {
+				// move subtractables with subtracts before those without to avoid losing them in the union logic
+				if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
+					return -1;
+				}
+				if ($b instanceof SubtractableType && $b->getSubtractedType() !== null) {
+					return 1;
+				}
 
-			if ($a instanceof ConstantArrayType && !$b instanceof ConstantArrayType) {
-				return -1;
-			}
-			if ($b instanceof ConstantArrayType && !$a instanceof ConstantArrayType) {
-				return 1;
-			}
+				if ($a instanceof ConstantArrayType && !$b instanceof ConstantArrayType) {
+					return -1;
+				}
+				if ($b instanceof ConstantArrayType && !$a instanceof ConstantArrayType) {
+					return 1;
+				}
 
-			return 0;
-		});
+				return 0;
+			});
+		}
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
 		// transform Child & Parent to Child

@@ -50,20 +50,19 @@ final class VerbosityLevel
 	/** @var self[] */
 	private static array $registry;
 
+	private static self $TYPE_ONLY;
+
+	private static self $VALUE;
+
+	private static self $PRECISE;
+
+	private static self $CACHE;
+
 	/**
 	 * @param self::* $value
 	 */
 	private function __construct(private int $value)
 	{
-	}
-
-	/**
-	 * @param self::* $value
-	 */
-	private static function create(int $value): self
-	{
-		self::$registry[$value] ??= new self($value);
-		return self::$registry[$value];
 	}
 
 	/** @return self::* */
@@ -75,19 +74,19 @@ final class VerbosityLevel
 	/** @api */
 	public static function typeOnly(): self
 	{
-		return self::create(self::TYPE_ONLY);
+		return self::$TYPE_ONLY ??= (self::$registry[self::TYPE_ONLY] ??= new self(self::TYPE_ONLY));
 	}
 
 	/** @api */
 	public static function value(): self
 	{
-		return self::create(self::VALUE);
+		return self::$VALUE ??= (self::$registry[self::VALUE] ??= new self(self::VALUE));
 	}
 
 	/** @api */
 	public static function precise(): self
 	{
-		return self::create(self::PRECISE);
+		return self::$PRECISE ??= (self::$registry[self::PRECISE] ??= new self(self::PRECISE));
 	}
 
 	/**
@@ -97,7 +96,7 @@ final class VerbosityLevel
 	 */
 	public static function cache(): self
 	{
-		return self::create(self::CACHE);
+		return self::$CACHE ??= (self::$registry[self::CACHE] ??= new self(self::CACHE));
 	}
 
 	public function isTypeOnly(): bool

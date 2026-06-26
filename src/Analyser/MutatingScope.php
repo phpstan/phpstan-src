@@ -3326,6 +3326,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * A multi-guard conditional holder may take some of its guards from the
+	 * current scope's already-narrowed expressions (e.g. the `!prevCond` part of
+	 * an `if`/`elseif` chain that is definite in scope but not re-specified by the
+	 * condition currently being applied), as long as at least one of its guards is
+	 * actively specified — so the holder is relevant to that condition rather than
+	 * firing on ambient scope state. Single-guard holders never seed, preserving
+	 * their existing behaviour.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $conditionHolders
+	 * @param array<string, ExpressionTypeHolder> $specifiedExpressions
+	 */
+	private function multiGuardCanSeedFromScope(array $conditionHolders, array $specifiedExpressions): bool
+	{
+		if (count($conditionHolders) < 2) {
+			return false;
+		}
+
+		foreach (array_keys($conditionHolders) as $holderExprString) {
+			if (array_key_exists($holderExprString, $specifiedExpressions)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @return static
 	 */
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
@@ -3415,13 +3442,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					) {
 						continue;
 					}
-					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					$conditionHolders = $conditionalExpression->getConditionExpressionTypeHolders();
+					$allowSeed = $this->multiGuardCanSeedFromScope($conditionHolders, $specifiedExpressions);
+					foreach ($conditionHolders as $holderExprString => $conditionalTypeHolder) {
 						if (
-							!array_key_exists($holderExprString, $specifiedExpressions)
-							|| !$conditionalTypeHolder->equals($specifiedExpressions[$holderExprString])
+							array_key_exists($holderExprString, $specifiedExpressions)
+							&& $conditionalTypeHolder->equals($specifiedExpressions[$holderExprString])
 						) {
-							continue 2;
+							continue;
 						}
+						if (
+							$allowSeed
+							&& array_key_exists($holderExprString, $scope->expressionTypes)
+							&& $scope->expressionTypes[$holderExprString]->getCertainty()->yes()
+							&& $conditionalTypeHolder->getType()->equals($scope->expressionTypes[$holderExprString]->getType())
+						) {
+							continue;
+						}
+
+						continue 2;
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;
@@ -3437,14 +3476,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
 						continue;
 					}
-					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					$conditionHolders = $conditionalExpression->getConditionExpressionTypeHolders();
+					$allowSeed = $this->multiGuardCanSeedFromScope($conditionHolders, $specifiedExpressions);
+					foreach ($conditionHolders as $holderExprString => $conditionalTypeHolder) {
 						if (
-							!array_key_exists($holderExprString, $specifiedExpressions)
-							|| !$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
-							|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
+							array_key_exists($holderExprString, $specifiedExpressions)
+							&& $conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
+							&& $conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
 						) {
-							continue 2;
+							continue;
 						}
+						if (
+							$allowSeed
+							&& array_key_exists($holderExprString, $scope->expressionTypes)
+							&& $conditionalTypeHolder->getCertainty()->equals($scope->expressionTypes[$holderExprString]->getCertainty())
+							&& $conditionalTypeHolder->getType()->isSuperTypeOf($scope->expressionTypes[$holderExprString]->getType())->yes()
+						) {
+							continue;
+						}
+
+						continue 2;
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;
@@ -3843,7 +3894,43 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$typeGuards[$exprString] = $holder;
 		}
 
-		if (count($typeGuards) === 0) {
+		// Path-condition guards distinguish this branch from the other one along
+		// an `if`/`elseif`/`else` chain. Unlike $typeGuards they keep the branch's
+		// own condition (e.g. the `elseif` operand), which $guardsToExclude drops
+		// because the merge absorbs its narrowed value. A branch reached after one
+		// or more preceding branches were skipped needs *all* of these together
+		// (`!prevCond && thisCond`) as a single guard; any one of them alone would
+		// also match a sibling branch and is dropped when that sibling merges in.
+		// Only pre-existing variables narrowed by the condition qualify — freshly
+		// assigned variables (absent from the other branch) are not conditions.
+		$conditionGuards = [];
+		foreach ($newVariableTypes as $exprString => $holder) {
+			if ($holder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+				continue;
+			}
+			if (
+				!array_key_exists($exprString, $theirExpressionTypes)
+				|| !$theirExpressionTypes[$exprString]->getCertainty()->yes()
+			) {
+				continue;
+			}
+			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
+				continue;
+			}
+
+			$conditionGuards[$exprString] = $holder;
+		}
+
+		// $typeGuards drives the single-guard holders; $conditionGuards drives the
+		// multi-guard (path-condition) holders. Either may be empty on its own, but
+		// when both are there is nothing to record.
+		if (count($typeGuards) === 0 && count($conditionGuards) < 2) {
 			return $conditionalExpressions;
 		}
 
@@ -3856,6 +3943,27 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				&& $mergedExpressionTypes[$exprString]->equals($holder)
 			) {
 				continue;
+			}
+
+			// Carry a value across the chain only for a plain variable whose
+			// *definedness* the branch establishes (defined here, not in the other
+			// branch). A variable already defined in both branches is a condition
+			// variable, not a branch product, so keying its narrowed value on the
+			// sibling conditions (`if rel=false then document=false`) would be
+			// unsound. Restricting to variables also keeps these path-condition
+			// holders out of the way of the narrowing recorded for compound
+			// boolean operands (e.g. `$x = $a->foo() !== null && ...; if ($x)`).
+			$targetIsConditionVariable = array_key_exists($exprString, $theirExpressionTypes)
+				&& $theirExpressionTypes[$exprString]->getCertainty()->yes()
+				&& $holder->getCertainty()->yes();
+
+			if ($holder->getExpr() instanceof Variable && !$targetIsConditionVariable) {
+				$pathGuards = $conditionGuards;
+				unset($pathGuards[$exprString]);
+				if (count($pathGuards) >= 2) {
+					$conditionalExpression = new ConditionalExpressionHolder($pathGuards, $holder);
+					$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+				}
 			}
 
 			$variableTypeGuards = $typeGuards;

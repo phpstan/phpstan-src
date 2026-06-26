@@ -74,6 +74,49 @@ function typeNarrowingCarried(?int $a, bool $b): void
 	}
 }
 
+// https://phpstan.org/r/aab74e73-2bfe-432b-8bcd-f9b939d2eaab
+// An `if`/`elseif`/`else` chain repeated with identical compound conditions must
+// carry definedness across every branch, not just the first.
+function compoundElseIfChain(bool $rel, bool $document, bool $overwrite): void
+{
+	if ($rel || $overwrite) {
+		$vvv = 1;
+	} elseif ($document) {
+		$aaa = 2;
+	} else {
+		$eee = 3;
+	}
+
+	if ($rel || $overwrite) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $vvv);
+	} elseif ($document) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $aaa);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createYes(), $eee);
+	}
+}
+
+// The same chain with single-variable conditions (a pre-existing limitation for
+// the non-first branches) must work too.
+function singleVarElseIfChain(bool $a, bool $b): void
+{
+	if ($a) {
+		$x = 1;
+	} elseif ($b) {
+		$y = 2;
+	} else {
+		$z = 3;
+	}
+
+	if ($a) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $x);
+	} elseif ($b) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $y);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createYes(), $z);
+	}
+}
+
 // A condition with a side effect in one operand must still narrow correctly
 // after the `if` (the whole-condition pinning must not re-run the assignment).
 function assignmentInOperand(string $foo): int

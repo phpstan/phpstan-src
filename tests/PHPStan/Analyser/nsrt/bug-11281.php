@@ -25,6 +25,48 @@ function hello2(string $values): void
 	}
 }
 
+/**
+ * The merged subtype-absorbed variable must survive as a conditional target
+ * regardless of which control-flow form reads the guard afterwards.
+ */
+function positiveGuard(string $values): void
+{
+	$ok = false;
+	try {
+		$values = array_map(static fn ($item) => Hello::fromObject($item), json_decode($values));
+		$ok = true;
+	} catch (\Throwable) {
+	}
+	if ($ok) {
+		assertType('array<Bug11281\Hello>', $values);
+	}
+}
+
+function nestedGuard(string $values, bool $other): void
+{
+	$ok = false;
+	try {
+		$values = array_map(static fn ($item) => Hello::fromObject($item), json_decode($values));
+		$ok = true;
+	} catch (\Throwable) {
+	}
+	if ($other && $ok) {
+		assertType('array<Bug11281\Hello>', $values);
+	}
+}
+
+function ternaryGuard(string $values): void
+{
+	$ok = false;
+	try {
+		$values = array_map(static fn ($item) => Hello::fromObject($item), json_decode($values));
+		$ok = true;
+	} catch (\Throwable) {
+	}
+	$result = $ok ? $values : [];
+	assertType('array<Bug11281\Hello>', $result);
+}
+
 final class Hello
 {
 

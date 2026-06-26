@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use Closure;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDoc\TypeStringResolver;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -13,6 +14,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -1616,6 +1618,28 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			// (see ConstantArrayTypeBuilder::getArray).
 			$this->assertInstanceOf(ArrayType::class, $array);
 			$this->assertSame('array<int, string>', $array->describe(VerbosityLevel::precise()));
+		});
+	}
+
+	public function testMapValueTypeKeepsSealedMarker(): void
+	{
+		BleedingEdgeToggle::withBleedingEdge(true, function () {
+			$array = new ConstantArrayType(
+				[new ConstantIntegerType(0)],
+				[new StringType()],
+				[1],
+				[],
+				TrinaryLogic::createYes(),
+			);
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $array->isSealed()->describe());
+
+			// Evaluating an array_map callback against the sealed `never` marker
+			// produces an ErrorType (e.g. `$enum->value` on `never`). That ErrorType
+			// must not leak into the otherwise-sealed shape's unsealed slot.
+			$mapped = $array->mapValueType(static fn (Type $type): Type => $type instanceof NeverType ? new ErrorType() : new ConstantStringType('foo'));
+			$this->assertInstanceOf(ConstantArrayType::class, $mapped);
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $mapped->isSealed()->describe());
+			$this->assertNull((new UnresolvableTypeHelper())->getUnresolvableType($mapped));
 		});
 	}
 

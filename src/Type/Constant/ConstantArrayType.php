@@ -3186,8 +3186,12 @@ class ConstantArrayType implements Type
 			$newValueTypes[] = $cb($valueType);
 		}
 
-		$newUnsealed = $this->unsealed === null
-			? null
+		// For a sealed array the unsealed slot is just the explicit-never marker;
+		// running the callback over it would replace the marker with whatever the
+		// callback returns (e.g. an ErrorType from evaluating an array_map callback
+		// on `never`) and leak that type into the otherwise-sealed shape.
+		$newUnsealed = $this->unsealed === null || !$this->isUnsealed()->yes()
+			? $this->unsealed
 			: [$this->unsealed[0], $cb($this->unsealed[1])];
 
 		return $this->recreate(

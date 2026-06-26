@@ -52,6 +52,15 @@ class Bug14844Test extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testBug14844ClassConst(): void
+	{
+		// Same bug as testBug14844, but the array_map callback fetches a class
+		// constant (`$type::FOO`) instead of an enum-case property. It also routes
+		// through mapValueType and must not plant an ErrorType in the sentinel.
+		$this->analyse([__DIR__ . '/data/bug-14844-class-const.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14844Siblings(): void
 	{
 		// Sibling ConstantArrayType operations that also touch the sealed

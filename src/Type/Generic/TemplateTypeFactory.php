@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
@@ -39,12 +40,15 @@ final class TemplateTypeFactory
 		}
 
 		$boundClass = get_class($bound);
-		if ($bound instanceof ObjectType && ($boundClass === ObjectType::class || $bound instanceof TemplateType)) {
-			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound, $default);
-		}
-
 		if ($bound instanceof GenericObjectType && ($boundClass === GenericObjectType::class || $bound instanceof TemplateType)) {
 			return new TemplateGenericObjectType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		// Catches plain ObjectType and any other object subtype without a dedicated
+		// Template* class (e.g. enum-case object types), preserving the precise bound
+		// instead of widening it to TemplateMixedType.
+		if ($bound instanceof ObjectType) {
+			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
 		if ($bound instanceof ObjectWithoutClassType && ($boundClass === ObjectWithoutClassType::class || $bound instanceof TemplateType)) {
@@ -71,7 +75,7 @@ final class TemplateTypeFactory
 			return new TemplateConstantStringType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
-		if ($bound instanceof IntegerType && ($boundClass === IntegerType::class || $bound instanceof TemplateType)) {
+		if ($bound instanceof IntegerType && ($boundClass === IntegerType::class || $bound instanceof IntegerRangeType || $bound instanceof TemplateType)) {
 			return new TemplateIntegerType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
@@ -83,7 +87,7 @@ final class TemplateTypeFactory
 			return new TemplateFloatType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
-		if ($bound instanceof BooleanType && ($boundClass === BooleanType::class || $bound instanceof TemplateType)) {
+		if ($bound instanceof BooleanType && ($boundClass === BooleanType::class || $bound->isTrue()->yes() || $bound->isFalse()->yes() || $bound instanceof TemplateType)) {
 			return new TemplateBooleanType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 

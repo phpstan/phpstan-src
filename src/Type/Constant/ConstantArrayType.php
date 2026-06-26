@@ -181,6 +181,14 @@ class ConstantArrayType implements Type
 			if ($unsealed[0] instanceof StrictMixedType && !$unsealed[0] instanceof TemplateStrictMixedType) {
 				$unsealed[0] = (new UnionType([new StringType(), new IntegerType()]))->toArrayKey();
 			}
+			if ($unsealed[0] instanceof NeverType && $unsealed[0]->isExplicit()) {
+				// Sealed sentinel (`isUnsealed()->no()`): there are no extra
+				// elements, so the value-type slot is not a real element type.
+				// Force it back to the explicit-never sentinel so no caller can
+				// plant a projected/transformed type (e.g. an ErrorType produced
+				// by mapping the sentinel as if it were an element) into it.
+				$unsealed[1] = new NeverType(true);
+			}
 		} elseif (BleedingEdgeToggle::isBleedingEdge()) {
 			$never = new NeverType(true);
 			$unsealed = [$never, $never];
@@ -3186,8 +3194,8 @@ class ConstantArrayType implements Type
 			$newValueTypes[] = $cb($valueType);
 		}
 
-		$newUnsealed = $this->unsealed === null || $this->isUnsealed()->no()
-			? $this->unsealed
+		$newUnsealed = $this->unsealed === null
+			? null
 			: [$this->unsealed[0], $cb($this->unsealed[1])];
 
 		return $this->recreate(

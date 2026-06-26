@@ -833,12 +833,19 @@ final class FunctionCallParametersCheck
 	 * narrowed by the controlling condition. Nested ternaries are flattened so every
 	 * value the expression can produce is represented by its own (un-normalized) type.
 	 *
+	 * The else branch is narrowed by the negated condition (`filterByTruthyValue` of
+	 * `!cond`) rather than `filterByFalseyValue($cond)`, mirroring how
+	 * TernaryHandler::specifyTypes models the else branch. Some conditions (e.g.
+	 * `is_resource()`, whose stub only declares `@phpstan-assert-if-true`) narrow
+	 * asymmetrically, so the falsey scope would otherwise diverge from the type the
+	 * ternary actually produces and report spurious branch types.
+	 *
 	 * @return list<Type>
 	 */
 	private function getTernaryBranchTypes(Expr\Ternary $ternary, Scope $scope): array
 	{
 		$truthyScope = $scope->filterByTruthyValue($ternary->cond);
-		$falseyScope = $scope->filterByFalseyValue($ternary->cond);
+		$falseyScope = $scope->filterByTruthyValue(new Expr\BooleanNot($ternary->cond));
 
 		if ($ternary->if === null) {
 			$ifTypes = [TypeCombinator::removeFalsey($truthyScope->getType($ternary->cond))];

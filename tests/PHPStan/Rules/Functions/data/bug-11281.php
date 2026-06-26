@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace Bug11281Functions;
 
@@ -31,4 +33,20 @@ function noError(array $values): void
 function nested(array $values, bool $other, bool $another): void
 {
 	sayHello($other ? $values['key'] : ($another ? 1 : ' nested string'));
+}
+
+function expectsString(string $s): void
+{
+}
+
+function falsePositive(mixed $value): void
+{
+	// is_resource() only narrows asymmetrically (@phpstan-assert-if-true), so the
+	// else branch must keep the type the ternary actually produces (mixed, accepted),
+	// not a spurious narrowing. No error should be reported here.
+	expectsString(
+		is_resource($value)
+			? stream_get_contents($value)
+			: $value,
+	);
 }

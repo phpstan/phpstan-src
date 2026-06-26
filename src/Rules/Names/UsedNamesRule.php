@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Names;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Const_;
 use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\GroupUse;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
@@ -16,6 +18,7 @@ use PHPStan\Node\FileNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -59,25 +62,19 @@ final class UsedNamesRule implements Rule
 	}
 
 	/**
-	 * @param array<string, string[]> $usedNames
+	 * @param array<Use_::TYPE_*, array<string, list<string>>>  $usedNames
 	 * @return list<IdentifierRuleError>
 	 */
 	private function findErrorsForNode(Node $node, string $namespace, array &$usedNames): array
 	{
 		$lowerNamespace = strtolower($namespace);
 		if ($node instanceof Use_) {
-			if ($this->shouldBeIgnored($node)) {
-				return [];
-			}
-			return $this->findErrorsInUses($node->uses, '', $lowerNamespace, $usedNames);
+			return $this->findErrorsInUses($node->uses, '', $lowerNamespace, $usedNames, $node->type);
 		}
 
 		if ($node instanceof GroupUse) {
-			if ($this->shouldBeIgnored($node)) {
-				return [];
-			}
 			$useGroupPrefix = $node->prefix->toString();
-			return $this->findErrorsInUses($node->uses, $useGroupPrefix, $lowerNamespace, $usedNames);
+			return $this->findErrorsInUses($node->uses, $useGroupPrefix, $lowerNamespace, $usedNames, $node->type);
 		}
 
 		if ($node instanceof ClassLike) {
@@ -93,7 +90,7 @@ final class UsedNamesRule implements Rule
 				$type = 'enum';
 			}
 			$name = $node->name->toLowerString();
-			if (in_array($name, $usedNames[$lowerNamespace] ?? [], true)) {
+			if (in_array($name, $usedNames[Use_::TYPE_NORMAL][$lowerNamespace] ?? [], true)) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Cannot declare %s %s because the name is already in use.',
@@ -106,8 +103,45 @@ final class UsedNamesRule implements Rule
 						->build(),
 				];
 			}
-			$usedNames[$lowerNamespace][] = $name;
+			$usedNames[Use_::TYPE_NORMAL][$lowerNamespace][] = $name;
 			return [];
+		}
+
+		if ($node instanceof Function_) {
+			$name = $node->name->toLowerString();
+			if (in_array($name, $usedNames[Use_::TYPE_FUNCTION][$lowerNamespace] ?? [], true)) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Cannot declare function %s() because the name is already in use.',
+						$namespace !== '' ? $namespace . '\\' . $node->name->toString() : $node->name->toString(),
+					))
+						->identifier('function.nameInUse')
+						->line($node->getStartLine())
+						->nonIgnorable()
+						->build(),
+				];
+			}
+			$usedNames[Use_::TYPE_FUNCTION][$lowerNamespace][] = $name;
+			return [];
+		}
+
+		if ($node instanceof Const_) {
+			$errors = [];
+			foreach ($node->consts as $constNode) {
+				$name = $constNode->name->toLowerString();
+				if (in_array($name, $usedNames[Use_::TYPE_CONSTANT][$lowerNamespace] ?? [], true)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Cannot declare constant %s because the name is already in use.',
+						$namespace !== '' ? $namespace . '\\' . $constNode->name->toString() : $constNode->name->toString(),
+					))
+						->identifier('const.nameInUse')
+						->line($constNode->getStartLine())
+						->nonIgnorable()
+						->build();
+				}
+				$usedNames[Use_::TYPE_CONSTANT][$lowerNamespace][] = $name;
+			}
+			return $errors;
 		}
 
 		return [];
@@ -115,37 +149,64 @@ final class UsedNamesRule implements Rule
 
 	/**
 	 * @param Node\UseItem[] $uses
-	 * @param array<string, string[]> $usedNames
+	 * @param array<Use_::TYPE_*, array<string, list<string>>> $usedNames
+	 * @param Use_::TYPE_*  $useType
 	 * @return list<IdentifierRuleError>
 	 */
-	private function findErrorsInUses(array $uses, string $useGroupPrefix, string $lowerNamespace, array &$usedNames): array
+	private function findErrorsInUses(array $uses, string $useGroupPrefix, string $lowerNamespace, array &$usedNames, int $useType): array
 	{
 		$errors = [];
 		foreach ($uses as $use) {
-			if ($this->shouldBeIgnored($use)) {
-				continue;
+			$realUseType = $this->getRealUseType($use->type, $useType);
+			if ($realUseType === Use_::TYPE_UNKNOWN) {
+				throw new ShouldNotHappenException();
 			}
 			$useAlias = $use->getAlias()->toLowerString();
-			if (in_array($useAlias, $usedNames[$lowerNamespace] ?? [], true)) {
+			if (in_array($useAlias, $usedNames[$realUseType][$lowerNamespace] ?? [], true)) {
+				if ($realUseType === Use_::TYPE_FUNCTION) {
+					$displayedUseType = 'use function';
+					$identifierUseType = 'useFunction';
+				} elseif ($realUseType === Use_::TYPE_CONSTANT) {
+					$displayedUseType = 'use const';
+					$identifierUseType = 'useConst';
+				} else {
+					$displayedUseType = 'use';
+					$identifierUseType = 'use';
+				}
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Cannot use %s as %s because the name is already in use.',
+					'Cannot %s %s as %s because the name is already in use.',
+					$displayedUseType,
 					$useGroupPrefix !== '' ? $useGroupPrefix . '\\' . $use->name->toString() : $use->name->toString(),
 					$use->getAlias()->toString(),
 				))
-					->identifier('use.nameInUse')
+					->identifier(sprintf('%s.nameInUse', $identifierUseType))
 					->line($use->getStartLine())
 					->nonIgnorable()
 					->build();
 				continue;
 			}
-			$usedNames[$lowerNamespace][] = $useAlias;
+			$usedNames[$realUseType][$lowerNamespace][] = $useAlias;
 		}
 		return $errors;
 	}
 
-	private function shouldBeIgnored(Use_|GroupUse|Node\UseItem $use): bool
+	/**
+	 * @param Use_::TYPE_* $useType
+	 * @param Use_::TYPE_* $parentUseType
+	 * @return Use_::TYPE_*
+	 */
+	private function getRealUseType(int $useType, int $parentUseType): int
 	{
-		return in_array($use->type, [Use_::TYPE_FUNCTION, Use_::TYPE_CONSTANT], true);
+		if ($parentUseType === Use_::TYPE_UNKNOWN) {
+			return $useType;
+		}
+		if ($useType === Use_::TYPE_UNKNOWN) {
+			return $parentUseType;
+		}
+		if ($useType === $parentUseType) {
+			return $useType;
+		}
+		return Use_::TYPE_UNKNOWN;
 	}
 
 }

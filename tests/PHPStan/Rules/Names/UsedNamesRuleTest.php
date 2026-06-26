@@ -21,7 +21,11 @@ final class UsedNamesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/simple-uses.php'], [
 			[
 				'Cannot declare class SomeNamespace\SimpleUses because the name is already in use.',
-				7,
+				9,
+			],
+			[
+				'Cannot declare function SomeNamespace\SimpleUsesFunc() because the name is already in use.',
+				13,
 			],
 		]);
 	}
@@ -65,11 +69,15 @@ final class UsedNamesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/no-namespace.php'], [
 			[
 				'Cannot declare class NoNamespace because the name is already in use.',
-				5,
+				7,
 			],
 			[
 				'Cannot declare class NoNamespace because the name is already in use.',
-				9,
+				11,
+			],
+			[
+				'Cannot declare function NoNamespaceFunc() because the name is already in use.',
+				15,
 			],
 		]);
 	}

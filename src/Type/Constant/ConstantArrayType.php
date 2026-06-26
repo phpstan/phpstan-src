@@ -182,11 +182,6 @@ class ConstantArrayType implements Type
 				$unsealed[0] = (new UnionType([new StringType(), new IntegerType()]))->toArrayKey();
 			}
 			if ($unsealed[0] instanceof NeverType && $unsealed[0]->isExplicit()) {
-				// Sealed sentinel (`isUnsealed()->no()`): there are no extra
-				// elements, so the value-type slot is not a real element type.
-				// Force it back to the explicit-never sentinel so no caller can
-				// plant a projected/transformed type (e.g. an ErrorType produced
-				// by mapping the sentinel as if it were an element) into it.
 				$unsealed[1] = new NeverType(true);
 			}
 		} elseif (BleedingEdgeToggle::isBleedingEdge()) {

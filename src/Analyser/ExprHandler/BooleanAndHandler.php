@@ -277,8 +277,8 @@ final class BooleanAndHandler implements ExprHandler
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 			impurePoints: array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-			truthyScopeCallback: static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr->right),
-			falseyScopeCallback: static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
+			truthyScopeCallback: fn (): MutatingScope => $this->conditionalExpressionHolderHelper->specifyWholeExpressionType($rightResult->getScope()->filterByTruthyValue($expr->right), $expr, true),
+			falseyScopeCallback: fn (): MutatingScope => $this->conditionalExpressionHolderHelper->specifyWholeExpressionType($leftMergedWithRightScope->filterByFalseyValue($expr), $expr, false),
 		);
 	}
 

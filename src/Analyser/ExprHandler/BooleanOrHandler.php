@@ -309,8 +309,8 @@ final class BooleanOrHandler implements ExprHandler
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 			impurePoints: array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-			truthyScopeCallback: static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr->right),
+			truthyScopeCallback: fn (): MutatingScope => $this->conditionalExpressionHolderHelper->specifyWholeExpressionType($leftMergedWithRightScope->filterByTruthyValue($expr), $expr, true),
+			falseyScopeCallback: fn (): MutatingScope => $this->conditionalExpressionHolderHelper->specifyWholeExpressionType($rightResult->getScope()->filterByFalseyValue($expr->right), $expr, false),
 		);
 	}
 

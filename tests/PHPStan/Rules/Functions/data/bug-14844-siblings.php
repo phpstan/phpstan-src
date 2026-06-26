@@ -24,6 +24,8 @@ function doFoo(callable $callable)
  * @template T
  * @param T $x
  * @return T
+ *
+ * @impure
  */
 function identity($x)
 {

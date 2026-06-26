@@ -47,14 +47,3 @@ function narrowIntRange($int): void
 		assertType('TInt of int<0, 5> (function Bug10083\narrowIntRange(), argument)', $int);
 	}
 }
-
-/**
- * @template TFloat of 1.0|2.0
- * @param TFloat $float
- */
-function narrowFloat($float): void
-{
-	if ($float === 1.0) {
-		assertType('TFloat of 1.0 (function Bug10083\narrowFloat(), argument)', $float);
-	}
-}

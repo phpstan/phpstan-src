@@ -7,7 +7,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
@@ -84,7 +83,7 @@ final class TemplateTypeFactory
 			return new TemplateConstantIntegerType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
-		if ($bound instanceof FloatType && ($boundClass === FloatType::class || $bound instanceof ConstantFloatType || $bound instanceof TemplateType)) {
+		if ($bound instanceof FloatType && ($boundClass === FloatType::class || $bound instanceof TemplateType)) {
 			return new TemplateFloatType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 

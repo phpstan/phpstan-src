@@ -51,6 +51,14 @@ class Bug14844Test extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14844.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug14844Siblings(): void
+	{
+		// Sibling ConstantArrayType operations that also touch the sealed
+		// `[never, never]` unsealed sentinel must not plant an ErrorType there.
+		$this->analyse([__DIR__ . '/data/bug-14844-siblings.php'], []);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

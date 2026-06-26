@@ -26,6 +26,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -412,6 +413,32 @@ final class FunctionCallParametersCheck
 							->line($argumentLine)
 							->acceptsReasonsTip($accepts->reasons)
 							->build();
+					} elseif ($argumentValue instanceof Expr\Ternary && $argumentValueType instanceof MixedType) {
+						// Type normalization can collapse a ternary's resulting type to
+						// mixed (e.g. mixed|string becomes mixed), hiding a branch whose
+						// type is not accepted. When the whole argument collapsed to mixed,
+						// inspect the branch types separately so such a passed value is
+						// still reported. A non-mixed resulting type keeps enough
+						// information for the regular check above, so branch inspection
+						// would only introduce false positives there.
+						foreach ($this->getTernaryBranchTypes($argumentValue, $scope) as $branchType) {
+							$branchAccepts = $this->ruleLevelHelper->accepts($parameterType, $branchType, $isStrictTypes);
+							if ($branchAccepts->result) {
+								continue;
+							}
+
+							$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $branchType);
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$wrongArgumentTypeMessage,
+								$this->describeParameter($parameter, $argumentName ?? $i + 1),
+								$parameterType->describe($verbosityLevel),
+								$branchType->describe($verbosityLevel),
+							))
+								->identifier('argument.type')
+								->line($argumentLine)
+								->acceptsReasonsTip($branchAccepts->reasons)
+								->build();
+						}
 					}
 				}
 
@@ -799,6 +826,35 @@ final class FunctionCallParametersCheck
 		}
 
 		return implode(' ', $parts);
+	}
+
+	/**
+	 * Collects the leaf types of a ternary's branches, each resolved in the scope
+	 * narrowed by the controlling condition. Nested ternaries are flattened so every
+	 * value the expression can produce is represented by its own (un-normalized) type.
+	 *
+	 * @return list<Type>
+	 */
+	private function getTernaryBranchTypes(Expr\Ternary $ternary, Scope $scope): array
+	{
+		$truthyScope = $scope->filterByTruthyValue($ternary->cond);
+		$falseyScope = $scope->filterByFalseyValue($ternary->cond);
+
+		if ($ternary->if === null) {
+			$ifTypes = [TypeCombinator::removeFalsey($truthyScope->getType($ternary->cond))];
+		} elseif ($ternary->if instanceof Expr\Ternary) {
+			$ifTypes = $this->getTernaryBranchTypes($ternary->if, $truthyScope);
+		} else {
+			$ifTypes = [$truthyScope->getType($ternary->if)];
+		}
+
+		if ($ternary->else instanceof Expr\Ternary) {
+			$elseTypes = $this->getTernaryBranchTypes($ternary->else, $falseyScope);
+		} else {
+			$elseTypes = [$falseyScope->getType($ternary->else)];
+		}
+
+		return array_merge($ifTypes, $elseTypes);
 	}
 
 	/**

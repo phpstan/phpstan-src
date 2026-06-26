@@ -2978,4 +2978,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11281(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11281.php'], [
+			[
+				'Parameter #1 $i of function Bug11281Functions\sayHello expects int, string given.',
+				16,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\sayHello expects int, string given.',
+				33,
+			],
+		]);
+	}
+
 }

@@ -129,3 +129,19 @@ function assignmentInOperand(string $foo): int
 
 	return $foo;
 }
+
+function unsetBetweenIfs(?int $a, bool $b): void
+{
+	if ($a !== null || $b) {
+		$x = 'set';
+	}
+
+	if (rand(0,1)) {
+		unset($x);
+	}
+
+	if ($a !== null || $b) {
+		assertType("'set'", $x);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $x);
+	}
+}

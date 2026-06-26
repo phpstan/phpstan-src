@@ -3186,10 +3186,6 @@ class ConstantArrayType implements Type
 			$newValueTypes[] = $cb($valueType);
 		}
 
-		// A sealed array's unsealed value type is the explicit-never sentinel for
-		// "no extra elements". Mapping it through $cb would invent a bogus type for
-		// elements that cannot exist (e.g. an ErrorType from an enum property fetch
-		// on never), so leave the sentinel untouched.
 		$newUnsealed = $this->unsealed === null || $this->isUnsealed()->no()
 			? $this->unsealed
 			: [$this->unsealed[0], $cb($this->unsealed[1])];

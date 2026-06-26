@@ -48,7 +48,7 @@ class Bug14844Test extends RuleTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14844(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-14844.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14844.php'], []);
 	}
 
 	public static function getAdditionalConfigFiles(): array

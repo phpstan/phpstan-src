@@ -112,3 +112,8 @@ function ternaryInVariable(mixed $value, string|false $sf): void
 
 	expectsString($result);
 }
+
+function testMaybeError(mixed $mixed, string|bool|int $maybeInt): void
+{
+	takesInt( $mixed ?? $maybeInt);
+}

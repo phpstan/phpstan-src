@@ -36,6 +36,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
 use function array_last;
+use function array_map;
 use function array_merge;
 use function count;
 use function implode;
@@ -64,6 +65,8 @@ final class FunctionCallParametersCheck
 		private bool $checkExtraArguments,
 		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
+		#[AutowiredParameter(ref: '%featureToggles.reportMixedTernaryAndCoalesce%')]
+		private bool $reportMixedTernaryAndCoalesce,
 	)
 	{
 	}
@@ -413,8 +416,12 @@ final class FunctionCallParametersCheck
 							->line($argumentLine)
 							->acceptsReasonsTip($accepts->reasons)
 							->build();
-					} elseif ($argumentValue instanceof Expr\Ternary && $argumentValueType instanceof MixedType) {
-						foreach ($this->getTernaryBranchTypes($argumentValue, $scope) as $branchType) {
+					} elseif (
+						$this->reportMixedTernaryAndCoalesce
+						&& ($argumentValue instanceof Expr\Ternary || $argumentValue instanceof Expr\BinaryOp\Coalesce)
+						&& $argumentValueType instanceof MixedType
+					) {
+						foreach ($this->getInlineBranchTypes($argumentValue, $scope) as $branchType) {
 							$branchAccepts = $this->ruleLevelHelper->accepts($parameterType, $branchType, $isStrictTypes);
 							if ($branchAccepts->result) {
 								continue;
@@ -822,39 +829,49 @@ final class FunctionCallParametersCheck
 	}
 
 	/**
-	 * Collects the leaf types of a ternary's branches, each resolved in the scope
-	 * narrowed by the controlling condition. Nested ternaries are flattened so every
-	 * value the expression can produce is represented by its own (un-normalized) type.
+	 * Collects the leaf types an inline ternary (`? :`, `?:`) or null-coalesce (`??`)
+	 * expression can produce, each resolved in the scope narrowed by the controlling
+	 * condition. Nested ternaries and coalesces (including mixed nesting) are flattened
+	 * so every value the expression can produce is represented by its own
+	 * (un-normalized) type. Plain leaf expressions resolve to their scope type.
 	 *
-	 * The else branch is narrowed by the negated condition (`filterByTruthyValue` of
-	 * `!cond`) rather than `filterByFalseyValue($cond)`, mirroring how
+	 * The ternary else branch is narrowed by the negated condition (`filterByTruthyValue`
+	 * of `!cond`) rather than `filterByFalseyValue($cond)`, mirroring how
 	 * TernaryHandler::specifyTypes models the else branch. Some conditions (e.g.
 	 * `is_resource()`, whose stub only declares `@phpstan-assert-if-true`) narrow
 	 * asymmetrically, so the falsey scope would otherwise diverge from the type the
 	 * ternary actually produces and report spurious branch types.
 	 *
+	 * The coalesce left operand contributes its non-null type, since `$a ?? $b` only
+	 * yields `$a` when it is set and not null.
+	 *
 	 * @return list<Type>
 	 */
-	private function getTernaryBranchTypes(Expr\Ternary $ternary, Scope $scope): array
+	private function getInlineBranchTypes(Expr $expr, Scope $scope): array
 	{
-		$truthyScope = $scope->filterByTruthyValue($ternary->cond);
-		$falseyScope = $scope->filterByTruthyValue(new Expr\BooleanNot($ternary->cond));
+		if ($expr instanceof Expr\Ternary) {
+			$truthyScope = $scope->filterByTruthyValue($expr->cond);
+			$falseyScope = $scope->filterByTruthyValue(new Expr\BooleanNot($expr->cond));
 
-		if ($ternary->if === null) {
-			$ifTypes = [TypeCombinator::removeFalsey($truthyScope->getType($ternary->cond))];
-		} elseif ($ternary->if instanceof Expr\Ternary) {
-			$ifTypes = $this->getTernaryBranchTypes($ternary->if, $truthyScope);
-		} else {
-			$ifTypes = [$truthyScope->getType($ternary->if)];
+			if ($expr->if === null) {
+				$ifTypes = [TypeCombinator::removeFalsey($truthyScope->getType($expr->cond))];
+			} else {
+				$ifTypes = $this->getInlineBranchTypes($expr->if, $truthyScope);
+			}
+
+			return array_merge($ifTypes, $this->getInlineBranchTypes($expr->else, $falseyScope));
 		}
 
-		if ($ternary->else instanceof Expr\Ternary) {
-			$elseTypes = $this->getTernaryBranchTypes($ternary->else, $falseyScope);
-		} else {
-			$elseTypes = [$falseyScope->getType($ternary->else)];
+		if ($expr instanceof Expr\BinaryOp\Coalesce) {
+			$leftTypes = array_map(
+				static fn (Type $type): Type => TypeCombinator::removeNull($type),
+				$this->getInlineBranchTypes($expr->left, $scope),
+			);
+
+			return array_merge($leftTypes, $this->getInlineBranchTypes($expr->right, $scope));
 		}
 
-		return array_merge($ifTypes, $elseTypes);
+		return [$scope->getType($expr)];
 	}
 
 	/**

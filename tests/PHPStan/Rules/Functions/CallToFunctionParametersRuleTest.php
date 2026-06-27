@@ -49,6 +49,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: true,
 			),
 		);
 	}
@@ -2995,8 +2996,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				42,
 			],
 			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				52,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				70,
+			],
+			[
 				'Parameter #1 $s of function Bug11281Functions\expectsString expects string, string|false given.',
-				71,
+				99,
 			],
 		]);
 	}

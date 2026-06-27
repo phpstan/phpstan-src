@@ -32,7 +32,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new CallMethodsRule(
 				new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-				new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+				new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true, false),
 			),
 			new OverridingMethodRule(
 				$phpVersion,

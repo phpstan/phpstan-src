@@ -42,6 +42,34 @@ function testShortTernary(mixed $mixed): void
 	takesInt($mixed ?: ' a string');
 }
 
+/**
+ * @param array<string, mixed> $values
+ */
+function testCoalesce(array $values): void
+{
+	// The coalesce's resulting type normalizes to mixed (mixed|string),
+	// but the else branch is definitely a string passed to an int parameter.
+	takesInt($values['key'] ?? ' a string');
+}
+
+/**
+ * @param array<string, mixed> $values
+ */
+function noErrorCoalesce(array $values): void
+{
+	// Numeric-ish coercible branch must not be flagged.
+	takesInt($values['key'] ?? 5);
+}
+
+/**
+ * @param array<string, mixed> $values
+ * @param array<string, mixed> $other
+ */
+function nestedCoalesce(array $values, array $other): void
+{
+	takesInt($values['key'] ?? $other['key'] ?? ' a string');
+}
+
 function expectsString(string $s): void
 {
 }

@@ -49,6 +49,7 @@ class InstantiationRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: false,
 			),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),

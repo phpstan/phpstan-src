@@ -48,7 +48,7 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
-				reportMixedTernaryAndCoalesce: false,
+				reportMixedTernaryAndCoalesce: true,
 			),
 		);
 	}

@@ -41,7 +41,7 @@ class Bug14844Test extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
-				reportMixedTernaryAndCoalesce: false,
+				reportMixedTernaryAndCoalesce: true,
 			),
 		);
 	}

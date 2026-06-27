@@ -46,7 +46,7 @@ class ClosureAttributesRuleTest extends RuleTestCase
 					checkArgumentsPassedByReference: true,
 					checkExtraArguments: true,
 					checkMissingTypehints: true,
-					reportMixedTernaryAndCoalesce: false,
+					reportMixedTernaryAndCoalesce: true,
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: false),

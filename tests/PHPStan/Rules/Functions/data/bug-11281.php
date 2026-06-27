@@ -66,3 +66,14 @@ function strictFalseBranchReported(mixed $value, string|false $sf): void
 			: $value,
 	);
 }
+
+function ternaryInVariable(mixed $value, string|false $sf): void
+{
+	// no error because the ternary is not used inline as function argument,
+	// but stored in a variable, which kicks in type normalization.
+	$result = is_resource($value)
+		? $sf
+		: $value;
+
+	expectsString($result);
+}

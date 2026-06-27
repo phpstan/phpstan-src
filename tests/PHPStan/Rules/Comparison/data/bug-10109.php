@@ -2,29 +2,20 @@
 
 namespace Bug10109;
 
-function simple(): void
-{
-	$x = 5;
-	while (--$x > 0) {
-	}
-
-	if ($x === 0) {
-		echo 'zero';
-	}
+// simpler
+$x = 5;
+while (--$x > 0) {
+	echo "$x\n";
+}
+if ($x === 0) {
+	echo "zero\n";
 }
 
-function closerToRealCode(int $max): void
-{
-	$x = $max;
-	while (--$x > 0) {
-		doSomething($x);
-	}
-
-	if ($x === 0) {
-		echo 'reached the end';
-	}
+// closer to real codebase
+$x = 5;
+while (mt_rand(0, 10) < 10 && --$x > 0) {
+	echo "$x\n";
 }
-
-function doSomething(int $x): void
-{
+if ($x === 0) {
+	echo "zero\n";
 }

@@ -987,6 +987,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14720.php'], []);
 	}
 
+	public function testBug14872(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14872.php'], [
+			[
+				'Parameter #3 $value of method Bug14872\Builder::where() expects int, string given.',
+				52,
+			],
+			[
+				'Parameter #3 $value of method Bug14872\Builder::where() expects string, int given.',
+				53,
+			],
+		]);
+	}
+
 	public function testClosureBind(): void
 	{
 		$this->checkThisOnly = false;
@@ -2287,9 +2304,8 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/generic-object-lower-bound.php'], [
 			[
-				'Parameter #1 $c of method GenericObjectLowerBound\Foo::doFoo() expects GenericObjectLowerBound\Collection<GenericObjectLowerBound\Cat|GenericObjectLowerBound\Dog>, GenericObjectLowerBound\Collection<GenericObjectLowerBound\Dog> given.',
-				48,
-				'Template type T on class GenericObjectLowerBound\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+				'Parameter #2 $d of method GenericObjectLowerBound\Foo::doFoo() expects GenericObjectLowerBound\Dog, GenericObjectLowerBound\Cat given.',
+				50,
 			],
 		]);
 	}

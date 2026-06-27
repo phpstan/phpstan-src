@@ -19,6 +19,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
+use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
@@ -78,6 +79,45 @@ final class GenericParametersAcceptorResolver
 			);
 		}
 
+		// template types that appear in an invariant position (e.g. T inside an
+		// invariant Column<T>) are determined exactly by that argument, so they
+		// are inferred first and substituted into the remaining parameter types —
+		// the other occurrences of the same template type are then validated
+		// against the anchored type instead of widening it into a union.
+		// e.g. in where(Column<T> $column, T $value) called with IntColumn (Column<int>)
+		// and 'foo', T becomes int and the error is reported on $value, not $column.
+		$anchorTypeMap = TemplateTypeMap::createEmpty();
+		$invariantNamesByParam = [];
+		foreach ($parameters as $param) {
+			if (!isset($namedArgTypes[$param->getName()])) {
+				continue;
+			}
+
+			$invariantNames = self::getInvariantTemplateTypeNames($param->getType());
+			if (count($invariantNames) === 0) {
+				continue;
+			}
+
+			$invariantNamesByParam[$param->getName()] = $invariantNames;
+
+			$paramType = self::resolvePredicateTemplateTypes($param->getType(), $predicateTypeMap);
+			$inferred = $paramType->inferTemplateTypes($namedArgTypes[$param->getName()]);
+			$kept = [];
+			foreach ($inferred->getTypes() as $name => $type) {
+				if (!array_key_exists($name, $invariantNames)) {
+					continue;
+				}
+
+				$kept[$name] = $type;
+			}
+
+			if (count($kept) === 0) {
+				continue;
+			}
+
+			$anchorTypeMap = $anchorTypeMap->union(new TemplateTypeMap($kept));
+		}
+
 		foreach ($parameters as $param) {
 			if (isset($namedArgTypes[$param->getName()])) {
 				$argType = $namedArgTypes[$param->getName()];
@@ -89,12 +129,21 @@ final class GenericParametersAcceptorResolver
 				continue;
 			}
 
-			$paramType = self::resolvePredicateTemplateTypes($param->getType(), $predicateTypeMap);
+			// Substitute the anchored types into the consumer parameters so they
+			// are validated against the anchored type, but keep them out of the
+			// parameter that anchored them — its own (possibly dependent) template
+			// types still need to be inferred from the original parameter type.
+			$paramSubstitutionMap = $predicateTypeMap->union($anchorTypeMap);
+			foreach (array_keys($invariantNamesByParam[$param->getName()] ?? []) as $name) {
+				$paramSubstitutionMap = $paramSubstitutionMap->unsetType($name);
+			}
+
+			$paramType = self::resolvePredicateTemplateTypes($param->getType(), $paramSubstitutionMap);
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 			$passedArgs['$' . $param->getName()] = $argType;
 		}
 
-		$typeMap = $typeMap->union($predicateTypeMap);
+		$typeMap = $typeMap->union($predicateTypeMap)->union($anchorTypeMap);
 
 		$returnType = $parametersAcceptor->getReturnType();
 		if (
@@ -163,6 +212,23 @@ final class GenericParametersAcceptorResolver
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @return array<string, true> names of template types that occur in an invariant position in $paramType
+	 */
+	private static function getInvariantTemplateTypeNames(Type $paramType): array
+	{
+		$names = [];
+		foreach ($paramType->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()) as $reference) {
+			if (!$reference->getPositionVariance()->invariant()) {
+				continue;
+			}
+
+			$names[$reference->getType()->getName()] = true;
+		}
+
+		return $names;
 	}
 
 	private static function inferPredicateTemplateTypes(Type $paramType, Type $argType): TemplateTypeMap

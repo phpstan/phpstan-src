@@ -414,13 +414,6 @@ final class FunctionCallParametersCheck
 							->acceptsReasonsTip($accepts->reasons)
 							->build();
 					} elseif ($argumentValue instanceof Expr\Ternary && $argumentValueType instanceof MixedType) {
-						// Type normalization can collapse a ternary's resulting type to
-						// mixed (e.g. mixed|string becomes mixed), hiding a branch whose
-						// type is not accepted. When the whole argument collapsed to mixed,
-						// inspect the branch types separately so such a passed value is
-						// still reported. A non-mixed resulting type keeps enough
-						// information for the regular check above, so branch inspection
-						// would only introduce false positives there.
 						foreach ($this->getTernaryBranchTypes($argumentValue, $scope) as $branchType) {
 							$branchAccepts = $this->ruleLevelHelper->accepts($parameterType, $branchType, $isStrictTypes);
 							if ($branchAccepts->result) {

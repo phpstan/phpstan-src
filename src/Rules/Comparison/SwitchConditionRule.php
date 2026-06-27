@@ -56,11 +56,13 @@ final class SwitchConditionRule implements Rule
 			$armScope = $arm->getScope();
 			$caseCondition = $arm->getCaseCondition();
 
-			$caseKey = $this->getCaseKey($armScope->getType($caseCondition));
-			if ($caseKey !== null) {
+			$caseConditionType = $armScope->getType($caseCondition);
+			$finiteTypes = $caseConditionType->getFiniteTypes();
+			if (count($finiteTypes) === 1) {
+				$caseValueType = $finiteTypes[0];
 				$firstSeen = null;
 				foreach ($seenCases as $seenCase) {
-					if ($seenCase['key'] === $caseKey) {
+					if ($seenCase['type']->equals($caseValueType)) {
 						$firstSeen = $seenCase;
 						break;
 					}
@@ -77,7 +79,7 @@ final class SwitchConditionRule implements Rule
 				}
 
 				$seenCases[] = [
-					'key' => $caseKey,
+					'type' => $caseValueType,
 					'printed' => $this->exprPrinter->printExpr($caseCondition),
 					'line' => $arm->getLine(),
 				];
@@ -118,7 +120,7 @@ final class SwitchConditionRule implements Rule
 				$errorBuilder = RuleErrorBuilder::message(sprintf(
 					'Switch condition comparison between %s and %s is always false.',
 					$subjectType->describe(VerbosityLevel::value()),
-					$armScope->getType($caseCondition)->describe(VerbosityLevel::value()),
+					$caseConditionType->describe(VerbosityLevel::value()),
 				))->line($arm->getLine())->identifier('switch.alwaysFalse');
 				$this->possiblyImpureTipHelper->addTip($armScope, $conditionExpr, $errorBuilder);
 				$ruleError = $errorBuilder->build();
@@ -156,27 +158,6 @@ final class SwitchConditionRule implements Rule
 	private function isConstantBoolean(Type $type): bool
 	{
 		return $type->isTrue()->yes() || $type->isFalse()->yes();
-	}
-
-	/**
-	 * Builds a comparable key identifying a single constant case value (scalar or
-	 * enum case), or null when the case condition does not have one definite value.
-	 *
-	 * @return array{'scalar', int|float|string|bool|null}|array{'enum', string, string}|null
-	 */
-	private function getCaseKey(Type $caseConditionType): ?array
-	{
-		$scalarValues = $caseConditionType->getConstantScalarValues();
-		if (count($scalarValues) === 1) {
-			return ['scalar', $scalarValues[0]];
-		}
-
-		$enumCases = $caseConditionType->getEnumCases();
-		if (count($enumCases) === 1) {
-			return ['enum', $enumCases[0]->getClassName(), $enumCases[0]->getEnumCaseName()];
-		}
-
-		return null;
 	}
 
 }

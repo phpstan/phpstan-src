@@ -479,7 +479,7 @@ class MagicConstUser {
 }
 
 function (): void {
-	assertType('int<50207, 80599>', PHP_VERSION_ID);
+	assertType('int<50207, 80600>', PHP_VERSION_ID);
 };
 
 function (int $i) {

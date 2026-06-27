@@ -29,6 +29,8 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	private bool $checkImplicitMixed = false;
 
+	private bool $reportMixedTernaryAndCoalesce = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -59,6 +61,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: $this->reportMixedTernaryAndCoalesce,
 			),
 		);
 	}
@@ -4233,6 +4236,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-14808.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11281(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->reportMixedTernaryAndCoalesce = true;
+		$this->analyse([__DIR__ . '/data/bug-11281.php'], [
+			[
+				'Parameter #1 $i of method Bug11281Methods\Foo::takesInt() expects int, string given.',
+				21,
+			],
+			[
+				'Parameter #1 $i of method Bug11281Methods\Foo::takesInt() expects int, string given.',
+				29,
+			],
+		]);
 	}
 
 }

@@ -7,11 +7,13 @@ use PhpParser\Node\Expr\BinaryOp\Equal;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 
 /**
@@ -24,6 +26,7 @@ final class SwitchConditionRule implements Rule
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
+		private ExprPrinter $exprPrinter,
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
@@ -40,6 +43,7 @@ final class SwitchConditionRule implements Rule
 		$errors = [];
 		$nextCaseIsDeadForType = false;
 		$nextCaseIsDeadForNativeType = false;
+		$seenCases = [];
 
 		foreach ($node->getArms() as $arm) {
 			if (
@@ -51,6 +55,34 @@ final class SwitchConditionRule implements Rule
 
 			$armScope = $arm->getScope();
 			$caseCondition = $arm->getCaseCondition();
+
+			$caseKey = $this->getCaseKey($armScope->getType($caseCondition));
+			if ($caseKey !== null) {
+				$firstSeen = null;
+				foreach ($seenCases as $seenCase) {
+					if ($seenCase['key'] === $caseKey) {
+						$firstSeen = $seenCase;
+						break;
+					}
+				}
+
+				if ($firstSeen !== null) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Case %s in switch is a duplicate of case %s on line %d.',
+						$this->exprPrinter->printExpr($caseCondition),
+						$firstSeen['printed'],
+						$firstSeen['line'],
+					))->line($arm->getLine())->identifier('switch.duplicateCase')->build();
+					continue;
+				}
+
+				$seenCases[] = [
+					'key' => $caseKey,
+					'printed' => $this->exprPrinter->printExpr($caseCondition),
+					'line' => $arm->getLine(),
+				];
+			}
+
 			$conditionExpr = new Equal($subject, $caseCondition);
 
 			$conditionType = $armScope->getType($conditionExpr);
@@ -124,6 +156,27 @@ final class SwitchConditionRule implements Rule
 	private function isConstantBoolean(Type $type): bool
 	{
 		return $type->isTrue()->yes() || $type->isFalse()->yes();
+	}
+
+	/**
+	 * Builds a comparable key identifying a single constant case value (scalar or
+	 * enum case), or null when the case condition does not have one definite value.
+	 *
+	 * @return array{'scalar', int|float|string|bool|null}|array{'enum', string, string}|null
+	 */
+	private function getCaseKey(Type $caseConditionType): ?array
+	{
+		$scalarValues = $caseConditionType->getConstantScalarValues();
+		if (count($scalarValues) === 1) {
+			return ['scalar', $scalarValues[0]];
+		}
+
+		$enumCases = $caseConditionType->getEnumCases();
+		if (count($enumCases) === 1) {
+			return ['enum', $enumCases[0]->getClassName(), $enumCases[0]->getEnumCaseName()];
+		}
+
+		return null;
 	}
 
 }

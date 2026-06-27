@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
@@ -33,6 +34,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 				),
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				self::getContainer()->getByType(ExprPrinter::class),
 				$this->treatPhpDocTypesAsCertain,
 			),
 			new ConstantConditionInTraitRule(),
@@ -52,15 +54,43 @@ class SwitchConditionRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false.php'], [
 			[
-				'Switch condition comparison between int<min, 0>|int<3, max> and 1 is always false.',
+				'Case \'lb\' in switch is a duplicate of case \'lb\' on line 24.',
+				30,
+			],
+			[
+				'Case \'oz\' in switch is a duplicate of case \'oz\' on line 27.',
+				33,
+			],
+			[
+				'Case 1 in switch is a duplicate of case 1 on line 42.',
 				46,
 			],
 			[
-				'Switch condition comparison between \'0\' and true is always false.',
+				'Case \'x\' in switch is a duplicate of case \'x\' on line 54.',
+				58,
+			],
+			[
+				'Case \'x\' in switch is a duplicate of case \'x\' on line 54.',
+				60,
+			],
+			[
+				'Case self::EQ in switch is a duplicate of case \'=\' on line 68.',
+				72,
+			],
+			[
+				'Case DUPLICATE_SWITCH_CASE_CONST in switch is a duplicate of case \'unknown\' on line 80.',
+				82,
+			],
+			[
+				'Case \'a\' in switch is a duplicate of case \'a\' on line 90.',
+				94,
+			],
+			[
+				'Case true in switch is a duplicate of case true on line 106.',
 				110,
 			],
 			[
-				'Switch condition comparison between \'0\' and null is always false.',
+				'Case null in switch is a duplicate of case null on line 108.',
 				112,
 			],
 		]);
@@ -71,7 +101,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/switch-condition-always-false-enum.php'], [
 			[
-				'Switch condition comparison between SwitchConditionAlwaysFalseEnum\Status::Pending and SwitchConditionAlwaysFalseEnum\Status::Active is always false.',
+				'Case \SwitchConditionAlwaysFalseEnum\Status::Active in switch is a duplicate of case \SwitchConditionAlwaysFalseEnum\Status::Active on line 20.',
 				24,
 			],
 		]);

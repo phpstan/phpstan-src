@@ -3252,20 +3252,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
-	 * Recovers expressions that were collapsed to never type because a side-effecting condition
-	 * (e.g. the `--$x > 0` of a `while` loop) was narrowed by filterByFalseyValue() without
-	 * re-applying its side effects. Their corrected type is taken from the loop-condition falsey
-	 * scope, where the side effects were applied exactly once.
+	 * Recovers the loop variables mutated by a side-effecting condition (e.g. the `--$x` of a
+	 * `while (--$x > 0)` loop). filterByFalseyValue() only narrows types, it does not re-apply
+	 * the condition's side effects, so the after-loop type of such a variable can be left wrong
+	 * (collapsed to never, or stuck at its in-body value that excludes a reachable exit value).
+	 * Their corrected type is taken from the loop-condition falsey scope, where the side effects
+	 * were applied exactly once, by unioning it into the current type.
+	 *
+	 * @param list<array{Expr, bool}> $exprs
 	 */
-	public function restoreNeverTypesFrom(self $other): self
+	public function restoreLoopConditionSideEffects(self $other, array $exprs): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$changed = false;
-		foreach ($expressionTypes as $exprString => $holder) {
-			if (!$holder->getType() instanceof NeverType) {
-				continue;
-			}
+		foreach ($exprs as [$expr, $onlyWhenNever]) {
+			$exprString = $this->getNodeKey($expr);
 			if (!array_key_exists($exprString, $other->expressionTypes)) {
 				continue;
 			}
@@ -3273,9 +3275,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if ($otherHolder->getType() instanceof NeverType) {
 				continue;
 			}
-			$expressionTypes[$exprString] = $otherHolder;
+			if (array_key_exists($exprString, $expressionTypes)) {
+				if ($onlyWhenNever && !$expressionTypes[$exprString]->getType() instanceof NeverType) {
+					continue;
+				}
+				$expressionTypes[$exprString] = $expressionTypes[$exprString]->and($otherHolder);
+			} else {
+				$expressionTypes[$exprString] = $otherHolder;
+			}
 			if (array_key_exists($exprString, $other->nativeExpressionTypes)) {
-				$nativeExpressionTypes[$exprString] = $other->nativeExpressionTypes[$exprString];
+				if (array_key_exists($exprString, $nativeExpressionTypes)) {
+					$nativeExpressionTypes[$exprString] = $nativeExpressionTypes[$exprString]->and($other->nativeExpressionTypes[$exprString]);
+				} else {
+					$nativeExpressionTypes[$exprString] = $other->nativeExpressionTypes[$exprString];
+				}
 			}
 			$changed = true;
 		}

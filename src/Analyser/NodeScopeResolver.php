@@ -1743,13 +1743,14 @@ class NodeScopeResolver
 			$bodyScope = $condExprResult->getTruthyScope();
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
-			if ($this->exprContainsSideEffect($stmt->cond)) {
+			$condSideEffectExprs = $this->getExprSideEffectTargets($stmt->cond);
+			if (count($condSideEffectExprs) > 0) {
 				// A condition with side effects (e.g. `while (--$x > 0)`) mutates its variables as
 				// part of being evaluated. filterByFalseyValue() only narrows, it does not re-apply
-				// those side effects, so it can collapse a variable to never type by contradicting
-				// its not-yet-mutated value. Recover such variables from the loop-condition falsey
-				// scope, which applied the side effects exactly once.
-				$finalScope = $finalScope->restoreNeverTypesFrom($condExprResult->getFalseyScope());
+				// those side effects, so the after-loop type of such a variable can be left wrong.
+				// Recover the mutated variables from the loop-condition falsey scope, which applied
+				// the side effects exactly once.
+				$finalScope = $finalScope->restoreLoopConditionSideEffects($condExprResult->getFalseyScope(), $condSideEffectExprs);
 			}
 
 			$alwaysIterates = false;
@@ -1995,8 +1996,9 @@ class NodeScopeResolver
 
 			if ($lastCondExpr !== null) {
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
-				if ($this->exprContainsSideEffect($lastCondExpr)) {
-					$finalScope = $finalScope->restoreNeverTypesFrom($lastCondExprResult->getFalseyScope());
+				$condSideEffectExprs = $this->getExprSideEffectTargets($lastCondExpr);
+				if (count($condSideEffectExprs) > 0) {
+					$finalScope = $finalScope->restoreLoopConditionSideEffects($lastCondExprResult->getFalseyScope(), $condSideEffectExprs);
 				}
 			}
 
@@ -5184,15 +5186,46 @@ class NodeScopeResolver
 		return $stmts;
 	}
 
-	private function exprContainsSideEffect(Expr $expr): bool
+	/**
+	 * Returns the assignment targets of the side effects (increments, decrements, assignments)
+	 * contained anywhere in the given expression, e.g. `[$x]` for `--$x > 0`.
+	 *
+	 * The boolean flags whether the variable's after-loop type may only be grafted from the
+	 * loop-condition falsey scope when filterByFalseyValue() collapsed it to never. It is false
+	 * for pre-increments/decrements and assignments — there the value compared by the condition
+	 * equals the variable's resulting value, so the falsey scope is the correct after-loop type
+	 * and is always grafted. It is true for post-increments/decrements, where the compared value
+	 * is the pre-mutation one, so grafting only rescues a never-collapse and otherwise keeps the
+	 * more precise in-loop type (e.g. the bound on a `$i++ < 10` counter).
+	 *
+	 * @return list<array{Expr, bool}>
+	 */
+	private function getExprSideEffectTargets(Expr $expr): array
 	{
-		return (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Expr\PreInc
+		$sideEffects = (new NodeFinder())->find([$expr], static fn (Node $node): bool => $node instanceof Expr\PreInc
 			|| $node instanceof Expr\PreDec
 			|| $node instanceof Expr\PostInc
 			|| $node instanceof Expr\PostDec
 			|| $node instanceof Expr\Assign
 			|| $node instanceof Expr\AssignOp
-			|| $node instanceof Expr\AssignRef) !== null;
+			|| $node instanceof Expr\AssignRef);
+
+		$targets = [];
+		foreach ($sideEffects as $sideEffect) {
+			if ($sideEffect instanceof Expr\PostInc || $sideEffect instanceof Expr\PostDec) {
+				$targets[] = [$sideEffect->var, true];
+			} elseif (
+				$sideEffect instanceof Expr\PreInc
+				|| $sideEffect instanceof Expr\PreDec
+				|| $sideEffect instanceof Expr\Assign
+				|| $sideEffect instanceof Expr\AssignOp
+				|| $sideEffect instanceof Expr\AssignRef
+			) {
+				$targets[] = [$sideEffect->var, false];
+			}
+		}
+
+		return $targets;
 	}
 
 	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope

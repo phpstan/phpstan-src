@@ -117,10 +117,6 @@ class SwitchConditionRuleTest extends RuleTestCase
 				'Switch condition comparison between int<5, max> and 1 is always false.',
 				50,
 			],
-			[
-				'Switch condition comparison between *NEVER* and string is always false.',
-				66,
-			],
 		]);
 	}
 

@@ -2991,8 +2991,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				35,
 			],
 			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				42,
+			],
+			[
 				'Parameter #1 $s of function Bug11281Functions\expectsString expects string, string|false given.',
-				64,
+				71,
 			],
 		]);
 	}

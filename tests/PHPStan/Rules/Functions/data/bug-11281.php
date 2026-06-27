@@ -35,6 +35,13 @@ function nested(array $values, bool $other, bool $another): void
 	takesInt($other ? $values['key'] : ($another ? 1 : ' nested string'));
 }
 
+function testShortTernary(mixed $mixed): void
+{
+	// Short ternary (?:): the if-branch reuses the (truthy-narrowed) condition value,
+	// the else branch is a string passed to an int parameter, so it must be reported.
+	takesInt($mixed ?: ' a string');
+}
+
 function expectsString(string $s): void
 {
 }

@@ -201,10 +201,12 @@ final class ConditionalExpressionHolderHelper
 				}
 
 				$conditions = $conditionExpressionTypes;
+				$droppedSelfCondition = null;
 				foreach (array_keys($conditions) as $conditionExprString) {
 					if ($conditionExprString !== $exprString) {
 						continue;
 					}
+					$droppedSelfCondition = $conditions[$conditionExprString];
 					unset($conditions[$conditionExprString]);
 				}
 
@@ -217,6 +219,23 @@ final class ConditionalExpressionHolderHelper
 				$holderType = $holdersFromSureTypes
 					? TypeCombinator::intersect($targetType, $type)
 					: TypeCombinator::remove($targetType, $type);
+
+				// A condition on the target expression itself cannot be tracked
+				// (the holder fires by matching *other* expressions) so it is
+				// dropped above. But that condition restricted the target to a
+				// subset of its values; without it the holder must also allow the
+				// values the condition excluded, otherwise it over-narrows the
+				// target when only the remaining conditions hold. Example:
+				// `!(isset($a['foo']) && !is_array($a['foo']))` keyed on
+				// `$a` having offset 'foo' must yield `array|null`, not `array`,
+				// because `$a['foo']` may be null when the dropped `isset` (i.e.
+				// non-null) condition does not hold.
+				if ($droppedSelfCondition !== null) {
+					$complement = TypeCombinator::remove($scope->getType($expr), $droppedSelfCondition->getType());
+					if (!$complement instanceof NeverType) {
+						$holderType = TypeCombinator::union($holderType, $complement);
+					}
+				}
 
 				// These boolean-decomposition holders only refine an expression's
 				// type in a future scope; they must never collapse it to never and

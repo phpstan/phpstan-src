@@ -842,8 +842,6 @@ class AnalyserTest extends PHPStanTestCase
 			false,
 			true,
 			true,
-			[],
-			[],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ImplicitToStringCallHelper::class),

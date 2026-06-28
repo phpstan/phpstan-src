@@ -355,6 +355,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				__DIR__ . '/../../../conf/bleedingEdge.neon',
 				__DIR__ . '/typeAliases.neon',
+				__DIR__ . '/nodeScopeResolverEarlyTerminating.neon',
 			],
 		);
 	}
@@ -367,21 +368,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/methodPhpDocs-recursive-trait-defined.php',
 			__DIR__ . '/data/anonymous-class-name-in-trait-trait.php',
 		];
-	}
-
-	protected static function getEarlyTerminatingMethodCalls(): array
-	{
-		return [
-			\EarlyTermination\Foo::class => [
-				'doFoo',
-				'doBar',
-			],
-		];
-	}
-
-	protected static function getEarlyTerminatingFunctionCalls(): array
-	{
-		return ['baz'];
 	}
 
 }

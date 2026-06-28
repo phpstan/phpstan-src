@@ -101,8 +101,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
 			$container->getParameter('polluteScopeWithBlock'),
-			static::getEarlyTerminatingMethodCalls(),
-			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ImplicitToStringCallHelper::class),
@@ -496,18 +494,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 	/** @return string[] */
 	protected static function getAdditionalAnalysedFiles(): array
-	{
-		return [];
-	}
-
-	/** @return string[][] */
-	protected static function getEarlyTerminatingMethodCalls(): array
-	{
-		return [];
-	}
-
-	/** @return string[] */
-	protected static function getEarlyTerminatingFunctionCalls(): array
 	{
 		return [];
 	}

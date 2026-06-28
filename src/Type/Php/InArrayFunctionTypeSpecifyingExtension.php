@@ -72,6 +72,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 		if ($arrayExpr instanceof Array_) {
 			$types = null;
+			$combinedMultipleItems = false;
 			foreach ($arrayExpr->items as $item) {
 				if ($item->unpack) {
 					$types = null;
@@ -89,10 +90,19 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					continue;
 				}
 
+				$combinedMultipleItems = true;
 				$types = $context->true() ? $types->normalize($scope)->intersectWith($itemTypes->normalize($scope)) : $types->unionWith($itemTypes);
 			}
 
 			if ($types !== null) {
+				// The root expression of a single item's comparison must not stand in
+				// for the whole in_array() call once multiple items are combined,
+				// otherwise an arbitrary "$needle === $oneItem" comparison would be
+				// treated as the call's result.
+				if ($combinedMultipleItems) {
+					$types = $types->setRootExpr(null);
+				}
+
 				return $types;
 			}
 		}

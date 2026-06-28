@@ -128,6 +128,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					255,
 				],
 				[
+					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
+					259,
+				],
+				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					263,
 				],
@@ -1092,6 +1096,25 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-12412.php'], []);
+	}
+
+	public function testBug14873(): void
+	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-14873.php'], [
+			[
+				'Call to function in_array() with arguments \'a\'|\'b\'|\'c\', array{\'a\', \'b\', \'c\'} and true will always evaluate to true.',
+				17,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with arguments \'a\'|\'b\', array{\'a\', \'b\', \'c\'} and true will always evaluate to true.',
+				21,
+				$tipText,
+			],
+		]);
 	}
 
 	public function testBug2730(): void

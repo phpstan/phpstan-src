@@ -187,33 +187,43 @@ final class ImpossibleCheckTypeHelper
 						}
 
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
+							$needleFiniteTypes = $needleType->getFiniteTypes();
 							foreach ($haystackArrayTypes as $haystackArrayType) {
+								$guaranteedValueTypes = [];
 								if ($haystackArrayType instanceof ConstantArrayType) {
 									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
 										if ($haystackArrayType->isOptionalKey($i)) {
 											continue;
 										}
 
-										$haystackArrayValueConstantScalarTypes = $haystackArrayValueType->getConstantScalarTypes();
-										if (count($haystackArrayValueConstantScalarTypes) > 1) {
+										$haystackArrayValueFiniteTypes = $haystackArrayValueType->getFiniteTypes();
+										if (count($haystackArrayValueFiniteTypes) !== 1) {
 											continue;
 										}
 
-										foreach ($haystackArrayValueConstantScalarTypes as $constantScalarType) {
-											if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-												continue 3;
-											}
-										}
+										$guaranteedValueTypes[] = $haystackArrayValueFiniteTypes[0];
 									}
 								} else {
-									foreach ($haystackArrayType->getIterableValueType()->getConstantScalarTypes() as $constantScalarType) {
-										if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-											continue 2;
-										}
+									foreach ($haystackArrayType->getIterableValueType()->getFiniteTypes() as $finiteType) {
+										$guaranteedValueTypes[] = $finiteType;
 									}
 								}
 
-								return null;
+								// in_array() is only guaranteed true when every possible needle value
+								// is guaranteed to be present in this haystack variant.
+								foreach ($needleFiniteTypes as $needleFiniteType) {
+									$found = false;
+									foreach ($guaranteedValueTypes as $guaranteedValueType) {
+										if ($guaranteedValueType->isSuperTypeOf($needleFiniteType)->yes()) {
+											$found = true;
+											break;
+										}
+									}
+
+									if (!$found) {
+										return null;
+									}
+								}
 							}
 						}
 

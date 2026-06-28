@@ -74,7 +74,7 @@ final class ParameterCastableToStringRule implements Rule
 
 		if (in_array($functionName, $checkAllArgsFunctions, true)) {
 			$argsToCheck = $origArgs;
-		} elseif (in_array($functionName, $checkFirstArgFunctions, true)) {
+		} else {
 			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 
 			if ($normalizedFuncCall === null) {
@@ -86,8 +86,6 @@ final class ParameterCastableToStringRule implements Rule
 				return [];
 			}
 			$argsToCheck = [0 => $normalizedArgs[0]];
-		} else {
-			return [];
 		}
 
 		$errors = [];

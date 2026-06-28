@@ -19,6 +19,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransformer;
 use PHPStan\Analyser\ImpurePoint;
@@ -95,6 +96,7 @@ final class FuncCallHandler implements ExprHandler
 	 * @param ExtensionsCollection<DynamicFunctionThrowTypeExtension> $dynamicFunctionThrowTypeExtensions
 	 */
 	public function __construct(
+		private EarlyTerminatingCallHelper $earlyTerminatingCallHelper,
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredExtensions(of: DynamicFunctionThrowTypeExtension::class)]
 		private ExtensionsCollection $dynamicFunctionThrowTypeExtensions,
@@ -811,6 +813,13 @@ final class FuncCallHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		if (
+			$expr->name instanceof Name
+			&& $this->earlyTerminatingCallHelper->isEarlyTerminatingFunctionCall($expr->name->toString())
+		) {
+			return new NeverType(true);
+		}
+
 		if ($expr->name instanceof Expr) {
 			$calledOnType = $scope->getType($expr->name);
 			if ($calledOnType->isCallable()->no()) {

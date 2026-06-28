@@ -79,8 +79,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
 			$container->getParameter('polluteScopeWithBlock'),
-			static::getEarlyTerminatingMethodCalls(),
-			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ImplicitToStringCallHelper::class),

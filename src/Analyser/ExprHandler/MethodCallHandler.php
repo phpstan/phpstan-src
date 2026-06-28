@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
@@ -56,6 +57,7 @@ final class MethodCallHandler implements ExprHandler
 {
 
 	public function __construct(
+		private EarlyTerminatingCallHelper $earlyTerminatingCallHelper,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private ReflectionProvider $reflectionProvider,
@@ -246,6 +248,13 @@ final class MethodCallHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		if (
+			$expr->name instanceof Identifier
+			&& $this->earlyTerminatingCallHelper->isEarlyTerminatingMethodCall($expr->name->name, $scope->getType($expr->var))
+		) {
+			return new NeverType(true);
+		}
+
 		if ($expr->name instanceof Identifier) {
 			if ($scope->nativeTypesPromoted) {
 				$methodReflection = $scope->getMethodReflection(

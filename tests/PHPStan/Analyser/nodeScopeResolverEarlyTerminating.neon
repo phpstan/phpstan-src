@@ -1,0 +1,7 @@
+parameters:
+	earlyTerminatingMethodCalls:
+		EarlyTermination\Foo:
+			- doFoo
+			- doBar
+	earlyTerminatingFunctionCalls:
+		- baz

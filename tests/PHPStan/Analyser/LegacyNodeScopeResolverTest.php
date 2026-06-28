@@ -46,6 +46,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		return [
 			__DIR__ . '/../../../conf/bleedingEdge.neon',
 			__DIR__ . '/typeAliases.neon',
+			__DIR__ . '/nodeScopeResolverEarlyTerminating.neon',
 		];
 	}
 
@@ -90,21 +91,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$this->assertTrue($scope->hasVariableType('var')->yes());
 			$this->assertTrue($scope->hasVariableType('foo')->no());
 		});
-	}
-
-	protected static function getEarlyTerminatingMethodCalls(): array
-	{
-		return [
-			\EarlyTermination\Foo::class => [
-				'doFoo',
-				'doBar',
-			],
-		];
-	}
-
-	protected static function getEarlyTerminatingFunctionCalls(): array
-	{
-		return ['baz'];
 	}
 
 }

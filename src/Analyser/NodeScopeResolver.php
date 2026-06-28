@@ -206,17 +206,12 @@ class NodeScopeResolver
 	private array $analysedFiles = [];
 
 	/** @var array<string, true> */
-	private array $earlyTerminatingMethodNames;
-
-	/** @var array<string, true> */
 	private array $calledMethodStack = [];
 
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
 	/**
-	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
-	 * @param array<int, string> $earlyTerminatingFunctionCalls
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
 	 * @param ExtensionsCollection<MethodParameterOutTypeExtension> $methodParameterOutTypeExtensions
 	 * @param ExtensionsCollection<StaticMethodParameterOutTypeExtension> $staticMethodParameterOutTypeExtensions
@@ -268,10 +263,6 @@ class NodeScopeResolver
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithBlock,
-		#[AutowiredParameter]
-		private readonly array $earlyTerminatingMethodCalls,
-		#[AutowiredParameter]
-		private readonly array $earlyTerminatingFunctionCalls,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private readonly bool $implicitThrows,
 		#[AutowiredParameter]
@@ -280,13 +271,6 @@ class NodeScopeResolver
 		protected readonly ExpressionResultFactory $expressionResultFactory,
 	)
 	{
-		$earlyTerminatingMethodNames = [];
-		foreach ($this->earlyTerminatingMethodCalls as $methodNames) {
-			foreach ($methodNames as $methodName) {
-				$earlyTerminatingMethodNames[strtolower($methodName)] = true;
-			}
-		}
-		$this->earlyTerminatingMethodNames = $earlyTerminatingMethodNames;
 	}
 
 	/**
@@ -2758,43 +2742,6 @@ class NodeScopeResolver
 
 	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
 	{
-		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
-			if (array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
-				if ($expr instanceof MethodCall) {
-					$methodCalledOnType = $scope->getType($expr->var);
-				} else {
-					if ($expr->class instanceof Name) {
-						$methodCalledOnType = $scope->resolveTypeByName($expr->class);
-					} else {
-						$methodCalledOnType = $scope->getType($expr->class);
-					}
-				}
-
-				foreach ($methodCalledOnType->getObjectClassNames() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-
-					$classReflection = $this->reflectionProvider->getClass($referencedClass);
-					foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
-						if (!isset($this->earlyTerminatingMethodCalls[$className])) {
-							continue;
-						}
-
-						if (in_array((string) $expr->name, $this->earlyTerminatingMethodCalls[$className], true)) {
-							return $expr;
-						}
-					}
-				}
-			}
-		}
-
-		if ($expr instanceof FuncCall && $expr->name instanceof Name) {
-			if (in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
-				return $expr;
-			}
-		}
-
 		if ($expr instanceof Expr\Exit_ || $expr instanceof Expr\Throw_) {
 			return $expr;
 		}

@@ -13,7 +13,7 @@ use function implode;
 use function sprintf;
 use function str_contains;
 
-#[RequiresPhp('>= 8.0')]
+#[RequiresPhp('>= 8.0.0')]
 class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 {
 

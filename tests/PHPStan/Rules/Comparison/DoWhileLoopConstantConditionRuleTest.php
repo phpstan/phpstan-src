@@ -82,7 +82,7 @@ class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testInTrait(): void
 	{
 		$this->analyse([__DIR__ . '/data/do-while-in-trait.php'], [

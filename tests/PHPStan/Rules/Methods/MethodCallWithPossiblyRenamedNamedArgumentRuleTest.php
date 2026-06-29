@@ -17,7 +17,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 /**
  * @extends RuleTestCase<CompositeRule>
  */
-#[RequiresPhp('>= 8.0')]
+#[RequiresPhp('>= 8.0.0')]
 class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 {
 

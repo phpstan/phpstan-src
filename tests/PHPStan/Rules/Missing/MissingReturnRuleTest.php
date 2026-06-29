@@ -373,7 +373,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12722.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14638(): void
 	{
 		$this->checkExplicitMixedMissingReturn = true;

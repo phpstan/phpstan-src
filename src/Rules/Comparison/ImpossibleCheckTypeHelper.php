@@ -187,33 +187,46 @@ final class ImpossibleCheckTypeHelper
 						}
 
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
+							$needleFiniteTypes = $needleType->getFiniteTypes();
+							if ($needleFiniteTypes === []) {
+								return null;
+							}
+
 							foreach ($haystackArrayTypes as $haystackArrayType) {
-								if ($haystackArrayType instanceof ConstantArrayType) {
-									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
-										if ($haystackArrayType->isOptionalKey($i)) {
-											continue;
-										}
-
-										$haystackArrayValueConstantScalarTypes = $haystackArrayValueType->getConstantScalarTypes();
-										if (count($haystackArrayValueConstantScalarTypes) > 1) {
-											continue;
-										}
-
-										foreach ($haystackArrayValueConstantScalarTypes as $constantScalarType) {
-											if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-												continue 3;
-											}
-										}
-									}
-								} else {
-									foreach ($haystackArrayType->getIterableValueType()->getConstantScalarTypes() as $constantScalarType) {
-										if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-											continue 2;
-										}
-									}
+								$guaranteedValueTypes = [];
+								if (!($haystackArrayType instanceof ConstantArrayType)) {
+									// A general array cannot guarantee any specific value is present.
+									return null;
 								}
 
-								return null;
+								foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
+									if ($haystackArrayType->isOptionalKey($i)) {
+										continue;
+									}
+
+									$haystackArrayValueFiniteTypes = $haystackArrayValueType->getFiniteTypes();
+									if (count($haystackArrayValueFiniteTypes) !== 1) {
+										continue;
+									}
+
+									$guaranteedValueTypes[] = $haystackArrayValueFiniteTypes[0];
+								}
+
+								// in_array() is only guaranteed true when every possible needle value
+								// is guaranteed to be present in this haystack variant.
+								foreach ($needleFiniteTypes as $needleFiniteType) {
+									$found = false;
+									foreach ($guaranteedValueTypes as $guaranteedValueType) {
+										if ($guaranteedValueType->isSuperTypeOf($needleFiniteType)->yes()) {
+											$found = true;
+											break;
+										}
+									}
+
+									if (!$found) {
+										return null;
+									}
+								}
 							}
 						}
 

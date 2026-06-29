@@ -72,6 +72,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 		if ($arrayExpr instanceof Array_) {
 			$types = null;
+			$combinedMultipleItems = false;
 			foreach ($arrayExpr->items as $item) {
 				if ($item->unpack) {
 					$types = null;
@@ -89,10 +90,21 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					continue;
 				}
 
+				$combinedMultipleItems = true;
 				$types = $context->true() ? $types->normalize($scope)->intersectWith($itemTypes->normalize($scope)) : $types->unionWith($itemTypes);
 			}
 
 			if ($types !== null) {
+				if ($combinedMultipleItems) {
+					// Each per-item SpecifiedTypes carries its own "$needle === $item"
+					// as its root expression. Once the comparisons of multiple items are
+					// combined, that per-item root expression no longer describes the whole
+					// in_array() call, so it must be cleared. Leaving it set lets callers
+					// such as ImpossibleCheckTypeHelper read the type of a single item's
+					// comparison and draw a wrong conclusion about the whole call.
+					$types = $types->setRootExpr(null);
+				}
+
 				return $types;
 			}
 		}

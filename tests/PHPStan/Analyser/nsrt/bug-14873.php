@@ -1,0 +1,114 @@
+<?php // lint >= 8.1
+
+declare(strict_types = 1);
+
+namespace Bug14873;
+
+use function PHPStan\Testing\assertType;
+use function in_array;
+
+enum Suit: string
+{
+
+	case Hearts = 'H';
+	case Spades = 'S';
+	case Clubs = 'C';
+
+}
+
+class HelloWorld
+{
+
+	/**
+	 * @param 'a'|'b'|'c' $full
+	 * @param 'a'|'b' $subset
+	 * @param 'a'|'x' $partial
+	 */
+	public function variableHaystack(string $full, string $subset, string $partial): void
+	{
+		$a = ['a', 'b', 'c'];
+
+		assertType('true', in_array($full, $a, true));
+		assertType('true', in_array($subset, $a, true));
+		assertType('bool', in_array($partial, $a, true));
+	}
+
+	/**
+	 * @param 'a'|'b'|'c' $full
+	 * @param 'a'|'b' $subset
+	 * @param 'a'|'x' $partial
+	 */
+	public function literalHaystack(string $full, string $subset, string $partial): void
+	{
+		assertType('true', in_array($full, ['a', 'b', 'c'], true));
+		assertType('bool', in_array($full, ['a', 'b', 'c'], false)); // non-strict
+		assertType('true', in_array($subset, ['a', 'b', 'c'], true));
+		assertType('bool', in_array($partial, ['a', 'b', 'c'], true));
+		assertType('false', in_array($subset, ['x', 'y'], true));
+
+		$fullOrEmpty = rand(0,1) ? $full : [];
+		assertType('bool', in_array($fullOrEmpty, ['a', 'b', 'c'], true));
+	}
+
+	/**
+	 * @param 1|2 $full
+	 * @param 1 $subset
+	 */
+	public function integers(int $full, int $subset): void
+	{
+		$a = [1, 2];
+
+		assertType('true', in_array($full, $a, true));
+		assertType('true', in_array($subset, $a, true));
+		assertType('true', in_array($full, [1, 2, 3], true));
+	}
+
+	/**
+	 * @param Suit::Hearts|Suit::Spades $subset
+	 */
+	public function enums(Suit $subset): void
+	{
+		$a = [Suit::Hearts, Suit::Spades, Suit::Clubs];
+
+		assertType('true', in_array($subset, $a, true));
+		assertType('true', in_array($subset, [Suit::Hearts, Suit::Spades, Suit::Clubs], true));
+		assertType('bool', in_array($subset, [Suit::Hearts], true));
+	}
+
+	/**
+	 * Plain objects do not have a finite set of possible values, so in_array()
+	 * must not be reported as always-true even when the needle's class matches
+	 * every haystack value type.
+	 */
+	public function objects(Article $article, ?Article $a, ?Article $b): void
+	{
+		$haystack = [$a, $b];
+
+		assertType('bool', in_array($article, $haystack, true));
+		assertType('bool', in_array($article, [$a, $b], true));
+	}
+
+	/**
+	 * A general (non-constant) array does not guarantee that any particular value
+	 * is present, so a subset needle must not be reported as always-true. Only a
+	 * non-empty array whose values all share a single finite type guarantees that
+	 * value's presence.
+	 *
+	 * @param 1|2 $needle
+	 * @param array<int, 1|2> $maybeEmpty
+	 * @param non-empty-array<int, 1|2> $nonEmptyMulti
+	 * @param non-empty-array<int, 1> $nonEmptySingle
+	 */
+	public function generalArrays(int $needle, array $maybeEmpty, array $nonEmptyMulti, array $nonEmptySingle): void
+	{
+		assertType('bool', in_array($needle, $maybeEmpty, true));
+		assertType('bool', in_array($needle, $nonEmptyMulti, true));
+		assertType('true', in_array(1, $nonEmptySingle, true));
+	}
+
+}
+
+class Article
+{
+
+}

@@ -17,7 +17,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
-use function array_keys;
 use function count;
 use function is_string;
 

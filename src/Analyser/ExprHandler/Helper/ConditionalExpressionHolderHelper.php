@@ -202,11 +202,11 @@ final class ConditionalExpressionHolderHelper
 
 				$conditions = $conditionExpressionTypes;
 				$droppedSelfCondition = null;
-				foreach (array_keys($conditions) as $conditionExprString) {
+				foreach ($conditions as $conditionExprString => $condition) {
 					if ($conditionExprString !== $exprString) {
 						continue;
 					}
-					$droppedSelfCondition = $conditions[$conditionExprString];
+					$droppedSelfCondition = $condition;
 					unset($conditions[$conditionExprString]);
 				}
 

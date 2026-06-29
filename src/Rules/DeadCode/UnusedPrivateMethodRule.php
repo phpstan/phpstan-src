@@ -107,7 +107,7 @@ final class UnusedPrivateMethodRule implements Rule
 				if ($methodCallNode->class instanceof Node\Name) {
 					$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
 				} else {
-					$calledOnType = $callScope->getType($methodCallNode->class);
+					$calledOnType = $callScope->getType($methodCallNode->class)->getObjectTypeOrClassStringObjectType();
 				}
 			}
 

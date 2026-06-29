@@ -64,7 +64,7 @@ final class UnusedPrivateConstantRule implements Rule
 			if ($fetchNode->class instanceof Node\Name) {
 				$fetchedOnClass = $fetchScope->resolveTypeByName($fetchNode->class);
 			} else {
-				$fetchedOnClass = $fetchScope->getType($fetchNode->class);
+				$fetchedOnClass = $fetchScope->getType($fetchNode->class)->getObjectTypeOrClassStringObjectType();
 			}
 
 			if (!$fetchNode->name instanceof Node\Identifier) {

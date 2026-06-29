@@ -352,7 +352,7 @@ jobs:
 
       - name: "Upload coverage report"
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/upload-code-coverage@v1
+        uses: actions/upload-code-coverage@82c7aee3fb2ad768e00b00a0a8d749c5815085b6 # v1
         with:
           file: tmp/coverage/cobertura.xml
           language: php

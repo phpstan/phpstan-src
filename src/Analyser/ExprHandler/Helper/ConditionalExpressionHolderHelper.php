@@ -220,16 +220,9 @@ final class ConditionalExpressionHolderHelper
 					? TypeCombinator::intersect($targetType, $type)
 					: TypeCombinator::remove($targetType, $type);
 
-				// A condition on the target expression itself cannot be tracked
-				// (the holder fires by matching *other* expressions) so it is
-				// dropped above. But that condition restricted the target to a
-				// subset of its values; without it the holder must also allow the
-				// values the condition excluded, otherwise it over-narrows the
-				// target when only the remaining conditions hold. Example:
-				// `!(isset($a['foo']) && !is_array($a['foo']))` keyed on
-				// `$a` having offset 'foo' must yield `array|null`, not `array`,
-				// because `$a['foo']` may be null when the dropped `isset` (i.e.
-				// non-null) condition does not hold.
+				// The dropped self-condition narrowed the target; without it the
+				// holder must allow the values it excluded, or it over-narrows when
+				// only the remaining conditions hold. So union back the complement.
 				if ($droppedSelfCondition !== null) {
 					$complement = TypeCombinator::remove($scope->getType($expr), $droppedSelfCondition->getType());
 					if (!$complement instanceof NeverType) {

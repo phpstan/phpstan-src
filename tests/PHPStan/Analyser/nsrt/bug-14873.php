@@ -75,4 +75,22 @@ class HelloWorld
 		assertType('bool', in_array($subset, [Suit::Hearts], true));
 	}
 
+	/**
+	 * Plain objects do not have a finite set of possible values, so in_array()
+	 * must not be reported as always-true even when the needle's class matches
+	 * every haystack value type.
+	 */
+	public function objects(Article $article, ?Article $a, ?Article $b): void
+	{
+		$haystack = [$a, $b];
+
+		assertType('bool', in_array($article, $haystack, true));
+		assertType('bool', in_array($article, [$a, $b], true));
+	}
+
+}
+
+class Article
+{
+
 }

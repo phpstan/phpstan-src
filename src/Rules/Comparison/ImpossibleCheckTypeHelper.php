@@ -188,6 +188,13 @@ final class ImpossibleCheckTypeHelper
 
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
 							$needleFiniteTypes = $needleType->getFiniteTypes();
+							if ($needleFiniteTypes === []) {
+								// The needle does not have a finite set of possible values
+								// (e.g. a plain object), so it cannot be proven that every
+								// possible needle value is present in the haystack.
+								return null;
+							}
+
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								$guaranteedValueTypes = [];
 								if ($haystackArrayType instanceof ConstantArrayType) {

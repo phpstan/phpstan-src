@@ -88,6 +88,24 @@ class HelloWorld
 		assertType('bool', in_array($article, [$a, $b], true));
 	}
 
+	/**
+	 * A general (non-constant) array does not guarantee that any particular value
+	 * is present, so a subset needle must not be reported as always-true. Only a
+	 * non-empty array whose values all share a single finite type guarantees that
+	 * value's presence.
+	 *
+	 * @param 1|2 $needle
+	 * @param array<int, 1|2> $maybeEmpty
+	 * @param non-empty-array<int, 1|2> $nonEmptyMulti
+	 * @param non-empty-array<int, 1> $nonEmptySingle
+	 */
+	public function generalArrays(int $needle, array $maybeEmpty, array $nonEmptyMulti, array $nonEmptySingle): void
+	{
+		assertType('bool', in_array($needle, $maybeEmpty, true));
+		assertType('bool', in_array($needle, $nonEmptyMulti, true));
+		assertType('true', in_array(1, $nonEmptySingle, true));
+	}
+
 }
 
 class Article

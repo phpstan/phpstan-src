@@ -208,9 +208,13 @@ final class ImpossibleCheckTypeHelper
 										$guaranteedValueTypes[] = $haystackArrayValueFiniteTypes[0];
 									}
 								} else {
-									foreach ($haystackArrayType->getIterableValueType()->getFiniteTypes() as $finiteType) {
-										$guaranteedValueTypes[] = $finiteType;
-									}
+									// A general (non-constant) array cannot guarantee that any specific
+									// value is present: array<int, 1|2> guarantees neither 1 nor 2, and a
+									// possibly-empty array guarantees nothing at all. A purely general
+									// haystack is already handled above (see the isConstantArray()->no()
+									// branch), so we only get here for union haystacks mixing a constant
+									// and a general array - bail out conservatively for those.
+									return null;
 								}
 
 								// in_array() is only guaranteed true when every possible needle value

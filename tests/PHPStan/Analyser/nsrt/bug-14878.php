@@ -4,7 +4,13 @@ namespace Bug14878;
 
 use function PHPStan\Testing\assertType;
 
-function test($a, $b): void
+// The `$b === true` and `$b === true && $cond` statements inside the branches
+// are what regressed: with the bug $b was narrowed to `mixed~true`, so they
+// emitted "Strict comparison ... will always evaluate to false" and "Result of
+// && is always false". They are referenced from BooleanAndConstantConditionRuleTest
+// and StrictComparisonOfDifferentTypesRuleTest as a regression guard.
+
+function test($a, $b, $cond): void
 {
 	if (
 		in_array($a, [1, 2])
@@ -14,10 +20,13 @@ function test($a, $b): void
 	} elseif (
 		$a == 3) {
 		assertType('mixed', $b);
+
+		$b === true;
+		$result = $b === true && $cond;
 	}
 }
 
-function testStrictElseIf($a, $b): void
+function testStrictElseIf($a, $b, $cond): void
 {
 	if (
 		in_array($a, [1, 2])
@@ -27,10 +36,13 @@ function testStrictElseIf($a, $b): void
 	} elseif (
 		$a === 3) {
 		assertType('mixed', $b);
+
+		$b === true;
+		$result = $b === true && $cond;
 	}
 }
 
-function testPlainElse($a, $b): void
+function testPlainElse($a, $b, $cond): void
 {
 	if (
 		in_array($a, [1, 2])
@@ -39,12 +51,15 @@ function testPlainElse($a, $b): void
 
 	} else {
 		assertType('mixed', $b);
+
+		$b === true;
+		$result = $b === true && $cond;
 	}
 }
 
 // Same degenerate-condition pattern without in_array: a loose `==` whose
 // falsey narrowing of $a is a no-op on a `mixed` type.
-function testLooseEqual($a, $b): void
+function testLooseEqual($a, $b, $cond): void
 {
 	if (
 		($a == 1 || $a == 2)
@@ -53,6 +68,9 @@ function testLooseEqual($a, $b): void
 
 	} elseif ($a == 3) {
 		assertType('mixed', $b);
+
+		$b === true;
+		$result = $b === true && $cond;
 	}
 }
 

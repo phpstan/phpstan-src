@@ -41,9 +41,13 @@ class HelloWorld
 	public function literalHaystack(string $full, string $subset, string $partial): void
 	{
 		assertType('true', in_array($full, ['a', 'b', 'c'], true));
+		assertType('bool', in_array($full, ['a', 'b', 'c'], false)); // non-strict
 		assertType('true', in_array($subset, ['a', 'b', 'c'], true));
 		assertType('bool', in_array($partial, ['a', 'b', 'c'], true));
 		assertType('false', in_array($subset, ['x', 'y'], true));
+
+		$fullOrEmpty = rand(0,1) ? $full : [];
+		assertType('bool', in_array($fullOrEmpty, ['a', 'b', 'c'], true));
 	}
 
 	/**

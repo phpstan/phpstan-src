@@ -177,7 +177,7 @@ final class UnusedPrivatePropertyRule implements Rule
 				if ($fetch->class instanceof Node\Name) {
 					$fetchedOnType = $usageScope->resolveTypeByName($fetch->class);
 				} else {
-					$fetchedOnType = $usageScope->getType($fetch->class);
+					$fetchedOnType = $usageScope->getType($fetch->class)->getObjectTypeOrClassStringObjectType();
 				}
 			}
 

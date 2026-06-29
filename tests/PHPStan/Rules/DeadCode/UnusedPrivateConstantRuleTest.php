@@ -100,4 +100,9 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14880(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14880-constant.php'], []);
+	}
+
 }

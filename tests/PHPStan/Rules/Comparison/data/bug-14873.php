@@ -27,4 +27,24 @@ class HelloWorld
 		}
 	}
 
+	/**
+	 * A general (non-constant) array does not guarantee that any particular value
+	 * is present, so a subset needle must not be reported as always-true - even
+	 * when every finite needle value appears in the array's value type.
+	 *
+	 * @param 1|2 $needle
+	 * @param array<int, 1|2> $maybeEmpty
+	 * @param non-empty-array<int, 1|2> $nonEmptyMulti
+	 */
+	public function generalArrays(int $needle, array $maybeEmpty, array $nonEmptyMulti): void
+	{
+		if (in_array($needle, $maybeEmpty, true)) {
+			echo 'maybeEmpty';
+		}
+
+		if (in_array($needle, $nonEmptyMulti, true)) {
+			echo 'nonEmptyMulti';
+		}
+	}
+
 }

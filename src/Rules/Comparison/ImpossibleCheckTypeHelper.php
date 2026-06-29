@@ -194,22 +194,22 @@ final class ImpossibleCheckTypeHelper
 
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								$guaranteedValueTypes = [];
-								if ($haystackArrayType instanceof ConstantArrayType) {
-									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
-										if ($haystackArrayType->isOptionalKey($i)) {
-											continue;
-										}
-
-										$haystackArrayValueFiniteTypes = $haystackArrayValueType->getFiniteTypes();
-										if (count($haystackArrayValueFiniteTypes) !== 1) {
-											continue;
-										}
-
-										$guaranteedValueTypes[] = $haystackArrayValueFiniteTypes[0];
-									}
-								} else {
+								if (!($haystackArrayType instanceof ConstantArrayType)) {
 									// A general array cannot guarantee any specific value is present.
 									return null;
+								}
+
+								foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
+									if ($haystackArrayType->isOptionalKey($i)) {
+										continue;
+									}
+
+									$haystackArrayValueFiniteTypes = $haystackArrayValueType->getFiniteTypes();
+									if (count($haystackArrayValueFiniteTypes) !== 1) {
+										continue;
+									}
+
+									$guaranteedValueTypes[] = $haystackArrayValueFiniteTypes[0];
 								}
 
 								// in_array() is only guaranteed true when every possible needle value

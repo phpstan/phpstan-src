@@ -346,17 +346,14 @@ jobs:
           php -d pcov.enabled=1 tests/vendor/bin/paratest \
             --passthru-php="'-d' 'pcov.enabled=1'" \
             --coverage-xml=tmp/coverage/coverage-xml \
-            --coverage-cobertura=tmp/coverage/cobertura.xml \
+            --coverage-clover=tmp/coverage/clover.xml \
             --log-junit=tmp/coverage/junit.xml \
             --exclude-source-from-xml-coverage
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-reports
-          path: |
-            tmp/coverage/coverage-xml
-            tmp/coverage/cobertura.xml
-            tmp/coverage/junit.xml
+          path: tmp/coverage
 
       - name: "Run infection"
         run: |

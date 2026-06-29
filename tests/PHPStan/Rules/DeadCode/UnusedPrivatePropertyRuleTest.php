@@ -466,7 +466,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14703(): void
 	{
 		$this->alwaysWrittenTags = [];

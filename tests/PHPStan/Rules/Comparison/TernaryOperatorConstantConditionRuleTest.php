@@ -106,7 +106,7 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7580.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11949(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

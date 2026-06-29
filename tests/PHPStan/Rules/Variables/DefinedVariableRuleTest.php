@@ -757,7 +757,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/variable-nullsafe-isset.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug7291(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

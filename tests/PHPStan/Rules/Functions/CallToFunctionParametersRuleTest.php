@@ -1605,7 +1605,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/benevolent-superglobal-keys.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testFileParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/file.php'], [
@@ -1620,7 +1620,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testFlockParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/flock.php'], [
@@ -2831,7 +2831,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14312b.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheck(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-parameter-check.php'], [
@@ -2890,13 +2890,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
+	#[RequiresPhp('>= 8.4.0')]
 	public function testBug14716(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14716.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12850(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12850.php'], [

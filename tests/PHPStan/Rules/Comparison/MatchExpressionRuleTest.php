@@ -513,7 +513,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testInTrait(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

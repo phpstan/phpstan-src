@@ -183,7 +183,7 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheckCallUserFunc(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-parameter-check-call-user-func.php'], [

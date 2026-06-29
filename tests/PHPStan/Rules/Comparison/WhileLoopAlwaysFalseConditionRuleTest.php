@@ -50,7 +50,7 @@ class WhileLoopAlwaysFalseConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testInTrait(): void
 	{
 		$this->analyse([__DIR__ . '/data/while-false-in-trait.php'], [

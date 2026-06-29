@@ -1017,7 +1017,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheckStatic(): void
 	{
 		$this->checkThisOnly = false;

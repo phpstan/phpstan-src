@@ -17,7 +17,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
-use function array_keys;
 use function count;
 use function is_string;
 
@@ -201,10 +200,12 @@ final class ConditionalExpressionHolderHelper
 				}
 
 				$conditions = $conditionExpressionTypes;
-				foreach (array_keys($conditions) as $conditionExprString) {
+				$droppedSelfCondition = null;
+				foreach ($conditions as $conditionExprString => $condition) {
 					if ($conditionExprString !== $exprString) {
 						continue;
 					}
+					$droppedSelfCondition = $condition;
 					unset($conditions[$conditionExprString]);
 				}
 
@@ -217,6 +218,16 @@ final class ConditionalExpressionHolderHelper
 				$holderType = $holdersFromSureTypes
 					? TypeCombinator::intersect($targetType, $type)
 					: TypeCombinator::remove($targetType, $type);
+
+				// The dropped self-condition narrowed the target; without it the
+				// holder must allow the values it excluded, or it over-narrows when
+				// only the remaining conditions hold. So union back the complement.
+				if ($droppedSelfCondition !== null) {
+					$complement = TypeCombinator::remove($scope->getType($expr), $droppedSelfCondition->getType());
+					if (!$complement instanceof NeverType) {
+						$holderType = TypeCombinator::union($holderType, $complement);
+					}
+				}
 
 				// These boolean-decomposition holders only refine an expression's
 				// type in a future scope; they must never collapse it to never and

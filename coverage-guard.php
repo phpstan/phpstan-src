@@ -10,6 +10,10 @@ use ShipMonk\CoverageGuard\Rule\EnforceCoverageForMethodsRule;
 
 $config = new Config();
 
+// Replace prefix of absolute paths in coverage files
+// Handy if you want to reuse clover.xml generated in CI
+$config->addCoveragePathMapping('/home/runner/work/phpstan-src/phpstan-src', __DIR__);
+
 // The coverage report is produced by PHPUnit/paratest on the same runner that
 // runs the gate, so the absolute file paths inside clover.xml already live
 // under this directory — git root is enough, no path mapping needed.

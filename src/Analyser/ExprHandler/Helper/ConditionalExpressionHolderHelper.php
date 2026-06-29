@@ -172,9 +172,15 @@ final class ConditionalExpressionHolderHelper
 				continue;
 			}
 
+			$scopeType = $scope->getType($expr);
+			$conditionType = TypeCombinator::intersect($scopeType, $type);
+			if ($scopeType->equals($conditionType)) {
+				continue;
+			}
+
 			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
 				$expr,
-				TypeCombinator::intersect($scope->getType($expr), $type),
+				$conditionType,
 			);
 		}
 

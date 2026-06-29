@@ -95,10 +95,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			}
 
 			if ($types !== null) {
-				// The root expression of a single item's comparison must not stand in
-				// for the whole in_array() call once multiple items are combined,
-				// otherwise an arbitrary "$needle === $oneItem" comparison would be
-				// treated as the call's result.
 				if ($combinedMultipleItems) {
 					$types = $types->setRootExpr(null);
 				}

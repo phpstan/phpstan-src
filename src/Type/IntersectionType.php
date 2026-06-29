@@ -41,6 +41,7 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -1215,7 +1216,31 @@ class IntersectionType implements CompoundType
 
 	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->searchArray($needleType, $strict));
+		$result = $this->intersectTypes(static fn (Type $type): Type => $type->searchArray($needleType, $strict));
+
+		if (
+			$strict !== null
+			&& $strict->yes()
+			&& $this->isIterableAtLeastOnce()->yes()
+		) {
+			$valueFiniteTypes = $this->getIterableValueType()->getFiniteTypes();
+			$needleFiniteTypes = $needleType->getFiniteTypes();
+			if (count($valueFiniteTypes) === 1 && $needleFiniteTypes !== []) {
+				$allFound = true;
+				foreach ($needleFiniteTypes as $needleFiniteType) {
+					if (!$valueFiniteTypes[0]->isSuperTypeOf($needleFiniteType)->yes()) {
+						$allFound = false;
+						break;
+					}
+				}
+
+				if ($allFound) {
+					$result = TypeCombinator::remove($result, new ConstantBooleanType(false));
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	public function shiftArray(): Type

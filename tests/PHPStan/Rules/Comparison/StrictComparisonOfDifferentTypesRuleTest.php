@@ -1244,6 +1244,29 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14791.php'], []);
 	}
 
+	public function testBug14877(): void
+	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
+		$this->analyse([__DIR__ . '/data/bug-14877.php'], [
+			[
+				'Strict comparison using !== between 0|1|2 and false will always evaluate to true.',
+				17,
+				$tipText,
+			],
+			[
+				'Strict comparison using !== between 0|1 and false will always evaluate to true.',
+				21,
+				$tipText,
+			],
+			[
+				'Strict comparison using !== between int and false will always evaluate to true.',
+				50,
+				$tipText,
+			],
+		]);
+	}
+
 	public function testBug14847(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14847.php'], [

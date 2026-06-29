@@ -39,6 +39,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 use function strtolower;
 use function strtoupper;
@@ -283,14 +284,31 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
 		$strict ??= TrinaryLogic::createMaybe();
+
+		$found = false;
+		$valueFiniteTypes = $this->valueType->getFiniteTypes();
+		$needleFiniteTypes = $needleType->getFiniteTypes();
+		if (count($valueFiniteTypes) === 1 && $needleFiniteTypes !== []) {
+			$found = true;
+			foreach ($needleFiniteTypes as $needleFiniteType) {
+				if (!$valueFiniteTypes[0]->isSuperTypeOf($needleFiniteType)->yes()) {
+					$found = false;
+					break;
+				}
+			}
+		}
+
 		if (
-			$needleType instanceof ConstantScalarType && $this->valueType instanceof ConstantScalarType
-			&& (
-				$needleType->getValue() === $this->valueType->getValue()
-				// @phpstan-ignore equal.notAllowed
-				|| ($strict->no() && $needleType->getValue() == $this->valueType->getValue()) // phpcs:ignore
-			)
+			!$found
+			&& $strict->no()
+			&& $needleType instanceof ConstantScalarType && $this->valueType instanceof ConstantScalarType
+			// @phpstan-ignore equal.notAllowed
+			&& $needleType->getValue() == $this->valueType->getValue() // phpcs:ignore
 		) {
+			$found = true;
+		}
+
+		if ($found) {
 			return new UnionType([
 				new IntegerType(),
 				new StringType(),

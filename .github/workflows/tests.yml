@@ -278,6 +278,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
+          - "8.3"
           - "8.4"
         operating-system: [ubuntu-latest]
 
@@ -311,8 +312,8 @@ jobs:
       - name: "Upgrade PHPUnit with Paratest to speedup coverage generation"
         shell: bash
         run: |
-          composer require --dev phpunit/phpunit:^13 brianium/paratest:^7.16 symfony/process:^7 symfony/string:^7 symfony/console:^7 --update-with-dependencies --ignore-platform-reqs --working-dir=tests
-          composer require --dev phpunit/phpunit:^13 sebastian/diff --update-with-dependencies --ignore-platform-reqs
+          composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16 symfony/process:^7 symfony/string:^7 symfony/console:^7 --update-with-dependencies --ignore-platform-reqs --working-dir=tests
+          composer require --dev phpunit/phpunit:^12 sebastian/diff --update-with-dependencies --ignore-platform-reqs
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:

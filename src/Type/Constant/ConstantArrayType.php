@@ -1675,6 +1675,10 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		if (!$hasIdenticalValue && $strict->yes() && $this->needleIsGuaranteedToBeFound($needleType)) {
+			$hasIdenticalValue = true;
+		}
+
 		if (count($matches) > 0) {
 			if ($hasIdenticalValue) {
 				return TypeCombinator::union(...$matches);
@@ -1684,6 +1688,48 @@ class ConstantArrayType implements Type
 		}
 
 		return new ConstantBooleanType(false);
+	}
+
+	/**
+	 * Whether every possible value of a finite needle type is guaranteed to be
+	 * present under a non-optional key, so a strict search always finds it.
+	 */
+	private function needleIsGuaranteedToBeFound(Type $needleType): bool
+	{
+		$needleFiniteTypes = $needleType->getFiniteTypes();
+		if ($needleFiniteTypes === []) {
+			return false;
+		}
+
+		$guaranteedValueTypes = [];
+		foreach ($this->valueTypes as $index => $valueType) {
+			if ($this->isOptionalKey($index)) {
+				continue;
+			}
+
+			$valueFiniteTypes = $valueType->getFiniteTypes();
+			if (count($valueFiniteTypes) !== 1) {
+				continue;
+			}
+
+			$guaranteedValueTypes[] = $valueFiniteTypes[0];
+		}
+
+		foreach ($needleFiniteTypes as $needleFiniteType) {
+			$found = false;
+			foreach ($guaranteedValueTypes as $guaranteedValueType) {
+				if ($guaranteedValueType->isSuperTypeOf($needleFiniteType)->yes()) {
+					$found = true;
+					break;
+				}
+			}
+
+			if (!$found) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public function shiftArray(): Type

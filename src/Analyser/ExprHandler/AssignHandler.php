@@ -48,8 +48,10 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\UsedAsStringNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Parser\ExprUsedAsStringVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -344,6 +346,10 @@ final class AssignHandler implements ExprHandler
 		);
 		$scope = $result->getScope();
 
+		if ($expr instanceof Assign) {
+			$this->emitUsedAsStringNode($nodeScopeResolver, $scope, $storage, $expr, $nodeCallback);
+		}
+
 		if (
 			$expr instanceof AssignRef
 			&& $expr->var instanceof Variable
@@ -389,6 +395,111 @@ final class AssignHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * Emits a {@see UsedAsStringNode} for the assigned value when it lands in a
+	 * string slot: a string-valued variable assignment or an assignment to a
+	 * native property whose type allows a string.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function emitUsedAsStringNode(
+		NodeScopeResolver $nodeScopeResolver,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		Assign $expr,
+		callable $nodeCallback,
+	): void
+	{
+		if (ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($expr->expr)) {
+			return;
+		}
+
+		if (!$this->isAssignToStringSlot($scope, $expr->var, $expr->expr)) {
+			return;
+		}
+
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new UsedAsStringNode($expr->expr), $scope, $storage);
+	}
+
+	/**
+	 * Whether the assigned value lands in a string slot: a string-valued variable
+	 * assignment, or an assignment to a native property whose declared type allows a
+	 * string (a plain `string` or a union that contains `string`, e.g. `string|int`)
+	 * when the assigned value can actually be coerced to a string in the current
+	 * typing mode. A union without any `string` member (e.g. `int|float`) is not a
+	 * string slot, and a value that cannot be coerced to a string (e.g. a
+	 * non-`Stringable` object) does not land in the slot as a string.
+	 */
+	private function isAssignToStringSlot(MutatingScope $scope, Expr $var, Expr $assignedExpr): bool
+	{
+		if ($var instanceof Variable) {
+			return $scope->getType($assignedExpr)->isString()->yes();
+		}
+
+		$slotType = $this->getAssignTargetPropertyNativeType($scope, $var);
+		if ($slotType === null || !$this->containsString($slotType)) {
+			return false;
+		}
+
+		// Only fire when the assigned value can actually be coerced to a string in
+		// the current (strict/weak) typing mode: a non-`Stringable` object assigned
+		// to a `string|int` property is not used as a string, while a `Stringable`
+		// assigned to it in weak mode is.
+		$coercedAssignedType = $scope->getType($assignedExpr)->toCoercedArgumentType($scope->isDeclareStrictTypes());
+
+		return $this->containsString($coercedAssignedType);
+	}
+
+	/**
+	 * Whether the type is a plain `string` or a union with at least one `string`
+	 * member (e.g. `string|int`).
+	 */
+	private function containsString(Type $type): bool
+	{
+		foreach (TypeUtils::flattenTypes($type) as $innerType) {
+			if ($innerType->isString()->yes()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function getAssignTargetPropertyNativeType(MutatingScope $scope, Expr $var): ?Type
+	{
+		if ($var instanceof PropertyFetch) {
+			if (!$var->name instanceof Node\Identifier) {
+				return null;
+			}
+			$propertyName = $var->name->toString();
+			$holderType = $scope->getType($var->var);
+			if (!$holderType->hasInstanceProperty($propertyName)->yes()) {
+				return null;
+			}
+			$property = $holderType->getInstanceProperty($propertyName, $scope);
+
+			return $property->hasNativeType() ? $property->getNativeType() : null;
+		}
+
+		if ($var instanceof StaticPropertyFetch) {
+			if (!$var->name instanceof Node\VarLikeIdentifier) {
+				return null;
+			}
+			$propertyName = $var->name->toString();
+			$holderType = $var->class instanceof Name
+				? $scope->resolveTypeByName($var->class)
+				: $scope->getType($var->class);
+			$property = $scope->getStaticPropertyReflection($holderType, $propertyName);
+			if ($property === null || !$property->hasNativeType()) {
+				return null;
+			}
+
+			return $property->getNativeType();
+		}
+
+		return null;
 	}
 
 	/**

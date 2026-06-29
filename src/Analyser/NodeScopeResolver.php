@@ -107,10 +107,12 @@ use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Node\UsedAsStringNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
+use PHPStan\Parser\ExprUsedAsStringVisitor;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
@@ -1241,6 +1243,14 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $prop, $scope, $storage);
 				if ($prop->default !== null) {
 					$this->processExprNode($stmt, $prop->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+
+					if (
+						$nativePropertyType !== null
+						&& $nativePropertyType->isString()->yes()
+						&& !ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($prop->default)
+					) {
+						$this->callNodeCallback($nodeCallback, new UsedAsStringNode($prop->default), $scope, $storage);
+					}
 				}
 
 				if (!$scope->isInClass()) {
@@ -2485,6 +2495,7 @@ class NodeScopeResolver
 			$impurePoints = [
 				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
+			$this->callNodeCallback($nodeCallback, new UsedAsStringNode(new Node\Scalar\String_($stmt->value, $stmt->getAttributes())), $scope, $storage);
 		} elseif ($stmt instanceof Node\Stmt\Block) {
 			$result = $this->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 			if ($this->polluteScopeWithBlock) {
@@ -2767,6 +2778,11 @@ class NodeScopeResolver
 		}
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
+
+		if ($expr->getAttribute(ExprUsedAsStringVisitor::ATTRIBUTE_NAME) === true) {
+			$usedAsStringScope = $context->isDeep() ? $scope->exitFirstLevelStatements() : $scope;
+			$this->callNodeCallback($nodeCallback, new UsedAsStringNode($expr), $usedAsStringScope, $storage);
+		}
 
 		/** @var ExprHandler<Expr> $exprHandler */
 		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
@@ -3283,6 +3299,35 @@ class NodeScopeResolver
 		}
 
 		$this->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+
+		$nativeParameterType = $param->type !== null
+			? ParserNodeTypeToPHPStanType::resolve($param->type, $scope->isInClass() ? $scope->getClassReflection() : null)
+			: null;
+		if (
+			$nativeParameterType === null
+			|| !$nativeParameterType->isString()->yes()
+			|| ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($param->default)
+		) {
+			return;
+		}
+
+		$this->callNodeCallback($nodeCallback, new UsedAsStringNode($param->default), $scope, $storage);
+	}
+
+	/**
+	 * Whether the native type is a string slot: a plain `string` or a union that
+	 * contains a `string` member (e.g. `string|int`). Plain `mixed` is not a string
+	 * slot, so arguments to untyped or PHPDoc-only `@param string` parameters do not fire.
+	 */
+	private function isStringSlotType(Type $type): bool
+	{
+		foreach (TypeUtils::flattenTypes($type) as $slotMemberType) {
+			if ($slotMemberType->isString()->yes()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -3722,6 +3767,17 @@ class NodeScopeResolver
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				// Closures and arrow functions expose their parameters as NativeParameterReflection
+				// (not ExtendedParameterReflection), so $parameterNativeType is null for them - their
+				// declared type already is the native type.
+				$argStringSlotType = $parameterNativeType ?? ($parameter instanceof NativeParameterReflection ? $parameter->getType() : null);
+				if (
+					$argStringSlotType !== null
+					&& $this->isStringSlotType($argStringSlotType)
+					&& !ExprUsedAsStringVisitor::isAlreadyUsedAsStringSite($arg->value)
+				) {
+					$this->callNodeCallback($nodeCallback, new UsedAsStringNode($arg->value), $scopeToPass, $storage);
+				}
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();

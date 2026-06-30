@@ -274,4 +274,16 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14469.php'], []);
 	}
 
+	public function testBug14884(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-14884.php'], []);
+	}
+
+	public function testBug14884Function(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-14884-function.php'], []);
+	}
+
 }

@@ -3851,6 +3851,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
 			}
+			// A call expression's value is established by actually invoking it, not
+			// by the types of other expressions. Making it a conditional-holder
+			// target would let an unrelated narrowing of a guard (e.g. an argument
+			// asserted by a different method's @phpstan-assert-if-true) silently
+			// re-derive the remembered call result, producing false "always
+			// true/false" reports.
+			if ($holder->getExpr() instanceof Expr\CallLike) {
+				continue;
+			}
 			if (
 				array_key_exists($exprString, $mergedExpressionTypes)
 				&& $mergedExpressionTypes[$exprString]->equals($holder)

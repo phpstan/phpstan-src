@@ -142,6 +142,8 @@ class GenericClassStringType extends ClassStringType
 			return $isSuperType;
 		} elseif ($type instanceof self) {
 			return $this->type->isSuperTypeOf($type->type);
+		} elseif ($type instanceof ClassStringType) {
+			return $this->type->isSuperTypeOf(new ObjectWithoutClassType());
 		} elseif ($type instanceof StringType) {
 			return IsSuperTypeOfResult::createMaybe();
 		}

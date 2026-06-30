@@ -156,6 +156,21 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 				new ConstantStringType(IntegerType::class),
 				TrinaryLogic::createMaybe(),
 			],
+			19 => [
+				new GenericClassStringType(new ObjectWithoutClassType()),
+				new ClassStringType(),
+				TrinaryLogic::createYes(),
+			],
+			20 => [
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new ObjectWithoutClassType(),
+					TemplateTypeVariance::createInvariant(),
+				)),
+				new ClassStringType(),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 

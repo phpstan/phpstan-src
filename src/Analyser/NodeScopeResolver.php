@@ -3669,7 +3669,14 @@ class NodeScopeResolver
 
 				$scope = $closureResult->getScope();
 				$deferredByRefClosureResults[] = $closureResult;
-				$invalidateExpressions = $closureResult->getInvalidateExpressions();
+				// Prefer the invalidate expressions collected on the ClosureType: those
+				// are gathered with the closure's pending fibers flushed, so they also
+				// cover writes that go through a parked fiber (e.g. $this->prop[] = ...),
+				// unlike $closureResult->getInvalidateExpressions().
+				$closureExprType = $scope->getType($arg->value);
+				$invalidateExpressions = $closureExprType instanceof ClosureType
+					? $closureExprType->getInvalidateExpressions()
+					: $closureResult->getInvalidateExpressions();
 				if ($restoreThisScope !== null) {
 					$nodeFinder = new NodeFinder();
 					$cb = static fn ($expr) => $expr instanceof Variable && $expr->name === 'this';
@@ -3685,7 +3692,7 @@ class NodeScopeResolver
 					$scope = $scope->restoreThis($restoreThisScope);
 				}
 
-				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+				if ($this->shouldInvalidateCallbackExpressions($parameter)) {
 					$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
 				}
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
@@ -3714,6 +3721,12 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
 				}
+				if ($this->shouldInvalidateCallbackExpressions($parameter)) {
+					$arrowFunctionType = $scope->getType($arg->value);
+					if ($arrowFunctionType instanceof ClosureType) {
+						$deferredInvalidateExpressions[] = [$arrowFunctionType->getInvalidateExpressions(), $arrowFunctionType->getUsedVariables()];
+					}
+				}
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
 			} else {
 				$exprType = $scope->getType($arg->value);
@@ -3734,8 +3747,10 @@ class NodeScopeResolver
 				if ($exprType->isCallable()->yes()) {
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
-						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+						if ($this->shouldInvalidateCallbackExpressions($parameter)) {
 							$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
+						}
+						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
 								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
@@ -3878,6 +3893,21 @@ class NodeScopeResolver
 		}
 
 		return $callCallbackImmediately;
+	}
+
+	/**
+	 * A callback passed as an argument escapes the current scope and may be invoked,
+	 * so its mutations have to invalidate the outer scope - unless the parameter is
+	 * explicitly marked as later-invoked, in which case the callback only runs after
+	 * the current function returns and its mutations are not visible here yet.
+	 */
+	private function shouldInvalidateCallbackExpressions(?ParameterReflection $parameter): bool
+	{
+		if ($parameter instanceof ExtendedParameterReflection) {
+			return !$parameter->isImmediatelyInvokedCallable()->no();
+		}
+
+		return true;
 	}
 
 	/**

@@ -685,6 +685,11 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14499.php'], []);
 	}
 
+	public function testBug14887(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14887.php'], []);
+	}
+
 	public function testInstantiationWithNonObjectType(): void
 	{
 		$this->analyse([__DIR__ . '/data/instantiation-non-object.php'], [

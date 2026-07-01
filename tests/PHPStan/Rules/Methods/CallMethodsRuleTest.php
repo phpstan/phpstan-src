@@ -4245,6 +4245,14 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #2 $value of method Bug14893\HelloWorld<DateTimeInterface>::offsetSet() expects Closure(Bug14893\HelloWorld<DateTimeInterface>): DateTimeInterface, static-Closure(mixed): stdClass given.',
 				51,
 			],
+			[
+				'Parameter #1 $value of method Bug14893\ArrayCase<T of object>::acceptsT() expects T of object, array<T of object>|T of object given.',
+				72,
+			],
+			[
+				'Parameter #1 $value of method Bug14893\ClassStringCase<T of object>::acceptsClassString() expects class-string<T of object>, string given.',
+				101,
+			],
 		]);
 	}
 

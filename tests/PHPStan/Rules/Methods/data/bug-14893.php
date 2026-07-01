@@ -50,3 +50,56 @@ function callWithMismatchedClosure(HelloWorld $h): void
 	// Closure returning an unrelated type is not a subtype - rejected.
 	$h->offsetSet(0, static fn ($self): \stdClass => new \stdClass());
 }
+
+/**
+ * @template T of object
+ */
+class ArrayCase
+{
+	/**
+	 * @param T $value
+	 */
+	public function acceptsT($value): void
+	{
+	}
+
+	/**
+	 * @param T|array<T> $value
+	 */
+	public function passUnion($value): void
+	{
+		// array<T> is genuinely not T - must still be rejected, the fix does not over-accept.
+		$this->acceptsT($value);
+	}
+}
+
+/**
+ * @template T of object
+ */
+class ClassStringCase
+{
+	/**
+	 * @param class-string<T> $value
+	 */
+	public function acceptsClassString(string $value): void
+	{
+	}
+
+	/**
+	 * @param non-empty-string $value
+	 */
+	public function acceptsNonEmptyString(string $value): void
+	{
+	}
+
+	/**
+	 * @param non-empty-string|class-string<T> $value
+	 */
+	public function passUnion(string $value): void
+	{
+		// non-empty-string is not a class-string<T> - rejected.
+		$this->acceptsClassString($value);
+		// a class-string is always a non-empty-string - accepted.
+		$this->acceptsNonEmptyString($value);
+	}
+}

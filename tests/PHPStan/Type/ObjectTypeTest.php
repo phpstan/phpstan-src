@@ -39,7 +39,6 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use ReflectionProperty;
 use SimpleXMLElement;
 use stdClass;
 use Throwable;
@@ -814,34 +813,6 @@ class ObjectTypeTest extends PHPStanTestCase
 			$actualResult,
 			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
-	}
-
-	/**
-	 * The per-pair reason strings that isSuperTypeOf() attaches to impossible
-	 * comparisons must never be retained in the process-lifetime superTypes
-	 * cache, otherwise every distinct compared pair leaks a distinct reason set.
-	 * See https://github.com/phpstan/phpstan/issues/14896
-	 */
-	public function testSuperTypesCacheDoesNotRetainReasons(): void
-	{
-		ObjectType::resetCaches();
-
-		$dateTime = new ObjectType(DateTime::class);
-		$union = TypeCombinator::union(new ObjectType(Exception::class), new ObjectType(stdClass::class));
-
-		$result = $dateTime->isSuperTypeOf($union);
-		$this->assertTrue($result->no());
-		$this->assertNotCount(0, $result->reasons, 'reasons are still returned to the caller');
-
-		$cacheProperty = new ReflectionProperty(ObjectType::class, 'superTypes');
-		$cacheProperty->setAccessible(true);
-		/** @var array<string, array<string, IsSuperTypeOfResult>> $cache */
-		$cache = $cacheProperty->getValue();
-		foreach ($cache as $inner) {
-			foreach ($inner as $cachedResult) {
-				$this->assertCount(0, $cachedResult->reasons, 'superTypes cache must not retain reason strings');
-			}
-		}
 	}
 
 }

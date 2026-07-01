@@ -12,11 +12,18 @@ function foobar(array $input): void
 	foreach ($input as $name => $value) {
 		switch ($name) {
 			case 'foo':
+				assertType("'foo'", $name);
 				break;
 			case 'bar' === $name && is_array($value):
+				assertType("'bar'", $name);
 				assertType('array<mixed, mixed>', $value);
 				break;
+			case 'baz' === $name || is_bool($value):
+				assertType("string", $name);
+				assertType('array<mixed>|bool|string', $value);
+				break;
 			case is_string($value):
+				assertType('non-falsy-string', $name);
 				assertType('string', $value);
 				break;
 		}

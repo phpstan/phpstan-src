@@ -2029,15 +2029,10 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $caseResult->getImpurePoints());
+
 					$caseCondType = $caseResult->getScope()->getType($caseNode->cond);
 					$switchCondType = $scope->getType($stmt->cond);
-					// When the case condition is a boolean expression (e.g. `is_array($value)`)
-					// and the switch subject is not itself a boolean, `$subject == $caseCond`
-					// cannot tell us whether $caseCond is truthy, so `filterByTruthyValue` alone
-					// would drop the side-effect narrowing performed inside the case condition.
-					// Fall back to the case condition's truthy scope in that situation.
-					// For boolean subjects (`switch (true)` / `switch (false)`), the `==` comparison
-					// is precise, so the plain scope is used to keep those cases correct.
+
 					$scopeForCaseBranch = $caseCondType->isBoolean()->yes() && !$switchCondType->isBoolean()->yes()
 						? $caseResult->getTruthyScope()
 						: $caseResult->getScope();

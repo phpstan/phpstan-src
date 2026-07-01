@@ -41,6 +41,7 @@ class CallUserFuncRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: true,
 			),
 		);
 	}

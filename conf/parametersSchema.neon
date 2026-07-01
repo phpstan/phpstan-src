@@ -51,6 +51,7 @@ parametersSchema:
 		checkDynamicConstantNameValues: bool()
 		unusedLabel: bool()
 		newOnNonObject: bool()
+		reportMixedTernaryAndCoalesce: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

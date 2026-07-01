@@ -29,6 +29,8 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	private bool $checkImplicitMixed = false;
 
+	private bool $reportMixedTernaryAndCoalesce = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -70,6 +72,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: $this->reportMixedTernaryAndCoalesce,
 			),
 		);
 	}
@@ -1055,6 +1058,23 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/class-exists-on-static-call.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11281(): void
+	{
+		$this->checkThisOnly = false;
+		$this->reportMixedTernaryAndCoalesce = true;
+		$this->analyse([__DIR__ . '/data/bug-11281-static.php'], [
+			[
+				'Parameter #1 $i of static method Bug11281StaticMethods\Foo::takesInt() expects int, string given.',
+				21,
+			],
+			[
+				'Parameter #1 $i of static method Bug11281StaticMethods\Foo::takesInt() expects int, string given.',
+				29,
+			],
+		]);
 	}
 
 }

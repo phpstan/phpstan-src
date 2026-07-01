@@ -26,6 +26,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -35,6 +36,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
 use function array_last;
+use function array_map;
 use function array_merge;
 use function count;
 use function implode;
@@ -63,6 +65,8 @@ final class FunctionCallParametersCheck
 		private bool $checkExtraArguments,
 		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
+		#[AutowiredParameter(ref: '%featureToggles.reportMixedTernaryAndCoalesce%')]
+		private bool $reportMixedTernaryAndCoalesce,
 	)
 	{
 	}
@@ -412,6 +416,29 @@ final class FunctionCallParametersCheck
 							->line($argumentLine)
 							->acceptsReasonsTip($accepts->reasons)
 							->build();
+					} elseif (
+						$this->reportMixedTernaryAndCoalesce
+						&& ($argumentValue instanceof Expr\Ternary || $argumentValue instanceof Expr\BinaryOp\Coalesce)
+						&& $argumentValueType instanceof MixedType
+					) {
+						foreach ($this->getInlineBranchTypes($argumentValue, $scope) as $branchType) {
+							$branchAccepts = $this->ruleLevelHelper->accepts($parameterType, $branchType, $isStrictTypes);
+							if ($branchAccepts->result) {
+								continue;
+							}
+
+							$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $branchType);
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$wrongArgumentTypeMessage,
+								$this->describeParameter($parameter, $argumentName ?? $i + 1),
+								$parameterType->describe($verbosityLevel),
+								$branchType->describe($verbosityLevel),
+							))
+								->identifier('argument.type')
+								->line($argumentLine)
+								->acceptsReasonsTip($branchAccepts->reasons)
+								->build();
+						}
 					}
 				}
 
@@ -799,6 +826,52 @@ final class FunctionCallParametersCheck
 		}
 
 		return implode(' ', $parts);
+	}
+
+	/**
+	 * Collects the leaf types an inline ternary (`? :`, `?:`) or null-coalesce (`??`)
+	 * expression can produce, each resolved in the scope narrowed by the controlling
+	 * condition. Nested ternaries and coalesces (including mixed nesting) are flattened
+	 * so every value the expression can produce is represented by its own
+	 * (un-normalized) type. Plain leaf expressions resolve to their scope type.
+	 *
+	 * The ternary else branch is narrowed by the negated condition (`filterByTruthyValue`
+	 * of `!cond`) rather than `filterByFalseyValue($cond)`, mirroring how
+	 * TernaryHandler::specifyTypes models the else branch. Some conditions (e.g.
+	 * `is_resource()`, whose stub only declares `@phpstan-assert-if-true`) narrow
+	 * asymmetrically, so the falsey scope would otherwise diverge from the type the
+	 * ternary actually produces and report spurious branch types.
+	 *
+	 * The coalesce left operand contributes its non-null type, since `$a ?? $b` only
+	 * yields `$a` when it is set and not null.
+	 *
+	 * @return list<Type>
+	 */
+	private function getInlineBranchTypes(Expr $expr, Scope $scope): array
+	{
+		if ($expr instanceof Expr\Ternary) {
+			$truthyScope = $scope->filterByTruthyValue($expr->cond);
+			$falseyScope = $scope->filterByTruthyValue(new Expr\BooleanNot($expr->cond));
+
+			if ($expr->if === null) {
+				$ifTypes = [TypeCombinator::removeFalsey($truthyScope->getType($expr->cond))];
+			} else {
+				$ifTypes = $this->getInlineBranchTypes($expr->if, $truthyScope);
+			}
+
+			return array_merge($ifTypes, $this->getInlineBranchTypes($expr->else, $falseyScope));
+		}
+
+		if ($expr instanceof Expr\BinaryOp\Coalesce) {
+			$leftTypes = array_map(
+				static fn (Type $type): Type => TypeCombinator::removeNull($type),
+				$this->getInlineBranchTypes($expr->left, $scope),
+			);
+
+			return array_merge($leftTypes, $this->getInlineBranchTypes($expr->right, $scope));
+		}
+
+		return [$scope->getType($expr)];
 	}
 
 	/**

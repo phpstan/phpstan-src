@@ -45,6 +45,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: true,
 			),
 			$ruleLevelHelper,
 			reportMaybes: true,

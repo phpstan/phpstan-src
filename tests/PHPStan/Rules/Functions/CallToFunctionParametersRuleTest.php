@@ -49,6 +49,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				reportMixedTernaryAndCoalesce: true,
 			),
 		);
 	}
@@ -2974,6 +2975,41 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #1 $a of function Bug11494\test expects array{long: string, details: string}|array{short: string}, array{short: \'thing\', extra: \'other\'} given.',
 				18,
 				"• Type #1 from the union: Array does not have offset 'long'.\n• Type #2 from the union: Sealed array shape does not accept array with extra key 'extra'.",
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11281(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11281.php'], [
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				18,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				35,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				42,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				52,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, string given.',
+				70,
+			],
+			[
+				'Parameter #1 $s of function Bug11281Functions\expectsString expects string, string|false given.',
+				99,
+			],
+			[
+				'Parameter #1 $i of function Bug11281Functions\takesInt expects int, bool|int|string given.',
+				118,
 			],
 		]);
 	}

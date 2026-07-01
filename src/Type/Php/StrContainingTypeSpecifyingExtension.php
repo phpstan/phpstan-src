@@ -23,6 +23,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use function array_key_exists;
 use function count;
+use function in_array;
 use function strtolower;
 
 #[AutowiredService]
@@ -44,6 +45,16 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		'mb_stripos' => [0, 1],
 		'mb_strripos' => [0, 1],
 		'mb_strstr' => [0, 1],
+	];
+
+	/**
+	 * Functions whose truthy result proves the needle is a literal substring of
+	 * the haystack, so the call value itself is remembered as `true`.
+	 */
+	private const SUBSTRING_PROVING_FUNCTIONS = [
+		'str_contains',
+		'str_starts_with',
+		'str_ends_with',
 	];
 
 	private TypeSpecifier $typeSpecifier;
@@ -84,7 +95,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 					$accessories[] = new AccessoryNonEmptyStringType();
 				}
 
-				return $this->typeSpecifier->create(
+				$specifiedTypes = $this->typeSpecifier->create(
 					$args[$hackstackArg]->value,
 					new IntersectionType($accessories),
 					$context,
@@ -98,6 +109,14 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 						new Arg($args[$needleArg]->value),
 					]),
 				));
+
+				if (in_array($lowerFunctionName, self::SUBSTRING_PROVING_FUNCTIONS, true)) {
+					$specifiedTypes = $specifiedTypes
+						->unionWith($this->typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $node, $scope))
+						->setRootExpr($specifiedTypes->getRootExpr());
+				}
+
+				return $specifiedTypes;
 			}
 		}
 

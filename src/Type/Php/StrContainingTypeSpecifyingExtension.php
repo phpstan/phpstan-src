@@ -48,7 +48,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	];
 
 	/**
-	 * Functions whose truthy result proves the needle is a literal substring of
+	 * Functions whose bool result proves the needle is a literal substring of
 	 * the haystack, so the call value itself is remembered as `true`.
 	 */
 	private const SUBSTRING_PROVING_FUNCTIONS = [

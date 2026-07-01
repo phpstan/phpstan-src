@@ -37,7 +37,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 {
 
 	/**
-	 * Functions whose truthy result proves the delimiter is a literal substring
+	 * Functions whose bool result proves the delimiter is a literal substring
 	 * of the string, so the result of exploding it has at least two elements.
 	 */
 	private const SUBSTRING_PROVING_FUNCTIONS = [

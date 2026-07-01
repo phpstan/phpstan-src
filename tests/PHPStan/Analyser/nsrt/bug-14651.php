@@ -119,10 +119,27 @@ function unknownLimit(string $s, int $limit): void
 function rangeLimit(string $s, int $bounded, int $unbounded): void
 {
 	if (str_contains($s, "\n")) {
+		assertType('non-falsy-string', $s);
 		// a bounded range yields optional keys up to its maximum
 		assertType('array{0: string, 1: string, 2?: string, 3?: string}', explode("\n", $s, $bounded));
 		// an unbounded range stays a >= 2 list
 		assertType('array{string, string, ...<string>}', explode("\n", $s, $unbounded));
+	} else {
+		assertType('string', $s);
+	}
+
+	assertType('string', $s);
+}
+
+function zeroAndNegativeLimit(string $s): void
+{
+	if (str_contains($s, "\n")) {
+		assertType('non-falsy-string', $s);
+		// limit 0 is treated as 1, so a single non-empty element
+		assertType('non-empty-list<string>', explode("\n", $s, 0));
+		// a negative limit drops trailing components and may empty the result
+		assertType('list<string>', explode("\n", $s, -1));
+		assertType('list<string>', explode("\n", $s, -2));
 	} else {
 		assertType('string', $s);
 	}

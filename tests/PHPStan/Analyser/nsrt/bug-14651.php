@@ -115,8 +115,11 @@ function unknownLimit(string $s, int $limit): void
 /**
  * @param int<2, 4> $bounded
  * @param int<5, max> $unbounded
+ * @param int<-2, 3> $negativeAndPositive
+ * @param int<-5, -1> $alwaysNegative
+ * @param int<min, -1> $unboundedNegative
  */
-function rangeLimit(string $s, int $bounded, int $unbounded): void
+function rangeLimit(string $s, int $bounded, int $unbounded, int $negativeAndPositive, int $alwaysNegative, int $unboundedNegative): void
 {
 	if (str_contains($s, "\n")) {
 		assertType('non-falsy-string', $s);
@@ -124,6 +127,10 @@ function rangeLimit(string $s, int $bounded, int $unbounded): void
 		assertType('array{0: string, 1: string, 2?: string, 3?: string}', explode("\n", $s, $bounded));
 		// an unbounded range stays a >= 2 list
 		assertType('array{string, string, ...<string>}', explode("\n", $s, $unbounded));
+		// ranges that may be negative are not proven to yield two elements
+		assertType('list<string>', explode("\n", $s, $negativeAndPositive));
+		assertType('list<string>', explode("\n", $s, $alwaysNegative));
+		assertType('list<string>', explode("\n", $s, $unboundedNegative));
 	} else {
 		assertType('string', $s);
 	}

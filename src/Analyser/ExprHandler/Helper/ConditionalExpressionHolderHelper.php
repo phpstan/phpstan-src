@@ -209,12 +209,9 @@ final class ConditionalExpressionHolderHelper
 					continue;
 				}
 
-				// The condition side narrowed this same expression to a no-op — e.g.
-				// the relation `$a === $b` between two variables of the same broad type,
-				// which couples the target into the antecedent without changing its
-				// type. Dropping that no-op leaves an antecedent that no longer
-				// constrains this target, so a holder projecting a consequent onto it
-				// would fire even when the dropped relation does not hold. Skip it.
+				// The target's only link to the antecedent was a no-op relation (e.g.
+				// `$a === $b`) that got dropped, so the antecedent no longer constrains
+				// it. Projecting a consequent onto it would fire unsoundly. Skip it.
 				if (array_key_exists($exprString, $droppedNoOpConditions)) {
 					continue;
 				}

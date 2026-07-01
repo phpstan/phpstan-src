@@ -6,14 +6,24 @@ use function PHPStan\Testing\assertType;
 
 function test(string $a, string $b): void {
 	if ($a === $b && $a !== "" && $b !== "") {
+		assertType('non-empty-string', $a);
+		assertType('non-empty-string', $b);
+
 		return;
 	}
 
 	if ($a !== "" || $b !== "") {
+		assertType('string', $a);
+		assertType('string', $b);
+
 		if ($a !== "") {
+			assertType('non-empty-string', $a);
+			assertType('string', $b);
 			// ...
 		}
 		if ($b !== "") {
+			assertType('non-empty-string', $b);
+
 			// The empty sibling `if ($a !== "")` above used to leave behind an
 			// unsound conditional-expression holder ("if $a is non-empty-string
 			// then $b is ''"), which narrowed $a to '' here.
@@ -28,14 +38,20 @@ function test(string $a, string $b): void {
 // Same defect through a loose `==` relational antecedent.
 function testLooseEqual(string $a, string $b): void {
 	if ($a == $b && $a !== "" && $b !== "") {
+		assertType('non-empty-string', $a);
+		assertType('non-empty-string', $b);
 		return;
 	}
 
 	if ($a !== "" || $b !== "") {
 		if ($a !== "") {
+			assertType('non-empty-string', $a);
+			assertType('string', $b);
 			// ...
 		}
 		if ($b !== "") {
+			assertType('non-empty-string', $b);
+
 			assertType('string', $a);
 			if ($a !== "") {
 				assertType('non-empty-string', $a);
@@ -71,15 +87,23 @@ class Props
 // integer ranges instead of empty/non-empty strings.
 function testIntRange(int $a, int $b): void {
 	if ($a === $b && $a > 0 && $b > 0) {
+		assertType('int<1, max>', $a);
+		assertType('int<1, max>', $b);
+
 		return;
 	}
+	assertType('int', $a);
+	assertType('int', $b);
 
 	if ($a > 0 || $b > 0) {
 		if ($a > 0) {
+			assertType('int<1, max>', $a);
+			assertType('int', $b);
 			// ...
 		}
 		if ($b > 0) {
 			assertType('int', $a);
+			assertType('int<1, max>', $b);
 		}
 	}
 }

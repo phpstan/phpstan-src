@@ -4243,19 +4243,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14893.php'], [
 			[
 				'Parameter #2 $value of method Bug14893\HelloWorld<DateTimeInterface>::offsetSet() expects Closure(Bug14893\HelloWorld<DateTimeInterface>): DateTimeInterface, static-Closure(mixed): stdClass given.',
-				51,
+				55,
 			],
 			[
 				'Parameter #1 $value of method Bug14893\ArrayCase<T of object>::acceptsT() expects T of object, array<T of object>|T of object given.',
-				86,
+				90,
 			],
 			[
 				'Parameter #1 $value of method Bug14893\ArrayCase<T of object>::acceptsArrayT() expects array<T of object>, array<T of object>|T of object given.',
-				87,
+				91,
 			],
 			[
 				'Parameter #1 $value of method Bug14893\ClassStringCase<T of object>::acceptsClassString() expects class-string<T of object>, string given.',
-				118,
+				137,
 			],
 		]);
 	}

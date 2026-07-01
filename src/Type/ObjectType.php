@@ -526,7 +526,18 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($type instanceof CompoundType) {
-			return self::$superTypes[$thisDescription][$description] = $type->isSubTypeOf($this);
+			$result = $type->isSubTypeOf($this);
+			if ($result->reasons === []) {
+				return self::$superTypes[$thisDescription][$description] = $result;
+			}
+
+			// Deliberately not stored in self::$superTypes: a compound type (e.g. a union of
+			// unrelated classes) bubbles up per-pair reason strings from its members via
+			// isSubTypeOf(). Caching them would retain one distinct reason set per compared
+			// pair for the whole process — the same accumulation the trait and unrelated-class
+			// branches below avoid. The verdict is cheap to recompute and the reasons are only
+			// ever read when an error is emitted.
+			return $result;
 		}
 
 		if ($type instanceof ClosureType) {

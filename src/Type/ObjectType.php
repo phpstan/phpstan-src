@@ -600,7 +600,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($thisClassReflection->isTrait() || $thatClassReflection->isTrait()) {
 			$traitReflection = $thisClassReflection->isTrait() ? $thisClassReflection : $thatClassReflection;
-			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo([
+			// Deliberately not stored in self::$superTypes: the reason string is specific to this
+			// class pair, so caching it would retain one distinct string per compared pair for the
+			// whole process. On large codebases that adds up to hundreds of MB. The verdict is cheap
+			// to recompute and the reason is only ever read when an error is emitted.
+			return IsSuperTypeOfResult::createNo([
 				sprintf('%s is a trait, which is never a value type.', $traitReflection->getDisplayName()),
 			]);
 		}
@@ -625,7 +629,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo(
+		// Deliberately not stored in self::$superTypes — see the trait branch above; the per-pair
+		// reason string would otherwise accumulate in the static cache for the whole process.
+		return IsSuperTypeOfResult::createNo(
 			$this->describeUnrelatedClassesReasons($thisClassReflection, $thatClassReflection),
 		);
 	}

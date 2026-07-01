@@ -17,6 +17,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function count;
 use function is_string;
 
@@ -150,6 +151,7 @@ final class ConditionalExpressionHolderHelper
 		// into one condition set. Picking only one list would drop a conjunct and
 		// let the resulting holder fire too eagerly.
 		$conditionExpressionTypes = [];
+		$droppedNoOpConditions = [];
 		foreach ($conditionSpecifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
 			if (!$this->isTrackableExpression($expr)) {
 				continue;
@@ -158,6 +160,7 @@ final class ConditionalExpressionHolderHelper
 			$scopeType = $scope->getType($expr);
 			$conditionType = TypeCombinator::remove($scopeType, $type);
 			if ($scopeType->equals($conditionType)) {
+				$droppedNoOpConditions[$exprString] = true;
 				continue;
 			}
 
@@ -174,6 +177,7 @@ final class ConditionalExpressionHolderHelper
 			$scopeType = $scope->getType($expr);
 			$conditionType = TypeCombinator::intersect($scopeType, $type);
 			if ($scopeType->equals($conditionType)) {
+				$droppedNoOpConditions[$exprString] = true;
 				continue;
 			}
 
@@ -202,6 +206,13 @@ final class ConditionalExpressionHolderHelper
 
 			foreach ($holderTypes as $exprString => [$expr, $type]) {
 				if (!$this->isTrackableExpression($expr)) {
+					continue;
+				}
+
+				// The target's only link to the antecedent was a no-op relation (e.g.
+				// `$a === $b`) that got dropped, so the antecedent no longer constrains
+				// it. Projecting a consequent onto it would fire unsoundly. Skip it.
+				if (array_key_exists($exprString, $droppedNoOpConditions)) {
 					continue;
 				}
 

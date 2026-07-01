@@ -213,7 +213,7 @@ phpbench-baseline:
 download-coverage:
 	rm -rf tmp/coverage-download
 	mkdir tmp/coverage-download
-	(cd tmp/coverage-download; gh run download `gh run ls --repo=phpstan/phpstan-src --branch=\`git for-each-ref --format='%(upstream:short)' $$(git symbolic-ref -q HEAD) |cut -d/ -f2\` --workflow=tests.yml --limit=1 --json=databaseId --jq '.[].databaseId'` --repo=phpstan/phpstan-src --name=coverage-reports)
+	(cd tmp/coverage-download; gh run download `gh run ls --repo=phpstan/phpstan-src --branch=\`git for-each-ref --format='%(upstream:short)' $$(git symbolic-ref -q HEAD) | cut -d/ -f2- \` --workflow=tests.yml --limit=1 --json=databaseId --jq '.[].databaseId'` --repo=phpstan/phpstan-src --name=coverage-reports)
 	sed -i '' -e 's,/home/runner/work/phpstan-src/phpstan-src/,'"$$PWD"/',g' tmp/coverage-download/clover.xml
 	cp tmp/coverage-download/clover.xml tmp/coverage/clover.xml
 

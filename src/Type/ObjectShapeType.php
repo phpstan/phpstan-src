@@ -296,17 +296,19 @@ class ObjectShapeType implements Type
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $propertyName => $propertyType) {
 			$typeHasProperty = $type->hasInstanceProperty((string) $propertyName);
-			$hasProperty = new IsSuperTypeOfResult(
-				$typeHasProperty,
-				$typeHasProperty->yes() ? [] : [
-					sprintf(
-						'%s %s have property $%s.',
-						$type->describe(VerbosityLevel::typeOnly()),
-						$typeHasProperty->no() ? 'does not' : 'might not',
-						$propertyName,
-					),
-				],
-			);
+			$hasProperty = $typeHasProperty->yes()
+				? IsSuperTypeOfResult::createYes()
+				: new IsSuperTypeOfResult(
+					$typeHasProperty,
+					static fn (): array => [
+						sprintf(
+							'%s %s have property $%s.',
+							$type->describe(VerbosityLevel::typeOnly()),
+							$typeHasProperty->no() ? 'does not' : 'might not',
+							$propertyName,
+						),
+					],
+				);
 			if ($hasProperty->no()) {
 				if (in_array($propertyName, $this->optionalProperties, true)) {
 					continue;
@@ -331,21 +333,27 @@ class ObjectShapeType implements Type
 			}
 
 			if (!$otherProperty->isPublic()) {
-				return IsSuperTypeOfResult::createNo([
-					sprintf('Property %s::$%s is not public.', $otherProperty->getDeclaringClass()->getDisplayName(), $propertyName),
-				]);
+				return IsSuperTypeOfResult::createNo(
+					static fn (): array => [
+						sprintf('Property %s::$%s is not public.', $otherProperty->getDeclaringClass()->getDisplayName(), $propertyName),
+					],
+				);
 			}
 
 			if ($otherProperty->isStatic()) {
-				return IsSuperTypeOfResult::createNo([
-					sprintf('Property %s::$%s is static.', $otherProperty->getDeclaringClass()->getDisplayName(), $propertyName),
-				]);
+				return IsSuperTypeOfResult::createNo(
+					static fn (): array => [
+						sprintf('Property %s::$%s is static.', $otherProperty->getDeclaringClass()->getDisplayName(), $propertyName),
+					],
+				);
 			}
 
 			if (!$otherProperty->isReadable()) {
-				return IsSuperTypeOfResult::createNo([
-					sprintf('Property %s::$%s is not readable.', $otherProperty->getDeclaringClass()->getDisplayName(), $propertyName),
-				]);
+				return IsSuperTypeOfResult::createNo(
+					static fn (): array => [
+						sprintf('Property %s::$%s is not readable.', $otherProperty->getDeclaringClass()->getDisplayName(), $propertyName),
+					],
+				);
 			}
 
 			$otherPropertyType = $otherProperty->getReadableType();

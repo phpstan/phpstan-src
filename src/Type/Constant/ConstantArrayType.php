@@ -766,7 +766,7 @@ class ConstantArrayType implements Type
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
 						if ($thisUnsealedness->no() && $typeUnsealedness->no()) {
-							return IsSuperTypeOfResult::createNo([$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+							return IsSuperTypeOfResult::createNo(fn (): array => [$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
 						}
 						return IsSuperTypeOfResult::createNo();
 					}
@@ -803,7 +803,7 @@ class ConstantArrayType implements Type
 					if ($thisUnsealedness->no()) {
 						if (!$type->isOptionalKey($i)) {
 							if ($typeUnsealedness->no()) {
-								return IsSuperTypeOfResult::createNo([$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+								return IsSuperTypeOfResult::createNo(fn (): array => [$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
 							}
 							return IsSuperTypeOfResult::createNo();
 						}

@@ -526,18 +526,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($type instanceof CompoundType) {
-			$result = $type->isSubTypeOf($this);
-			if ($result->reasons === []) {
-				return self::$superTypes[$thisDescription][$description] = $result;
-			}
-
-			// Deliberately not stored in self::$superTypes: a compound type (e.g. a union of
-			// unrelated classes) bubbles up per-pair reason strings from its members via
-			// isSubTypeOf(). Caching them would retain one distinct reason set per compared
-			// pair for the whole process — the same accumulation the trait and unrelated-class
-			// branches below avoid. The verdict is cheap to recompute and the reasons are only
-			// ever read when an error is emitted.
-			return $result;
+			return self::$superTypes[$thisDescription][$description] = $type->isSubTypeOf($this);
 		}
 
 		if ($type instanceof ClosureType) {
@@ -611,13 +600,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($thisClassReflection->isTrait() || $thatClassReflection->isTrait()) {
 			$traitReflection = $thisClassReflection->isTrait() ? $thisClassReflection : $thatClassReflection;
-			// Deliberately not stored in self::$superTypes: the reason string is specific to this
-			// class pair, so caching it would retain one distinct string per compared pair for the
-			// whole process. On large codebases that adds up to hundreds of MB. The verdict is cheap
-			// to recompute and the reason is only ever read when an error is emitted.
-			return IsSuperTypeOfResult::createNo([
-				sprintf('%s is a trait, which is never a value type.', $traitReflection->getDisplayName()),
-			]);
+			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo(
+				static fn (): array => [
+					sprintf('%s is a trait, which is never a value type.', $traitReflection->getDisplayName()),
+				],
+			);
 		}
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
@@ -640,10 +627,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		// Deliberately not stored in self::$superTypes — see the trait branch above; the per-pair
-		// reason string would otherwise accumulate in the static cache for the whole process.
-		return IsSuperTypeOfResult::createNo(
-			$this->describeUnrelatedClassesReasons($thisClassReflection, $thatClassReflection),
+		return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo(
+			fn (): array => $this->describeUnrelatedClassesReasons($thisClassReflection, $thatClassReflection),
 		);
 	}
 

@@ -32,3 +32,21 @@ class HelloWorld
 		return $value;
 	}
 }
+
+/**
+ * @param HelloWorld<\DateTimeInterface> $h
+ */
+function callWithMatchingClosure(HelloWorld $h): void
+{
+	// Closure returning the concrete T is a genuine subtype - accepted.
+	$h->offsetSet(0, static fn ($self): \DateTimeInterface => new \DateTime());
+}
+
+/**
+ * @param HelloWorld<\DateTimeInterface> $h
+ */
+function callWithMismatchedClosure(HelloWorld $h): void
+{
+	// Closure returning an unrelated type is not a subtype - rejected.
+	$h->offsetSet(0, static fn ($self): \stdClass => new \stdClass());
+}

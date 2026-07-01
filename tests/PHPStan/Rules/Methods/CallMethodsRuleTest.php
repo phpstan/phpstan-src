@@ -4240,7 +4240,12 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-14893.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-14893.php'], [
+			[
+				'Parameter #2 $value of method Bug14893\HelloWorld<DateTimeInterface>::offsetSet() expects Closure(Bug14893\HelloWorld<DateTimeInterface>): DateTimeInterface, static-Closure(mixed): stdClass given.',
+				51,
+			],
+		]);
 	}
 
 }

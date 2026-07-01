@@ -29,6 +29,9 @@ final class PackageDependencyResolver
 	/** @var array<string, string>|null normalized install path => package name, longest path first */
 	private ?array $installPathToPackage = null;
 
+	/** @var array<string, string|null> file => resolved package (or null for none) */
+	private array $resolvedPackages = [];
+
 	/** @param string[] $composerAutoloaderProjectPaths */
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
@@ -38,6 +41,19 @@ final class PackageDependencyResolver
 	}
 
 	public function resolvePackage(string $file): ?string
+	{
+		// This is called once per dependency file of every analysed file, so the same vendor files
+		// get resolved over and over. Memoize per file: without it this scans every install path
+		// (linear in the number of installed packages) on each call, which dominates cold analysis
+		// of projects with many dependencies.
+		if (array_key_exists($file, $this->resolvedPackages)) {
+			return $this->resolvedPackages[$file];
+		}
+
+		return $this->resolvedPackages[$file] = $this->doResolvePackage($file);
+	}
+
+	private function doResolvePackage(string $file): ?string
 	{
 		// Normalize with a forward slash regardless of platform: normalizePath() defaults to
 		// DIRECTORY_SEPARATOR, so on Windows the paths would use '\' while the prefix check below

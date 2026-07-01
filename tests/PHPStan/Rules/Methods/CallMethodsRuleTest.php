@@ -4247,11 +4247,15 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $value of method Bug14893\ArrayCase<T of object>::acceptsT() expects T of object, array<T of object>|T of object given.',
-				72,
+				86,
+			],
+			[
+				'Parameter #1 $value of method Bug14893\ArrayCase<T of object>::acceptsArrayT() expects array<T of object>, array<T of object>|T of object given.',
+				87,
 			],
 			[
 				'Parameter #1 $value of method Bug14893\ClassStringCase<T of object>::acceptsClassString() expects class-string<T of object>, string given.',
-				101,
+				118,
 			],
 		]);
 	}

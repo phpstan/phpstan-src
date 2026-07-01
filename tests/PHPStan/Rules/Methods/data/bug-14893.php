@@ -2,6 +2,10 @@
 
 namespace Bug14893;
 
+use function is_array;
+use function is_object_in_taxonomy;
+use function PHPStan\Testing\assertType;
+
 /**
  * @template T of object
  */
@@ -64,12 +68,44 @@ class ArrayCase
 	}
 
 	/**
+	 * @param array<T> $value
+	 */
+	public function acceptsArrayT($value): void
+	{
+	}
+
+	/**
+	 * @param T|array<T> $value
+	 */
+	public function acceptsTUnionArrayT($value): void
+	{
+	}
+
+	/**
 	 * @param T|array<T> $value
 	 */
 	public function passUnion($value): void
 	{
 		// array<T> is genuinely not T - must still be rejected, the fix does not over-accept.
 		$this->acceptsT($value);
+		$this->acceptsArrayT($value);
+
+		$this->acceptsTUnionArrayT($value); // fine
+
+		if (is_array($value)) {
+			// fine after narrow
+			$this->acceptsArrayT($value);
+
+			assertType('array<T of object (class Bug14893\ArrayCase, argument)>', $value);
+		} else {
+			assertType('T of object (class Bug14893\ArrayCase, argument)', $value);
+		}
+
+		if (is_object($value)) {
+			assertType('T of object (class Bug14893\ArrayCase, argument)', $value);
+		} else {
+			assertType('array<T of object (class Bug14893\ArrayCase, argument)>', $value);
+		}
 	}
 }
 

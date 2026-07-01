@@ -4,7 +4,7 @@ namespace PHPStan\Parser;
 
 use PhpParser\Node;
 use PHPStan\File\FileReader;
-use function array_slice;
+use function array_key_first;
 
 final class CachedParser implements Parser
 {
@@ -30,24 +30,25 @@ final class CachedParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		if ($this->cachedNodesByStringCountMax !== 0 && $this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax) {
-			$this->cachedNodesByString = array_slice(
-				$this->cachedNodesByString,
-				1,
-				preserve_keys: true,
-			);
-
-			--$this->cachedNodesByStringCount;
-		}
-
 		$sourceCode = FileReader::read($file);
-		if (!isset($this->cachedNodesByString[$sourceCode]) || isset($this->parsedByString[$sourceCode])) {
-			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseFile($file);
-			$this->cachedNodesByStringCount++;
-			unset($this->parsedByString[$sourceCode]);
+		$isCached = isset($this->cachedNodesByString[$sourceCode]);
+		if ($isCached && !isset($this->parsedByString[$sourceCode])) {
+			return $this->markRecentlyUsed($sourceCode);
 		}
 
-		return $this->cachedNodesByString[$sourceCode];
+		$nodes = $this->originalParser->parseFile($file);
+		if ($isCached) {
+			// upgrade an entry previously produced by parseString() in place -
+			// no net change to the entry count, just refresh its LRU position
+			unset($this->cachedNodesByString[$sourceCode], $this->parsedByString[$sourceCode]);
+		} else {
+			$this->evictLeastRecentlyUsed();
+			$this->cachedNodesByStringCount++;
+		}
+
+		$this->cachedNodesByString[$sourceCode] = $nodes;
+
+		return $nodes;
 	}
 
 	/**
@@ -55,23 +56,49 @@ final class CachedParser implements Parser
 	 */
 	public function parseString(string $sourceCode): array
 	{
-		if ($this->cachedNodesByStringCountMax !== 0 && $this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax) {
-			$this->cachedNodesByString = array_slice(
-				$this->cachedNodesByString,
-				1,
-				preserve_keys: true,
-			);
-
-			--$this->cachedNodesByStringCount;
+		if (isset($this->cachedNodesByString[$sourceCode])) {
+			return $this->markRecentlyUsed($sourceCode);
 		}
 
-		if (!isset($this->cachedNodesByString[$sourceCode])) {
-			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseString($sourceCode);
-			$this->cachedNodesByStringCount++;
-			$this->parsedByString[$sourceCode] = true;
+		$nodes = $this->originalParser->parseString($sourceCode);
+		$this->evictLeastRecentlyUsed();
+		$this->cachedNodesByString[$sourceCode] = $nodes;
+		$this->cachedNodesByStringCount++;
+		$this->parsedByString[$sourceCode] = true;
+
+		return $nodes;
+	}
+
+	/**
+	 * LRU bookkeeping: re-insert the entry at the end so genuinely cold sources
+	 * are evicted first, not the ones inserted earliest.
+	 *
+	 * @return Node\Stmt[]
+	 */
+	private function markRecentlyUsed(string $sourceCode): array
+	{
+		$nodes = $this->cachedNodesByString[$sourceCode];
+		unset($this->cachedNodesByString[$sourceCode]);
+		$this->cachedNodesByString[$sourceCode] = $nodes;
+
+		return $nodes;
+	}
+
+	private function evictLeastRecentlyUsed(): void
+	{
+		if ($this->cachedNodesByStringCountMax === 0) {
+			return;
 		}
 
-		return $this->cachedNodesByString[$sourceCode];
+		while ($this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax) {
+			$oldestKey = array_key_first($this->cachedNodesByString);
+			if ($oldestKey === null) {
+				break;
+			}
+
+			unset($this->cachedNodesByString[$oldestKey], $this->parsedByString[$oldestKey]);
+			$this->cachedNodesByStringCount--;
+		}
 	}
 
 	public function getCachedNodesByStringCount(): int

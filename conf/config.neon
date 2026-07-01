@@ -125,7 +125,7 @@ parameters:
 	cache:
 		nodesByStringCountMax: 256
 		resolvedPhpDocBlockCacheCountMax: 2048
-		nameScopeMapMemoryCacheCountMax: 2048
+		nameScopeMapMemoryCacheCountMax: 512
 	reportUnmatchedIgnoredErrors: true
 	reportIgnoresWithoutComments: false
 	typeAliases: []

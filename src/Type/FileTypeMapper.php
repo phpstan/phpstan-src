@@ -32,13 +32,13 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_reverse;
-use function array_slice;
 use function count;
 use function hash_file;
 use function in_array;
@@ -118,13 +118,12 @@ final class FileTypeMapper
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
 
-		if ($this->resolvedPhpDocBlockCacheCount >= $this->resolvedPhpDocBlockCacheCountMax) {
-			$this->resolvedPhpDocBlockCache = array_slice(
-				$this->resolvedPhpDocBlockCache,
-				1,
-				preserve_keys: true,
-			);
-
+		while ($this->resolvedPhpDocBlockCacheCount >= $this->resolvedPhpDocBlockCacheCountMax) {
+			$oldestKey = array_key_first($this->resolvedPhpDocBlockCache);
+			if ($oldestKey === null) {
+				break;
+			}
+			unset($this->resolvedPhpDocBlockCache[$oldestKey]);
 			$this->resolvedPhpDocBlockCacheCount--;
 		}
 
@@ -336,33 +335,41 @@ final class FileTypeMapper
 	 */
 	private function getNameScopeMap(string $fileName): array
 	{
-		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('ftm-%s', $fileName);
-			$variableCacheKey = sprintf('v5-%s', ComposerHelper::getPhpDocParserVersion());
-			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
-			if ($cached === null) {
-				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
-				$filesWithHashes = [];
-				foreach ($files as $file) {
-					$newHash = hash_file('sha256', $file);
-					$filesWithHashes[$file] = $newHash;
-				}
-				$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
-			} else {
-				[$nameScopeMap] = $cached;
-			}
-			if ($this->memoryCacheCount >= $this->nameScopeMapMemoryCacheCountMax) {
-				$this->memoryCache = array_slice(
-					$this->memoryCache,
-					1,
-					preserve_keys: true,
-				);
-				$this->memoryCacheCount--;
-			}
+		if (isset($this->memoryCache[$fileName])) {
+			// LRU: move the freshly-accessed entry to the end so eviction drops
+			// genuinely cold files, not hot dependencies inserted early on.
+			$cachedEntry = $this->memoryCache[$fileName];
+			unset($this->memoryCache[$fileName]);
+			$this->memoryCache[$fileName] = $cachedEntry;
 
-			$this->memoryCache[$fileName] = [$nameScopeMap];
-			$this->memoryCacheCount++;
+			return $cachedEntry;
 		}
+
+		$cacheKey = sprintf('ftm-%s', $fileName);
+		$variableCacheKey = sprintf('v5-%s', ComposerHelper::getPhpDocParserVersion());
+		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
+		if ($cached === null) {
+			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
+			$filesWithHashes = [];
+			foreach ($files as $file) {
+				$newHash = hash_file('sha256', $file);
+				$filesWithHashes[$file] = $newHash;
+			}
+			$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
+		} else {
+			[$nameScopeMap] = $cached;
+		}
+		while ($this->memoryCacheCount >= $this->nameScopeMapMemoryCacheCountMax) {
+			$oldestKey = array_key_first($this->memoryCache);
+			if ($oldestKey === null) {
+				break;
+			}
+			unset($this->memoryCache[$oldestKey]);
+			$this->memoryCacheCount--;
+		}
+
+		$this->memoryCache[$fileName] = [$nameScopeMap];
+		$this->memoryCacheCount++;
 
 		return $this->memoryCache[$fileName];
 	}

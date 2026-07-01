@@ -19,6 +19,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -272,6 +273,16 @@ final class StaticCallHandler implements ExprHandler
 
 				$scope = $scope->assignInitializedProperty($thisType, $property->getName());
 			}
+		}
+
+		if (
+			OutputBufferHelper::isLevelTracked($scope)
+			&& (
+				$methodReflection === null
+				|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
+			)
+		) {
+			$scope = OutputBufferHelper::invalidateLevel($scope);
 		}
 
 		$hasYield = $hasYield || $argsResult->hasYield();

@@ -6,7 +6,6 @@ use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -19,6 +18,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransformer;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -53,7 +53,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -572,28 +571,22 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
-		if ($functionReflection !== null) {
-			$functionName = $functionReflection->getName();
-			if ($functionName === 'ob_start') {
-				$outputBufferDelta = 1;
-			} elseif (in_array($functionName, ['ob_get_clean', 'ob_get_flush', 'ob_end_clean', 'ob_end_flush'], true)) {
-				$outputBufferDelta = -1;
+		$outputBufferDelta = $functionReflection !== null ? OutputBufferHelper::getLevelDelta($functionReflection->getName()) : 0;
+		if ($outputBufferDelta !== 0) {
+			$scope = OutputBufferHelper::applyLevelDelta($scope, $outputBufferDelta);
+		} elseif (OutputBufferHelper::isLevelTracked($scope)) {
+			if ($functionReflection === null) {
+				// callable/closure variable or unknown function: forget the level
+				// unless the invoked callable is known to be pure
+				$forgetOutputBufferLevel = !$parametersAcceptor instanceof CallableParametersAcceptor
+					|| count($parametersAcceptor->getImpurePoints()) > 0;
 			} else {
-				$outputBufferDelta = 0;
+				$forgetOutputBufferLevel = (!$functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no())
+					|| OutputBufferHelper::callImmediatelyInvokesImpureCallable($scope, $parametersAcceptor, $normalizedExpr->getArgs());
 			}
-			if ($outputBufferDelta !== 0) {
-				$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
-				$scope = $scope->assignExpression(
-					$obGetLevelCall,
-					$scope->getType(new BinaryOp\Plus(
-						new TypeExpr($scope->getType($obGetLevelCall)),
-						new TypeExpr(new ConstantIntegerType($outputBufferDelta)),
-					)),
-					$scope->getType(new BinaryOp\Plus(
-						new TypeExpr($scope->getNativeType($obGetLevelCall)),
-						new TypeExpr(new ConstantIntegerType($outputBufferDelta)),
-					)),
-				);
+
+			if ($forgetOutputBufferLevel) {
+				$scope = OutputBufferHelper::invalidateLevel($scope);
 			}
 		}
 

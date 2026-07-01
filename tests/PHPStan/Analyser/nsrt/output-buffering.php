@@ -155,3 +155,151 @@ function levelNarrowedToBoundedIntRange(): void
 		assertType('int<1, 4>', ob_get_level());
 	}
 }
+
+function impureCallableForgetsLevel(callable $cb): void
+{
+	ob_start();
+	assertType('int<1, max>', ob_get_level());
+	$cb();
+	// the callable may have closed the buffer, so the level is forgotten
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function impureClosureForgetsLevel(\Closure $closure): void
+{
+	ob_start();
+	$closure();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+/** @param pure-callable $cb */
+function pureCallableKeepsLevel(callable $cb): void
+{
+	ob_start();
+	$cb();
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+function impureFunctionForgetsLevel(): void
+{
+	ob_start();
+	impureFunction();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+/** @phpstan-pure */
+function pureFunction(): int
+{
+	return 1;
+}
+
+function impureFunction(): void
+{
+}
+
+function pureFunctionKeepsLevel(): void
+{
+	ob_start();
+	pureFunction();
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+class Service
+{
+
+	public function impureMethod(): void
+	{
+	}
+
+	/** @phpstan-pure */
+	public function pureMethod(): int
+	{
+		return 1;
+	}
+
+	public static function impureStaticMethod(): void
+	{
+	}
+
+	public function __invoke(): void
+	{
+	}
+
+}
+
+function impureMethodForgetsLevel(Service $service): void
+{
+	ob_start();
+	$service->impureMethod();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function pureMethodKeepsLevel(Service $service): void
+{
+	ob_start();
+	$service->pureMethod();
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+function impureStaticMethodForgetsLevel(): void
+{
+	ob_start();
+	Service::impureStaticMethod();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function invokableForgetsLevel(Service $service): void
+{
+	ob_start();
+	$service();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function callUserFuncForgetsLevel(callable $cb): void
+{
+	ob_start();
+	call_user_func($cb);
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function arrayMapForgetsLevel(callable $cb, array $a): void
+{
+	ob_start();
+	array_map($cb, $a);
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function arrayMapPureCallbackKeepsLevel(array $a): void
+{
+	ob_start();
+	array_map('strtoupper', $a);
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+function laterInvokedCallableKeepsLevel(callable $cb): void
+{
+	ob_start();
+	register_shutdown_function($cb);
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+function builtinKeepsLevel(): void
+{
+	ob_start();
+	printf('hello');
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}

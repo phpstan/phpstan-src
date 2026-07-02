@@ -693,6 +693,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArrayReduceCarryConcat(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-reduce-carry-concat.php'], []);
+	}
+
 	public function testArrayReduceArrowFunctionCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_reduce_arrow.php'], [

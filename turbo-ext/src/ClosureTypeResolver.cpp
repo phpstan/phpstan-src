@@ -54,6 +54,9 @@ zend_string *pt_ctr_throw_points = nullptr;
 zend_string *pt_ctr_impure_points = nullptr;
 zend_string *pt_ctr_invalidate_expressions = nullptr;
 zend_string *pt_ctr_used_variables = nullptr;
+zend_string *pt_ctr_array_reduce_args = nullptr;
+zend_string *pt_ctr_carry = nullptr;
+zend_string *pt_ctr_item = nullptr;
 
 /* the private static $resolveClosureTypeDepth */
 int pt_ctr_resolve_closure_type_depth = 0;
@@ -64,6 +67,7 @@ int pt_ctr_resolve_closure_type_depth = 0;
 pt_method_site pt_ctr_simple_throw_point_explicit_site;
 pt_method_site pt_ctr_simple_throw_point_implicit_site;
 pt_method_site pt_ctr_stats_increment_site;
+pt_method_site pt_ctr_less_specific_site;
 
 /* $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope)) */
 zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval *scope)
@@ -83,6 +87,12 @@ zv::Val simpleThrowPointExplicit(zval *type, bool canContainAnyThrowable)
 zv::Val simpleThrowPointImplicit()
 {
 	return pt_call_static_cached(pt_ctr_simple_throw_point_implicit_site, PT_CLASS_SIMPLE_THROW_POINT, PT_LC("createimplicit"), 0, NULL);
+}
+
+/* GeneralizePrecision::lessSpecific() */
+zv::Val generalizePrecisionLessSpecific()
+{
+	return pt_call_static_cached(pt_ctr_less_specific_site, PT_CLASS_GENERALIZE_PRECISION, PT_LC("lessspecific"), 0, NULL);
 }
 
 /* TemplateArgumentStats::$enabled && TemplateArgumentStats::increment('closureTypeBodyWalks'); false = pending exception */
@@ -347,21 +357,19 @@ public:
 		// walking its body: parameters plus the DECLARED return type.
 		if (shallow) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
 
-		zv::Val cachedTypes = findCachedTypes(expr);
-		zv::Str cacheKey = closureContextCacheKey(scope, expr, p.callableParameters.isNull() ? NULL : p.callableParameters.raw(), p.parameters.raw());
-		if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
-		zval *cached = zend_symtable_find(Z_ARRVAL_P(cachedTypes.raw()), cacheKey.get());
-		if (cached != NULL) {
-			ZVAL_DEREF(cached);
-			return createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree);
+		// once array_reduce()'s TReturn is resolved, the callback is typed by the
+		// carry it resolved to, like the walk of its body that put that carry in
+		zval *arrayReduceArgs = ptclosure::attribute(expr, pt_ctr_array_reduce_args);
+		if (arrayReduceArgs != NULL && Z_TYPE_P(arrayReduceArgs) != IS_NULL) {
+			bool carryUnresolved;
+			if (UNEXPECTED(!isArrayReduceCarryUnresolved(p, carryUnresolved))) return zv::Val();
+			if (carryUnresolved) {
+				zv::Val arrayReduceArgsHold = zv::Val::copyOf(zv::Ref(arrayReduceArgs));
+				return resolveArrayReduceCallbackType(scope, expr, storage, arrayReduceArgsHold.raw(), p);
+			}
 		}
-		if (pt_ctr_resolve_closure_type_depth >= 2) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
 
-		if (UNEXPECTED(!countClosureTypeBodyWalk())) return zv::Val();
-		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
-		if (UNEXPECTED(isArrowFunction < 0)) return zv::Val();
-		if (isArrowFunction) return walkArrowFunction(scope, expr, p, cacheKey.get());
-		return walkClosure(scope, expr, p, cacheKey.get());
+		return resolveClosureTypeWithParameters(scope, expr, p);
 	}
 
 	/* Mirrors buildClosureTypeForClosure() (the nullable ones NULL for null) */
@@ -414,6 +422,228 @@ private:
 		/* nothing types the closure where it is written (ClosureSignatureInference) */
 		bool contextFree = false;
 	};
+
+	/* Mirrors resolveArrayReduceCallbackType(): the passes replace the
+	 * callable parameters of `p` (its $parameters / $isVariadic /
+	 * $contextFree stay) */
+	zv::Val resolveArrayReduceCallbackType(zval *scope, zval *expr, zval *storage, zval *arrayReduceArgs, Parameters &p)
+	{
+		// [$arrayArg, $initialArg] = $arrayReduceArgs;
+		zval null;
+		ZVAL_NULL(&null);
+		zval *arrayArg = &null;
+		zval *initialArg = &null;
+		if (EXPECTED(Z_TYPE_P(arrayReduceArgs) == IS_ARRAY)) {
+			zval *found = zend_hash_index_find(Z_ARRVAL_P(arrayReduceArgs), 0);
+			if (EXPECTED(found != NULL)) {
+				arrayArg = found;
+				ZVAL_DEREF(arrayArg);
+			}
+			found = zend_hash_index_find(Z_ARRVAL_P(arrayReduceArgs), 1);
+			if (EXPECTED(found != NULL)) {
+				initialArg = found;
+				ZVAL_DEREF(initialArg);
+			}
+		}
+
+		zval *arrayValue = ptclosure::prop(ptclosure::argValueSite, arrayArg, PT_LC("value"));
+		if (UNEXPECTED(arrayValue == NULL)) return zv::Val();
+		zv::Val arrayValueHold = zv::Val::copyOf(zv::Ref(arrayValue));
+		zv::Val arrayType = readExprType(storage, arrayValueHold.raw(), scope, false);
+		zv::Val itemType = iterableValueTypeOf(arrayType);
+		if (UNEXPECTED(itemType.isUndef())) return zv::Val();
+
+		zv::Val mixedType = pt_type_new_mixed_type();
+		if (UNEXPECTED(mixedType.isUndef())) return zv::Val();
+		zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
+		if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
+		zv::Val nativeArrayType = readExprType(storage, arrayValueHold.raw(), nativeScope.raw(), true);
+		zv::Val nativeItemType = iterableValueTypeOf(nativeArrayType);
+		if (UNEXPECTED(nativeItemType.isUndef())) return zv::Val();
+		p.nativeCallableParameters = createArrayReduceCallbackParameters(mixedType.raw(), nativeItemType.raw());
+		if (UNEXPECTED(p.nativeCallableParameters.isUndef())) return zv::Val();
+
+		zv::Val carryType;
+		if (Z_TYPE_P(initialArg) != IS_NULL) {
+			zval *initialValue = ptclosure::prop(ptclosure::argValueSite, initialArg, PT_LC("value"));
+			if (UNEXPECTED(initialValue == NULL)) return zv::Val();
+			zv::Val initialValueHold = zv::Val::copyOf(zv::Ref(initialValue));
+			carryType = readExprType(storage, initialValueHold.raw(), scope, false);
+		} else {
+			zval nullType;
+			if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+			carryType = zv::Val::adopt(nullType);
+		}
+		if (UNEXPECTED(carryType.isUndef())) return zv::Val();
+
+		p.callableParameters = createArrayReduceCallbackParameters(carryType.raw(), itemType.raw());
+		if (UNEXPECTED(p.callableParameters.isUndef())) return zv::Val();
+		zv::Val closureType = resolveClosureTypeWithParameters(scope, expr, p);
+		zv::Val returnType = closureType.isUndef() ? zv::Val() : returnTypeOf(closureType);
+		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+		bool isFixedPoint = false;
+		if (UNEXPECTED(!isArrayReduceCarryFixedPoint(carryType, returnType, isFixedPoint))) return zv::Val();
+		if (isFixedPoint) return closureType;
+
+		carryType = widenArrayReduceCarryType(carryType.raw(), returnType.raw());
+		if (UNEXPECTED(carryType.isUndef())) return zv::Val();
+		p.callableParameters = createArrayReduceCallbackParameters(carryType.raw(), itemType.raw());
+		if (UNEXPECTED(p.callableParameters.isUndef())) return zv::Val();
+		closureType = resolveClosureTypeWithParameters(scope, expr, p);
+		returnType = closureType.isUndef() ? zv::Val() : returnTypeOf(closureType);
+		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+		if (UNEXPECTED(!isArrayReduceCarryFixedPoint(carryType, returnType, isFixedPoint))) return zv::Val();
+		if (isFixedPoint) return closureType;
+
+		p.callableParameters = createArrayReduceCallbackParameters(mixedType.raw(), itemType.raw());
+		if (UNEXPECTED(p.callableParameters.isUndef())) return zv::Val();
+		return resolveClosureTypeWithParameters(scope, expr, p);
+	}
+
+	/* Mirrors createArrayReduceCallbackParameters(): [carry, item] */
+	static zv::Val createArrayReduceCallbackParameters(zval *carryType, zval *itemType)
+	{
+		zend_object *no = pt_passed_by_reference_create_no();
+		if (UNEXPECTED(no == NULL)) return zv::Val();
+		zval noZv;
+		ZVAL_OBJ(&noZv, no);
+		zv::Val carry = pt_dummy_parameter_new(pt_ctr_carry, carryType, false, &noZv, false, NULL);
+		if (UNEXPECTED(carry.isUndef())) return zv::Val();
+		zv::Val item = pt_dummy_parameter_new(pt_ctr_item, itemType, false, &noZv, false, NULL);
+		if (UNEXPECTED(item.isUndef())) return zv::Val();
+		zv::Arr parameters = zv::Arr::create(2);
+		parameters.push(std::move(carry));
+		parameters.push(std::move(item));
+		return zv::Val(std::move(parameters));
+	}
+
+	/* Mirrors widenArrayReduceCarryType() */
+	static zv::Val widenArrayReduceCarryType(zval *initialType, zval *returnType)
+	{
+		zval types[2];
+		ZVAL_COPY_VALUE(&types[0], initialType);
+		ZVAL_COPY_VALUE(&types[1], returnType);
+		zv::Val unionType = pt_type_combinator_union(2, types);
+		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+		if (UNEXPECTED(!unionType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function getConstantArrays() on %s", zend_zval_value_name(unionType.raw()));
+			return zv::Val();
+		}
+		zv::Val constantArrays = pt_type_op(Z_OBJ_P(unionType.raw()), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
+		if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
+		if (EXPECTED(Z_TYPE_P(constantArrays.raw()) == IS_ARRAY) && zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw())) > 0) {
+			zv::Arr generalized = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw())));
+			for (zv::ArrayEntry entry : zv::ArrRef(constantArrays.raw())) {
+				zval *constantArray = entry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(constantArray) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function generalizeValues() on %s", zend_zval_value_name(constantArray));
+					return zv::Val();
+				}
+				zv::Val generalizedArray = pt_type_call(Z_OBJ_P(constantArray), PT_LC("generalizevalues"), 0, NULL);
+				if (UNEXPECTED(generalizedArray.isUndef())) return zv::Val();
+				generalized.push(std::move(generalizedArray));
+			}
+			return ptclosure::unionOf(generalized);
+		}
+
+		zv::Val precision = generalizePrecisionLessSpecific();
+		if (UNEXPECTED(precision.isUndef())) return zv::Val();
+		return pt_type_call(Z_OBJ_P(unionType.raw()), PT_LC("generalize"), 1, precision.raw());
+	}
+
+	/* $type->getIterableValueType(); UNDEF in, UNDEF out */
+	static zv::Val iterableValueTypeOf(zv::Val &type)
+	{
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		if (UNEXPECTED(!type.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function getIterableValueType() on %s", zend_zval_value_name(type.raw()));
+			return zv::Val();
+		}
+		return pt_type_op(Z_OBJ_P(type.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+	}
+
+	/* $closureType->getReturnType() */
+	static zv::Val returnTypeOf(zv::Val &closureType)
+	{
+		if (UNEXPECTED(!closureType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function getReturnType() on %s", zend_zval_value_name(closureType.raw()));
+			return zv::Val();
+		}
+		return pt_type_call(Z_OBJ_P(closureType.raw()), PT_LC("getreturntype"), 0, NULL);
+	}
+
+	/* getClosureType()'s gate: $callableParameters === null
+	 * || !isset($callableParameters[0])
+	 * || $callableParameters[0]->getType()->hasTemplateOrLateResolvableType();
+	 * false = pending exception */
+	[[nodiscard]] static bool isArrayReduceCarryUnresolved(Parameters &p, bool &out)
+	{
+		out = true;
+		if (p.callableParameters.isNull() || Z_TYPE_P(p.callableParameters.raw()) != IS_ARRAY) return true;
+		zval *carry = zend_hash_index_find(Z_ARRVAL_P(p.callableParameters.raw()), 0);
+		if (carry != NULL) ZVAL_DEREF(carry);
+		if (carry == NULL || Z_TYPE_P(carry) == IS_NULL) return true;
+		if (UNEXPECTED(Z_TYPE_P(carry) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(carry));
+			return false;
+		}
+		zv::Val carryType = pt_type_call(Z_OBJ_P(carry), PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(carryType.isUndef())) return false;
+		if (UNEXPECTED(!carryType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function hasTemplateOrLateResolvableType() on %s", zend_zval_value_name(carryType.raw()));
+			return false;
+		}
+		zv::Val result = pt_type_op(Z_OBJ_P(carryType.raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
+		if (UNEXPECTED(result.isUndef())) return false;
+		out = zend_is_true(result.raw());
+		return true;
+	}
+
+	/* Mirrors isArrayReduceCarryFixedPoint(): an implicit never return is no
+	 * fixed point, otherwise TypeCombinator::union($carry, $return)->equals($carry);
+	 * false = pending exception */
+	[[nodiscard]] static bool isArrayReduceCarryFixedPoint(zv::Val &carryType, zv::Val &returnType, bool &out)
+	{
+		out = false;
+		if (Z_TYPE_P(returnType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(returnType.raw()), pt_ce_never_type)) {
+			zv::Val isExplicit = pt_type_call(Z_OBJ_P(returnType.raw()), PT_LC("isexplicit"), 0, NULL);
+			if (UNEXPECTED(isExplicit.isUndef())) return false;
+			if (!zend_is_true(isExplicit.raw())) return true;
+		}
+		zval types[2];
+		ZVAL_COPY_VALUE(&types[0], carryType.raw());
+		ZVAL_COPY_VALUE(&types[1], returnType.raw());
+		zv::Val unionType = pt_type_combinator_union(2, types);
+		if (UNEXPECTED(unionType.isUndef())) return false;
+		if (UNEXPECTED(!unionType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function equals() on %s", zend_zval_value_name(unionType.raw()));
+			return false;
+		}
+		zv::Val equal = pt_type_op(Z_OBJ_P(unionType.raw()), PT_OP_EQUALS, 1, carryType.raw());
+		if (UNEXPECTED(equal.isUndef())) return false;
+		out = zend_is_true(equal.raw());
+		return true;
+	}
+
+	/* Mirrors resolveClosureTypeWithParameters() */
+	zv::Val resolveClosureTypeWithParameters(zval *scope, zval *expr, Parameters &p)
+	{
+		zv::Val cachedTypes = findCachedTypes(expr);
+		zv::Str cacheKey = closureContextCacheKey(scope, expr, p.callableParameters.isNull() ? NULL : p.callableParameters.raw(), p.parameters.raw());
+		if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
+		zval *cached = zend_symtable_find(Z_ARRVAL_P(cachedTypes.raw()), cacheKey.get());
+		if (cached != NULL) {
+			ZVAL_DEREF(cached);
+			return createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree);
+		}
+		if (pt_ctr_resolve_closure_type_depth >= 2) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
+
+		if (UNEXPECTED(!countClosureTypeBodyWalk())) return zv::Val();
+		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
+		if (UNEXPECTED(isArrowFunction < 0)) return zv::Val();
+		if (isArrowFunction) return walkArrowFunction(scope, expr, p, cacheKey.get());
+		return walkClosure(scope, expr, p, cacheKey.get());
+	}
 
 	void writeSlot(uint32_t index, zv::Val value)
 	{
@@ -1561,6 +1791,9 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	pt_ctr_impure_points = zend_string_init_interned(PT_LC("impurePoints"), 1);
 	pt_ctr_invalidate_expressions = zend_string_init_interned(PT_LC("invalidateExpressions"), 1);
 	pt_ctr_used_variables = zend_string_init_interned(PT_LC("usedVariables"), 1);
+	pt_ctr_array_reduce_args = zend_string_init_interned(PT_LC("arrayReduceArgs"), 1);
+	pt_ctr_carry = zend_string_init_interned(PT_LC("carry"), 1);
+	pt_ctr_item = zend_string_init_interned(PT_LC("item"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver");
 	ptdecl::ClosureTypeResolver::declareClass(cls);

@@ -25,6 +25,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Parser\ArrayReduceArgVisitor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -33,15 +34,18 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -150,6 +154,131 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			);
 		}
 
+		// once array_reduce()'s TReturn is resolved, the callback is typed by the
+		// carry it resolved to, like the walk of its body that put that carry in
+		$arrayReduceArgs = $expr->getAttribute(ArrayReduceArgVisitor::ATTRIBUTE_NAME);
+		if (
+			$arrayReduceArgs !== null
+			&& (
+				$callableParameters === null
+				|| !isset($callableParameters[0])
+				|| $callableParameters[0]->getType()->hasTemplateOrLateResolvableType()
+			)
+		) {
+			return $this->resolveArrayReduceCallbackType($scope, $expr, $storage, $arrayReduceArgs, $parameters, $isVariadic, $contextFree);
+		}
+
+		return $this->resolveClosureTypeWithParameters($scope, $expr, $parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree);
+	}
+
+	/**
+	 * Resolves an array_reduce() callback with a bounded fixed-point iteration
+	 * over its $carry parameter.
+	 *
+	 * The first pass types $carry as the initial argument. When the callback's return
+	 * type escapes it, the carry type is widened and verified in a second pass. When
+	 * even the widened type is not a fixed point, the callback is analysed once more
+	 * with an unknown carry instead of claiming a shape the carry can outgrow.
+	 * See isArrayReduceCarryFixedPoint() for what counts as a fixed point.
+	 *
+	 * @param array{Node\Arg, Node\Arg|null} $arrayReduceArgs
+	 * @param list<NativeParameterReflection> $parameters
+	 */
+	private function resolveArrayReduceCallbackType(
+		MutatingScope $scope,
+		Node\Expr\Closure|ArrowFunction $expr,
+		?ExpressionResultStorage $storage,
+		array $arrayReduceArgs,
+		array $parameters,
+		bool $isVariadic,
+		bool $contextFree,
+	): ClosureType
+	{
+		[$arrayArg, $initialArg] = $arrayReduceArgs;
+		$itemType = $this->readExprType($storage, $arrayArg->value, $scope, false)->getIterableValueType();
+		$nativeCallableParameters = self::createArrayReduceCallbackParameters(
+			new MixedType(),
+			$this->readExprType($storage, $arrayArg->value, $scope->doNotTreatPhpDocTypesAsCertain(), true)->getIterableValueType(),
+		);
+
+		$carryType = $initialArg !== null ? $this->readExprType($storage, $initialArg->value, $scope, false) : new NullType();
+		$closureType = $this->resolveClosureTypeWithParameters($scope, $expr, $parameters, $isVariadic, self::createArrayReduceCallbackParameters($carryType, $itemType), $nativeCallableParameters, $contextFree);
+		if (self::isArrayReduceCarryFixedPoint($carryType, $closureType->getReturnType())) {
+			return $closureType;
+		}
+
+		$carryType = self::widenArrayReduceCarryType($carryType, $closureType->getReturnType());
+		$closureType = $this->resolveClosureTypeWithParameters($scope, $expr, $parameters, $isVariadic, self::createArrayReduceCallbackParameters($carryType, $itemType), $nativeCallableParameters, $contextFree);
+		if (self::isArrayReduceCarryFixedPoint($carryType, $closureType->getReturnType())) {
+			return $closureType;
+		}
+
+		return $this->resolveClosureTypeWithParameters($scope, $expr, $parameters, $isVariadic, self::createArrayReduceCallbackParameters(new MixedType(), $itemType), $nativeCallableParameters, $contextFree);
+	}
+
+	/**
+	 * Whether the callback returning $returnType keeps the carry within $carryType.
+	 *
+	 * Not isSuperTypeOf(): an array shape without definite sealedness is a supertype
+	 * of the same shape with extra keys, so a carry that grows one key per iteration
+	 * would pass. An implicit never return is the inference giving up on the body,
+	 * not a callback that always throws, so it proves nothing about the carry.
+	 */
+	private static function isArrayReduceCarryFixedPoint(Type $carryType, Type $returnType): bool
+	{
+		if ($returnType instanceof NeverType && !$returnType->isExplicit()) {
+			return false;
+		}
+
+		return TypeCombinator::union($carryType, $returnType)->equals($carryType);
+	}
+
+	/**
+	 * @return list<DummyParameter>
+	 */
+	private static function createArrayReduceCallbackParameters(Type $carryType, Type $itemType): array
+	{
+		return [
+			new DummyParameter('carry', $carryType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+			new DummyParameter('item', $itemType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+		];
+	}
+
+	/** Widens while preserving constant array shapes so that the second pass can converge. */
+	private static function widenArrayReduceCarryType(Type $initialType, Type $returnType): Type
+	{
+		$union = TypeCombinator::union($initialType, $returnType);
+		$constantArrays = $union->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			$generalized = [];
+			foreach ($constantArrays as $constantArray) {
+				$generalized[] = $constantArray->generalizeValues();
+			}
+
+			return TypeCombinator::union(...$generalized);
+		}
+
+		return $union->generalize(GeneralizePrecision::lessSpecific());
+	}
+
+	/**
+	 * Walks the body with the given callable parameters, or answers from the
+	 * per-context cache.
+	 *
+	 * @param list<NativeParameterReflection> $parameters
+	 * @param ParameterReflection[]|null $callableParameters
+	 * @param ParameterReflection[]|null $nativeCallableParameters
+	 */
+	private function resolveClosureTypeWithParameters(
+		MutatingScope $scope,
+		Node\Expr\Closure|ArrowFunction $expr,
+		array $parameters,
+		bool $isVariadic,
+		?array $callableParameters,
+		?array $nativeCallableParameters,
+		bool $contextFree,
+	): ClosureType
+	{
 		$cachedTypes = $this->findCachedTypes($expr);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
 		if (array_key_exists($cacheKey, $cachedTypes)) {

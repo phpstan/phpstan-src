@@ -25,6 +25,7 @@ $parserVisitorClasses = [
 	'ArrayFindArgVisitor',
 	'ArrayMapArgVisitor',
 	'ArrayOffsetNormalizingVisitor',
+	'ArrayReduceArgVisitor',
 	'ArrayWalkArgVisitor',
 	'ArrowFunctionArgVisitor',
 	'ClosureArgVisitor',
@@ -66,6 +67,9 @@ $parserVisitorSnippets = [
 	'<?php array_find($a, $cb); array_any($a, $cb); array_all($a, $cb); array_find_key($a, $cb); array_search($a, $cb);',
 	'<?php array_map($cb, $a, $b); array_map($cb, $a); array_map($cb); array_map(null, $a, $b);
 		array_map(callback: $cb, array: $a); array_map(array: $a, callback: $cb); array_map(...);',
+	'<?php array_reduce($a, $cb, $i); array_reduce($a, $cb); array_reduce($a); array_reduce(); array_reduce(...); ARRAY_REDUCE($a, $cb, 0);
+		array_reduce(initial: [], callback: $cb, array: $a); array_reduce($a, callback: $cb, initial: 1); array_reduce($a, initial: 1);
+		array_reduce(...$args); array_reduce($a, ...$rest); array_reduce($a, $cb, ...$rest); \\array_reduce($a, $cb, 1); $o->array_reduce($a, $cb, 1); array_reduce($a, $cb, 1, 2);',
 
 	// closures and arrow functions called where they are written
 	'<?php (function ($x) { return $x; })(1); (function () {})(); ($f = function ($x) {})(2);',

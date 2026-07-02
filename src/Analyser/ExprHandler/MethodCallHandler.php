@@ -186,11 +186,13 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
-		$scope = $scope->invalidateVolatileExpressionsAfterCall(
-			$methodReflection !== null,
-			$methodReflection !== null && $methodReflection->getDeclaringClass()->isBuiltin(),
-			$methodReflection !== null && $methodReflection->hasSideEffects()->no(),
-		);
+		// an unresolved or impure user method may reach ob_start()/openssl_*() transitively
+		if (
+			$methodReflection === null
+			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
+		) {
+			$scope = $scope->invalidateVolatileExpressions();
+		}
 
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());

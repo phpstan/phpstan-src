@@ -574,17 +574,20 @@ final class FuncCallHandler implements ExprHandler
 		$outputBufferDelta = $functionReflection !== null ? OutputBufferHelper::getLevelDelta($functionReflection->getName()) : 0;
 		if ($outputBufferDelta !== 0) {
 			$scope = OutputBufferHelper::applyLevelDelta($scope, $outputBufferDelta);
-		} elseif ($functionReflection !== null) {
-			$scope = $scope->invalidateVolatileExpressionsAfterCall(
-				true,
-				$functionReflection->isBuiltin(),
-				$functionReflection->hasSideEffects()->no(),
-			);
+		}
+
+		if ($functionReflection !== null) {
+			// a resolved impure user function may reach ob_start()/openssl_*() transitively
+			if (!$functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no()) {
+				$scope = $scope->invalidateVolatileExpressions();
+			}
 		} else {
 			// unknown function or a callable value - safe only when a provably pure callable
 			$pureCallable = $parametersAcceptor instanceof CallableParametersAcceptor
 				&& count($parametersAcceptor->getImpurePoints()) === 0;
-			$scope = $scope->invalidateVolatileExpressionsAfterCall($pureCallable, false, true);
+			if (!$pureCallable) {
+				$scope = $scope->invalidateVolatileExpressions();
+			}
 		}
 
 		return new ExpressionResult(

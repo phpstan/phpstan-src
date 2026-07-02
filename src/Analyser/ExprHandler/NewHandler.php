@@ -216,16 +216,17 @@ final class NewHandler implements ExprHandler
 		}
 
 		if ($constructorReflection !== null) {
-			$scope = $scope->invalidateVolatileExpressionsAfterCall(
-				true,
-				$constructorReflection->getDeclaringClass()->isBuiltin(),
-				$constructorReflection->hasSideEffects()->no(),
-			);
+			// an impure user constructor may reach ob_start()/openssl_*() transitively
+			if (!$constructorReflection->getDeclaringClass()->isBuiltin() && !$constructorReflection->hasSideEffects()->no()) {
+				$scope = $scope->invalidateVolatileExpressions();
+			}
 		} else {
 			// no constructor reflection: the callee is only safe when the class is
 			// known and cannot be instantiated as an impure subclass
 			$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
-			$scope = $scope->invalidateVolatileExpressionsAfterCall($calleeKnown, false, true);
+			if (!$calleeKnown) {
+				$scope = $scope->invalidateVolatileExpressions();
+			}
 		}
 
 		return new ExpressionResult(

@@ -18,8 +18,8 @@ use function in_array;
  *
  * Forgetting the tracked level after impure code that PHPStan cannot inspect
  * (user functions, methods, callables may open or close buffers) is not handled
- * here but by MutatingScope::invalidateVolatileExpressionsAfterCall(), which
- * concentrates that policy for every volatile global-state expression.
+ * here but by MutatingScope::invalidateVolatileExpressions(), which the call
+ * handlers invoke for every volatile global-state expression.
  */
 final class OutputBufferHelper
 {

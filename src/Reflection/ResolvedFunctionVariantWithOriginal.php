@@ -122,6 +122,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 						$closureThisType,
 						$param->getAttributes(),
 						$param->getAllowedConstants(),
+						$param->isPureUnlessCallableIsImpureParameter(),
 					);
 				},
 				$this->parametersAcceptor->getParameters(),

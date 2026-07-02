@@ -40,6 +40,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	 * @param array<string, bool> $phpDocParameterImmediatelyInvokedCallable
 	 * @param array<string, Type> $phpDocParameterClosureThisTypes
 	 * @param list<AttributeReflection> $attributes
+	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -62,6 +63,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private array $phpDocParameterImmediatelyInvokedCallable,
 		private array $phpDocParameterClosureThisTypes,
 		private array $attributes,
+		private array $phpDocParameterPureUnlessCallableIsImpure,
 	)
 	{
 	}
@@ -130,6 +132,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$this->phpDocParameterClosureThisTypes[$reflection->getName()] ?? null,
 				$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 				$this->allowedConstantsMapProvider->getForFunctionParameter(strtolower($this->reflection->getName()), $reflection->getName()),
+				$this->phpDocParameterPureUnlessCallableIsImpure[$reflection->getName()] ?? false,
 			);
 		}, $this->reflection->getParameters());
 	}
@@ -215,7 +218,7 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return [];
+		return $this->phpDocParameterPureUnlessCallableIsImpure;
 	}
 
 	public function isBuiltin(): bool

@@ -133,6 +133,7 @@ final class NativeFunctionReflectionProvider
 						$phpDocType = null;
 						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						$closureThisType = null;
+						$pureUnlessCallableIsImpureParameter = isset($pureUnlessCallableIsImpureParameters[$name]) && $pureUnlessCallableIsImpureParameters[$name];
 						if ($phpDoc !== null) {
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamTags())) {
 								$phpDocType = $phpDoc->getParamTags()[$parameterSignature->getName()]->getType();
@@ -142,6 +143,9 @@ final class NativeFunctionReflectionProvider
 							}
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamClosureThisTags())) {
 								$closureThisType = $phpDoc->getParamClosureThisTags()[$parameterSignature->getName()]->getType();
+							}
+							if (($phpDoc->getParamsPureUnlessCallableIsImpure()[$parameterSignature->getName()] ?? false) === true) {
+								$pureUnlessCallableIsImpureParameter = true;
 							}
 						}
 
@@ -159,7 +163,7 @@ final class NativeFunctionReflectionProvider
 							$closureThisType,
 							[],
 							$allowedConstantsMapProvider->getForFunctionParameter($lowerCasedFunctionName, $parameterSignature->getName()),
-							isset($pureUnlessCallableIsImpureParameters[$name]) && $pureUnlessCallableIsImpureParameters[$name],
+							$pureUnlessCallableIsImpureParameter,
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),

@@ -393,8 +393,11 @@ final class PhpDocNodeResolver
 	public function resolveParamPureUnlessCallableIsImpure(PhpDocNode $phpDocNode): array
 	{
 		$parameters = [];
-		foreach ($phpDocNode->getPureUnlessCallableIsImpureTagValues() as $tag) {
-			$parameters[$tag->parameterName] = true;
+		foreach (['@pure-unless-callable-is-impure', '@phpstan-pure-unless-callable-is-impure'] as $tagName) {
+			foreach ($phpDocNode->getPureUnlessCallableIsImpureTagValues($tagName) as $tag) {
+				$parameterName = substr($tag->parameterName, 1);
+				$parameters[$parameterName] = true;
+			}
 		}
 
 		return $parameters;

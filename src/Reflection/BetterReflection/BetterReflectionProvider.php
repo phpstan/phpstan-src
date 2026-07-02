@@ -292,6 +292,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocParameterOutTags = [];
 		$phpDocParameterImmediatelyInvokedCallable = [];
 		$phpDocParameterClosureThisTypeTags = [];
+		$phpDocParameterPureUnlessCallableIsImpure = [];
 
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -318,6 +319,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
+			$phpDocParameterPureUnlessCallableIsImpure = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
 		}
 
 		return $this->functionReflectionFactory->create(
@@ -338,6 +340,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterImmediatelyInvokedCallable,
 			array_map(static fn (ParamClosureThisTag $tag): Type => $tag->getType(), $phpDocParameterClosureThisTypeTags),
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
+			$phpDocParameterPureUnlessCallableIsImpure,
 		);
 	}
 

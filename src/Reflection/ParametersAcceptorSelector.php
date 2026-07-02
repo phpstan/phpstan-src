@@ -768,6 +768,7 @@ final class ParametersAcceptorSelector
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getClosureThisType() : null,
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAttributes() : [],
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null,
+						$parameter instanceof ExtendedParameterReflection && $parameter->isPureUnlessCallableIsImpureParameter(),
 					);
 					continue;
 				}
@@ -822,6 +823,9 @@ final class ParametersAcceptorSelector
 					}
 				}
 
+				$pureUnlessCallableIsImpureParameter = $parameters[$i]->isPureUnlessCallableIsImpureParameter()
+					|| ($parameter instanceof ExtendedParameterReflection && $parameter->isPureUnlessCallableIsImpureParameter());
+
 				$parameters[$i] = new ExtendedDummyParameter(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),
 					$type,
@@ -836,6 +840,7 @@ final class ParametersAcceptorSelector
 					$closureThisType,
 					$attributes,
 					$allowedConstants,
+					$pureUnlessCallableIsImpureParameter,
 				);
 
 				if ($isVariadic) {
@@ -1265,6 +1270,7 @@ final class ParametersAcceptorSelector
 			$wrapped->getClosureThisType(),
 			$wrapped->getAttributes(),
 			$wrapped->getAllowedConstants(),
+			$wrapped->isPureUnlessCallableIsImpureParameter(),
 		);
 	}
 

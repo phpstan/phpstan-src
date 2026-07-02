@@ -910,7 +910,8 @@ class NodeScopeResolver
 				$phpDocImmediatelyInvokedCallableParameters,
 				$phpDocClosureThisTypeParameters,
 				$isConstructor,
-				phpDocPureUnlessCallableIsImpureParameters: $pureUnlessCallableIsImpureParameters,
+				null,
+				$pureUnlessCallableIsImpureParameters,
 			);
 
 			if (!$scope->isInClass()) {

@@ -1186,7 +1186,9 @@ final class PhpClassReflectionExtension
 			$phpDocParameterOutTypes,
 			$phpDocImmediatelyInvokedCallableParameters,
 			$phpDocClosureThisTypeParameters,
-			phpDocPureUnlessCallableIsImpureParameters: $phpDocPureUnlessCallableIsImpureParameters,
+			false,
+			null,
+			$phpDocPureUnlessCallableIsImpureParameters,
 		);
 
 		$propertyTypes = [];

@@ -15,6 +15,7 @@ use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ArrayReduceArgVisitor;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -71,11 +72,14 @@ final class ScopeOps
 		$attributes = $node->getAttributes();
 		if (
 			$node instanceof Node\FunctionLike
-			&& (($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+			&& (
+				(($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+				|| (($attributes[ArrayReduceArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+			)
 			&& (($attributes['startFilePos'] ?? null) !== null)
 		) {
 			$key .= '/*' . $attributes['startFilePos'];
-			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] as $arg) {
+			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? [] as $arg) {
 				$key .= ':' . $exprPrinter->printExpr($arg->value);
 			}
 			$key .= '*/';

@@ -136,7 +136,7 @@ use function sprintf;
 						],
 					];
 					$prBody = $pullRequests[0]['body'] ?? '';
-					if (preg_match_all('/(?:closes?|fix(?:es)?)\s+(?:https:\/\/github\.com\/phpstan\/phpstan\/issues\/|phpstan\/phpstan#)(\d+)/i', $prBody, $matches)) {
+					if (preg_match_all('/(?:closes?|fix(?:es)?)\s+(?:https:\/\/github\.com\/phpstan\/phpstan\/issues\/|phpstan\/phpstan#)(\d+)/i', $prBody, $matches) > 0) {
 						foreach (array_unique($matches[1]) as $issueNumber) {
 							$items[] = [
 								'number' => (int) $issueNumber,

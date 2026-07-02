@@ -401,6 +401,11 @@ final class FileTypeMapper
 			}
 
 			if ($useCache) {
+				$pool = [];
+				foreach ($nameScopeMap as $nameScopeKey => $intermediaryNameScope) {
+					$nameScopeMap[$nameScopeKey] = $intermediaryNameScope->intern($pool);
+				}
+
 				return [$nameScopeMap, array_keys($filesWithHashes)];
 			}
 		}

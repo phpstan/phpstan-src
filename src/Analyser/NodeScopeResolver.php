@@ -214,7 +214,6 @@ class NodeScopeResolver
 		private readonly Container $container,
 		private readonly ReflectionProvider $reflectionProvider,
 		private readonly InitializerExprTypeResolver $initializerExprTypeResolver,
-		#[AutowiredParameter(ref: '@nodeScopeResolverReflector')]
 		private readonly Reflector $reflector,
 		private readonly ClassReflectionFactory $classReflectionFactory,
 		private readonly ParameterOutTypeExtensionProvider $parameterOutTypeExtensionProvider,

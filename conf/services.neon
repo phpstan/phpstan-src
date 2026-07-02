@@ -246,10 +246,6 @@ services:
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider
 
-	nodeScopeResolverReflector:
-		factory: @betterReflectionReflector
-		autowired: false
-
 	# not registered using attributes because people often override it
 
 	exceptionTypeResolver:

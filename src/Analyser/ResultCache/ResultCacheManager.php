@@ -17,9 +17,9 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\ProjectConfigHelper;
 use PHPStan\File\CouldNotReadFileException;
+use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FileWriter;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
@@ -36,7 +36,11 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
+use function error_get_last;
 use function explode;
+use function fclose;
+use function fopen;
+use function fwrite;
 use function get_loaded_extensions;
 use function getenv;
 use function hash_file;
@@ -49,6 +53,7 @@ use function microtime;
 use function sort;
 use function sprintf;
 use function str_starts_with;
+use function substr;
 use function time;
 use function unlink;
 use function var_export;
@@ -1153,25 +1158,89 @@ final class ResultCacheManager
 
 		$file = $this->cacheFilePath;
 
-		FileWriter::write(
-			$file,
-			"<?php declare(strict_types = 1);
+		// streamed to the file section by section - building the whole
+		// var_export()ed contents in memory at once would take up roughly
+		// twice the size of the resulting file in the main process
+		$handle = @fopen($file, 'w');
+		if ($handle === false) {
+			$error = error_get_last();
+			throw new CouldNotWriteFileException($file, $error !== null ? $error['message'] : 'unknown cause');
+		}
+
+		try {
+			$this->writeToHandle($handle, $file, "<?php declare(strict_types = 1);
 
 return [
 	'lastFullAnalysisTime' => " . var_export($lastFullAnalysisTime, true) . ",
 	'meta' => " . var_export($meta, true) . ",
 	'projectExtensionFiles' => " . var_export($projectExtensionFiles, true) . ",
-	'errorsCallback' => static function (): array { return " . var_export($errors, true) . "; },
-	'locallyIgnoredErrorsCallback' => static function (): array { return " . var_export($locallyIgnoredErrors, true) . "; },
-	'linesToIgnore' => " . var_export($linesToIgnore, true) . ",
-	'unmatchedLineIgnores' => " . var_export($unmatchedLineIgnores, true) . ",
-	'collectedDataCallback' => static function (): array { return " . var_export($collectedData, true) . "; },
-	'dependencies' => " . var_export($invertedDependencies, true) . ",
-	'packageDependencies' => " . var_export($packageDependencies, true) . ",
-	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . '; },
+	'errorsCallback' => static function (): array { return ");
+			$this->streamArrayVarExportToHandle($handle, $file, $errors);
+			$this->writeToHandle($handle, $file, "; },
+	'locallyIgnoredErrorsCallback' => static function (): array { return ");
+			$this->streamArrayVarExportToHandle($handle, $file, $locallyIgnoredErrors);
+			$this->writeToHandle($handle, $file, "; },
+	'linesToIgnore' => ");
+			$this->streamArrayVarExportToHandle($handle, $file, $linesToIgnore);
+			$this->writeToHandle($handle, $file, ",
+	'unmatchedLineIgnores' => ");
+			$this->streamArrayVarExportToHandle($handle, $file, $unmatchedLineIgnores);
+			$this->writeToHandle($handle, $file, ",
+	'collectedDataCallback' => static function (): array { return ");
+			$this->streamArrayVarExportToHandle($handle, $file, $collectedData);
+			$this->writeToHandle($handle, $file, "; },
+	'dependencies' => ");
+			$this->streamArrayVarExportToHandle($handle, $file, $invertedDependencies);
+			$this->writeToHandle($handle, $file, ",
+	'packageDependencies' => ");
+			$this->streamArrayVarExportToHandle($handle, $file, $packageDependencies);
+			$this->writeToHandle($handle, $file, ",
+	'exportedNodesCallback' => static function (): array { return ");
+			$this->streamArrayVarExportToHandle($handle, $file, $exportedNodes);
+			$this->writeToHandle($handle, $file, '; },
 ];
-',
-		);
+');
+		} finally {
+			fclose($handle);
+		}
+	}
+
+	/**
+	 * @param resource $handle
+	 */
+	private function writeToHandle($handle, string $file, string $contents): void
+	{
+		if (@fwrite($handle, $contents) === false) {
+			$error = error_get_last();
+			throw new CouldNotWriteFileException($file, $error !== null ? $error['message'] : 'unknown cause');
+		}
+	}
+
+	/**
+	 * Streams the var_export() representation of an array to the file entry
+	 * by entry, producing output byte-identical to var_export($values, true).
+	 *
+	 * var_export() builds the whole export in memory even when told to print it,
+	 * so exporting a big section in one call would take up as much memory
+	 * as the resulting file section itself.
+	 *
+	 * Each entry is exported wrapped in a single-entry array whose "array (\n"
+	 * prefix and "\n)" suffix are stripped, yielding the same bytes (including
+	 * indentation) the entry would get inside the full export. Indenting the lines
+	 * of a standalone value export would corrupt multi-line string contents instead.
+	 *
+	 * @param resource $handle
+	 * @param array<mixed> $values
+	 */
+	private function streamArrayVarExportToHandle($handle, string $file, array $values): void
+	{
+		$this->writeToHandle($handle, $file, 'array (');
+		foreach ($values as $key => $value) {
+			$entry = var_export([$key => $value], true);
+			$this->writeToHandle($handle, $file, "\n" . substr($entry, 8, -2));
+		}
+
+		$this->writeToHandle($handle, $file, "\n)");
 	}
 
 	/**

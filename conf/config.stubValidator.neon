@@ -19,19 +19,16 @@ services:
 		arguments:
 			allStubFiles: %allStubFiles%
 			php8Parser: @php8PhpParser
-			memoizingSourceLocatorEntriesCountMax: %cache.memoizingSourceLocatorEntriesCountMax%
 
 	# overrides service from parsers.neon
 	defaultAnalysisParser!:
 		factory: @stubParser
 
-	# overrides service from services.neon
-	nodeScopeResolverReflector:
-		factory: @stubReflector
-
-	# overrides service from services.neon so that Reflector autowires to stubReflector
-	originalBetterReflectionReflector!:
-		factory: @stubReflector
+	# overrides service from services.neon so that the reflector
+	# (and everything above it) reflects only the stub files
+	betterReflectionSourceLocator!:
+		factory: @stubSourceLocator
+		autowired: false
 
 	# overrides service from services.neon
 	reflectionProvider:
@@ -52,14 +49,8 @@ services:
 	stubBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
-			reflector: @stubReflector
+			reflector: @betterReflectionReflector
 			universalObjectCratesClasses: %universalObjectCratesClasses%
-		autowired: false
-
-	stubReflector:
-		class: PHPStan\BetterReflection\Reflector\DefaultReflector
-		arguments:
-			sourceLocator: @stubSourceLocator
 		autowired: false
 
 	stubSourceLocator:

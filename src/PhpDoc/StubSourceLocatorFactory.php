@@ -7,7 +7,6 @@ use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
-use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
@@ -26,7 +25,6 @@ final class StubSourceLocatorFactory
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private array $allStubFiles,
-		private int $memoizingSourceLocatorEntriesCountMax,
 	)
 	{
 	}
@@ -52,10 +50,9 @@ final class StubSourceLocatorFactory
 
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpStormStubsSourceStubber);
 
-		return new MemoizingSourceLocator(
-			new AggregateSourceLocator($locators),
-			$this->memoizingSourceLocatorEntriesCountMax === 0 ? null : $this->memoizingSourceLocatorEntriesCountMax,
-		);
+		// no MemoizingSourceLocator here - located reflections are already memoized
+		// by MemoizingReflector, a second cache layer would only pin them in memory twice
+		return new AggregateSourceLocator($locators);
 	}
 
 }

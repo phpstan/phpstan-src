@@ -9,7 +9,6 @@ use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStub
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Php\PhpVersion;
@@ -47,7 +46,6 @@ final class TestCaseSourceLocatorFactory
 		private PhpVersion $phpVersion,
 		private array $fileExtensions,
 		private ?array $excludePaths,
-		private int $memoizingSourceLocatorEntriesCountMax,
 	)
 	{
 	}
@@ -98,10 +96,9 @@ final class TestCaseSourceLocatorFactory
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 
-		return new MemoizingSourceLocator(
-			new AggregateSourceLocator($locators),
-			$this->memoizingSourceLocatorEntriesCountMax === 0 ? null : $this->memoizingSourceLocatorEntriesCountMax,
-		);
+		// no MemoizingSourceLocator here - located reflections are already memoized
+		// by MemoizingReflector, a second cache layer would only pin them in memory twice
+		return new AggregateSourceLocator($locators);
 	}
 
 }

@@ -10,8 +10,10 @@ use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function strtolower;
 
@@ -29,8 +31,8 @@ final class MemoizingReflector implements Reflector
 	private array $functionReflections = [];
 
 	public function __construct(
-		#[AutowiredParameter(ref: '@originalBetterReflectionReflector')]
-		private Reflector $reflector,
+		#[AutowiredParameter(ref: '@betterReflectionSourceLocator')]
+		private SourceLocator $sourceLocator,
 	)
 	{
 	}
@@ -51,13 +53,22 @@ final class MemoizingReflector implements Reflector
 			return $classReflection;
 		}
 
-		try {
-			return $this->classReflections[$lowerClassName] = $this->reflector->reflectClass($className);
-		} catch (IdentifierNotFound $e) {
+		// located directly, without a DefaultReflector - created reflections capture
+		// the reflector passed here and resolve e.g. parent classes and interfaces
+		// through it, so passing $this routes those lookups through this cache too
+		$identifier = new Identifier($className, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
+		$classReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
+		if ($classReflection === null) {
 			$this->classReflections[$className] = null;
 
-			throw $e;
+			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
+
+		if (!$classReflection instanceof ReflectionClass) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->classReflections[$lowerClassName] = $classReflection;
 	}
 
 	#[Override]
@@ -72,13 +83,19 @@ final class MemoizingReflector implements Reflector
 			return $constantReflection;
 		}
 
-		try {
-			return $this->constantReflections[$constantName] = $this->reflector->reflectConstant($constantName);
-		} catch (IdentifierNotFound $e) {
+		$identifier = new Identifier($constantName, new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT));
+		$constantReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
+		if ($constantReflection === null) {
 			$this->constantReflections[$constantName] = null;
 
-			throw $e;
+			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
+
+		if (!$constantReflection instanceof ReflectionConstant) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->constantReflections[$constantName] = $constantReflection;
 	}
 
 	#[Override]
@@ -94,31 +111,49 @@ final class MemoizingReflector implements Reflector
 			return $functionReflection;
 		}
 
-		try {
-			return $this->functionReflections[$lowerFunctionName] = $this->reflector->reflectFunction($functionName);
-		} catch (IdentifierNotFound $e) {
+		$identifier = new Identifier($functionName, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION));
+		$functionReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
+		if ($functionReflection === null) {
 			$this->functionReflections[$lowerFunctionName] = null;
 
-			throw $e;
+			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
+
+		if (!$functionReflection instanceof ReflectionFunction) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->functionReflections[$lowerFunctionName] = $functionReflection;
 	}
 
+	/**
+	 * @return list<ReflectionClass>
+	 */
 	#[Override]
 	public function reflectAllClasses(): iterable
 	{
-		return $this->reflector->reflectAllClasses();
+		/** @var list<ReflectionClass> */
+		return $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
 	}
 
+	/**
+	 * @return list<ReflectionFunction>
+	 */
 	#[Override]
 	public function reflectAllFunctions(): iterable
 	{
-		return $this->reflector->reflectAllFunctions();
+		/** @var list<ReflectionFunction> */
+		return $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION));
 	}
 
+	/**
+	 * @return list<ReflectionConstant>
+	 */
 	#[Override]
 	public function reflectAllConstants(): iterable
 	{
-		return $this->reflector->reflectAllConstants();
+		/** @var list<ReflectionConstant> */
+		return $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT));
 	}
 
 }

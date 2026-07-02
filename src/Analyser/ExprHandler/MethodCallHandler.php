@@ -186,7 +186,6 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
-		// an unresolved or impure user method may reach ob_start()/openssl_*() transitively
 		if (
 			$methodReflection === null
 			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())

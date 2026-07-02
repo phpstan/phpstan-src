@@ -10,17 +10,6 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function in_array;
 
-/**
- * Tracks the output-buffering nesting level (the value of ob_get_level())
- * across calls. The level is stored in scope as the type of the
- * ob_get_level() expression. Calls to ob_start()/ob_end_*() shift it by a
- * known delta.
- *
- * Forgetting the tracked level after impure code that PHPStan cannot inspect
- * (user functions, methods, callables may open or close buffers) is not handled
- * here but by MutatingScope::invalidateVolatileExpressions(), which the call
- * handlers invoke for every volatile global-state expression.
- */
 final class OutputBufferHelper
 {
 

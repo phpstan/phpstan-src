@@ -2,13 +2,11 @@
 
 namespace PHPStan\Type;
 
-use Closure;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use function array_map;
+use function array_merge;
 use function array_unique;
 use function array_values;
-use function sprintf;
 
 /**
  * Result of a Type::isSuperTypeOf() check — whether one type is a supertype of another.
@@ -27,16 +25,6 @@ use function sprintf;
  *
  * Can be converted to AcceptsResult via toAcceptsResult().
  *
- * Reasons are computed lazily: `isSuperTypeOf()` runs on hot analysis paths, but the reason
- * strings are only ever read when a rule renders an error tip. Building them eagerly - and
- * propagating them through the type algebra via and()/or()/extremeIdentity() - made large
- * codebases spend their time constructing strings that were then thrown away. A reason-bearing
- * result therefore stores a factory closure; the public `$reasons` property materializes it on
- * first access through __get(), and the composition methods compose factories without forcing
- * them.
- *
- * @property-read list<string> $reasons Human-readable explanations of the type relationship
- *
  * @api
  */
 final class IsSuperTypeOfResult
@@ -48,54 +36,15 @@ final class IsSuperTypeOfResult
 
 	private static self $NO;
 
-	/** @var list<string>|null */
-	private ?array $materializedReasons;
-
-	/** @var (Closure(): list<string>)|null */
-	private ?Closure $reasonsFactory;
-
 	/**
 	 * @api
-	 * @param list<string>|(Closure(): list<string>) $reasons Human-readable explanations of the type relationship
+	 * @param list<string> $reasons Human-readable explanations of the type relationship
 	 */
 	public function __construct(
 		public readonly TrinaryLogic $result,
-		array|Closure $reasons,
+		public readonly array $reasons,
 	)
 	{
-		if ($reasons instanceof Closure) {
-			$this->materializedReasons = null;
-			$this->reasonsFactory = $reasons;
-		} else {
-			$this->materializedReasons = $reasons;
-			$this->reasonsFactory = null;
-		}
-	}
-
-	public function __get(string $name): mixed
-	{
-		if ($name === 'reasons') {
-			return $this->getReasons();
-		}
-
-		throw new ShouldNotHappenException(sprintf('Access to an undefined property %s::$%s.', self::class, $name));
-	}
-
-	public function __isset(string $name): bool
-	{
-		return $name === 'reasons';
-	}
-
-	/** @return list<string> */
-	public function getReasons(): array
-	{
-		if ($this->materializedReasons === null) {
-			$factory = $this->reasonsFactory;
-			$this->materializedReasons = $factory === null ? [] : $factory();
-			$this->reasonsFactory = null;
-		}
-
-		return $this->materializedReasons;
 	}
 
 	/**
@@ -130,11 +79,11 @@ final class IsSuperTypeOfResult
 		return self::$YES ??= new self(TrinaryLogic::createYes(), []);
 	}
 
-	/** @param list<string>|(Closure(): list<string>) $reasons */
-	public static function createNo(array|Closure $reasons = []): self
+	/** @param list<string> $reasons */
+	public static function createNo(array $reasons = []): self
 	{
 		if ($reasons === []) {
-			return self::$NO ??= new self(TrinaryLogic::createNo(), []);
+			return self::$NO ??= new self(TrinaryLogic::createNo(), $reasons);
 		}
 		return new self(TrinaryLogic::createNo(), $reasons);
 	}
@@ -154,46 +103,48 @@ final class IsSuperTypeOfResult
 
 	public function toAcceptsResult(): AcceptsResult
 	{
-		return new AcceptsResult($this->result, fn (): array => $this->getReasons());
+		return new AcceptsResult($this->result, $this->reasons);
 	}
 
 	public function and(self ...$others): self
 	{
 		$results = [];
+		$reasons = [];
 		foreach ($others as $other) {
 			$results[] = $other->result;
+			$reasons[] = $other->reasons;
 		}
-
-		$operands = [$this, ...$others];
 
 		return new self(
 			$this->result->and(...$results),
-			static fn (): array => self::mergeReasons($operands),
+			array_values(array_unique(array_merge($this->reasons, ...$reasons))),
 		);
 	}
 
 	public function or(self ...$others): self
 	{
 		$results = [];
+		$reasons = [];
 		foreach ($others as $other) {
 			$results[] = $other->result;
+			$reasons[] = $other->reasons;
 		}
-
-		$operands = [$this, ...$others];
 
 		return new self(
 			$this->result->or(...$results),
-			static fn (): array => self::mergeReasons($operands),
+			array_values(array_unique(array_merge($this->reasons, ...$reasons))),
 		);
 	}
 
 	/** @param callable(string): string $cb */
 	public function decorateReasons(callable $cb): self
 	{
-		return new self(
-			$this->result,
-			fn (): array => array_map($cb, $this->getReasons()),
-		);
+		$reasons = [];
+		foreach ($this->reasons as $reason) {
+			$reasons[] = $cb($reason);
+		}
+
+		return new self($this->result, $reasons);
 	}
 
 	/** @see TrinaryLogic::extremeIdentity() */
@@ -204,14 +155,15 @@ final class IsSuperTypeOfResult
 		}
 
 		$results = [];
+		$reasons = [];
 		foreach ($operands as $operand) {
 			$results[] = $operand->result;
+			foreach ($operand->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
 
-		return new self(
-			TrinaryLogic::extremeIdentity(...$results),
-			static fn (): array => self::mergeReasons($operands),
-		);
+		return new self(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)));
 	}
 
 	/** @see TrinaryLogic::maxMin() */
@@ -222,14 +174,15 @@ final class IsSuperTypeOfResult
 		}
 
 		$results = [];
+		$reasons = [];
 		foreach ($operands as $operand) {
 			$results[] = $operand->result;
+			foreach ($operand->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
 
-		return new self(
-			TrinaryLogic::maxMin(...$results),
-			static fn (): array => self::mergeReasons($operands),
-		);
+		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)));
 	}
 
 	/**
@@ -242,7 +195,7 @@ final class IsSuperTypeOfResult
 		callable $callback,
 	): self
 	{
-		$operands = [];
+		$reasons = [];
 		$hasNo = false;
 		foreach ($objects as $object) {
 			$isSuperTypeOf = $callback($object);
@@ -252,39 +205,25 @@ final class IsSuperTypeOfResult
 				$hasNo = true;
 			}
 
-			$operands[] = $isSuperTypeOf;
+			foreach ($isSuperTypeOf->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
 
 		return new self(
 			$hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
-			static fn (): array => self::mergeReasons($operands),
+			array_values(array_unique($reasons)),
 		);
 	}
 
 	public function negate(): self
 	{
-		return new self($this->result->negate(), fn (): array => $this->getReasons());
+		return new self($this->result->negate(), $this->reasons);
 	}
 
 	public function describe(): string
 	{
 		return $this->result->describe();
-	}
-
-	/**
-	 * @param array<self> $operands
-	 * @return list<string>
-	 */
-	private static function mergeReasons(array $operands): array
-	{
-		$reasons = [];
-		foreach ($operands as $operand) {
-			foreach ($operand->getReasons() as $reason) {
-				$reasons[] = $reason;
-			}
-		}
-
-		return array_values(array_unique($reasons));
 	}
 
 }

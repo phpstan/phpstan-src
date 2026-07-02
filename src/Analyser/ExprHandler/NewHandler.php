@@ -215,18 +215,12 @@ final class NewHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 
-		if ($constructorReflection !== null) {
-			// an impure user constructor may reach ob_start()/openssl_*() transitively
-			if (!$constructorReflection->getDeclaringClass()->isBuiltin() && !$constructorReflection->hasSideEffects()->no()) {
-				$scope = $scope->invalidateVolatileExpressions();
-			}
-		} else {
-			// no constructor reflection: the callee is only safe when the class is
-			// known and cannot be instantiated as an impure subclass
-			$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
-			if (!$calleeKnown) {
-				$scope = $scope->invalidateVolatileExpressions();
-			}
+		$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
+		if (
+			($constructorReflection !== null && !$constructorReflection->getDeclaringClass()->isBuiltin() && !$constructorReflection->hasSideEffects()->no())
+			|| ($constructorReflection === null && !$calleeKnown)
+		) {
+			$scope = $scope->invalidateVolatileExpressions();
 		}
 
 		return new ExpressionResult(

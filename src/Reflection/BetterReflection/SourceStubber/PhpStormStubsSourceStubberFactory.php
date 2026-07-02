@@ -18,13 +18,20 @@ final class PhpStormStubsSourceStubberFactory
 		private Parser $phpParser,
 		private Printer $printer,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%cache.phpStormStubsNodesCountMax%')]
+		private int $phpStormStubsNodesCountMax,
 	)
 	{
 	}
 
 	public function create(): PhpStormStubsSourceStubber
 	{
-		return new PhpStormStubsSourceStubber($this->phpParser, $this->printer, $this->phpVersion->getVersionId());
+		return new PhpStormStubsSourceStubber(
+			$this->phpParser,
+			$this->printer,
+			$this->phpVersion->getVersionId(),
+			$this->phpStormStubsNodesCountMax === 0 ? null : $this->phpStormStubsNodesCountMax,
+		);
 	}
 
 }

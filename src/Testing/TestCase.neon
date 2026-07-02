@@ -9,6 +9,7 @@ services:
 			php8Parser: @php8PhpParser
 			fileExtensions: %fileExtensions%
 			excludePaths: %excludePaths%
+			memoizingSourceLocatorEntriesCountMax: %cache.memoizingSourceLocatorEntriesCountMax%
 
 	# overrides service from parsers.neon
 	currentPhpVersionSimpleParser!:

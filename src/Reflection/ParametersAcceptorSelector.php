@@ -11,6 +11,7 @@ use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Parser\ArrayFilterArgVisitor;
 use PHPStan\Parser\ArrayFindArgVisitor;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ArrayReduceArgVisitor;
 use PHPStan\Parser\ArrayWalkArgVisitor;
 use PHPStan\Parser\ClosureBindArgVisitor;
 use PHPStan\Parser\ClosureBindToVarVisitor;
@@ -130,6 +131,41 @@ final class ParametersAcceptorSelector
 					$parameters[0] = self::overrideParameterType($parameters[0], $callableType, $nativeCallableType);
 					$parametersAcceptors = [self::overrideAcceptorParameters($acceptor, $parameters)];
 				}
+			}
+
+			foreach ($args as $arg) {
+				$arrayReduceArgs = $arg->value->getAttribute(ArrayReduceArgVisitor::ATTRIBUTE_NAME);
+				if ($arrayReduceArgs === null) {
+					continue;
+				}
+				if (!$arg->value instanceof Node\Expr\Closure && !$arg->value instanceof Node\Expr\ArrowFunction) {
+					break;
+				}
+
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				if (!isset($parameters[1]) || !$parameters[1]->getType()->isCallable()->yes()) {
+					// the acceptor belongs to the callback itself, not to array_reduce()
+					break;
+				}
+
+				$callbackParameterAcceptors = $parameters[1]->getType()->getCallableParametersAcceptors($scope);
+				$callbackAcceptors = $scope->getType($arg->value)->getCallableParametersAcceptors($scope);
+				if (count($callbackParameterAcceptors) !== 1 || count($callbackAcceptors) !== 1) {
+					break;
+				}
+
+				[$arrayArg, $initialArg] = $arrayReduceArgs;
+				$initialType = $initialArg !== null ? $scope->getType($initialArg->value) : new NullType();
+				$carryType = TypeCombinator::union($initialType, $callbackAcceptors[0]->getReturnType());
+				$itemType = $scope->getIterableValueType($scope->getType($arrayArg->value));
+				$callableType = new CallableType([
+					new DummyParameter('carry', $carryType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+					new DummyParameter('item', $itemType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+				], $callbackParameterAcceptors[0]->getReturnType(), false);
+				$parameters[1] = self::overrideParameterType($parameters[1], $callableType, $callableType);
+				$parametersAcceptors = [self::overrideAcceptorParameters($acceptor, $parameters)];
+				break;
 			}
 
 			if (count($args) >= 3 && (bool) $args[0]->getAttribute(CurlSetOptArgVisitor::ATTRIBUTE_NAME)) {

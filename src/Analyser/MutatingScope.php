@@ -40,6 +40,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ArrayReduceArgVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -979,11 +980,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$attributes = $node->getAttributes();
 		if (
 			$node instanceof Node\FunctionLike
-			&& (($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+			&& (
+				(($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+				|| (($attributes[ArrayReduceArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+			)
 			&& (($attributes['startFilePos'] ?? null) !== null)
 		) {
 			$key .= '/*' . $attributes['startFilePos'];
-			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] as $arg) {
+			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? [] as $arg) {
 				$key .= ':' . $this->exprPrinter->printExpr($arg->value);
 			}
 			$key .= '*/';

@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\SignatureMap;
 use Nette\Schema\Expect;
 use Nette\Schema\Processor;
 use PHPStan\Testing\PHPStanTestCase;
+use function count;
 
 class FunctionMetadataTest extends PHPStanTestCase
 {
@@ -17,8 +18,11 @@ class FunctionMetadataTest extends PHPStanTestCase
 		$processor = new Processor();
 		$processor->process(Expect::arrayOf(
 			Expect::structure([
-				'hasSideEffects' => Expect::bool()->required(),
-			])->required(),
+				'hasSideEffects' => Expect::bool(),
+				'pureUnlessCallableIsImpureParameters' => Expect::arrayOf(Expect::bool(), Expect::string()),
+			])
+				->assert(static fn ($v) => count((array) $v) > 0, 'Metadata entries must not be empty.')
+				->required(),
 		)->required(), $data);
 	}
 

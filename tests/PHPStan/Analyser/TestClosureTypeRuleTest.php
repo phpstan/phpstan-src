@@ -21,11 +21,11 @@ class TestClosureTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/nsrt/closure-passed-to-type.php'], [
 			[
 				'Closure type: Closure(mixed): (1|2|3)',
-				25,
+				26,
 			],
 			[
 				'Closure type: Closure(mixed): (1|2|3)',
-				35,
+				36,
 			],
 		]);
 	}

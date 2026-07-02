@@ -216,23 +216,18 @@ final class NewHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 
-		if (OutputBufferHelper::isLevelTracked($scope)) {
-			$forgetOutputBufferLevel = false;
-			if ($constructorReflection !== null) {
-				// an impure user-defined constructor may open or close output buffers
-				$forgetOutputBufferLevel = !$constructorReflection->getDeclaringClass()->isBuiltin()
-					&& !$constructorReflection->hasSideEffects()->no();
-			} elseif ($classReflection === null) {
-				// unknown class - the constructor may do anything
-				$forgetOutputBufferLevel = true;
-			} elseif ($isDynamic && !$classReflection->isFinal()) {
-				// a subclass constructor may open or close output buffers
-				$forgetOutputBufferLevel = true;
-			}
-
-			if ($forgetOutputBufferLevel) {
-				$scope = OutputBufferHelper::invalidateLevel($scope);
-			}
+		if ($constructorReflection !== null) {
+			$scope = OutputBufferHelper::invalidateLevelAfterCall(
+				$scope,
+				true,
+				$constructorReflection->getDeclaringClass()->isBuiltin(),
+				$constructorReflection->hasSideEffects()->no(),
+			);
+		} else {
+			// no constructor reflection: the callee is only safe when the class is
+			// known and cannot be instantiated as an impure subclass
+			$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
+			$scope = OutputBufferHelper::invalidateLevelAfterCall($scope, $calleeKnown, false, true);
 		}
 
 		return new ExpressionResult(

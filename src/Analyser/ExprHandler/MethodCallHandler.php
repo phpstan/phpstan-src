@@ -187,15 +187,12 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
-		if (
-			OutputBufferHelper::isLevelTracked($scope)
-			&& (
-				$methodReflection === null
-				|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
-			)
-		) {
-			$scope = OutputBufferHelper::invalidateLevel($scope);
-		}
+		$scope = OutputBufferHelper::invalidateLevelAfterCall(
+			$scope,
+			$methodReflection !== null,
+			$methodReflection !== null && $methodReflection->getDeclaringClass()->isBuiltin(),
+			$methodReflection !== null && $methodReflection->hasSideEffects()->no(),
+		);
 
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());

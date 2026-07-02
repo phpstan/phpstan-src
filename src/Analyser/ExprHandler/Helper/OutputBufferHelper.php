@@ -84,4 +84,44 @@ final class OutputBufferHelper
 		return $scope;
 	}
 
+	/**
+	 * Forgets the tracked level after a call whose callee (a function, method or
+	 * constructor) may transitively open or close an output buffer. This is the
+	 * single policy shared by all call handlers.
+	 *
+	 * The callee is safe (the narrowing survives) only when it is either a
+	 * provably pure routine or a PHP built-in other than the ob_* family (which
+	 * is handled separately via getLevelDelta()). Everything else - unknown or
+	 * un-inspectable callees, and impure user code - may reach ob_start()/
+	 * ob_end_*() and must forget the level.
+	 *
+	 * A dedicated call is required because the automatic invalidation
+	 * MutatingScope performs after impure calls only covers expressions on the
+	 * callee object, not global output-buffer state. Deciding purely on impure
+	 * points would be too coarse: built-ins such as printf() or
+	 * register_shutdown_function() are impure yet never change the nesting
+	 * level, so the narrowing must survive them.
+	 *
+	 * @param bool $calleeKnown    whether the called routine could be resolved
+	 * @param bool $calleeIsBuiltin whether the called routine is a PHP built-in
+	 * @param bool $calleeIsPure   whether the called routine is provably side-effect-free
+	 */
+	public static function invalidateLevelAfterCall(
+		MutatingScope $scope,
+		bool $calleeKnown,
+		bool $calleeIsBuiltin,
+		bool $calleeIsPure,
+	): MutatingScope
+	{
+		if (!self::isLevelTracked($scope)) {
+			return $scope;
+		}
+
+		if (!$calleeKnown || (!$calleeIsBuiltin && !$calleeIsPure)) {
+			return self::invalidateLevel($scope);
+		}
+
+		return $scope;
+	}
+
 }

@@ -146,6 +146,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
 
+	/**
+	 * Argument-less function-call expressions that may be tracked in scope but
+	 * whose value reflects mutable global/output-buffer state rather than just
+	 * their arguments. Any call to code PHPStan cannot inspect may change that
+	 * state transitively, so these narrowings must be forgotten afterwards. The
+	 * ob_get_level() delta bookkeeping lives in OutputBufferHelper; this list
+	 * only concerns invalidation.
+	 */
+	private const VOLATILE_GLOBAL_STATE_FUNCTIONS = ['ob_get_level', 'openssl_error_string'];
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -636,6 +646,83 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	/**
+	 * Forgets every tracked volatile global-state expression (see
+	 * self::VOLATILE_GLOBAL_STATE_FUNCTIONS). These functions take no arguments,
+	 * so the exact key lookups keep this O(1) in the common case where nothing
+	 * is tracked.
+	 */
+	public function invalidateVolatileExpressions(): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+
+		$changed = false;
+		foreach (self::VOLATILE_GLOBAL_STATE_FUNCTIONS as $functionName) {
+			foreach ([$functionName . '()', '\\' . $functionName . '()'] as $exprString) {
+				if (
+					!array_key_exists($exprString, $expressionTypes)
+					&& !array_key_exists($exprString, $nativeExpressionTypes)
+				) {
+					continue;
+				}
+
+				unset($expressionTypes[$exprString]);
+				unset($nativeExpressionTypes[$exprString]);
+				$changed = true;
+			}
+		}
+
+		if (!$changed) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
+	/**
+	 * Concentrates the "does this call invalidate tracked volatile global state"
+	 * policy shared by all call handlers (function, method, static method and
+	 * constructor calls). The narrowing survives only when the callee is
+	 * provably safe: a PHP built-in (whose output-buffer/openssl effects are
+	 * modelled explicitly elsewhere) or a provably pure routine. Every other
+	 * callee - unresolved, or impure user code - may transitively reach
+	 * ob_start()/ob_end_*()/openssl_*() and must forget the tracked state.
+	 *
+	 * Deciding purely on impure points would be too coarse: built-ins such as
+	 * printf() are impure yet never change the tracked state, so the narrowing
+	 * must survive them.
+	 *
+	 * @param bool $calleeKnown     whether the called routine could be resolved
+	 * @param bool $calleeIsBuiltin whether the called routine is a PHP built-in
+	 * @param bool $calleeIsPure    whether the called routine is provably side-effect-free
+	 */
+	public function invalidateVolatileExpressionsAfterCall(bool $calleeKnown, bool $calleeIsBuiltin, bool $calleeIsPure): self
+	{
+		if ($calleeKnown && ($calleeIsBuiltin || $calleeIsPure)) {
+			return $this;
+		}
+
+		return $this->invalidateVolatileExpressions();
 	}
 
 	/** @api */

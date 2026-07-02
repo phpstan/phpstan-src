@@ -13,7 +13,6 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -217,8 +216,7 @@ final class NewHandler implements ExprHandler
 		}
 
 		if ($constructorReflection !== null) {
-			$scope = OutputBufferHelper::invalidateLevelAfterCall(
-				$scope,
+			$scope = $scope->invalidateVolatileExpressionsAfterCall(
 				true,
 				$constructorReflection->getDeclaringClass()->isBuiltin(),
 				$constructorReflection->hasSideEffects()->no(),
@@ -227,7 +225,7 @@ final class NewHandler implements ExprHandler
 			// no constructor reflection: the callee is only safe when the class is
 			// known and cannot be instantiated as an impure subclass
 			$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
-			$scope = OutputBufferHelper::invalidateLevelAfterCall($scope, $calleeKnown, false, true);
+			$scope = $scope->invalidateVolatileExpressionsAfterCall($calleeKnown, false, true);
 		}
 
 		return new ExpressionResult(

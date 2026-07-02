@@ -16,7 +16,6 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
-use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -187,8 +186,7 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
-		$scope = OutputBufferHelper::invalidateLevelAfterCall(
-			$scope,
+		$scope = $scope->invalidateVolatileExpressionsAfterCall(
 			$methodReflection !== null,
 			$methodReflection !== null && $methodReflection->getDeclaringClass()->isBuiltin(),
 			$methodReflection !== null && $methodReflection->hasSideEffects()->no(),

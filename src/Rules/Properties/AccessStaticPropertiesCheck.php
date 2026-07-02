@@ -16,6 +16,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -163,9 +164,24 @@ final class AccessStaticPropertiesCheck
 				$classType = $scope->resolveTypeByName($node->class);
 			}
 		} else {
+			$exprToCheck = NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class);
+			$exprType = $scope->getType($exprToCheck);
+			if ($exprType->isClassString()->yes()) {
+				// A constant class-name string or a class-string type describes the
+				// object it names, so route the check through that object type. This
+				// makes constant-string / class-string unions behave exactly like
+				// object unions with regard to rule levels (member filtering when
+				// checkUnionTypes is off, whole-union check when it is on).
+				$objectType = $exprType->getClassStringObjectType();
+				if (count($objectType->getObjectClassNames()) === 0) {
+					// plain class-string resolves to ObjectWithoutClassType, keep silent
+					return [];
+				}
+				$exprToCheck = new TypeExpr($objectType);
+			}
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class),
+				$exprToCheck,
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasStaticProperty($name)->yes(),
 			);

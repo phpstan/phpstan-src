@@ -576,8 +576,6 @@ final class FuncCallHandler implements ExprHandler
 			$scope = OutputBufferHelper::applyLevelDelta($scope, $outputBufferDelta);
 		} elseif (OutputBufferHelper::isLevelTracked($scope)) {
 			if ($functionReflection === null) {
-				// callable/closure variable or unknown function: forget the level
-				// unless the invoked callable is known to be pure
 				$forgetOutputBufferLevel = !$parametersAcceptor instanceof CallableParametersAcceptor
 					|| count($parametersAcceptor->getImpurePoints()) > 0;
 			} else {

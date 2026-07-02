@@ -190,9 +190,11 @@ public:
 		{
 			zv::Val deepContext = pt_expression_context_enter_deep(context);
 			if (UNEXPECTED(deepContext.isUndef())) return zv::Val();
+			zv::Val subjectContext = pt_expression_context_enter_isset_target(deepContext.raw());
+			if (UNEXPECTED(subjectContext.isUndef())) return zv::Val();
 			subject = exprExpr(expr);
 			if (UNEXPECTED(subject == NULL)) return zv::Val();
-			exprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, subject, scope.raw(), storage, nodeCallback, deepContext.raw());
+			exprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, subject, scope.raw(), storage, nodeCallback, subjectContext.raw());
 			if (UNEXPECTED(exprResult.isUndef())) return zv::Val();
 		}
 		{

@@ -553,11 +553,21 @@ public:
 					AOH_SET(inputsFlow, pt_variable_flow_inputs(zval_get_long(writeId.raw()), targetId.raw()));
 				}
 			}
+			// an illegal offset throws before the write
+			zv::Val illegalOffsetThrowFlow = zv::Val::null();
+			{
+				AOH_VAL(illegalOffsetDimFetches, targetRead(&pt_prepared_assign_target_illegal_offset_dim_fetches, target.raw()));
+				if (zend_hash_num_elements(Z_ARRVAL_P(illegalOffsetDimFetches.raw())) > 0) {
+					zv::Val className = zv::Val::string(PT_LC("TypeError"));
+					AOH_VAL(typeError, pt_type_new_object_type(className.raw()));
+					AOH_SET(illegalOffsetThrowFlow, pt_variable_flow_throwing(typeError.raw(), true, false));
+				}
+			}
 			zval null = {};
 			ZVAL_NULL(&null);
 			AOH_VAL(targetWriteFlow, pt_variable_flow_builder_target_write(exprVar, PT_AOH_KIND_READ_MODIFY_WRITE, scope.raw(), storage, &null));
-			zv::Args flows{rhsFlow.raw(), inputsFlow.raw(), targetWriteFlow.raw()};
-			AOH_SET(writeFlow, pt_variable_flow_sequence(3, flows));
+			zv::Args flows{rhsFlow.raw(), inputsFlow.raw(), illegalOffsetThrowFlow.raw(), targetWriteFlow.raw()};
+			AOH_SET(writeFlow, pt_variable_flow_sequence(4, flows));
 		}
 		zv::Val variableFlow;
 		{

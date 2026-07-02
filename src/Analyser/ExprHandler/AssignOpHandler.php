@@ -35,7 +35,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
+use TypeError;
 use function array_merge;
+use function count;
 use function get_class;
 use function is_string;
 use function sprintf;
@@ -296,6 +298,8 @@ final class AssignOpHandler implements ExprHandler
 		$writeFlow = VariableFlow::sequence(
 			$rhsResult->getVariableFlow(),
 			$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
+			// an illegal offset throws before the write
+			count($target->getIllegalOffsetDimFetches()) > 0 ? VariableFlow::throwing(new ObjectType(TypeError::class), true) : null,
 			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE, $scope, $storage),
 		);
 		$variableFlow = VariableFlow::sequence(

@@ -14,6 +14,7 @@ inline constexpr uint32_t expressionResultFactory = 0;
 inline constexpr uint32_t defaultNarrowingHelper = 1;
 inline constexpr uint32_t methodThrowPointHelper = 2;
 inline constexpr uint32_t methodCallReturnTypeHelper = 3;
+inline constexpr uint32_t phpVersion = 4;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -29,6 +30,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 	cls.property("methodThrowPointHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper");
 	cls.property("methodCallReturnTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper");
+	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Php\\PhpVersion");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -42,70 +44,73 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 170 */
 	"methodCallReturnTypeHelper\0" /* 229 */
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper\0" /* 256 */
-	"__construct\0" /* 319 */
-	"expr\0" /* 331 */
-	"PhpParser\\Node\\Expr\0" /* 336 */
-	"\0" /* 356 */
-	"supports\0" /* 357 */
-	"nodeScopeResolver\0" /* 366 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 384 */
-	"stmt\0" /* 419 */
-	"PhpParser\\Node\\Stmt\0" /* 424 */
-	"scope\0" /* 444 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 450 */
-	"storage\0" /* 481 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 489 */
-	"nodeCallback\0" /* 530 */
-	"context\0" /* 543 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 551 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 586 */
-	"processExpr\0" /* 620 */
-	"PhpParser\\Node\\Expr\\ArrayDimFetch\0" /* 632 */
-	"dimResult\0" /* 666 */
-	"varResult\0" /* 676 */
-	"beforeScope\0" /* 686 */
-	"composeResult\0" /* 698 */
-	"PHPStan\\Analyser\\VariableFlow\0" /* 712 */
-	"offsetRead"; /* 742 */
+	"phpVersion\0" /* 319 */
+	"PHPStan\\Php\\PhpVersion\0" /* 330 */
+	"__construct\0" /* 353 */
+	"expr\0" /* 365 */
+	"PhpParser\\Node\\Expr\0" /* 370 */
+	"\0" /* 390 */
+	"supports\0" /* 391 */
+	"nodeScopeResolver\0" /* 400 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 418 */
+	"stmt\0" /* 453 */
+	"PhpParser\\Node\\Stmt\0" /* 458 */
+	"scope\0" /* 478 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 484 */
+	"storage\0" /* 515 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 523 */
+	"nodeCallback\0" /* 564 */
+	"context\0" /* 577 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 585 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 620 */
+	"processExpr\0" /* 654 */
+	"PhpParser\\Node\\Expr\\ArrayDimFetch\0" /* 666 */
+	"dimResult\0" /* 700 */
+	"varResult\0" /* 710 */
+	"beforeScope\0" /* 720 */
+	"composeResult\0" /* 732 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 746 */
+	"offsetRead"; /* 776 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
 	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
 	reg::packed(147, 0, 170), /* __construct $methodThrowPointHelper */
 	reg::packed(229, 0, 256), /* __construct $methodCallReturnTypeHelper */
-	reg::packed(331, 0, 336), /* supports $expr */
-	reg::packed(356, MAY_BE_BOOL), /* supports return */
-	reg::packed(366, 0, 384), /* processExpr $nodeScopeResolver */
-	reg::packed(419, 0, 424), /* processExpr $stmt */
-	reg::packed(331, 0, 336), /* processExpr $expr */
-	reg::packed(444, 0, 450), /* processExpr $scope */
-	reg::packed(481, 0, 489), /* processExpr $storage */
-	reg::packed(530, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(543, 0, 551), /* processExpr $context */
-	reg::packed(356, 0, 586), /* processExpr return */
-	reg::packed(366, 0, 384), /* composeResult $nodeScopeResolver */
-	reg::packed(419, 0, 424), /* composeResult $stmt */
-	reg::packed(331, 0, 632), /* composeResult $expr */
-	reg::packed(666, MAY_BE_NULL, 586), /* composeResult $dimResult */
-	reg::packed(676, 0, 586), /* composeResult $varResult */
-	reg::packed(481, 0, 489), /* composeResult $storage */
-	reg::packed(543, 0, 551), /* composeResult $context */
-	reg::packed(686, 0, 450), /* composeResult $beforeScope */
-	reg::packed(356, 0, 586), /* composeResult return */
-	reg::packed(331, 0, 632), /* offsetRead $expr */
-	reg::packed(666, MAY_BE_NULL, 586), /* offsetRead $dimResult */
-	reg::packed(543, 0, 551), /* offsetRead $context */
-	reg::packed(356, MAY_BE_NULL, 712), /* offsetRead return */
+	reg::packed(319, 0, 330), /* __construct $phpVersion */
+	reg::packed(365, 0, 370), /* supports $expr */
+	reg::packed(390, MAY_BE_BOOL), /* supports return */
+	reg::packed(400, 0, 418), /* processExpr $nodeScopeResolver */
+	reg::packed(453, 0, 458), /* processExpr $stmt */
+	reg::packed(365, 0, 370), /* processExpr $expr */
+	reg::packed(478, 0, 484), /* processExpr $scope */
+	reg::packed(515, 0, 523), /* processExpr $storage */
+	reg::packed(564, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(577, 0, 585), /* processExpr $context */
+	reg::packed(390, 0, 620), /* processExpr return */
+	reg::packed(400, 0, 418), /* composeResult $nodeScopeResolver */
+	reg::packed(453, 0, 458), /* composeResult $stmt */
+	reg::packed(365, 0, 666), /* composeResult $expr */
+	reg::packed(700, MAY_BE_NULL, 620), /* composeResult $dimResult */
+	reg::packed(710, 0, 620), /* composeResult $varResult */
+	reg::packed(515, 0, 523), /* composeResult $storage */
+	reg::packed(577, 0, 585), /* composeResult $context */
+	reg::packed(720, 0, 484), /* composeResult $beforeScope */
+	reg::packed(390, 0, 620), /* composeResult return */
+	reg::packed(365, 0, 666), /* offsetRead $expr */
+	reg::packed(700, MAY_BE_NULL, 620), /* offsetRead $dimResult */
+	reg::packed(577, 0, 585), /* offsetRead $context */
+	reg::packed(390, MAY_BE_NULL, 746), /* offsetRead return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 319 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 357 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 620 /* processExpr */, 7, 6, 7, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig composeResult = { { 698 /* composeResult */, 8, 14, 8, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig offsetRead = { { 742 /* offsetRead */, 3, 23, 3, 26, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 353 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 391 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 654 /* processExpr */, 7, 7, 7, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig composeResult = { { 732 /* composeResult */, 8, 15, 8, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig offsetRead = { { 776 /* offsetRead */, 3, 24, 3, 27, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayDimFetchHandler

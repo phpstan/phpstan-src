@@ -39,6 +39,7 @@ const VersionQuery pt_pva_queries[PT_PHP_VERSION_QUERY_COUNT] = {
 	/* PT_PHP_VERSION_SUPPORTS_ASYMMETRIC_VISIBILITY */ {PT_LC("supportsasymmetricvisibility"), "supportsAsymmetricVisibility", 80400, false},
 	/* PT_PHP_VERSION_SUPPORTS_ENUMS */ {PT_LC("supportsenums"), "supportsEnums", 80100, false},
 	/* PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS */ {PT_LC("supportspropertyhooks"), "supportsPropertyHooks", 80400, false},
+	/* PT_PHP_VERSION_THROWS_TYPE_ERROR_FOR_ILLEGAL_OFFSETS */ {PT_LC("throwstypeerrorforillegaloffsets"), "throwsTypeErrorForIllegalOffsets", 80000, false},
 };
 
 pt_method_site pt_pva_query_sites[PT_PHP_VERSION_QUERY_COUNT];

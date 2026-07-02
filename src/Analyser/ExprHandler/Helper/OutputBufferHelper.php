@@ -44,19 +44,23 @@ final class OutputBufferHelper
 
 	public static function applyLevelDelta(MutatingScope $scope, int $delta): MutatingScope
 	{
-		$obGetLevelCall = new FuncCall(new Name('ob_get_level'), []);
+		foreach ([new Name('ob_get_level'), new Name\FullyQualified('ob_get_level')] as $name) {
+			$obGetLevelCall = new FuncCall($name, []);
 
-		return $scope->assignExpression(
-			$obGetLevelCall,
-			$scope->getType(new BinaryOp\Plus(
-				new TypeExpr($scope->getType($obGetLevelCall)),
-				new TypeExpr(new ConstantIntegerType($delta)),
-			)),
-			$scope->getType(new BinaryOp\Plus(
-				new TypeExpr($scope->getNativeType($obGetLevelCall)),
-				new TypeExpr(new ConstantIntegerType($delta)),
-			)),
-		);
+			$scope = $scope->assignExpression(
+				$obGetLevelCall,
+				$scope->getType(new BinaryOp\Plus(
+					new TypeExpr($scope->getType($obGetLevelCall)),
+					new TypeExpr(new ConstantIntegerType($delta)),
+				)),
+				$scope->getType(new BinaryOp\Plus(
+					new TypeExpr($scope->getNativeType($obGetLevelCall)),
+					new TypeExpr(new ConstantIntegerType($delta)),
+				)),
+			);
+		}
+
+		return $scope;
 	}
 
 	/**
@@ -66,12 +70,22 @@ final class OutputBufferHelper
 	 */
 	public static function isLevelTracked(MutatingScope $scope): bool
 	{
-		return !$scope->hasExpressionType(new FuncCall(new Name('ob_get_level'), []))->no();
+		foreach ([new Name('ob_get_level'), new Name\FullyQualified('ob_get_level')] as $name) {
+			if (!$scope->hasExpressionType(new FuncCall($name, []))->no()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static function invalidateLevel(MutatingScope $scope): MutatingScope
 	{
-		return $scope->invalidateExpression(new FuncCall(new Name('ob_get_level'), []));
+		foreach ([new Name('ob_get_level'), new Name\FullyQualified('ob_get_level')] as $name) {
+			$scope = $scope->invalidateExpression(new FuncCall($name, []));
+		}
+
+		return $scope;
 	}
 
 	/**

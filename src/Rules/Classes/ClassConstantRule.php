@@ -12,6 +12,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -28,6 +29,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -198,9 +200,28 @@ final class ClassConstantRule implements Rule
 				return $messages;
 			}
 		} else {
+			$exprToCheck = NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class);
+			if (strtolower($constantName) !== 'class') {
+				$exprType = $scope->getType($exprToCheck);
+				if ($exprType->isClassString()->yes() && !$exprType->hasConstant($constantName)->yes()) {
+					// A constant class-name string or a class-string type describes the
+					// object it names, so route the check through that object type. This
+					// makes constant-string / class-string unions behave exactly like
+					// object unions with regard to rule levels (member filtering when
+					// checkUnionTypes is off, whole-union check when it is on).
+					// The ::class pseudo-constant is excluded above because
+					// $string::class is a runtime TypeError, handled below as a string.
+					$objectType = $exprType->getClassStringObjectType();
+					if (count($objectType->getObjectClassNames()) === 0) {
+						// plain class-string resolves to ObjectWithoutClassType, keep silent
+						return $messages;
+					}
+					$exprToCheck = new TypeExpr($objectType);
+				}
+			}
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class),
+				$exprToCheck,
 				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
 				static fn (Type $type): bool => $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes(),
 			);

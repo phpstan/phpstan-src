@@ -123,8 +123,16 @@ use Symfony\Component\Finder\Finder;
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			if ($metadata[$functionName]['hasSideEffects']) {
+			if (isset($metadata[$functionName]['hasSideEffects']) && $metadata[$functionName]['hasSideEffects']) {
 				throw new ShouldNotHappenException($functionName);
+			}
+
+			if (isset($metadata[$functionName]['pureUnlessCallableIsImpureParameters'])) {
+				$metadata[$functionName] = [
+					'pureUnlessCallableIsImpureParameters' => $metadata[$functionName]['pureUnlessCallableIsImpureParameters'],
+				];
+
+				continue;
 			}
 		}
 		$metadata[$functionName] = ['hasSideEffects' => false];
@@ -184,12 +192,32 @@ return [
 ];
 php;
 	$content = '';
+	$escape = static fn (mixed $value): string => var_export($value, true);
+	$encodeHasSideEffects = static fn (array $meta) => [$escape('hasSideEffects'), $escape($meta['hasSideEffects'])];
+	$encodePureUnlessCallableIsImpureParameters = static fn (array $meta) => [
+		$escape('pureUnlessCallableIsImpureParameters'),
+		sprintf(
+			'[%s]',
+			implode(
+				' ,',
+				array_map(
+					static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
+					array_keys($meta['pureUnlessCallableIsImpureParameters']),
+					$meta['pureUnlessCallableIsImpureParameters'],
+				),
+			),
+		),
+	];
+
 	foreach ($metadata as $name => $meta) {
 		$content .= sprintf(
 			"\t%s => [%s => %s],\n",
 			var_export($name, true),
-			var_export('hasSideEffects', true),
-			var_export($meta['hasSideEffects'], true),
+			...match (true) {
+				isset($meta['hasSideEffects']) => $encodeHasSideEffects($meta),
+				isset($meta['pureUnlessCallableIsImpureParameters']) => $encodePureUnlessCallableIsImpureParameters($meta),
+				default => throw new ShouldNotHappenException($escape($meta)),
+			},
 		);
 	}
 

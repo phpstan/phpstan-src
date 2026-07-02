@@ -75,6 +75,8 @@ final class BetterReflectionSourceLocatorFactory
 		private bool $playgroundMode, // makes all PHPStan classes in the PHAR discoverable with PSR-4
 		#[AutowiredParameter]
 		private ?string $singleReflectionFile,
+		#[AutowiredParameter(ref: '%cache.memoizingSourceLocatorEntriesCountMax%')]
+		private int $memoizingSourceLocatorEntriesCountMax,
 	)
 	{
 	}
@@ -173,7 +175,10 @@ final class BetterReflectionSourceLocatorFactory
 			return new AggregateSourceLocator($locators);
 		};
 
-		return new MemoizingSourceLocator(new LazySourceLocator($initializer));
+		return new MemoizingSourceLocator(
+			new LazySourceLocator($initializer),
+			$this->memoizingSourceLocatorEntriesCountMax === 0 ? null : $this->memoizingSourceLocatorEntriesCountMax,
+		);
 	}
 
 }

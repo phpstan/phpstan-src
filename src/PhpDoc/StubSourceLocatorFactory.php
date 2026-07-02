@@ -26,6 +26,7 @@ final class StubSourceLocatorFactory
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private array $allStubFiles,
+		private int $memoizingSourceLocatorEntriesCountMax,
 	)
 	{
 	}
@@ -51,7 +52,10 @@ final class StubSourceLocatorFactory
 
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpStormStubsSourceStubber);
 
-		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
+		return new MemoizingSourceLocator(
+			new AggregateSourceLocator($locators),
+			$this->memoizingSourceLocatorEntriesCountMax === 0 ? null : $this->memoizingSourceLocatorEntriesCountMax,
+		);
 	}
 
 }

@@ -149,7 +149,9 @@ parametersSchema:
 	cache: structure([
 		nodesByStringCountMax: int(),
 		resolvedPhpDocBlockCacheCountMax: int(),
-		nameScopeMapMemoryCacheCountMax: int()
+		nameScopeMapMemoryCacheCountMax: int(),
+		memoizingSourceLocatorEntriesCountMax: int(),
+		phpStormStubsNodesCountMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()
 	reportIgnoresWithoutComments: bool()

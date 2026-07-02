@@ -47,6 +47,7 @@ final class TestCaseSourceLocatorFactory
 		private PhpVersion $phpVersion,
 		private array $fileExtensions,
 		private ?array $excludePaths,
+		private int $memoizingSourceLocatorEntriesCountMax,
 	)
 	{
 	}
@@ -97,7 +98,10 @@ final class TestCaseSourceLocatorFactory
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 
-		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
+		return new MemoizingSourceLocator(
+			new AggregateSourceLocator($locators),
+			$this->memoizingSourceLocatorEntriesCountMax === 0 ? null : $this->memoizingSourceLocatorEntriesCountMax,
+		);
 	}
 
 }

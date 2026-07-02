@@ -19,6 +19,7 @@ services:
 		arguments:
 			allStubFiles: %allStubFiles%
 			php8Parser: @php8PhpParser
+			memoizingSourceLocatorEntriesCountMax: %cache.memoizingSourceLocatorEntriesCountMax%
 
 	# overrides service from parsers.neon
 	defaultAnalysisParser!:

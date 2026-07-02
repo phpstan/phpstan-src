@@ -29,7 +29,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
-use function is_int;
 use function max;
 
 #[AutowiredService]
@@ -160,7 +159,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 	/**
 	 * The greatest number of elements the split can produce, or null when the
-	 * limit is unbounded or too wide to enumerate.
+	 * limit is unbounded or larger than the constant array builder handles.
 	 */
 	private function getMaximumElementCount(?Type $limitType): ?int
 	{
@@ -168,19 +167,18 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			return null;
 		}
 
-		$finiteTypes = $limitType->getFiniteTypes();
-		if ($finiteTypes === []) {
-			return null;
-		}
-
 		$max = null;
-		foreach ($finiteTypes as $finiteType) {
-			$values = $finiteType->getConstantScalarValues();
-			if (count($values) !== 1 || !is_int($values[0])) {
+		foreach ($limitType->getFiniteTypes() as $finiteType) {
+			if (!$finiteType instanceof ConstantIntegerType) {
 				return null;
 			}
 
-			$max = $max === null ? $values[0] : max($max, $values[0]);
+			$value = $finiteType->getValue();
+			if ($value > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				return null;
+			}
+
+			$max = $max === null ? $value : max($max, $value);
 		}
 
 		return $max;

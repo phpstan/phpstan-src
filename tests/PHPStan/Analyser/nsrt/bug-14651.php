@@ -153,3 +153,16 @@ function zeroAndNegativeLimit(string $s): void
 
 	assertType('string', $s);
 }
+
+function largeConstantLimit(string $s): void
+{
+	if (str_contains($s, "\n")) {
+		assertType('non-falsy-string', $s);
+		// a limit larger than the array builder handles stays a >= 2 list
+		assertType('array{string, string, ...<string>}', explode("\n", $s, 100000));
+	} else {
+		assertType('string', $s);
+	}
+
+	assertType('string', $s);
+}

@@ -67,7 +67,7 @@ jobs:
 
       # separate limit since some PHP8.1 only behavior is less efficient
       - name: "PHPStan"
-        run: "php bin/phpstan clear-result-cache -q && php -d memory_limit=499M bin/phpstan -v"
+        run: "php bin/phpstan clear-result-cache -q && php -d memory_limit=599M bin/phpstan -v"
         if: matrix.php-version == '8.1'
 
       - name: "PHPStan"

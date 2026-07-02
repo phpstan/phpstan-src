@@ -90,7 +90,7 @@ final class SignatureMapParser
 			$parameterNameString,
 			'#^(?P<reference>&(?:\.\.\.)?r?w?_?)?(?P<variadic>\.\.\.)?(?P<name>[^=]+)?(?P<optional>=)?($)#',
 		);
-		if ($matches === null || !isset($matches['optional'])) {
+		if ($matches === null) {
 			throw new ShouldNotHappenException();
 		}
 

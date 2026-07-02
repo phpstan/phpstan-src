@@ -410,9 +410,9 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 				$matches = Strings::match($deprecatedMessage ?? '', '#^(\d+)\.(\d+)(?:\.(\d+))?$#');
 				if ($matches !== null) {
-					$major = $matches[1];
-					$minor = $matches[2];
-					$patch = $matches[3] ?? 0;
+					$major = (int) $matches[1];
+					$minor = (int) $matches[2];
+					$patch = (int) ($matches[3] ?? 0);
 					$versionId = sprintf('%d%02d%02d', $major, $minor, $patch);
 
 					if ($phpVersionType !== null) {

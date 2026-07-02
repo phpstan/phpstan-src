@@ -61,7 +61,7 @@
 		"symfony/string": "^5.4.3"
 	},
 	"replace": {
-		"phpstan/phpstan": "2.1.x",
+		"phpstan/phpstan": "2.2.x",
 		"symfony/polyfill-php73": "*"
 	},
 	"suggest": {

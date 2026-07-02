@@ -42,9 +42,9 @@ final class ComposerPhpVersionParser
 			return null;
 		}
 
-		$major = $matches[1];
-		$minor = $matches[2];
-		$patch = $matches[3] ?? 0;
+		$major = (int) $matches[1];
+		$minor = (int) $matches[2];
+		$patch = (int) ($matches[3] ?? 0);
 		$versionId = (int) sprintf('%d%02d%02d', $major, $minor, $patch);
 
 		return $buildPhpVersion($version, $versionId, $isMaxVersion);

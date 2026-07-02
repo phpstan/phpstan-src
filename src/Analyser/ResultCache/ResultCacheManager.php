@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use JsonSerializable;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
@@ -20,6 +21,7 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
@@ -32,6 +34,7 @@ use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -50,12 +53,15 @@ use function is_dir;
 use function is_file;
 use function ksort;
 use function microtime;
+use function serialize;
 use function sort;
 use function sprintf;
+use function str_ends_with;
 use function str_starts_with;
 use function substr;
 use function time;
 use function unlink;
+use function unserialize;
 use function var_export;
 use const PHP_VERSION_ID;
 
@@ -118,6 +124,8 @@ final class ResultCacheManager
 		private array $parametersNotInvalidatingCache,
 		#[AutowiredParameter(ref: '%resultCacheSkipIfOlderThanDays%')]
 		private int $skipResultCacheIfOlderThanDays,
+		#[AutowiredParameter(ref: '%featureToggles.multiFileResultCache%')]
+		private bool $multiFileResultCache,
 	)
 	{
 	}
@@ -402,12 +410,21 @@ final class ResultCacheManager
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
 		$invertedUsedTraitDependenciesToReturn = [];
-		$errors = $data['errorsCallback']();
-		$locallyIgnoredErrors = $data['locallyIgnoredErrorsCallback']();
+		if (array_key_exists('errorsFilePath', $data)) {
+			// bleeding edge multi-file format - a missing referenced file throws
+			// (usually a CI restoring only resultCache.php and not the whole directory)
+			$errors = $this->decodeErrorsSection($this->loadSectionFile($data['errorsFilePath']));
+			$locallyIgnoredErrors = $this->decodeErrorsSection($this->loadSectionFile($data['locallyIgnoredErrorsFilePath']));
+			$collectedData = $this->loadSectionFile($data['collectedDataFilePath']);
+			$exportedNodes = $this->decodeExportedNodesSection($this->loadSectionFile($data['exportedNodesFilePath']));
+		} else {
+			$errors = $data['errorsCallback']();
+			$locallyIgnoredErrors = $data['locallyIgnoredErrorsCallback']();
+			$collectedData = $data['collectedDataCallback']();
+			$exportedNodes = $data['exportedNodesCallback']();
+		}
 		$linesToIgnore = $data['linesToIgnore'];
 		$unmatchedLineIgnores = $data['unmatchedLineIgnores'];
-		$collectedData = $data['collectedDataCallback']();
-		$exportedNodes = $data['exportedNodesCallback']();
 		$filteredErrors = [];
 		$filteredLocallyIgnoredErrors = [];
 		$filteredLinesToIgnore = [];
@@ -1158,6 +1175,57 @@ final class ResultCacheManager
 
 		$file = $this->cacheFilePath;
 
+		if ($this->multiFileResultCache) {
+			// bleeding edge multi-file format: the heavy sections are stored as pure data
+			// in sibling files, decoded on restore. Loading them costs only the memory
+			// of the data itself, while require of a var_export()ed PHP file costs
+			// several times more in the PHP compiler even when lazy-loaded via closures.
+			// The section files are written before the main file so that the main file
+			// never references files that do not exist yet.
+			$sectionFilePaths = $this->getSectionFilePaths();
+			$this->saveSectionFile($sectionFilePaths['errors'], $errors);
+			$this->saveSectionFile($sectionFilePaths['locallyIgnoredErrors'], $locallyIgnoredErrors);
+			$this->saveSectionFile($sectionFilePaths['collectedData'], $collectedData);
+			$this->saveSectionFile($sectionFilePaths['exportedNodes'], $exportedNodes);
+
+			$handle = @fopen($file, 'w');
+			if ($handle === false) {
+				$error = error_get_last();
+				throw new CouldNotWriteFileException($file, $error !== null ? $error['message'] : 'unknown cause');
+			}
+
+			try {
+				$this->writeToHandle($handle, $file, "<?php declare(strict_types = 1);
+
+return [
+	'lastFullAnalysisTime' => " . var_export($lastFullAnalysisTime, true) . ",
+	'meta' => " . var_export($meta, true) . ",
+	'projectExtensionFiles' => " . var_export($projectExtensionFiles, true) . ",
+	'errorsFilePath' => " . var_export($sectionFilePaths['errors'], true) . ",
+	'locallyIgnoredErrorsFilePath' => " . var_export($sectionFilePaths['locallyIgnoredErrors'], true) . ",
+	'linesToIgnore' => ");
+				$this->streamArrayVarExportToHandle($handle, $file, $linesToIgnore);
+				$this->writeToHandle($handle, $file, ",
+	'unmatchedLineIgnores' => ");
+				$this->streamArrayVarExportToHandle($handle, $file, $unmatchedLineIgnores);
+				$this->writeToHandle($handle, $file, ",
+	'collectedDataFilePath' => " . var_export($sectionFilePaths['collectedData'], true) . ",
+	'dependencies' => ");
+				$this->streamArrayVarExportToHandle($handle, $file, $invertedDependencies);
+				$this->writeToHandle($handle, $file, ",
+	'packageDependencies' => ");
+				$this->streamArrayVarExportToHandle($handle, $file, $packageDependencies);
+				$this->writeToHandle($handle, $file, ",
+	'exportedNodesFilePath' => " . var_export($sectionFilePaths['exportedNodes'], true) . ',
+];
+');
+			} finally {
+				fclose($handle);
+			}
+
+			return;
+		}
+
 		// streamed to the file section by section - building the whole
 		// var_export()ed contents in memory at once would take up roughly
 		// twice the size of the resulting file in the main process
@@ -1214,6 +1282,137 @@ return [
 			$error = error_get_last();
 			throw new CouldNotWriteFileException($file, $error !== null ? $error['message'] : 'unknown cause');
 		}
+	}
+
+	/**
+	 * @return array{errors: string, locallyIgnoredErrors: string, collectedData: string, exportedNodes: string}
+	 */
+	private function getSectionFilePaths(): array
+	{
+		$basePath = $this->cacheFilePath;
+		if (str_ends_with($basePath, '.php')) {
+			$basePath = substr($basePath, 0, -4);
+		}
+
+		return [
+			'errors' => $basePath . '-errors.dat',
+			'locallyIgnoredErrors' => $basePath . '-locallyIgnoredErrors.dat',
+			'collectedData' => $basePath . '-collectedData.dat',
+			'exportedNodes' => $basePath . '-exportedNodes.dat',
+		];
+	}
+
+	/**
+	 * Writes serialize() output of pure data (no objects). The outer array is
+	 * hand-assembled in the serialize() format so that the whole serialized
+	 * section never has to be built in memory at once.
+	 *
+	 * Objects are converted to data through jsonSerialize(), the same
+	 * representation the parallel workers use to send their results
+	 * to the main process.
+	 *
+	 * @param array<string, mixed> $dataPerFile
+	 */
+	private function saveSectionFile(string $filePath, array $dataPerFile): void
+	{
+		$handle = @fopen($filePath, 'w');
+		if ($handle === false) {
+			$error = error_get_last();
+			throw new CouldNotWriteFileException($filePath, $error !== null ? $error['message'] : 'unknown cause');
+		}
+
+		try {
+			$this->writeToHandle($handle, $filePath, 'a:' . count($dataPerFile) . ':{');
+			foreach ($dataPerFile as $analysedFile => $entries) {
+				$this->writeToHandle($handle, $filePath, serialize($analysedFile) . serialize($this->toPureData($entries)));
+			}
+
+			$this->writeToHandle($handle, $filePath, '}');
+		} finally {
+			fclose($handle);
+		}
+	}
+
+	private function toPureData(mixed $value): mixed
+	{
+		if ($value instanceof JsonSerializable) {
+			return $this->toPureData($value->jsonSerialize());
+		}
+
+		if (is_array($value)) {
+			$result = [];
+			foreach ($value as $key => $item) {
+				$result[$key] = $this->toPureData($item);
+			}
+
+			return $result;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private function loadSectionFile(string $filePath): array
+	{
+		if (!is_file($filePath)) {
+			// clear the main cache file so that the next run does not fail the same way
+			@unlink($this->cacheFilePath);
+
+			throw new CouldNotReadFileException($filePath);
+		}
+
+		$contents = FileReader::read($filePath);
+		$data = @unserialize($contents, ['allowed_classes' => false]);
+		if (!is_array($data)) {
+			@unlink($this->cacheFilePath);
+			@unlink($filePath);
+
+			throw new ShouldNotHappenException(sprintf('Result cache file %s is corrupted.', $filePath));
+		}
+
+		return $data;
+	}
+
+	/**
+	 * @param array<string, mixed> $section
+	 * @return array<string, list<Error>>
+	 */
+	private function decodeErrorsSection(array $section): array
+	{
+		$result = [];
+		foreach ($section as $analysedFile => $errorsData) {
+			/** @var list<mixed[]> $errorsData */
+			foreach ($errorsData as $errorData) {
+				$result[$analysedFile][] = Error::decode($errorData);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param array<string, mixed> $section
+	 * @return array<string, RootExportedNode[]>
+	 */
+	private function decodeExportedNodesSection(array $section): array
+	{
+		$result = [];
+		foreach ($section as $analysedFile => $nodesData) {
+			/** @var list<array{type: class-string<RootExportedNode>, data: mixed[]}> $nodesData */
+			$result[$analysedFile] = array_map(static function (array $node): RootExportedNode {
+				$class = $node['type'];
+				$decoded = $class::decode($node['data']);
+				if (!$decoded instanceof RootExportedNode) {
+					throw new ShouldNotHappenException();
+				}
+
+				return $decoded;
+			}, $nodesData);
+		}
+
+		return $result;
 	}
 
 	/**

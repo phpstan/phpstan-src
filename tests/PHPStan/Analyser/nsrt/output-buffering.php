@@ -204,7 +204,7 @@ function impureFunction(): void
 function pureFunctionKeepsLevel(): void
 {
 	ob_start();
-	pureFunction();
+	$x=pureFunction();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
 }
@@ -243,7 +243,7 @@ function impureMethodForgetsLevel(Service $service): void
 function pureMethodKeepsLevel(Service $service): void
 {
 	ob_start();
-	$service->pureMethod();
+	$x=$service->pureMethod();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
 }

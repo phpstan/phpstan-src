@@ -2,16 +2,12 @@
 
 namespace PHPStan\Analyser\ExprHandler\Helper;
 
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Reflection\ExtendedParameterReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use function count;
 use function in_array;
 
 /**

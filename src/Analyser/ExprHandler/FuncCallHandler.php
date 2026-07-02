@@ -581,8 +581,7 @@ final class FuncCallHandler implements ExprHandler
 				$forgetOutputBufferLevel = !$parametersAcceptor instanceof CallableParametersAcceptor
 					|| count($parametersAcceptor->getImpurePoints()) > 0;
 			} else {
-				$forgetOutputBufferLevel = (!$functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no())
-					|| OutputBufferHelper::callImmediatelyInvokesImpureCallable($scope, $parametersAcceptor, $normalizedExpr->getArgs());
+				$forgetOutputBufferLevel = (!$functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no());
 			}
 
 			if ($forgetOutputBufferLevel) {

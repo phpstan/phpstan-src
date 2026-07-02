@@ -88,48 +88,4 @@ final class OutputBufferHelper
 		return $scope;
 	}
 
-	/**
-	 * Whether a call immediately invokes one of its callable arguments with an
-	 * impure callable, e.g. call_user_func($cb) or array_map($cb, $a). Such a
-	 * call can open or close output buffers even though the invoked function
-	 * itself (a built-in) does not.
-	 *
-	 * @param Arg[] $args
-	 */
-	public static function callImmediatelyInvokesImpureCallable(MutatingScope $scope, ParametersAcceptor $parametersAcceptor, array $args): bool
-	{
-		$parameters = $parametersAcceptor->getParameters();
-		if (count($parameters) === 0) {
-			return false;
-		}
-
-		foreach ($args as $i => $arg) {
-			if ($arg->unpack) {
-				continue;
-			}
-
-			$parameter = $parameters[$i] ?? ($parametersAcceptor->isVariadic() ? $parameters[count($parameters) - 1] : null);
-			if (!$parameter instanceof ExtendedParameterReflection) {
-				continue;
-			}
-
-			if ($parameter->isImmediatelyInvokedCallable()->no()) {
-				continue;
-			}
-
-			$argType = $scope->getType($arg->value);
-			if (!$argType->isCallable()->yes()) {
-				continue;
-			}
-
-			foreach ($argType->getCallableParametersAcceptors($scope) as $acceptor) {
-				if (count($acceptor->getImpurePoints()) > 0) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
 }

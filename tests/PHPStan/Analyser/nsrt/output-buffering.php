@@ -264,22 +264,6 @@ function invokableForgetsLevel(Service $service): void
 	assertType('string|false', ob_get_clean());
 }
 
-function callUserFuncForgetsLevel(callable $cb): void
-{
-	ob_start();
-	call_user_func($cb);
-	assertType('int<0, max>', ob_get_level());
-	assertType('string|false', ob_get_clean());
-}
-
-function arrayMapForgetsLevel(callable $cb, array $a): void
-{
-	ob_start();
-	array_map($cb, $a);
-	assertType('int<0, max>', ob_get_level());
-	assertType('string|false', ob_get_clean());
-}
-
 function arrayMapPureCallbackKeepsLevel(array $a): void
 {
 	ob_start();

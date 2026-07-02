@@ -11,6 +11,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
@@ -32,6 +33,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -183,9 +185,24 @@ final class StaticMethodCallCheck
 				}
 			}
 		} else {
+			$exprToCheck = NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class);
+			$exprType = $scope->getType($exprToCheck);
+			if ($exprType->isClassString()->yes() && !$exprType->hasMethod($methodName)->yes()) {
+				// A constant class-name string or a class-string type describes the
+				// object it names, so route the check through that object type. This
+				// makes constant-string / class-string unions behave exactly like
+				// object unions with regard to rule levels (member filtering when
+				// checkUnionTypes is off, whole-union check when it is on).
+				$objectType = $exprType->getClassStringObjectType();
+				if (count($objectType->getObjectClassNames()) === 0) {
+					// plain class-string resolves to ObjectWithoutClassType, keep silent
+					return [[], null];
+				}
+				$exprToCheck = new TypeExpr($objectType);
+			}
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class),
+				$exprToCheck,
 				sprintf('Call to static method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
 				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);

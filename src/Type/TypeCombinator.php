@@ -199,7 +199,6 @@ final class TypeCombinator
 		$alreadyNormalizedCounter = 0;
 
 		$benevolentTypes = [];
-		$benevolentUnionObject = null;
 		$neverCount = 0;
 		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < $typesCount; $i++) {
@@ -215,10 +214,7 @@ final class TypeCombinator
 				$neverCount++;
 				continue;
 			}
-			if ($types[$i] instanceof BenevolentUnionType) {
-				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
-					$benevolentUnionObject = $types[$i];
-				}
+			if ($types[$i] instanceof BenevolentUnionType && !$types[$i] instanceof TemplateType) {
 				$benevolentTypesCount = 0;
 				$typesInner = $types[$i]->getTypes();
 				foreach ($typesInner as $benevolentInnerType) {
@@ -471,10 +467,6 @@ final class TypeCombinator
 			}
 
 			if ($tempTypes === []) {
-				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
-					return $benevolentUnionObject->withTypes(array_values($types));
-				}
-
 				return new BenevolentUnionType(array_values($types), true);
 			}
 		}

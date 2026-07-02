@@ -636,7 +636,7 @@ final class PhpClassReflectionExtension
 
 			$isPure = null;
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
-				$isPure = !$this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects'];
+				$isPure = !($this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects'] ?? true);
 			}
 
 			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $methodReflection);
@@ -882,11 +882,14 @@ final class PhpClassReflectionExtension
 		);
 
 		$isPure = null;
+		$pureUnlessCallableIsImpureParameters = [];
 		if ($actualDeclaringClass->isBuiltin() || $actualDeclaringClass->isEnum()) {
 			foreach (array_keys($actualDeclaringClass->getAncestors()) as $className) {
 				if ($this->signatureMapProvider->hasMethodMetadata($className, $methodReflection->getName())) {
-					$hasSideEffects = $this->signatureMapProvider->getMethodMetadata($className, $methodReflection->getName())['hasSideEffects'];
+					$methodMetadata = $this->signatureMapProvider->getMethodMetadata($className, $methodReflection->getName());
+					$hasSideEffects = $methodMetadata['hasSideEffects'] ?? true;
 					$isPure = !$hasSideEffects;
+					$pureUnlessCallableIsImpureParameters += $methodMetadata['pureUnlessCallableIsImpureParameters'] ?? [];
 
 					break;
 				}
@@ -988,6 +991,7 @@ final class PhpClassReflectionExtension
 			$closureThisParameters,
 			$acceptsNamedArguments,
 			$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($actualDeclaringClass->getName(), $declaringTraitName, $methodReflection->getName(), $actualDeclaringClass->getFileName())),
+			$pureUnlessCallableIsImpureParameters,
 		);
 	}
 
@@ -1163,7 +1167,7 @@ final class PhpClassReflectionExtension
 			$classScope = $classScope->enterNamespace($namespace);
 		}
 		$classScope = $classScope->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -1182,6 +1186,7 @@ final class PhpClassReflectionExtension
 			$phpDocParameterOutTypes,
 			$phpDocImmediatelyInvokedCallableParameters,
 			$phpDocClosureThisTypeParameters,
+			phpDocPureUnlessCallableIsImpureParameters: $phpDocPureUnlessCallableIsImpureParameters,
 		);
 
 		$propertyTypes = [];

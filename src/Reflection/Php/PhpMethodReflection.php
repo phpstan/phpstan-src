@@ -90,6 +90,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private array $immediatelyInvokedCallableParameters,
 		private array $phpDocClosureThisTypeParameters,
 		private array $attributes,
+		private array $pureUnlessCallableIsImpureParameters,
 	)
 	{
 	}
@@ -405,6 +406,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createFromBoolean($this->isPure);
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return $this->pureUnlessCallableIsImpureParameters;
+	}
+
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self
 	{
 		return new self(
@@ -433,6 +439,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->immediatelyInvokedCallableParameters,
 			$this->phpDocClosureThisTypeParameters,
 			$this->attributes,
+			$this->pureUnlessCallableIsImpureParameters,
 		);
 	}
 
@@ -467,6 +474,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->immediatelyInvokedCallableParameters,
 			$this->phpDocClosureThisTypeParameters,
 			$this->attributes,
+			$this->pureUnlessCallableIsImpureParameters,
 		);
 	}
 

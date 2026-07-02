@@ -145,6 +145,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();

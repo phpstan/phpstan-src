@@ -110,6 +110,11 @@ final class NativeFunctionReflection implements FunctionReflection
 		return $this->hasSideEffects->negate();
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
+	}
+
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {

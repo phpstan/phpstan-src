@@ -110,13 +110,24 @@ final class NativeFunctionReflectionProvider
 		}
 
 		$allowedConstantsMapProvider = $this->allowedConstantsMapProvider;
+		$pureUnlessCallableIsImpureParameters = [];
+		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
+			$functionMetadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			if (isset($functionMetadata['pureUnlessCallableIsImpureParameters'])) {
+				$pureUnlessCallableIsImpureParameters = $functionMetadata['pureUnlessCallableIsImpureParameters'];
+			}
+		} else {
+			$functionMetadata = null;
+		}
+
 		$variantsByType = ['positional' => []];
 		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
 			foreach ($functionSignatures ?? [] as $functionSignature) {
 				$variantsByType[$signatureType][] = new ExtendedFunctionVariant(
 					TemplateTypeMap::createEmpty(),
 					null,
-					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $lowerCasedFunctionName, $allowedConstantsMapProvider): ExtendedNativeParameterReflection {
+					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $lowerCasedFunctionName, $allowedConstantsMapProvider, $pureUnlessCallableIsImpureParameters): ExtendedNativeParameterReflection {
+						$name = $parameterSignature->getName();
 						$type = $parameterSignature->getType();
 
 						$phpDocType = null;
@@ -148,6 +159,7 @@ final class NativeFunctionReflectionProvider
 							$closureThisType,
 							[],
 							$allowedConstantsMapProvider->getForFunctionParameter($lowerCasedFunctionName, $parameterSignature->getName()),
+							isset($pureUnlessCallableIsImpureParameters[$name]) && $pureUnlessCallableIsImpureParameters[$name],
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),
@@ -158,8 +170,8 @@ final class NativeFunctionReflectionProvider
 			}
 		}
 
-		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-			$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects']);
+		if (isset($functionMetadata['hasSideEffects'])) {
+			$hasSideEffects = TrinaryLogic::createFromBoolean($functionMetadata['hasSideEffects']);
 		} else {
 			$hasSideEffects = TrinaryLogic::createMaybe();
 		}

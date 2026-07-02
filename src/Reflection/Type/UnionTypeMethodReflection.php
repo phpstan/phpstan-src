@@ -171,6 +171,11 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->isPure());
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
+	}
+
 	public function getDocComment(): ?string
 	{
 		return null;

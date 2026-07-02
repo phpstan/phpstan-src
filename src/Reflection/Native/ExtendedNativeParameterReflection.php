@@ -31,6 +31,7 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		private ?Type $closureThisType,
 		private array $attributes,
 		private ?ParameterAllowedConstants $allowedConstants,
+		private bool $pureUnlessCallableIsImpureParameter = false,
 	)
 	{
 	}
@@ -112,6 +113,11 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		}
 
 		return $this->allowedConstants->check($constants);
+	}
+
+	public function isPureUnlessCallableIsImpureParameter(): bool
+	{
+		return $this->pureUnlessCallableIsImpureParameter;
 	}
 
 }

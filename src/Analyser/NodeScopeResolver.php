@@ -910,6 +910,7 @@ class NodeScopeResolver
 				$phpDocImmediatelyInvokedCallableParameters,
 				$phpDocClosureThisTypeParameters,
 				$isConstructor,
+				phpDocPureUnlessCallableIsImpureParameters: $pureUnlessCallableIsImpureParameters,
 			);
 
 			if (!$scope->isInClass()) {
@@ -3657,26 +3658,6 @@ class NodeScopeResolver
 						$parameterNativeType = $lastParameter->getNativeType();
 					}
 					$parameter = $lastParameter;
-				}
-
-				if ($parameter instanceof ExtendedParameterReflection
-					&& $parameter->isPureUnlessCallableIsImpureParameter()
-					&& $parameterType !== null
-					&& $parameterType->isTrue()->yes()
-				) {
-					if (count($parameterType->getCallableParametersAcceptors($scope)) > 0 && $calleeReflection !== null) {
-						$parameterCallable = $parameterType->getCallableParametersAcceptors($scope)[0];
-						$certain = $parameterCallable->isPure()->yes();
-						if ($certain) {
-							$impurePoints[] = new ImpurePoint(
-								$scope,
-								$callLike,
-								'functionCall',
-								sprintf('call to function %s()', $calleeReflection->getName()),
-								$certain,
-							);
-						}
-					}
 				}
 			}
 

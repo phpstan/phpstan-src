@@ -230,4 +230,26 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6574.php'], []);
 	}
 
+	public function testPureUnlessCallableIsImpure(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [
+			[
+				'Impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithImpureCallback().',
+				22,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureWithImpureCallback().',
+				23,
+			],
+			[
+				'Possibly impure call to a callable in pure function PureUnlessCallableIsImpureFunction\pureWithOpaqueCallback().',
+				36,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithOpaqueCallback().',
+				36,
+			],
+		]);
+	}
+
 }

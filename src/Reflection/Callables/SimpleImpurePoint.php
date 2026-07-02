@@ -6,9 +6,12 @@ use PhpParser\Node\Arg;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use function count;
 use function sprintf;
 
 /**
@@ -57,6 +60,18 @@ final class SimpleImpurePoint
 			$certain = $function->isPure()->no();
 			if ($variant !== null) {
 				$certain = $certain || $variant->getReturnType()->isVoid()->yes();
+			}
+
+			if (!$certain && $scope !== null && $variant !== null) {
+				$verdict = self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args);
+				if ($verdict !== null) {
+					if ($verdict->yes()) {
+						return null;
+					}
+					if ($verdict->no()) {
+						$certain = true;
+					}
+				}
 			}
 
 			if ($function instanceof FunctionReflection) {
@@ -114,6 +129,77 @@ final class SimpleImpurePoint
 		}
 
 		return null;
+	}
+
+	/**
+	 * Combined purity verdict of all arguments passed to parameters flagged
+	 * with @pure-unless-callable-is-impure. Returns null when the variant has
+	 * no such parameters (so the caller keeps its current behavior).
+	 *
+	 * @param Arg[] $args
+	 */
+	private static function resolvePureUnlessCallableIsImpureVerdict(ParametersAcceptor $variant, Scope $scope, array $args): ?TrinaryLogic
+	{
+		$parameters = $variant->getParameters();
+		$verdict = null;
+
+		foreach ($parameters as $parameterIndex => $parameter) {
+			if (!$parameter instanceof ExtendedParameterReflection) {
+				continue;
+			}
+			if (!$parameter->isPureUnlessCallableIsImpureParameter()) {
+				continue;
+			}
+
+			$verdict ??= TrinaryLogic::createYes();
+
+			$matchedArg = null;
+			$hasNamedParameter = false;
+			foreach ($args as $i => $arg) {
+				if ($arg->name !== null) {
+					$hasNamedParameter = true;
+					if ($arg->name->name === $parameter->getName()) {
+						$matchedArg = $arg;
+						break;
+					}
+
+					continue;
+				}
+
+				if (!$hasNamedParameter && $i === $parameterIndex) {
+					$matchedArg = $arg;
+					break;
+				}
+			}
+
+			if ($matchedArg === null) {
+				// Optional callback omitted (e.g. array_filter($arr)) - pure.
+				continue;
+			}
+
+			$argType = $scope->getType($matchedArg->value);
+			if ($argType->isNull()->yes()) {
+				// Explicit null callback (e.g. array_filter($arr, null)) - pure.
+				continue;
+			}
+
+			if (!$argType->isCallable()->yes()) {
+				$verdict = $verdict->and(TrinaryLogic::createMaybe());
+				continue;
+			}
+
+			$acceptors = $argType->getCallableParametersAcceptors($scope);
+			if (count($acceptors) === 0) {
+				$verdict = $verdict->and(TrinaryLogic::createMaybe());
+				continue;
+			}
+
+			foreach ($acceptors as $acceptor) {
+				$verdict = $verdict->and($acceptor->isPure());
+			}
+		}
+
+		return $verdict;
 	}
 
 	/** @return ImpurePointIdentifier */

@@ -89,12 +89,10 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
 				126,
-				'Classes InvalidPhpDoc\Bar and InvalidPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @return contains unresolvable type.',
 				126,
-				'Classes InvalidPhpDoc\Bar and InvalidPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @param for parameter $a with type T is not subtype of native type int.',
@@ -220,7 +218,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $foo contains unresolvable type.',
 				20,
-				'Classes Bug3753\Bar and Bug3753\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 		]);
 	}
@@ -431,7 +428,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param-closure-this for parameter $i contains unresolvable type.',
 				34,
-				'Classes Exception and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @param-closure-this is for parameter $i with non-Closure type string.',

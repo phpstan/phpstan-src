@@ -70,7 +70,6 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $value contains unresolvable type.',
 				34,
-				'Classes Exception and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @param for parameter $value contains generic type Exception<int> but class Exception is not generic.',

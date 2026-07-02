@@ -599,12 +599,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($thisClassReflection->isTrait() || $thatClassReflection->isTrait()) {
-			$traitReflection = $thisClassReflection->isTrait() ? $thisClassReflection : $thatClassReflection;
-			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo(
-				static fn (): array => [
-					sprintf('%s is a trait, which is never a value type.', $traitReflection->getDisplayName()),
-				],
-			);
+			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo();
 		}
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
@@ -627,38 +622,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo(
-			fn (): array => $this->describeUnrelatedClassesReasons($thisClassReflection, $thatClassReflection),
-		);
-	}
-
-	/**
-	 * Explains why two distinct, non-trait class reflections that are not in an
-	 * inheritance relationship can never share an instance. Reached only from the
-	 * final `createNo()` of isSuperTypeOf(): one side being an interface implies
-	 * the other is a final class that does not implement it; otherwise both are
-	 * classes and PHP's single inheritance rules them out.
-	 *
-	 * @return list<string>
-	 */
-	private function describeUnrelatedClassesReasons(ClassReflection $a, ClassReflection $b): array
-	{
-		if ($a->isInterface() !== $b->isInterface()) {
-			$interfaceReflection = $a->isInterface() ? $a : $b;
-			$classReflection = $a->isInterface() ? $b : $a;
-
-			return [sprintf(
-				'Final class %s does not implement interface %s.',
-				$classReflection->getDisplayName(),
-				$interfaceReflection->getDisplayName(),
-			)];
-		}
-
-		return [sprintf(
-			'Classes %s and %s are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
-			$a->getDisplayName(),
-			$b->getDisplayName(),
-		)];
+		return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo();
 	}
 
 	public function equals(Type $type): bool

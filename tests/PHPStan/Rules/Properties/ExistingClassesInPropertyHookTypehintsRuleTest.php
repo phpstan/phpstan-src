@@ -51,7 +51,6 @@ class ExistingClassesInPropertyHookTypehintsRuleTest extends RuleTestCase
 			[
 				'Parameter $v of set hook for property ExistingClassesPropertyHooks\Foo::$j has unresolvable native type.',
 				15,
-				'Classes Exception and stdClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Get hook for property ExistingClassesPropertyHooks\Foo::$k has invalid return type ExistingClassesPropertyHooks\Undefined.',

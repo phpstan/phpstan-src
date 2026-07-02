@@ -158,7 +158,6 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 					[
 						'Property PropertyIntersectionTypes\Test::$prop2 has unresolvable native type.',
 						30,
-						'Classes PropertyIntersectionTypes\Ipsum and PropertyIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Property PropertyIntersectionTypes\Test::$prop3 has unresolvable native type.',

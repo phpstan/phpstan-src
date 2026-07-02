@@ -391,12 +391,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 					[
 						'Parameter $a of function FunctionIntersectionTypes\doBar() has unresolvable native type.',
 						30,
-						'Classes FunctionIntersectionTypes\Ipsum and FunctionIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Function FunctionIntersectionTypes\doBar() has unresolvable native return type.',
 						30,
-						'Classes FunctionIntersectionTypes\Ipsum and FunctionIntersectionTypes\Lorem are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 					],
 					[
 						'Parameter $a of function FunctionIntersectionTypes\doBaz() has unresolvable native type.',

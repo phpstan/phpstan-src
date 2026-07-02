@@ -10,7 +10,6 @@ use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -75,8 +74,6 @@ final class BetterReflectionSourceLocatorFactory
 		private bool $playgroundMode, // makes all PHPStan classes in the PHAR discoverable with PSR-4
 		#[AutowiredParameter]
 		private ?string $singleReflectionFile,
-		#[AutowiredParameter(ref: '%cache.memoizingSourceLocatorEntriesCountMax%')]
-		private int $memoizingSourceLocatorEntriesCountMax,
 	)
 	{
 	}
@@ -175,10 +172,9 @@ final class BetterReflectionSourceLocatorFactory
 			return new AggregateSourceLocator($locators);
 		};
 
-		return new MemoizingSourceLocator(
-			new LazySourceLocator($initializer),
-			$this->memoizingSourceLocatorEntriesCountMax === 0 ? null : $this->memoizingSourceLocatorEntriesCountMax,
-		);
+		// no MemoizingSourceLocator here - located reflections are already memoized
+		// by MemoizingReflector, a second cache layer would only pin them in memory twice
+		return new LazySourceLocator($initializer);
 	}
 
 }

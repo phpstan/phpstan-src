@@ -42,13 +42,6 @@ services:
 		autowired:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 
-	originalBetterReflectionReflector:
-		class: PHPStan\BetterReflection\Reflector\DefaultReflector
-		arguments:
-			sourceLocator: @betterReflectionSourceLocator
-		autowired: false
-
-
 	# not registered using attributes because we don't want to apply service tags automatically
 	-
 		class: PHPStan\Dependency\ExportedNodeVisitor

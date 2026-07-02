@@ -274,6 +274,13 @@ final class StaticCallHandler implements ExprHandler
 			}
 		}
 
+		if (
+			$methodReflection === null
+			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
+		) {
+			$scope = $scope->invalidateVolatileExpressions();
+		}
+
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());

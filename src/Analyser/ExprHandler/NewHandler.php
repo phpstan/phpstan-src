@@ -215,6 +215,14 @@ final class NewHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 
+		$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
+		if (
+			($constructorReflection !== null && !$constructorReflection->getDeclaringClass()->isBuiltin() && !$constructorReflection->hasSideEffects()->no())
+			|| ($constructorReflection === null && !$calleeKnown)
+		) {
+			$scope = $scope->invalidateVolatileExpressions();
+		}
+
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,

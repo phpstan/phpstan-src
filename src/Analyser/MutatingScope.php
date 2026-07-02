@@ -638,6 +638,60 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
+	/**
+	 * Forgets every tracked volatile global-state expression: argument-less
+	 * function-call expressions whose value reflects mutable global/output-buffer
+	 * state rather than just their arguments (ob_get_level(), openssl_error_string()).
+	 * Any call to code PHPStan cannot inspect may change that state transitively, so
+	 * these narrowings must be forgotten afterwards. These functions take no
+	 * arguments, so the exact key lookups keep this O(1) in the common case where
+	 * nothing is tracked.
+	 */
+	public function invalidateVolatileExpressions(): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+
+		$changed = false;
+		foreach (['ob_get_level', 'openssl_error_string'] as $functionName) {
+			foreach ([$functionName . '()', '\\' . $functionName . '()'] as $exprString) {
+				if (
+					!array_key_exists($exprString, $expressionTypes)
+					&& !array_key_exists($exprString, $nativeExpressionTypes)
+				) {
+					continue;
+				}
+
+				unset($expressionTypes[$exprString]);
+				unset($nativeExpressionTypes[$exprString]);
+				$changed = true;
+			}
+		}
+
+		if (!$changed) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{

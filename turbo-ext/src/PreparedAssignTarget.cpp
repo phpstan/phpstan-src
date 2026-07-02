@@ -4,7 +4,7 @@
  *
  * The pre-value half of an assignment AssignHandler::prepareTarget()
  * captures and applyWrite() reads back (~590K getter calls per
- * self-analysis). State lives in the twin's 27 promoted property slots, in
+ * self-analysis). State lives in the twin's 28 promoted property slots, in
  * its order; the getters of the kind-specific parts throw the twin's
  * ShouldNotHappenException when the slot is null. Native creators use
  * pt_prepared_assign_target_new() with the constructor's positional
@@ -22,7 +22,7 @@ namespace sigs = ptdecl::PreparedAssignTarget::sig;
 zend_class_entry *pt_ce_prepared_assign_target = nullptr;
 
 /* the constructor's positional parameter count and the required ones */
-#define PT_PAT_ARG_COUNT 27
+#define PT_PAT_ARG_COUNT 28
 #define PT_PAT_REQUIRED_ARG_COUNT 11
 
 namespace phpstanturbo {
@@ -33,9 +33,9 @@ class PreparedAssignTarget
 public:
 	explicit PreparedAssignTarget(zend_object *self) : self(self) {}
 
-	/* the constructor: argv holds the 27 positional arguments in the twin's
+	/* the constructor: argv holds the 28 positional arguments in the twin's
 	 * order, an UNDEF slot for an omitted optional one (its default: null,
-	 * [] for $targetChainResults) */
+	 * [] for $targetChainResults and $illegalOffsetDimFetches) */
 	void construct(zval *argv) const
 	{
 		for (uint32_t i = 0; i < PT_PAT_ARG_COUNT; i++) {
@@ -43,7 +43,7 @@ public:
 			if (Z_TYPE(argv[i]) != IS_UNDEF) {
 				pt_write_slot(self, i, &argv[i]);
 			} else {
-				if (i == slots::targetChainResults) {
+				if (i == slots::targetChainResults || i == slots::illegalOffsetDimFetches) {
 					ZVAL_EMPTY_ARRAY(&value);
 				} else {
 					ZVAL_NULL(&value);
@@ -89,6 +89,7 @@ public:
 	zv::Val getTargetReadResult() const { return readRequired(slots::targetReadResult, "targetReadResult"); }
 	zv::Val getTargetChainResults() const { return read(slots::targetChainResults, "targetChainResults"); }
 	zv::Val getVariableNameResult() const { return read(slots::variableNameResult, "variableNameResult"); }
+	zv::Val getIllegalOffsetDimFetches() const { return read(slots::illegalOffsetDimFetches, "illegalOffsetDimFetches"); }
 
 private:
 	zend_object *self;
@@ -187,6 +188,7 @@ PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 			Z_PARAM_ARRAY(objects[24])
 			Z_PARAM_OBJECT_OR_NULL(objects[25])
 			Z_PARAM_OBJECT_OR_NULL(objects[26])
+			Z_PARAM_ARRAY(objects[27])
 		ZEND_PARSE_PARAMETERS_END();
 		zval scalar;
 		ZVAL_STR(&scalar, kindStr);
@@ -265,6 +267,8 @@ PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 	cls.method<&PreparedAssignTarget::getTargetChainResults>(sigs::getTargetChainResults);
 
 	cls.method<&PreparedAssignTarget::getVariableNameResult>(sigs::getVariableNameResult);
+
+	cls.method<&PreparedAssignTarget::getIllegalOffsetDimFetches>(sigs::getIllegalOffsetDimFetches);
 
 	cls.shadow(&pt_ce_prepared_assign_target);
 }

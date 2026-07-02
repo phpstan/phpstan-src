@@ -33,6 +33,7 @@ use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
@@ -286,6 +287,8 @@ final class AssignHandler implements ExprHandler
 			VariableFlowBuilder::targetRead($expr->var, $storage, false),
 			$assignedExprResult->getVariableFlow(),
 			$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
+			// an illegal offset throws before the write
+			count($target->getIllegalOffsetDimFetches()) > 0 ? VariableFlow::throwing(new ObjectType(TypeError::class), true) : null,
 			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_ASSIGN, $scope, $storage, $redundantType),
 		);
 		if ($expr instanceof Assign && $expr->expr instanceof Expr\Array_ && self::hasArrayReference($expr->expr)) {
@@ -852,6 +855,35 @@ final class AssignHandler implements ExprHandler
 				$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $callbackScope->enterExpressionAssign($dimFetch) : $callbackScope, $storage);
 			}
 
+			// the links whose offset may throw TypeError - PHP throws only after
+			// evaluating the assigned value, so applyWrite() creates their throw points
+			$illegalOffsetDimFetches = [];
+			if ($this->phpVersion->throwsTypeErrorForIllegalOffsets()) {
+				foreach ($offsetTypes as $i => [$offsetType, $offsetDimFetch]) {
+					// $arr[] = ... never throws for the offset
+					if ($offsetType === null) {
+						continue;
+					}
+					if (!IllegalOffsetTypeHelper::mayOffsetThrowTypeError($offsetType)) {
+						continue;
+					}
+					// writes to ArrayAccess objects go through offsetSet() whose throw points applyWrite() models;
+					// the container is the previous chain link - the root for the first dimension
+					$containerResult = $i === 0 ? $varResult : $deferredDimFetchResults[$i - 1][1];
+					$containerType = $containerResult->getType();
+					if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($containerType)->yes()) {
+						continue;
+					}
+					// `$lvalue ??= ...` throws reading an array or a string container,
+					// before the assigned value is evaluated
+					if ($mode->issetSemanticsForRead() && ($containerType->isArray()->yes() || $containerType->isString()->yes())) {
+						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $offsetDimFetch, false);
+						continue;
+					}
+					$illegalOffsetDimFetches[] = $offsetDimFetch;
+				}
+			}
+
 			if ($mode->issetSemanticsForRead()) {
 				// `$lvalue ??= ...` reads the chain with isset() semantics. The root
 				// and dimensions were just walked, so each chain link's read is
@@ -931,6 +963,7 @@ final class AssignHandler implements ExprHandler
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
 				dependencies: $targetDependencies,
+				illegalOffsetDimFetches: $illegalOffsetDimFetches,
 			);
 		}
 
@@ -1437,6 +1470,25 @@ final class AssignHandler implements ExprHandler
 			if ($isImplicitArrayCreation->yes()) {
 				$varType = new ConstantArrayType([], []);
 				$varNativeType = new ConstantArrayType([], []);
+			}
+
+			// an illegal offset throws TypeError after the assigned value was
+			// evaluated and an undefined root was turned into an array
+			$illegalOffsetDimFetches = $target->getIllegalOffsetDimFetches();
+			if (count($illegalOffsetDimFetches) > 0) {
+				$throwPointScope = $scope;
+				if (!$isImplicitArrayCreation->no() && $var instanceof Variable && is_string($var->name)) {
+					$throwPointScope = $throwPointScope->assignVariable(
+						$var->name,
+						TypeCombinator::union($varType, new ConstantArrayType([], [])),
+						TypeCombinator::union($varNativeType, new ConstantArrayType([], [])),
+						TrinaryLogic::createYes(),
+						[],
+					);
+				}
+				foreach ($illegalOffsetDimFetches as $illegalOffsetDimFetch) {
+					$throwPoints[] = InternalThrowPoint::createExplicit($throwPointScope, new ObjectType(TypeError::class), $illegalOffsetDimFetch, false);
+				}
 			}
 			$offsetValueType = $varType;
 			$offsetNativeValueType = $varNativeType;

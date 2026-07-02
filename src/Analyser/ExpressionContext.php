@@ -29,6 +29,7 @@ final class ExpressionContext
 		private ?bool $valueConsumed = null,
 		private ?Type $passedToType = null,
 		private ?Type $nativePassedToType = null,
+		private bool $issetTarget = false,
 	)
 	{
 	}
@@ -50,7 +51,7 @@ final class ExpressionContext
 	 */
 	public function enterDeep(): self
 	{
-		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
+		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && !$this->issetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
 			return $this;
 		}
 
@@ -78,7 +79,7 @@ final class ExpressionContext
 	 */
 	public function withoutValueFlow(): self
 	{
-		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
+		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && !$this->issetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
 			return $this;
 		}
 
@@ -136,7 +137,7 @@ final class ExpressionContext
 			return $this;
 		}
 
-		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, false, $this->valueFlowTarget, $this->valueFlowDirect, $this->arrayDimFetchRoot, $this->unsetTarget, $this->valueConsumed);
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, false, $this->valueFlowTarget, $this->valueFlowDirect, $this->arrayDimFetchRoot, $this->unsetTarget, $this->valueConsumed, issetTarget: $this->issetTarget);
 	}
 
 	public function enterThrow(): self
@@ -241,6 +242,20 @@ final class ExpressionContext
 	public function isUnsetTarget(): bool
 	{
 		return $this->unsetTarget;
+	}
+
+	/**
+	 * The expression is an isset() or empty() subject: an illegal offset of
+	 * a string container makes it false instead of throwing.
+	 */
+	public function enterIssetTarget(): self
+	{
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $this->resolveTemplateArguments, issetTarget: true);
+	}
+
+	public function isIssetTarget(): bool
+	{
+		return $this->issetTarget;
 	}
 
 }

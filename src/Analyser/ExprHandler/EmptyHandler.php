@@ -51,7 +51,7 @@ final class EmptyHandler implements ExprHandler
 		$beforeScope = $scope;
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->expr);
 		$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
-		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep()->enterIssetTarget());
 		$scope = $exprResult->getScope();
 		$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);

@@ -1819,7 +1819,8 @@ zv::Val pt_expression_context_create_top_level(bool resolveTemplateArguments = t
 zv::Val pt_expression_context_create_deep(bool resolveTemplateArguments = true);
 /* $context->enterDeep() / enterDeepKeepingValueFlow() / withoutValueFlow() /
  * enterMatchArm() / withoutTemplateArgumentResolution() / enterThrow() /
- * enterArrayDimFetchRoot() / enterUnsetTarget() / enterPassedToType($type,
+ * enterArrayDimFetchRoot() / enterUnsetTarget() / enterIssetTarget() /
+ * enterPassedToType($type,
  * $nativeType) / enterRightSideAssign($variableName, $expr) /
  * enterAssignRightSideCallArgs($acceptor) / enterValueFlow($target, $direct)
  * — the native bodies for a native context, the methods of anything else
@@ -1832,13 +1833,14 @@ zv::Val pt_expression_context_without_template_argument_resolution(zval *context
 zv::Val pt_expression_context_enter_throw(zval *context);
 zv::Val pt_expression_context_enter_array_dim_fetch_root(zval *context);
 zv::Val pt_expression_context_enter_unset_target(zval *context);
+zv::Val pt_expression_context_enter_isset_target(zval *context);
 zv::Val pt_expression_context_enter_passed_to_type(zval *context, zval *type, zval *nativeType);
 zv::Val pt_expression_context_enter_right_side_assign(zval *context, zend_string *variableName, zval *expr);
 zv::Val pt_expression_context_enter_assign_right_side_call_args(zval *context, zval *acceptor);
 zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool direct);
 /* $context->isDeep() / isValueConsumed() / shouldResolveTemplateArguments() /
  * isInThrow() / isValueFlowDirect() / isArrayDimFetchRoot() /
- * isUnsetTarget(); false = pending exception */
+ * isUnsetTarget() / isIssetTarget(); false = pending exception */
 [[nodiscard]] bool pt_expression_context_is_deep(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_value_consumed(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_should_resolve_template_arguments(zval *context, bool &out);
@@ -1846,6 +1848,7 @@ zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool
 [[nodiscard]] bool pt_expression_context_is_value_flow_direct(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_array_dim_fetch_root(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_unset_target(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_is_isset_target(zval *context, bool &out);
 /* $context->getPassedToType() / getNativePassedToType() /
  * getInAssignRightSideVariableName() / getInAssignRightSideExpr() /
  * getInAssignRightSideType() / getInAssignRightSideNativeType() /
@@ -2098,7 +2101,8 @@ extern zend_class_entry *pt_ce_prepared_assign_target;
 /* new PreparedAssignTarget(...$argv): the constructor's positional
  * arguments in the twin's order (at least the 11 required ones), an
  * omitted or UNDEF optional one taking its default (the last one,
- * $dependencies, is ptdecl::PreparedAssignTarget::slot::dependencies) */
+ * $illegalOffsetDimFetches, is
+ * ptdecl::PreparedAssignTarget::slot::illegalOffsetDimFetches) */
 zv::Val pt_prepared_assign_target_new(uint32_t argc, zval *argv);
 
 /* }}} */
@@ -3101,6 +3105,10 @@ zv::Val pt_variable_write_offset_from_type(zval *dimType);
  * for the shadowing class, the method otherwise ($dimResult NULL or IS_NULL
  * for null); UNDEF = pending exception */
 zv::Val pt_array_dim_fetch_handler_compose_result(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *dimResult, zval *varResult, zval *storage, zval *context, zval *beforeScope);
+/* IllegalOffsetTypeHelper.cpp —
+ * IllegalOffsetTypeHelper::mayOffsetThrowTypeError($offsetType) (borrowed);
+ * false = pending exception */
+[[nodiscard]] bool pt_illegal_offset_type_helper_may_offset_throw_type_error(zval *offsetType, bool &out);
 
 /* }}} */
 
@@ -4389,6 +4397,7 @@ enum pt_php_version_query
 	PT_PHP_VERSION_SUPPORTS_ASYMMETRIC_VISIBILITY,
 	PT_PHP_VERSION_SUPPORTS_ENUMS,
 	PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS,
+	PT_PHP_VERSION_THROWS_TYPE_ERROR_FOR_ILLEGAL_OFFSETS,
 	PT_PHP_VERSION_QUERY_COUNT
 };
 /* $phpVersion-><query>() / ->getVersionId(): the $versionId slot of exactly

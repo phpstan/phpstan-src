@@ -24,6 +24,7 @@ inline constexpr uint32_t unsetTarget = 10;
 inline constexpr uint32_t valueConsumed = 11;
 inline constexpr uint32_t passedToType = 12;
 inline constexpr uint32_t nativePassedToType = 13;
+inline constexpr uint32_t issetTarget = 14;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -48,6 +49,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("valueConsumed", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_BOOL);
 	cls.property("passedToType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 	cls.property("nativePassedToType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
+	cls.property("issetTarget", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -73,44 +75,47 @@ inline constexpr char strings[] =
 	"valueConsumed\0" /* 294 */
 	"passedToType\0" /* 308 */
 	"nativePassedToType\0" /* 321 */
-	"__construct\0" /* 340 */
-	"\0" /* 352 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 353 */
-	"createTopLevel\0" /* 388 */
-	"createDeep\0" /* 403 */
-	"enterDeep\0" /* 414 */
-	"enterDeepKeepingValueFlow\0" /* 424 */
-	"withoutValueFlow\0" /* 450 */
-	"enterMatchArm\0" /* 467 */
-	"isValueConsumed\0" /* 481 */
-	"type\0" /* 497 */
-	"nativeType\0" /* 502 */
-	"enterPassedToType\0" /* 513 */
-	"getPassedToType\0" /* 531 */
-	"getNativePassedToType\0" /* 547 */
-	"shouldResolveTemplateArguments\0" /* 569 */
-	"withoutTemplateArgumentResolution\0" /* 600 */
-	"enterThrow\0" /* 634 */
-	"isInThrow\0" /* 645 */
-	"variableName\0" /* 655 */
-	"expr\0" /* 668 */
-	"enterRightSideAssign\0" /* 673 */
-	"getInAssignRightSideVariableName\0" /* 694 */
-	"getInAssignRightSideExpr\0" /* 727 */
-	"acceptor\0" /* 752 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 761 */
-	"enterAssignRightSideCallArgs\0" /* 799 */
-	"getInAssignRightSideType\0" /* 828 */
-	"getInAssignRightSideNativeType\0" /* 853 */
-	"target\0" /* 884 */
-	"direct\0" /* 891 */
-	"enterValueFlow\0" /* 898 */
-	"getValueFlowTarget\0" /* 913 */
-	"isValueFlowDirect\0" /* 932 */
-	"enterArrayDimFetchRoot\0" /* 950 */
-	"isArrayDimFetchRoot\0" /* 973 */
-	"enterUnsetTarget\0" /* 993 */
-	"isUnsetTarget"; /* 1010 */
+	"issetTarget\0" /* 340 */
+	"__construct\0" /* 352 */
+	"\0" /* 364 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 365 */
+	"createTopLevel\0" /* 400 */
+	"createDeep\0" /* 415 */
+	"enterDeep\0" /* 426 */
+	"enterDeepKeepingValueFlow\0" /* 436 */
+	"withoutValueFlow\0" /* 462 */
+	"enterMatchArm\0" /* 479 */
+	"isValueConsumed\0" /* 493 */
+	"type\0" /* 509 */
+	"nativeType\0" /* 514 */
+	"enterPassedToType\0" /* 525 */
+	"getPassedToType\0" /* 543 */
+	"getNativePassedToType\0" /* 559 */
+	"shouldResolveTemplateArguments\0" /* 581 */
+	"withoutTemplateArgumentResolution\0" /* 612 */
+	"enterThrow\0" /* 646 */
+	"isInThrow\0" /* 657 */
+	"variableName\0" /* 667 */
+	"expr\0" /* 680 */
+	"enterRightSideAssign\0" /* 685 */
+	"getInAssignRightSideVariableName\0" /* 706 */
+	"getInAssignRightSideExpr\0" /* 739 */
+	"acceptor\0" /* 764 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 773 */
+	"enterAssignRightSideCallArgs\0" /* 811 */
+	"getInAssignRightSideType\0" /* 840 */
+	"getInAssignRightSideNativeType\0" /* 865 */
+	"target\0" /* 896 */
+	"direct\0" /* 903 */
+	"enterValueFlow\0" /* 910 */
+	"getValueFlowTarget\0" /* 925 */
+	"isValueFlowDirect\0" /* 944 */
+	"enterArrayDimFetchRoot\0" /* 962 */
+	"isArrayDimFetchRoot\0" /* 985 */
+	"enterUnsetTarget\0" /* 1005 */
+	"isUnsetTarget\0" /* 1022 */
+	"enterIssetTarget\0" /* 1036 */
+	"isIssetTarget"; /* 1053 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_BOOL), /* __construct $isDeep */
 	reg::packed(7, MAY_BE_NULL | MAY_BE_STRING), /* __construct $inAssignRightSideVariableName */
@@ -126,78 +131,83 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(294, MAY_BE_NULL | MAY_BE_BOOL, reg::NoString, false, false, 133), /* __construct $valueConsumed */
 	reg::packed(308, MAY_BE_NULL, 115, false, false, 133), /* __construct $passedToType */
 	reg::packed(321, MAY_BE_NULL, 115, false, false, 133), /* __construct $nativePassedToType */
+	reg::packed(340, MAY_BE_BOOL, reg::NoString, false, false, 87), /* __construct $issetTarget */
 	reg::packed(166, MAY_BE_BOOL, reg::NoString, false, false, 191), /* createTopLevel $resolveTemplateArguments */
-	reg::packed(352, 0, 353), /* createTopLevel return */
+	reg::packed(364, 0, 365), /* createTopLevel return */
 	reg::packed(166, MAY_BE_BOOL, reg::NoString, false, false, 191), /* createDeep $resolveTemplateArguments */
-	reg::packed(352, 0, 353), /* createDeep return */
-	reg::packed(352, 0, 353), /* enterDeep return */
-	reg::packed(352, 0, 353), /* enterDeepKeepingValueFlow return */
-	reg::packed(352, 0, 353), /* withoutValueFlow return */
-	reg::packed(352, 0, 353), /* enterMatchArm return */
-	reg::packed(352, MAY_BE_BOOL), /* isValueConsumed return */
-	reg::packed(497, MAY_BE_NULL, 115), /* enterPassedToType $type */
-	reg::packed(502, MAY_BE_NULL, 115), /* enterPassedToType $nativeType */
-	reg::packed(352, 0, 353), /* enterPassedToType return */
-	reg::packed(352, MAY_BE_NULL, 115), /* getPassedToType return */
-	reg::packed(352, MAY_BE_NULL, 115), /* getNativePassedToType return */
-	reg::packed(352, MAY_BE_BOOL), /* isDeep return */
-	reg::packed(352, MAY_BE_BOOL), /* shouldResolveTemplateArguments return */
-	reg::packed(352, 0, 353), /* withoutTemplateArgumentResolution return */
-	reg::packed(352, 0, 353), /* enterThrow return */
-	reg::packed(352, MAY_BE_BOOL), /* isInThrow return */
-	reg::packed(655, MAY_BE_STRING), /* enterRightSideAssign $variableName */
-	reg::packed(668, 0, 59), /* enterRightSideAssign $expr */
-	reg::packed(352, 0, 353), /* enterRightSideAssign return */
-	reg::packed(352, MAY_BE_NULL | MAY_BE_STRING), /* getInAssignRightSideVariableName return */
-	reg::packed(352, MAY_BE_NULL, 59), /* getInAssignRightSideExpr return */
-	reg::packed(752, 0, 761), /* enterAssignRightSideCallArgs $acceptor */
-	reg::packed(352, 0, 353), /* enterAssignRightSideCallArgs return */
-	reg::packed(352, MAY_BE_NULL, 115), /* getInAssignRightSideType return */
-	reg::packed(352, MAY_BE_NULL, 115), /* getInAssignRightSideNativeType return */
-	reg::packed(884, 0, 212), /* enterValueFlow $target */
-	reg::packed(891, MAY_BE_BOOL), /* enterValueFlow $direct */
-	reg::packed(352, 0, 353), /* enterValueFlow return */
-	reg::packed(352, MAY_BE_NULL, 212), /* getValueFlowTarget return */
-	reg::packed(352, MAY_BE_BOOL), /* isValueFlowDirect return */
-	reg::packed(352, 0, 353), /* enterArrayDimFetchRoot return */
-	reg::packed(352, MAY_BE_BOOL), /* isArrayDimFetchRoot return */
-	reg::packed(352, 0, 353), /* enterUnsetTarget return */
-	reg::packed(352, MAY_BE_BOOL), /* isUnsetTarget return */
+	reg::packed(364, 0, 365), /* createDeep return */
+	reg::packed(364, 0, 365), /* enterDeep return */
+	reg::packed(364, 0, 365), /* enterDeepKeepingValueFlow return */
+	reg::packed(364, 0, 365), /* withoutValueFlow return */
+	reg::packed(364, 0, 365), /* enterMatchArm return */
+	reg::packed(364, MAY_BE_BOOL), /* isValueConsumed return */
+	reg::packed(509, MAY_BE_NULL, 115), /* enterPassedToType $type */
+	reg::packed(514, MAY_BE_NULL, 115), /* enterPassedToType $nativeType */
+	reg::packed(364, 0, 365), /* enterPassedToType return */
+	reg::packed(364, MAY_BE_NULL, 115), /* getPassedToType return */
+	reg::packed(364, MAY_BE_NULL, 115), /* getNativePassedToType return */
+	reg::packed(364, MAY_BE_BOOL), /* isDeep return */
+	reg::packed(364, MAY_BE_BOOL), /* shouldResolveTemplateArguments return */
+	reg::packed(364, 0, 365), /* withoutTemplateArgumentResolution return */
+	reg::packed(364, 0, 365), /* enterThrow return */
+	reg::packed(364, MAY_BE_BOOL), /* isInThrow return */
+	reg::packed(667, MAY_BE_STRING), /* enterRightSideAssign $variableName */
+	reg::packed(680, 0, 59), /* enterRightSideAssign $expr */
+	reg::packed(364, 0, 365), /* enterRightSideAssign return */
+	reg::packed(364, MAY_BE_NULL | MAY_BE_STRING), /* getInAssignRightSideVariableName return */
+	reg::packed(364, MAY_BE_NULL, 59), /* getInAssignRightSideExpr return */
+	reg::packed(764, 0, 773), /* enterAssignRightSideCallArgs $acceptor */
+	reg::packed(364, 0, 365), /* enterAssignRightSideCallArgs return */
+	reg::packed(364, MAY_BE_NULL, 115), /* getInAssignRightSideType return */
+	reg::packed(364, MAY_BE_NULL, 115), /* getInAssignRightSideNativeType return */
+	reg::packed(896, 0, 212), /* enterValueFlow $target */
+	reg::packed(903, MAY_BE_BOOL), /* enterValueFlow $direct */
+	reg::packed(364, 0, 365), /* enterValueFlow return */
+	reg::packed(364, MAY_BE_NULL, 212), /* getValueFlowTarget return */
+	reg::packed(364, MAY_BE_BOOL), /* isValueFlowDirect return */
+	reg::packed(364, 0, 365), /* enterArrayDimFetchRoot return */
+	reg::packed(364, MAY_BE_BOOL), /* isArrayDimFetchRoot return */
+	reg::packed(364, 0, 365), /* enterUnsetTarget return */
+	reg::packed(364, MAY_BE_BOOL), /* isUnsetTarget return */
+	reg::packed(364, 0, 365), /* enterIssetTarget return */
+	reg::packed(364, MAY_BE_BOOL), /* isIssetTarget return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 340 /* __construct */, 3, 0, 14, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createTopLevel = { { 388 /* createTopLevel */, 0, 14, 1, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createDeep = { { 403 /* createDeep */, 0, 16, 1, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig enterDeep = { { 414 /* enterDeep */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterDeepKeepingValueFlow = { { 424 /* enterDeepKeepingValueFlow */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withoutValueFlow = { { 450 /* withoutValueFlow */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterMatchArm = { { 467 /* enterMatchArm */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isValueConsumed = { { 481 /* isValueConsumed */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterPassedToType = { { 513 /* enterPassedToType */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPassedToType = { { 531 /* getPassedToType */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNativePassedToType = { { 547 /* getNativePassedToType */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isDeep = { { 0 /* isDeep */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig shouldResolveTemplateArguments = { { 569 /* shouldResolveTemplateArguments */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withoutTemplateArgumentResolution = { { 600 /* withoutTemplateArgumentResolution */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterThrow = { { 634 /* enterThrow */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isInThrow = { { 645 /* isInThrow */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterRightSideAssign = { { 673 /* enterRightSideAssign */, 2, 33, 2, 35, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getInAssignRightSideVariableName = { { 694 /* getInAssignRightSideVariableName */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getInAssignRightSideExpr = { { 727 /* getInAssignRightSideExpr */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterAssignRightSideCallArgs = { { 799 /* enterAssignRightSideCallArgs */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getInAssignRightSideType = { { 828 /* getInAssignRightSideType */, 0, 40, 0, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getInAssignRightSideNativeType = { { 853 /* getInAssignRightSideNativeType */, 0, 41, 0, 41, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterValueFlow = { { 898 /* enterValueFlow */, 2, 42, 2, 44, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getValueFlowTarget = { { 913 /* getValueFlowTarget */, 0, 45, 0, 45, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isValueFlowDirect = { { 932 /* isValueFlowDirect */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterArrayDimFetchRoot = { { 950 /* enterArrayDimFetchRoot */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isArrayDimFetchRoot = { { 973 /* isArrayDimFetchRoot */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterUnsetTarget = { { 993 /* enterUnsetTarget */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUnsetTarget = { { 1010 /* isUnsetTarget */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 352 /* __construct */, 3, 0, 15, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createTopLevel = { { 400 /* createTopLevel */, 0, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createDeep = { { 415 /* createDeep */, 0, 17, 1, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig enterDeep = { { 426 /* enterDeep */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterDeepKeepingValueFlow = { { 436 /* enterDeepKeepingValueFlow */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withoutValueFlow = { { 462 /* withoutValueFlow */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterMatchArm = { { 479 /* enterMatchArm */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValueConsumed = { { 493 /* isValueConsumed */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterPassedToType = { { 525 /* enterPassedToType */, 2, 24, 2, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPassedToType = { { 543 /* getPassedToType */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativePassedToType = { { 559 /* getNativePassedToType */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDeep = { { 0 /* isDeep */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shouldResolveTemplateArguments = { { 581 /* shouldResolveTemplateArguments */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withoutTemplateArgumentResolution = { { 612 /* withoutTemplateArgumentResolution */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterThrow = { { 646 /* enterThrow */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInThrow = { { 657 /* isInThrow */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterRightSideAssign = { { 685 /* enterRightSideAssign */, 2, 34, 2, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInAssignRightSideVariableName = { { 706 /* getInAssignRightSideVariableName */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInAssignRightSideExpr = { { 739 /* getInAssignRightSideExpr */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterAssignRightSideCallArgs = { { 811 /* enterAssignRightSideCallArgs */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInAssignRightSideType = { { 840 /* getInAssignRightSideType */, 0, 41, 0, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInAssignRightSideNativeType = { { 865 /* getInAssignRightSideNativeType */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterValueFlow = { { 910 /* enterValueFlow */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getValueFlowTarget = { { 925 /* getValueFlowTarget */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValueFlowDirect = { { 944 /* isValueFlowDirect */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterArrayDimFetchRoot = { { 962 /* enterArrayDimFetchRoot */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isArrayDimFetchRoot = { { 985 /* isArrayDimFetchRoot */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterUnsetTarget = { { 1005 /* enterUnsetTarget */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUnsetTarget = { { 1022 /* isUnsetTarget */, 0, 51, 0, 51, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterIssetTarget = { { 1036 /* enterIssetTarget */, 0, 52, 0, 52, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isIssetTarget = { { 1053 /* isIssetTarget */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExpressionContext

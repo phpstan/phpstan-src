@@ -13,8 +13,10 @@
  * SpecifiedTypes::emptySpecifyCallback(), as in the twin.
  *
  * NodeScopeResolver, MutatingScope, ExpressionResult, ExpressionContext,
- * VariableFlow(Builder), VariableWriteOffset, TypeCombinator and the Type
- * kernel are called through their direct entries; the VariableWrite value
+ * VariableFlow(Builder), VariableWriteOffset, TypeCombinator,
+ * IllegalOffsetTypeHelper, InternalThrowPoint and the Type kernel are called
+ * through their direct entries, PhpVersion through PhpVersionAccess.cpp; the
+ * VariableWrite value
  * target through its slots (VariableFlow.cpp's pt_variable_write_slots_of()),
  * InitializerExprTypeResolver::getArrayType() through its direct entry; the
  * LiteralArrayItem / LiteralArrayNode / VariableWrite virtual
@@ -88,8 +90,17 @@ zv::Val variableWriteGetter(zval *write, uint32_t pt_variable_write_slots::*memb
 
 /* {{{ small value helpers */
 
-/* the permanent interned 'is_callable' (module startup) */
+/* the permanent interned 'is_callable' / 'TypeError' (module startup) */
 zend_string *pt_arh_is_callable = nullptr;
+zend_string *pt_arh_type_error = nullptr;
+
+/* new ObjectType(TypeError::class) */
+zv::Val newTypeErrorType()
+{
+	zval className;
+	ZVAL_STR(&className, pt_arh_type_error);
+	return pt_type_new_object_type(&className);
+}
 
 /* a PHP `$x !== null` read of a $nextIndex zval */
 inline bool isSet(const zval *value)
@@ -140,10 +151,11 @@ public:
 	explicit ArrayHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *initializerExprTypeResolver, zval *expressionResultFactory) const
+	void construct(zval *initializerExprTypeResolver, zval *expressionResultFactory, zval *phpVersion) const
 	{
 		pt_write_slot(self, slots::initializerExprTypeResolver, initializerExprTypeResolver);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
+		pt_write_slot(self, slots::phpVersion, phpVersion);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -343,6 +355,31 @@ public:
 					return zv::Val();
 				}
 				if (UNEXPECTED(!storeItemResult(itemResults, arrayItem, heldValue.raw(), valueResult.raw(), variableFlows, hasYield, throwPoints, impurePoints, isAlwaysTerminating, scope, hold))) return zv::Val();
+				if (!keyResult.isUndef()) {
+					bool throwsTypeErrorForIllegalOffsets;
+					if (UNEXPECTED(!pt_php_version_answer(OBJ_PROP_NUM(self, slots::phpVersion), PT_PHP_VERSION_THROWS_TYPE_ERROR_FOR_ILLEGAL_OFFSETS, throwsTypeErrorForIllegalOffsets))) return zv::Val();
+					if (throwsTypeErrorForIllegalOffsets) {
+						zv::Val keyResultType = pt_expression_result_get_type(keyResult.raw());
+						if (UNEXPECTED(keyResultType.isUndef())) return zv::Val();
+						bool mayThrow;
+						if (UNEXPECTED(!pt_illegal_offset_type_helper_may_offset_throw_type_error(keyResultType.raw(), mayThrow))) return zv::Val();
+						if (mayThrow) {
+							// an array or an object key throws TypeError once the value was evaluated
+							zv::Val typeError = newTypeErrorType();
+							if (UNEXPECTED(typeError.isUndef())) return zv::Val();
+							zval *throwingKey = itemKey(arrayItem);
+							if (UNEXPECTED(throwingKey == NULL)) return zv::Val();
+							zv::Val throwPoint = pt_internal_throw_point_create_explicit(scope.raw(), typeError.raw(), throwingKey, false);
+							if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
+							appendTo(throwPoints, std::move(throwPoint));
+							zv::Val flowType = newTypeErrorType();
+							if (UNEXPECTED(flowType.isUndef())) return zv::Val();
+							zv::Val throwFlow = pt_variable_flow_throwing(flowType.raw(), true, false);
+							if (UNEXPECTED(throwFlow.isUndef())) return zv::Val();
+							variableFlows.push(std::move(throwFlow));
+						}
+					}
+				}
 
 				// the item's callback fires after its key and value were processed,
 				// with the item's entry scope
@@ -732,6 +769,7 @@ using phpstanturbo::ArrayHandler;
 PT_MINIT_REGISTRATION(pt_register_array_handler)
 {
 	pt_arh_is_callable = zend_string_init_interned(PT_LC("is_callable"), 1);
+	pt_arh_type_error = zend_string_init_interned(PT_LC("TypeError"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ArrayHandler");
 	ptdecl::ArrayHandler::declareClass(cls);
@@ -740,9 +778,9 @@ PT_MINIT_REGISTRATION(pt_register_array_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *initializerExprTypeResolver, *expressionResultFactory;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, expressionResultFactory)) RETURN_THROWS();
-		ArrayHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, expressionResultFactory);
+		zval *initializerExprTypeResolver, *expressionResultFactory, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, expressionResultFactory, phpVersion)) RETURN_THROWS();
+		ArrayHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, expressionResultFactory, phpVersion);
 	});
 
 	cls.method<&ArrayHandler::supports, zp::Obj>(sigs::supports);

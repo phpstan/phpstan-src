@@ -15,7 +15,9 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -27,6 +29,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Variable\VariableWrite;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -35,8 +38,10 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use TypeError;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -57,6 +62,7 @@ final class ArrayHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -144,6 +150,15 @@ final class ArrayHandler implements ExprHandler
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 			$scope = $valueResult->getScope();
+			if (
+				$keyResult !== null
+				&& $this->phpVersion->throwsTypeErrorForIllegalOffsets()
+				&& IllegalOffsetTypeHelper::mayOffsetThrowTypeError($keyResult->getType())
+			) {
+				// an array or an object key throws TypeError once the value was evaluated
+				$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $arrayItem->key, false);
+				$variableFlows[] = VariableFlow::throwing(new ObjectType(TypeError::class), true);
+			}
 			// the item's callback fires after its key and value were processed,
 			// with the item's entry scope - callback-side asks answer from the
 			// storage instead of re-walking the yet-unstored sub-expressions

@@ -4,7 +4,7 @@
  *
  * A final value class with a private constructor: instances come only from
  * the static factories and the enter*() / with*() derivations. The state
- * lives in the twin's fourteen promoted property slots (generated
+ * lives in the twin's fifteen promoted property slots (generated
  * declarations), so the standard object handlers do GC/free/clone —
  * enterPassedToType()'s `clone $this` is the engine's clone handler.
  *
@@ -53,6 +53,7 @@ public:
 		int valueConsumed = -1;
 		zval *passedToType = NULL;
 		zval *nativePassedToType = NULL;
+		bool issetTarget = false;
 	};
 
 	/* the constructor body: the promoted properties */
@@ -80,6 +81,7 @@ public:
 		zval_ptr_dtor(&old);
 		write(slots::passedToType, f.passedToType);
 		write(slots::nativePassedToType, f.nativePassedToType);
+		writeBool(slots::issetTarget, f.issetTarget);
 	}
 
 	/* Mirrors createTopLevel(). */
@@ -107,7 +109,7 @@ public:
 	/* Mirrors enterDeep(). */
 	zv::Val enterDeep() const
 	{
-		if (boolSlot(slots::isDeep) && isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType)) {
+		if (boolSlot(slots::isDeep) && isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && !boolSlot(slots::issetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType)) {
 			return thisValue();
 		}
 
@@ -131,7 +133,7 @@ public:
 	/* Mirrors withoutValueFlow(). */
 	zv::Val withoutValueFlow() const
 	{
-		if (isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType)) {
+		if (isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && !boolSlot(slots::issetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType)) {
 			return thisValue();
 		}
 
@@ -198,6 +200,7 @@ public:
 		f.unsetTarget = boolSlot(slots::unsetTarget);
 		zval *valueConsumed = slot(slots::valueConsumed);
 		f.valueConsumed = Z_TYPE_P(valueConsumed) == IS_NULL ? -1 : (Z_TYPE_P(valueConsumed) == IS_TRUE ? 1 : 0);
+		f.issetTarget = boolSlot(slots::issetTarget);
 		return newSelf(f);
 	}
 
@@ -286,6 +289,16 @@ public:
 	}
 
 	bool isUnsetTarget() const { return boolSlot(slots::unsetTarget); }
+
+	/* Mirrors enterIssetTarget(). */
+	zv::Val enterIssetTarget() const
+	{
+		Fields f = carried();
+		f.issetTarget = true;
+		return newSelf(f);
+	}
+
+	bool isIssetTarget() const { return boolSlot(slots::issetTarget); }
 
 private:
 	zend_object *self;
@@ -446,6 +459,12 @@ zv::Val pt_expression_context_enter_unset_target(zval *context)
 	return pt_type_call(Z_OBJ_P(context), PT_LC("enterunsettarget"), 0, NULL);
 }
 
+zv::Val pt_expression_context_enter_isset_target(zval *context)
+{
+	if (isNative(context)) return ExpressionContext(Z_OBJ_P(context)).enterIssetTarget();
+	return pt_type_call(Z_OBJ_P(context), PT_LC("enterissettarget"), 0, NULL);
+}
+
 zv::Val pt_expression_context_enter_passed_to_type(zval *context, zval *type, zval *nativeType)
 {
 	if (isNative(context)) return ExpressionContext(Z_OBJ_P(context)).enterPassedToType(type, nativeType);
@@ -540,6 +559,15 @@ bool pt_expression_context_is_unset_target(zval *context, bool &out)
 	return boolMethod(context, PT_LC("isunsettarget"), out);
 }
 
+bool pt_expression_context_is_isset_target(zval *context, bool &out)
+{
+	if (isNative(context)) {
+		out = ExpressionContext(Z_OBJ_P(context)).isIssetTarget();
+		return true;
+	}
+	return boolMethod(context, PT_LC("isissettarget"), out);
+}
+
 zv::Val pt_expression_context_get_passed_to_type(zval *context)
 {
 	if (isNative(context)) return ExpressionContext(Z_OBJ_P(context)).getPassedToType();
@@ -602,7 +630,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 		zval *expr;
 		bool valueConsumedIsNull = true;
 		bool valueConsumed = false;
-		ZEND_PARSE_PARAMETERS_START(3, 14)
+		ZEND_PARSE_PARAMETERS_START(3, 15)
 			Z_PARAM_BOOL(f.isDeep)
 			Z_PARAM_STR_OR_NULL(variableName)
 			Z_PARAM_OBJECT_OR_NULL(expr)
@@ -618,6 +646,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 			Z_PARAM_BOOL_OR_NULL(valueConsumed, valueConsumedIsNull)
 			Z_PARAM_OBJECT_OR_NULL(f.passedToType)
 			Z_PARAM_OBJECT_OR_NULL(f.nativePassedToType)
+			Z_PARAM_BOOL(f.issetTarget)
 		ZEND_PARSE_PARAMETERS_END();
 		zval name;
 		if (variableName != NULL) {
@@ -714,6 +743,13 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 	cls.method(sigs::isUnsetTarget, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(ExpressionContext(Z_OBJ_P(ZEND_THIS)).isUnsetTarget());
+	});
+
+	cls.method<&ExpressionContext::enterIssetTarget>(sigs::enterIssetTarget);
+
+	cls.method(sigs::isIssetTarget, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_BOOL(ExpressionContext(Z_OBJ_P(ZEND_THIS)).isIssetTarget());
 	});
 
 	cls.shadow(&pt_ce_expression_context);

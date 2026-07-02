@@ -287,3 +287,69 @@ function builtinKeepsLevel(): void
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
 }
+
+class WithImpureConstructor
+{
+
+	public function __construct()
+	{
+	}
+
+}
+
+class WithPureConstructor
+{
+
+	/** @phpstan-pure */
+	public function __construct()
+	{
+	}
+
+}
+
+class WithoutConstructor
+{
+
+}
+
+function impureConstructorForgetsLevel(): void
+{
+	ob_start();
+	// the constructor may have opened or closed a buffer
+	new WithImpureConstructor();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function pureConstructorKeepsLevel(): void
+{
+	ob_start();
+	new WithPureConstructor();
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+function noConstructorKeepsLevel(): void
+{
+	ob_start();
+	new WithoutConstructor();
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}
+
+/** @param class-string $className */
+function unknownClassForgetsLevel(string $className): void
+{
+	ob_start();
+	new $className();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_clean());
+}
+
+function builtinConstructorKeepsLevel(): void
+{
+	ob_start();
+	new \ArrayObject();
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_clean());
+}

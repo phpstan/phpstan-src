@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -213,6 +214,25 @@ final class NewHandler implements ExprHandler
 			}
 		} elseif ($classReflection === null || ($isDynamic && $constructorReflection === null && !$classReflection->isFinal())) {
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+		}
+
+		if (OutputBufferHelper::isLevelTracked($scope)) {
+			$forgetOutputBufferLevel = false;
+			if ($constructorReflection !== null) {
+				// an impure user-defined constructor may open or close output buffers
+				$forgetOutputBufferLevel = !$constructorReflection->getDeclaringClass()->isBuiltin()
+					&& !$constructorReflection->hasSideEffects()->no();
+			} elseif ($classReflection === null) {
+				// unknown class - the constructor may do anything
+				$forgetOutputBufferLevel = true;
+			} elseif ($isDynamic && !$classReflection->isFinal()) {
+				// a subclass constructor may open or close output buffers
+				$forgetOutputBufferLevel = true;
+			}
+
+			if ($forgetOutputBufferLevel) {
+				$scope = OutputBufferHelper::invalidateLevel($scope);
+			}
 		}
 
 		return new ExpressionResult(

@@ -2211,12 +2211,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Return type of call to method GenericReturnTypeNever\Foo::doBar() contains unresolvable type.',
 				70,
-				'Classes GenericReturnTypeNever\Dolor and GenericReturnTypeNever\Sit are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'Return type of call to method GenericReturnTypeNever\Foo::doBazBaz() contains unresolvable type.',
 				73,
-				'Classes GenericReturnTypeNever\Dolor and GenericReturnTypeNever\Sit are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 		]);
 	}

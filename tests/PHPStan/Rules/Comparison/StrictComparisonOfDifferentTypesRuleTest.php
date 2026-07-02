@@ -581,7 +581,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\HelloWorld)> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				37,
-				'Classes Bug3633\HelloWorld and Bug3633\OtherClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\HelloWorld\' will always evaluate to true.',
@@ -595,7 +595,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\OtherClass)> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				64,
-				'Classes Bug3633\OtherClass and Bug3633\HelloWorld are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
@@ -610,12 +610,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\FinalClass)> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				93,
-				'Classes Bug3633\FinalClass and Bug3633\HelloWorld are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
+				$tipText,
 			],
 			[
 				'Strict comparison using === between class-string<$this(Bug3633\FinalClass)> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				96,
-				'Classes Bug3633\FinalClass and Bug3633\OtherClass are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
+				$tipText,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',

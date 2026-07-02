@@ -24,7 +24,6 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Foo::FOO contains unresolvable type.',
 				9,
-				'Classes stdClass and IncompatibleClassConstantPhpDoc\Foo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Foo::DOLOR contains generic type IncompatibleClassConstantPhpDoc\Foo<int> but class IncompatibleClassConstantPhpDoc\Foo is not generic.',

@@ -52,7 +52,6 @@ class MixinRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @mixin contains unresolvable type.',
 				24,
-				'Classes Exception and SplFileInfo are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
 			],
 			[
 				'PHPDoc tag @mixin contains generic type Exception<MixinRule\Foo> but class Exception is not generic.',

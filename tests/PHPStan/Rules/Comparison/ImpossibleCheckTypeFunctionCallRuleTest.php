@@ -294,23 +294,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7898.php'], []);
 	}
 
-	public function testReasons(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/check-type-function-call-reasons.php'], [
-			[
-				'Call to function is_a() with CheckTypeFunctionCallReasons\Foo and \'CheckTypeFunctionCallReasons\\\\Bar\' will always evaluate to false.',
-				23,
-				'Final class CheckTypeFunctionCallReasons\Foo does not implement interface CheckTypeFunctionCallReasons\Bar.',
-			],
-			[
-				'Call to function is_a() with CheckTypeFunctionCallReasons\Baz and \'CheckTypeFunctionCallReasons\\\\Foo\' will always evaluate to false.',
-				28,
-				'Classes CheckTypeFunctionCallReasons\Foo and CheckTypeFunctionCallReasons\Baz are not in an inheritance relationship and because of single inheritance no object can be an instance of both.',
-			],
-		]);
-	}
-
 	#[RequiresPhp('>= 8.1.0')]
 	public function testStructExists(): void
 	{

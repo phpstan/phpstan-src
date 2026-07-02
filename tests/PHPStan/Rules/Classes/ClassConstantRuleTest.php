@@ -23,6 +23,8 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	private bool $checkImportedClassNameCase = false;
 
+	private bool $checkUnionTypes = true;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -31,7 +33,7 @@ class ClassConstantRuleTest extends RuleTestCase
 			$reflectionProvider,
 			checkNullables: true,
 			checkThisOnly: false,
-			checkUnionTypes: true,
+			checkUnionTypes: $this->checkUnionTypes,
 			checkExplicitMixed: true,
 			checkImplicitMixed: true,
 			checkBenevolentUnionTypes: false,
@@ -602,6 +604,89 @@ class ClassConstantRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/class-constant-on-expr-php-versions.php'], $errors);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testClassConstantAccessOnStringUnions(): void
+	{
+		$this->analyse([__DIR__ . '/data/class-constant-string-unions.php'], [
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz::BAR.',
+				39,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz|ClassConstantStringUnions\Foo::BAR.',
+				45,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz|ClassConstantStringUnions\Foo::BAR.',
+				57,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz|ClassConstantStringUnions\Foo::BAR.',
+				65,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz::BAR.',
+				73,
+			],
+			[
+				'Accessing ::class constant on a dynamic string is not supported in PHP.',
+				87,
+			],
+			[
+				'Accessing ::class constant on a dynamic string is not supported in PHP.',
+				95,
+			],
+			[
+				'Access to private constant PRIVATE_CONST of class ClassConstantStringUnions\WithNonPublic.',
+				115,
+			],
+			[
+				'Access to protected constant PROTECTED_CONST of class ClassConstantStringUnions\WithNonPublic.',
+				116,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz::BAR.',
+				140,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testClassConstantAccessOnStringUnionsWithoutCheckUnionTypes(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/class-constant-string-unions.php'], [
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz::BAR.',
+				39,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz::BAR.',
+				73,
+			],
+			[
+				'Accessing ::class constant on a dynamic string is not supported in PHP.',
+				87,
+			],
+			[
+				'Accessing ::class constant on a dynamic string is not supported in PHP.',
+				95,
+			],
+			[
+				'Access to private constant PRIVATE_CONST of class ClassConstantStringUnions\WithNonPublic.',
+				115,
+			],
+			[
+				'Access to protected constant PROTECTED_CONST of class ClassConstantStringUnions\WithNonPublic.',
+				116,
+			],
+			[
+				'Access to undefined constant ClassConstantStringUnions\Baz::BAR.',
+				140,
+			],
+		]);
 	}
 
 }

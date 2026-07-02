@@ -10,6 +10,7 @@ use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -26,6 +27,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -182,9 +184,25 @@ final class ClassConstantRule implements Rule
 				return $messages;
 			}
 		} else {
+			$exprToCheck = NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class);
+			if (strtolower($constantName) !== 'class') {
+				// A constant class-name string or a class-string type describes the
+				// object it names, so route the check through that object type. This
+				// makes constant-string / class-string unions behave exactly like
+				// object unions with regard to rule levels (member filtering when
+				// checkUnionTypes is off, whole-union check when it is on).
+				// Every other type (objects, or unions with members that are not
+				// class-strings) yields no class name here and keeps the old path.
+				// The ::class pseudo-constant is excluded above because
+				// $string::class is a runtime TypeError, handled below as a string.
+				$objectType = $scope->getType($exprToCheck)->getClassStringObjectType();
+				if ($this->canCheckThroughObjectType($objectType)) {
+					$exprToCheck = new TypeExpr($objectType);
+				}
+			}
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class),
+				$exprToCheck,
 				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
 				static fn (Type $type): bool => $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes(),
 			);
@@ -264,6 +282,27 @@ final class ClassConstantRule implements Rule
 		}
 
 		return $messages;
+	}
+
+	/**
+	 * Class-strings without a class name (class-string, class-string<object>,
+	 * class-string<T of object>) and class-strings naming a trait keep the
+	 * string code path: RuleLevelHelper would filter the object type out or
+	 * report the trait as an unknown class.
+	 */
+	private function canCheckThroughObjectType(Type $objectType): bool
+	{
+		if (count($objectType->getObjectClassNames()) === 0) {
+			return false;
+		}
+
+		foreach ($objectType->getObjectClassReflections() as $classReflection) {
+			if ($classReflection->isTrait()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

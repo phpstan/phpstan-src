@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use function serialize;
 
 final class IntermediaryNameScope
 {
@@ -113,6 +114,54 @@ final class IntermediaryNameScope
 			$this->typeAliasClassName,
 			$this->traitData,
 		);
+	}
+
+	/**
+	 * Restores sharing of identical property values and parent scopes after hydration from the file cache.
+	 *
+	 * var_export() used by the cache cannot represent shared references, so every hydrated
+	 * scope carries its own copy of the same uses maps and of the whole parent chain.
+	 * Without interning, the name scope map of a file with many members takes up
+	 * many times more memory when loaded from the cache than when freshly created.
+	 *
+	 * @param array<string, self|array<mixed>> $pool
+	 */
+	public function intern(array &$pool): self
+	{
+		$key = serialize($this);
+		if (isset($pool[$key])) {
+			/** @var self */
+			return $pool[$key];
+		}
+
+		$this->uses = self::internArray($pool, $this->uses);
+		$this->templatePhpDocNodes = self::internArray($pool, $this->templatePhpDocNodes);
+		$this->typeAliasesMap = self::internArray($pool, $this->typeAliasesMap);
+		$this->constUses = self::internArray($pool, $this->constUses);
+		if ($this->parent !== null) {
+			$this->parent = $this->parent->intern($pool);
+		}
+
+		return $pool[$key] = $this;
+	}
+
+	/**
+	 * @template T of array<mixed>
+	 * @param array<string, self|array<mixed>> $pool
+	 * @param T $value
+	 * @return T
+	 */
+	private static function internArray(array &$pool, array $value): array
+	{
+		$key = 'a:' . serialize($value);
+		if (isset($pool[$key])) {
+			/** @var T */
+			return $pool[$key];
+		}
+
+		$pool[$key] = $value;
+
+		return $value;
 	}
 
 	/**

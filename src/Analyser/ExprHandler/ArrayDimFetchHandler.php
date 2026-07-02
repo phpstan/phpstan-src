@@ -13,7 +13,9 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
@@ -23,9 +25,11 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use TypeError;
 use function array_merge;
 
 /**
@@ -34,6 +38,10 @@ use function array_merge;
 #[AutowiredService]
 final class ArrayDimFetchHandler implements ExprHandler
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -107,6 +115,16 @@ final class ArrayDimFetchHandler implements ExprHandler
 				new NoopNodeCallback(),
 				$context,
 			)->getThrowPoints());
+		}
+
+		if (
+			$this->phpVersion->throwsTypeErrorForIllegalOffsets()
+			// only array and string offset reads throw TypeError for illegal offsets,
+			// reads on null and other scalars emit a warning, ArrayAccess objects go through offsetGet()
+			&& (!$varType->isArray()->no() || !$varType->isString()->no())
+			&& IllegalOffsetTypeHelper::mayOffsetThrowTypeError($scope->getType($expr->dim))
+		) {
+			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $expr, false);
 		}
 
 		return new ExpressionResult(

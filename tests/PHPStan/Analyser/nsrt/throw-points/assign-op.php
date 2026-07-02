@@ -43,14 +43,6 @@ function () {
 
 function () {
 	try {
-		$foo[doesntThrow()] .= 0;
-	} finally {
-		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
-	}
-};
-
-function () {
-	try {
 		$foo[maybeThrows()] .= 0;
 	} finally {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);

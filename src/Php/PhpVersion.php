@@ -186,6 +186,12 @@ final class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	// see https://wiki.php.net/rfc/engine_warnings - "Illegal offset type" family
+	public function throwsTypeErrorForIllegalOffsets(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function supportsHhPrintfSpecifier(): bool
 	{
 		return $this->versionId >= 80000;

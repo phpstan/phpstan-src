@@ -15,26 +15,6 @@
         "ignorable": true
     },
     {
-        "message": "Expression \"$a[$objectOrInt]\" on a separate line does not do anything.",
-        "line": 19,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$a[$objectOrNull]\" on a separate line does not do anything.",
-        "line": 20,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$a[$explicitlyMixed]\" on a separate line does not do anything.",
-        "line": 21,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$a[$implicitlyMixed]\" on a separate line does not do anything.",
-        "line": 22,
-        "ignorable": true
-    },
-    {
         "message": "Expression \"$arrayOrObject[42]\" on a separate line does not do anything.",
         "line": 24,
         "ignorable": true
@@ -47,26 +27,6 @@
     {
         "message": "Expression \"$arrayOrObject[$intOrNull]\" on a separate line does not do anything.",
         "line": 27,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$arrayOrObject[$objectOrInt]\" on a separate line does not do anything.",
-        "line": 28,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$arrayOrObject[$objectOrNull]\" on a separate line does not do anything.",
-        "line": 29,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$arrayOrObject[$explicitlyMixed]\" on a separate line does not do anything.",
-        "line": 30,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$arrayOrObject[$implicitlyMixed]\" on a separate line does not do anything.",
-        "line": 31,
         "ignorable": true
     },
     {
@@ -85,26 +45,6 @@
         "ignorable": true
     },
     {
-        "message": "Expression \"$explicitlyMixed[$objectOrInt]\" on a separate line does not do anything.",
-        "line": 37,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$explicitlyMixed[$objectOrNull]\" on a separate line does not do anything.",
-        "line": 38,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$explicitlyMixed[$explicitlyMixed]\" on a separate line does not do anything.",
-        "line": 39,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$explicitlyMixed[$implicitlyMixed]\" on a separate line does not do anything.",
-        "line": 40,
-        "ignorable": true
-    },
-    {
         "message": "Expression \"$implicitlyMixed[42]\" on a separate line does not do anything.",
         "line": 42,
         "ignorable": true
@@ -117,26 +57,6 @@
     {
         "message": "Expression \"$implicitlyMixed[$intOrNull]\" on a separate line does not do anything.",
         "line": 45,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$implicitlyMixed[$objectOrInt]\" on a separate line does not do anything.",
-        "line": 46,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$implicitlyMixed[$objectOrNull]\" on a separate line does not do anything.",
-        "line": 47,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$implicitlyMixed[$explicitlyMixed]\" on a separate line does not do anything.",
-        "line": 48,
-        "ignorable": true
-    },
-    {
-        "message": "Expression \"$implicitlyMixed[$implicitlyMixed]\" on a separate line does not do anything.",
-        "line": 49,
         "ignorable": true
     }
 ]

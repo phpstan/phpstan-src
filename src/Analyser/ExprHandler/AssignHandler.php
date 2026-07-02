@@ -28,6 +28,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -605,6 +606,24 @@ final class AssignHandler implements ExprHandler
 					if ($enterExpressionAssign) {
 						$scope = $scope->exitExpressionAssign($dimExpr);
 					}
+				}
+			}
+
+			if ($this->phpVersion->throwsTypeErrorForIllegalOffsets()) {
+				foreach ($offsetTypes as [$offsetType, $offsetDimFetch]) {
+					// $arr[] = ... never throws for the offset
+					if ($offsetType === null) {
+						continue;
+					}
+					if (!IllegalOffsetTypeHelper::mayOffsetThrowTypeError($offsetType)) {
+						continue;
+					}
+					// writes to ArrayAccess objects go through offsetSet() whose throw points are modelled below
+					$containerType = $scope->getType($offsetDimFetch->var);
+					if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($containerType)->yes()) {
+						continue;
+					}
+					$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $offsetDimFetch, false);
 				}
 			}
 

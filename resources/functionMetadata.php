@@ -12,8 +12,16 @@
  * 2) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
  * 3) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
  * 4) Once the PR from 3) is merged, please update the package here and run ./bin/generate-function-metadata.php.
+ *
+ * The array is keyed by lowercase function name or "Class::method". Each entry is
+ * exactly one of:
+ *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
+ *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
+ *     one of the listed callable parameters (keyed by parameter name) receives an
+ *     impure callable, e.g. array_map()'s 'callback'.
  */
 
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
 return [
 	'BackedEnum::from' => ['hasSideEffects' => false],
 	'BackedEnum::tryFrom' => ['hasSideEffects' => false],

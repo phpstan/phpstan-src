@@ -1,5 +1,21 @@
 <?php declare(strict_types = 1);
 
+/**
+ * Hand-maintained side-effect metadata for built-in functions and methods,
+ * keyed by lowercase function name or "Class::method". resources/functionMetadata.php
+ * is generated from this file by bin/generate-function-metadata.php.
+ *
+ * Each entry is exactly one of these shapes:
+ *
+ *   - ['hasSideEffects' => bool]
+ *         false: the call is pure. true: the call has side effects.
+ *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>]
+ *         the call is pure unless one of the listed callable parameters
+ *         (keyed by parameter name) receives an impure callable, e.g. array_map()
+ *         whose only side effects come from its 'callback' argument.
+ */
+
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],

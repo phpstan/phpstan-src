@@ -10,6 +10,8 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_key_first;
+use function count;
 use function sprintf;
 
 #[AutowiredService(as: TypeAliasResolver::class)]
@@ -19,7 +21,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 	/** @var array<string, Type> */
 	private array $resolvedGlobalTypeAliases = [];
 
-	/** @var array<string, Type> */
+	/** @var array<string, Type> LRU; first entry = least recently used */
 	private array $resolvedLocalTypeAliases = [];
 
 	/** @var array<string, true> */
@@ -37,6 +39,8 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		private TypeStringResolver $typeStringResolver,
 		private TypeNodeResolver $typeNodeResolver,
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter(ref: '%cache.resolvedLocalTypeAliasesCountMax%')]
+		private int $resolvedLocalTypeAliasesCountMax,
 	)
 	{
 	}
@@ -81,7 +85,11 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		$aliasNameInClassScope = $className . '::' . $aliasName;
 
 		if (array_key_exists($aliasNameInClassScope, $this->resolvedLocalTypeAliases)) {
-			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
+			// LRU: move to the most-recently-used position
+			$resolvedAliasType = $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
+			unset($this->resolvedLocalTypeAliases[$aliasNameInClassScope]);
+
+			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
 		}
 
 		// prevent infinite recursion
@@ -120,6 +128,11 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		}
 
 		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
+		if ($this->resolvedLocalTypeAliasesCountMax !== 0 && count($this->resolvedLocalTypeAliases) > $this->resolvedLocalTypeAliasesCountMax) {
+			// resolved alias types transitively pin ClassReflections and their whole
+			// reflection trees — evict the least recently used
+			unset($this->resolvedLocalTypeAliases[array_key_first($this->resolvedLocalTypeAliases)]);
+		}
 		unset($this->inProcess[$aliasNameInClassScope]);
 
 		return $resolvedAliasType;

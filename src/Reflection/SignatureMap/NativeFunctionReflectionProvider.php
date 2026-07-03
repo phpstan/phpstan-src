@@ -133,7 +133,7 @@ final class NativeFunctionReflectionProvider
 						$phpDocType = null;
 						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						$closureThisType = null;
-						$pureUnlessCallableIsImpureParameter = isset($pureUnlessCallableIsImpureParameters[$name]) && $pureUnlessCallableIsImpureParameters[$name];
+						$pureUnlessCallableIsImpureParameter = $pureUnlessCallableIsImpureParameters[$name] ?? false;
 						if ($phpDoc !== null) {
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamTags())) {
 								$phpDocType = $phpDoc->getParamTags()[$parameterSignature->getName()]->getType();
@@ -174,11 +174,9 @@ final class NativeFunctionReflectionProvider
 			}
 		}
 
-		if (isset($functionMetadata['hasSideEffects'])) {
-			$hasSideEffects = TrinaryLogic::createFromBoolean($functionMetadata['hasSideEffects']);
-		} else {
-			$hasSideEffects = TrinaryLogic::createMaybe();
-		}
+		$hasSideEffects = isset($functionMetadata['hasSideEffects'])
+			? TrinaryLogic::createFromBoolean($functionMetadata['hasSideEffects'])
+			: TrinaryLogic::createMaybe();
 
 		$functionReflection = new NativeFunctionReflection(
 			$realFunctionName,

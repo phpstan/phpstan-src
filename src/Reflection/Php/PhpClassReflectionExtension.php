@@ -636,7 +636,9 @@ final class PhpClassReflectionExtension
 
 			$isPure = null;
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
-				$isPure = !($this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName())['hasSideEffects'] ?? true);
+				$methodMetadata = $this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName());
+				$hasSideEffects = $methodMetadata['hasSideEffects'] ?? true;
+				$isPure = !$hasSideEffects;
 			}
 
 			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $methodReflection);

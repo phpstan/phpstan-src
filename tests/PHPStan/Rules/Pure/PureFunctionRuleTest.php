@@ -260,4 +260,19 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testPureUnlessCallableIsImpurePhp84(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-php84.php'], [
+			[
+				'Impure call to function array_any() in pure function PureUnlessCallableIsImpureFunctionPhp84\anyWithImpureCallback().',
+				29,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\anyWithImpureCallback().',
+				30,
+			],
+		]);
+	}
+
 }

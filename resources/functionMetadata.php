@@ -733,6 +733,8 @@ return [
 	'apcu_key_info' => ['hasSideEffects' => true],
 	'apcu_sma_info' => ['hasSideEffects' => true],
 	'apcu_store' => ['hasSideEffects' => true],
+	'array_all' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_any' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_change_key_case' => ['hasSideEffects' => false],
 	'array_chunk' => ['hasSideEffects' => false],
 	'array_column' => ['hasSideEffects' => false],

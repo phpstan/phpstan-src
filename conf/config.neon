@@ -49,7 +49,6 @@ parameters:
 		checkDynamicConstantNameValues: false
 		unusedLabel: false
 		newOnNonObject: false
-		multiFileResultCache: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

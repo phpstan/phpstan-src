@@ -51,7 +51,6 @@ parametersSchema:
 		checkDynamicConstantNameValues: bool()
 		unusedLabel: bool()
 		newOnNonObject: bool()
-		multiFileResultCache: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -22,4 +22,3 @@ parameters:
 		checkDynamicConstantNameValues: true
 		unusedLabel: true
 		newOnNonObject: true
-		multiFileResultCache: true

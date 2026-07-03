@@ -152,10 +152,10 @@ final class BooleanAndHandler implements ExprHandler
 				$result = $result->setAlwaysOverwriteTypes();
 			}
 			return $result->setNewConditionalExpressionHolders($this->conditionalExpressionHolderHelper->mergeConditionalHolders([
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, false, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, false, true, $scope, $expr->left),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, true, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, true, true, $scope, $expr->left),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, false, true, $rightScope, $expr->right, $expr->left),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, false, true, $scope, $expr->left, $expr->right),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, true, true, $rightScope, $expr->right, $expr->left),
+				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, true, true, $scope, $expr->left, $expr->right),
 			]))->setRootExpr($expr);
 		}
 

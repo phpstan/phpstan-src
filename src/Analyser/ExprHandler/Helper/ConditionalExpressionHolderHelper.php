@@ -141,8 +141,23 @@ final class ConditionalExpressionHolderHelper
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	public function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null): array
+	public function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null, ?Expr $conditionSideExpr = null): array
 	{
+		// The condition (antecedent) side asserts a truth value for its
+		// sub-expression, and the holder guard uses that side's per-expression
+		// narrowing as if it were equivalent to that truth value. When the
+		// condition side is a compound boolean whose asserted truth value is a
+		// disjunction (`$a || $b` asserted true, or `$a && $b` asserted false),
+		// the narrowing is only a necessary consequence of the truth value, not a
+		// sufficient one — e.g. `($a && $b) || ($c && $d)` being true narrows a
+		// shared variable, but that narrowing can hold without the disjunction
+		// being true. Using such an under-approximating narrowing as a guard fires
+		// the holder unsoundly, so no holder is built. This mirrors the holder-side
+		// check below with the opposite polarity.
+		if ($this->isUnsplittableCompoundSide($conditionSideExpr, !$holderSideIsNegated)) {
+			return [];
+		}
+
 		// The condition side asserts that its sub-expression evaluates truthy.
 		// When that sub-expression is itself a compound boolean (e.g. `$a && $b`),
 		// the narrowings making it true are spread across both the sure and
@@ -200,7 +215,7 @@ final class ConditionalExpressionHolderHelper
 			// Symmetrically, in the `BooleanOr` true context the holder asserts its
 			// side is true, and a disjunction side (`$a || $b`) is itself a disjunction.
 			// Such a side is left whole rather than split into over-narrowing holders.
-			if ($this->isUnsplittableCompoundHolderSide($holderSideExpr, $holderSideIsNegated)) {
+			if ($this->isUnsplittableCompoundSide($holderSideExpr, $holderSideIsNegated)) {
 				return [];
 			}
 
@@ -269,22 +284,23 @@ final class ConditionalExpressionHolderHelper
 	}
 
 	/**
-	 * A holder side whose truth value is asserted as a disjunction cannot be
-	 * decomposed into independent per-expression holders. That happens for a
-	 * conjunction (`&&`) asserted false (negated context) and for a disjunction
-	 * (`||`) asserted true.
+	 * A boolean operand whose asserted truth value is a disjunction cannot be
+	 * decomposed into independent per-expression narrowings. That happens for a
+	 * conjunction (`&&`) asserted false (its negation is a disjunction) and for a
+	 * disjunction (`||`) asserted true. Applies to both the holder (consequent)
+	 * side and the condition (antecedent) side.
 	 */
-	private function isUnsplittableCompoundHolderSide(?Expr $holderSideExpr, bool $holderSideIsNegated): bool
+	private function isUnsplittableCompoundSide(?Expr $sideExpr, bool $isNegated): bool
 	{
-		if ($holderSideExpr === null) {
+		if ($sideExpr === null) {
 			return false;
 		}
 
-		if ($holderSideIsNegated) {
-			return $holderSideExpr instanceof BooleanAnd || $holderSideExpr instanceof LogicalAnd;
+		if ($isNegated) {
+			return $sideExpr instanceof BooleanAnd || $sideExpr instanceof LogicalAnd;
 		}
 
-		return $holderSideExpr instanceof BooleanOr || $holderSideExpr instanceof LogicalOr;
+		return $sideExpr instanceof BooleanOr || $sideExpr instanceof LogicalOr;
 	}
 
 	private function isTrackableExpression(Expr $expr): bool

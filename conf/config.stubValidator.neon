@@ -51,6 +51,7 @@ services:
 		arguments:
 			reflector: @betterReflectionReflector
 			universalObjectCratesClasses: %universalObjectCratesClasses%
+			reflectionRegistryCountMax: %cache.reflectionRegistryCountMax%
 		autowired: false
 
 	stubSourceLocator:

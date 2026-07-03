@@ -1,0 +1,5 @@
+# Mentions %env.PHPSTAN_TEST_W1_CACHE_KEY% only in this comment - it is not a real reference, so the
+# variable must not be kept in the container cache key (Nette's parser ignores comments, unlike a raw
+# text scan which would treat this as a reference and recompile spuriously).
+parameters:
+	customRulesetUsed: true

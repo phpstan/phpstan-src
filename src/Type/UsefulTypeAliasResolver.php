@@ -10,16 +10,20 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_key_first;
+use function count;
 use function sprintf;
 
 #[AutowiredService(as: TypeAliasResolver::class)]
 final class UsefulTypeAliasResolver implements TypeAliasResolver
 {
 
+	private const RESOLVED_LOCAL_TYPE_ALIASES_MAX = 2048;
+
 	/** @var array<string, Type> */
 	private array $resolvedGlobalTypeAliases = [];
 
-	/** @var array<string, Type> */
+	/** @var array<string, Type> LRU; first entry = least recently used */
 	private array $resolvedLocalTypeAliases = [];
 
 	/** @var array<string, true> */
@@ -81,7 +85,11 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		$aliasNameInClassScope = $className . '::' . $aliasName;
 
 		if (array_key_exists($aliasNameInClassScope, $this->resolvedLocalTypeAliases)) {
-			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
+			// LRU: move to the most-recently-used position
+			$resolvedAliasType = $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
+			unset($this->resolvedLocalTypeAliases[$aliasNameInClassScope]);
+
+			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
 		}
 
 		// prevent infinite recursion
@@ -120,6 +128,11 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		}
 
 		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
+		if (count($this->resolvedLocalTypeAliases) > self::RESOLVED_LOCAL_TYPE_ALIASES_MAX) {
+			// resolved alias types transitively pin ClassReflections and their whole
+			// reflection trees — evict the least recently used
+			unset($this->resolvedLocalTypeAliases[array_key_first($this->resolvedLocalTypeAliases)]);
+		}
 		unset($this->inProcess[$aliasNameInClassScope]);
 
 		return $resolvedAliasType;

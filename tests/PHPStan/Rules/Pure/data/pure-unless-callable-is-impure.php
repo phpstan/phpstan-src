@@ -87,3 +87,27 @@ function pureCallingUserlandAliasWithPureCallback(array $arr): array
 {
 	return myMapPhpstanAlias(static fn (int $x): int => $x * 2, $arr);
 }
+
+/**
+ * @param array<int> $arr
+ * @param (callable(int): int)|null $cb
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureWithMaybeNullCallback(array $arr, ?callable $cb): array
+{
+	// $cb might be null (pure) or an unknown callable, so the call stays possibly impure.
+	return array_map($cb, $arr);
+}
+
+/**
+ * @param array<int> $arr
+ * @param (pure-callable(int): int)|int $cb
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureWithMaybeCallablePureCallback(array $arr, $cb): array
+{
+	// $cb is only maybe-callable, so the call stays possibly impure.
+	return array_map($cb, $arr);
+}

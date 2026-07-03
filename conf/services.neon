@@ -59,6 +59,7 @@ services:
 		arguments:
 			parser: @defaultAnalysisParser
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
+			memberCacheKeysMax: %cache.memberCacheKeysMax%
 
 	-
 		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension

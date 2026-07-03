@@ -127,6 +127,7 @@ parameters:
 		resolvedPhpDocBlockCacheCountMax: 2048
 		nameScopeMapMemoryCacheCountMax: 512
 		phpStormStubsNodesCountMax: 128
+		memberCacheKeysMax: 2048
 	reportUnmatchedIgnoredErrors: true
 	reportIgnoresWithoutComments: false
 	typeAliases: []

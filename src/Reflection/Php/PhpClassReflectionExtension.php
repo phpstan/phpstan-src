@@ -74,8 +74,6 @@ use function strtolower;
 final class PhpClassReflectionExtension
 {
 
-	private const MEMBER_CACHE_KEYS_MAX = 2048;
-
 	/** @var array<string, true> shared LRU over the member cache keys below; first entry = least recently used */
 	private array $memberCacheOrder = [];
 
@@ -114,6 +112,7 @@ final class PhpClassReflectionExtension
 		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 		private bool $inferPrivatePropertyTypeFromConstructor,
 		private PhpVersion $phpVersion,
+		private int $memberCacheKeysMax,
 	)
 	{
 	}
@@ -121,7 +120,7 @@ final class PhpClassReflectionExtension
 	/**
 	 * Moves the cache key to the most-recently-used position of the shared LRU governing
 	 * all four member caches; evicts the least recently used key's entries from all of
-	 * them once the limit is reached.
+	 * them once the limit is reached. A limit of 0 means unlimited.
 	 *
 	 * Replaces the former evictPrivateSymbols(): instead of dropping only private members
 	 * of the just-analysed class (public/protected members accumulated for the whole
@@ -137,7 +136,7 @@ final class PhpClassReflectionExtension
 		}
 
 		$this->memberCacheOrder[$cacheKey] = true;
-		if (count($this->memberCacheOrder) <= self::MEMBER_CACHE_KEYS_MAX) {
+		if ($this->memberCacheKeysMax === 0 || count($this->memberCacheOrder) <= $this->memberCacheKeysMax) {
 			return;
 		}
 

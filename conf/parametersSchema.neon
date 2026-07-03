@@ -150,7 +150,8 @@ parametersSchema:
 		nodesByStringCountMax: int(),
 		resolvedPhpDocBlockCacheCountMax: int(),
 		nameScopeMapMemoryCacheCountMax: int(),
-		phpStormStubsNodesCountMax: int()
+		phpStormStubsNodesCountMax: int(),
+		memberCacheKeysMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()
 	reportIgnoresWithoutComments: bool()

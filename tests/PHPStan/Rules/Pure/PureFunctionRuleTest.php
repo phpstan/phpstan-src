@@ -272,6 +272,22 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\anyWithImpureCallback().',
 				30,
 			],
+			[
+				'Impure call to function array_find() in pure function PureUnlessCallableIsImpureFunctionPhp84\findWithImpureCallback().',
+				59,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\findWithImpureCallback().',
+				60,
+			],
+			[
+				'Impure call to function array_find_key() in pure function PureUnlessCallableIsImpureFunctionPhp84\findKeyWithImpureCallback().',
+				71,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\findKeyWithImpureCallback().',
+				72,
+			],
 		]);
 	}
 

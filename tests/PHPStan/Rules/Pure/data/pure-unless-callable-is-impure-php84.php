@@ -31,3 +31,45 @@ function anyWithImpureCallback(array $arr): bool
 		return $x > 0;
 	});
 }
+
+/**
+ * @param array<int> $arr
+ * @phpstan-pure
+ */
+function findWithPureCallback(array $arr): ?int
+{
+	return array_find($arr, static fn (int $x): bool => $x > 0);
+}
+
+/**
+ * @param array<int> $arr
+ * @phpstan-pure
+ */
+function findKeyWithPureCallback(array $arr): int|string|null
+{
+	return array_find_key($arr, static fn (int $x): bool => $x > 0);
+}
+
+/**
+ * @param array<int> $arr
+ * @phpstan-pure
+ */
+function findWithImpureCallback(array $arr): ?int
+{
+	return array_find($arr, static function (int $x): bool {
+		echo $x;
+		return $x > 0;
+	});
+}
+
+/**
+ * @param array<int> $arr
+ * @phpstan-pure
+ */
+function findKeyWithImpureCallback(array $arr): int|string|null
+{
+	return array_find_key($arr, static function (int $x): bool {
+		echo $x;
+		return $x > 0;
+	});
+}

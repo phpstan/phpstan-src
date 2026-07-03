@@ -49,6 +49,7 @@ use PHPStan\Reflection\Php\ExitFunctionReflection;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
@@ -92,6 +93,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private DeprecationProvider $deprecationProvider,
 		private PhpVersion $phpVersion,
 		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
+		private SignatureMapProvider $signatureMapProvider,
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private FunctionReflectionFactory $functionReflectionFactory,
 		private RelativePathHelper $relativePathHelper,
@@ -320,6 +322,18 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
 			$phpDocParameterPureUnlessCallableIsImpure = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
+		}
+
+		$lowerCasedFunctionName = strtolower($reflectionFunction->getName());
+		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
+			$functionMetadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			foreach ($functionMetadata['pureUnlessCallableIsImpureParameters'] ?? [] as $parameterName => $isPureUnlessCallableIsImpure) {
+				if (($phpDocParameterPureUnlessCallableIsImpure[$parameterName] ?? false) === true) {
+					continue;
+				}
+
+				$phpDocParameterPureUnlessCallableIsImpure[$parameterName] = $isPureUnlessCallableIsImpure;
+			}
 		}
 
 		return $this->functionReflectionFactory->create(

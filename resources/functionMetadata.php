@@ -749,6 +749,7 @@ return [
 	'array_fill_keys' => ['hasSideEffects' => false],
 	'array_filter' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_find' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_find_key' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_first' => ['hasSideEffects' => false],
 	'array_flip' => ['hasSideEffects' => false],
 	'array_intersect' => ['hasSideEffects' => false],

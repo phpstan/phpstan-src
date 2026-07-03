@@ -60,6 +60,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_slice;
@@ -72,6 +73,11 @@ use function strtolower;
 
 final class PhpClassReflectionExtension
 {
+
+	private const MEMBER_CACHE_KEYS_MAX = 2048;
+
+	/** @var array<string, true> shared LRU over the member cache keys below; first entry = least recently used */
+	private array $memberCacheOrder = [];
 
 	/** @var PhpPropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
@@ -112,52 +118,37 @@ final class PhpClassReflectionExtension
 	{
 	}
 
-	public function evictPrivateSymbols(string $classCacheKey): void
+	/**
+	 * Moves the cache key to the most-recently-used position of the shared LRU governing
+	 * all four member caches; evicts the least recently used key's entries from all of
+	 * them once the limit is reached.
+	 *
+	 * Replaces the former evictPrivateSymbols(): instead of dropping only private members
+	 * of the just-analysed class (public/protected members accumulated for the whole
+	 * process, measured at hundreds of MB on large codebases), classes not used recently
+	 * are evicted wholesale — misses are pure recomputation.
+	 */
+	private function touchMemberCacheKey(string $cacheKey): void
 	{
-		foreach ($this->propertiesIncludingAnnotations as $key => $properties) {
-			if ($key !== $classCacheKey) {
-				continue;
-			}
-			foreach ($properties as $name => $property) {
-				if (!$property->isPrivate()) {
-					continue;
-				}
-				unset($this->propertiesIncludingAnnotations[$key][$name]);
-			}
+		if (isset($this->memberCacheOrder[$cacheKey])) {
+			unset($this->memberCacheOrder[$cacheKey]);
+			$this->memberCacheOrder[$cacheKey] = true;
+			return;
 		}
-		foreach ($this->nativeProperties as $key => $properties) {
-			if ($key !== $classCacheKey) {
-				continue;
-			}
-			foreach ($properties as $name => $property) {
-				if (!$property->isPrivate()) {
-					continue;
-				}
-				unset($this->nativeProperties[$key][$name]);
-			}
+
+		$this->memberCacheOrder[$cacheKey] = true;
+		if (count($this->memberCacheOrder) <= self::MEMBER_CACHE_KEYS_MAX) {
+			return;
 		}
-		foreach ($this->methodsIncludingAnnotations as $key => $methods) {
-			if ($key !== $classCacheKey) {
-				continue;
-			}
-			foreach ($methods as $name => $method) {
-				if (!$method->isPrivate()) {
-					continue;
-				}
-				unset($this->methodsIncludingAnnotations[$key][$name]);
-			}
-		}
-		foreach ($this->nativeMethods as $key => $methods) {
-			if ($key !== $classCacheKey) {
-				continue;
-			}
-			foreach ($methods as $name => $method) {
-				if (!$method->isPrivate()) {
-					continue;
-				}
-				unset($this->nativeMethods[$key][$name]);
-			}
-		}
+
+		$evictKey = array_key_first($this->memberCacheOrder);
+		unset(
+			$this->memberCacheOrder[$evictKey],
+			$this->methodsIncludingAnnotations[$evictKey],
+			$this->nativeMethods[$evictKey],
+			$this->propertiesIncludingAnnotations[$evictKey],
+			$this->nativeProperties[$evictKey],
+		);
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -171,6 +162,7 @@ final class PhpClassReflectionExtension
 		if ($scope->isInClass()) {
 			$cacheKey = sprintf('%s-%s', $cacheKey, $scope->getClassReflection()->getCacheKey());
 		}
+		$this->touchMemberCacheKey($cacheKey);
 		if (!isset($this->propertiesIncludingAnnotations[$cacheKey][$propertyName])) {
 			$this->propertiesIncludingAnnotations[$cacheKey][$propertyName] = $this->createProperty($classReflection, $propertyName, $scope, true);
 		}
@@ -180,6 +172,7 @@ final class PhpClassReflectionExtension
 
 	public function getNativeProperty(ClassReflection $classReflection, string $propertyName): PhpPropertyReflection
 	{
+		$this->touchMemberCacheKey($classReflection->getCacheKey());
 		if (!isset($this->nativeProperties[$classReflection->getCacheKey()][$propertyName])) {
 			$property = $this->createProperty($classReflection, $propertyName, new OutOfClassScope(), false);
 			$this->nativeProperties[$classReflection->getCacheKey()][$propertyName] = $property;
@@ -535,6 +528,7 @@ final class PhpClassReflectionExtension
 
 	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
+		$this->touchMemberCacheKey($classReflection->getCacheKey());
 		if (isset($this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName])) {
 			return $this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName];
 		}
@@ -558,6 +552,7 @@ final class PhpClassReflectionExtension
 
 	public function getNativeMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
+		$this->touchMemberCacheKey($classReflection->getCacheKey());
 		if (isset($this->nativeMethods[$classReflection->getCacheKey()][$methodName])) {
 			return $this->nativeMethods[$classReflection->getCacheKey()][$methodName];
 		}

@@ -716,7 +716,9 @@ final class ClassReflection
 
 			unset($this->methods[$name]);
 		}
-		$this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension()->evictPrivateSymbols($this->getCacheKey());
+		// PhpClassReflectionExtension's member caches are governed by their own LRU
+		// (see PhpClassReflectionExtension::touchMemberCacheKey()) instead of per-class
+		// private-symbol eviction.
 	}
 
 	/** @deprecated Use getInstanceProperty or getStaticProperty */

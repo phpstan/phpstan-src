@@ -16,8 +16,6 @@ use function strtolower;
 final class MemoizingReflectionProvider implements ReflectionProvider
 {
 
-	private const CLASSES_MAX = 2048;
-
 	/** @var array<lowercase-string, true> */
 	private array $knownClasses = [];
 
@@ -30,7 +28,7 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 	/** @var array<lowercase-string, string> */
 	private array $classNames = [];
 
-	public function __construct(private ReflectionProvider $provider)
+	public function __construct(private ReflectionProvider $provider, private int $classesCountMax)
 	{
 	}
 
@@ -69,7 +67,7 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 
 		$classReflection = $this->provider->getClass($className);
 		$this->classes[$lowerClassName] = $classReflection;
-		if (count($this->classes) > self::CLASSES_MAX) {
+		if ($this->classesCountMax !== 0 && count($this->classes) > $this->classesCountMax) {
 			unset($this->classes[array_key_first($this->classes)]);
 		}
 

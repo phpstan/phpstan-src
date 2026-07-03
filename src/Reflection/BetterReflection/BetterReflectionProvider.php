@@ -69,8 +69,6 @@ use const PHP_VERSION_ID;
 final class BetterReflectionProvider implements ReflectionProvider
 {
 
-	private const CLASS_REFLECTIONS_MAX = 2048;
-
 	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
 
@@ -104,6 +102,8 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		#[AutowiredParameter(ref: '%universalObjectCratesClasses%')]
 		private array $universalObjectCratesClasses,
+		#[AutowiredParameter(ref: '%cache.reflectionRegistryCountMax%')]
+		private int $reflectionRegistryCountMax,
 	)
 	{
 	}
@@ -164,7 +164,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
 		);
 		$this->classReflections[$reflectionClassName] = $classReflection;
-		if (count($this->classReflections) > self::CLASS_REFLECTIONS_MAX) {
+		if ($this->reflectionRegistryCountMax !== 0 && count($this->classReflections) > $this->reflectionRegistryCountMax) {
 			unset($this->classReflections[array_key_first($this->classReflections)]);
 		}
 

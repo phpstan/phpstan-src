@@ -13,13 +13,15 @@ final class ReflectionProviderFactory
 	public function __construct(
 		#[AutowiredParameter(ref: '@betterReflectionProvider')]
 		private ReflectionProvider $staticReflectionProvider,
+		#[AutowiredParameter(ref: '%cache.reflectionRegistryCountMax%')]
+		private int $reflectionRegistryCountMax,
 	)
 	{
 	}
 
 	public function create(): ReflectionProvider
 	{
-		return new MemoizingReflectionProvider($this->staticReflectionProvider);
+		return new MemoizingReflectionProvider($this->staticReflectionProvider, $this->reflectionRegistryCountMax);
 	}
 
 }

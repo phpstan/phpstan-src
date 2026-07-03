@@ -23,8 +23,6 @@ use function strtolower;
 final class MemoizingReflector implements Reflector
 {
 
-	private const REFLECTIONS_MAX = 2048;
-
 	/** @var array<string, ReflectionClass|null> LRU; first entry = least recently used */
 	private array $classReflections = [];
 
@@ -37,6 +35,8 @@ final class MemoizingReflector implements Reflector
 	public function __construct(
 		#[AutowiredParameter(ref: '@betterReflectionSourceLocator')]
 		private SourceLocator $sourceLocator,
+		#[AutowiredParameter(ref: '%cache.reflectionRegistryCountMax%')]
+		private int $reflectionRegistryCountMax,
 	)
 	{
 	}
@@ -68,7 +68,7 @@ final class MemoizingReflector implements Reflector
 		$classReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
 		if ($classReflection === null) {
 			$this->classReflections[$className] = null;
-			if (count($this->classReflections) > self::REFLECTIONS_MAX) {
+			if ($this->reflectionRegistryCountMax !== 0 && count($this->classReflections) > $this->reflectionRegistryCountMax) {
 				unset($this->classReflections[array_key_first($this->classReflections)]);
 			}
 
@@ -80,7 +80,7 @@ final class MemoizingReflector implements Reflector
 		}
 
 		$this->classReflections[$lowerClassName] = $classReflection;
-		if (count($this->classReflections) > self::REFLECTIONS_MAX) {
+		if ($this->reflectionRegistryCountMax !== 0 && count($this->classReflections) > $this->reflectionRegistryCountMax) {
 			unset($this->classReflections[array_key_first($this->classReflections)]);
 		}
 
@@ -134,7 +134,7 @@ final class MemoizingReflector implements Reflector
 		$functionReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
 		if ($functionReflection === null) {
 			$this->functionReflections[$lowerFunctionName] = null;
-			if (count($this->functionReflections) > self::REFLECTIONS_MAX) {
+			if ($this->reflectionRegistryCountMax !== 0 && count($this->functionReflections) > $this->reflectionRegistryCountMax) {
 				unset($this->functionReflections[array_key_first($this->functionReflections)]);
 			}
 
@@ -146,7 +146,7 @@ final class MemoizingReflector implements Reflector
 		}
 
 		$this->functionReflections[$lowerFunctionName] = $functionReflection;
-		if (count($this->functionReflections) > self::REFLECTIONS_MAX) {
+		if ($this->reflectionRegistryCountMax !== 0 && count($this->functionReflections) > $this->reflectionRegistryCountMax) {
 			unset($this->functionReflections[array_key_first($this->functionReflections)]);
 		}
 

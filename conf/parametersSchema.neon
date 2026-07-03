@@ -148,6 +148,7 @@ parametersSchema:
 	internalErrorsCountLimit: int()
 	cache: structure([
 		nodesByStringCountMax: int(),
+		reflectionRegistryCountMax: int(),
 		resolvedPhpDocBlockCacheCountMax: int(),
 		nameScopeMapMemoryCacheCountMax: int(),
 		phpStormStubsNodesCountMax: int(),

@@ -124,6 +124,7 @@ parameters:
 	internalErrorsCountLimit: 50
 	cache:
 		nodesByStringCountMax: 256
+		reflectionRegistryCountMax: 2048
 		resolvedPhpDocBlockCacheCountMax: 2048
 		nameScopeMapMemoryCacheCountMax: 512
 		phpStormStubsNodesCountMax: 128

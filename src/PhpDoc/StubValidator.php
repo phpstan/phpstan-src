@@ -8,11 +8,10 @@ use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
-use PHPStan\Reflection\PhpVersionStaticAccessor;
-use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
-use PHPStan\Type\ObjectType;
 use Throwable;
 use function array_fill_keys;
 use function count;
@@ -26,6 +25,7 @@ final class StubValidator
 
 	public function __construct(
 		private DerivativeContainerFactory $derivativeContainerFactory,
+		private Container $mainContainer,
 		private StubFilesProvider $stubFilesProvider,
 	)
 	{
@@ -40,9 +40,6 @@ final class StubValidator
 		if (count($stubFiles) === 0) {
 			return [];
 		}
-
-		$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		$originalPhpVersion = PhpVersionStaticAccessor::getInstance();
 
 		try {
 			$container = $this->derivativeContainerFactory->create([
@@ -93,9 +90,15 @@ final class StubValidator
 				}
 			}
 		} finally {
-			ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
-			PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
-			ObjectType::resetCaches();
+			// Creating the derived container above re-ran ContainerFactory::postInitializeContainer(),
+			// pointing all process-wide statics (ReflectionProviderStaticAccessor,
+			// BetterReflection::populate() with the source locator/reflector/stubber, bleeding-edge
+			// toggles, ...) at the derived container. Re-initialize them from the main container —
+			// previously only the two accessors were restored, so the BetterReflection statics kept
+			// the whole derived container alive for the rest of the process, and reflections created
+			// through them afterwards (e.g. adapter-internal lookups during result finalization)
+			// were built by the derived container's reflector.
+			ContainerFactory::postInitializeContainer($this->mainContainer);
 		}
 
 		return $errors;

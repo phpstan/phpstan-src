@@ -15,19 +15,23 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_key_first;
+use function count;
 use function strtolower;
 
 #[AutowiredService(name: 'betterReflectionReflector', as: Reflector::class)]
 final class MemoizingReflector implements Reflector
 {
 
-	/** @var array<string, ReflectionClass|null> */
+	private const REFLECTIONS_MAX = 2048;
+
+	/** @var array<string, ReflectionClass|null> LRU; first entry = least recently used */
 	private array $classReflections = [];
 
 	/** @var array<string, ReflectionConstant|null> */
 	private array $constantReflections = [];
 
-	/** @var array<lowercase-string, ReflectionFunction|null> */
+	/** @var array<lowercase-string, ReflectionFunction|null> LRU; first entry = least recently used */
 	private array $functionReflections = [];
 
 	public function __construct(
@@ -42,7 +46,11 @@ final class MemoizingReflector implements Reflector
 	{
 		$lowerClassName = strtolower($className);
 		if (array_key_exists($lowerClassName, $this->classReflections) && $this->classReflections[$lowerClassName] !== null) {
-			return $this->classReflections[$lowerClassName];
+			// LRU: move to the most-recently-used position
+			$classReflection = $this->classReflections[$lowerClassName];
+			unset($this->classReflections[$lowerClassName]);
+
+			return $this->classReflections[$lowerClassName] = $classReflection;
 		}
 		if (array_key_exists($className, $this->classReflections)) {
 			$classReflection = $this->classReflections[$className];
@@ -60,6 +68,9 @@ final class MemoizingReflector implements Reflector
 		$classReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
 		if ($classReflection === null) {
 			$this->classReflections[$className] = null;
+			if (count($this->classReflections) > self::REFLECTIONS_MAX) {
+				unset($this->classReflections[array_key_first($this->classReflections)]);
+			}
 
 			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
@@ -68,7 +79,12 @@ final class MemoizingReflector implements Reflector
 			throw new ShouldNotHappenException();
 		}
 
-		return $this->classReflections[$lowerClassName] = $classReflection;
+		$this->classReflections[$lowerClassName] = $classReflection;
+		if (count($this->classReflections) > self::REFLECTIONS_MAX) {
+			unset($this->classReflections[array_key_first($this->classReflections)]);
+		}
+
+		return $classReflection;
 	}
 
 	#[Override]
@@ -108,13 +124,19 @@ final class MemoizingReflector implements Reflector
 				throw IdentifierNotFound::fromIdentifier(new Identifier($functionName, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION)));
 			}
 
-			return $functionReflection;
+			// LRU: move to the most-recently-used position
+			unset($this->functionReflections[$lowerFunctionName]);
+
+			return $this->functionReflections[$lowerFunctionName] = $functionReflection;
 		}
 
 		$identifier = new Identifier($functionName, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION));
 		$functionReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
 		if ($functionReflection === null) {
 			$this->functionReflections[$lowerFunctionName] = null;
+			if (count($this->functionReflections) > self::REFLECTIONS_MAX) {
+				unset($this->functionReflections[array_key_first($this->functionReflections)]);
+			}
 
 			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
@@ -123,7 +145,12 @@ final class MemoizingReflector implements Reflector
 			throw new ShouldNotHappenException();
 		}
 
-		return $this->functionReflections[$lowerFunctionName] = $functionReflection;
+		$this->functionReflections[$lowerFunctionName] = $functionReflection;
+		if (count($this->functionReflections) > self::REFLECTIONS_MAX) {
+			unset($this->functionReflections[array_key_first($this->functionReflections)]);
+		}
+
+		return $functionReflection;
 	}
 
 	/**

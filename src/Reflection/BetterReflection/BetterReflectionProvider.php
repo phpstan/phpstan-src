@@ -59,6 +59,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_key_first;
 use function array_map;
+use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -68,10 +69,12 @@ use const PHP_VERSION_ID;
 final class BetterReflectionProvider implements ReflectionProvider
 {
 
+	private const CLASS_REFLECTIONS_MAX = 2048;
+
 	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
 
-	/** @var ClassReflection[] */
+	/** @var ClassReflection[] LRU; first entry = least recently used */
 	private array $classReflections = [];
 
 	/** @var ClassReflection[] */
@@ -140,7 +143,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$reflectionClassName = strtolower($reflectionClass->getName());
 
 		if (array_key_exists($reflectionClassName, $this->classReflections)) {
-			return $this->classReflections[$reflectionClassName];
+			// LRU: move to the most-recently-used position
+			$classReflection = $this->classReflections[$reflectionClassName];
+			unset($this->classReflections[$reflectionClassName]);
+
+			return $this->classReflections[$reflectionClassName] = $classReflection;
 		}
 
 		if ($reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000) {
@@ -149,13 +156,19 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$adaptedClass = new ReflectionClass($reflectionClass);
 		}
 
-		return $this->classReflections[$reflectionClassName] = $this->classReflectionFactory->create(
+		$classReflection = $this->classReflectionFactory->create(
 			$reflectionClass->getName(),
 			$adaptedClass,
 			null,
 			null,
 			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
 		);
+		$this->classReflections[$reflectionClassName] = $classReflection;
+		if (count($this->classReflections) > self::CLASS_REFLECTIONS_MAX) {
+			unset($this->classReflections[array_key_first($this->classReflections)]);
+		}
+
+		return $classReflection;
 	}
 
 	public function getClassName(string $className): string

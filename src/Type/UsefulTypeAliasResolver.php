@@ -18,8 +18,6 @@ use function sprintf;
 final class UsefulTypeAliasResolver implements TypeAliasResolver
 {
 
-	private const RESOLVED_LOCAL_TYPE_ALIASES_MAX = 2048;
-
 	/** @var array<string, Type> */
 	private array $resolvedGlobalTypeAliases = [];
 
@@ -41,6 +39,8 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		private TypeStringResolver $typeStringResolver,
 		private TypeNodeResolver $typeNodeResolver,
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter(ref: '%cache.resolvedLocalTypeAliasesCountMax%')]
+		private int $resolvedLocalTypeAliasesCountMax,
 	)
 	{
 	}
@@ -128,7 +128,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		}
 
 		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
-		if (count($this->resolvedLocalTypeAliases) > self::RESOLVED_LOCAL_TYPE_ALIASES_MAX) {
+		if ($this->resolvedLocalTypeAliasesCountMax !== 0 && count($this->resolvedLocalTypeAliases) > $this->resolvedLocalTypeAliasesCountMax) {
 			// resolved alias types transitively pin ClassReflections and their whole
 			// reflection trees — evict the least recently used
 			unset($this->resolvedLocalTypeAliases[array_key_first($this->resolvedLocalTypeAliases)]);

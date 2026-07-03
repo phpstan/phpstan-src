@@ -151,7 +151,8 @@ parametersSchema:
 		resolvedPhpDocBlockCacheCountMax: int(),
 		nameScopeMapMemoryCacheCountMax: int(),
 		phpStormStubsNodesCountMax: int(),
-		memberCacheKeysMax: int()
+		memberCacheKeysMax: int(),
+		resolvedLocalTypeAliasesCountMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()
 	reportIgnoresWithoutComments: bool()

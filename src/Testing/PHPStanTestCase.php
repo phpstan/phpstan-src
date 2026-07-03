@@ -137,6 +137,7 @@ abstract class PHPStanTestCase extends TestCase
 			$container->getByType(TypeStringResolver::class),
 			$container->getByType(TypeNodeResolver::class),
 			$reflectionProvider,
+			0,
 		);
 	}
 

@@ -65,6 +65,10 @@ final class TypeSpecifier
 	 * This matters for deep boolean chains, where specifyTypesInCondition() runs once per arm.
 	 * Keyed by Expr class-string; false means no handler matched (default narrowing).
 	 *
+	 * Call-likes (Expr\CallLike) are never memoized: their handlers select on
+	 * isFirstClassCallable(), which the Expr class alone does not determine. Every other
+	 * handler's supports() is a pure instanceof check, so the class fully determines it.
+	 *
 	 * @var array<class-string<Expr>, ExprHandler<Expr>|false>
 	 */
 	private array $exprHandlersByClass = [];
@@ -99,31 +103,46 @@ final class TypeSpecifier
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
-		// First-class callables are the only handlers whose supports() depends on more
-		// than the Expr class, and they are all filtered out above, so the matching
-		// handler is fully determined by the Expr class and can be memoized.
-		$exprClass = $expr::class;
-		if (!array_key_exists($exprClass, $this->exprHandlersByClass)) {
-			$matchedHandler = false;
-			/** @var ExprHandler<Expr> $exprHandler */
-			foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-				if (!$exprHandler->supports($expr)) {
-					continue;
-				}
-
-				$matchedHandler = $exprHandler;
-				break;
-			}
-
-			$this->exprHandlersByClass[$exprClass] = $matchedHandler;
-		}
-
-		$exprHandler = $this->exprHandlersByClass[$exprClass];
-		if ($exprHandler !== false) {
+		$exprHandler = $this->resolveExprHandler($expr);
+		if ($exprHandler !== null) {
 			return $exprHandler->specifyTypes($this, $scope, $expr, $context);
 		}
 
 		return $this->specifyDefaultTypes($scope, $expr, $context);
+	}
+
+	/**
+	 * Resolves the ExprHandler for the given expression, memoizing the result by Expr class.
+	 *
+	 * @return ExprHandler<Expr>|null
+	 */
+	private function resolveExprHandler(Expr $expr): ?ExprHandler
+	{
+		// Call-likes are excluded from the cache: their handlers select on
+		// isFirstClassCallable(), so the Expr class does not uniquely determine the handler.
+		if (!$expr instanceof Expr\CallLike) {
+			$cached = $this->exprHandlersByClass[$expr::class] ?? null;
+			if ($cached !== null) {
+				return $cached === false ? null : $cached;
+			}
+		}
+
+		$matchedHandler = null;
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($expr)) {
+				continue;
+			}
+
+			$matchedHandler = $exprHandler;
+			break;
+		}
+
+		if (!$expr instanceof Expr\CallLike) {
+			$this->exprHandlersByClass[$expr::class] = $matchedHandler ?? false;
+		}
+
+		return $matchedHandler;
 	}
 
 	/** @internal */

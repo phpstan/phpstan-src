@@ -199,9 +199,12 @@ class NodeScopeResolver
 
 	/**
 	 * Memoizes which ExprHandler handles each Expr class so processExprNode() does not
-	 * re-scan every tagged handler on each call. First-class callables (the only handlers
-	 * whose supports() depends on more than the class) are transformed away before the
-	 * lookup, so the matching handler is fully determined by the Expr class.
+	 * re-scan every tagged handler on each call. Keyed by Expr class-string; false means
+	 * no handler matched (default handling).
+	 *
+	 * Call-likes (Expr\CallLike) are never memoized: their handlers select on
+	 * isFirstClassCallable(), which the Expr class alone does not determine. Every other
+	 * handler's supports() is a pure instanceof check, so the class fully determines it.
 	 *
 	 * @var array<class-string<Expr>, ExprHandler<Expr>|false>
 	 */
@@ -2777,24 +2780,8 @@ class NodeScopeResolver
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 
-		$exprClass = $expr::class;
-		if (!array_key_exists($exprClass, $this->exprHandlersByClass)) {
-			$matchedHandler = false;
-			/** @var ExprHandler<Expr> $exprHandler */
-			foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-				if (!$exprHandler->supports($expr)) {
-					continue;
-				}
-
-				$matchedHandler = $exprHandler;
-				break;
-			}
-
-			$this->exprHandlersByClass[$exprClass] = $matchedHandler;
-		}
-
-		$exprHandler = $this->exprHandlersByClass[$exprClass];
-		if ($exprHandler !== false) {
+		$exprHandler = $this->resolveExprHandler($expr);
+		if ($exprHandler !== null) {
 			return $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		}
 
@@ -2812,6 +2799,40 @@ class NodeScopeResolver
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * Resolves the ExprHandler for the given expression, memoizing the result by Expr class.
+	 *
+	 * @return ExprHandler<Expr>|null
+	 */
+	private function resolveExprHandler(Expr $expr): ?ExprHandler
+	{
+		// Call-likes are excluded from the cache: their handlers select on
+		// isFirstClassCallable(), so the Expr class does not uniquely determine the handler.
+		if (!$expr instanceof Expr\CallLike) {
+			$cached = $this->exprHandlersByClass[$expr::class] ?? null;
+			if ($cached !== null) {
+				return $cached === false ? null : $cached;
+			}
+		}
+
+		$matchedHandler = null;
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($expr)) {
+				continue;
+			}
+
+			$matchedHandler = $exprHandler;
+			break;
+		}
+
+		if (!$expr instanceof Expr\CallLike) {
+			$this->exprHandlersByClass[$expr::class] = $matchedHandler ?? false;
+		}
+
+		return $matchedHandler;
 	}
 
 	/**

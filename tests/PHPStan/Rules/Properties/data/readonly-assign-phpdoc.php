@@ -312,3 +312,23 @@ class ArrayAccessPropertyFetch
 	}
 
 }
+
+class ArrayAccessExistingOffset
+{
+
+	/**
+	 * @readonly
+	 * @var \ArrayObject<string, int>
+	 */
+	private \ArrayObject $storage;
+
+	public function __construct() {
+		$this->storage = new \ArrayObject();
+	}
+
+	public function set(int $value): void {
+		$this->storage['a'] = $value;
+		$this->storage['a'] = $value; // offsetSet on existing offset, not a reassignment
+	}
+
+}

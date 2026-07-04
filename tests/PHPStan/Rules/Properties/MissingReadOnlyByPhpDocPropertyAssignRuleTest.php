@@ -149,4 +149,9 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign-phpdoc-and-native.php'], []);
 	}
 
+	public function testBug13856(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13856-phpdoc.php'], []);
+	}
+
 }

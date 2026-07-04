@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
@@ -21,6 +22,7 @@ use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
 use ReflectionProperty;
 use function count;
@@ -206,13 +208,17 @@ final class ClassStatementsGatherer
 		if ($node instanceof PropertyAssignNode) {
 			$propertyFetch = $node->getPropertyFetch();
 			$assignedExpr = $node->getAssignedExpr();
+			$viaOffsetAccess = false;
 			if ($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof SetExistingOffsetValueTypeExpr) {
 				$propertyType = $scope->getType($propertyFetch);
 				if (!$propertyType->isObject()->no()) {
 					$this->propertyUsages[] = new PropertyRead($propertyFetch, $scope);
 				}
+				// Writing to an offset of an ArrayAccess object goes through offsetSet()
+				// and does not reassign the property itself.
+				$viaOffsetAccess = (new ObjectType(ArrayAccess::class))->isSuperTypeOf($propertyType)->yes();
 			}
-			$this->propertyUsages[] = new PropertyWrite($propertyFetch, $scope, false);
+			$this->propertyUsages[] = new PropertyWrite($propertyFetch, $scope, false, $viaOffsetAccess);
 			$this->propertyAssigns[] = new PropertyAssign($node, $scope);
 			return;
 		}

@@ -217,6 +217,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 					if (
 						!$hasInitialization->no()
 						&& !$usage->isPromotedPropertyWrite()
+						&& !$usage->isViaOffsetAccess()
 						&& !array_key_exists($propertyName, $initializedViaExtension)
 					) {
 						$additionalAssigns[] = [

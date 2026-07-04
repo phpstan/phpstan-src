@@ -6,6 +6,7 @@ use ArrayAccess;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
@@ -122,7 +123,7 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 
 			$assignedExpr = $node->getAssignedExpr();
 			if (
-				($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof UnsetOffsetExpr)
+				($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof SetExistingOffsetValueTypeExpr || $assignedExpr instanceof UnsetOffsetExpr)
 				&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($assignedExpr->getVar()))->yes()
 			) {
 				continue;

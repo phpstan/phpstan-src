@@ -12,7 +12,7 @@ use PHPStan\Analyser\Scope;
 final class PropertyWrite
 {
 
-	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite)
+	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite, private bool $viaOffsetAccess = false)
 	{
 	}
 
@@ -32,6 +32,16 @@ final class PropertyWrite
 	public function isPromotedPropertyWrite(): bool
 	{
 		return $this->promotedPropertyWrite;
+	}
+
+	/**
+	 * Whether the write happens through offset access ($this->prop[...] = ...)
+	 * on an ArrayAccess object, which goes through offsetSet() rather than
+	 * reassigning the property itself.
+	 */
+	public function isViaOffsetAccess(): bool
+	{
+		return $this->viaOffsetAccess;
 	}
 
 }

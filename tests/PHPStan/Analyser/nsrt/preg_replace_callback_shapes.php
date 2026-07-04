@@ -2,6 +2,7 @@
 
 namespace PregReplaceCallbackMatchShapes;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 function (string $s): void {
@@ -54,5 +55,20 @@ function bug12792(string $string) : void {
 			return '';
 		},
 		$string
+	);
+}
+
+function bug14904(string $string): void {
+	preg_replace_callback(
+		'/a|(?<b>b)/',
+		function (array $match): string {
+			assertType("array{0: non-empty-string, b: 'b'|null, 1: 'b'|null}", $match);
+			assertNativeType('array<int|string, string|null>', $match);
+			return '';
+		},
+		$string,
+		-1,
+		$count,
+		PREG_UNMATCHED_AS_NULL
 	);
 }

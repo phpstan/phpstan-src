@@ -5,17 +5,22 @@ namespace PHPStan\IssueBot\Playground;
 use function array_keys;
 use function count;
 use function max;
-use function str_contains;
 
 /**
- * Excludes PHP versions on which a code snippet newly stopped parsing.
+ * Excludes PHP versions on which a code snippet does not parse.
  *
  * When PHP-Parser gains or fixes reverse emulation of newer syntax (like arrow
  * functions being turned back into plain identifiers on PHP < 7.4), snippets
  * using that syntax start reporting a parse error on old PHP versions instead
- * of analysis results. Such a change says nothing about the analysed issue, so
- * these versions are dropped from both sides of the comparison - but only as
- * long as the newest analysed version still parses.
+ * of analysis results - or report a different set of parse errors than before.
+ * Such changes say nothing about the analysed issue, so these versions are
+ * dropped from both sides of the comparison - but only as long as the newest
+ * analysed version still parses. A version where a parse error is replaced by
+ * analysis errors (the snippet newly started parsing) is kept.
+ *
+ * The returned original errors may come out empty - every version the original
+ * snapshot covered may no longer parse. There is nothing left to compare then
+ * and the snippet should be skipped.
  */
 class NewlyUnparsableVersionFilter
 {
@@ -48,15 +53,8 @@ class NewlyUnparsableVersionFilter
 			if (!$this->isParseErrorOnly($errors)) {
 				continue;
 			}
-			if ($this->hasParseError($originalErrors[$phpVersion] ?? [])) {
-				continue;
-			}
 
 			unset($filteredOriginalErrors[$phpVersion], $filteredNewErrors[$phpVersion]);
-		}
-
-		if (count($filteredOriginalErrors) === 0) {
-			return [$originalErrors, $newErrors];
 		}
 
 		return [$filteredOriginalErrors, $filteredNewErrors];
@@ -72,36 +70,12 @@ class NewlyUnparsableVersionFilter
 		}
 
 		foreach ($errors as $error) {
-			if (!$this->isParseError($error)) {
+			if ($error->getIdentifier() !== self::PARSE_ERROR_IDENTIFIER) {
 				return false;
 			}
 		}
 
 		return true;
-	}
-
-	/**
-	 * @param list<PlaygroundError> $errors
-	 */
-	private function hasParseError(array $errors): bool
-	{
-		foreach ($errors as $error) {
-			if ($this->isParseError($error)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private function isParseError(PlaygroundError $error): bool
-	{
-		if ($error->getIdentifier() === self::PARSE_ERROR_IDENTIFIER) {
-			return true;
-		}
-
-		// old playground snapshots do not have error identifiers
-		return $error->getIdentifier() === null && str_contains($error->getMessage(), 'Syntax error');
 	}
 
 }

@@ -109,12 +109,14 @@ class EvaluateCommand extends Command
 					$newResult[70100] = $newResult[70200];
 				}
 
-				[$originalErrors, $newResult] = $this->newlyUnparsableVersionFilter->filter($originalErrors, $newResult);
-
 				$originalTabs = $this->tabCreator->create($originalErrors);
 				$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $newResult));
 				$text = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $botComments);
 				if ($text === null) {
+					continue;
+				}
+
+				if ($this->isOnlyParseErrorChange($hash, $originalErrors, $newResult, $botComments)) {
 					continue;
 				}
 
@@ -199,6 +201,31 @@ class EvaluateCommand extends Command
 		}
 
 		return $exitCode;
+	}
+
+	/**
+	 * Decides whether the detected change disappears once PHP versions on
+	 * which the snippet does not parse are ignored. The posted comment is
+	 * always generated from the unfiltered results, so diffs keep matching
+	 * previously posted bot comments - the filtered results are only used
+	 * to decide whether to post at all.
+	 *
+	 * @param array<int, list<PlaygroundError>> $originalErrors
+	 * @param array<int, list<PlaygroundError>> $newErrors
+	 * @param BotComment[] $botComments
+	 */
+	private function isOnlyParseErrorChange(string $hash, array $originalErrors, array $newErrors, array $botComments): bool
+	{
+		[$filteredOriginalErrors, $filteredNewErrors] = $this->newlyUnparsableVersionFilter->filter($originalErrors, $newErrors);
+		if (count($filteredOriginalErrors) === 0) {
+			// every version the original snapshot covered no longer parses
+			return true;
+		}
+
+		$originalTabs = $this->tabCreator->create($filteredOriginalErrors);
+		$newTabs = $this->tabCreator->create($this->filterErrors($filteredOriginalErrors, $filteredNewErrors));
+
+		return $this->postGenerator->createText($hash, $originalTabs, $newTabs, $botComments) === null;
 	}
 
 	/**

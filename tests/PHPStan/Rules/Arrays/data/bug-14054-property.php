@@ -9,12 +9,18 @@ namespace Bug14054Property;
 final class Magic
 {
 
-	public function __get(string $name): mixed
+	/**
+	 * @return mixed
+	 */
+	public function __get(string $name)
 	{
 		return [];
 	}
 
-	public function __set(string $name, mixed $value): void
+	/**
+	 * @param mixed $value
+	 */
+	public function __set(string $name, $value): void
 	{
 	}
 

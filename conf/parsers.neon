@@ -69,6 +69,7 @@ services:
 		arguments:
 			originalParser: @pathRoutingParser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+			cachedSourceBytesMax: %cache.nodesByStringSourceBytesMax%
 		autowired: false
 
 	freshStubParser:
@@ -82,4 +83,5 @@ services:
 		arguments:
 			originalParser: @freshStubParser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+			cachedSourceBytesMax: %cache.nodesByStringSourceBytesMax%
 		autowired: false

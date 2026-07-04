@@ -11,6 +11,7 @@ use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\Stub;
+use function sprintf;
 
 class CachedParserTest extends PHPStanTestCase
 {
@@ -24,6 +25,7 @@ class CachedParserTest extends PHPStanTestCase
 		$parser = new CachedParser(
 			$this->getParserStub(),
 			$cachedNodesByStringCountMax,
+			1048576,
 		);
 
 		$this->assertSame(
@@ -63,6 +65,57 @@ class CachedParserTest extends PHPStanTestCase
 		];
 	}
 
+	public function testSourceBytesLimitEvictsAboveFloor(): void
+	{
+		// byte capacity (5000 / 100 = 50 entries) binds before the count limit (500)
+		$parser = new CachedParser($this->getParserStub(), 500, 5000);
+
+		for ($i = 0; $i < 100; $i++) {
+			$parser->parseString(sprintf('%0100d', $i));
+		}
+
+		$this->assertSame(50, $parser->getCachedNodesByStringCount());
+	}
+
+	public function testSourceBytesLimitNeverEvictsBelowFloor(): void
+	{
+		// byte capacity (1000 / 100 = 10 entries) is below the floor of 32,
+		// so the floor wins and the cache keeps growing to 32 + 1 entries
+		$parser = new CachedParser($this->getParserStub(), 500, 1000);
+
+		for ($i = 0; $i < 100; $i++) {
+			$parser->parseString(sprintf('%0100d', $i));
+		}
+
+		$this->assertSame(33, $parser->getCachedNodesByStringCount());
+	}
+
+	public function testSourceLargerThanBytesLimitDoesNotFlushCache(): void
+	{
+		$parser = new CachedParser($this->getParserStub(), 500, 5000);
+
+		for ($i = 0; $i < 20; $i++) {
+			$parser->parseString(sprintf('%0100d', $i));
+		}
+		$this->assertSame(20, $parser->getCachedNodesByStringCount());
+
+		// an entry bigger than the whole byte limit must not evict the
+		// resident entries (count is below the floor) and is cached itself
+		$parser->parseString(sprintf('%010000d', 0));
+		$this->assertSame(21, $parser->getCachedNodesByStringCount());
+	}
+
+	public function testSourceBytesLimitZeroMeansUnlimited(): void
+	{
+		$parser = new CachedParser($this->getParserStub(), 500, 0);
+
+		for ($i = 0; $i < 100; $i++) {
+			$parser->parseString(sprintf('%0100d', $i));
+		}
+
+		$this->assertSame(100, $parser->getCachedNodesByStringCount());
+	}
+
 	private function getParserStub(): Parser&Stub
 	{
 		$mock = $this->createStub(Parser::class);
@@ -88,7 +141,7 @@ class CachedParserTest extends PHPStanTestCase
 			self::getContainer()->getService('php8Parser'),
 			null,
 		);
-		$parser = new CachedParser($pathRoutingParser, 500);
+		$parser = new CachedParser($pathRoutingParser, 500, 4194304);
 		$path = $fileHelper->normalizePath(__DIR__ . '/data/test.php');
 		$pathRoutingParser->setAnalysedFiles([$path]);
 		$contents = FileReader::read($path);
@@ -134,7 +187,7 @@ class CachedParserTest extends PHPStanTestCase
 			self::getContainer()->getService('php8Parser'),
 			null,
 		);
-		$parser = new CachedParser($pathRoutingParser, 500);
+		$parser = new CachedParser($pathRoutingParser, 500, 4194304);
 		$path = $fileHelper->normalizePath(__DIR__ . '/data/parser-cache-bug.php');
 		$pathRoutingParser->setAnalysedFiles([$path]);
 		$contents = FileReader::read($path);

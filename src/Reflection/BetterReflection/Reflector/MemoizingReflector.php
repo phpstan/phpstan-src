@@ -15,28 +15,24 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
-use function array_key_first;
-use function count;
 use function strtolower;
 
 #[AutowiredService(name: 'betterReflectionReflector', as: Reflector::class)]
 final class MemoizingReflector implements Reflector
 {
 
-	/** @var array<string, ReflectionClass|null> LRU; first entry = least recently used */
+	/** @var array<string, ReflectionClass|null> */
 	private array $classReflections = [];
 
 	/** @var array<string, ReflectionConstant|null> */
 	private array $constantReflections = [];
 
-	/** @var array<lowercase-string, ReflectionFunction|null> LRU; first entry = least recently used */
+	/** @var array<lowercase-string, ReflectionFunction|null> */
 	private array $functionReflections = [];
 
 	public function __construct(
 		#[AutowiredParameter(ref: '@betterReflectionSourceLocator')]
 		private SourceLocator $sourceLocator,
-		#[AutowiredParameter(ref: '%cache.reflectionRegistryCountMax%')]
-		private int $reflectionRegistryCountMax,
 	)
 	{
 	}
@@ -46,11 +42,7 @@ final class MemoizingReflector implements Reflector
 	{
 		$lowerClassName = strtolower($className);
 		if (array_key_exists($lowerClassName, $this->classReflections) && $this->classReflections[$lowerClassName] !== null) {
-			// LRU: move to the most-recently-used position
-			$classReflection = $this->classReflections[$lowerClassName];
-			unset($this->classReflections[$lowerClassName]);
-
-			return $this->classReflections[$lowerClassName] = $classReflection;
+			return $this->classReflections[$lowerClassName];
 		}
 		if (array_key_exists($className, $this->classReflections)) {
 			$classReflection = $this->classReflections[$className];
@@ -68,9 +60,6 @@ final class MemoizingReflector implements Reflector
 		$classReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
 		if ($classReflection === null) {
 			$this->classReflections[$className] = null;
-			if ($this->reflectionRegistryCountMax !== 0 && count($this->classReflections) > $this->reflectionRegistryCountMax) {
-				unset($this->classReflections[array_key_first($this->classReflections)]);
-			}
 
 			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
@@ -79,12 +68,7 @@ final class MemoizingReflector implements Reflector
 			throw new ShouldNotHappenException();
 		}
 
-		$this->classReflections[$lowerClassName] = $classReflection;
-		if ($this->reflectionRegistryCountMax !== 0 && count($this->classReflections) > $this->reflectionRegistryCountMax) {
-			unset($this->classReflections[array_key_first($this->classReflections)]);
-		}
-
-		return $classReflection;
+		return $this->classReflections[$lowerClassName] = $classReflection;
 	}
 
 	#[Override]
@@ -124,19 +108,13 @@ final class MemoizingReflector implements Reflector
 				throw IdentifierNotFound::fromIdentifier(new Identifier($functionName, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION)));
 			}
 
-			// LRU: move to the most-recently-used position
-			unset($this->functionReflections[$lowerFunctionName]);
-
-			return $this->functionReflections[$lowerFunctionName] = $functionReflection;
+			return $functionReflection;
 		}
 
 		$identifier = new Identifier($functionName, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION));
 		$functionReflection = $this->sourceLocator->locateIdentifier($this, $identifier);
 		if ($functionReflection === null) {
 			$this->functionReflections[$lowerFunctionName] = null;
-			if ($this->reflectionRegistryCountMax !== 0 && count($this->functionReflections) > $this->reflectionRegistryCountMax) {
-				unset($this->functionReflections[array_key_first($this->functionReflections)]);
-			}
 
 			throw IdentifierNotFound::fromIdentifier($identifier);
 		}
@@ -145,12 +123,7 @@ final class MemoizingReflector implements Reflector
 			throw new ShouldNotHappenException();
 		}
 
-		$this->functionReflections[$lowerFunctionName] = $functionReflection;
-		if ($this->reflectionRegistryCountMax !== 0 && count($this->functionReflections) > $this->reflectionRegistryCountMax) {
-			unset($this->functionReflections[array_key_first($this->functionReflections)]);
-		}
-
-		return $functionReflection;
+		return $this->functionReflections[$lowerFunctionName] = $functionReflection;
 	}
 
 	/**

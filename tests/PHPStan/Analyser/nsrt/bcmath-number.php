@@ -413,4 +413,11 @@ class Foo
 		assertType('BcMath\Number', --$a);
 		assertType('BcMath\Number', $a--);
 	}
+
+	public function bcUnary(Number $a): void
+	{
+		assertType('BcMath\Number', -$a);
+		assertType('BcMath\Number', +$a);
+		assertType('*ERROR*', ~$a);
+	}
 }

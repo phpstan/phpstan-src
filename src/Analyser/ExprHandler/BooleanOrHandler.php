@@ -27,6 +27,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_first;
+use function array_key_last;
 use function array_merge;
 use function array_reverse;
 use function count;
@@ -54,6 +55,13 @@ final class BooleanOrHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		// For deep BooleanOr chains, resolve the boolean type by iterating the flattened arms while
+		// threading the falsey scope, instead of recursing into the left operand and re-narrowing the
+		// whole chain at each level - the latter is O(n^2) (and worse) in the number of arms.
+		if (BooleanAndHandler::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+			return $this->resolveTypeForFlattenedBooleanOr($scope, $expr);
+		}
+
 		$leftBooleanType = $scope->getType($expr->left)->toBoolean();
 		if ($leftBooleanType->isTrue()->yes()) {
 			return new ConstantBooleanType(true);
@@ -78,6 +86,44 @@ final class BooleanOrHandler implements ExprHandler
 		}
 
 		return new BooleanType();
+	}
+
+	/**
+	 * The whole chain is true if any arm is true (given the previous arms are false), false if every
+	 * arm is false, and bool otherwise. Threading the falsey scope arm by arm keeps this O(n), matching
+	 * the recursive resolveType() result without re-narrowing the whole left chain at each level.
+	 *
+	 * @param BooleanOr|LogicalOr $expr
+	 */
+	private function resolveTypeForFlattenedBooleanOr(MutatingScope $scope, Expr $expr): Type
+	{
+		$arms = [];
+		$current = $expr;
+		while ($current instanceof BooleanOr || $current instanceof LogicalOr) {
+			$arms[] = $current->right;
+			$current = $current->left;
+		}
+		$arms[] = $current;
+		$arms = array_reverse($arms);
+
+		$allArmsAreFalse = true;
+		$armScope = $scope;
+		$lastArmKey = array_key_last($arms);
+		foreach ($arms as $key => $arm) {
+			$armBooleanType = $armScope->getType($arm)->toBoolean();
+			if ($armBooleanType->isTrue()->yes()) {
+				return new ConstantBooleanType(true);
+			}
+			if (!$armBooleanType->isFalse()->yes()) {
+				$allArmsAreFalse = false;
+			}
+			if ($key === $lastArmKey) {
+				continue;
+			}
+			$armScope = $armScope->filterByFalseyValue($arm);
+		}
+
+		return $allArmsAreFalse ? new ConstantBooleanType(false) : new BooleanType();
 	}
 
 	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes

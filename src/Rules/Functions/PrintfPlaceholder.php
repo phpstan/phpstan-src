@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -34,7 +35,11 @@ final class PrintfPlaceholder
 				return (new IntegerType())->accepts($argumentType, true)->yes();
 			case 'int':
 				return $strictPlaceholderTypes
-					? (new IntegerType())->accepts($argumentType, true)->yes()
+					? (new UnionType([
+						new IntegerType(),
+						// decimal-int-string is allowed because it's printed by %d without any lossy conversion.
+						new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]),
+					]))->accepts($argumentType, true)->yes()
 					: ! $argumentType->toInteger() instanceof ErrorType;
 			case 'float':
 				return $strictPlaceholderTypes

@@ -238,6 +238,22 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 				'Parameter #2 of function printf is expected to be string by placeholder #1 ("%s"), true given.',
 				48,
 			],
+			[
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
+				88,
+			],
+			[
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
+				90,
+			],
+			[
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
+				98,
+			],
+			[
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
+				99,
+			],
 		]);
 	}
 

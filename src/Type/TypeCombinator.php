@@ -1957,7 +1957,7 @@ final class TypeCombinator
 							$merged = self::intersectDefiniteConstantArrays($constArray, $otherArray);
 							if ($merged instanceof NeverType) {
 								if ($merged->getReason() === null) {
-									$reasons = array_merge($isSuperTypeA->reasons, $isSuperTypeB->reasons);
+									$reasons = array_merge($isSuperTypeA->getReasons(), $isSuperTypeB->getReasons());
 									if ($reasons !== []) {
 										return new NeverType(reason: $reasons[0]);
 									}
@@ -2054,7 +2054,7 @@ final class TypeCombinator
 				}
 
 				if ($isSuperTypeA->no()) {
-					return new NeverType(reason: $isSuperTypeA->reasons[0] ?? null);
+					return new NeverType(reason: $isSuperTypeA->getReasons()[0] ?? null);
 				}
 			}
 		}

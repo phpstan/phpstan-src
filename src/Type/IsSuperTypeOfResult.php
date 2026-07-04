@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type;
 
+use Closure;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -23,6 +25,11 @@ use function array_values;
  * This is distinct from `accepts()` which also considers rule levels and PHPDoc context.
  * Use `isSuperTypeOf()` for type-theoretic comparisons and `accepts()` for assignability checks.
  *
+ * Reasons can also be provided lazily (as `Closure(): string`) via $lazyReasons. This lets a
+ * type comparison attach an expensive-to-build explanation (e.g. one that calls describe() on
+ * large array shapes) without paying for it on the hot path — the closure only runs when
+ * getReasons() is called, i.e. when the reason is actually rendered.
+ *
  * Can be converted to AcceptsResult via toAcceptsResult().
  *
  * @api
@@ -39,10 +46,12 @@ final class IsSuperTypeOfResult
 	/**
 	 * @api
 	 * @param list<string> $reasons Human-readable explanations of the type relationship
+	 * @param list<Closure(): string> $lazyReasons Reasons built on demand, see the class docblock
 	 */
 	public function __construct(
 		public readonly TrinaryLogic $result,
 		public readonly array $reasons,
+		public readonly array $lazyReasons = [],
 	)
 	{
 	}
@@ -74,18 +83,39 @@ final class IsSuperTypeOfResult
 		return $this->result->no();
 	}
 
+	/**
+	 * All reasons with the lazy ones materialized. Prefer this over reading $reasons directly
+	 * when the reasons are going to be rendered.
+	 *
+	 * @return list<string>
+	 */
+	public function getReasons(): array
+	{
+		if ($this->lazyReasons === []) {
+			return $this->reasons;
+		}
+
+		return array_values(array_unique(array_merge(
+			$this->reasons,
+			array_map(static fn (Closure $cb): string => $cb(), $this->lazyReasons),
+		)));
+	}
+
 	public static function createYes(): self
 	{
 		return self::$YES ??= new self(TrinaryLogic::createYes(), []);
 	}
 
-	/** @param list<string> $reasons */
-	public static function createNo(array $reasons = []): self
+	/**
+	 * @param list<string> $reasons
+	 * @param list<Closure(): string> $lazyReasons
+	 */
+	public static function createNo(array $reasons = [], array $lazyReasons = []): self
 	{
-		if ($reasons === []) {
+		if ($reasons === [] && $lazyReasons === []) {
 			return self::$NO ??= new self(TrinaryLogic::createNo(), $reasons);
 		}
-		return new self(TrinaryLogic::createNo(), $reasons);
+		return new self(TrinaryLogic::createNo(), $reasons, $lazyReasons);
 	}
 
 	public static function createMaybe(): self
@@ -103,21 +133,24 @@ final class IsSuperTypeOfResult
 
 	public function toAcceptsResult(): AcceptsResult
 	{
-		return new AcceptsResult($this->result, $this->reasons);
+		return new AcceptsResult($this->result, $this->getReasons());
 	}
 
 	public function and(self ...$others): self
 	{
 		$results = [];
 		$reasons = [];
+		$lazyReasons = [];
 		foreach ($others as $other) {
 			$results[] = $other->result;
 			$reasons[] = $other->reasons;
+			$lazyReasons[] = $other->lazyReasons;
 		}
 
 		return new self(
 			$this->result->and(...$results),
 			array_values(array_unique(array_merge($this->reasons, ...$reasons))),
+			array_merge($this->lazyReasons, ...$lazyReasons),
 		);
 	}
 
@@ -125,14 +158,17 @@ final class IsSuperTypeOfResult
 	{
 		$results = [];
 		$reasons = [];
+		$lazyReasons = [];
 		foreach ($others as $other) {
 			$results[] = $other->result;
 			$reasons[] = $other->reasons;
+			$lazyReasons[] = $other->lazyReasons;
 		}
 
 		return new self(
 			$this->result->or(...$results),
 			array_values(array_unique(array_merge($this->reasons, ...$reasons))),
+			array_merge($this->lazyReasons, ...$lazyReasons),
 		);
 	}
 
@@ -144,7 +180,12 @@ final class IsSuperTypeOfResult
 			$reasons[] = $cb($reason);
 		}
 
-		return new self($this->result, $reasons);
+		$lazyReasons = [];
+		foreach ($this->lazyReasons as $lazyReason) {
+			$lazyReasons[] = static fn (): string => $cb($lazyReason());
+		}
+
+		return new self($this->result, $reasons, $lazyReasons);
 	}
 
 	/** @see TrinaryLogic::extremeIdentity() */
@@ -156,14 +197,18 @@ final class IsSuperTypeOfResult
 
 		$results = [];
 		$reasons = [];
+		$lazyReasons = [];
 		foreach ($operands as $operand) {
 			$results[] = $operand->result;
 			foreach ($operand->reasons as $reason) {
 				$reasons[] = $reason;
 			}
+			foreach ($operand->lazyReasons as $lazyReason) {
+				$lazyReasons[] = $lazyReason;
+			}
 		}
 
-		return new self(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)));
+		return new self(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	/** @see TrinaryLogic::maxMin() */
@@ -175,14 +220,18 @@ final class IsSuperTypeOfResult
 
 		$results = [];
 		$reasons = [];
+		$lazyReasons = [];
 		foreach ($operands as $operand) {
 			$results[] = $operand->result;
 			foreach ($operand->reasons as $reason) {
 				$reasons[] = $reason;
 			}
+			foreach ($operand->lazyReasons as $lazyReason) {
+				$lazyReasons[] = $lazyReason;
+			}
 		}
 
-		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)));
+		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	/**
@@ -196,6 +245,7 @@ final class IsSuperTypeOfResult
 	): self
 	{
 		$reasons = [];
+		$lazyReasons = [];
 		$hasNo = false;
 		foreach ($objects as $object) {
 			$isSuperTypeOf = $callback($object);
@@ -208,17 +258,21 @@ final class IsSuperTypeOfResult
 			foreach ($isSuperTypeOf->reasons as $reason) {
 				$reasons[] = $reason;
 			}
+			foreach ($isSuperTypeOf->lazyReasons as $lazyReason) {
+				$lazyReasons[] = $lazyReason;
+			}
 		}
 
 		return new self(
 			$hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
 			array_values(array_unique($reasons)),
+			$lazyReasons,
 		);
 	}
 
 	public function negate(): self
 	{
-		return new self($this->result->negate(), $this->reasons);
+		return new self($this->result->negate(), $this->reasons, $this->lazyReasons);
 	}
 
 	public function describe(): string

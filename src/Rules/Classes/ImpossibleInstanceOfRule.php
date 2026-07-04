@@ -85,7 +85,7 @@ final class ImpossibleInstanceOfRule implements Rule
 		}
 
 		$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
-		$reasons = $classType->isSuperTypeOf($exprType)->reasons;
+		$reasons = $classType->isSuperTypeOf($exprType)->getReasons();
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
 			if ($reasons !== []) {

@@ -766,7 +766,7 @@ class ConstantArrayType implements Type
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
 						if ($thisUnsealedness->no() && $typeUnsealedness->no()) {
-							return IsSuperTypeOfResult::createNo([$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+							return IsSuperTypeOfResult::createNo(lazyReasons: [fn (): string => $this->sealedArrayShapesCannotBeIntersectedReason($type)]);
 						}
 						return IsSuperTypeOfResult::createNo();
 					}
@@ -803,7 +803,7 @@ class ConstantArrayType implements Type
 					if ($thisUnsealedness->no()) {
 						if (!$type->isOptionalKey($i)) {
 							if ($typeUnsealedness->no()) {
-								return IsSuperTypeOfResult::createNo([$this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+								return IsSuperTypeOfResult::createNo(lazyReasons: [fn (): string => $this->sealedArrayShapesCannotBeIntersectedReason($type)]);
 							}
 							return IsSuperTypeOfResult::createNo();
 						}
@@ -867,6 +867,11 @@ class ConstantArrayType implements Type
 		return IsSuperTypeOfResult::createNo();
 	}
 
+	/**
+	 * Passed as a lazy reason to IsSuperTypeOfResult so the expensive describe() calls only
+	 * run when the reason is actually rendered, never during the hot isSuperTypeOf()
+	 * comparisons whose reasons are discarded.
+	 */
 	private function sealedArrayShapesCannotBeIntersectedReason(self $type): string
 	{
 		return sprintf(

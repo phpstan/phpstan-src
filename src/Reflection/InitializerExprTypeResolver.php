@@ -1963,7 +1963,7 @@ final class InitializerExprTypeResolver
 		$leftIsSuperTypeOfRight = $leftType->isSuperTypeOf($rightType);
 		$rightIsSuperTypeOfLeft = $rightType->isSuperTypeOf($leftType);
 		if ($leftIsSuperTypeOfRight->no() && $rightIsSuperTypeOfLeft->no()) {
-			return new TypeResult(new ConstantBooleanType(false), array_merge($leftIsSuperTypeOfRight->reasons, $rightIsSuperTypeOfLeft->reasons));
+			return new TypeResult(new ConstantBooleanType(false), array_merge($leftIsSuperTypeOfRight->getReasons(), $rightIsSuperTypeOfLeft->getReasons()));
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {

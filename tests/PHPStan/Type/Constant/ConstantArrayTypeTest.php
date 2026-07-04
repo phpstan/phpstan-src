@@ -1031,6 +1031,26 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testSealedArrayShapesCannotBeIntersectedReasonIsLazy(): void
+	{
+		$resolver = self::getContainer()->getByType(TypeStringResolver::class);
+
+		[$type, $otherType] = BleedingEdgeToggle::withBleedingEdge(true, static fn (): array => [
+			$resolver->resolve('array{foo: int}', null),
+			$resolver->resolve('array{bar: string}', null),
+		]);
+
+		$result = $type->isSuperTypeOf($otherType);
+		$this->assertTrue($result->no());
+
+		// The expensive describe()-based reason must not be built eagerly during the
+		// isSuperTypeOf() hot path - it is only materialized on demand via getReasons().
+		$this->assertSame([], $result->reasons);
+		$this->assertSame([
+			'Sealed array shapes array{foo: int} and array{bar: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys',
+		], $result->getReasons());
+	}
+
 	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name): Type => TemplateTypeFactory::create(

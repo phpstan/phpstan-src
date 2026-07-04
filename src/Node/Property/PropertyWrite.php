@@ -2,9 +2,16 @@
 
 namespace PHPStan\Node\Property;
 
+use ArrayAccess;
+use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Type\ObjectType;
 
 /**
  * @api
@@ -12,7 +19,12 @@ use PHPStan\Analyser\Scope;
 final class PropertyWrite
 {
 
-	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite, private bool $viaOffsetAccess = false)
+	public function __construct(
+		private PropertyFetch|StaticPropertyFetch $fetch,
+		private Scope $scope,
+		private bool $promotedPropertyWrite,
+		private ClassPropertyNode|PropertyAssignNode|AssignRef|null $originalNode = null,
+	)
 	{
 	}
 
@@ -41,7 +53,21 @@ final class PropertyWrite
 	 */
 	public function isViaOffsetAccess(): bool
 	{
-		return $this->viaOffsetAccess;
+		if (!$this->originalNode instanceof PropertyAssignNode) {
+			return false;
+		}
+
+		$assignedExpr = $this->originalNode->getAssignedExpr();
+		if (
+			!$assignedExpr instanceof SetOffsetValueTypeExpr
+			&& !$assignedExpr instanceof SetExistingOffsetValueTypeExpr
+		) {
+			return false;
+		}
+
+		return (new ObjectType(ArrayAccess::class))
+			->isSuperTypeOf($this->scope->getType($this->originalNode->getPropertyFetch()))
+			->yes();
 	}
 
 }

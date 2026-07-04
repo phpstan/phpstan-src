@@ -8,6 +8,7 @@ use Github\Client;
 use PHPStan\IssueBot\Comment\BotComment;
 use PHPStan\IssueBot\Comment\IssueCommentDownloader;
 use PHPStan\IssueBot\Issue\IssueCache;
+use PHPStan\IssueBot\Playground\NewlyUnparsableVersionFilter;
 use PHPStan\IssueBot\Playground\PlaygroundCache;
 use PHPStan\IssueBot\Playground\PlaygroundError;
 use PHPStan\IssueBot\Playground\TabCreator;
@@ -39,6 +40,7 @@ class EvaluateCommand extends Command
 
 	public function __construct(
 		private TabCreator $tabCreator,
+		private NewlyUnparsableVersionFilter $newlyUnparsableVersionFilter,
 		private PostGenerator $postGenerator,
 		private Client $githubClient,
 		private IssueCommentDownloader $issueCommentDownloader,
@@ -96,7 +98,6 @@ class EvaluateCommand extends Command
 				}
 
 				$originalErrors = $originalResults[$hash]->getVersionedErrors();
-				$originalTabs = $this->tabCreator->create($originalErrors);
 
 				if (!array_key_exists($hash, $newResults)) {
 					throw new Exception(sprintf('Hash %s does not exist in new results.', $hash));
@@ -108,6 +109,9 @@ class EvaluateCommand extends Command
 					$newResult[70100] = $newResult[70200];
 				}
 
+				[$originalErrors, $newResult] = $this->newlyUnparsableVersionFilter->filter($originalErrors, $newResult);
+
+				$originalTabs = $this->tabCreator->create($originalErrors);
 				$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $newResult));
 				$text = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $botComments);
 				if ($text === null) {

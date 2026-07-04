@@ -2811,7 +2811,7 @@ class NodeScopeResolver
 		// Call-likes are excluded from the cache: their handlers select on
 		// isFirstClassCallable(), so the Expr class does not uniquely determine the handler.
 		if (!$expr instanceof Expr\CallLike) {
-			$cached = $this->exprHandlersByClass[$expr::class] ?? null;
+			$cached = $this->exprHandlersByClass[get_class($expr)] ?? null;
 			if ($cached !== null) {
 				return $cached === false ? null : $cached;
 			}
@@ -2829,7 +2829,7 @@ class NodeScopeResolver
 		}
 
 		if (!$expr instanceof Expr\CallLike) {
-			$this->exprHandlersByClass[$expr::class] = $matchedHandler ?? false;
+			$this->exprHandlersByClass[get_class($expr)] = $matchedHandler ?? false;
 		}
 
 		return $matchedHandler;

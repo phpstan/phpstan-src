@@ -3901,6 +3901,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $conditionalExpressions;
 		}
 
+		// Both isSuperTypeOf() checks below depend only on the guard (and its
+		// their-branch type), not on the target $exprString, so their results are
+		// invariant across the target loop. Cache them per guard to avoid
+		// recomputing expensive supertype checks on big union / constant-array
+		// types once per (target, guard) pair.
+		$guardIsSuperTypeOfTheirExprCache = [];
+		$theirExprIsSuperTypeOfGuardCache = [];
+
 		foreach ($newVariableTypes as $exprString => $holder) {
 			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
@@ -3924,12 +3932,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					array_key_exists($guardExprString, $theirExpressionTypes)
 					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
 				) {
-					$guardIsSuperTypeOfTheirExpr = $guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType());
-					$theirExprIsSuperTypeOfGuard = $theirExpressionTypes[$guardExprString]->getType()->isSuperTypeOf($guardHolder->getType());
+					$guardIsSuperTypeOfTheirExpr = $guardIsSuperTypeOfTheirExprCache[$guardExprString] ??= $guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType());
 
+					// The reverse isSuperTypeOf() check is expensive on big union /
+					// constant-array types, so it is evaluated last and only when the
+					// cheaper forward-based conditions did not already decide.
 					if (
 						$guardIsSuperTypeOfTheirExpr->yes()
-						|| $theirExprIsSuperTypeOfGuard->yes()
 						|| (
 							array_key_exists($exprString, $theirExpressionTypes)
 							&& $theirExpressionTypes[$exprString]->getCertainty()->yes()
@@ -3940,6 +3949,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 							&& $holder->getType()->equals($guardHolder->getType())
 							&& !$guardIsSuperTypeOfTheirExpr->no()
 						)
+						|| ($theirExprIsSuperTypeOfGuardCache[$guardExprString] ??= $theirExpressionTypes[$guardExprString]->getType()->isSuperTypeOf($guardHolder->getType()))->yes()
 					) {
 						continue;
 					}

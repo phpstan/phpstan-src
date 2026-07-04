@@ -97,7 +97,10 @@ final class CoalesceHandler implements ExprHandler
 			)->setRootExpr($expr);
 		}
 
-		if ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right)->toBoolean())->yes()) {
+		if (
+			!$context->falsey()
+			&& (new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right)->toBoolean())->yes()
+		) {
 			return $typeSpecifier->create(
 				$expr->left,
 				new NullType(),

@@ -197,6 +197,16 @@ class NodeScopeResolver
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
+	/**
+	 * Memoizes which ExprHandler handles each Expr class so processExprNode() does not
+	 * re-scan every tagged handler on each call. First-class callables (the only handlers
+	 * whose supports() depends on more than the class) are transformed away before the
+	 * lookup, so the matching handler is fully determined by the Expr class.
+	 *
+	 * @var array<class-string<Expr>, ExprHandler<Expr>|false>
+	 */
+	private array $exprHandlersByClass = [];
+
 	/** @var array<string, true> */
 	private array $earlyTerminatingMethodNames;
 
@@ -2767,12 +2777,24 @@ class NodeScopeResolver
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 
-		/** @var ExprHandler<Expr> $exprHandler */
-		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-			if (!$exprHandler->supports($expr)) {
-				continue;
+		$exprClass = $expr::class;
+		if (!array_key_exists($exprClass, $this->exprHandlersByClass)) {
+			$matchedHandler = false;
+			/** @var ExprHandler<Expr> $exprHandler */
+			foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+				if (!$exprHandler->supports($expr)) {
+					continue;
+				}
+
+				$matchedHandler = $exprHandler;
+				break;
 			}
 
+			$this->exprHandlersByClass[$exprClass] = $matchedHandler;
+		}
+
+		$exprHandler = $this->exprHandlersByClass[$exprClass];
+		if ($exprHandler !== false) {
 			return $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		}
 

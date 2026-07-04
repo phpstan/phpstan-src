@@ -60,6 +60,16 @@ final class TypeSpecifier
 	private ?array $staticMethodTypeSpecifyingExtensionsByClass = null;
 
 	/**
+	 * Memoizes which ExprHandler handles each Expr class so specifyTypesInCondition()
+	 * does not re-scan every tagged handler (a linear supports() sweep) on each call.
+	 * This matters for deep boolean chains, where specifyTypesInCondition() runs once per arm.
+	 * Keyed by Expr class-string; false means no handler matched (default narrowing).
+	 *
+	 * @var array<class-string<Expr>, ExprHandler<Expr>|false>
+	 */
+	private array $exprHandlersByClass = [];
+
+	/**
 	 * @param FunctionTypeSpecifyingExtension[] $functionTypeSpecifyingExtensions
 	 * @param MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
 	 * @param StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
@@ -89,12 +99,27 @@ final class TypeSpecifier
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
-		/** @var ExprHandler<Expr> $exprHandler */
-		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-			if (!$exprHandler->supports($expr)) {
-				continue;
+		// First-class callables are the only handlers whose supports() depends on more
+		// than the Expr class, and they are all filtered out above, so the matching
+		// handler is fully determined by the Expr class and can be memoized.
+		$exprClass = $expr::class;
+		if (!array_key_exists($exprClass, $this->exprHandlersByClass)) {
+			$matchedHandler = false;
+			/** @var ExprHandler<Expr> $exprHandler */
+			foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+				if (!$exprHandler->supports($expr)) {
+					continue;
+				}
+
+				$matchedHandler = $exprHandler;
+				break;
 			}
 
+			$this->exprHandlersByClass[$exprClass] = $matchedHandler;
+		}
+
+		$exprHandler = $this->exprHandlersByClass[$exprClass];
+		if ($exprHandler !== false) {
 			return $exprHandler->specifyTypes($this, $scope, $expr, $context);
 		}
 

@@ -33,7 +33,7 @@
 		"nette/php-generator": "3.6.9",
 		"nette/schema": "^1.2.2",
 		"nette/utils": "^3.2.5",
-		"nikic/php-parser": "^5.7.0",
+		"nikic/php-parser": "^5.8.0",
 		"ondram/ci-detector": "^4.0",
 		"ondrejmirtes/better-reflection": "6.70.0.3",
 		"ondrejmirtes/composer-attribute-collector": "^1.1.1",

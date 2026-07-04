@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Type\ObjectType;
 
@@ -61,6 +62,7 @@ final class PropertyWrite
 		if (
 			!$assignedExpr instanceof SetOffsetValueTypeExpr
 			&& !$assignedExpr instanceof SetExistingOffsetValueTypeExpr
+			&& !$assignedExpr instanceof UnsetOffsetExpr
 		) {
 			return false;
 		}

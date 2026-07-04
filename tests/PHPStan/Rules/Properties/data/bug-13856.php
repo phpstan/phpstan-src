@@ -70,6 +70,7 @@ class ExistingOffset
 		$this->storage = new \ArrayObject();
 		$this->storage['a'] = 1;
 		$this->storage['a'] = 2;
+		unset($this->storage['a']);
 	}
 
 }

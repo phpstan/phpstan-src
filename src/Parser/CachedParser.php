@@ -18,6 +18,14 @@ final class CachedParser implements Parser
 	 */
 	private const SIZE_EVICTION_FLOOR_LIMIT = 32;
 
+	/**
+	 * Default for $cachedSourceBytesMax, must match the default of
+	 * cache.nodesByStringSourceBytesMax in config.neon. It doubles as the
+	 * constructor default because third-party extensions (e.g. Larastan's
+	 * migrationsParser service) instantiate this class without the parameter.
+	 */
+	private const CACHED_SOURCE_BYTES_DEFAULT_LIMIT = 4_194_304;
+
 	/** @var array<string, Node\Stmt[]>*/
 	private array $cachedNodesByString = [];
 
@@ -40,7 +48,7 @@ final class CachedParser implements Parser
 	public function __construct(
 		private Parser $originalParser,
 		private int $cachedNodesByStringCountMax,
-		private int $cachedSourceBytesMax,
+		private int $cachedSourceBytesMax = self::CACHED_SOURCE_BYTES_DEFAULT_LIMIT,
 	)
 	{
 	}

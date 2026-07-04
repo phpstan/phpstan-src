@@ -105,6 +105,19 @@ class CachedParserTest extends PHPStanTestCase
 		$this->assertSame(21, $parser->getCachedNodesByStringCount());
 	}
 
+	public function testConstructionWithoutSourceBytesMaxStaysBackwardCompatible(): void
+	{
+		// third-party extensions (e.g. Larastan's migrationsParser service)
+		// instantiate CachedParser without the $cachedSourceBytesMax argument
+		$parser = new CachedParser($this->getParserStub(), 500);
+
+		for ($i = 0; $i < 100; $i++) {
+			$parser->parseString(sprintf('%0100d', $i));
+		}
+
+		$this->assertSame(100, $parser->getCachedNodesByStringCount());
+	}
+
 	public function testSourceBytesLimitZeroMeansUnlimited(): void
 	{
 		$parser = new CachedParser($this->getParserStub(), 500, 0);

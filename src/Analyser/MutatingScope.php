@@ -2554,11 +2554,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
-	public function enterExpressionAssign(Expr $expr, bool $readModify = false): self
+	public function enterExpressionAssign(Expr $expr, bool $readBeforeWrite = false): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
-		$currentlyAssignedExpressions[$exprString] = !$readModify;
+		$currentlyAssignedExpressions[$exprString] = !$readBeforeWrite;
 
 		$scope = $this->scopeFactory->create(
 			$this->context,

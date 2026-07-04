@@ -3645,6 +3645,7 @@ class NodeScopeResolver
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
+						$scopeToPass = $scopeToPass->replaceInFunctionCallStackParameterType($overwritingParameterType);
 					}
 				}
 
@@ -3711,6 +3712,7 @@ class NodeScopeResolver
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
+						$scopeToPass = $scopeToPass->replaceInFunctionCallStackParameterType($overwritingParameterType);
 					}
 				}
 

@@ -57,6 +57,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -1396,6 +1397,56 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $functionScope;
+	}
+
+	/**
+	 * Overrides the type of the parameter on top of the in-function-call stack.
+	 *
+	 * Used when a FunctionParameterClosureTypeExtension changes the type of a
+	 * closure/callable parameter, so that the closure's return type inferred via
+	 * ClosureTypeResolver (which reads the parameter type off this stack) matches
+	 * the parameter type the closure body is actually analysed with.
+	 */
+	public function replaceInFunctionCallStackParameterType(Type $type): self
+	{
+		if (count($this->inFunctionCallsStack) === 0) {
+			return $this;
+		}
+
+		$stack = $this->inFunctionCallsStack;
+		$lastIndex = count($stack) - 1;
+		[$reflection, $parameter] = $stack[$lastIndex];
+		if ($parameter === null) {
+			return $this;
+		}
+
+		$stack[$lastIndex] = [$reflection, new NativeParameterReflection(
+			$parameter->getName(),
+			$parameter->isOptional(),
+			$type,
+			$parameter->passedByReference(),
+			$parameter->isVariadic(),
+			$parameter->getDefaultValue(),
+		)];
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$stack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
 	}
 
 	public function popInFunctionCall(): self

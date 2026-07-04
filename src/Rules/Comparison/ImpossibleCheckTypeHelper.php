@@ -398,7 +398,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			foreach ($isSuperType->reasons as $reason) {
+			foreach ($isSuperType->getReasons() as $reason) {
 				$reasons[] = $reason;
 			}
 		}
@@ -431,7 +431,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			foreach ($isSuperType->reasons as $reason) {
+			foreach ($isSuperType->getReasons() as $reason) {
 				$reasons[] = $reason;
 			}
 		}

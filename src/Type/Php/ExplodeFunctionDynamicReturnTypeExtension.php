@@ -91,12 +91,18 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
 
-		if ($this->isDelimiterGuaranteedPresent($args, $scope) && ($limitType === null || IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($limitType)->yes())) {
+		if (
+			$this->isDelimiterGuaranteedPresent($args, $scope)
+			&& ($limitType === null || IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($limitType)->yes())
+		) {
 			$returnType = $this->createGuaranteedSplitType($returnValueType, $limitType);
 		} else {
 			$returnType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $returnValueType), new AccessoryArrayListType()]);
 
-			if ($limitType === null || IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($limitType)->yes()) {
+			if (
+				$limitType === null
+				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($limitType)->yes()
+			) {
 				$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 			}
 		}

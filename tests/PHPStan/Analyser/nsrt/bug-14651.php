@@ -86,10 +86,10 @@ function notGuaranteed(string $s): void
 		assertType('non-falsy-string', $s);
 		// different delimiter than the proven substring
 		assertType('non-empty-list<string>', explode(",", $s, 2));
-		// limit 1 always yields a single element
-		assertType('non-empty-list<string>', explode("\n", $s, 1));
-		// negative limit may drop the guaranteed parts
-		assertType('list<string>', explode("\n", $s, -1));
+		// limit 1 returns the whole string as the only element
+		assertType('array{non-falsy-string}', explode("\n", $s, 1));
+		// limit -1 drops only the last of the guaranteed parts, so one remains
+		assertType('non-empty-list<string>', explode("\n", $s, -1));
 	} else {
 		assertType('string', $s);
 	}
@@ -142,16 +142,19 @@ function zeroAndNegativeLimit(string $s): void
 {
 	if (str_contains($s, "\n")) {
 		assertType('non-falsy-string', $s);
-		// limit 0 is treated as 1, so a single non-empty element
-		assertType('non-empty-list<string>', explode("\n", $s, 0));
-		// a negative limit drops trailing components and may empty the result
-		assertType('list<string>', explode("\n", $s, -1));
+		// limit 0 is treated as 1, so the whole string is the only element
+		assertType('array{non-falsy-string}', explode("\n", $s, 0));
+		// limit -1 drops the last component, but a guaranteed part remains
+		assertType('non-empty-list<string>', explode("\n", $s, -1));
+		// limit -2 or beyond may drop every guaranteed part
 		assertType('list<string>', explode("\n", $s, -2));
 	} else {
 		assertType('string', $s);
 	}
 
 	assertType('string', $s);
+	// without a guard, limit -1 may drop the only component and empty the result
+	assertType('list<string>', explode("\n", $s, -1));
 }
 
 function largeConstantLimit(string $s): void
@@ -165,4 +168,38 @@ function largeConstantLimit(string $s): void
 	}
 
 	assertType('string', $s);
+}
+
+function singleElementLimit(string $s): void
+{
+	// limit 0 or 1 returns the whole string as the only element, even without a guard
+	assertType('array{string}', explode("\n", $s, 0));
+	assertType('array{string}', explode("\n", $s, 1));
+
+	if (str_contains($s, "\n")) {
+		assertType('non-falsy-string', $s);
+		// the single element keeps the refined haystack type
+		assertType('array{non-falsy-string}', explode("\n", $s, 0));
+		assertType('array{non-falsy-string}', explode("\n", $s, 1));
+		// the limit governs even when the delimiter differs from the proven one
+		assertType('array{non-falsy-string}', explode(",", $s, 1));
+	}
+}
+
+/**
+ * @param int<0, 1> $zeroOrOne
+ * @param int<-1, -1> $minusOne
+ * @param int<0, 2> $wider
+ */
+function singleElementRangeLimit(string $s, int $zeroOrOne, int $minusOne, int $wider): void
+{
+	// a range fully within {0, 1} still yields a single element
+	assertType('array{string}', explode("\n", $s, $zeroOrOne));
+	// a wider range no longer guarantees a single element
+	assertType('non-empty-list<string>', explode("\n", $s, $wider));
+
+	if (str_contains($s, "\n")) {
+		// limit -1 keeps at least one of the guaranteed parts
+		assertType('non-empty-list<string>', explode("\n", $s, $minusOne));
+	}
 }

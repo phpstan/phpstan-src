@@ -562,7 +562,7 @@ final class AssignHandler implements ExprHandler
 			// property root must resolve to its readable type (not its writable one) even
 			// though it sits on the left-hand side of the assignment.
 			if ($enterExpressionAssign) {
-				$scope = $scope->enterExpressionAssign($var, isPlainWrite: false);
+				$scope = $scope->enterExpressionAssign($var, false);
 			}
 			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();

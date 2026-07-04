@@ -150,13 +150,6 @@ final class FunctionDefinitionCheck
 			}
 
 			$type = $scope->getFunctionType($param->type, false, false);
-			if ($type->isVoid()->yes()) {
-				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))
-					->line($param->type->getStartLine())
-					->identifier('parameter.void')
-					->nonIgnorable()
-					->build();
-			}
 			$unresolvableType = $this->phpVersion->supportsPureIntersectionTypes()
 				? $this->unresolvableTypeHelper->getUnresolvableType($type)
 				: null;
@@ -433,13 +426,6 @@ final class FunctionDefinitionCheck
 			$parameterVar = $parameterNodeCallback()->var;
 			if (!$parameterVar instanceof Variable || !is_string($parameterVar->name)) {
 				throw new ShouldNotHappenException();
-			}
-			if ($parameter->getNativeType()->isVoid()->yes()) {
-				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))
-					->line($parameterNodeCallback()->getStartLine())
-					->identifier('parameter.void')
-					->nonIgnorable()
-					->build();
 			}
 			$unresolvableType = $this->phpVersion->supportsPureIntersectionTypes()
 				? $this->unresolvableTypeHelper->getUnresolvableType($parameter->getNativeType())

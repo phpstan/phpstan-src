@@ -181,7 +181,11 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
 			[
-				'Parameter $param of function VoidParameterTypehint\doFoo() has invalid type void.',
+				'void cannot be used as a parameter type on line 5',
+				5,
+			],
+			[
+				'void cannot be used as a parameter type on line 9',
 				9,
 			],
 		]);

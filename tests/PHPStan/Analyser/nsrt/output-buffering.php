@@ -353,3 +353,17 @@ function builtinConstructorKeepsLevel(): void
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
 }
+
+function withRequire(): void
+{
+	ob_start();
+	require __DIR__ . '/does-not-matter.php';
+	assertType('int<0, max>', ob_get_level());
+}
+
+function withEval(string $function): void
+{
+	ob_start();
+	eval(sprintf('function %s() {}', $function));
+	assertType('int<0, max>', ob_get_level());
+}

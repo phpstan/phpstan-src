@@ -44,7 +44,7 @@ final class IncludeHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$identifier = in_array($expr->type, [Include_::TYPE_INCLUDE, Include_::TYPE_INCLUDE_ONCE], true) ? 'include' : 'require';
-		$scope = $exprResult->getScope()->afterExtractCall();
+		$scope = $exprResult->getScope()->afterExtractCall()->invalidateVolatileExpressions();
 
 		return new ExpressionResult(
 			$scope,

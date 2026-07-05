@@ -14,15 +14,11 @@ use function in_array;
 final class BcMathNumberUnaryOperatorTypeSpecifyingExtension implements UnaryOperatorTypeSpecifyingExtension
 {
 
-	private ?ObjectType $bcMathNumberType = null;
+	private ObjectType $bcMathNumberType;
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
-	}
-
-	private function getBcMathNumberType(): ObjectType
-	{
-		return $this->bcMathNumberType ??= new ObjectType('BcMath\Number');
+		$this->bcMathNumberType = new ObjectType('BcMath\Number');
 	}
 
 	public function isOperatorSupported(string $operatorSigil, Type $operand): bool
@@ -35,12 +31,12 @@ final class BcMathNumberUnaryOperatorTypeSpecifyingExtension implements UnaryOpe
 			return false;
 		}
 
-		return $this->getBcMathNumberType()->isSuperTypeOf($operand)->yes();
+		return $this->bcMathNumberType->isSuperTypeOf($operand)->yes();
 	}
 
 	public function specifyType(string $operatorSigil, Type $operand): Type
 	{
-		return $this->getBcMathNumberType();
+		return $this->bcMathNumberType;
 	}
 
 }

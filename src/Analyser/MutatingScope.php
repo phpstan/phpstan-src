@@ -652,7 +652,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		$changed = VolatileExpressionHelper::invalidateVolatileFunctionCalls($expressionTypes, $nativeExpressionTypes);
 		$changed = VolatileExpressionHelper::invalidateSuperglobals($expressionTypes, $nativeExpressionTypes) || $changed;
-		$changed = VolatileExpressionHelper::invalidateNegativeExistenceChecks($expressionTypes, $nativeExpressionTypes) || $changed;
+		$changed = VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes) || $changed;
 
 		if (!$changed) {
 			return $this;
@@ -689,7 +689,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 
-		if (!VolatileExpressionHelper::invalidateNegativeExistenceChecks($expressionTypes, $nativeExpressionTypes, $functionNames, $declaredSymbolName)) {
+		if (!VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes, $functionNames, $declaredSymbolName)) {
 			return $this;
 		}
 

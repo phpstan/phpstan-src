@@ -6,7 +6,11 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use function array_key_exists;
 use function array_keys;
+use function count;
+use function in_array;
+use function ltrim;
 use function str_starts_with;
+use function strtolower;
 
 final class VolatileExpressionHelper
 {

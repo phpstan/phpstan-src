@@ -13,6 +13,13 @@ use function in_array;
 final class GmpUnaryOperatorTypeSpecifyingExtension implements UnaryOperatorTypeSpecifyingExtension
 {
 
+	private ObjectType $gmpType;
+
+	public function __construct()
+	{
+		$this->gmpType = new ObjectType('GMP');
+	}
+
 	public function isOperatorSupported(string $operatorSigil, Type $operand): bool
 	{
 		if ($operand instanceof NeverType) {
@@ -23,13 +30,12 @@ final class GmpUnaryOperatorTypeSpecifyingExtension implements UnaryOperatorType
 			return false;
 		}
 
-		$gmpType = new ObjectType('GMP');
-		return $gmpType->isSuperTypeOf($operand)->yes();
+		return $this->gmpType->isSuperTypeOf($operand)->yes();
 	}
 
 	public function specifyType(string $operatorSigil, Type $operand): Type
 	{
-		return new ObjectType('GMP');
+		return $this->gmpType;
 	}
 
 }

@@ -17,8 +17,11 @@ use function in_array;
 final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeSpecifyingExtension
 {
 
+	private ObjectType $mathNumberType;
+
 	public function __construct(private PhpVersion $phpVersion)
 	{
+		$this->mathNumberType = new ObjectType('BcMath\Number');
 	}
 
 	public function isOperatorSupported(string $operatorSigil, Type $leftSide, Type $rightSide): bool
@@ -27,19 +30,16 @@ final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeS
 			return false;
 		}
 
-		$bcMathNumberType = new ObjectType('BcMath\Number');
-
 		return in_array($operatorSigil, ['-', '+', '*', '/', '**', '%', '<', '<=', '>', '>=', '==', '!=', '<=>'], true)
 			&& (
-				$bcMathNumberType->isSuperTypeOf($leftSide)->yes()
-				|| $bcMathNumberType->isSuperTypeOf($rightSide)->yes()
+				$this->mathNumberType->isSuperTypeOf($leftSide)->yes()
+				|| $this->mathNumberType->isSuperTypeOf($rightSide)->yes()
 			);
 	}
 
 	public function specifyType(string $operatorSigil, Type $leftSide, Type $rightSide): Type
 	{
-		$bcMathNumberType = new ObjectType('BcMath\Number');
-		$otherSide = $bcMathNumberType->isSuperTypeOf($leftSide)->yes()
+		$otherSide = $this->mathNumberType->isSuperTypeOf($leftSide)->yes()
 			? $rightSide
 			: $leftSide;
 
@@ -58,9 +58,9 @@ final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeS
 		if (
 			$otherSide->isInteger()->yes()
 			|| $otherSide->isNumericString()->yes()
-			|| $bcMathNumberType->isSuperTypeOf($otherSide)->yes()
+			|| $this->mathNumberType->isSuperTypeOf($otherSide)->yes()
 		) {
-			return $bcMathNumberType;
+			return $this->mathNumberType;
 		}
 
 		return new ErrorType();

@@ -558,8 +558,11 @@ final class AssignHandler implements ExprHandler
 			}
 
 			// 1. eval root expr
+			// The root is read to obtain the container that receives the offset write, so a
+			// property root must resolve to its readable type (not its writable one) even
+			// though it sits on the left-hand side of the assignment.
 			if ($enterExpressionAssign) {
-				$scope = $scope->enterExpressionAssign($var);
+				$scope = $scope->enterExpressionAssign($var, false);
 			}
 			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();

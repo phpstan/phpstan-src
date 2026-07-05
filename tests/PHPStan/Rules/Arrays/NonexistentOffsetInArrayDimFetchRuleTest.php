@@ -359,6 +359,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3784.php'], []);
 	}
 
+	public function testBug14054(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14054.php'], []);
+	}
+
 	public function testBug3700(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3700.php'], []);

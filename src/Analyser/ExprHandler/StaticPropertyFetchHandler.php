@@ -154,7 +154,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			return null;
 		}
 
-		if ($scope->isInExpressionAssign($propertyFetch)) {
+		if ($scope->isInWriteExpressionAssign($propertyFetch)) {
 			return $propertyReflection->getWritableType();
 		}
 

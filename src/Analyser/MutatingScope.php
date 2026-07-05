@@ -170,7 +170,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param list<non-empty-string> $inClosureBindScopeClasses
-	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, bool> $currentlyAssignedExpressions true when the expression is a plain write target (its writable type applies), false when it is read-modified in place (e.g. the base of `$prop[] = ...`), where its readable type applies
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
@@ -2554,11 +2554,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
-	public function enterExpressionAssign(Expr $expr): self
+	public function enterExpressionAssign(Expr $expr, bool $isPlainWrite = true): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
-		$currentlyAssignedExpressions[$exprString] = true;
+		$currentlyAssignedExpressions[$exprString] = $isPlainWrite;
 
 		$scope = $this->scopeFactory->create(
 			$this->context,
@@ -2625,6 +2625,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		$exprString = $this->getNodeKey($expr);
 		return array_key_exists($exprString, $this->currentlyAssignedExpressions);
+	}
+
+	/**
+	 * Whether the expression is a plain write target of an assignment, as opposed to being
+	 * read-modified in place (e.g. the base of `$prop[] = ...`). Used to decide whether a
+	 * property fetch resolves to its writable or readable type.
+	 */
+	public function isInWriteExpressionAssign(Expr $expr): bool
+	{
+		if (count($this->currentlyAssignedExpressions) === 0) {
+			return false;
+		}
+
+		$exprString = $this->getNodeKey($expr);
+		return ($this->currentlyAssignedExpressions[$exprString] ?? false) === true;
 	}
 
 	public function setAllowedUndefinedExpression(Expr $expr): self

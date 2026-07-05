@@ -6,15 +6,36 @@ use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileFinder;
+use PHPStan\Internal\DirectoryCreator;
+use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Php\PhpVersion;
 use function array_key_exists;
 use function array_keys;
+use function fclose;
+use function flock;
+use function fopen;
 use function hash_file;
+use function hrtime;
+use function sha1;
 use function sprintf;
+use function usleep;
+use const LOCK_EX;
+use const LOCK_NB;
+use const LOCK_UN;
 
 #[AutowiredService]
 final class OptimizedDirectorySourceLocatorFactory
 {
+
+	/**
+	 * Give up waiting for the scan lock after this long and scan the directory anyway, so a wedged
+	 * winner or a foreign phpstan process holding the shared lock cannot block a worker until
+	 * parallel.processTimeout. A directory scan finishes in well under a second, so this is far above
+	 * any legitimate wait.
+	 */
+	private const SCAN_LOCK_WAIT_SECONDS_LIMIT = 10.0;
+
+	private const SCAN_LOCK_POLL_INTERVAL_MICROSECONDS = 50_000;
 
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
@@ -23,6 +44,8 @@ final class OptimizedDirectorySourceLocatorFactory
 		private PhpVersion $phpVersion,
 		private SymbolFinderInFiles $symbolFinderInFiles,
 		private Cache $cache,
+		#[AutowiredParameter]
+		private string $tmpDir,
 	)
 	{
 	}
@@ -53,37 +76,76 @@ final class OptimizedDirectorySourceLocatorFactory
 
 		$originalFileHashes = $fileHashes;
 
-		/** @var array<string, array{string, string[], string[], string[]}>|null $cached */
-		$cached = $this->cache->load($cacheKey, $variableCacheKey);
-		$findInFiles = [];
-		if ($cached !== null) {
-			foreach ($cached as $file => [$hash, $classes, $functions, $constants]) {
-				if (!array_key_exists($file, $fileHashes)) {
-					unset($cached[$file]);
-					continue;
-				}
-				$newHash = $fileHashes[$file];
-				unset($fileHashes[$file]);
-				if ($hash === $newHash) {
-					continue;
-				}
+		$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
 
+		$scanLock = null;
+		if ($cached === null) {
+			// On a cold cache every parallel worker builds the same directory locator at once and would
+			// scan the same directory redundantly. A scan is not published until it finishes and the save
+			// is atomic, so these races are wasteful rather than unsafe. The first worker to take the lock
+			// scans and saves; the rest block until it releases, then re-read the cache it wrote. When the
+			// re-read hits, the lock has done its job, so release it right away and continue lock-free -
+			// the validation and any (re)scan below then run exactly as they did before this change.
+			$scanLock = $this->acquireDirectoryScanLock($cacheKey . $variableCacheKey);
+			if ($scanLock !== null) {
+				$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
+				if ($cached !== null) {
+					$this->releaseDirectoryScanLock($scanLock);
+					$scanLock = null;
+				}
+			}
+		}
+
+		try {
+			$cacheModified = false;
+			$findInFiles = [];
+			if ($cached !== null) {
+				foreach ($cached as $file => [$hash, $classes, $functions, $constants]) {
+					if (!array_key_exists($file, $fileHashes)) {
+						unset($cached[$file]);
+						$cacheModified = true;
+						continue;
+					}
+					$newHash = $fileHashes[$file];
+					unset($fileHashes[$file]);
+					if ($hash === $newHash) {
+						continue;
+					}
+
+					$findInFiles[] = $file;
+				}
+			} else {
+				// Cold miss: publish the result (even an empty one) so lock losers read it back instead
+				// of finding the cache still cold and re-scanning the directory themselves.
+				$cached = [];
+				$cacheModified = true;
+			}
+
+			foreach (array_keys($fileHashes) as $file) {
 				$findInFiles[] = $file;
 			}
-		} else {
-			$cached = [];
-		}
 
-		foreach (array_keys($fileHashes) as $file) {
-			$findInFiles[] = $file;
-		}
+			if ($findInFiles !== []) {
+				$cacheModified = true;
+				foreach ($this->symbolFinderInFiles->findSymbols($findInFiles, $this->phpVersion->supportsEnums()) as $file => [$newClasses, $newFunctions, $newConstants]) {
+					$newHash = $originalFileHashes[$file];
+					$cached[$file] = [$newHash, $newClasses, $newFunctions, $newConstants];
+				}
+			}
 
-		foreach ($this->symbolFinderInFiles->findSymbols($findInFiles, $this->phpVersion->supportsEnums()) as $file => [$newClasses, $newFunctions, $newConstants]) {
-			$newHash = $originalFileHashes[$file];
-			$cached[$file] = [$newHash, $newClasses, $newFunctions, $newConstants];
+			// Only write when the cache actually changed. A lock loser re-reads exactly what the winner
+			// wrote, and a warm run finds every hash unchanged, so both would otherwise re-serialize and
+			// re-write the identical symbol table - the loser while still holding the lock.
+			if ($cacheModified) {
+				$this->cache->save($cacheKey, $variableCacheKey, $cached);
+			}
+		} finally {
+			// Release even if scanning or saving throws, so a failing worker cannot leave other
+			// workers blocked on the lock until it exits.
+			if ($scanLock !== null) {
+				$this->releaseDirectoryScanLock($scanLock);
+			}
 		}
-
-		$this->cache->save($cacheKey, $variableCacheKey, $cached);
 
 		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($cached);
 
@@ -95,6 +157,70 @@ final class OptimizedDirectorySourceLocatorFactory
 			$functionToFiles,
 			$constantToFile,
 		);
+	}
+
+	/**
+	 * Take an exclusive cross-process lock for a directory's symbol scan so that on a cold cache only
+	 * the first worker scans it. Best effort: a null return means locking is unavailable or the wait
+	 * timed out, and the caller scans as before. The returned handle is held until
+	 * {@see releaseDirectoryScanLock()}; the OS releases the lock if the process dies while holding it.
+	 *
+	 * @return resource|null
+	 */
+	private function acquireDirectoryScanLock(string $lockKey)
+	{
+		$lockDirectory = sprintf('%s/cache/locks', $this->tmpDir);
+		try {
+			DirectoryCreator::ensureDirectoryExists($lockDirectory, 0777);
+		} catch (DirectoryCreatorException) {
+			return null;
+		}
+
+		// The lock files are zero-byte markers, never written to and never removed - they are reused
+		// across runs. A tmp reaper (e.g. systemd-tmpfiles) unlinking one while it is held is harmless:
+		// the next fopen('c') creates a fresh inode and two workers may scan the same directory at once,
+		// which is exactly the pre-lock race and stays correct because the cache save is atomic.
+		$lockHandle = @fopen(sprintf('%s/odsl-%s.lock', $lockDirectory, sha1($lockKey)), 'c');
+		if ($lockHandle === false) {
+			return null;
+		}
+
+		// Poll for the lock with a deadline instead of blocking forever: a live-but-wedged winner, or a
+		// foreign phpstan process holding the shared odsl-installed-files lock, would otherwise block
+		// this worker until parallel.processTimeout. On timeout we scan the directory ourselves, capping
+		// the damage at the pre-lock behaviour for that directory.
+		$deadline = hrtime(true) + (int) (self::SCAN_LOCK_WAIT_SECONDS_LIMIT * 1_000_000_000);
+		while (!@flock($lockHandle, LOCK_EX | LOCK_NB)) {
+			if (hrtime(true) >= $deadline) {
+				@fclose($lockHandle);
+				return null;
+			}
+
+			usleep(self::SCAN_LOCK_POLL_INTERVAL_MICROSECONDS);
+		}
+
+		return $lockHandle;
+	}
+
+	/**
+	 * @param non-empty-string $cacheKey
+	 * @return array<string, array{string, string[], string[], string[]}>|null
+	 */
+	private function loadCachedSymbols(string $cacheKey, string $variableCacheKey): ?array
+	{
+		/** @var array<string, array{string, string[], string[], string[]}>|null $cached */
+		$cached = $this->cache->load($cacheKey, $variableCacheKey);
+
+		return $cached;
+	}
+
+	/**
+	 * @param resource $lockHandle
+	 */
+	private function releaseDirectoryScanLock($lockHandle): void
+	{
+		@flock($lockHandle, LOCK_UN);
+		@fclose($lockHandle);
 	}
 
 	/**

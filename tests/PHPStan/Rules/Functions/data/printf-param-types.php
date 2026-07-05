@@ -70,3 +70,31 @@ printf('%2$*s', 5, 'a');
 printf('%s %2$*s', 'a', 5, 'a');
 printf('%1$-+\'X10.2f', 5);
 printf('%1$*.*f %s %2$d', 5, 6, new FooStringable()); // 5.000000 foo 6
+
+function testIntString(string $s): void
+{
+	/** @var decimal-int-string $decimalIntString */
+	$decimalIntString = $s;
+	/** @var numeric-string $numericString */
+	$numericString = $s;
+	/** @var non-decimal-int-string $nonDecimalIntString */
+	$nonDecimalIntString = $s;
+
+	// OK: decimal-int-string is printed by %d without lossy conversion
+	printf('%d', $decimalIntString);
+	printf('%f', $decimalIntString);
+
+	// Strict error: numeric-string may contain a decimal part
+	printf('%d', $numericString);
+	// Strict error: non-decimal-int-string may be trimmed/altered by %d
+	printf('%d', $nonDecimalIntString);
+
+	// OK: constant decimal-int-strings
+	printf('%d', '42');
+	printf('%d', '-1');
+	sprintf('%d', '0');
+
+	// Strict error: constant non-decimal-int-strings
+	printf('%d', '00');
+	printf('%d', '+1');
+}

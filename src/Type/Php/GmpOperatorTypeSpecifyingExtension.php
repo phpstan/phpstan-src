@@ -16,25 +16,29 @@ use function in_array;
 final class GmpOperatorTypeSpecifyingExtension implements OperatorTypeSpecifyingExtension
 {
 
+	private ObjectType $gmpType;
+
+	public function __construct()
+	{
+		$this->gmpType = new ObjectType('GMP');
+	}
+
 	public function isOperatorSupported(string $operatorSigil, Type $leftSide, Type $rightSide): bool
 	{
 		if ($leftSide instanceof NeverType || $rightSide instanceof NeverType) {
 			return false;
 		}
 
-		$gmpType = new ObjectType('GMP');
-
 		return in_array($operatorSigil, ['+', '-', '*', '/', '**', '%', '&', '|', '^', '<<', '>>', '<', '<=', '>', '>=', '==', '!=', '<=>'], true)
 			&& (
-				$gmpType->isSuperTypeOf($leftSide)->yes()
-				|| $gmpType->isSuperTypeOf($rightSide)->yes()
+				$this->gmpType->isSuperTypeOf($leftSide)->yes()
+				|| $this->gmpType->isSuperTypeOf($rightSide)->yes()
 			);
 	}
 
 	public function specifyType(string $operatorSigil, Type $leftSide, Type $rightSide): Type
 	{
-		$gmpType = new ObjectType('GMP');
-		$otherSide = $gmpType->isSuperTypeOf($leftSide)->yes()
+		$otherSide = $this->gmpType->isSuperTypeOf($leftSide)->yes()
 			? $rightSide
 			: $leftSide;
 
@@ -51,9 +55,9 @@ final class GmpOperatorTypeSpecifyingExtension implements OperatorTypeSpecifying
 		if (
 			$otherSide->isInteger()->yes()
 			|| $otherSide->isNumericString()->yes()
-			|| $gmpType->isSuperTypeOf($otherSide)->yes()
+			|| $this->gmpType->isSuperTypeOf($otherSide)->yes()
 		) {
-			return $gmpType;
+			return $this->gmpType;
 		}
 
 		return new ErrorType();

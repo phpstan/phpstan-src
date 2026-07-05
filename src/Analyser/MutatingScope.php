@@ -641,11 +641,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/**
 	 * Forgets every tracked volatile global-state expression: argument-less
 	 * function-call expressions whose value reflects mutable global/output-buffer
-	 * state rather than just their arguments (ob_get_level(), openssl_error_string()).
-	 * Any call to code PHPStan cannot inspect may change that state transitively, so
-	 * these narrowings must be forgotten afterwards. These functions take no
-	 * arguments, so the exact key lookups keep this O(1) in the common case where
-	 * nothing is tracked.
+	 * state rather than just their arguments (ob_get_level(), openssl_error_string()),
+	 * as well as superglobal variables and their offsets. Any call to code PHPStan
+	 * cannot inspect may change that state transitively, so these narrowings must be
+	 * forgotten afterwards. The argument-less functions take no arguments, so the
+	 * exact key lookups keep this O(1) in the common case where nothing is tracked.
 	 */
 	public function invalidateVolatileExpressions(): self
 	{
@@ -666,6 +666,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				unset($nativeExpressionTypes[$exprString]);
 				$changed = true;
 			}
+		}
+
+		foreach (array_keys($expressionTypes + $nativeExpressionTypes) as $exprString) {
+			if (!$this->isSuperglobalExpressionString($exprString)) {
+				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$changed = true;
 		}
 
 		if (!$changed) {
@@ -690,6 +700,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	private function isSuperglobalExpressionString(string $exprString): bool
+	{
+		foreach (self::SUPERGLOBAL_VARIABLES as $superglobalName) {
+			$variableString = '$' . $superglobalName;
+			if ($exprString === $variableString || str_starts_with($exprString, $variableString . '[')) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/** @api */

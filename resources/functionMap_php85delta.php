@@ -16,9 +16,17 @@
 return [
 	'new' => [
 		'chr' => ['non-empty-string', 'ascii'=>'int<0,255>'],
+		'session_get_cookie_params' => ['array{lifetime:0|positive-int,path:non-falsy-string,domain:string,secure:bool,httponly:bool,samesite:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\',partitioned:bool}'],
+		'session_set_cookie_params\'1' => ['bool', 'options'=>'array{lifetime?:int,path?:string,domain?:string,secure?:bool,httponly?:bool,samesite?:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\',partitioned?:bool}'],
+		'setcookie\'1' => ['bool', 'name'=>'string', 'value='=>'string', 'options='=>'array{ expires?:int, path?:string, domain?:string, secure?:bool, httponly?:bool, samesite?:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\', partitioned?:bool}'],
+		'setrawcookie\'1' => ['bool', 'name'=>'string', 'value='=>'string', 'options='=>'array{ expires?:int, path?:string, domain?:string, secure?:bool, httponly?:bool, samesite?:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\', partitioned?:bool}'],
 		'SQLite3Result::fetchAll' => ['($mode is SQLITE3_NUM ? list<non-empty-list<mixed>>|false : ($mode is SQLITE3_ASSOC ? list<non-empty-array<string,mixed>>|false : list<non-empty-array<int|string,mixed>>|false))', 'mode='=>'int'],
 	],
 	'old' => [
 		'chr' => ['non-empty-string', 'ascii'=>'int'],
+		'session_get_cookie_params' => ['array{lifetime:0|positive-int,path:non-falsy-string,domain:string,secure:bool,httponly:bool,samesite:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\'}'],
+		'session_set_cookie_params\'1' => ['bool', 'options'=>'array{lifetime?:int,path?:string,domain?:string,secure?:bool,httponly?:bool,samesite?:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\'}'],
+		'setcookie\'1' => ['bool', 'name'=>'string', 'value='=>'string', 'options='=>'array{ expires?:int, path?:string, domain?:string, secure?:bool, httponly?:bool, samesite?:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\'}'],
+		'setrawcookie\'1' => ['bool', 'name'=>'string', 'value='=>'string', 'options='=>'array{ expires?:int, path?:string, domain?:string, secure?:bool, httponly?:bool, samesite?:\'None\'|\'Lax\'|\'Strict\'|\'none\'|\'lax\'|\'strict\'}'],
 	]
 ];

@@ -644,61 +644,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * state rather than just their arguments (ob_get_level(), openssl_error_string()),
 	 * as well as superglobal variables and their offsets. Any call to code PHPStan
 	 * cannot inspect may change that state transitively, so these narrowings must be
-	 * forgotten afterwards.
-	 *
-	 * All lookups are kept O(1) in the common case where nothing is tracked: the
-	 * argument-less functions and the bare superglobal variables are looked up by
-	 * exact key. The unbounded set of superglobal offset keys ($_GET['x'], ...) is
-	 * only scanned once a bare superglobal variable is known to be tracked, which
-	 * is guaranteed whenever any of its offsets is tracked (narrowing an offset in
-	 * specifyExpressionType() always also narrows the container variable).
+	 * forgotten afterwards. See VolatileExpressionHelper for the O(1) common-case
+	 * lookup strategy.
 	 */
 	public function invalidateVolatileExpressions(): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 
-		$changed = false;
-		foreach (['ob_get_level', 'openssl_error_string'] as $functionName) {
-			foreach ([$functionName . '()', '\\' . $functionName . '()'] as $exprString) {
-				if (
-					!array_key_exists($exprString, $expressionTypes)
-					&& !array_key_exists($exprString, $nativeExpressionTypes)
-				) {
-					continue;
-				}
-
-				unset($expressionTypes[$exprString]);
-				unset($nativeExpressionTypes[$exprString]);
-				$changed = true;
-			}
-		}
-
-		$hasTrackedSuperglobal = false;
-		foreach (self::SUPERGLOBAL_VARIABLES as $superglobalName) {
-			$variableString = '$' . $superglobalName;
-			if (
-				!array_key_exists($variableString, $expressionTypes)
-				&& !array_key_exists($variableString, $nativeExpressionTypes)
-			) {
-				continue;
-			}
-
-			$hasTrackedSuperglobal = true;
-			break;
-		}
-
-		if ($hasTrackedSuperglobal) {
-			foreach (array_keys($expressionTypes + $nativeExpressionTypes) as $exprString) {
-				if (!$this->isSuperglobalExpressionString($exprString)) {
-					continue;
-				}
-
-				unset($expressionTypes[$exprString]);
-				unset($nativeExpressionTypes[$exprString]);
-				$changed = true;
-			}
-		}
+		$changed = VolatileExpressionHelper::invalidateVolatileFunctionCalls($expressionTypes, $nativeExpressionTypes);
+		$changed = VolatileExpressionHelper::invalidateSuperglobals($expressionTypes, $nativeExpressionTypes) || $changed;
 
 		if (!$changed) {
 			return $this;
@@ -722,18 +677,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-	}
-
-	private function isSuperglobalExpressionString(string $exprString): bool
-	{
-		foreach (self::SUPERGLOBAL_VARIABLES as $superglobalName) {
-			$variableString = '$' . $superglobalName;
-			if ($exprString === $variableString || str_starts_with($exprString, $variableString . '[')) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/** @api */

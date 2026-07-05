@@ -641,32 +641,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/**
 	 * Forgets every tracked volatile global-state expression: argument-less
 	 * function-call expressions whose value reflects mutable global/output-buffer
-	 * state rather than just their arguments (ob_get_level(), openssl_error_string()).
-	 * Any call to code PHPStan cannot inspect may change that state transitively, so
-	 * these narrowings must be forgotten afterwards. These functions take no
-	 * arguments, so the exact key lookups keep this O(1) in the common case where
-	 * nothing is tracked.
+	 * state rather than just their arguments (ob_get_level(), openssl_error_string()),
+	 * as well as superglobal variables and their offsets. Any call to code PHPStan
+	 * cannot inspect may change that state transitively, so these narrowings must be
+	 * forgotten afterwards. See VolatileExpressionHelper for the O(1) common-case
+	 * lookup strategy.
 	 */
 	public function invalidateVolatileExpressions(): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 
-		$changed = false;
-		foreach (['ob_get_level', 'openssl_error_string'] as $functionName) {
-			foreach ([$functionName . '()', '\\' . $functionName . '()'] as $exprString) {
-				if (
-					!array_key_exists($exprString, $expressionTypes)
-					&& !array_key_exists($exprString, $nativeExpressionTypes)
-				) {
-					continue;
-				}
-
-				unset($expressionTypes[$exprString]);
-				unset($nativeExpressionTypes[$exprString]);
-				$changed = true;
-			}
-		}
+		$changed = VolatileExpressionHelper::invalidateVolatileFunctionCalls($expressionTypes, $nativeExpressionTypes);
+		$changed = VolatileExpressionHelper::invalidateSuperglobals($expressionTypes, $nativeExpressionTypes) || $changed;
 
 		if (!$changed) {
 			return $this;

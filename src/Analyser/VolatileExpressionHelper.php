@@ -88,7 +88,16 @@ final class VolatileExpressionHelper
 
 		$changed = false;
 		foreach (array_keys($expressionTypes + $nativeExpressionTypes) as $exprString) {
-			if (!self::isSuperglobalExpressionString($exprString)) {
+			$isSuperglobal = false;
+			foreach (Scope::SUPERGLOBAL_VARIABLES as $superglobalName) {
+				$variableString = '$' . $superglobalName;
+				if ($exprString === $variableString || str_starts_with($exprString, $variableString . '[')) {
+					$isSuperglobal = true;
+					break;
+				}
+			}
+
+			if (!$isSuperglobal) {
 				continue;
 			}
 
@@ -98,18 +107,6 @@ final class VolatileExpressionHelper
 		}
 
 		return $changed;
-	}
-
-	private static function isSuperglobalExpressionString(string $exprString): bool
-	{
-		foreach (Scope::SUPERGLOBAL_VARIABLES as $superglobalName) {
-			$variableString = '$' . $superglobalName;
-			if ($exprString === $variableString || str_starts_with($exprString, $variableString . '[')) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 }

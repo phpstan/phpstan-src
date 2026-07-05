@@ -265,6 +265,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithMaybeCallablePureCallback().',
 				167,
 			],
+			[
+				'Impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithImpureCallback().',
+				200,
+			],
+			[
+				'Possibly impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithOpaqueCallback().',
+				213,
+			],
 		]);
 	}
 

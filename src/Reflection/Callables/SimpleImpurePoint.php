@@ -134,11 +134,12 @@ final class SimpleImpurePoint
 	/**
 	 * Combined purity verdict of all arguments passed to parameters flagged
 	 * with @pure-unless-callable-is-impure. Returns null when the variant has
-	 * no such parameters (so the caller keeps its current behavior).
+	 * no such parameters (so the caller keeps its current behavior). Shared with
+	 * NewHandler, which applies it to constructor calls.
 	 *
 	 * @param Arg[] $args
 	 */
-	private static function resolvePureUnlessCallableIsImpureVerdict(ParametersAcceptor $variant, Scope $scope, array $args): ?TrinaryLogic
+	public static function resolvePureUnlessCallableIsImpureVerdict(ParametersAcceptor $variant, Scope $scope, array $args): ?TrinaryLogic
 	{
 		$parameters = $variant->getParameters();
 		$verdict = null;

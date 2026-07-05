@@ -32,6 +32,7 @@ use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -258,13 +259,19 @@ final class NewHandler implements ExprHandler
 		if ($constructorReflection !== null) {
 			if (!$constructorReflection->hasSideEffects()->no()) {
 				$certain = $constructorReflection->isPure()->no();
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'new',
-					sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
-					$certain,
-				);
+				$verdict = SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($parametersAcceptor, $scope, $expr->getArgs());
+				if ($verdict === null || !$verdict->yes()) {
+					if ($verdict !== null && $verdict->no()) {
+						$certain = true;
+					}
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'new',
+						sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
+						$certain,
+					);
+				}
 			}
 		} elseif ($classReflection === null) {
 			$impurePoints[] = new ImpurePoint(

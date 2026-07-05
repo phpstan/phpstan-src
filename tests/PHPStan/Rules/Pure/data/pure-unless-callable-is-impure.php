@@ -166,3 +166,51 @@ function pureWithMaybeCallablePureCallback(array $arr, $cb): array
 	// $cb is only maybe-callable, so the call stays possibly impure.
 	return array_map($cb, $arr);
 }
+
+class Baz
+{
+
+	protected mixed $x;
+
+	/**
+	 * @pure-unless-callable-is-impure $f
+	 */
+	public function __construct(callable $f)
+	{
+		$this->x = $f(1);
+	}
+
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureInstantiatingWithPureCallback(): int
+{
+	new Baz(static fn (int $x): int => $x * 2);
+
+	return 1;
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureInstantiatingWithImpureCallback(): int
+{
+	new Baz(static function (int $x): int {
+		echo $x;
+		return $x * 2;
+	});
+
+	return 1;
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureInstantiatingWithOpaqueCallback(callable $cb): int
+{
+	new Baz($cb);
+
+	return 1;
+}

@@ -482,6 +482,32 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11708.php'], []);
 	}
 
+	public function testBug13488(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-13488.php'], []);
+	}
+
+	public function testBug13488Loose(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		// Unlike strict comparison, loose == false / != true keep the offset
+		// possibly-missing (null == false), while == true / != false imply it
+		// exists, so those follow-up isset() calls are genuinely redundant.
+		$this->analyse([__DIR__ . '/data/bug-13488-loose.php'], [
+			[
+				'Offset non-empty-string on array<string, bool> in isset() always exists and is not nullable.',
+				32,
+			],
+			[
+				'Offset non-empty-string on array<string, bool> in isset() always exists and is not nullable.',
+				48,
+			],
+		]);
+	}
+
 	public function testIssetAfterRememberedConstructor(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

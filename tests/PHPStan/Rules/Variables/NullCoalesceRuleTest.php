@@ -326,6 +326,28 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11708.php'], []);
 	}
 
+	public function testBug13488(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13488.php'], []);
+	}
+
+	public function testBug13488Loose(): void
+	{
+		// Unlike strict comparison, loose == false / != true keep the offset
+		// possibly-missing (null == false), while == true / != false imply it
+		// exists, so those follow-up ?? uses are genuinely redundant.
+		$this->analyse([__DIR__ . '/data/bug-13488-loose.php'], [
+			[
+				'Offset non-empty-string on array<string, bool> on left side of ?? always exists and is not nullable.',
+				33,
+			],
+			[
+				'Offset non-empty-string on array<string, bool> on left side of ?? always exists and is not nullable.',
+				49,
+			],
+		]);
+	}
+
 	public function testBug10610(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10610.php'], []);

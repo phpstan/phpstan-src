@@ -90,9 +90,12 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
+		$delimiterGuaranteedPresent = $this->isDelimiterGuaranteedPresent($args, $scope);
 
-		if (
-			$this->isDelimiterGuaranteedPresent($args, $scope)
+		if ($this->isSingleElementLimit($limitType)) {
+			$returnType = $this->createSingleElementSplitType($stringType->toString());
+		} elseif (
+			$delimiterGuaranteedPresent
 			&& ($limitType === null || IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($limitType)->yes())
 		) {
 			$returnType = $this->createGuaranteedSplitType($returnValueType, $limitType);
@@ -102,6 +105,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			if (
 				$limitType === null
 				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($limitType)->yes()
+				|| ($delimiterGuaranteedPresent && $this->isMinusOneLimit($limitType))
 			) {
 				$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 			}
@@ -138,6 +142,31 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return false;
+	}
+
+	/**
+	 * A limit of 0 or 1 returns the whole string as the only element, without
+	 * splitting on the delimiter.
+	 */
+	private function isSingleElementLimit(?Type $limitType): bool
+	{
+		return $limitType !== null
+			&& IntegerRangeType::fromInterval(0, 1)->isSuperTypeOf($limitType)->yes();
+	}
+
+	private function isMinusOneLimit(?Type $limitType): bool
+	{
+		return $limitType !== null
+			&& (new ConstantIntegerType(-1))->isSuperTypeOf($limitType)->yes();
+	}
+
+	/** The whole string, unsplit, as the only element. */
+	private function createSingleElementSplitType(Type $valueType): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType(new ConstantIntegerType(0), $valueType);
+
+		return $builder->getArray();
 	}
 
 	/**

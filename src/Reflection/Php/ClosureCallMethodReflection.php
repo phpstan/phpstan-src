@@ -201,7 +201,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return [];
+		return $this->nativeMethodReflection->getPureUnlessCallableIsImpureParameters();
 	}
 
 	public function getAttributes(): array

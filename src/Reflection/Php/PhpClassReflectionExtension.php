@@ -914,6 +914,9 @@ final class PhpClassReflectionExtension
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
 			$immediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $resolvedPhpDoc->getParamsImmediatelyInvokedCallable());
 			$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureThisTags());
+			foreach ($resolvedPhpDoc->getParamsPureUnlessCallableIsImpure() as $paramName => $isPureUnlessCallableIsImpure) {
+				$pureUnlessCallableIsImpureParameters[$paramName] = $isPureUnlessCallableIsImpure;
+			}
 			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
 			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {

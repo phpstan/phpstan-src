@@ -170,7 +170,7 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return [];
+		return $this->reflection->getPureUnlessCallableIsImpureParameters();
 	}
 
 	public function getAttributes(): array

@@ -341,7 +341,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return [];
+		return $this->pureUnlessCallableIsImpureParameters;
 	}
 
 	public function getAttributes(): array

@@ -231,6 +231,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,
 			$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 			$this->allowedConstantsMapProvider->getForMethodParameter($this->declaringClass->getName(), $this->reflection->getName(), $reflection->getName()),
+			$this->pureUnlessCallableIsImpureParameters[$reflection->getName()] ?? false,
 		), $this->reflection->getParameters());
 	}
 

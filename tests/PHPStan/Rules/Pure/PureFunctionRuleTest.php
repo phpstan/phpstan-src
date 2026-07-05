@@ -250,12 +250,20 @@ class PureFunctionRuleTest extends RuleTestCase
 				36,
 			],
 			[
+				'Impure call to method PureUnlessCallableIsImpureFunction\Mapper::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingMethodWithImpureCallback().',
+				129,
+			],
+			[
+				'Possibly impure call to method PureUnlessCallableIsImpureFunction\Mapper::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingMethodWithOpaqueCallback().',
+				143,
+			],
+			[
 				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithMaybeNullCallback().',
-				100,
+				155,
 			],
 			[
 				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithMaybeCallablePureCallback().',
-				112,
+				167,
 			],
 		]);
 	}

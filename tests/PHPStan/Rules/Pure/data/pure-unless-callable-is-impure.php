@@ -88,6 +88,61 @@ function pureCallingUserlandAliasWithPureCallback(array $arr): array
 	return myMapPhpstanAlias(static fn (int $x): int => $x * 2, $arr);
 }
 
+class Mapper
+{
+
+	/**
+	 * @param callable(int): int $f
+	 * @param array<int> $arr
+	 * @return array<int>
+	 * @pure-unless-callable-is-impure $f
+	 */
+	public function map(callable $f, array $arr): array
+	{
+		$result = [];
+		foreach ($arr as $i => $v) {
+			$result[$i] = $f($v);
+		}
+
+		return $result;
+	}
+
+}
+
+/**
+ * @param array<int> $arr
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingMethodWithPureCallback(Mapper $mapper, array $arr): array
+{
+	return $mapper->map(static fn (int $x): int => $x * 2, $arr);
+}
+
+/**
+ * @param array<int> $arr
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingMethodWithImpureCallback(Mapper $mapper, array $arr): array
+{
+	return $mapper->map(static function (int $x): int {
+		echo $x;
+		return $x * 2;
+	}, $arr);
+}
+
+/**
+ * @param array<int> $arr
+ * @param callable(int): int $cb
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingMethodWithOpaqueCallback(Mapper $mapper, array $arr, callable $cb): array
+{
+	return $mapper->map($cb, $arr);
+}
+
 /**
  * @param array<int> $arr
  * @param (callable(int): int)|null $cb

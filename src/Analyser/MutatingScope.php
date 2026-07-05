@@ -644,8 +644,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * state rather than just their arguments (ob_get_level(), openssl_error_string()),
 	 * as well as superglobal variables and their offsets. Any call to code PHPStan
 	 * cannot inspect may change that state transitively, so these narrowings must be
-	 * forgotten afterwards. The argument-less functions take no arguments, so the
-	 * exact key lookups keep this O(1) in the common case where nothing is tracked.
+	 * forgotten afterwards.
+	 *
+	 * All lookups are kept O(1) in the common case where nothing is tracked: the
+	 * argument-less functions and the bare superglobal variables are looked up by
+	 * exact key. The unbounded set of superglobal offset keys ($_GET['x'], ...) is
+	 * only scanned once a bare superglobal variable is known to be tracked, which
+	 * is guaranteed whenever any of its offsets is tracked (narrowing an offset in
+	 * specifyExpressionType() always also narrows the container variable).
 	 */
 	public function invalidateVolatileExpressions(): self
 	{
@@ -668,14 +674,30 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 		}
 
-		foreach (array_keys($expressionTypes + $nativeExpressionTypes) as $exprString) {
-			if (!$this->isSuperglobalExpressionString($exprString)) {
+		$hasTrackedSuperglobal = false;
+		foreach (self::SUPERGLOBAL_VARIABLES as $superglobalName) {
+			$variableString = '$' . $superglobalName;
+			if (
+				!array_key_exists($variableString, $expressionTypes)
+				&& !array_key_exists($variableString, $nativeExpressionTypes)
+			) {
 				continue;
 			}
 
-			unset($expressionTypes[$exprString]);
-			unset($nativeExpressionTypes[$exprString]);
-			$changed = true;
+			$hasTrackedSuperglobal = true;
+			break;
+		}
+
+		if ($hasTrackedSuperglobal) {
+			foreach (array_keys($expressionTypes + $nativeExpressionTypes) as $exprString) {
+				if (!$this->isSuperglobalExpressionString($exprString)) {
+					continue;
+				}
+
+				unset($expressionTypes[$exprString]);
+				unset($nativeExpressionTypes[$exprString]);
+				$changed = true;
+			}
 		}
 
 		if (!$changed) {

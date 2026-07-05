@@ -1065,6 +1065,8 @@ final class PhpClassReflectionExtension
 				$closureThisType,
 				[],
 				$this->allowedConstantsMapProvider->getForMethodParameter($declaringClassName, $methodName, $parameterSignature->getName()),
+				// pure-unless-callable-is-impure is not threaded here because no built-in method
+				// carries it (there are no Class::method entries in functionMetadata.php).
 			);
 		}
 

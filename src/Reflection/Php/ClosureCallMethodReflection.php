@@ -99,6 +99,8 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 					null,
 					[],
 					null,
+					// pure-unless-callable-is-impure is not threaded here: a closure's own
+					// parameters cannot carry the tag.
 				), $parameters),
 				$this->closureType->isVariadic(),
 				$this->closureType->getReturnType(),

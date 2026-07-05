@@ -12,6 +12,10 @@ function testUnaryPlus(Number $x): void {
 	+$x;
 }
 
+function testNestedUnary(Number $x): void {
+	var_dump(+(-$x));
+}
+
 function testBitwiseNot(Number $x): void {
 	~$x;
 }

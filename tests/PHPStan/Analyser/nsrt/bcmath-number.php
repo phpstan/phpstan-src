@@ -418,6 +418,7 @@ class Foo
 	{
 		assertType('BcMath\Number', -$a);
 		assertType('BcMath\Number', +$a);
+		assertType('BcMath\Number', +(-$a));
 		assertType('*ERROR*', ~$a);
 	}
 }

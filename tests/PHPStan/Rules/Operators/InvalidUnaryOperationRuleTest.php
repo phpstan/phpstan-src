@@ -154,7 +154,7 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unary-bcmath-number.php'], [
 			[
 				'Unary operation "~" on BcMath\Number results in an error.',
-				16,
+				20,
 			],
 		]);
 	}

@@ -170,7 +170,7 @@ function pureWithMaybeCallablePureCallback(array $arr, $cb): array
 class Baz
 {
 
-	protected mixed $x;
+	protected $x;
 
 	/**
 	 * @pure-unless-callable-is-impure $f

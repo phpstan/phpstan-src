@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.1
+
+declare(strict_types = 1);
 
 namespace Bug13608;
 
@@ -190,4 +192,88 @@ function classDeclarationMatchesLeadingBackslashArgument(): void
 
 		assertType('bool', class_exists('\Bug13608\LeadingBackslashClass'));
 	}
+}
+
+// declaring a trait may define the missing one, so the negative result is forgotten
+function withTraitDeclaration(string $trait): void
+{
+	if (trait_exists($trait)) {
+		return;
+	}
+
+	trait DeclaredTraitByBug13608 {}
+
+	assertType('bool', trait_exists($trait));
+}
+
+// declaring a differently-named trait cannot define the checked one
+function traitDeclarationKeepsOtherName(): void
+{
+	if (!trait_exists('Bug13608\\SomeMissingTrait')) {
+		assertType('false', trait_exists('Bug13608\\SomeMissingTrait'));
+
+		trait OtherDeclaredTraitByBug13608 {}
+
+		assertType('false', trait_exists('Bug13608\\SomeMissingTrait'));
+	}
+}
+
+// declaring a trait cannot make class_exists() true
+function traitDeclarationKeepsClassExists(string $class): void
+{
+	if (!class_exists($class)) {
+		assertType('false', class_exists($class));
+
+		trait YetAnotherDeclaredTraitByBug13608 {}
+
+		assertType('false', class_exists($class));
+	}
+}
+
+// declaring an interface may define the missing one, so the negative result is forgotten
+function withInterfaceDeclaration(string $interface): void
+{
+	if (interface_exists($interface)) {
+		return;
+	}
+
+	interface DeclaredInterfaceByBug13608 {}
+
+	assertType('bool', interface_exists($interface));
+}
+
+// declaring a differently-named interface cannot define the checked one
+function interfaceDeclarationKeepsOtherName(): void
+{
+	if (!interface_exists('Bug13608\\SomeMissingInterface')) {
+		assertType('false', interface_exists('Bug13608\\SomeMissingInterface'));
+
+		interface OtherDeclaredInterfaceByBug13608 {}
+
+		assertType('false', interface_exists('Bug13608\\SomeMissingInterface'));
+	}
+}
+
+// declaring an enum may define the missing one, so the negative enum_exists() result is forgotten
+function withEnumDeclaration(string $enum): void
+{
+	if (enum_exists($enum)) {
+		return;
+	}
+
+	enum DeclaredEnumByBug13608 {}
+
+	assertType('bool', enum_exists($enum));
+}
+
+// an enum is also a class, so declaring one forgets the negative class_exists() result too
+function enumDeclarationForgetsClassExists(string $class): void
+{
+	if (class_exists($class)) {
+		return;
+	}
+
+	enum AnotherDeclaredEnumByBug13608 {}
+
+	assertType('bool', class_exists($class));
 }

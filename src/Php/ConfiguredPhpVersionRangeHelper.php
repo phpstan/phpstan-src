@@ -6,9 +6,10 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use function is_array;
+use function is_int;
 
 #[AutowiredService]
-class ConfiguredPhpVersionRangeHelper
+final class ConfiguredPhpVersionRangeHelper
 {
 
 	/**
@@ -30,7 +31,9 @@ class ConfiguredPhpVersionRangeHelper
 	 */
 	public function getVersionRange(): array
 	{
-		if (is_array($this->configPhpVersion)) {
+		if (is_int($this->configPhpVersion)) {
+			return [null, null];
+		} elseif (is_array($this->configPhpVersion)) {
 			if ($this->configPhpVersion['max'] < $this->configPhpVersion['min']) {
 				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
 			}

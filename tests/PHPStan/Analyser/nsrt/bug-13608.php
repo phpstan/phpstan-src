@@ -178,3 +178,16 @@ function classDeclarationKeepsFunctionExists(string $function): void
 		assertType('false', function_exists($function));
 	}
 }
+
+// the class_exists() argument carries a leading backslash while the declared class name
+// does not, so only ltrim normalization matches them and forgets the negative result
+function classDeclarationMatchesLeadingBackslashArgument(): void
+{
+	if (!class_exists('\Bug13608\LeadingBackslashClass')) {
+		assertType('false', class_exists('\Bug13608\LeadingBackslashClass'));
+
+		class LeadingBackslashClass {}
+
+		assertType('bool', class_exists('\Bug13608\LeadingBackslashClass'));
+	}
+}

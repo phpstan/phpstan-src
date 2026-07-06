@@ -25,7 +25,7 @@ final class ConfiguredPhpVersionRangeHelper
 
 	/**
 	 * Returns the php version range analysis is running against.
-	 * Souce is either the NEON config phpVersion min/max values, or the projects composer.json php version constraint.
+	 * Source is either the NEON config phpVersion min/max values, or the projects composer.json php version constraint.
 	 *
 	 * @return array{PhpVersion|null, PhpVersion|null}
 	 */

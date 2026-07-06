@@ -121,7 +121,7 @@ final class VolatileExpressionHelper
 	 *
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param list<string> $functionNames
+	 * @param list<'class_exists'|'interface_exists'|'trait_exists'|'enum_exists'|'function_exists'> $functionNames
 	 * @return bool whether anything was removed
 	 */
 	public static function invalidateNegativeExistenceChecks(

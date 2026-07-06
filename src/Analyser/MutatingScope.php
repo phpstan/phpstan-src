@@ -682,7 +682,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * Forgets negative results of the given existence checks (function_exists(),
 	 * class_exists(), ...) because declaring a symbol may define the previously-missing one.
 	 *
-	 * @param list<string> $functionNames lowercase existence-check function names to forget
+	 * @param list<'class_exists'|'interface_exists'|'trait_exists'|'enum_exists'|'function_exists'> $functionNames existence-check function names to forget
 	 */
 	public function invalidateExistenceCheckExpressions(array $functionNames, ?string $declaredSymbolName): self
 	{

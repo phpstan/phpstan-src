@@ -865,6 +865,10 @@ class NodeScopeResolver
 			if (!$scope->isInAnonymousFunction()) {
 				$this->processPendingFibers($storage);
 			}
+
+			// declaring the function defines it in global state, so a negative
+			// function_exists() narrowing that may refer to that function must be forgotten
+			$scope = $scope->invalidateExistenceCheckExpressions(['function_exists'], $functionReflection->getName());
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -1183,8 +1187,25 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 		} elseif ($stmt instanceof Node\Stmt\Trait_) {
+			// declaring the trait defines it in global state,
+			// so a negative trait_exists() narrowing that may refer to that trait must be forgotten
+			$name = $stmt->namespacedName ?? $stmt->name;
+			$scope = $scope->invalidateExistenceCheckExpressions(['trait_exists'], $name instanceof Name ? $name->toString() : null);
+
 			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 		} elseif ($stmt instanceof Node\Stmt\ClassLike) {
+			// declaring a class/interface/enum defines it in global state,
+			// so a matching negative existence-check narrowing must be forgotten
+			if ($stmt instanceof Node\Stmt\Interface_) {
+				$existenceCheckFunctionNames = ['interface_exists'];
+			} elseif ($stmt instanceof Node\Stmt\Enum_) {
+				$existenceCheckFunctionNames = ['class_exists', 'enum_exists'];
+			} else {
+				$existenceCheckFunctionNames = ['class_exists'];
+			}
+			$name = $stmt->namespacedName ?? $stmt->name;
+			$scope = $scope->invalidateExistenceCheckExpressions($existenceCheckFunctionNames, $name instanceof Name ? $name->toString() : null);
+
 			if (!$context->isTopLevel()) {
 				return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 			}

@@ -641,11 +641,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/**
 	 * Forgets every tracked volatile global-state expression: argument-less
 	 * function-call expressions whose value reflects mutable global/output-buffer
-	 * state rather than just their arguments (ob_get_level(), openssl_error_string()),
-	 * as well as superglobal variables and their offsets. Any call to code PHPStan
-	 * cannot inspect may change that state transitively, so these narrowings must be
-	 * forgotten afterwards. See VolatileExpressionHelper for the O(1) common-case
-	 * lookup strategy.
+	 * state rather than just their arguments, superglobal variables and their offsets
+	 * and negative results of existence checks (function_exists(), class_exists(), ...)
+	 * because the invalidating code may define the missing function/class/etc.
 	 */
 	public function invalidateVolatileExpressions(): self
 	{
@@ -654,8 +652,44 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		$changed = VolatileExpressionHelper::invalidateVolatileFunctionCalls($expressionTypes, $nativeExpressionTypes);
 		$changed = VolatileExpressionHelper::invalidateSuperglobals($expressionTypes, $nativeExpressionTypes) || $changed;
+		$changed = VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes) || $changed;
 
 		if (!$changed) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
+	/**
+	 * Forgets negative results of the given existence checks (function_exists(),
+	 * class_exists(), ...) because declaring a symbol may define the previously-missing one.
+	 *
+	 * @param list<'class_exists'|'interface_exists'|'trait_exists'|'enum_exists'|'function_exists'> $functionNames existence-check function names to forget
+	 */
+	public function invalidateExistenceCheckExpressions(array $functionNames, ?string $declaredSymbolName): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+
+		if (!VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes, $functionNames, $declaredSymbolName)) {
 			return $this;
 		}
 

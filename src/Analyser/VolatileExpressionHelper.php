@@ -2,24 +2,28 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use function array_key_exists;
 use function array_keys;
+use function count;
+use function in_array;
+use function ltrim;
 use function str_starts_with;
+use function strtolower;
 
-/**
- * Removes tracked narrowings of mutable global state from an expression-type map.
- *
- * Two kinds of expressions are volatile in this sense: argument-less function-call
- * expressions whose value reflects mutable global/output-buffer state rather than
- * just their arguments (ob_get_level(), openssl_error_string()), and superglobal
- * variables together with their offsets ($_GET, $_GET['x'], ...). Any call to code
- * PHPStan cannot inspect may change that state transitively, so these narrowings
- * must be forgotten afterwards.
- */
 final class VolatileExpressionHelper
 {
 
 	private const VOLATILE_FUNCTION_NAMES = ['ob_get_level', 'openssl_error_string'];
+
+	private const EXISTENCE_CHECK_FUNCTION_NAMES = [
+		'class_exists',
+		'interface_exists',
+		'trait_exists',
+		'enum_exists',
+		'function_exists',
+	];
 
 	/**
 	 * Forgets tracked argument-less volatile function-call expressions.
@@ -99,6 +103,58 @@ final class VolatileExpressionHelper
 
 			if (!$isSuperglobal) {
 				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$changed = true;
+		}
+
+		return $changed;
+	}
+
+	/**
+	 * Removes negative existence-check narrowings (function_exists(), class_exists(), ...)
+	 * from the given expression-type maps in place, returning whether anything was removed.
+	 * With no filters given every negative existence check is removed; pass $functionNames
+	 * and/or $declaredSymbolName to restrict removal to a specific check kind and symbol.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
+	 * @param list<'class_exists'|'interface_exists'|'trait_exists'|'enum_exists'|'function_exists'> $functionNames
+	 * @return bool whether anything was removed
+	 */
+	public static function invalidateNegativeExistenceChecks(
+		Scope $scope,
+		array &$expressionTypes,
+		array &$nativeExpressionTypes,
+		array $functionNames = self::EXISTENCE_CHECK_FUNCTION_NAMES,
+		?string $declaredSymbolName = null,
+	): bool
+	{
+		$changed = false;
+		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$expr = $exprTypeHolder->getExpr();
+
+			if (
+				!$expr instanceof FuncCall
+				|| $expr->isFirstClassCallable()
+				|| !$expr->name instanceof Name
+				|| !in_array($expr->name->toLowerString(), $functionNames, true)
+				|| $exprTypeHolder->getType()->isTrue()->yes()
+			) {
+				continue;
+			}
+
+			// keep a check whose single constant-string argument names a symbol other than the declared one
+			if ($declaredSymbolName !== null && isset($expr->getArgs()[0])) {
+				$constantStrings = $scope->getType($expr->getArgs()[0]->value)->getConstantStrings();
+				if (
+					count($constantStrings) === 1
+					&& ltrim(strtolower($constantStrings[0]->getValue()), '\\') !== ltrim(strtolower($declaredSymbolName), '\\')
+				) {
+					continue;
+				}
 			}
 
 			unset($expressionTypes[$exprString]);

@@ -24,7 +24,7 @@ final class ConfiguredPhpVersionRangeHelper
 	}
 
 	/**
-	 * @return array{PhpVersion, PhpVersion}
+	 * @return array{PhpVersion|null, PhpVersion|null}
 	 */
 	public function getVersionRange(): array
 	{

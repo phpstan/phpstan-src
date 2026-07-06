@@ -214,3 +214,28 @@ function pureInstantiatingWithOpaqueCallback(callable $cb): int
 
 	return 1;
 }
+
+/**
+ * @param pure-callable(int): int $pureCb
+ * @phpstan-pure
+ */
+function pureInstantiatingWithPureCallableParam(callable $pureCb): int
+{
+	// $pureCb is known pure, so the instantiation is pure.
+	new Baz($pureCb);
+
+	return 1;
+}
+
+/**
+ * @param pure-callable(int): int $pureCb
+ * @param callable(int): int $cb
+ * @phpstan-pure
+ */
+function pureInstantiatingWithUnionCallback(callable $pureCb, callable $cb, bool $flag): int
+{
+	// The union pure-callable|callable might be the impure branch, so it stays possibly impure.
+	new Baz($flag ? $pureCb : $cb);
+
+	return 1;
+}

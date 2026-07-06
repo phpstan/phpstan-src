@@ -273,6 +273,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithOpaqueCallback().',
 				213,
 			],
+			[
+				'Possibly impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithUnionCallback().',
+				238,
+			],
 		]);
 	}
 

@@ -1,11 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Type;
+namespace PHPStan\Php;
 
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\ComposerPhpVersionFactory;
-use PHPStan\Php\PhpVersion;
 use function is_array;
 
 #[AutowiredService]

@@ -28,7 +28,7 @@ final class ConstantResolverFactory
 			$this->container->getParameter('dynamicConstantNames'),
 			new ConfiguredPhpVersionRangeHelper(
 				$this->container->getParameter('phpVersion'),
-				$composerFactory
+				$composerFactory,
 			),
 			$this->container,
 		);

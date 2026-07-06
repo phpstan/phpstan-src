@@ -866,8 +866,8 @@ class NodeScopeResolver
 				$this->processPendingFibers($storage);
 			}
 
-			// declaring a function defines it in global state, so a negative
-			// function_exists() narrowing that may refer to it must be forgotten
+			// declaring the function defines it in global state, so a negative
+			// function_exists() narrowing that may refer to that function must be forgotten
 			$scope = $scope->invalidateExistenceCheckExpressions(['function_exists'], $functionReflection->getName());
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;
@@ -1187,8 +1187,8 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 		} elseif ($stmt instanceof Node\Stmt\Trait_) {
-			// declaring a trait defines it in global state,
-			// so a negative trait_exists() narrowing that may refer to it must be forgotten
+			// declaring the trait defines it in global state,
+			// so a negative trait_exists() narrowing that may refer to that trait must be forgotten
 			$name = $stmt->namespacedName ?? $stmt->name;
 			$scope = $scope->invalidateExistenceCheckExpressions(['trait_exists'], $name instanceof Name ? $name->toString() : null);
 

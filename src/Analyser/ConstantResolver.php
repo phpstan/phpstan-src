@@ -46,7 +46,6 @@ final class ConstantResolver
 
 	/**
 	 * @param string[] $dynamicConstantNames
-	 * @param int|array{min: int, max: int}|null $phpVersion
 	 */
 	public function __construct(
 		private ReflectionProviderProvider $reflectionProviderProvider,

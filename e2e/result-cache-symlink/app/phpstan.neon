@@ -1,0 +1,8 @@
+parameters:
+	paths:
+		- src
+		- vendor/resultcachesymlink/ext/src
+	level: 8
+
+rules:
+	- ResultCacheSymlinkE2E\CustomRule

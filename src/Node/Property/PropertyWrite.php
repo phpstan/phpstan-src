@@ -2,17 +2,12 @@
 
 namespace PHPStan\Node\Property;
 
-use ArrayAccess;
 use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
-use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
-use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
-use PHPStan\Type\ObjectType;
 
 /**
  * @api
@@ -58,18 +53,7 @@ final class PropertyWrite
 			return false;
 		}
 
-		$assignedExpr = $this->originalNode->getAssignedExpr();
-		if (
-			!$assignedExpr instanceof SetOffsetValueTypeExpr
-			&& !$assignedExpr instanceof SetExistingOffsetValueTypeExpr
-			&& !$assignedExpr instanceof UnsetOffsetExpr
-		) {
-			return false;
-		}
-
-		return (new ObjectType(ArrayAccess::class))
-			->isSuperTypeOf($this->scope->getType($this->originalNode->getPropertyFetch()))
-			->yes();
+		return $this->originalNode->isArrayAccessOffsetWrite($this->scope);
 	}
 
 }

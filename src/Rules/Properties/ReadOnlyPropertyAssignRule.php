@@ -2,14 +2,10 @@
 
 namespace PHPStan\Rules\Properties;
 
-use ArrayAccess;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
-use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
-use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstructorsHelper;
@@ -17,7 +13,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
 use function in_array;
 use function sprintf;
@@ -123,11 +118,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 				continue;
 			}
 
-			$assignedExpr = $node->getAssignedExpr();
-			if (
-				($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof SetExistingOffsetValueTypeExpr || $assignedExpr instanceof UnsetOffsetExpr)
-				&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($assignedExpr->getVar()))->yes()
-			) {
+			if ($node->isArrayAccessOffsetWrite($scope)) {
 				continue;
 			}
 

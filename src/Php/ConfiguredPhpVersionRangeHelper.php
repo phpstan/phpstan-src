@@ -7,7 +7,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use function is_array;
 
 #[AutowiredService]
-final class ConfiguredPhpVersionRangeHelper
+class ConfiguredPhpVersionRangeHelper
 {
 
 	/**

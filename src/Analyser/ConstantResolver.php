@@ -5,13 +5,11 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Php\ComposerPhpVersionFactory;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -28,8 +26,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function in_array;
-use function is_array;
-use function is_int;
 use function max;
 use function sprintf;
 use const INF;
@@ -50,13 +46,11 @@ final class ConstantResolver
 
 	/**
 	 * @param string[] $dynamicConstantNames
-	 * @param int|array{min: int, max: int}|null $phpVersion
 	 */
 	public function __construct(
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private array $dynamicConstantNames,
-		private int|array|null $phpVersion,
-		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private ?Container $container,
 	)
 	{
@@ -104,8 +98,7 @@ final class ConstantResolver
 		$minPhpVersion = null;
 		$maxPhpVersion = null;
 		if (in_array($resolvedConstantName, ['PHP_VERSION_ID', 'PHP_MAJOR_VERSION', 'PHP_MINOR_VERSION', 'PHP_RELEASE_VERSION'], true)) {
-			$minPhpVersion = $this->getMinPhpVersion();
-			$maxPhpVersion = $this->getMaxPhpVersion();
+			[$minPhpVersion, $maxPhpVersion] = $this->configuredPhpVersionRangeHelper->getVersionRange();
 		}
 
 		if ($resolvedConstantName === 'PHP_MAJOR_VERSION') {
@@ -381,40 +374,6 @@ final class ConstantResolver
 		}
 
 		return null;
-	}
-
-	private function getMinPhpVersion(): ?PhpVersion
-	{
-		if (is_int($this->phpVersion)) {
-			return null;
-		}
-
-		if (is_array($this->phpVersion)) {
-			if ($this->phpVersion['max'] < $this->phpVersion['min']) {
-				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
-			}
-
-			return new PhpVersion($this->phpVersion['min']);
-		}
-
-		return $this->composerPhpVersionFactory->getMinVersion();
-	}
-
-	private function getMaxPhpVersion(): ?PhpVersion
-	{
-		if (is_int($this->phpVersion)) {
-			return null;
-		}
-
-		if (is_array($this->phpVersion)) {
-			if ($this->phpVersion['max'] < $this->phpVersion['min']) {
-				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
-			}
-
-			return new PhpVersion($this->phpVersion['max']);
-		}
-
-		return $this->composerPhpVersionFactory->getMaxVersion();
 	}
 
 	public function getConfiguredGlobalConstantType(string $constantName): ?Type

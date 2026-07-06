@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 
 #[AutowiredService]
@@ -25,8 +26,10 @@ final class ConstantResolverFactory
 		return new ConstantResolver(
 			$this->reflectionProviderProvider,
 			$this->container->getParameter('dynamicConstantNames'),
-			$this->container->getParameter('phpVersion'),
-			$composerFactory,
+			new ConfiguredPhpVersionRangeHelper(
+				$this->container->getParameter('phpVersion'),
+				$composerFactory,
+			),
 			$this->container,
 		);
 	}

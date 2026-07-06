@@ -15,6 +15,7 @@ use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProv
 use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileExcluder;
 use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -90,7 +91,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 		try {
 			$composerPhpVersionFactory = new ComposerPhpVersionFactory([]);
-			$constantResolver = new ConstantResolver($reflectionProviderProvider, [], phpVersion: null, composerPhpVersionFactory: $composerPhpVersionFactory, container: null);
+			$constantResolver = new ConstantResolver($reflectionProviderProvider, [], new ConfiguredPhpVersionRangeHelper(null, $composerPhpVersionFactory), container: null);
 
 			$phpDocParserConfig = new ParserConfig([]);
 			$ignoredRegexValidator = new IgnoredRegexValidator(

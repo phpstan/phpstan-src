@@ -160,6 +160,7 @@ final class ClassStatementsGatherer
 					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
 					$scope,
 					true,
+					$node,
 				);
 			}
 			return;
@@ -212,7 +213,7 @@ final class ClassStatementsGatherer
 					$this->propertyUsages[] = new PropertyRead($propertyFetch, $scope);
 				}
 			}
-			$this->propertyUsages[] = new PropertyWrite($propertyFetch, $scope, false);
+			$this->propertyUsages[] = new PropertyWrite($propertyFetch, $scope, false, $node);
 			$this->propertyAssigns[] = new PropertyAssign($node, $scope);
 			return;
 		}
@@ -230,7 +231,7 @@ final class ClassStatementsGatherer
 			}
 
 			$this->propertyUsages[] = new PropertyRead($node->expr, $scope);
-			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope, false);
+			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope, false, $node);
 			return;
 		}
 		if ($node instanceof Expr\Variable) {

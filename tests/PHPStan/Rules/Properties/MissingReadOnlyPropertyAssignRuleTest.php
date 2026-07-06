@@ -349,4 +349,15 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12253.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug13856(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13856.php'], [
+			[
+				'Readonly property Bug13856\ReadonlyArray::$numbers is already assigned.',
+				57,
+			],
+		]);
+	}
+
 }

@@ -378,4 +378,32 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessParameterPassed(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed.php'], [
+			[
+				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\purePassingByRef().',
+				44,
+			],
+			[
+				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplacePhpstanAlias() in pure function PureUnlessParameterPassedFunction\purePassingByRefAlias().',
+				62,
+			],
+		]);
+	}
+
+	public function testPureUnlessParameterPassedBuiltin(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed-builtin.php'], [
+			[
+				'Possibly impure call to function str_replace() in pure function PureUnlessParameterPassedBuiltin\pureStrReplaceWithCount().',
+				22,
+			],
+			[
+				'Possibly impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithMatches().',
+				40,
+			],
+		]);
+	}
+
 }

@@ -28,6 +28,7 @@ use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
@@ -47,8 +48,10 @@ use function array_merge;
 use function array_reverse;
 use function count;
 use function in_array;
+use function ltrim;
 use function method_exists;
 use function str_starts_with;
+use function strpos;
 use function substr;
 
 #[AutowiredService]
@@ -396,6 +399,46 @@ final class PhpDocNodeResolver
 		foreach (['@pure-unless-callable-is-impure', '@phpstan-pure-unless-callable-is-impure'] as $tagName) {
 			foreach ($phpDocNode->getPureUnlessCallableIsImpureTagValues($tagName) as $tag) {
 				$parameterName = substr($tag->parameterName, 1);
+				$parameters[$parameterName] = true;
+			}
+		}
+
+		return $parameters;
+	}
+
+	/**
+	 * @return array<string, bool>
+	 */
+	public function resolveParamPureUnlessParameterPassed(PhpDocNode $phpDocNode): array
+	{
+		$parameters = [];
+		// TODO: replace this generic-tag parsing with
+		// $phpDocNode->getPureUnlessParameterIsPassedTagValues() once
+		// phpstan/phpdoc-parser#259 is merged and the parser understands the tag.
+		foreach (['@pure-unless-parameter-passed', '@phpstan-pure-unless-parameter-passed'] as $tagName) {
+			foreach ($phpDocNode->getTags() as $tag) {
+				if ($tag->name !== $tagName) {
+					continue;
+				}
+				if (!$tag->value instanceof GenericTagValueNode) {
+					continue;
+				}
+
+				$value = ltrim($tag->value->value);
+				if ($value === '' || $value[0] !== '$') {
+					continue;
+				}
+
+				$parameterName = substr($value, 1);
+				$spacePosition = strpos($parameterName, ' ');
+				if ($spacePosition !== false) {
+					$parameterName = substr($parameterName, 0, $spacePosition);
+				}
+
+				if ($parameterName === '') {
+					continue;
+				}
+
 				$parameters[$parameterName] = true;
 			}
 		}

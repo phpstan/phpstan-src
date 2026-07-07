@@ -2,18 +2,17 @@
 
 namespace PHPStan\Reflection\Callables;
 
-use PHPStan\Analyser\ScopeContext;
-use PHPStan\Analyser\ScopeFactory;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
-use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
-class SimpleImpurePointTest extends PHPStanTestCase
+class SimpleImpurePointTest extends TestCase
 {
 
 	public static function dataResolvePureUnlessCallableIsImpureVerdict(): iterable
@@ -63,8 +62,8 @@ class SimpleImpurePointTest extends PHPStanTestCase
 			new MixedType(),
 		);
 
-		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
-		$scope = $scopeFactory->create(ScopeContext::create('dummy.php'));
+		// The callback is omitted (no args), so the scope is never consulted.
+		$scope = $this->createMock(Scope::class);
 
 		$verdict = SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, []);
 

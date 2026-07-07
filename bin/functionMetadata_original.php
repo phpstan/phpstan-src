@@ -13,9 +13,13 @@
  *         the call is pure unless one of the listed callable parameters
  *         (keyed by parameter name) receives an impure callable, e.g. array_map()
  *         whose only side effects come from its 'callback' argument.
+ *   - ['pureUnlessParameterPassedParameters' => array<string, true>]
+ *         the call is pure unless one of the listed (by-ref out) parameters
+ *         (keyed by parameter name) receives an argument, e.g. str_replace()
+ *         whose only side effect is writing to its optional 'count' argument.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],
@@ -264,7 +268,11 @@ return [
 	'output_reset_rewrite_vars' => ['hasSideEffects' => true],
 	'pclose' => ['hasSideEffects' => true],
 	'popen' => ['hasSideEffects' => true],
+	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true]],
+	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true]],
+	'preg_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
 	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'similar_text' => ['pureUnlessParameterPassedParameters' => ['percent' => true]],
 	'readfile' => ['hasSideEffects' => true],
 	'rename' => ['hasSideEffects' => true],
 	'rewind' => ['hasSideEffects' => true],
@@ -272,6 +280,8 @@ return [
 	'sprintf' => ['hasSideEffects' => false],
 	'str_decrement' => ['hasSideEffects' => false],
 	'str_increment' => ['hasSideEffects' => false],
+	'str_ireplace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
+	'str_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
 	'symlink' => ['hasSideEffects' => true],
 	'time' => ['hasSideEffects' => true],
 	'tempnam' => ['hasSideEffects' => true],

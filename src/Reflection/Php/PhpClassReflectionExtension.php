@@ -885,6 +885,7 @@ final class PhpClassReflectionExtension
 
 		$isPure = null;
 		$pureUnlessCallableIsImpureParameters = [];
+		$pureUnlessParameterPassedParameters = [];
 		if ($actualDeclaringClass->isBuiltin() || $actualDeclaringClass->isEnum()) {
 			foreach (array_keys($actualDeclaringClass->getAncestors()) as $className) {
 				if ($this->signatureMapProvider->hasMethodMetadata($className, $methodReflection->getName())) {
@@ -892,6 +893,7 @@ final class PhpClassReflectionExtension
 					$hasSideEffects = $methodMetadata['hasSideEffects'] ?? true;
 					$isPure = !$hasSideEffects;
 					$pureUnlessCallableIsImpureParameters += $methodMetadata['pureUnlessCallableIsImpureParameters'] ?? [];
+					$pureUnlessParameterPassedParameters += $methodMetadata['pureUnlessParameterPassedParameters'] ?? [];
 
 					break;
 				}
@@ -916,6 +918,9 @@ final class PhpClassReflectionExtension
 			$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureThisTags());
 			foreach ($resolvedPhpDoc->getParamsPureUnlessCallableIsImpure() as $paramName => $isPureUnlessCallableIsImpure) {
 				$pureUnlessCallableIsImpureParameters[$paramName] = $isPureUnlessCallableIsImpure;
+			}
+			foreach ($resolvedPhpDoc->getParamsPureUnlessParameterPassed() as $paramName => $isPureUnlessParameterPassed) {
+				$pureUnlessParameterPassedParameters[$paramName] = $isPureUnlessParameterPassed;
 			}
 			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
@@ -997,6 +1002,7 @@ final class PhpClassReflectionExtension
 			$acceptsNamedArguments,
 			$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($actualDeclaringClass->getName(), $declaringTraitName, $methodReflection->getName(), $actualDeclaringClass->getFileName())),
 			$pureUnlessCallableIsImpureParameters,
+			$pureUnlessParameterPassedParameters,
 		);
 	}
 
@@ -1065,8 +1071,10 @@ final class PhpClassReflectionExtension
 				$closureThisType,
 				[],
 				$this->allowedConstantsMapProvider->getForMethodParameter($declaringClassName, $methodName, $parameterSignature->getName()),
-				// pure-unless-callable-is-impure is not threaded here because no built-in method
-				// carries it (there are no Class::method entries in functionMetadata.php).
+				// pure-unless-callable-is-impure and pure-unless-parameter-passed are not
+				// threaded here because no built-in method carries either tag (there are no
+				// Class::method entries in functionMetadata.php).
+				TrinaryLogic::createNo(),
 				TrinaryLogic::createNo(),
 			);
 		}
@@ -1175,7 +1183,7 @@ final class PhpClassReflectionExtension
 			$classScope = $classScope->enterNamespace($namespace);
 		}
 		$classScope = $classScope->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters, $phpDocPureUnlessParameterPassedParameters] = $this->phpDocsResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -1197,6 +1205,7 @@ final class PhpClassReflectionExtension
 			false,
 			null,
 			$phpDocPureUnlessCallableIsImpureParameters,
+			$phpDocPureUnlessParameterPassedParameters,
 		);
 
 		$propertyTypes = [];

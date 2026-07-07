@@ -75,4 +75,22 @@ class SimpleImpurePointTest extends TestCase
 		}
 	}
 
+	public static function dataApplyPureUnlessCallableIsImpureVerdict(): iterable
+	{
+		yield 'no verdict keeps base certainty (false)' => [null, false, false];
+		yield 'no verdict keeps base certainty (true)' => [null, true, true];
+		yield 'verdict Yes suppresses the impure point' => [TrinaryLogic::createYes(), false, null];
+		yield 'verdict No is certainly impure' => [TrinaryLogic::createNo(), false, true];
+		// A Maybe verdict keeps the base certainty; this is the case that tells
+		// yes()/no() apart from their negated counterparts.
+		yield 'verdict Maybe keeps base certainty (false)' => [TrinaryLogic::createMaybe(), false, false];
+		yield 'verdict Maybe keeps base certainty (true)' => [TrinaryLogic::createMaybe(), true, true];
+	}
+
+	#[DataProvider('dataApplyPureUnlessCallableIsImpureVerdict')]
+	public function testApplyPureUnlessCallableIsImpureVerdict(?TrinaryLogic $verdict, bool $baseCertain, ?bool $expected): void
+	{
+		$this->assertSame($expected, SimpleImpurePoint::applyPureUnlessCallableIsImpureVerdict($verdict, $baseCertain));
+	}
+
 }

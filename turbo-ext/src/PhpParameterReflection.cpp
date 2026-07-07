@@ -79,7 +79,7 @@ public:
 
 	/* the promoted slots in parameter order (borrowed; NULL for a nullable
 	 * null) */
-	void construct(zval *initializerExprTypeResolver, zval *reflection, zval *phpDocType, zval *declaringClass, zval *outType, zval *immediatelyInvokedCallable, zval *closureThisType, zval *attributes, zval *allowedConstants, zval *pureUnlessCallableIsImpureParameter) const
+	void construct(zval *initializerExprTypeResolver, zval *reflection, zval *phpDocType, zval *declaringClass, zval *outType, zval *immediatelyInvokedCallable, zval *closureThisType, zval *attributes, zval *allowedConstants, zval *pureUnlessCallableIsImpureParameter, zval *pureUnlessParameterPassedParameter) const
 	{
 		pt_write_slot(self, slots::initializerExprTypeResolver, initializerExprTypeResolver);
 		pt_write_slot(self, slots::reflection, reflection);
@@ -91,6 +91,7 @@ public:
 		pt_write_slot(self, slots::attributes, attributes);
 		writeNullable(slots::allowedConstants, allowedConstants);
 		pt_write_slot(self, slots::pureUnlessCallableIsImpureParameter, pureUnlessCallableIsImpureParameter);
+		pt_write_slot(self, slots::pureUnlessParameterPassedParameter, pureUnlessParameterPassedParameter);
 	}
 
 	/* $this->reflection->isOptional() */
@@ -249,6 +250,7 @@ public:
 	}
 
 	zv::Val isPureUnlessCallableIsImpureParameter() const { return copyOf(slots::pureUnlessCallableIsImpureParameter, "pureUnlessCallableIsImpureParameter"); }
+	zv::Val isPureUnlessParameterPassedParameter() const { return copyOf(slots::pureUnlessParameterPassedParameter, "pureUnlessParameterPassedParameter"); }
 
 private:
 	zend_object *self;
@@ -330,6 +332,7 @@ const MemberName memberNames[PT_PR_MEMBER_COUNT] = {
 	/* PT_PR_GET_ATTRIBUTES */ PT_PPR_MEMBER("getattributes", "getAttributes"),
 	/* PT_PR_GET_ALLOWED_CONSTANTS */ PT_PPR_MEMBER("getallowedconstants", "getAllowedConstants"),
 	/* PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER */ PT_PPR_MEMBER("ispureunlesscallableisimpureparameter", "isPureUnlessCallableIsImpureParameter"),
+	/* PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER */ PT_PPR_MEMBER("ispureunlessparameterpassedparameter", "isPureUnlessParameterPassedParameter"),
 };
 
 #undef PT_PPR_MEMBER
@@ -374,6 +377,7 @@ zv::Val pt_php_parameter_reflection_call(zend_object *parameter, pt_parameter_re
 		case PT_PR_GET_ATTRIBUTES: return reflection.getAttributes();
 		case PT_PR_GET_ALLOWED_CONSTANTS: return reflection.getAllowedConstants();
 		case PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER: return reflection.isPureUnlessCallableIsImpureParameter();
+		case PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER: return reflection.isPureUnlessParameterPassedParameter();
 		case PT_PR_MEMBER_COUNT: break;
 	}
 	ZEND_UNREACHABLE();
@@ -395,8 +399,8 @@ PT_MINIT_REGISTRATION(pt_register_php_parameter_reflection)
 	ptdecl::PhpParameterReflection::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *initializerExprTypeResolver, *reflection, *phpDocType = NULL, *declaringClass = NULL, *outType = NULL, *immediatelyInvokedCallable, *closureThisType = NULL, *attributes, *allowedConstants = NULL, *pureUnlessCallableIsImpureParameter;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		zval *initializerExprTypeResolver, *reflection, *phpDocType = NULL, *declaringClass = NULL, *outType = NULL, *immediatelyInvokedCallable, *closureThisType = NULL, *attributes, *allowedConstants = NULL, *pureUnlessCallableIsImpureParameter, *pureUnlessParameterPassedParameter;
+		ZEND_PARSE_PARAMETERS_START(11, 11)
 			Z_PARAM_OBJECT(initializerExprTypeResolver)
 			Z_PARAM_OBJECT(reflection)
 			Z_PARAM_OBJECT_OR_NULL(phpDocType)
@@ -407,8 +411,9 @@ PT_MINIT_REGISTRATION(pt_register_php_parameter_reflection)
 			Z_PARAM_ARRAY(attributes)
 			Z_PARAM_OBJECT_OR_NULL(allowedConstants)
 			Z_PARAM_OBJECT(pureUnlessCallableIsImpureParameter)
+			Z_PARAM_OBJECT(pureUnlessParameterPassedParameter)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_PPR_THIS.construct(initializerExprTypeResolver, reflection, phpDocType, declaringClass, outType, immediatelyInvokedCallable, closureThisType, attributes, allowedConstants, pureUnlessCallableIsImpureParameter);
+		PT_PPR_THIS.construct(initializerExprTypeResolver, reflection, phpDocType, declaringClass, outType, immediatelyInvokedCallable, closureThisType, attributes, allowedConstants, pureUnlessCallableIsImpureParameter, pureUnlessParameterPassedParameter);
 	});
 
 	cls.method<&PhpParameterReflection::isOptional>(sigs::isOptional);
@@ -441,6 +446,7 @@ PT_MINIT_REGISTRATION(pt_register_php_parameter_reflection)
 	});
 
 	cls.method<&PhpParameterReflection::isPureUnlessCallableIsImpureParameter>(sigs::isPureUnlessCallableIsImpureParameter);
+	cls.method<&PhpParameterReflection::isPureUnlessParameterPassedParameter>(sigs::isPureUnlessParameterPassedParameter);
 
 	cls.shadow(&pt_ce_php_parameter_reflection);
 }

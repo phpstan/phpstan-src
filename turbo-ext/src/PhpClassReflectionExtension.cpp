@@ -1986,13 +1986,15 @@ public:
 			if (UNEXPECTED(allowedConstants.isUndef())) return zv::Val();
 			zv::Val pureUnlessCallableIsImpure = trinaryNo();
 			if (UNEXPECTED(pureUnlessCallableIsImpure.isUndef())) return zv::Val();
+			zv::Val pureUnlessParameterPassed = trinaryNo();
+			if (UNEXPECTED(pureUnlessParameterPassed.isUndef())) return zv::Val();
 			zv::Val mixedPhpDocType;
 			if (phpDocType.isUndef()) {
 				mixedPhpDocType = mixedType();
 				if (UNEXPECTED(mixedPhpDocType.isUndef())) return zv::Val();
 			}
 
-			zval args[14];
+			zval args[15];
 			if (usePhpDocParameterNames) {
 				ZVAL_STR(&args[0], phpDocParameterName.get());
 			} else {
@@ -2011,7 +2013,8 @@ public:
 			ZVAL_EMPTY_ARRAY(&args[11]);
 			ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
 			ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
-			zv::Val parameter = pt_extended_native_parameter_reflection_new(14, args);
+			ZVAL_COPY_VALUE(&args[14], pureUnlessParameterPassed.raw());
+			zv::Val parameter = pt_extended_native_parameter_reflection_new(15, args);
 			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
 			parameters.push(std::move(parameter));
 		}
@@ -2209,6 +2212,7 @@ public:
 
 		int isPure = -1;
 		zv::Arr pureUnlessCallableIsImpureParameters = zv::Arr::create(0);
+		zv::Arr pureUnlessParameterPassedParameters = zv::Arr::create(0);
 		bool isBuiltin = callBool(actualDeclaringClass, PT_LC("isbuiltin"), 0, NULL, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		bool actualIsEnum = false;
@@ -2251,6 +2255,19 @@ public:
 						}
 					}
 				}
+				zval *pureUnlessPassed = Z_TYPE_P(metadata.raw()) == IS_ARRAY ? zend_hash_str_find(Z_ARRVAL_P(metadata.raw()), PT_LC("pureUnlessParameterPassedParameters")) : NULL;
+				if (pureUnlessPassed != NULL) {
+					ZVAL_DEREF(pureUnlessPassed);
+					if (Z_TYPE_P(pureUnlessPassed) == IS_ARRAY) {
+						for (zv::ArrayEntry passedEntry : zv::ArrRef(pureUnlessPassed)) {
+							zend_string *key = passedEntry.stringKeyOrNull();
+							if (key == NULL) continue;
+							if (!zend_symtable_exists(pureUnlessParameterPassedParameters.table(), key)) {
+								pureUnlessParameterPassedParameters.set(key, zv::Val::copyOf(passedEntry.value()));
+							}
+						}
+					}
+				}
 				break;
 			}
 		}
@@ -2288,6 +2305,15 @@ public:
 					zend_string *key = pureEntry.stringKeyOrNull();
 					if (key == NULL) continue;
 					pureUnlessCallableIsImpureParameters.set(key, zv::Val::copyOf(pureEntry.value()));
+				}
+			}
+			zv::Val pureUnlessPassed = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAMS_PURE_UNLESS_PARAMETER_PASSED);
+			if (UNEXPECTED(pureUnlessPassed.isUndef())) return zv::Val();
+			if (Z_TYPE_P(pureUnlessPassed.raw()) == IS_ARRAY) {
+				for (zv::ArrayEntry passedEntry : zv::ArrRef(pureUnlessPassed.raw())) {
+					zend_string *key = passedEntry.stringKeyOrNull();
+					if (key == NULL) continue;
+					pureUnlessParameterPassedParameters.set(key, zv::Val::copyOf(passedEntry.value()));
 				}
 			}
 
@@ -2442,7 +2468,7 @@ public:
 		zv::Val attributes = attributesOf(methodReflection, context.raw());
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 
-		zval args[22];
+		zval args[23];
 		ZVAL_COPY_VALUE(&args[0], actualDeclaringClass);
 		ZVAL_COPY_VALUE(&args[1], declaringTrait.raw());
 		ZVAL_COPY_VALUE(&args[2], methodReflection);
@@ -2469,7 +2495,8 @@ public:
 		ZVAL_BOOL(&args[19], acceptsNamedArguments);
 		ZVAL_COPY_VALUE(&args[20], attributes.raw());
 		ZVAL_COPY_VALUE(&args[21], pureUnlessCallableIsImpureParameters.raw());
-		return call(slot(slots::methodReflectionFactory), PT_LC("create"), 22, args);
+		ZVAL_COPY_VALUE(&args[22], pureUnlessParameterPassedParameters.raw());
+		return call(slot(slots::methodReflectionFactory), PT_LC("create"), 23, args);
 	}
 
 	/* Mirrors getPhpDocReturnType(). */

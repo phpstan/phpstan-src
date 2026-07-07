@@ -2,7 +2,7 @@
  * PHPStanTurbo\ExtendedNativeParameterReflection — native implementation of
  * PHPStan\Reflection\Native\ExtendedNativeParameterReflection.
  *
- * A final value class over its fourteen promoted slots in the twin's order:
+ * A final value class over its fifteen promoted slots in the twin's order:
  * every getter returns its slot, hasNativeType() asks the native type
  * whether it is an explicit mixed, checkAllowedConstants() delegates to the
  * PHP ParameterAllowedConstants. Native callers read the getters through
@@ -56,7 +56,7 @@ public:
 
 	/* the promoted slots in parameter order (borrowed; NULL for a nullable
 	 * null) */
-	void construct(zend_string *name, bool optional, zval *type, zval *phpDocType, zval *nativeType, zval *passedByReference, bool variadic, zval *defaultValue, zval *outType, zval *immediatelyInvokedCallable, zval *closureThisType, zval *attributes, zval *allowedConstants, zval *pureUnlessCallableIsImpureParameter) const
+	void construct(zend_string *name, bool optional, zval *type, zval *phpDocType, zval *nativeType, zval *passedByReference, bool variadic, zval *defaultValue, zval *outType, zval *immediatelyInvokedCallable, zval *closureThisType, zval *attributes, zval *allowedConstants, zval *pureUnlessCallableIsImpureParameter, zval *pureUnlessParameterPassedParameter) const
 	{
 		zval value;
 		ZVAL_STR(&value, name);
@@ -76,6 +76,7 @@ public:
 		pt_write_slot(self, slots::attributes, attributes);
 		writeNullable(slots::allowedConstants, allowedConstants);
 		pt_write_slot(self, slots::pureUnlessCallableIsImpureParameter, pureUnlessCallableIsImpureParameter);
+		pt_write_slot(self, slots::pureUnlessParameterPassedParameter, pureUnlessParameterPassedParameter);
 	}
 
 	zv::Val getName() const { return copyOf(slots::name, "name"); }
@@ -126,6 +127,7 @@ public:
 	}
 
 	zv::Val isPureUnlessCallableIsImpureParameter() const { return copyOf(slots::pureUnlessCallableIsImpureParameter, "pureUnlessCallableIsImpureParameter"); }
+	zv::Val isPureUnlessParameterPassedParameter() const { return copyOf(slots::pureUnlessParameterPassedParameter, "pureUnlessParameterPassedParameter"); }
 
 private:
 	zend_object *self;
@@ -159,16 +161,16 @@ using phpstanturbo::ExtendedNativeParameterReflection;
 
 zv::Val pt_extended_native_parameter_reflection_new(uint32_t argc, zval *argv)
 {
-	if (EXPECTED(argc == 14)) {
+	if (EXPECTED(argc == 15)) {
 		auto isBool = [](zval *value) { return Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE; };
 		auto isObjectOrNull = [](zval *value) { return Z_TYPE_P(value) == IS_OBJECT || Z_TYPE_P(value) == IS_NULL; };
 		if (EXPECTED(Z_TYPE(argv[0]) == IS_STRING && isBool(&argv[1]) && Z_TYPE(argv[2]) == IS_OBJECT && Z_TYPE(argv[3]) == IS_OBJECT && Z_TYPE(argv[4]) == IS_OBJECT
 			&& Z_TYPE(argv[5]) == IS_OBJECT && isBool(&argv[6]) && isObjectOrNull(&argv[7]) && isObjectOrNull(&argv[8]) && Z_TYPE(argv[9]) == IS_OBJECT
-			&& isObjectOrNull(&argv[10]) && Z_TYPE(argv[11]) == IS_ARRAY && isObjectOrNull(&argv[12]) && Z_TYPE(argv[13]) == IS_OBJECT)) {
+			&& isObjectOrNull(&argv[10]) && Z_TYPE(argv[11]) == IS_ARRAY && isObjectOrNull(&argv[12]) && Z_TYPE(argv[13]) == IS_OBJECT && Z_TYPE(argv[14]) == IS_OBJECT)) {
 			zval object;
 			if (UNEXPECTED(object_init_ex(&object, pt_ce_extended_native_parameter_reflection) != SUCCESS)) return zv::Val();
 			auto orNull = [](zval *value) { return Z_TYPE_P(value) == IS_NULL ? NULL : value; };
-			ExtendedNativeParameterReflection(Z_OBJ(object)).construct(Z_STR(argv[0]), Z_TYPE(argv[1]) == IS_TRUE, &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, orNull(&argv[7]), orNull(&argv[8]), &argv[9], orNull(&argv[10]), &argv[11], orNull(&argv[12]), &argv[13]);
+			ExtendedNativeParameterReflection(Z_OBJ(object)).construct(Z_STR(argv[0]), Z_TYPE(argv[1]) == IS_TRUE, &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, orNull(&argv[7]), orNull(&argv[8]), &argv[9], orNull(&argv[10]), &argv[11], orNull(&argv[12]), &argv[13], &argv[14]);
 			return zv::Val::adopt(object);
 		}
 	}
@@ -200,6 +202,7 @@ zv::Val pt_extended_native_parameter_reflection_call(zend_object *parameter, pt_
 		case PT_PR_GET_ATTRIBUTES: return reflection.getAttributes();
 		case PT_PR_GET_ALLOWED_CONSTANTS: return reflection.getAllowedConstants();
 		case PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER: return reflection.isPureUnlessCallableIsImpureParameter();
+		case PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER: return reflection.isPureUnlessParameterPassedParameter();
 		case PT_PR_MEMBER_COUNT: break;
 	}
 	ZEND_UNREACHABLE();
@@ -223,8 +226,8 @@ PT_MINIT_REGISTRATION(pt_register_extended_native_parameter_reflection)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *name;
 		bool optional, variadic;
-		zval *type, *phpDocType, *nativeType, *passedByReference, *defaultValue = NULL, *outType = NULL, *immediatelyInvokedCallable, *closureThisType = NULL, *attributes, *allowedConstants = NULL, *pureUnlessCallableIsImpureParameter;
-		ZEND_PARSE_PARAMETERS_START(14, 14)
+		zval *type, *phpDocType, *nativeType, *passedByReference, *defaultValue = NULL, *outType = NULL, *immediatelyInvokedCallable, *closureThisType = NULL, *attributes, *allowedConstants = NULL, *pureUnlessCallableIsImpureParameter, *pureUnlessParameterPassedParameter;
+		ZEND_PARSE_PARAMETERS_START(15, 15)
 			Z_PARAM_STR(name)
 			Z_PARAM_BOOL(optional)
 			Z_PARAM_OBJECT(type)
@@ -239,8 +242,9 @@ PT_MINIT_REGISTRATION(pt_register_extended_native_parameter_reflection)
 			Z_PARAM_ARRAY(attributes)
 			Z_PARAM_OBJECT_OR_NULL(allowedConstants)
 			Z_PARAM_OBJECT(pureUnlessCallableIsImpureParameter)
+			Z_PARAM_OBJECT(pureUnlessParameterPassedParameter)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_ENPR_THIS.construct(name, optional, type, phpDocType, nativeType, passedByReference, variadic, defaultValue, outType, immediatelyInvokedCallable, closureThisType, attributes, allowedConstants, pureUnlessCallableIsImpureParameter);
+		PT_ENPR_THIS.construct(name, optional, type, phpDocType, nativeType, passedByReference, variadic, defaultValue, outType, immediatelyInvokedCallable, closureThisType, attributes, allowedConstants, pureUnlessCallableIsImpureParameter, pureUnlessParameterPassedParameter);
 	});
 
 	cls.method<&ExtendedNativeParameterReflection::getName>(sigs::getName);
@@ -273,6 +277,7 @@ PT_MINIT_REGISTRATION(pt_register_extended_native_parameter_reflection)
 	});
 
 	cls.method<&ExtendedNativeParameterReflection::isPureUnlessCallableIsImpureParameter>(sigs::isPureUnlessCallableIsImpureParameter);
+	cls.method<&ExtendedNativeParameterReflection::isPureUnlessParameterPassedParameter>(sigs::isPureUnlessParameterPassedParameter);
 
 	cls.shadow(&pt_ce_extended_native_parameter_reflection);
 }

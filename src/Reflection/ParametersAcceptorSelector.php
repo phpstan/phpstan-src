@@ -843,6 +843,7 @@ final class ParametersAcceptorSelector
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAttributes() : [],
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null,
 						$parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo(),
+						$parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessParameterPassedParameter() : TrinaryLogic::createNo(),
 					);
 					continue;
 				}
@@ -921,6 +922,10 @@ final class ParametersAcceptorSelector
 				$rightPureUnless = $parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo();
 				$pureUnlessCallableIsImpureParameter = $leftPureUnless->equals($rightPureUnless) ? $leftPureUnless : TrinaryLogic::createMaybe();
 
+				$leftPureUnlessParameterPassed = $parameters[$i]->isPureUnlessParameterPassedParameter();
+				$rightPureUnlessParameterPassed = $parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessParameterPassedParameter() : TrinaryLogic::createNo();
+				$pureUnlessParameterPassedParameter = $leftPureUnlessParameterPassed->equals($rightPureUnlessParameterPassed) ? $leftPureUnlessParameterPassed : TrinaryLogic::createMaybe();
+
 				$parameters[$i] = new ExtendedDummyParameter(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),
 					$type,
@@ -936,6 +941,7 @@ final class ParametersAcceptorSelector
 					$attributes,
 					$allowedConstants,
 					$pureUnlessCallableIsImpureParameter,
+					$pureUnlessParameterPassedParameter,
 				);
 
 				if ($isParameterVariadic) {
@@ -1037,6 +1043,7 @@ final class ParametersAcceptorSelector
 			null,
 			[],
 			null,
+			TrinaryLogic::createNo(),
 			TrinaryLogic::createNo(),
 		);
 	}
@@ -1396,6 +1403,7 @@ final class ParametersAcceptorSelector
 			$wrapped->getAttributes(),
 			$wrapped->getAllowedConstants(),
 			$wrapped->isPureUnlessCallableIsImpureParameter(),
+			$wrapped->isPureUnlessParameterPassedParameter(),
 		);
 	}
 

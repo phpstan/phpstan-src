@@ -572,17 +572,18 @@ private:
 
 		/* new ExtendedDummyParameter($param->getName(), $paramType, ...) — the
 		 * getters in argument order */
-		static constexpr pt_parameter_reflection_member getters[11] = {
+		static constexpr pt_parameter_reflection_member getters[12] = {
 			PT_PR_GET_NAME, PT_PR_IS_OPTIONAL, PT_PR_PASSED_BY_REFERENCE, PT_PR_IS_VARIADIC, PT_PR_GET_DEFAULT_VALUE,
 			PT_PR_GET_NATIVE_TYPE, PT_PR_GET_PHPDOC_TYPE, PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE, PT_PR_GET_ATTRIBUTES,
 			PT_PR_GET_ALLOWED_CONSTANTS, PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
+			PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER,
 		};
-		zv::Val values[11];
-		for (int i = 0; i < 11; i++) {
+		zv::Val values[12];
+		for (int i = 0; i < 12; i++) {
 			values[i] = pt_parameter_reflection_call(param, getters[i]);
 			if (UNEXPECTED(values[i].isUndef())) return zv::Val();
 		}
-		zval args[14];
+		zval args[15];
 		ZVAL_COPY_VALUE(&args[0], values[0].raw());
 		ZVAL_COPY_VALUE(&args[1], paramType.raw());
 		ZVAL_COPY_VALUE(&args[2], values[1].raw());
@@ -597,7 +598,8 @@ private:
 		ZVAL_COPY_VALUE(&args[11], values[8].raw());
 		ZVAL_COPY_VALUE(&args[12], values[9].raw());
 		ZVAL_COPY_VALUE(&args[13], values[10].raw());
-		return pt_extended_dummy_parameter_new(14, args);
+		ZVAL_COPY_VALUE(&args[14], values[11].raw());
+		return pt_extended_dummy_parameter_new(15, args);
 	}
 
 	/* TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes(

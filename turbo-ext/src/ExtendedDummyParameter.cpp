@@ -2,7 +2,7 @@
  * PHPStanTurbo\ExtendedDummyParameter — native implementation of
  * PHPStan\Reflection\Php\ExtendedDummyParameter.
  *
- * Final, extending the shadowing DummyParameter: its eight promoted slots
+ * Final, extending the shadowing DummyParameter: its nine promoted slots
  * follow the parent's six (generated declarations), the constructor writes
  * them and runs the parent's constructor body directly
  * (pt_dummy_parameter_construct() — the parent method is native, nothing can
@@ -30,9 +30,9 @@ public:
 	explicit ExtendedDummyParameter(zend_object *self) : self(self) {}
 
 	/* the promoted slots in parameter order, then parent::__construct()
-	 * (argv: the constructor's fourteen arguments, NULL / IS_NULL for the
+	 * (argv: the constructor's fifteen arguments, NULL / IS_NULL for the
 	 * nullable nulls); false = pending exception */
-	[[nodiscard]] bool construct(zend_string *name, zval *type, bool optional, zval *passedByReference, bool variadic, zval *defaultValue, zval *nativeType, zval *phpDocType, zval *outType, zval *immediatelyInvokedCallable, zval *closureThisType, zval *attributes, zval *allowedConstants, zval *pureUnlessCallableIsImpureParameter) const
+	[[nodiscard]] bool construct(zend_string *name, zval *type, bool optional, zval *passedByReference, bool variadic, zval *defaultValue, zval *nativeType, zval *phpDocType, zval *outType, zval *immediatelyInvokedCallable, zval *closureThisType, zval *attributes, zval *allowedConstants, zval *pureUnlessCallableIsImpureParameter, zval *pureUnlessParameterPassedParameter) const
 	{
 		write(slots::nativeType, nativeType);
 		write(slots::phpDocType, phpDocType);
@@ -42,6 +42,7 @@ public:
 		write(slots::attributes, attributes);
 		write(slots::allowedConstants, allowedConstants);
 		write(slots::pureUnlessCallableIsImpureParameter, pureUnlessCallableIsImpureParameter);
+		write(slots::pureUnlessParameterPassedParameter, pureUnlessParameterPassedParameter);
 		return pt_dummy_parameter_construct(self, name, type, optional, passedByReference, variadic, defaultValue);
 	}
 
@@ -53,6 +54,7 @@ public:
 	zv::Val getAttributes() const { return copyOf(slots::attributes, "attributes"); }
 	zv::Val getAllowedConstants() const { return copyOf(slots::allowedConstants, "allowedConstants"); }
 	zv::Val isPureUnlessCallableIsImpureParameter() const { return copyOf(slots::pureUnlessCallableIsImpureParameter, "pureUnlessCallableIsImpureParameter"); }
+	zv::Val isPureUnlessParameterPassedParameter() const { return copyOf(slots::pureUnlessParameterPassedParameter, "pureUnlessParameterPassedParameter"); }
 
 	/* !$this->nativeType instanceof MixedType || $this->nativeType->isExplicitMixed();
 	 * false = pending exception */
@@ -136,18 +138,18 @@ using phpstanturbo::ExtendedDummyParameter;
 
 zv::Val pt_extended_dummy_parameter_new(uint32_t argc, zval *argv)
 {
-	if (EXPECTED(argc == 14)) {
+	if (EXPECTED(argc == 15)) {
 		zval *name = &argv[0], *optional = &argv[2], *passedByReference = &argv[3], *variadic = &argv[4], *defaultValue = &argv[5];
 		zval *outType = &argv[8], *closureThisType = &argv[10], *attributes = &argv[11], *allowedConstants = &argv[12];
 		auto isBool = [](zval *value) { return Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE; };
 		auto isObjectOrNull = [](zval *value) { return Z_TYPE_P(value) == IS_OBJECT || Z_TYPE_P(value) == IS_NULL; };
 		if (EXPECTED(Z_TYPE_P(name) == IS_STRING && Z_TYPE(argv[1]) == IS_OBJECT && isBool(optional) && isObjectOrNull(passedByReference) && isBool(variadic) && isObjectOrNull(defaultValue)
 			&& Z_TYPE(argv[6]) == IS_OBJECT && Z_TYPE(argv[7]) == IS_OBJECT && isObjectOrNull(outType) && Z_TYPE(argv[9]) == IS_OBJECT && isObjectOrNull(closureThisType)
-			&& Z_TYPE_P(attributes) == IS_ARRAY && isObjectOrNull(allowedConstants) && Z_TYPE(argv[13]) == IS_OBJECT)) {
+			&& Z_TYPE_P(attributes) == IS_ARRAY && isObjectOrNull(allowedConstants) && Z_TYPE(argv[13]) == IS_OBJECT && Z_TYPE(argv[14]) == IS_OBJECT)) {
 			zval object;
 			if (UNEXPECTED(object_init_ex(&object, pt_ce_extended_dummy_parameter) != SUCCESS)) return zv::Val();
 			zv::Val result = zv::Val::adopt(object);
-			if (UNEXPECTED(!ExtendedDummyParameter(Z_OBJ_P(result.raw())).construct(Z_STR_P(name), &argv[1], Z_TYPE_P(optional) == IS_TRUE, Z_TYPE_P(passedByReference) == IS_NULL ? NULL : passedByReference, Z_TYPE_P(variadic) == IS_TRUE, Z_TYPE_P(defaultValue) == IS_NULL ? NULL : defaultValue, &argv[6], &argv[7], outType, &argv[9], closureThisType, attributes, allowedConstants, &argv[13]))) return zv::Val();
+			if (UNEXPECTED(!ExtendedDummyParameter(Z_OBJ_P(result.raw())).construct(Z_STR_P(name), &argv[1], Z_TYPE_P(optional) == IS_TRUE, Z_TYPE_P(passedByReference) == IS_NULL ? NULL : passedByReference, Z_TYPE_P(variadic) == IS_TRUE, Z_TYPE_P(defaultValue) == IS_NULL ? NULL : defaultValue, &argv[6], &argv[7], outType, &argv[9], closureThisType, attributes, allowedConstants, &argv[13], &argv[14]))) return zv::Val();
 			return result;
 		}
 	}
@@ -172,9 +174,9 @@ PT_MINIT_REGISTRATION(pt_register_extended_dummy_parameter)
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *name;
-		zval *type, *passedByReference = NULL, *defaultValue = NULL, *nativeType, *phpDocType, *outType = NULL, *immediatelyInvokedCallable, *closureThisType = NULL, *attributes, *allowedConstants = NULL, *pureUnlessCallableIsImpureParameter;
+		zval *type, *passedByReference = NULL, *defaultValue = NULL, *nativeType, *phpDocType, *outType = NULL, *immediatelyInvokedCallable, *closureThisType = NULL, *attributes, *allowedConstants = NULL, *pureUnlessCallableIsImpureParameter, *pureUnlessParameterPassedParameter;
 		bool optional, variadic;
-		ZEND_PARSE_PARAMETERS_START(14, 14)
+		ZEND_PARSE_PARAMETERS_START(15, 15)
 			Z_PARAM_STR(name)
 			Z_PARAM_OBJECT(type)
 			Z_PARAM_BOOL(optional)
@@ -189,8 +191,9 @@ PT_MINIT_REGISTRATION(pt_register_extended_dummy_parameter)
 			Z_PARAM_ARRAY(attributes)
 			Z_PARAM_OBJECT_OR_NULL(allowedConstants)
 			Z_PARAM_OBJECT(pureUnlessCallableIsImpureParameter)
+			Z_PARAM_OBJECT(pureUnlessParameterPassedParameter)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!PT_EDP_THIS.construct(name, type, optional, passedByReference, variadic, defaultValue, nativeType, phpDocType, outType, immediatelyInvokedCallable, closureThisType, attributes, allowedConstants, pureUnlessCallableIsImpureParameter))) RETURN_THROWS();
+		if (UNEXPECTED(!PT_EDP_THIS.construct(name, type, optional, passedByReference, variadic, defaultValue, nativeType, phpDocType, outType, immediatelyInvokedCallable, closureThisType, attributes, allowedConstants, pureUnlessCallableIsImpureParameter, pureUnlessParameterPassedParameter))) RETURN_THROWS();
 	});
 
 	cls.method<&ExtendedDummyParameter::getPhpDocType>(sigs::getPhpDocType);
@@ -211,6 +214,7 @@ PT_MINIT_REGISTRATION(pt_register_extended_dummy_parameter)
 	});
 
 	cls.method<&ExtendedDummyParameter::isPureUnlessCallableIsImpureParameter>(sigs::isPureUnlessCallableIsImpureParameter);
+	cls.method<&ExtendedDummyParameter::isPureUnlessParameterPassedParameter>(sigs::isPureUnlessParameterPassedParameter);
 
 	cls.shadow(&pt_ce_extended_dummy_parameter);
 }

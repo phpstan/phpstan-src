@@ -249,6 +249,7 @@ final class Describer
 			'attributes' => $this->describe($parameter->getAttributes(), $depth + 1),
 			'allowedConstants' => $parameter->getAllowedConstants() === null ? null : 'allowedConstants',
 			'pureUnlessCallableIsImpure' => $parameter->isPureUnlessCallableIsImpureParameter()->describe(),
+			'pureUnlessParameterPassed' => $parameter->isPureUnlessParameterPassedParameter()->describe(),
 		];
 	}
 

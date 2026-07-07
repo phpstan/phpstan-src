@@ -54,6 +54,7 @@ const MemberInfo pt_rpd_members[PT_RPD_MEMBER_COUNT] = {
 	/* PT_RPD_GET_PARAM_OUT_TAGS */ {"paramOutTags", PT_LC("getparamouttags"), "getParamOutTags", PT_RPD_ARRAY_FALSE},
 	/* PT_RPD_GET_PARAMS_IMMEDIATELY_INVOKED_CALLABLE */ {"paramsImmediatelyInvokedCallable", PT_LC("getparamsimmediatelyinvokedcallable"), "getParamsImmediatelyInvokedCallable", PT_RPD_ARRAY_FALSE},
 	/* PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE */ {"paramsPureUnlessCallableIsImpure", PT_LC("getparamspureunlesscallableisimpure"), "getParamsPureUnlessCallableIsImpure", PT_RPD_ARRAY_FALSE},
+	/* PT_RPD_GET_PARAMS_PURE_UNLESS_PARAMETER_PASSED */ {"paramsPureUnlessParameterPassed", PT_LC("getparamspureunlessparameterpassed"), "getParamsPureUnlessParameterPassed", PT_RPD_ARRAY_FALSE},
 	/* PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS */ {"paramClosureThisTags", PT_LC("getparamclosurethistags"), "getParamClosureThisTags", PT_RPD_ARRAY_FALSE},
 	/* PT_RPD_GET_RETURN_TAG */ {"returnTag", PT_LC("getreturntag"), "getReturnTag", PT_RPD_TAG_BOOL},
 	/* PT_RPD_GET_THROWS_TAG */ {"throwsTag", PT_LC("getthrowstag"), "getThrowsTag", PT_RPD_TAG_BOOL},

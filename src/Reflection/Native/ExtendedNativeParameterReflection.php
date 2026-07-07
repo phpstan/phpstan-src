@@ -34,6 +34,7 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		private array $attributes,
 		private ?ParameterAllowedConstants $allowedConstants,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
+		private TrinaryLogic $pureUnlessParameterPassedParameter,
 	)
 	{
 	}
@@ -120,6 +121,11 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic
 	{
 		return $this->pureUnlessCallableIsImpureParameter;
+	}
+
+	public function isPureUnlessParameterPassedParameter(): TrinaryLogic
+	{
+		return $this->pureUnlessParameterPassedParameter;
 	}
 
 }

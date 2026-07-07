@@ -40,4 +40,6 @@ interface ExtendedParameterReflection extends ParameterReflection
 
 	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic;
 
+	public function isPureUnlessParameterPassedParameter(): TrinaryLogic;
+
 }

@@ -5245,7 +5245,9 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	if (UNEXPECTED(allowedConstants.isUndef())) return zv::Val();
 	zv::Val pureUnlessCallableIsImpure = protoParameterCall(parameter, PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER, "ispureunlesscallableisimpureparameter", PROTO_ANY);
 	if (UNEXPECTED(pureUnlessCallableIsImpure.isUndef())) return zv::Val();
-	zval args[14];
+	zv::Val pureUnlessParameterPassed = protoParameterCall(parameter, PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER, "ispureunlessparameterpassedparameter", PROTO_ANY);
+	if (UNEXPECTED(pureUnlessParameterPassed.isUndef())) return zv::Val();
+	zval args[15];
 	ZVAL_COPY_VALUE(&args[0], name.raw());
 	ZVAL_COPY_VALUE(&args[1], transformedType.raw());
 	ZVAL_COPY_VALUE(&args[2], optional.raw());
@@ -5260,7 +5262,8 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	ZVAL_COPY_VALUE(&args[11], attributes.raw());
 	ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
 	ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
-	return pt_extended_dummy_parameter_new(14, args);
+	ZVAL_COPY_VALUE(&args[14], pureUnlessParameterPassed.raw());
+	return pt_extended_dummy_parameter_new(15, args);
 }
 
 /* the twins' $variantFn: new ExtendedFunctionVariant(...) over $acceptor;

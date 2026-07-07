@@ -96,6 +96,9 @@ final class ResolvedPhpDocBlock
 	/** @var array<string, bool>|false */
 	private array|false $paramsImmediatelyInvokedCallable = false;
 
+	/** @var array<string, bool>|false */
+	private array|false $paramsPureUnlessCallableIsImpure = false;
+
 	/** @var array<string, ParamClosureThisTag>|false */
 	private array|false $paramClosureThisTags = false;
 
@@ -220,6 +223,7 @@ final class ResolvedPhpDocBlock
 		$self->paramTags = [];
 		$self->paramOutTags = [];
 		$self->paramsImmediatelyInvokedCallable = [];
+		$self->paramsPureUnlessCallableIsImpure = [];
 		$self->paramClosureThisTags = [];
 		$self->returnTag = null;
 		$self->throwsTag = null;
@@ -276,6 +280,7 @@ final class ResolvedPhpDocBlock
 		$result->paramTags = self::mergeParamTags($this->getParamTags(), $parent, $parameterMapping, $parentClass);
 		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parent, $parameterMapping, $parentClass);
 		$result->paramsImmediatelyInvokedCallable = self::mergeParamsImmediatelyInvokedCallable($this->getParamsImmediatelyInvokedCallable(), $parent, $parameterMapping);
+		$result->paramsPureUnlessCallableIsImpure = self::mergeParamsPureUnlessCallableIsImpure($this->getParamsPureUnlessCallableIsImpure(), $parent, $parameterMapping);
 		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parent, $parameterMapping, $parentClass);
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $declaringClass, $parent, $parameterMapping, $parentClass);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parent);
@@ -582,6 +587,18 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $this->paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @return array<string, bool>
+	 */
+	public function getParamsPureUnlessCallableIsImpure(): array
+	{
+		if ($this->paramsPureUnlessCallableIsImpure === false) {
+			$this->paramsPureUnlessCallableIsImpure = $this->phpDocNodeResolver->resolveParamPureUnlessCallableIsImpure($this->phpDocNode);
+		}
+
+		return $this->paramsPureUnlessCallableIsImpure;
 	}
 
 	/**
@@ -1083,6 +1100,34 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @param array<string, bool> $paramsPureUnlessCallableIsImpure
+	 * @return array<string, bool>
+	 */
+	private static function mergeParamsPureUnlessCallableIsImpure(array $paramsPureUnlessCallableIsImpure, self $parent, InheritedPhpDocParameterMapping $parameterMapping): array
+	{
+		return self::mergeOneParentParamPureUnlessCallableIsImpure($paramsPureUnlessCallableIsImpure, $parent, $parameterMapping);
+	}
+
+	/**
+	 * @param array<string, bool> $paramsPureUnlessCallableIsImpure
+	 * @return array<string, bool>
+	 */
+	private static function mergeOneParentParamPureUnlessCallableIsImpure(array $paramsPureUnlessCallableIsImpure, self $parent, InheritedPhpDocParameterMapping $parameterMapping): array
+	{
+		$parentPureUnlessCallableIsImpure = $parameterMapping->transformArrayKeysWithParameterNameMapping($parent->getParamsPureUnlessCallableIsImpure());
+
+		foreach ($parentPureUnlessCallableIsImpure as $name => $parentIsPureUnlessCallableIsImpure) {
+			if (array_key_exists($name, $paramsPureUnlessCallableIsImpure)) {
+				continue;
+			}
+
+			$paramsPureUnlessCallableIsImpure[$name] = $parentIsPureUnlessCallableIsImpure;
+		}
+
+		return $paramsPureUnlessCallableIsImpure;
 	}
 
 	/**

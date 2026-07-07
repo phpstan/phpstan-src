@@ -132,6 +132,7 @@ final class GenericParametersAcceptorResolver
 					null,
 					[],
 					null,
+					TrinaryLogic::createNo(),
 				), $parameters),
 				$parametersAcceptor->isVariadic(),
 				$returnType,

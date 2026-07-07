@@ -646,4 +646,17 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10942.php'], []);
 	}
 
+	public function testPureUnlessCallableIsImpureOverride(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->reportMethodPurityOverride = true;
+		$this->analyse([__DIR__ . '/data/method-signature-pure-unless-callable.php'], [
+			[
+				'Impure method MethodSignaturePureUnlessCallable\ImpureChild::run() overrides method MethodSignaturePureUnlessCallable\PureUnlessParent::run() marked @pure-unless-callable-is-impure.',
+				21,
+			],
+		]);
+	}
+
 }

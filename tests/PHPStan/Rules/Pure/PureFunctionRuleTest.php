@@ -230,4 +230,101 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6574.php'], []);
 	}
 
+	public function testPureUnlessCallableIsImpure(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [
+			[
+				'Impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithImpureCallback().',
+				22,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureWithImpureCallback().',
+				23,
+			],
+			[
+				'Possibly impure call to a callable in pure function PureUnlessCallableIsImpureFunction\pureWithOpaqueCallback().',
+				36,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithOpaqueCallback().',
+				36,
+			],
+			[
+				'Impure call to method PureUnlessCallableIsImpureFunction\Mapper::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingMethodWithImpureCallback().',
+				129,
+			],
+			[
+				'Possibly impure call to method PureUnlessCallableIsImpureFunction\Mapper::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingMethodWithOpaqueCallback().',
+				143,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithMaybeNullCallback().',
+				155,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFunction\pureWithMaybeCallablePureCallback().',
+				167,
+			],
+			[
+				'Impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithImpureCallback().',
+				200,
+			],
+			[
+				'Possibly impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithOpaqueCallback().',
+				213,
+			],
+			[
+				'Possibly impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithUnionCallback().',
+				238,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureUnlessCallableWithImpureStatementOutsideCallback().',
+				253,
+			],
+			[
+				'Function PureUnlessCallableIsImpureFunction\redundantPureUnlessCallableWithPureCallable() is marked @pure-unless-callable-is-impure for parameter $f, but $f is already a pure callable, so function PureUnlessCallableIsImpureFunction\redundantPureUnlessCallableWithPureCallable() can be marked @phpstan-pure instead.',
+				268,
+			],
+			[
+				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingInheritedMethodWithOpaqueCallback().',
+				374,
+			],
+			[
+				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperRenamedChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingRenamedInheritedMethodWithOpaqueCallback().',
+				399,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testPureUnlessCallableIsImpurePhp84(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-php84.php'], [
+			[
+				'Impure call to function array_any() in pure function PureUnlessCallableIsImpureFunctionPhp84\anyWithImpureCallback().',
+				29,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\anyWithImpureCallback().',
+				30,
+			],
+			[
+				'Impure call to function array_find() in pure function PureUnlessCallableIsImpureFunctionPhp84\findWithImpureCallback().',
+				59,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\findWithImpureCallback().',
+				60,
+			],
+			[
+				'Impure call to function array_find_key() in pure function PureUnlessCallableIsImpureFunctionPhp84\findKeyWithImpureCallback().',
+				71,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\findKeyWithImpureCallback().',
+				72,
+			],
+		]);
+	}
+
 }

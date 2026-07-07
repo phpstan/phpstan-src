@@ -388,6 +388,22 @@ final class PhpDocNodeResolver
 	}
 
 	/**
+	 * @return array<string, bool>
+	 */
+	public function resolveParamPureUnlessCallableIsImpure(PhpDocNode $phpDocNode): array
+	{
+		$parameters = [];
+		foreach (['@pure-unless-callable-is-impure', '@phpstan-pure-unless-callable-is-impure'] as $tagName) {
+			foreach ($phpDocNode->getPureUnlessCallableIsImpureTagValues($tagName) as $tag) {
+				$parameterName = substr($tag->parameterName, 1);
+				$parameters[$parameterName] = true;
+			}
+		}
+
+		return $parameters;
+	}
+
+	/**
 	 * @return array<string, ParamClosureThisTag>
 	 */
 	public function resolveParamClosureThisTags(PhpDocNode $phpDocNode, NameScope $nameScope): array

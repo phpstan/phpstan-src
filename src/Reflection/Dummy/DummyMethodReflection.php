@@ -145,6 +145,11 @@ final class DummyMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
+	}
+
 	public function getAttributes(): array
 	{
 		return [];

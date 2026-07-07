@@ -75,6 +75,18 @@ final class MethodSignatureRule implements Rule
 					$parentMethodDeclaringClass->getDisplayName(),
 					$parentMethod->getName(),
 				))->identifier('method.impure')->build();
+			} elseif (
+				$this->reportMethodPurityOverride
+				&& $method->isPure()->no()
+				&& count($parentMethod->getPureUnlessCallableIsImpureParameters()) > 0
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Impure method %s::%s() overrides method %s::%s() marked @pure-unless-callable-is-impure.',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$parentMethodDeclaringClass->getDisplayName(),
+					$parentMethod->getName(),
+				))->identifier('method.impureOverridePureUnlessCallable')->build();
 			}
 
 			$parentVariants = $parentMethod->getVariants();

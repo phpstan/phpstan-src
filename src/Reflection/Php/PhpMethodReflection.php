@@ -63,6 +63,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 * @param list<AttributeReflection> $attributes
+	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -90,6 +91,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private array $immediatelyInvokedCallableParameters,
 		private array $phpDocClosureThisTypeParameters,
 		private array $attributes,
+		private array $pureUnlessCallableIsImpureParameters,
 	)
 	{
 	}
@@ -229,6 +231,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,
 			$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 			$this->allowedConstantsMapProvider->getForMethodParameter($this->declaringClass->getName(), $this->reflection->getName(), $reflection->getName()),
+			TrinaryLogic::createFromBoolean($this->pureUnlessCallableIsImpureParameters[$reflection->getName()] ?? false),
 		), $this->reflection->getParameters());
 	}
 
@@ -405,6 +408,14 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createFromBoolean($this->isPure);
 	}
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters);
+	}
+
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self
 	{
 		return new self(
@@ -433,6 +444,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->immediatelyInvokedCallableParameters,
 			$this->phpDocClosureThisTypeParameters,
 			$this->attributes,
+			$this->pureUnlessCallableIsImpureParameters,
 		);
 	}
 
@@ -467,6 +479,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->immediatelyInvokedCallableParameters,
 			$this->phpDocClosureThisTypeParameters,
 			$this->attributes,
+			$this->pureUnlessCallableIsImpureParameters,
 		);
 	}
 

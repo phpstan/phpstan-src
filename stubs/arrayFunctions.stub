@@ -9,6 +9,8 @@
  * @param TReturn $three
  *
  * @return TReturn
+ *
+ * @pure-unless-callable-is-impure $two
  */
 function array_reduce(
 	array $one,

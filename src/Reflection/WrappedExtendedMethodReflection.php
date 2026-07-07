@@ -78,6 +78,7 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 					null,
 					[],
 					null,
+					TrinaryLogic::createNo(),
 				), $variant->getParameters()),
 				$variant->isVariadic(),
 				$variant->getReturnType(),
@@ -143,6 +144,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 	public function isPure(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
 	}
 
 	public function getAsserts(): Assertions

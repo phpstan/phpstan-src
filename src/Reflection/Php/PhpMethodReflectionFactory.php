@@ -20,6 +20,7 @@ interface PhpMethodReflectionFactory
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 * @param list<AttributeReflection> $attributes
+	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -43,6 +44,7 @@ interface PhpMethodReflectionFactory
 		array $phpDocClosureThisTypeParameters,
 		bool $acceptsNamedArguments,
 		array $attributes,
+		array $pureUnlessCallableIsImpureParameters,
 	): PhpMethodReflection;
 
 }

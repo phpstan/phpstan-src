@@ -119,12 +119,20 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects: bool}> $metadata */
+	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			if ($metadata[$functionName]['hasSideEffects']) {
+			if (isset($metadata[$functionName]['hasSideEffects']) && $metadata[$functionName]['hasSideEffects']) {
 				throw new ShouldNotHappenException($functionName);
+			}
+
+			if (isset($metadata[$functionName]['pureUnlessCallableIsImpureParameters'])) {
+				$metadata[$functionName] = [
+					'pureUnlessCallableIsImpureParameters' => $metadata[$functionName]['pureUnlessCallableIsImpureParameters'],
+				];
+
+				continue;
 			}
 		}
 		$metadata[$functionName] = ['hasSideEffects' => false];
@@ -177,19 +185,47 @@ use Symfony\Component\Finder\Finder;
  * 2) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
  * 3) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
  * 4) Once the PR from 3) is merged, please update the package here and run ./bin/generate-function-metadata.php.
+ *
+ * The array is keyed by lowercase function name or "Class::method". Each entry is
+ * exactly one of:
+ *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
+ *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
+ *     one of the listed callable parameters (keyed by parameter name) receives an
+ *     impure callable, e.g. array_map()'s 'callback'.
  */
 
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
 return [
 %s
 ];
 php;
 	$content = '';
+	$escape = static fn (mixed $value): string => var_export($value, true);
+	$encodeHasSideEffects = static fn (array $meta) => [$escape('hasSideEffects'), $escape($meta['hasSideEffects'])];
+	$encodePureUnlessCallableIsImpureParameters = static fn (array $meta) => [
+		$escape('pureUnlessCallableIsImpureParameters'),
+		sprintf(
+			'[%s]',
+			implode(
+				' ,',
+				array_map(
+					static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
+					array_keys($meta['pureUnlessCallableIsImpureParameters']),
+					$meta['pureUnlessCallableIsImpureParameters'],
+				),
+			),
+		),
+	];
+
 	foreach ($metadata as $name => $meta) {
 		$content .= sprintf(
 			"\t%s => [%s => %s],\n",
 			var_export($name, true),
-			var_export('hasSideEffects', true),
-			var_export($meta['hasSideEffects'], true),
+			...match (true) {
+				isset($meta['hasSideEffects']) => $encodeHasSideEffects($meta),
+				isset($meta['pureUnlessCallableIsImpureParameters']) => $encodePureUnlessCallableIsImpureParameters($meta),
+				default => throw new ShouldNotHappenException($escape($meta)),
+			},
 		);
 	}
 

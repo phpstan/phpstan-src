@@ -214,6 +214,11 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->isPure());
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return MergedPureUnlessCallableIsImpureParameters::merge($this->methods);
+	}
+
 	public function getDocComment(): ?string
 	{
 		return null;

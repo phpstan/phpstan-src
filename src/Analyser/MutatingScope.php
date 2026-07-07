@@ -1555,6 +1555,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param Type[] $parameterOutTypes
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
+	 * @param array<string, bool> $phpDocPureUnlessCallableIsImpureParameters
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
@@ -1576,6 +1577,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		array $phpDocClosureThisTypeParameters = [],
 		bool $isConstructor = false,
 		?ResolvedPhpDocBlock $resolvedPhpDocBlock = null,
+		array $phpDocPureUnlessCallableIsImpureParameters = [],
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -1611,6 +1613,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocClosureThisTypeParameters),
 				$isConstructor,
 				$this->attributeReflectionFactory->fromAttrGroups($classMethod->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $classMethod)),
+				$phpDocPureUnlessCallableIsImpureParameters,
 			),
 			!$classMethod->isStatic(),
 		);
@@ -1700,6 +1703,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				[],
 				false,
 				$this->attributeReflectionFactory->fromAttrGroups($hook->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $hook)),
+				[],
 			),
 			true,
 		);
@@ -1776,6 +1780,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param Type[] $parameterOutTypes
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
+	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
@@ -1793,6 +1798,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		array $parameterOutTypes = [],
 		array $immediatelyInvokedCallableParameters = [],
 		array $phpDocClosureThisTypeParameters = [],
+		array $pureUnlessCallableIsImpureParameters = [],
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -1818,6 +1824,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$immediatelyInvokedCallableParameters,
 				$phpDocClosureThisTypeParameters,
 				$this->attributeReflectionFactory->fromAttrGroups($function->attrGroups, InitializerExprContext::fromStubParameter(null, $this->getFile(), $function)),
+				$pureUnlessCallableIsImpureParameters,
 			),
 			false,
 		);

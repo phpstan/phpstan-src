@@ -69,6 +69,11 @@ interface ExtendedMethodReflection extends MethodReflection
 	 */
 	public function isPure(): TrinaryLogic;
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
+	public function getPureUnlessCallableIsImpureParameters(): array;
+
 	/** @return list<AttributeReflection> */
 	public function getAttributes(): array;
 

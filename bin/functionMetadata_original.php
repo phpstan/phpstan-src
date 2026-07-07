@@ -1,5 +1,21 @@
 <?php declare(strict_types = 1);
 
+/**
+ * Hand-maintained side-effect metadata for built-in functions and methods,
+ * keyed by lowercase function name or "Class::method". resources/functionMetadata.php
+ * is generated from this file by bin/generate-function-metadata.php.
+ *
+ * Each entry is exactly one of these shapes:
+ *
+ *   - ['hasSideEffects' => bool]
+ *         false: the call is pure. true: the call has side effects.
+ *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>]
+ *         the call is pure unless one of the listed callable parameters
+ *         (keyed by parameter name) receives an impure callable, e.g. array_map()
+ *         whose only side effects come from its 'callback' argument.
+ */
+
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],
@@ -20,6 +36,8 @@ return [
 	'apcu_key_info' => ['hasSideEffects' => true],
 	'apcu_sma_info' => ['hasSideEffects' => true],
 	'apcu_store' => ['hasSideEffects' => true],
+	'array_all' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_any' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_change_key_case' => ['hasSideEffects' => false],
 	'array_chunk' => ['hasSideEffects' => false],
 	'array_column' => ['hasSideEffects' => false],
@@ -28,20 +46,24 @@ return [
 	'array_diff' => ['hasSideEffects' => false],
 	'array_diff_assoc' => ['hasSideEffects' => false],
 	'array_diff_key' => ['hasSideEffects' => false],
-	'array_diff_uassoc' => ['hasSideEffects' => false],
-	'array_diff_ukey' => ['hasSideEffects' => false],
+	'array_diff_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['key_compare_func' => true]],
+	'array_diff_ukey' => ['pureUnlessCallableIsImpureParameters' => ['key_comp_func' => true]],
 	'array_fill' => ['hasSideEffects' => false],
 	'array_fill_keys' => ['hasSideEffects' => false],
+	'array_filter' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_find' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_find_key' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_flip' => ['hasSideEffects' => false],
 	'array_intersect' => ['hasSideEffects' => false],
 	'array_intersect_assoc' => ['hasSideEffects' => false],
 	'array_intersect_key' => ['hasSideEffects' => false],
-	'array_intersect_uassoc' => ['hasSideEffects' => false],
-	'array_intersect_ukey' => ['hasSideEffects' => false],
+	'array_intersect_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['key_compare_func' => true]],
+	'array_intersect_ukey' => ['pureUnlessCallableIsImpureParameters' => ['key_compare_func' => true]],
 	'array_key_first' => ['hasSideEffects' => false],
 	'array_key_last' => ['hasSideEffects' => false],
 	'array_key_exists' => ['hasSideEffects' => false],
 	'array_keys' => ['hasSideEffects' => false],
+	'array_map' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_merge' => ['hasSideEffects' => false],
 	'array_merge_recursive' => ['hasSideEffects' => false],
 	'array_pad' => ['hasSideEffects' => false],
@@ -49,18 +71,19 @@ return [
 	'array_product' => ['hasSideEffects' => false],
 	'array_push' => ['hasSideEffects' => true],
 	'array_rand' => ['hasSideEffects' => false],
+	'array_reduce' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_replace' => ['hasSideEffects' => false],
 	'array_replace_recursive' => ['hasSideEffects' => false],
 	'array_reverse' => ['hasSideEffects' => false],
 	'array_shift' => ['hasSideEffects' => true],
 	'array_slice' => ['hasSideEffects' => false],
 	'array_sum' => ['hasSideEffects' => false],
-	'array_udiff' => ['hasSideEffects' => false],
-	'array_udiff_assoc' => ['hasSideEffects' => false],
-	'array_udiff_uassoc' => ['hasSideEffects' => false],
-	'array_uintersect' => ['hasSideEffects' => false],
-	'array_uintersect_assoc' => ['hasSideEffects' => false],
-	'array_uintersect_uassoc' => ['hasSideEffects' => false],
+	'array_udiff' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true]],
+	'array_udiff_assoc' => ['pureUnlessCallableIsImpureParameters' => ['key_comp_func' => true]],
+	'array_udiff_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true, 'key_comp_func' => true]],
+	'array_uintersect' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true]],
+	'array_uintersect_assoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true]],
+	'array_uintersect_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true, 'key_compare_func' => true]],
 	'array_unique' => ['hasSideEffects' => false],
 	'array_unshift' => ['hasSideEffects' => true],
 	'array_values' => ['hasSideEffects' => false],
@@ -81,6 +104,8 @@ return [
 	'bcround' => ['hasSideEffects' => false],
 	'bcfloor' => ['hasSideEffects' => false],
 	'bcceil' => ['hasSideEffects' => false],
+	'call_user_func' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
+	'call_user_func_array' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
 	// continue functionMap.php, line 424
 	'chgrp' => ['hasSideEffects' => true],
 	'chmod' => ['hasSideEffects' => true],
@@ -97,6 +122,8 @@ return [
 	'file_put_contents' => ['hasSideEffects' => true],
 	'flock' => ['hasSideEffects' => true],
 	'fopen' => ['hasSideEffects' => true],
+	'forward_static_call' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
+	'forward_static_call_array' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
 	'fpassthru' => ['hasSideEffects' => true],
 	'fputcsv' => ['hasSideEffects' => true],
 	'fputs' => ['hasSideEffects' => true],
@@ -237,6 +264,7 @@ return [
 	'output_reset_rewrite_vars' => ['hasSideEffects' => true],
 	'pclose' => ['hasSideEffects' => true],
 	'popen' => ['hasSideEffects' => true],
+	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'readfile' => ['hasSideEffects' => true],
 	'rename' => ['hasSideEffects' => true],
 	'rewind' => ['hasSideEffects' => true],

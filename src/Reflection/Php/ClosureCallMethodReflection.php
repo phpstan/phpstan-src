@@ -99,6 +99,9 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 					null,
 					[],
 					null,
+					// pure-unless-callable-is-impure is not threaded here: a closure's own
+					// parameters cannot carry the tag.
+					TrinaryLogic::createNo(),
 				), $parameters),
 				$this->closureType->isVariadic(),
 				$this->closureType->getReturnType(),
@@ -197,6 +200,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 	public function isPure(): TrinaryLogic
 	{
 		return $this->nativeMethodReflection->isPure();
+	}
+
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return $this->nativeMethodReflection->getPureUnlessCallableIsImpureParameters();
 	}
 
 	public function getAttributes(): array

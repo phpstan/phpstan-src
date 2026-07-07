@@ -49,6 +49,7 @@ use PHPStan\Reflection\Php\ExitFunctionReflection;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
@@ -92,6 +93,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private DeprecationProvider $deprecationProvider,
 		private PhpVersion $phpVersion,
 		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
+		private SignatureMapProvider $signatureMapProvider,
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private FunctionReflectionFactory $functionReflectionFactory,
 		private RelativePathHelper $relativePathHelper,
@@ -292,6 +294,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocParameterOutTags = [];
 		$phpDocParameterImmediatelyInvokedCallable = [];
 		$phpDocParameterClosureThisTypeTags = [];
+		$phpDocParameterPureUnlessCallableIsImpure = [];
 
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -318,6 +321,19 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
+			$phpDocParameterPureUnlessCallableIsImpure = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
+		}
+
+		$lowerCasedFunctionName = strtolower($reflectionFunction->getName());
+		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
+			$functionMetadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			foreach ($functionMetadata['pureUnlessCallableIsImpureParameters'] ?? [] as $parameterName => $isPureUnlessCallableIsImpure) {
+				if (($phpDocParameterPureUnlessCallableIsImpure[$parameterName] ?? false) === true) {
+					continue;
+				}
+
+				$phpDocParameterPureUnlessCallableIsImpure[$parameterName] = $isPureUnlessCallableIsImpure;
+			}
 		}
 
 		return $this->functionReflectionFactory->create(
@@ -338,6 +354,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterImmediatelyInvokedCallable,
 			array_map(static fn (ParamClosureThisTag $tag): Type => $tag->getType(), $phpDocParameterClosureThisTypeTags),
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
+			$phpDocParameterPureUnlessCallableIsImpure,
 		);
 	}
 

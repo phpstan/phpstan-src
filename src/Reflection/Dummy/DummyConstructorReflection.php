@@ -153,6 +153,11 @@ final class DummyConstructorReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createYes();
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
+	}
+
 	public function getAttributes(): array
 	{
 		return [];

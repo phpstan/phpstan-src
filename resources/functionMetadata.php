@@ -12,8 +12,16 @@
  * 2) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
  * 3) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
  * 4) Once the PR from 3) is merged, please update the package here and run ./bin/generate-function-metadata.php.
+ *
+ * The array is keyed by lowercase function name or "Class::method". Each entry is
+ * exactly one of:
+ *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
+ *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
+ *     one of the listed callable parameters (keyed by parameter name) receives an
+ *     impure callable, e.g. array_map()'s 'callback'.
  */
 
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
 return [
 	'BackedEnum::from' => ['hasSideEffects' => false],
 	'BackedEnum::tryFrom' => ['hasSideEffects' => false],
@@ -725,6 +733,8 @@ return [
 	'apcu_key_info' => ['hasSideEffects' => true],
 	'apcu_sma_info' => ['hasSideEffects' => true],
 	'apcu_store' => ['hasSideEffects' => true],
+	'array_all' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_any' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_change_key_case' => ['hasSideEffects' => false],
 	'array_chunk' => ['hasSideEffects' => false],
 	'array_column' => ['hasSideEffects' => false],
@@ -733,23 +743,27 @@ return [
 	'array_diff' => ['hasSideEffects' => false],
 	'array_diff_assoc' => ['hasSideEffects' => false],
 	'array_diff_key' => ['hasSideEffects' => false],
-	'array_diff_uassoc' => ['hasSideEffects' => false],
-	'array_diff_ukey' => ['hasSideEffects' => false],
+	'array_diff_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['key_compare_func' => true]],
+	'array_diff_ukey' => ['pureUnlessCallableIsImpureParameters' => ['key_comp_func' => true]],
 	'array_fill' => ['hasSideEffects' => false],
 	'array_fill_keys' => ['hasSideEffects' => false],
+	'array_filter' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_find' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'array_find_key' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_first' => ['hasSideEffects' => false],
 	'array_flip' => ['hasSideEffects' => false],
 	'array_intersect' => ['hasSideEffects' => false],
 	'array_intersect_assoc' => ['hasSideEffects' => false],
 	'array_intersect_key' => ['hasSideEffects' => false],
-	'array_intersect_uassoc' => ['hasSideEffects' => false],
-	'array_intersect_ukey' => ['hasSideEffects' => false],
+	'array_intersect_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['key_compare_func' => true]],
+	'array_intersect_ukey' => ['pureUnlessCallableIsImpureParameters' => ['key_compare_func' => true]],
 	'array_is_list' => ['hasSideEffects' => false],
 	'array_key_exists' => ['hasSideEffects' => false],
 	'array_key_first' => ['hasSideEffects' => false],
 	'array_key_last' => ['hasSideEffects' => false],
 	'array_keys' => ['hasSideEffects' => false],
 	'array_last' => ['hasSideEffects' => false],
+	'array_map' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_merge' => ['hasSideEffects' => false],
 	'array_merge_recursive' => ['hasSideEffects' => false],
 	'array_pad' => ['hasSideEffects' => false],
@@ -757,6 +771,7 @@ return [
 	'array_product' => ['hasSideEffects' => false],
 	'array_push' => ['hasSideEffects' => true],
 	'array_rand' => ['hasSideEffects' => false],
+	'array_reduce' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'array_replace' => ['hasSideEffects' => false],
 	'array_replace_recursive' => ['hasSideEffects' => false],
 	'array_reverse' => ['hasSideEffects' => false],
@@ -764,12 +779,12 @@ return [
 	'array_shift' => ['hasSideEffects' => true],
 	'array_slice' => ['hasSideEffects' => false],
 	'array_sum' => ['hasSideEffects' => false],
-	'array_udiff' => ['hasSideEffects' => false],
-	'array_udiff_assoc' => ['hasSideEffects' => false],
-	'array_udiff_uassoc' => ['hasSideEffects' => false],
-	'array_uintersect' => ['hasSideEffects' => false],
-	'array_uintersect_assoc' => ['hasSideEffects' => false],
-	'array_uintersect_uassoc' => ['hasSideEffects' => false],
+	'array_udiff' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true]],
+	'array_udiff_assoc' => ['pureUnlessCallableIsImpureParameters' => ['key_comp_func' => true]],
+	'array_udiff_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true ,'key_comp_func' => true]],
+	'array_uintersect' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true]],
+	'array_uintersect_assoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true]],
+	'array_uintersect_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true ,'key_compare_func' => true]],
 	'array_unique' => ['hasSideEffects' => false],
 	'array_unshift' => ['hasSideEffects' => true],
 	'array_values' => ['hasSideEffects' => false],
@@ -803,6 +818,8 @@ return [
 	'bzerror' => ['hasSideEffects' => false],
 	'bzerrstr' => ['hasSideEffects' => false],
 	'bzopen' => ['hasSideEffects' => false],
+	'call_user_func' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
+	'call_user_func_array' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
 	'ceil' => ['hasSideEffects' => false],
 	'checkdate' => ['hasSideEffects' => false],
 	'checkdnsrr' => ['hasSideEffects' => false],
@@ -954,6 +971,8 @@ return [
 	'fmod' => ['hasSideEffects' => false],
 	'fnmatch' => ['hasSideEffects' => true],
 	'fopen' => ['hasSideEffects' => true],
+	'forward_static_call' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
+	'forward_static_call_array' => ['pureUnlessCallableIsImpureParameters' => ['function' => true]],
 	'fpassthru' => ['hasSideEffects' => true],
 	'fputcsv' => ['hasSideEffects' => true],
 	'fputs' => ['hasSideEffects' => true],
@@ -1616,6 +1635,7 @@ return [
 	'preg_last_error' => ['hasSideEffects' => true],
 	'preg_last_error_msg' => ['hasSideEffects' => true],
 	'preg_quote' => ['hasSideEffects' => false],
+	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'preg_split' => ['hasSideEffects' => false],
 	'property_exists' => ['hasSideEffects' => false],
 	'quoted_printable_decode' => ['hasSideEffects' => false],

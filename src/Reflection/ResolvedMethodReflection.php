@@ -168,6 +168,11 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->isPure();
 	}
 
+	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return $this->reflection->getPureUnlessCallableIsImpureParameters();
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts ??= $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(

@@ -16,6 +16,7 @@ interface FunctionReflectionFactory
 	 * @param array<string, bool> $phpDocParameterImmediatelyInvokedCallable
 	 * @param array<string, Type> $phpDocParameterClosureThisTypes
 	 * @param list<AttributeReflection> $attributes
+	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
 	 */
 	public function create(
 		ReflectionFunction $reflection,
@@ -35,6 +36,7 @@ interface FunctionReflectionFactory
 		array $phpDocParameterImmediatelyInvokedCallable,
 		array $phpDocParameterClosureThisTypes,
 		array $attributes,
+		array $phpDocParameterPureUnlessCallableIsImpure,
 	): PhpFunctionReflection;
 
 }

@@ -30,6 +30,7 @@ final class PureFunctionRule implements Rule
 		$function = $node->getFunctionReflection();
 
 		return $this->check->check(
+			$scope,
 			sprintf('Function %s()', $function->getName()),
 			'Function',
 			$function,

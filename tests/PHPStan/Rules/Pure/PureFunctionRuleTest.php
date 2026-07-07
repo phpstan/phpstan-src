@@ -281,6 +281,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureUnlessCallableWithImpureStatementOutsideCallback().',
 				253,
 			],
+			[
+				'Function PureUnlessCallableIsImpureFunction\redundantPureUnlessCallableWithPureCallable() is marked @pure-unless-callable-is-impure for parameter $f, but $f is already a pure callable, so function PureUnlessCallableIsImpureFunction\redundantPureUnlessCallableWithPureCallable() can be marked @phpstan-pure instead.',
+				268,
+			],
 		]);
 	}
 

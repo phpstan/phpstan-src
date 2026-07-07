@@ -30,6 +30,7 @@ final class PureMethodRule implements Rule
 		$method = $node->getMethodReflection();
 
 		return $this->check->check(
+			$scope,
 			sprintf('Method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			'Method',
 			$method,

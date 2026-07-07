@@ -258,3 +258,20 @@ function pureUnlessCallableWithImpureStatementOutsideCallback(callable $f, array
 
 	return $result;
 }
+
+/**
+ * @param pure-callable(int): int $f
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ */
+function redundantPureUnlessCallableWithPureCallable(callable $f, array $arr): array
+{
+	// $f is already a pure-callable, so @pure-unless-callable-is-impure is redundant.
+	$result = [];
+	foreach ($arr as $i => $v) {
+		$result[$i] = $f($v);
+	}
+
+	return $result;
+}

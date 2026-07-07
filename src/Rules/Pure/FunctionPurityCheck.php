@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ImpurePoint;
+use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -38,6 +39,7 @@ final class FunctionPurityCheck
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
+		Scope $scope,
 		string $functionDescription,
 		string $identifier,
 		FunctionReflection|ExtendedMethodReflection $functionReflection,
@@ -59,6 +61,33 @@ final class FunctionPurityCheck
 			}
 
 			$pureUnlessCallableParamNames[$parameter->getName()] = true;
+
+			$acceptors = $parameter->getType()->getCallableParametersAcceptors($scope);
+			if (count($acceptors) === 0) {
+				continue;
+			}
+
+			$allPure = true;
+			foreach ($acceptors as $acceptor) {
+				if ($acceptor->isPure()->yes()) {
+					continue;
+				}
+
+				$allPure = false;
+				break;
+			}
+
+			if (!$allPure) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'%s is marked @pure-unless-callable-is-impure for parameter $%s, but $%s is already a pure callable, so %s can be marked @phpstan-pure instead.',
+				$functionDescription,
+				$parameter->getName(),
+				$parameter->getName(),
+				lcfirst($functionDescription),
+			))->identifier(sprintf('pure%s.redundantUnlessCallable', $identifier))->build();
 		}
 
 		if ($isPure->yes()) {

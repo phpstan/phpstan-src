@@ -779,7 +779,7 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
@@ -809,6 +809,7 @@ class NodeScopeResolver
 				$phpDocParameterOutTypes,
 				$phpDocImmediatelyInvokedCallableParameters,
 				$phpDocClosureThisTypeParameters,
+				$pureUnlessCallableIsImpureParameters,
 			);
 			$functionReflection = $functionScope->getFunction();
 			if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {

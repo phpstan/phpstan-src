@@ -239,3 +239,22 @@ function pureInstantiatingWithUnionCallback(callable $pureCb, callable $cb, bool
 
 	return 1;
 }
+
+/**
+ * @param callable(int): int $f
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ */
+function pureUnlessCallableWithImpureStatementOutsideCallback(callable $f, array $arr): array
+{
+	// The function is pure except for $f, so a side effect outside $f is reported,
+	// while the $f() invocation itself is exempt.
+	echo 'side effect';
+	$result = [];
+	foreach ($arr as $i => $v) {
+		$result[$i] = $f($v);
+	}
+
+	return $result;
+}

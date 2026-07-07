@@ -277,6 +277,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure instantiation of class PureUnlessCallableIsImpureFunction\Baz in pure function PureUnlessCallableIsImpureFunction\pureInstantiatingWithUnionCallback().',
 				238,
 			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureUnlessCallableWithImpureStatementOutsideCallback().',
+				253,
+			],
 		]);
 	}
 

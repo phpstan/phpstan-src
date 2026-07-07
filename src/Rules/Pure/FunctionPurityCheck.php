@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Pure;
 
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ImpurePoint;
@@ -16,8 +17,11 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
 use function array_filter;
+use function array_key_exists;
+use function array_merge;
 use function count;
 use function in_array;
+use function is_string;
 use function lcfirst;
 use function sprintf;
 
@@ -48,6 +52,15 @@ final class FunctionPurityCheck
 		$errors = [];
 		$isPure = $functionReflection->isPure();
 
+		$pureUnlessCallableParamNames = [];
+		foreach ($parameters as $parameter) {
+			if (!$parameter->isPureUnlessCallableIsImpureParameter()->yes()) {
+				continue;
+			}
+
+			$pureUnlessCallableParamNames[$parameter->getName()] = true;
+		}
+
 		if ($isPure->yes()) {
 			foreach ($parameters as $parameter) {
 				if (!$parameter->passedByReference()->createsNewVariable()) {
@@ -74,21 +87,12 @@ final class FunctionPurityCheck
 				))->identifier(sprintf('pure%s.void', $identifier))->build();
 			}
 
-			foreach ($impurePoints as $impurePoint) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s %s in pure %s.',
-					$impurePoint->isCertain() ? 'Impure' : 'Possibly impure',
-					$impurePoint->getDescription(),
-					lcfirst($functionDescription),
-				))
-					->line($impurePoint->getNode()->getStartLine())
-					->identifier(sprintf(
-						'%s.%s',
-						$impurePoint->isCertain() ? 'impure' : 'possiblyImpure',
-						$impurePoint->getIdentifier(),
-					))
-					->build();
-			}
+			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
+		} elseif ($pureUnlessCallableParamNames !== []) {
+			// A function declared @pure-unless-callable-is-impure is pure except
+			// for the flagged callables, so its body is checked for purity while
+			// the flagged callables' own invocations are exempt.
+			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($isPure->no()) {
 			if (
 				count($throwPoints) === 0
@@ -151,6 +155,60 @@ final class FunctionPurityCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @param ImpurePoint[] $impurePoints
+	 * @param array<string, true> $pureUnlessCallableParamNames
+	 * @return list<IdentifierRuleError>
+	 */
+	private function reportImpurePoints(array $impurePoints, array $pureUnlessCallableParamNames, string $functionDescription): array
+	{
+		$errors = [];
+		foreach ($impurePoints as $impurePoint) {
+			if ($this->isPureUnlessCallableInvocation($impurePoint, $pureUnlessCallableParamNames)) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'%s %s in pure %s.',
+				$impurePoint->isCertain() ? 'Impure' : 'Possibly impure',
+				$impurePoint->getDescription(),
+				lcfirst($functionDescription),
+			))
+				->line($impurePoint->getNode()->getStartLine())
+				->identifier(sprintf(
+					'%s.%s',
+					$impurePoint->isCertain() ? 'impure' : 'possiblyImpure',
+					$impurePoint->getIdentifier(),
+				))
+				->build();
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param array<string, true> $pureUnlessCallableParamNames
+	 */
+	private function isPureUnlessCallableInvocation(ImpurePoint $impurePoint, array $pureUnlessCallableParamNames): bool
+	{
+		if ($pureUnlessCallableParamNames === []) {
+			return false;
+		}
+
+		$node = $impurePoint->getNode();
+		if (!$node instanceof FuncCall) {
+			return false;
+		}
+		if (!$node->name instanceof Variable) {
+			return false;
+		}
+		if (!is_string($node->name->name)) {
+			return false;
+		}
+
+		return array_key_exists($node->name->name, $pureUnlessCallableParamNames);
 	}
 
 }

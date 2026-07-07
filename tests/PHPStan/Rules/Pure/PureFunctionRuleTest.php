@@ -285,6 +285,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Function PureUnlessCallableIsImpureFunction\redundantPureUnlessCallableWithPureCallable() is marked @pure-unless-callable-is-impure for parameter $f, but $f is already a pure callable, so function PureUnlessCallableIsImpureFunction\redundantPureUnlessCallableWithPureCallable() can be marked @phpstan-pure instead.',
 				268,
 			],
+			[
+				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingInheritedMethodWithOpaqueCallback().',
+				374,
+			],
+			[
+				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperRenamedChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingRenamedInheritedMethodWithOpaqueCallback().',
+				399,
+			],
 		]);
 	}
 

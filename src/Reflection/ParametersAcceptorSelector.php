@@ -823,8 +823,9 @@ final class ParametersAcceptorSelector
 					}
 				}
 
-				$pureUnlessCallableIsImpureParameter = $parameters[$i]->isPureUnlessCallableIsImpureParameter()
-					->or($parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo());
+				$leftPureUnless = $parameters[$i]->isPureUnlessCallableIsImpureParameter();
+				$rightPureUnless = $parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo();
+				$pureUnlessCallableIsImpureParameter = $leftPureUnless->equals($rightPureUnless) ? $leftPureUnless : TrinaryLogic::createMaybe();
 
 				$parameters[$i] = new ExtendedDummyParameter(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),

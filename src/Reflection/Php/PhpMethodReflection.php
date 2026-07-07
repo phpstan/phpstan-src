@@ -408,9 +408,12 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createFromBoolean($this->isPure);
 	}
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return $this->pureUnlessCallableIsImpureParameters;
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters);
 	}
 
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self

@@ -173,7 +173,7 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return $this->methods[0]->getPureUnlessCallableIsImpureParameters();
+		return MergedPureUnlessCallableIsImpureParameters::merge($this->methods);
 	}
 
 	public function getDocComment(): ?string

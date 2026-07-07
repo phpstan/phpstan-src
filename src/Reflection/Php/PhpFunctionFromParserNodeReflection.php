@@ -21,6 +21,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use function array_map;
 use function array_reverse;
 use function is_array;
 use function is_string;
@@ -339,9 +340,12 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 		return TrinaryLogic::createFromBoolean($this->isPure);
 	}
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return $this->pureUnlessCallableIsImpureParameters;
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters);
 	}
 
 	public function getAttributes(): array

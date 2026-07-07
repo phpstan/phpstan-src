@@ -216,9 +216,12 @@ final class PhpFunctionReflection implements FunctionReflection
 		return TrinaryLogic::createFromBoolean($this->isPure);
 	}
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return $this->phpDocParameterPureUnlessCallableIsImpure;
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->phpDocParameterPureUnlessCallableIsImpure);
 	}
 
 	public function isBuiltin(): bool

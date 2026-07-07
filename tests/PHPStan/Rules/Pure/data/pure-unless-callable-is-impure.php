@@ -275,3 +275,126 @@ function redundantPureUnlessCallableWithPureCallable(callable $f, array $arr): a
 
 	return $result;
 }
+
+interface PureUnlessCallableA
+{
+
+	/**
+	 * @pure-unless-callable-is-impure $f
+	 */
+	public function m(callable $f): int;
+
+}
+
+interface PureUnlessCallableB
+{
+
+	public function m(callable $f): int;
+
+}
+
+/**
+ * @param PureUnlessCallableA|PureUnlessCallableB $obj
+ * @phpstan-pure
+ */
+function pureUnionMethodWithPureCallback($obj): int
+{
+	// The @pure-unless-callable-is-impure flag on $f is Yes in A and absent in B,
+	// so combineAcceptors merges it to Maybe. A pure callback keeps the call pure,
+	// so no error is reported. (If the Maybe flag were treated like No, this call
+	// would be wrongly reported as possibly impure.)
+	return $obj->m(static fn (int $x): int => $x * 2);
+}
+
+abstract class InheritedMapperParent
+{
+
+	/**
+	 * @param callable(int): int $cb
+	 * @param array<int> $arr
+	 * @return array<int>
+	 * @pure-unless-callable-is-impure $cb
+	 */
+	abstract public function map(callable $cb, array $arr): array;
+
+}
+
+class InheritedMapperChild extends InheritedMapperParent
+{
+
+	public function map(callable $cb, array $arr): array
+	{
+		$result = [];
+		foreach ($arr as $i => $v) {
+			$result[$i] = $cb($v);
+		}
+
+		return $result;
+	}
+
+}
+
+class InheritedMapperRenamedChild extends InheritedMapperParent
+{
+
+	public function map(callable $fn, array $arr): array
+	{
+		$result = [];
+		foreach ($arr as $i => $v) {
+			$result[$i] = $fn($v);
+		}
+
+		return $result;
+	}
+
+}
+
+/**
+ * @param array<int> $arr
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingInheritedMethodWithPureCallback(InheritedMapperChild $mapper, array $arr): array
+{
+	// The child does not re-declare @pure-unless-callable-is-impure; it is inherited
+	// from the parent. A pure callback keeps the call pure, so no error is reported.
+	return $mapper->map(static fn (int $x): int => $x * 2, $arr);
+}
+
+/**
+ * @param array<int> $arr
+ * @param callable(int): int $cb
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingInheritedMethodWithOpaqueCallback(InheritedMapperChild $mapper, array $arr, callable $cb): array
+{
+	// The inherited @pure-unless-callable-is-impure applies to the child, so an opaque
+	// callable makes the call possibly impure.
+	return $mapper->map($cb, $arr);
+}
+
+/**
+ * @param array<int> $arr
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingRenamedInheritedMethodWithPureCallback(InheritedMapperRenamedChild $mapper, array $arr): array
+{
+	// The parent flags $cb; the child renames it to $fn. The inherited flag still
+	// applies to the renamed parameter, so a pure callback keeps the call pure.
+	return $mapper->map(static fn (int $x): int => $x * 2, $arr);
+}
+
+/**
+ * @param array<int> $arr
+ * @param callable(int): int $cb
+ * @return array<int>
+ * @phpstan-pure
+ */
+function pureCallingRenamedInheritedMethodWithOpaqueCallback(InheritedMapperRenamedChild $mapper, array $arr, callable $cb): array
+{
+	// The inherited flag applies to the renamed parameter, so an opaque callable
+	// makes the call possibly impure.
+	return $mapper->map($cb, $arr);
+}

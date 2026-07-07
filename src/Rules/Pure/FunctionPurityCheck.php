@@ -54,9 +54,10 @@ final class FunctionPurityCheck
 		$errors = [];
 		$isPure = $functionReflection->isPure();
 
+		$pureUnlessCallableParameters = $functionReflection->getPureUnlessCallableIsImpureParameters();
 		$pureUnlessCallableParamNames = [];
 		foreach ($parameters as $parameter) {
-			if (!$parameter->isPureUnlessCallableIsImpureParameter()->yes()) {
+			if (!array_key_exists($parameter->getName(), $pureUnlessCallableParameters)) {
 				continue;
 			}
 

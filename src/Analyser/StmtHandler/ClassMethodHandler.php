@@ -65,7 +65,7 @@ final class ClassMethodHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
 		foreach ($stmt->params as $param) {
 			$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
@@ -103,6 +103,7 @@ final class ClassMethodHandler implements StmtHandler
 			$isConstructor,
 			null,
 			$pureUnlessCallableIsImpureParameters,
+			$pureUnlessParameterPassedParameters,
 		);
 
 		if (!$scope->isInClass()) {

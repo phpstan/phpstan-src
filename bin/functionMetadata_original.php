@@ -268,8 +268,10 @@ return [
 	'output_reset_rewrite_vars' => ['hasSideEffects' => true],
 	'pclose' => ['hasSideEffects' => true],
 	'popen' => ['hasSideEffects' => true],
-	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true]],
-	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true]],
+	// 'matches'/'subpatterns': PHP 8+ uses the php-8-stubs parameter name, PHP <8 falls
+	// back to the legacy functionMap.php name.
+	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
+	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
 	'preg_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
 	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'similar_text' => ['pureUnlessParameterPassedParameters' => ['percent' => true]],
@@ -280,8 +282,10 @@ return [
 	'sprintf' => ['hasSideEffects' => false],
 	'str_decrement' => ['hasSideEffects' => false],
 	'str_increment' => ['hasSideEffects' => false],
-	'str_ireplace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
-	'str_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
+	// 'count'/'replace_count': PHP 8+ uses the php-8-stubs parameter name, PHP <8 falls
+	// back to the legacy functionMap.php name.
+	'str_ireplace' => ['pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
+	'str_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
 	'symlink' => ['hasSideEffects' => true],
 	'time' => ['hasSideEffects' => true],
 	'tempnam' => ['hasSideEffects' => true],

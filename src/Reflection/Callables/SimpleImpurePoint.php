@@ -64,11 +64,14 @@ final class SimpleImpurePoint
 
 			if (!$certain && $scope !== null && $variant !== null) {
 				$verdict = self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args);
-				$certainty = self::applyPureUnlessCallableIsImpureVerdict($verdict, $certain);
-				if ($certainty === null) {
-					return null;
+				if ($verdict !== null) {
+					if ($verdict->yes()) {
+						return null;
+					}
+					if ($verdict->no()) {
+						$certain = true;
+					}
 				}
-				$certain = $certainty;
 			}
 
 			if ($function instanceof FunctionReflection) {
@@ -198,29 +201,6 @@ final class SimpleImpurePoint
 		}
 
 		return $verdict;
-	}
-
-	/**
-	 * Applies a @pure-unless-callable-is-impure verdict to a base certainty.
-	 * Returns null when the call is pure (verdict Yes) and no impure point should
-	 * be created, true when it is certainly impure (verdict No), and the base
-	 * certainty otherwise (verdict Maybe, or no flagged parameters). Shared by
-	 * createFromVariant() and NewHandler so the yes()/no() branching lives in one
-	 * place.
-	 */
-	public static function applyPureUnlessCallableIsImpureVerdict(?TrinaryLogic $verdict, bool $baseCertain): ?bool
-	{
-		if ($verdict === null) {
-			return $baseCertain;
-		}
-		if ($verdict->yes()) {
-			return null;
-		}
-		if ($verdict->no()) {
-			return true;
-		}
-
-		return $baseCertain;
 	}
 
 	/** @return ImpurePointIdentifier */

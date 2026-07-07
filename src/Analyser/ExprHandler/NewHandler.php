@@ -258,10 +258,13 @@ final class NewHandler implements ExprHandler
 
 		if ($constructorReflection !== null) {
 			if (!$constructorReflection->hasSideEffects()->no()) {
+				$certain = $constructorReflection->isPure()->no();
 				$verdict = SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($parametersAcceptor, $scope, $expr->getArgs());
-				$certain = SimpleImpurePoint::applyPureUnlessCallableIsImpureVerdict($verdict, $constructorReflection->isPure()->no());
-				if ($certain === null) {
+				if ($verdict !== null && $verdict->yes()) {
 					return [$constructorReflection, $classReflection, $parametersAcceptor, $impurePoints];
+				}
+				if ($verdict !== null && $verdict->no()) {
+					$certain = true;
 				}
 				$impurePoints[] = new ImpurePoint(
 					$scope,

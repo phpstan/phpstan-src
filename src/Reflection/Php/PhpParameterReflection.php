@@ -38,6 +38,7 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 		private array $attributes,
 		private ?ParameterAllowedConstants $allowedConstants,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
+		private TrinaryLogic $pureUnlessParameterPassedParameter,
 	)
 	{
 	}
@@ -164,6 +165,11 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic
 	{
 		return $this->pureUnlessCallableIsImpureParameter;
+	}
+
+	public function isPureUnlessParameterPassedParameter(): TrinaryLogic
+	{
+		return $this->pureUnlessParameterPassedParameter;
 	}
 
 }

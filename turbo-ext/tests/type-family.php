@@ -6888,7 +6888,9 @@ foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflect
 // print_r() and var_export() (positional and named, truthy, maybe and falsy
 // arguments), the pure-unless-callable-is-impure parameters of array_filter()
 // and array_reduce() fed pure, impure, maybe-pure, null, non-callable and
-// omitted callbacks (positional and named), the transformed and plain
+// omitted callbacks (positional and named), the pure-unless-parameter-passed
+// out parameters of str_replace() and preg_match() passed and omitted
+// (positional, named and unpacked), the transformed and plain
 // fixture methods, a missing scope or variant, and unconstructed instances
 $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class] = (new ReflectionMethod(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'createFromVariant'))->isInternal();
 {
@@ -6922,9 +6924,15 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 		'named callback pure' => [$arg('array', 'array'), $arg('pure', 'callback')],
 		'named two maybe' => [$arg('array', 'one'), $arg('maybe', 'two')],
 		'keyed' => [1 => $arg('impure'), 0 => $arg('array')],
+		'three' => [$arg('string'), $arg('string'), $arg('string')],
+		'four' => [$arg('string'), $arg('string'), $arg('string'), $arg('true')],
+		'named count' => [$arg('string'), $arg('string'), $arg('string'), $arg('true', 'count')],
+		'named matches' => [$arg('string', 'pattern'), $arg('string', 'subject'), $arg('true', 'matches')],
+		'named subject only' => [$arg('string', 'pattern'), $arg('string', 'subject')],
+		'unpacked' => [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('array'), unpack: true)],
 	];
 	$functions = [];
-	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand'] as $functionName) {
+	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand', 'str_replace', 'preg_match'] as $functionName) {
 		$functions[$functionName] = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
 	}
 	foreach ($functions as $functionName => $function) {
@@ -6934,6 +6942,7 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 		foreach ($argLists as $argListName => $args) {
 			$r["function $functionName $argListName"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant, $sipScope, $args)));
 			$r["function $functionName $argListName verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $sipScope, $args)));
+			$r["function $functionName $argListName passed verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($variant, $args)));
 		}
 	}
 	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {

@@ -2,10 +2,11 @@
  * PHPStanTurbo\SimpleImpurePoint — native implementation of
  * PHPStan\Reflection\Callables\SimpleImpurePoint.
  *
- * A final value class over the twin's three promoted slots, plus the two
+ * A final value class over the twin's three promoted slots, plus the
  * statics every call handler asks: createFromVariant() (the impure point of a
- * call to a function or method, null for a pure one) and
- * resolvePureUnlessCallableIsImpureVerdict(). Native callers use
+ * call to a function or method, null for a pure one),
+ * resolvePureUnlessCallableIsImpureVerdict() and
+ * resolvePureUnlessParameterPassedVerdict(). Native callers use
  * pt_simple_impure_point_resolve(), which answers createFromVariant() without
  * the intermediate object (the method call handler copies its three values
  * into an ImpurePoint straight away), and pt_simple_impure_point_new(). The
@@ -53,6 +54,12 @@ zv::Val variantParameters(zval *variant)
 zv::Val parameterIsPureUnlessCallableIsImpure(zval *parameter)
 {
 	return pt_parameter_reflection_call(parameter, PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER);
+}
+
+/* $parameter->isPureUnlessParameterPassedParameter() */
+zv::Val parameterIsPureUnlessParameterPassed(zval *parameter)
+{
+	return pt_parameter_reflection_call(parameter, PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER);
 }
 
 /* $parameter->getName() */
@@ -225,6 +232,13 @@ public:
 			}
 		}
 
+		if (!certain && scope != NULL && variant != NULL) {
+			zend_long passedVerdict = PT_TRI_YES;
+			bool hasPassedVerdict = false;
+			if (UNEXPECTED(!resolvePassedVerdict(variant, args, hasPassedVerdict, passedVerdict))) return false;
+			if (hasPassedVerdict && passedVerdict == PT_TRI_YES) return true;
+		}
+
 		zend_class_entry *functionReflectionCe = pt_class(PT_CLASS_FUNCTION_REFLECTION);
 		if (UNEXPECTED(functionReflectionCe == NULL)) return false;
 		if (instanceof_function(Z_OBJCE_P(function), functionReflectionCe)) {
@@ -377,6 +391,71 @@ public:
 		return true;
 	}
 
+	/* Mirrors resolvePureUnlessParameterPassedVerdict(): hasVerdict false
+	 * for the twin's null, verdict the PT_TRI_* value otherwise; false =
+	 * pending exception */
+	[[nodiscard]] static bool resolvePassedVerdict(zval *variant, zval *args, bool &hasVerdict, zend_long &verdict)
+	{
+		hasVerdict = false;
+		verdict = PT_TRI_YES;
+		zv::Val parameters = variantParameters(variant);
+		if (UNEXPECTED(parameters.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(parameters.raw()) != IS_ARRAY)) {
+			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(parameters.raw()));
+			return !EG(exception);
+		}
+		zend_class_entry *extendedParameterCe = pt_class(PT_CLASS_EXTENDED_PARAMETER_REFLECTION);
+		if (UNEXPECTED(extendedParameterCe == NULL)) return false;
+
+		for (auto parameterEntry : zv::TableRef(Z_ARRVAL_P(parameters.raw()))) {
+			zval *parameter = parameterEntry.value().deref().raw();
+			if (Z_TYPE_P(parameter) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(parameter), extendedParameterCe)) continue;
+			zend_long pureUnless = trinaryOf(parameterIsPureUnlessParameterPassed(parameter));
+			if (UNEXPECTED(pureUnless < 0)) return false;
+			if (pureUnless == PT_TRI_NO) continue;
+
+			if (!hasVerdict) {
+				hasVerdict = true;
+				verdict = PT_TRI_YES;
+			}
+
+			zval *matchedArg = NULL;
+			bool hasNamedParameter = false;
+			if (EXPECTED(Z_TYPE_P(args) == IS_ARRAY)) {
+				for (auto argEntry : zv::TableRef(Z_ARRVAL_P(args))) {
+					zval *arg = argEntry.value().deref().raw();
+					zval *argName = nodeProperty(pt_sip_arg_name_site, arg, PT_LC("name"));
+					if (UNEXPECTED(EG(exception))) return false;
+					if (Z_TYPE_P(argName) != IS_NULL) {
+						hasNamedParameter = true;
+						zval *identifierName = nodeProperty(pt_sip_identifier_name_site, argName, PT_LC("name"));
+						if (UNEXPECTED(EG(exception))) return false;
+						zv::Val parameterNameValue = parameterName(parameter);
+						if (UNEXPECTED(parameterNameValue.isUndef())) return false;
+						if (zend_is_identical(identifierName, parameterNameValue.raw())) {
+							matchedArg = arg;
+							break;
+						}
+						continue;
+					}
+					if (!hasNamedParameter && identicalKeys(argEntry, parameterEntry)) {
+						matchedArg = arg;
+						break;
+					}
+				}
+			} else {
+				zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(args));
+				if (UNEXPECTED(EG(exception))) return false;
+			}
+
+			if (matchedArg == NULL) continue;
+
+			verdict = pt_trinary_and(verdict, PT_TRI_NO);
+		}
+
+		return true;
+	}
+
 private:
 	zend_object *self;
 
@@ -514,6 +593,16 @@ PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 		bool hasVerdict = false;
 		zend_long verdict = PT_TRI_YES;
 		if (UNEXPECTED(!SimpleImpurePoint::resolveVerdict(variant, scope, args, hasVerdict, verdict))) RETURN_THROWS();
+		if (!hasVerdict) RETURN_NULL();
+		RETURN_COPY(pt_trinary_singleton(verdict));
+	});
+
+	cls.method(sigs::resolvePureUnlessParameterPassedVerdict, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *variant, *args;
+		if (!zp::parse<zp::Obj, zp::Arr>(execute_data, variant, args)) RETURN_THROWS();
+		bool hasVerdict = false;
+		zend_long verdict = PT_TRI_YES;
+		if (UNEXPECTED(!SimpleImpurePoint::resolvePassedVerdict(variant, args, hasVerdict, verdict))) RETURN_THROWS();
 		if (!hasVerdict) RETURN_NULL();
 		RETURN_COPY(pt_trinary_singleton(verdict));
 	});

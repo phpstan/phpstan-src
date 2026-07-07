@@ -49,9 +49,10 @@ inline constexpr char strings[] =
 	"createFromVariant\0" /* 270 */
 	"PHPStan\\TrinaryLogic\0" /* 288 */
 	"resolvePureUnlessCallableIsImpureVerdict\0" /* 309 */
-	"getIdentifier\0" /* 350 */
-	"getDescription\0" /* 364 */
-	"isCertain"; /* 379 */
+	"resolvePureUnlessParameterPassedVerdict\0" /* 350 */
+	"getIdentifier\0" /* 390 */
+	"getDescription\0" /* 404 */
+	"isCertain"; /* 419 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $identifier */
 	reg::packed(11, MAY_BE_STRING), /* __construct $description */
@@ -65,6 +66,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(180, 0, 186), /* resolvePureUnlessCallableIsImpureVerdict $scope */
 	reg::packed(214, MAY_BE_ARRAY), /* resolvePureUnlessCallableIsImpureVerdict $args */
 	reg::packed(222, MAY_BE_NULL, 288), /* resolvePureUnlessCallableIsImpureVerdict return */
+	reg::packed(134, 0, 142), /* resolvePureUnlessParameterPassedVerdict $variant */
+	reg::packed(214, MAY_BE_ARRAY), /* resolvePureUnlessParameterPassedVerdict $args */
+	reg::packed(222, MAY_BE_NULL, 288), /* resolvePureUnlessParameterPassedVerdict return */
 	reg::packed(222, MAY_BE_STRING), /* getIdentifier return */
 	reg::packed(222, MAY_BE_STRING), /* getDescription return */
 	reg::packed(222, MAY_BE_BOOL), /* isCertain return */
@@ -77,9 +81,10 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 31 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig createFromVariant = { { 270 /* createFromVariant */, 2, 3, 4, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig resolvePureUnlessCallableIsImpureVerdict = { { 309 /* resolvePureUnlessCallableIsImpureVerdict */, 3, 8, 3, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getIdentifier = { { 350 /* getIdentifier */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDescription = { { 364 /* getDescription */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isCertain = { { 379 /* isCertain */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolvePureUnlessParameterPassedVerdict = { { 350 /* resolvePureUnlessParameterPassedVerdict */, 2, 12, 2, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIdentifier = { { 390 /* getIdentifier */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDescription = { { 404 /* getDescription */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCertain = { { 419 /* isCertain */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::SimpleImpurePoint

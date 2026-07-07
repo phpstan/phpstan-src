@@ -2671,13 +2671,14 @@ public:
 		if (UNEXPECTED(classScope.isUndef())) return zv::Val();
 
 		/* [$templateTypeMap, ..., $acceptsNamedArguments, , $phpDocComment, ...,
-		 * $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] */
+		 * $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters,
+		 * $phpDocPureUnlessParameterPassedParameters] */
 		pt_php_docs phpDocs;
-		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(slots::phpDocsResolver), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20), phpDocs))) return zv::Val();
+		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(slots::phpDocsResolver), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20) | (1u << 21), phpDocs))) return zv::Val();
 		zval *docs[PT_PHP_DOCS_COUNT];
 		for (uint32_t i = 0; i < PT_PHP_DOCS_COUNT; i++) docs[i] = &phpDocs.items[i];
 
-		zval enterArgs[20];
+		zval enterArgs[21];
 		ZVAL_COPY_VALUE(&enterArgs[0], methodNode.raw());
 		ZVAL_COPY_VALUE(&enterArgs[1], docs[0]);  /* templateTypeMap */
 		ZVAL_COPY_VALUE(&enterArgs[2], docs[1]);  /* phpDocParameterTypes */
@@ -2698,7 +2699,8 @@ public:
 		ZVAL_FALSE(&enterArgs[17]);
 		ZVAL_NULL(&enterArgs[18]);
 		ZVAL_COPY_VALUE(&enterArgs[19], docs[20]); /* pureUnlessCallableIsImpureParameters */
-		zv::Val methodScope = call(classScope.raw(), PT_LC("enterclassmethod"), 20, enterArgs);
+		ZVAL_COPY_VALUE(&enterArgs[20], docs[21]); /* pureUnlessParameterPassedParameters */
+		zv::Val methodScope = call(classScope.raw(), PT_LC("enterclassmethod"), 21, enterArgs);
 		if (UNEXPECTED(methodScope.isUndef())) return zv::Val();
 
 		zend_class_entry *expressionStmtCe = pt_class(PT_CLASS_EXPRESSION_STMT);

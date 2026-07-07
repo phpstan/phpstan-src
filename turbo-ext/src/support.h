@@ -3393,7 +3393,7 @@ extern zend_class_entry *pt_ce_deprecated_attribute_resolver;
 extern zend_class_entry *pt_ce_property_hooks_processor;
 extern zend_class_entry *pt_ce_called_method_processor;
 
-/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 21
+/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 22
  * values of the twin's list, owned. For the shadowing class every item is
  * set; any other resolver's method runs and its array is unpacked like the
  * caller's list() — an item it lacks stays UNDEF, unless its bit (1 << index)
@@ -3401,7 +3401,7 @@ extern zend_class_entry *pt_ce_called_method_processor;
  * false = pending exception */
 enum : uint32_t
 {
-	PT_PHP_DOCS_COUNT = 21,
+	PT_PHP_DOCS_COUNT = 22,
 	PT_PHP_DOCS_TEMPLATE_TYPE_MAP = 0,
 	PT_PHP_DOCS_PARAMETER_TYPES,
 	PT_PHP_DOCS_IMMEDIATELY_INVOKED_CALLABLE_PARAMETERS,
@@ -3423,6 +3423,7 @@ enum : uint32_t
 	PT_PHP_DOCS_IS_ALLOWED_PRIVATE_MUTATION,
 	PT_PHP_DOCS_RESOLVED_PHP_DOC,
 	PT_PHP_DOCS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
+	PT_PHP_DOCS_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS,
 };
 struct pt_php_docs
 {

@@ -1590,6 +1590,8 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				},
 				'enterClassMethod(static)' => static fn () => $scope->enterClassMethod($sfProbeStaticClassMethod, $sfEmptyTemplateTypeMap, [], null, null, null, false, true, true, true, false, null, new \PHPStan\Type\ObjectWithoutClassType(), 'doc', ['a' => new \PHPStan\Type\IntegerType()], ['a' => true], [], true),
 				'enterFunction' => static fn () => $scope->enterFunction($sfProbeFunction, $sfEmptyTemplateTypeMap, ['a' => new \PHPStan\Type\IntegerType()], new \PHPStan\Type\StringType(), null, null, false, false),
+				'enterClassMethod(pure unless passed)' => static fn () => $scope->enterClassMethod($sfProbeClassMethod, $sfEmptyTemplateTypeMap, [], null, null, null, false, false, false, phpDocPureUnlessCallableIsImpureParameters: ['a' => true], phpDocPureUnlessParameterPassedParameters: ['b' => true, 'd' => false]),
+				'enterFunction(pure unless passed)' => static fn () => $scope->enterFunction($sfProbeFunction, $sfEmptyTemplateTypeMap, [], null, null, null, false, false, pureUnlessParameterPassedParameters: ['a' => true]),
 				'enterPropertyHook(get)' => static fn () => $scope->enterPropertyHook($sfProbeGetHook, 'name', new \PhpParser\Node\Identifier('string'), new \PHPStan\Type\StringType(), [], null, null, false, null, null),
 				'enterPropertyHook(set)' => static fn () => $scope->enterPropertyHook($sfProbeSetHook, 'name', new \PhpParser\Node\Identifier('string'), new \PHPStan\Type\StringType(), [], null, 'gone', true, false, 'doc'),
 				'enterPropertyHook(set, param)' => static fn () => $scope->enterPropertyHook($sfProbeSetHookWithParam, 'name', new \PhpParser\Node\Identifier('string'), new \PHPStan\Type\StringType(), [], null, null, false, true, null),

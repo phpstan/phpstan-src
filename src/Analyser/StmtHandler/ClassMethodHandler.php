@@ -76,7 +76,7 @@ final class ClassMethodHandler implements StmtHandler
 	{
 		$dependencies = [];
 		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
 		$dependencies[] = $this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
 
@@ -112,6 +112,7 @@ final class ClassMethodHandler implements StmtHandler
 			$isConstructor,
 			null,
 			$pureUnlessCallableIsImpureParameters,
+			$pureUnlessParameterPassedParameters,
 		);
 
 		if (!$scope->isInClass()) {

@@ -4326,7 +4326,7 @@ public:
 	static zv::Val emptyAssertions() { return pt_assertions_create_empty(); }
 
 	/** @api (twin 2012) */
-	zv::Val enterClassMethod(zval *classMethod, zval *templateTypeMap, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *throwType, zval *deprecatedDescription, bool isDeprecated, bool isInternal, bool isFinal, zval *isPure, bool acceptsNamedArguments, zval *asserts, zval *selfOutType, zval *phpDocComment, zval *parameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *phpDocClosureThisTypeParameters, bool isConstructor, zval *resolvedPhpDocBlock, zval *phpDocPureUnlessCallableIsImpureParameters)
+	zv::Val enterClassMethod(zval *classMethod, zval *templateTypeMap, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *throwType, zval *deprecatedDescription, bool isDeprecated, bool isInternal, bool isFinal, zval *isPure, bool acceptsNamedArguments, zval *asserts, zval *selfOutType, zval *phpDocComment, zval *parameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *phpDocClosureThisTypeParameters, bool isConstructor, zval *resolvedPhpDocBlock, zval *phpDocPureUnlessCallableIsImpureParameters, zval *phpDocPureUnlessParameterPassedParameters)
 	{
 		bool inClass;
 		if (UNEXPECTED(!thisIsInClass(inClass))) return zv::Val();
@@ -4336,7 +4336,7 @@ public:
 		}
 
 		zend_object *classMethodObject = Z_OBJ_P(classMethod);
-		Args<28> a;
+		Args<29> a;
 		PT_MS_ARG_OWNED(a, thisGetClassReflection());
 		a.add(zv::Ref(classMethod));
 		a.addNull();
@@ -4387,6 +4387,7 @@ public:
 			PT_MS_ARG_OWNED(a, attributesFromAttrGroups(attrGroups.deref().raw(), className.raw(), classMethodObject));
 		}
 		a.add(zv::Ref(phpDocPureUnlessCallableIsImpureParameters));
+		a.add(zv::Ref(phpDocPureUnlessParameterPassedParameters));
 
 		zv::Val reflection = pt_type_new(PT_CLASS_PHP_METHOD_FROM_PARSER_NODE_REFLECTION, a.count, a.argv);
 		if (UNEXPECTED(reflection.isUndef())) return zv::Val();
@@ -4502,7 +4503,7 @@ public:
 		zv::Val realParameterTypes = getRealParameterTypes(hookObject);
 		if (UNEXPECTED(realParameterTypes.isUndef())) return zv::Val();
 
-		Args<28> a;
+		Args<29> a;
 		PT_MS_ARG_OWNED(a, thisGetClassReflection());
 		{
 			zval hookZv;
@@ -4551,6 +4552,7 @@ public:
 			PT_MS_ARG_OWNED(a, attributesFromAttrGroups(attrGroups.deref().raw(), className.raw(), hookObject));
 		}
 		a.addEmptyArray();
+		a.addEmptyArray();
 
 		zv::Val reflection = pt_type_new(PT_CLASS_PHP_METHOD_FROM_PARSER_NODE_REFLECTION, a.count, a.argv);
 		if (UNEXPECTED(reflection.isUndef())) return zv::Val();
@@ -4558,7 +4560,7 @@ public:
 	}
 
 	/** @api (twin 2237) */
-	zv::Val enterFunction(zval *function, zval *templateTypeMap, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *throwType, zval *deprecatedDescription, bool isDeprecated, bool isInternal, zval *isPure, bool acceptsNamedArguments, zval *asserts, zval *phpDocComment, zval *parameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *phpDocClosureThisTypeParameters, zval *pureUnlessCallableIsImpureParameters)
+	zv::Val enterFunction(zval *function, zval *templateTypeMap, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *throwType, zval *deprecatedDescription, bool isDeprecated, bool isInternal, zval *isPure, bool acceptsNamedArguments, zval *asserts, zval *phpDocComment, zval *parameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *phpDocClosureThisTypeParameters, zval *pureUnlessCallableIsImpureParameters, zval *pureUnlessParameterPassedParameters)
 	{
 		zend_object *functionObject = Z_OBJ_P(function);
 		Args<28> a;
@@ -4602,6 +4604,7 @@ public:
 			PT_MS_ARG_OWNED(a, attributesFromAttrGroups(attrGroups.deref().raw(), &nullClassName, functionObject));
 		}
 		a.add(zv::Ref(pureUnlessCallableIsImpureParameters));
+		a.add(zv::Ref(pureUnlessParameterPassedParameters));
 
 		zv::Val reflection = pt_type_new(PT_CLASS_PHP_FUNCTION_FROM_PARSER_NODE_REFLECTION, a.count, a.argv);
 		if (UNEXPECTED(reflection.isUndef())) return zv::Val();
@@ -11992,10 +11995,10 @@ zv::Val pt_mutating_scope_enter_class_method(zend_object *scope, zval *argv)
 		&& msIsBool(&argv[6]) && msIsBool(&argv[7]) && msIsBool(&argv[8]) && msIsBoolOrNull(&argv[9]) && msIsBool(&argv[10])
 		&& msIsObjectOrNull(&argv[11]) && msIsObjectOrNull(&argv[12]) && msIsStringOrNull(&argv[13])
 		&& Z_TYPE(argv[14]) == IS_ARRAY && Z_TYPE(argv[15]) == IS_ARRAY && Z_TYPE(argv[16]) == IS_ARRAY
-		&& msIsBool(&argv[17]) && msIsObjectOrNull(&argv[18]) && Z_TYPE(argv[19]) == IS_ARRAY)) {
-		return MutatingScope(scope).enterClassMethod(&argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, Z_TYPE(argv[7]) == IS_TRUE, Z_TYPE(argv[8]) == IS_TRUE, &argv[9], Z_TYPE(argv[10]) == IS_TRUE, &argv[11], &argv[12], &argv[13], &argv[14], &argv[15], &argv[16], Z_TYPE(argv[17]) == IS_TRUE, &argv[18], &argv[19]);
+		&& msIsBool(&argv[17]) && msIsObjectOrNull(&argv[18]) && Z_TYPE(argv[19]) == IS_ARRAY && Z_TYPE(argv[20]) == IS_ARRAY)) {
+		return MutatingScope(scope).enterClassMethod(&argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, Z_TYPE(argv[7]) == IS_TRUE, Z_TYPE(argv[8]) == IS_TRUE, &argv[9], Z_TYPE(argv[10]) == IS_TRUE, &argv[11], &argv[12], &argv[13], &argv[14], &argv[15], &argv[16], Z_TYPE(argv[17]) == IS_TRUE, &argv[18], &argv[19], &argv[20]);
 	}
-	return pt_type_call(scope, PT_LC("enterclassmethod"), 20, argv);
+	return pt_type_call(scope, PT_LC("enterclassmethod"), 21, argv);
 }
 
 zv::Val pt_mutating_scope_enter_function(zend_object *scope, zval *argv)
@@ -12005,10 +12008,10 @@ zv::Val pt_mutating_scope_enter_function(zend_object *scope, zval *argv)
 		&& msIsObjectOrNull(&argv[3]) && msIsObjectOrNull(&argv[4]) && msIsStringOrNull(&argv[5])
 		&& msIsBool(&argv[6]) && msIsBool(&argv[7]) && msIsBoolOrNull(&argv[8]) && msIsBool(&argv[9])
 		&& msIsObjectOrNull(&argv[10]) && msIsStringOrNull(&argv[11])
-		&& Z_TYPE(argv[12]) == IS_ARRAY && Z_TYPE(argv[13]) == IS_ARRAY && Z_TYPE(argv[14]) == IS_ARRAY && Z_TYPE(argv[15]) == IS_ARRAY)) {
-		return MutatingScope(scope).enterFunction(&argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, Z_TYPE(argv[7]) == IS_TRUE, &argv[8], Z_TYPE(argv[9]) == IS_TRUE, &argv[10], &argv[11], &argv[12], &argv[13], &argv[14], &argv[15]);
+		&& Z_TYPE(argv[12]) == IS_ARRAY && Z_TYPE(argv[13]) == IS_ARRAY && Z_TYPE(argv[14]) == IS_ARRAY && Z_TYPE(argv[15]) == IS_ARRAY && Z_TYPE(argv[16]) == IS_ARRAY)) {
+		return MutatingScope(scope).enterFunction(&argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, Z_TYPE(argv[7]) == IS_TRUE, &argv[8], Z_TYPE(argv[9]) == IS_TRUE, &argv[10], &argv[11], &argv[12], &argv[13], &argv[14], &argv[15], &argv[16]);
 	}
-	return pt_type_call(scope, PT_LC("enterfunction"), 16, argv);
+	return pt_type_call(scope, PT_LC("enterfunction"), 17, argv);
 }
 
 zv::Val pt_mutating_scope_enter_class(zend_object *scope, zval *classReflection)
@@ -12847,12 +12850,13 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		reg::withDefault(reg::boolArg("isConstructor"), "false"),
 		reg::withDefault(reg::obj("resolvedPhpDocBlock", resolvedPhpDocBlock, true), "null"),
 		reg::withDefault(reg::arrayArg("phpDocPureUnlessCallableIsImpureParameters"), "[]"),
+		reg::withDefault(reg::arrayArg("phpDocPureUnlessParameterPassedParameters"), "[]"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classMethod, *templateTypeMapArg, *phpDocParameterTypes, *phpDocReturnType = NULL, *throwType = NULL, *asserts = NULL, *selfOutType = NULL, *resolvedPhpDocBlock = NULL;
-		zval *parameterOutTypes = NULL, *immediatelyInvokedCallableParameters = NULL, *phpDocClosureThisTypeParameters = NULL, *phpDocPureUnlessCallableIsImpureParameters = NULL;
+		zval *parameterOutTypes = NULL, *immediatelyInvokedCallableParameters = NULL, *phpDocClosureThisTypeParameters = NULL, *phpDocPureUnlessCallableIsImpureParameters = NULL, *phpDocPureUnlessParameterPassedParameters = NULL;
 		zend_string *deprecatedDescription = NULL, *phpDocComment = NULL;
 		bool isDeprecated, isInternal, isFinal, isPure = false, isPureIsNull = true, acceptsNamedArguments = true, isConstructor = false;
-		ZEND_PARSE_PARAMETERS_START(9, 20)
+		ZEND_PARSE_PARAMETERS_START(9, 21)
 			Z_PARAM_OBJECT(classMethod)
 			Z_PARAM_OBJECT(templateTypeMapArg)
 			Z_PARAM_ARRAY(phpDocParameterTypes)
@@ -12874,6 +12878,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 			Z_PARAM_BOOL(isConstructor)
 			Z_PARAM_OBJECT_OR_NULL(resolvedPhpDocBlock)
 			Z_PARAM_ARRAY(phpDocPureUnlessCallableIsImpureParameters)
+			Z_PARAM_ARRAY(phpDocPureUnlessParameterPassedParameters)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_MS_OBJ_ZVAL(phpDocReturnType);
 		PT_MS_OBJ_ZVAL(throwType);
@@ -12886,13 +12891,14 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		PT_MS_ARRAY_ZVAL(immediatelyInvokedCallableParameters);
 		PT_MS_ARRAY_ZVAL(phpDocClosureThisTypeParameters);
 		PT_MS_ARRAY_ZVAL(phpDocPureUnlessCallableIsImpureParameters);
+		PT_MS_ARRAY_ZVAL(phpDocPureUnlessParameterPassedParameters);
 		zval isPureZv;
 		if (isPureIsNull) {
 			ZVAL_NULL(&isPureZv);
 		} else {
 			ZVAL_BOOL(&isPureZv, isPure);
 		}
-		PT_RETURN_VAL(PT_THIS.enterClassMethod(classMethod, templateTypeMapArg, phpDocParameterTypes, phpDocReturnType, throwType, &deprecatedDescriptionZv, isDeprecated, isInternal, isFinal, &isPureZv, acceptsNamedArguments, asserts, selfOutType, &phpDocCommentZv, parameterOutTypes, immediatelyInvokedCallableParameters, phpDocClosureThisTypeParameters, isConstructor, resolvedPhpDocBlock, phpDocPureUnlessCallableIsImpureParameters));
+		PT_RETURN_VAL(PT_THIS.enterClassMethod(classMethod, templateTypeMapArg, phpDocParameterTypes, phpDocReturnType, throwType, &deprecatedDescriptionZv, isDeprecated, isInternal, isFinal, &isPureZv, acceptsNamedArguments, asserts, selfOutType, &phpDocCommentZv, parameterOutTypes, immediatelyInvokedCallableParameters, phpDocClosureThisTypeParameters, isConstructor, resolvedPhpDocBlock, phpDocPureUnlessCallableIsImpureParameters, phpDocPureUnlessParameterPassedParameters));
 	}, &returnsSelf);
 
 	cls.method("enterPropertyHook", reg::Public, 10, {
@@ -12957,12 +12963,13 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		reg::withDefault(reg::arrayArg("immediatelyInvokedCallableParameters"), "[]"),
 		reg::withDefault(reg::arrayArg("phpDocClosureThisTypeParameters"), "[]"),
 		reg::withDefault(reg::arrayArg("pureUnlessCallableIsImpureParameters"), "[]"),
+		reg::withDefault(reg::arrayArg("pureUnlessParameterPassedParameters"), "[]"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *function = NULL, *templateTypeMapArg = NULL, *phpDocParameterTypes = NULL, *phpDocReturnType = NULL, *throwType = NULL, *asserts = NULL;
-		zval *parameterOutTypes = NULL, *immediatelyInvokedCallableParameters = NULL, *phpDocClosureThisTypeParameters = NULL, *pureUnlessCallableIsImpureParameters = NULL;
+		zval *parameterOutTypes = NULL, *immediatelyInvokedCallableParameters = NULL, *phpDocClosureThisTypeParameters = NULL, *pureUnlessCallableIsImpureParameters = NULL, *pureUnlessParameterPassedParameters = NULL;
 		zend_string *deprecatedDescription = NULL, *phpDocComment = NULL;
 		bool isDeprecated = false, isInternal = false, isPure = false, isPureIsNull = true, acceptsNamedArguments = true;
-		ZEND_PARSE_PARAMETERS_START(8, 16)
+		ZEND_PARSE_PARAMETERS_START(8, 17)
 			Z_PARAM_OBJECT(function)
 			Z_PARAM_OBJECT(templateTypeMapArg)
 			Z_PARAM_ARRAY(phpDocParameterTypes)
@@ -12980,6 +12987,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 			Z_PARAM_ARRAY(immediatelyInvokedCallableParameters)
 			Z_PARAM_ARRAY(phpDocClosureThisTypeParameters)
 			Z_PARAM_ARRAY(pureUnlessCallableIsImpureParameters)
+			Z_PARAM_ARRAY(pureUnlessParameterPassedParameters)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_MS_OBJ_ZVAL(phpDocReturnType);
 		PT_MS_OBJ_ZVAL(throwType);
@@ -12990,13 +12998,14 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		PT_MS_ARRAY_ZVAL(immediatelyInvokedCallableParameters);
 		PT_MS_ARRAY_ZVAL(phpDocClosureThisTypeParameters);
 		PT_MS_ARRAY_ZVAL(pureUnlessCallableIsImpureParameters);
+		PT_MS_ARRAY_ZVAL(pureUnlessParameterPassedParameters);
 		zval isPureZv;
 		if (isPureIsNull) {
 			ZVAL_NULL(&isPureZv);
 		} else {
 			ZVAL_BOOL(&isPureZv, isPure);
 		}
-		PT_RETURN_VAL(PT_THIS.enterFunction(function, templateTypeMapArg, phpDocParameterTypes, phpDocReturnType, throwType, &deprecatedDescriptionZv, isDeprecated, isInternal, &isPureZv, acceptsNamedArguments, asserts, &phpDocCommentZv, parameterOutTypes, immediatelyInvokedCallableParameters, phpDocClosureThisTypeParameters, pureUnlessCallableIsImpureParameters));
+		PT_RETURN_VAL(PT_THIS.enterFunction(function, templateTypeMapArg, phpDocParameterTypes, phpDocReturnType, throwType, &deprecatedDescriptionZv, isDeprecated, isInternal, &isPureZv, acceptsNamedArguments, asserts, &phpDocCommentZv, parameterOutTypes, immediatelyInvokedCallableParameters, phpDocClosureThisTypeParameters, pureUnlessCallableIsImpureParameters, pureUnlessParameterPassedParameters));
 	}, &returnsSelf);
 
 	cls.method<&MutatingScope::enterNamespace, zp::Str>(sigs::enterNamespace);

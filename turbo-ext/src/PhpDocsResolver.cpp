@@ -6,7 +6,7 @@
  * arginfo so Nette autowires it. getPhpDocs() — asked by ClassMethodHandler,
  * FunctionHandler, PropertyHandler, PropertyHooksProcessor and
  * PhpClassReflectionExtension for every declaration — is exported as
- * pt_php_docs_resolver_get_php_docs(), which hands the 21 values over
+ * pt_php_docs_resolver_get_php_docs(), which hands the 22 values over
  * without building the twin's array; the PHP method builds it.
  *
  * FileTypeMapper, PhpDocInheritanceResolver, ResolvedPhpDocBlock, the PHPDoc
@@ -283,6 +283,7 @@ public:
 		zv::Val selfOutType = zv::Val::null();
 		zv::Arr phpDocParameterOutTypes = zv::Arr::empty();
 		zv::Arr phpDocPureUnlessCallableIsImpureParameters = zv::Arr::empty();
+		zv::Arr phpDocPureUnlessParameterPassedParameters = zv::Arr::empty();
 		zv::Val templateTypeMap;
 
 		{
@@ -467,6 +468,11 @@ public:
 				if (UNEXPECTED(value.isUndef())) return false;
 				phpDocPureUnlessCallableIsImpureParameters = zv::Arr::adoptVal(std::move(value));
 			}
+			{
+				zv::Val value = pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAMS_PURE_UNLESS_PARAMETER_PASSED);
+				if (UNEXPECTED(value.isUndef())) return false;
+				phpDocPureUnlessParameterPassedParameters = zv::Arr::adoptVal(std::move(value));
+			}
 		} else {
 			asserts = createEmptyAssertions();
 			if (UNEXPECTED(asserts.isUndef())) return false;
@@ -510,6 +516,7 @@ public:
 		moveInto(items[PT_PHP_DOCS_IS_ALLOWED_PRIVATE_MUTATION], isAllowedPrivateMutation);
 		moveInto(items[PT_PHP_DOCS_RESOLVED_PHP_DOC], resolvedPhpDoc);
 		moveInto(items[PT_PHP_DOCS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS], phpDocPureUnlessCallableIsImpureParameters);
+		moveInto(items[PT_PHP_DOCS_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS], phpDocPureUnlessParameterPassedParameters);
 		return true;
 	}
 

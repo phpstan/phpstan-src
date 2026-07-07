@@ -101,6 +101,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 					null,
 					// pure-unless-callable-is-impure is not threaded here: a closure's own
 					// parameters cannot carry the tag.
+					TrinaryLogic::createNo(),
 				), $parameters),
 				$this->closureType->isVariadic(),
 				$this->closureType->getReturnType(),

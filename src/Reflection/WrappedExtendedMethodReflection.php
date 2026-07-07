@@ -78,6 +78,7 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 					null,
 					[],
 					null,
+					TrinaryLogic::createNo(),
 				), $variant->getParameters()),
 				$variant->isVariadic(),
 				$variant->getReturnType(),

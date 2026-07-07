@@ -92,9 +92,9 @@ final class AnnotationsMethodParameterReflection implements ExtendedParameterRef
 		return new AllowedConstantsResult([], [], false);
 	}
 
-	public function isPureUnlessCallableIsImpureParameter(): bool
+	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic
 	{
-		return false;
+		return TrinaryLogic::createNo();
 	}
 
 }

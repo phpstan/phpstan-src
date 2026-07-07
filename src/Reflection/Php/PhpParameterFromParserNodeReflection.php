@@ -33,7 +33,7 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
 		private array $attributes,
-		private bool $pureUnlessCallableIsImpureParameter,
+		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
 	)
 	{
 	}
@@ -126,7 +126,7 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 		return new AllowedConstantsResult([], [], false);
 	}
 
-	public function isPureUnlessCallableIsImpureParameter(): bool
+	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic
 	{
 		return $this->pureUnlessCallableIsImpureParameter;
 	}

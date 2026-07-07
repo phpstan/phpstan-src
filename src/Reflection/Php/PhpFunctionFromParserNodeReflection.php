@@ -179,7 +179,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 				$closureThisType = null;
 			}
 
-			$pureUnlessCallableIsImpureParameter = $this->pureUnlessCallableIsImpureParameters[$parameter->var->name] ?? false;
+			$pureUnlessCallableIsImpureParameter = TrinaryLogic::createFromBoolean($this->pureUnlessCallableIsImpureParameters[$parameter->var->name] ?? false);
 
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,

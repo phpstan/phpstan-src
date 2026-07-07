@@ -768,7 +768,7 @@ final class ParametersAcceptorSelector
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getClosureThisType() : null,
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAttributes() : [],
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null,
-						$parameter instanceof ExtendedParameterReflection && $parameter->isPureUnlessCallableIsImpureParameter(),
+						$parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo(),
 					);
 					continue;
 				}
@@ -824,7 +824,7 @@ final class ParametersAcceptorSelector
 				}
 
 				$pureUnlessCallableIsImpureParameter = $parameters[$i]->isPureUnlessCallableIsImpureParameter()
-					|| ($parameter instanceof ExtendedParameterReflection && $parameter->isPureUnlessCallableIsImpureParameter());
+					->or($parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo());
 
 				$parameters[$i] = new ExtendedDummyParameter(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),
@@ -942,6 +942,7 @@ final class ParametersAcceptorSelector
 			null,
 			[],
 			null,
+			TrinaryLogic::createNo(),
 		);
 	}
 

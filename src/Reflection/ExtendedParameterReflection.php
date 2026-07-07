@@ -36,6 +36,6 @@ interface ExtendedParameterReflection extends ParameterReflection
 	 */
 	public function checkAllowedConstants(array $constants): AllowedConstantsResult;
 
-	public function isPureUnlessCallableIsImpureParameter(): bool;
+	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic;
 
 }

@@ -148,7 +148,7 @@ final class SimpleImpurePoint
 			if (!$parameter instanceof ExtendedParameterReflection) {
 				continue;
 			}
-			if (!$parameter->isPureUnlessCallableIsImpureParameter()) {
+			if ($parameter->isPureUnlessCallableIsImpureParameter()->no()) {
 				continue;
 			}
 

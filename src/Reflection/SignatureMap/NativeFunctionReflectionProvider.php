@@ -133,7 +133,7 @@ final class NativeFunctionReflectionProvider
 						$phpDocType = null;
 						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						$closureThisType = null;
-						$pureUnlessCallableIsImpureParameter = $pureUnlessCallableIsImpureParameters[$name] ?? false;
+						$pureUnlessCallableIsImpureParameter = TrinaryLogic::createFromBoolean($pureUnlessCallableIsImpureParameters[$name] ?? false);
 						if ($phpDoc !== null) {
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamTags())) {
 								$phpDocType = $phpDoc->getParamTags()[$parameterSignature->getName()]->getType();
@@ -145,7 +145,7 @@ final class NativeFunctionReflectionProvider
 								$closureThisType = $phpDoc->getParamClosureThisTags()[$parameterSignature->getName()]->getType();
 							}
 							if (($phpDoc->getParamsPureUnlessCallableIsImpure()[$parameterSignature->getName()] ?? false) === true) {
-								$pureUnlessCallableIsImpureParameter = true;
+								$pureUnlessCallableIsImpureParameter = TrinaryLogic::createYes();
 							}
 						}
 

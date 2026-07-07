@@ -31,7 +31,7 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 		private ?Type $closureThisType,
 		private array $attributes,
 		private ?ParameterAllowedConstants $allowedConstants,
-		private bool $pureUnlessCallableIsImpureParameter = false,
+		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
 	)
 	{
 		parent::__construct($name, $type, $optional, $passedByReference, $variadic, $defaultValue);
@@ -86,7 +86,7 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 		return $this->allowedConstants->check($constants);
 	}
 
-	public function isPureUnlessCallableIsImpureParameter(): bool
+	public function isPureUnlessCallableIsImpureParameter(): TrinaryLogic
 	{
 		return $this->pureUnlessCallableIsImpureParameter;
 	}

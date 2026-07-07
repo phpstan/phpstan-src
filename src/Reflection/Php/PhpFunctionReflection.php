@@ -132,7 +132,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$this->phpDocParameterClosureThisTypes[$reflection->getName()] ?? null,
 				$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 				$this->allowedConstantsMapProvider->getForFunctionParameter(strtolower($this->reflection->getName()), $reflection->getName()),
-				$this->phpDocParameterPureUnlessCallableIsImpure[$reflection->getName()] ?? false,
+				TrinaryLogic::createFromBoolean($this->phpDocParameterPureUnlessCallableIsImpure[$reflection->getName()] ?? false),
 			);
 		}, $this->reflection->getParameters());
 	}

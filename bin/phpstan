@@ -18,7 +18,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	gc_disable();
 	if (ini_get('zend.assertions') !== '-1') {
-		ini_set('zend.assertions', 0);
+		ini_set('zend.assertions', '0');
 	}
 
 	define('__PHPSTAN_RUNNING__', true);

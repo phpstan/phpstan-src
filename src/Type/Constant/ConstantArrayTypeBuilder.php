@@ -224,11 +224,11 @@ final class ConstantArrayTypeBuilder
 								if ($offsetValue <= $max) {
 									$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
 								} else {
-									$this->isList = TrinaryLogic::createNo();
+									$this->markNonListKey($optional);
 								}
 							}
 						} else {
-							$this->isList = TrinaryLogic::createNo();
+							$this->markNonListKey($optional);
 						}
 
 						if ($offsetValue >= $max) {
@@ -245,10 +245,10 @@ final class ConstantArrayTypeBuilder
 							}
 						}
 					} else {
-						$this->isList = TrinaryLogic::createNo();
+						$this->markNonListKey($optional);
 					}
 				} else {
-					$this->isList = TrinaryLogic::createNo();
+					$this->markNonListKey($optional);
 				}
 
 				if ($optional) {
@@ -408,6 +408,18 @@ final class ConstantArrayTypeBuilder
 			$this->optionalKeys[] = count($this->keyTypes) - 1;
 		}
 		$this->degradeToGeneralArray = true;
+	}
+
+	/**
+	 * Record adding a key incompatible with list ordering. A required key breaks
+	 * list-ness; an optional one only degrades Yes to Maybe (No stays No), since
+	 * the array is still a list when the key is absent.
+	 */
+	private function markNonListKey(bool $optional): void
+	{
+		$this->isList = $optional
+			? $this->isList->and(TrinaryLogic::createMaybe())
+			: TrinaryLogic::createNo();
 	}
 
 	public function degradeToGeneralArray(bool $oversized = false): void

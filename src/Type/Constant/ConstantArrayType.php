@@ -1440,6 +1440,56 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * List-ness of a sealed shape from its keys and optionality: `yes` if every
+	 * realization (choice of present optional keys) is a list, `no` if none is,
+	 * `maybe` otherwise.
+	 *
+	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param int[] $optionalKeys
+	 */
+	private static function inferIsListFromShape(array $keyTypes, array $optionalKeys): TrinaryLogic
+	{
+		$optional = [];
+		foreach ($optionalKeys as $optionalKey) {
+			$optional[$optionalKey] = true;
+		}
+
+		// Prefix lengths reachable by realizations that are still a valid list.
+		$validLengths = [0 => true];
+		$existsInvalid = false;
+
+		foreach ($keyTypes as $i => $keyType) {
+			$isOptional = array_key_exists($i, $optional);
+			// A numeric-string key like "1" is an integer key at runtime, so
+			// normalize before deciding whether it continues the list.
+			$arrayKey = $keyType->toArrayKey();
+			$value = $arrayKey instanceof ConstantIntegerType ? $arrayKey->getValue() : null;
+
+			$newValidLengths = [];
+			foreach (array_keys($validLengths) as $length) {
+				if ($isOptional) {
+					$newValidLengths[$length] = true;
+				}
+
+				// A key equal to the current length extends the prefix; anything
+				// else is a non-list realization.
+				if ($value === $length) {
+					$newValidLengths[$length + 1] = true;
+				} else {
+					$existsInvalid = true;
+				}
+			}
+
+			$validLengths = $newValidLengths;
+			if ($validLengths === []) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return $existsInvalid ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
+	}
+
+	/**
 	 * When we're unsetting something not on the array, it will be untouched,
 	 * So the nextAutoIndexes won't change, and the array might still be a list even with PHPStan definition.
 	 *
@@ -1454,6 +1504,9 @@ class ConstantArrayType implements Type
 
 		$isListOnlyIfKeysAreOptional = false;
 		foreach ($newKeyTypes as $k2 => $newKeyType2) {
+			// A numeric-string key like "1" is an integer key at runtime, so
+			// normalize before deciding whether it continues the list.
+			$newKeyType2 = $newKeyType2->toArrayKey();
 			if (!$newKeyType2 instanceof ConstantIntegerType || $newKeyType2->getValue() !== $k2) {
 				// We found a non-optional key that implies that the array is never a list.
 				if (!in_array($k2, $newOptionalKeys, true)) {
@@ -3034,12 +3087,21 @@ class ConstantArrayType implements Type
 		/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 		$keyTypes = $keyTypes;
 
+		// Merging widens single-side keys to optional, so a sealed result may gain
+		// list realizations (e.g. `[]`) the naive `and` misses. `or`-ing in the
+		// shape's own list-ness lifts a `no`/`maybe` while keeping a genuine `yes`.
+		$naiveIsList = $this->isList->and($otherArray->isList);
+		$mergedIsSealed = $mergedUnsealedKey instanceof NeverType && $mergedUnsealedKey->isExplicit();
+		$isList = $mergedIsSealed
+			? $naiveIsList->or(self::inferIsListFromShape($keyTypes, $optionalKeys))
+			: $naiveIsList;
+
 		return $this->recreate(
 			$keyTypes,
 			$valueTypes,
 			$nextAutoIndexes,
 			$optionalKeys,
-			$this->isList->and($otherArray->isList),
+			$isList,
 			$resultUnsealed,
 		);
 	}
@@ -3066,7 +3128,16 @@ class ConstantArrayType implements Type
 		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
-		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList), $this->unsealed);
+		// Same recompute as mergeWith(), over `$this`'s keys only — this legacy
+		// path drops the other side's extra keys.
+		$naiveIsList = $this->isList->and($otherArray->isList);
+		$mergedIsSealed = $this->unsealed === null
+			|| ($this->unsealed[0] instanceof NeverType && $this->unsealed[0]->isExplicit());
+		$isList = $mergedIsSealed
+			? $naiveIsList->or(self::inferIsListFromShape($this->keyTypes, $optionalKeys))
+			: $naiveIsList;
+
+		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $this->unsealed);
 	}
 
 	/**
@@ -3168,6 +3239,38 @@ class ConstantArrayType implements Type
 
 		if ($this->isList->no()) {
 			return new NeverType();
+		}
+
+		// isList is Maybe. In a sealed shape a key past a gap in the 0..n sequence
+		// (or any non-integer key) can never appear in a list, so keep only the
+		// contiguous 0..m prefix. Unsealed extras may fill the gaps, so keep every
+		// key there.
+		if ($this->isUnsealed()->no()) {
+			$positionByIndex = [];
+			foreach ($this->keyTypes as $position => $keyType) {
+				if (!$keyType instanceof ConstantIntegerType) {
+					continue;
+				}
+				$positionByIndex[$keyType->getValue()] = $position;
+			}
+
+			$keptPositions = [];
+			for ($index = 0; array_key_exists($index, $positionByIndex); $index++) {
+				$keptPositions[] = $positionByIndex[$index];
+			}
+
+			if (count($keptPositions) < count($this->keyTypes)) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($keptPositions as $position) {
+					$builder->setOffsetValueType(
+						$this->keyTypes[$position],
+						$this->valueTypes[$position],
+						$this->isOptionalKey($position),
+					);
+				}
+
+				return $builder->getArray();
+			}
 		}
 
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);

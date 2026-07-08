@@ -1639,6 +1639,115 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		});
 	}
 
+	/**
+	 * @param list<array{int|string, Type, bool}> $items
+	 */
+	private function buildShape(array $items): ConstantArrayType
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($items as [$key, $valueType, $optional]) {
+			$keyType = is_string($key) ? new ConstantStringType($key) : new ConstantIntegerType($key);
+			$builder->setOffsetValueType($keyType, $valueType, $optional);
+		}
+		$array = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array);
+
+		return $array;
+	}
+
+	public function testMakeListProjectsSealedShapeButKeepsUnsealedKeys(): void
+	{
+		// A sealed shape with an optional key past the gap at 1 (2? here): key 2 can
+		// never appear in a list, so makeList() drops it and projects to the prefix.
+		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
+			$array = $this->buildShape([[0, new IntegerType(), false], [2, new StringType(), true]]);
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
+			$this->assertSame('array{int}', $array->makeList()->describe(VerbosityLevel::precise()));
+		});
+
+		// Unsealed: extras may fill the gap, so key 2 is reachable and every key is kept.
+		BleedingEdgeToggle::withBleedingEdge(false, function (): void {
+			$array = $this->buildShape([[0, new IntegerType(), false], [2, new StringType(), true]]);
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
+			$this->assertSame('array{0: int, 2?: string}', $array->makeList()->describe(VerbosityLevel::precise()));
+		});
+	}
+
+	public function testMergeWithRecomputesListnessOfSealedShape(): void
+	{
+		// main mergeWith() path (bleeding edge: shapes carry real unsealed markers)
+		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
+			// Two pure lists merge into a list, even though the merged shape read with
+			// independent optional keys would over-approximate to maybe.
+			$x = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), true]]);
+			$y = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), false], [2, new IntegerType(), true]]);
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());
+
+			// A mandatory non-list key that becomes optional through merging turns the
+			// naive `no` into `maybe` (the merged shape now admits list realizations).
+			$x2 = $this->buildShape([[0, new IntegerType(), false], ['a', new StringType(), false]]);
+			$y2 = $this->buildShape([[0, new IntegerType(), false]]);
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $x2->mergeWith($y2)->isList()->describe());
+		});
+
+		// legacyMergeWith() path (unsealed === null)
+		BleedingEdgeToggle::withBleedingEdge(false, function (): void {
+			$x = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), false], [2, new StringType(), false]]);
+			$y = $this->buildShape([[0, new IntegerType(), false]]);
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());
+
+			$x2 = $this->buildShape([[0, new IntegerType(), false], ['a', new StringType(), false]]);
+			$y2 = $this->buildShape([[0, new IntegerType(), false]]);
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $x2->mergeWith($y2)->isList()->describe());
+
+			// Legacy merge keeps only $this's keys, so a naive `maybe` (the other side
+			// has a gap key) sharpens back to `yes`: the surviving keys form a list once
+			// the key absent from the other side is widened to a trailing optional.
+			$x3 = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), false]]);
+			$y3 = $this->buildShape([[0, new IntegerType(), false], [5, new StringType(), true]]);
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $y3->isList()->describe());
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $x3->mergeWith($y3)->isList()->describe());
+		});
+	}
+
+	public function testMergeWithTreatsNumericStringKeyAsIntWhenRecomputingListness(): void
+	{
+		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
+			$never = new NeverType(true);
+			// array{0: string, '1'?: string} built directly with an un-normalized "1"
+			// string key. PHP stores "1" as the integer key 1, so the merged shape is
+			// a list — inferIsListFromShape() must normalize the key via toArrayKey().
+			$x = new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantStringType('1')],
+				[new StringType(), new StringType()],
+				[2],
+				[1],
+				null,
+				[$never, $never],
+			);
+			$y = $this->buildShape([[0, new StringType(), false]]);
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());
+		});
+	}
+
+	public function testUnsetOffsetTreatsNumericStringKeyAsIntWhenRecomputingListness(): void
+	{
+		// list{'0': string, 1?: int} built directly with an un-normalized "0" string
+		// key. Unsetting the optional tail leaves list{'0': string}, still a list, so
+		// isListAfterUnset() must normalize the key via toArrayKey().
+		$type = new ConstantArrayType(
+			[new ConstantStringType('0'), new ConstantIntegerType(1)],
+			[new StringType(), new IntegerType()],
+			[2],
+			[1],
+			TrinaryLogic::createYes(),
+		);
+
+		$unset = $type->unsetOffset(new ConstantIntegerType(1), true);
+		$this->assertInstanceOf(ConstantArrayType::class, $unset);
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $unset->isList()->describe());
+	}
+
 	public static function dataGetArraySize(): iterable
 	{
 		$cases = [];

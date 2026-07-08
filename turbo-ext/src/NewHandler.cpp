@@ -815,6 +815,14 @@ public:
 			if (hasVerdict && verdict == PT_TRI_YES) return zv::Val::null();
 			if (hasVerdict && verdict == PT_TRI_NO) certain = true;
 
+			if (!certain) {
+				bool hasPassedVerdict;
+				zend_long passedVerdict;
+				if (UNEXPECTED(!pt_simple_impure_point_resolve_passed_verdict(parametersAcceptor, args, hasPassedVerdict, passedVerdict))) return zv::Val();
+				if (hasPassedVerdict && passedVerdict == PT_TRI_YES) return zv::Val::null();
+				if (hasPassedVerdict && passedVerdict == PT_TRI_NO) certain = true;
+			}
+
 			return constructorInstantiationImpurePoint(scopeBeforeArgs, expr, constructorReflection, certain);
 		}
 

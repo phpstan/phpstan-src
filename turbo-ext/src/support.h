@@ -2745,6 +2745,9 @@ zv::Val pt_template_type_map_map(zval *map, zval *cb);
  * $scope, $args): hasVerdict false for the twin's null, verdict the PT_TRI_*
  * value otherwise; false = pending exception */
 [[nodiscard]] bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict);
+/* SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($variant,
+ * $args): the same answers */
+[[nodiscard]] bool pt_simple_impure_point_resolve_passed_verdict(zval *variant, zval *args, bool &hasVerdict, zend_long &verdict);
 
 /* }}} */
 

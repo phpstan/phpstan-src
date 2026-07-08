@@ -36,6 +36,7 @@ namespace {
 
 pt_property_site pt_sip_arg_name_site;
 pt_property_site pt_sip_arg_value_site;
+pt_property_site pt_sip_arg_unpack_site;
 pt_property_site pt_sip_identifier_name_site;
 
 /* $variant->getReturnType() */
@@ -420,10 +421,17 @@ public:
 			}
 
 			zval *matchedArg = NULL;
+			bool hasUnpackedArg = false;
 			bool hasNamedParameter = false;
 			if (EXPECTED(Z_TYPE_P(args) == IS_ARRAY)) {
 				for (auto argEntry : zv::TableRef(Z_ARRVAL_P(args))) {
 					zval *arg = argEntry.value().deref().raw();
+					zval *unpack = nodeProperty(pt_sip_arg_unpack_site, arg, PT_LC("unpack"));
+					if (UNEXPECTED(EG(exception))) return false;
+					if (zend_is_true(unpack)) {
+						hasUnpackedArg = true;
+						continue;
+					}
 					zval *argName = nodeProperty(pt_sip_arg_name_site, arg, PT_LC("name"));
 					if (UNEXPECTED(EG(exception))) return false;
 					if (Z_TYPE_P(argName) != IS_NULL) {
@@ -448,9 +456,17 @@ public:
 				if (UNEXPECTED(EG(exception))) return false;
 			}
 
-			if (matchedArg == NULL) continue;
+			if (matchedArg == NULL) {
+				if (hasUnpackedArg) {
+					verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
+				}
+				continue;
+			}
 
-			verdict = pt_trinary_and(verdict, PT_TRI_NO);
+			/* $parameter->isPureUnlessParameterPassedParameter()->yes(), asked again */
+			zend_long certainFlag = trinaryOf(parameterIsPureUnlessParameterPassed(parameter));
+			if (UNEXPECTED(certainFlag < 0)) return false;
+			verdict = pt_trinary_and(verdict, certainFlag == PT_TRI_YES ? PT_TRI_NO : PT_TRI_MAYBE);
 		}
 
 		return true;
@@ -540,6 +556,11 @@ bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, 
 bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict)
 {
 	return SimpleImpurePoint::resolveVerdict(variant, scope, args, hasVerdict, verdict);
+}
+
+bool pt_simple_impure_point_resolve_passed_verdict(zval *variant, zval *args, bool &hasVerdict, zend_long &verdict)
+{
+	return SimpleImpurePoint::resolvePassedVerdict(variant, args, hasVerdict, verdict);
 }
 
 /* }}} */

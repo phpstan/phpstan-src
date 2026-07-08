@@ -39,7 +39,7 @@
 		"ondrejmirtes/composer-attribute-collector": "^1.1.1",
 		"ondrejmirtes/php-merge": "^4.1",
 		"phpstan/php-8-stubs": "0.4.35",
-		"phpstan/phpdoc-parser": "2.3.2",
+		"phpstan/phpdoc-parser": "2.3.3",
 		"react/child-process": "^0.7",
 		"react/event-loop": "^1.2",
 		"react/promise": "^3.2",

@@ -41,6 +41,7 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Parser\ClosureBindArgVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -1417,8 +1418,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function resolveName(Name $name): string
 	{
 		$originalClass = (string) $name;
+		$lowerClass = strtolower($originalClass);
+
+		$bindScopeClassName = $this->resolveClosureBindScopeClassName($name);
+		if ($bindScopeClassName !== null) {
+			if (in_array($lowerClass, ['self', 'static'], true)) {
+				return $bindScopeClassName;
+			}
+			if ($lowerClass === 'parent' && $this->reflectionProvider->hasClass($bindScopeClassName)) {
+				$parentClassReflection = $this->reflectionProvider->getClass($bindScopeClassName)->getParentClass();
+				if ($parentClassReflection !== null) {
+					return $parentClassReflection->getName();
+				}
+			}
+		}
+
 		if ($this->isInClass()) {
-			$lowerClass = strtolower($originalClass);
 			if (in_array($lowerClass, [
 				'self',
 				'static',
@@ -1441,17 +1456,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
-		if ($name->toLowerString() === 'static' && $this->isInClass()) {
-			if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
-				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
-					return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
-				}
+		$bindScopeClassName = $this->resolveClosureBindScopeClassName($name);
+		if ($name->toLowerString() === 'static') {
+			if ($bindScopeClassName !== null && $this->reflectionProvider->hasClass($bindScopeClassName)) {
+				return new StaticType($this->reflectionProvider->getClass($bindScopeClassName));
 			}
+			if ($this->isInClass()) {
+				if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
+					if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
+						return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
+					}
+				}
 
-			return new StaticType($this->getClassReflection());
+				return new StaticType($this->getClassReflection());
+			}
 		}
 
 		$originalClass = $this->resolveName($name);
+		if ($bindScopeClassName !== null && $this->reflectionProvider->hasClass($originalClass)) {
+			return new ObjectType($originalClass);
+		}
 		if ($this->isInClass()) {
 			if ($this->inClosureBindScopeClasses === [$originalClass]) {
 				if ($this->reflectionProvider->hasClass($originalClass)) {
@@ -1468,6 +1492,34 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return new ObjectType($originalClass);
+	}
+
+	/**
+	 * Resolves the class name that a `self`/`parent`/`static` node is bound to by a
+	 * surrounding `Closure::bind()` call, annotated by {@see ClosureBindArgVisitor}. Returns
+	 * null when the node is not inside a bound closure or the bind scope argument does not
+	 * resolve to a single known class (e.g. the default "static" scope). This works even
+	 * outside a class context, because the type of a bound closure's body is inferred in the
+	 * enclosing scope where the closure-bind scope classes are not otherwise available.
+	 */
+	/** @return non-empty-string|null */
+	private function resolveClosureBindScopeClassName(Name $name): ?string
+	{
+		if (!$name->hasAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME)) {
+			return null;
+		}
+
+		$scopeArg = $name->getAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME);
+		if (!$scopeArg instanceof Expr) {
+			return null;
+		}
+
+		$objectClassNames = $this->getType($scopeArg)->getClassStringObjectType()->getObjectClassNames();
+		if (count($objectClassNames) !== 1) {
+			return null;
+		}
+
+		return $objectClassNames[0];
 	}
 
 	/**

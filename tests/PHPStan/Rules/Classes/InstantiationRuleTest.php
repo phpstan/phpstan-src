@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Analyser\ClosureBindScopeResolver;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -63,6 +64,7 @@ class InstantiationRuleTest extends RuleTestCase
 			),
 			$ruleLevelHelper,
 			new ConsistentConstructorHelper(),
+			new ClosureBindScopeResolver($reflectionProvider),
 			newOnNonObject: true,
 			discoveringSymbolsTip: true,
 		);

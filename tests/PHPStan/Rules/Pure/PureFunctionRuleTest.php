@@ -296,6 +296,57 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testPureUnlessCallableIsImpureNamedArgs(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-named-arg.php'], [
+			[
+				'Impure call to function PureUnlessCallableIsImpureNamedArg\myMap() in pure function PureUnlessCallableIsImpureNamedArg\pureCallingUserlandWithImpureCallbackByName().',
+				61,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureNamedArg\pureCallingUserlandWithImpureCallbackByName().',
+				62,
+			],
+			[
+				'Possibly impure call to a callable in pure function PureUnlessCallableIsImpureNamedArg\pureCallingUserlandWithOpaqueCallbackByName().',
+				75,
+			],
+			[
+				'Possibly impure call to function PureUnlessCallableIsImpureNamedArg\myMap() in pure function PureUnlessCallableIsImpureNamedArg\pureCallingUserlandWithOpaqueCallbackByName().',
+				75,
+			],
+			[
+				'Impure call to function array_map() in pure function PureUnlessCallableIsImpureNamedArg\pureWithImpureCallbackByName().',
+				85,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureNamedArg\pureWithImpureCallbackByName().',
+				86,
+			],
+			[
+				'Possibly impure call to a callable in pure function PureUnlessCallableIsImpureNamedArg\pureWithOpaqueCallbackByName().',
+				99,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureNamedArg\pureWithOpaqueCallbackByName().',
+				99,
+			],
+			[
+				'Impure call to function PureUnlessCallableIsImpureNamedArg\myMap() in pure function PureUnlessCallableIsImpureNamedArg\pureCallingUserlandWithImpureCallbackShuffled().',
+				121,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureNamedArg\pureCallingUserlandWithImpureCallbackShuffled().',
+				122,
+			],
+			[
+				'Impure call to method PureUnlessCallableIsImpureNamedArg\Mapper::map() in pure function PureUnlessCallableIsImpureNamedArg\pureCallingMethodWithImpureCallbackByName().',
+				134,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.4.0')]
 	public function testPureUnlessCallableIsImpurePhp84(): void
 	{

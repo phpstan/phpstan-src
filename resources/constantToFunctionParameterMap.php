@@ -140,6 +140,26 @@ return [
 		],
 	],
 
+	'preg_replace_callback' => [
+		'flags' => [
+			'type' => 'bitmask',
+			'constants' => [
+				'PREG_OFFSET_CAPTURE',
+				'PREG_UNMATCHED_AS_NULL',
+			],
+		],
+	],
+
+	'preg_replace_callback_array' => [
+		'flags' => [
+			'type' => 'bitmask',
+			'constants' => [
+				'PREG_OFFSET_CAPTURE',
+				'PREG_UNMATCHED_AS_NULL',
+			],
+		],
+	],
+
 	// ————————————————————————————————————————————
 	// Sorting
 	// ————————————————————————————————————————————

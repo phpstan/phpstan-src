@@ -2887,6 +2887,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Constant JSON_THROW_ON_ERROR is not allowed for parameter #3 $depth of function json_decode.',
 				99,
 			],
+			[
+				'Constant PREG_SPLIT_NO_EMPTY is not allowed for parameter #6 $flags of function preg_replace_callback.',
+				110,
+			],
+			[
+				'Constant PREG_SPLIT_NO_EMPTY is not allowed for parameter #5 $flags of function preg_replace_callback_array.',
+				119,
+			],
 		]);
 	}
 

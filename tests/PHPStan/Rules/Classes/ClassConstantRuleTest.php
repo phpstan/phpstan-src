@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Analyser\ClosureBindScopeResolver;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -46,6 +47,7 @@ class ClassConstantRuleTest extends RuleTestCase
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 			),
 			new PhpVersion($this->phpVersion),
+			new ClosureBindScopeResolver($reflectionProvider),
 			checkNonStringableDynamicAccess: true,
 		);
 	}

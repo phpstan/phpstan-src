@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\Analyser\ClosureBindScopeResolver;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -22,6 +23,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -44,6 +46,7 @@ final class ClassConstantRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
+		private ClosureBindScopeResolver $closureBindScopeResolver,
 		#[AutowiredParameter(ref: '%featureToggles.checkNonStringableDynamicAccess%')]
 		private bool $checkNonStringableDynamicAccess,
 	)
@@ -110,35 +113,51 @@ final class ClassConstantRule implements Rule
 		if ($class instanceof Node\Name) {
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
+			$bindScopeClassReflection = $this->closureBindScopeResolver->resolveScopeClass($scope, $class);
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
-				if (!$scope->isInClass()) {
+				if ($bindScopeClassReflection !== null) {
+					$classType = new ObjectType($bindScopeClassReflection->getName());
+				} elseif (!$scope->isInClass()) {
 					return [
 						RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $className))
 							->identifier(sprintf('outOfClass.%s', $lowercasedClassName))
 							->build(),
 					];
+				} else {
+					$classType = $scope->resolveTypeByName($class);
 				}
-
-				$classType = $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
-				if (!$scope->isInClass()) {
+				if ($bindScopeClassReflection !== null) {
+					$parentClassReflection = $bindScopeClassReflection->getParentClass();
+					if ($parentClassReflection === null) {
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Access to parent::%s but %s does not extend any class.',
+								$constantName,
+								$bindScopeClassReflection->getDisplayName(),
+							))->identifier('class.noParent')->build(),
+						];
+					}
+					$classType = new ObjectType($parentClassReflection->getName());
+				} elseif (!$scope->isInClass()) {
 					return [
 						RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $className))
 							->identifier(sprintf('outOfClass.%s', $lowercasedClassName))
 							->build(),
 					];
+				} else {
+					$currentClassReflection = $scope->getClassReflection();
+					if ($currentClassReflection->getParentClass() === null) {
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Access to parent::%s but %s does not extend any class.',
+								$constantName,
+								$currentClassReflection->getDisplayName(),
+							))->identifier('class.noParent')->build(),
+						];
+					}
+					$classType = $scope->resolveTypeByName($class);
 				}
-				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === null) {
-					return [
-						RuleErrorBuilder::message(sprintf(
-							'Access to parent::%s but %s does not extend any class.',
-							$constantName,
-							$currentClassReflection->getDisplayName(),
-						))->identifier('class.noParent')->build(),
-					];
-				}
-				$classType = $scope->resolveTypeByName($class);
 			} else {
 				if (!$this->reflectionProvider->hasClass($className)) {
 					if ($scope->isInClassExists($className)) {

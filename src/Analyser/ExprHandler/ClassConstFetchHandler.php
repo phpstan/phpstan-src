@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ClosureBindScopeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -19,14 +20,10 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Parser\ClosureBindArgVisitor;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
-use function count;
 
 /**
  * @implements ExprHandler<ClassConstFetch>
@@ -38,7 +35,7 @@ final class ClassConstFetchHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
-		private ReflectionProvider $reflectionProvider,
+		private ClosureBindScopeResolver $closureBindScopeResolver,
 	)
 	{
 	}
@@ -55,9 +52,11 @@ final class ClassConstFetchHandler implements ExprHandler
 		}
 
 		$classReflection = $scope->isInClass() ? $scope->getClassReflection() : null;
-		$bindScopeReflection = $this->resolveClosureBindScopeReflection($scope, $expr->class);
-		if ($bindScopeReflection !== null) {
-			$classReflection = $bindScopeReflection;
+		if ($expr->class instanceof Name) {
+			$bindScopeReflection = $this->closureBindScopeResolver->resolveScopeClass($scope, $expr->class);
+			if ($bindScopeReflection !== null) {
+				$classReflection = $bindScopeReflection;
+			}
 		}
 
 		return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
@@ -66,37 +65,6 @@ final class ClassConstFetchHandler implements ExprHandler
 			$classReflection,
 			static fn (Expr $e): Type => $scope->getType($e),
 		);
-	}
-
-	/**
-	 * Resolves the `Closure::bind()` scope class annotated on a `self`/`parent`/`static`
-	 * class name node by {@see ClosureBindArgVisitor}. Returns null when the node is not
-	 * inside a bound closure or the scope argument does not resolve to a single known class.
-	 */
-	private function resolveClosureBindScopeReflection(MutatingScope $scope, Expr|Name $class): ?ClassReflection
-	{
-		if (!$class instanceof Name || !$class->hasAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME)) {
-			return null;
-		}
-
-		$scopeArg = $class->getAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME);
-		if (!$scopeArg instanceof Expr) {
-			// null attribute means the default "static" scope: keep the enclosing class.
-			return null;
-		}
-
-		$scopeArgType = $scope->getType($scopeArg);
-		$objectClassNames = $scopeArgType->getClassStringObjectType()->getObjectClassNames();
-		if (count($objectClassNames) !== 1) {
-			return null;
-		}
-
-		$className = $objectClassNames[0];
-		if (!$this->reflectionProvider->hasClass($className)) {
-			return null;
-		}
-
-		return $this->reflectionProvider->getClass($className);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

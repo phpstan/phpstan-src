@@ -105,3 +105,18 @@ json_decode($json, false);
 
 // PHP_OS passed to $subject of preg_match - should not report
 preg_match('/foo/', PHP_OS);
+
+// preg_replace_callback: wrong constant in $flags
+preg_replace_callback('/foo/', fn ($m) => $m[0], 'subject', -1, $count, PREG_SPLIT_NO_EMPTY);
+
+// preg_replace_callback: correct constant in $flags
+preg_replace_callback('/foo/', fn ($m) => $m[0], 'subject', -1, $count, PREG_OFFSET_CAPTURE);
+
+// preg_replace_callback: correct bitmask in $flags
+preg_replace_callback('/foo/', fn ($m) => $m[0], 'subject', -1, $count, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL);
+
+// preg_replace_callback_array: wrong constant in $flags
+preg_replace_callback_array(['/foo/' => fn ($m) => $m[0]], 'subject', -1, $count, PREG_SPLIT_NO_EMPTY);
+
+// preg_replace_callback_array: correct constant in $flags
+preg_replace_callback_array(['/foo/' => fn ($m) => $m[0]], 'subject', -1, $count, PREG_UNMATCHED_AS_NULL);

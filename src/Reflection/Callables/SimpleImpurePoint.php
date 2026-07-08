@@ -76,10 +76,15 @@ final class SimpleImpurePoint
 
 			if (!$certain && $scope !== null && $variant !== null) {
 				$passedVerdict = self::resolvePureUnlessParameterPassedVerdict($variant, $args);
-				if ($passedVerdict !== null && $passedVerdict->yes()) {
-					// None of the @pure-unless-parameter-passed by-ref parameters
-					// received an argument, so the call is pure.
-					return null;
+				if ($passedVerdict !== null) {
+					if ($passedVerdict->yes()) {
+						// None of the @pure-unless-parameter-passed by-ref parameters
+						// received an argument, so the call is pure.
+						return null;
+					}
+					if ($passedVerdict->no()) {
+						$certain = true;
+					}
 				}
 			}
 

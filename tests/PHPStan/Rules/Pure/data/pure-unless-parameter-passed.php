@@ -1,4 +1,4 @@
-<?php // lint >= 8.0
+<?php // lint >= 8.1
 
 namespace PureUnlessParameterPassedFunction;
 
@@ -38,7 +38,7 @@ function pureNotPassingByRef(string $s): string
  */
 function purePassingByRef(string $s): string
 {
-	// $count is passed, so myReplace() is possibly impure.
+	// $count is passed, so myReplace() is impure (the flag is certain).
 	$count = 0;
 
 	return myReplace($s, $count);
@@ -165,4 +165,180 @@ function pureUnionMethodPassingCount($obj, string $s): string
 	$count = 0;
 	// $count is passed against the Maybe-flagged parameter, so this is possibly impure.
 	return $obj->m($s, $count);
+}
+
+interface PureUnlessParameterPassedIntersectionA
+{
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	public function m(string $s, int &$count = 0): string;
+
+}
+
+interface PureUnlessParameterPassedIntersectionB
+{
+
+	public function n(): string;
+
+}
+
+/**
+ * @param PureUnlessParameterPassedIntersectionA&PureUnlessParameterPassedIntersectionB $obj
+ * @phpstan-pure
+ */
+function pureIntersectionMethodOmittingCount($obj, string $s): string
+{
+	// $count is omitted here, so the call stays pure.
+	return $obj->m($s);
+}
+
+/**
+ * @param PureUnlessParameterPassedIntersectionA&PureUnlessParameterPassedIntersectionB $obj
+ * @phpstan-pure
+ */
+function pureIntersectionMethodPassingCount($obj, string $s): string
+{
+	$count = 0;
+	// $count is passed, so this is impure (the flag is certain).
+	return $obj->m($s, $count);
+}
+
+class Replacer
+{
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	public function replace(string $subject, int &$count = 0): string
+	{
+		$count = 1;
+
+		return $subject;
+	}
+
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingMethodNotPassingByRef(Replacer $replacer, string $s): string
+{
+	// $count is omitted, so the call stays pure.
+	return $replacer->replace($s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingMethodPassingByRef(Replacer $replacer, string $s): string
+{
+	$count = 0;
+	// $count is passed, so the call is impure (the flag is certain).
+	return $replacer->replace($s, $count);
+}
+
+abstract class InheritedReplacerParent
+{
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	abstract public function replace(string $subject, int &$count = 0): string;
+
+}
+
+class InheritedReplacerChild extends InheritedReplacerParent
+{
+
+	public function replace(string $subject, int &$count = 0): string
+	{
+		$count = 1;
+
+		return $subject;
+	}
+
+}
+
+class InheritedReplacerRenamedChild extends InheritedReplacerParent
+{
+
+	public function replace(string $subject, int &$cnt = 0): string
+	{
+		$cnt = 1;
+
+		return $subject;
+	}
+
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingInheritedMethodNotPassingByRef(InheritedReplacerChild $replacer, string $s): string
+{
+	// The child does not re-declare @pure-unless-parameter-passed; it is inherited
+	// from the parent. $count is omitted here, so the call stays pure.
+	return $replacer->replace($s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingInheritedMethodPassingByRef(InheritedReplacerChild $replacer, string $s): string
+{
+	$count = 0;
+	// The inherited @pure-unless-parameter-passed applies to the child, so passing
+	// $count makes the call impure (the flag is certain).
+	return $replacer->replace($s, $count);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingRenamedInheritedMethodNotPassingByRef(InheritedReplacerRenamedChild $replacer, string $s): string
+{
+	// The parent flags $count; the child renames it to $cnt. The inherited flag
+	// still applies to the renamed parameter. It is omitted here, so this stays pure.
+	return $replacer->replace($s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingRenamedInheritedMethodPassingByRef(InheritedReplacerRenamedChild $replacer, string $s): string
+{
+	$cnt = 0;
+	// The inherited flag applies to the renamed parameter, so passing it makes
+	// the call impure (the flag is certain).
+	return $replacer->replace($s, $cnt);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingFirstClassCallableOmittingCount(string $s): string
+{
+	$f = myReplace(...);
+	// A first-class callable's purity is evaluated from its ParametersAcceptor
+	// alone, without scope/args, so @pure-unless-parameter-passed cannot gate on
+	// whether $count is actually passed at this call site; it stays possibly
+	// impure even though $count is omitted here.
+	return $f($s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureCallingFirstClassCallablePassingCount(string $s): string
+{
+	$count = 0;
+	$f = myReplace(...);
+	// The first-class callable is called with the flagged $count passed, so this
+	// stays possibly impure.
+	return $f($s, $count);
 }

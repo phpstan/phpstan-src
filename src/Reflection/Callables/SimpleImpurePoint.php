@@ -237,8 +237,14 @@ final class SimpleImpurePoint
 			$verdict ??= TrinaryLogic::createYes();
 
 			$matchedArg = null;
+			$hasUnpackedArg = false;
 			$hasNamedParameter = false;
 			foreach ($args as $i => $arg) {
+				if ($arg->unpack) {
+					$hasUnpackedArg = true;
+					continue;
+				}
+
 				if ($arg->name !== null) {
 					$hasNamedParameter = true;
 					if ($arg->name->name === $parameter->getName()) {
@@ -256,10 +262,24 @@ final class SimpleImpurePoint
 			}
 
 			if ($matchedArg === null) {
+				if ($hasUnpackedArg) {
+					// An unpacked argument list (...$args) might supply the flagged
+					// by-ref parameter, so we cannot be sure the call stays pure.
+					$verdict = $verdict->and(TrinaryLogic::createMaybe());
+				}
+
 				continue;
 			}
 
-			$verdict = $verdict->and(TrinaryLogic::createNo());
+			if ($parameter->isPureUnlessParameterPassedParameter()->yes()) {
+				$verdict = $verdict->and(TrinaryLogic::createNo());
+				continue;
+			}
+
+			// The flag itself is uncertain (e.g. only one variant of a union type
+			// declares @pure-unless-parameter-passed), so passing an argument here
+			// only makes the call possibly impure, not certainly impure.
+			$verdict = $verdict->and(TrinaryLogic::createMaybe());
 		}
 
 		return $verdict;

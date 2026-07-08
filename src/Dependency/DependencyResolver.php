@@ -23,6 +23,7 @@ use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
@@ -38,7 +39,7 @@ use function count;
 final class DependencyResolver
 {
 
-	/** @var array<string, list<ClassReflection|FunctionReflection>> */
+	/** @var array<string, list<ClassReflection|FunctionReflection|ConstantReflection>> */
 	private array $classDependencies = [];
 
 	public function __construct(
@@ -366,6 +367,17 @@ final class DependencyResolver
 					}
 				}
 			}
+		} elseif ($node instanceof Node\Expr\ConstFetch) {
+			$constantName = $node->name;
+			$lowercasedConstantName = $constantName->toLowerString();
+			if (
+				$lowercasedConstantName !== 'true'
+				&& $lowercasedConstantName !== 'false'
+				&& $lowercasedConstantName !== 'null'
+				&& $this->reflectionProvider->hasConstant($constantName, $scope)
+			) {
+				$dependenciesReflections[] = $this->reflectionProvider->getConstant($constantName, $scope);
+			}
 		} elseif ($node instanceof Node\Expr\StaticPropertyFetch) {
 			if ($node->class instanceof Node\Name) {
 				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
@@ -521,7 +533,7 @@ final class DependencyResolver
 	}
 
 	/**
-	 * @param array<int, ClassReflection|FunctionReflection> $dependenciesReflections
+	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
 	 */
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{
@@ -533,7 +545,7 @@ final class DependencyResolver
 	}
 
 	/**
-	 * @return list<ClassReflection|FunctionReflection>
+	 * @return list<ClassReflection|FunctionReflection|ConstantReflection>
 	 */
 	private function buildClassDependencies(string $className): array
 	{
@@ -687,7 +699,7 @@ final class DependencyResolver
 	}
 
 	/**
-	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
+	 * @param array<ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
 	 */
 	private function extractFromParametersAcceptor(
 		ExtendedParametersAcceptor $parametersAcceptor,
@@ -724,7 +736,7 @@ final class DependencyResolver
 	}
 
 	/**
-	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
+	 * @param array<ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
 	 */
 	private function extractThrowType(
 		?Type $throwType,

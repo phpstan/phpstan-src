@@ -15,6 +15,8 @@ interface RootExportedNode extends ExportedNode
 
 	public const TYPE_FUNCTION = 'function';
 
+	public const TYPE_CONSTANT = 'constant';
+
 	/** @return self::TYPE_* */
 	public function getType(): string;
 

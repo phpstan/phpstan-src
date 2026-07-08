@@ -12,6 +12,8 @@ use PHPStan\Dependency\ExportedNode\ExportedAttributeNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassNode;
+use PHPStan\Dependency\ExportedNode\ExportedConstantNode;
+use PHPStan\Dependency\ExportedNode\ExportedConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedEnumCaseNode;
 use PHPStan\Dependency\ExportedNode\ExportedEnumNode;
 use PHPStan\Dependency\ExportedNode\ExportedFunctionNode;
@@ -224,6 +226,18 @@ final class ExportedNodeResolver
 				$this->exportParameterNodes($node->params, $fileName, null),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
+		}
+
+		if ($node instanceof Node\Stmt\Const_) {
+			$constants = [];
+			foreach ($node->consts as $const) {
+				$constants[] = new ExportedConstantNode(
+					$const->name->toString(),
+					$this->exprPrinter->printExpr($const->value),
+				);
+			}
+
+			return new ExportedConstantsNode($constants);
 		}
 
 		return null;

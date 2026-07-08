@@ -353,6 +353,13 @@ jobs:
               ../../bin/phpstan -vvv
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-constants
+              ../../bin/phpstan analyse
+              patch -b src/Constants.php < renameConstant.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'ClassUsingConstant.php:10:Constant SOME_MODE not found. [identifier=constant.notFound]' "$OUTPUT"
+          - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test
               ../../bin/phpstan

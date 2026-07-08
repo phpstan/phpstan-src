@@ -389,6 +389,22 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplacePhpstanAlias() in pure function PureUnlessParameterPassedFunction\purePassingByRefAlias().',
 				62,
 			],
+			[
+				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureUnpackingArgs().',
+				72,
+			],
+			[
+				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureNamedArgForFlaggedParameter().',
+				91,
+			],
+			[
+				'Impure instantiation of class PureUnlessParameterPassedFunction\MyReplacerConstructor in pure function PureUnlessParameterPassedFunction\pureConstructorPassingByRef().',
+				127,
+			],
+			[
+				'Possibly impure call to method PureUnlessParameterPassedFunction\PureUnlessParameterPassedA::m() in pure function PureUnlessParameterPassedFunction\pureUnionMethodPassingCount().',
+				167,
+			],
 		]);
 	}
 

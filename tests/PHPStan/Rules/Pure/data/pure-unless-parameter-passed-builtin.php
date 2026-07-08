@@ -16,7 +16,7 @@ function pureStrReplaceWithoutCount(string $s): string
  */
 function pureStrReplaceWithCount(string $s): string
 {
-	// The by-ref $count is passed, so str_replace() is possibly impure.
+	// The by-ref $count is passed, so str_replace() is impure (the flag is certain).
 	$count = 0;
 
 	return str_replace('a', 'b', $s, $count);
@@ -36,6 +36,6 @@ function purePregMatchWithoutMatches(string $s): int
  */
 function purePregMatchWithMatches(string $s): int
 {
-	// The by-ref $matches is passed, so preg_match() is possibly impure.
+	// The by-ref $matches is passed, so preg_match() is impure (the flag is certain).
 	return (int) preg_match('/a/', $s, $matches);
 }

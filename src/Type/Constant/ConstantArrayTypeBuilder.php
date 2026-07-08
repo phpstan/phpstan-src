@@ -224,11 +224,11 @@ final class ConstantArrayTypeBuilder
 								if ($offsetValue <= $max) {
 									$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
 								} else {
-									$this->isList = TrinaryLogic::createNo();
+									$this->isList = $optional ? $this->isList->and(TrinaryLogic::createMaybe()) : TrinaryLogic::createNo();
 								}
 							}
 						} else {
-							$this->isList = TrinaryLogic::createNo();
+							$this->isList = $optional ? $this->isList->and(TrinaryLogic::createMaybe()) : TrinaryLogic::createNo();
 						}
 
 						if ($offsetValue >= $max) {
@@ -245,10 +245,10 @@ final class ConstantArrayTypeBuilder
 							}
 						}
 					} else {
-						$this->isList = TrinaryLogic::createNo();
+						$this->isList = $optional ? $this->isList->and(TrinaryLogic::createMaybe()) : TrinaryLogic::createNo();
 					}
 				} else {
-					$this->isList = TrinaryLogic::createNo();
+					$this->isList = $optional ? $this->isList->and(TrinaryLogic::createMaybe()) : TrinaryLogic::createNo();
 				}
 
 				if ($optional) {

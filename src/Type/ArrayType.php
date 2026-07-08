@@ -147,8 +147,21 @@ class ArrayType implements Type
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self || $type instanceof ConstantArrayType) {
-			return $this->getItemType()->isSuperTypeOf($type->getItemType())
+			$result = $this->getItemType()->isSuperTypeOf($type->getItemType())
 				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+
+			if (
+				$result->no()
+				&& $type->isConstantArray()->yes()
+				&& !$type->isIterableAtLeastOnce()->yes()
+			) {
+				// A constant array whose offending keys/values are all optional
+				// still admits the empty array, which is a subtype of every
+				// array type — so the relationship is `maybe`, not `no`.
+				return IsSuperTypeOfResult::createMaybe();
+			}
+
+			return $result;
 		}
 
 		if ($type instanceof CompoundType) {

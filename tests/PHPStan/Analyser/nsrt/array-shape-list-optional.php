@@ -25,8 +25,8 @@ class Foo
 		assertType('list{0: string, 1: int, 2?: string, 3?: string}', $valid1);
 		assertType('list{0: string, 1?: int, 2?: string, 3?: string}', $valid2);
 		assertType('non-empty-array{0?: string, 1?: int, 2?: string, 3?: string}', $valid3);
-		assertType('*NEVER*', $invalid1);
-		assertType('*NEVER*', $invalid2);
+		assertType('list{0: string, 1: int, 2?: string, 4?: string}', $invalid1);
+		assertType('list{0: string, 1: int, 2?: string, foo?: string}', $invalid2);
 	}
 
 }

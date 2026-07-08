@@ -1438,6 +1438,57 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * Compute the list-ness trinary of a sealed array shape purely from its keys
+	 * and their optionality: `yes` if every realization (choice of which optional
+	 * keys are present) is a list, `no` if none is, `maybe` otherwise. An optional
+	 * key that breaks list-ness only degrades the answer to `maybe`, because the
+	 * realization where that key is absent may still be a list.
+	 *
+	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param int[] $optionalKeys
+	 */
+	private static function inferIsListFromShape(array $keyTypes, array $optionalKeys): TrinaryLogic
+	{
+		$optional = [];
+		foreach ($optionalKeys as $optionalKey) {
+			$optional[$optionalKey] = true;
+		}
+
+		// Prefix lengths reachable by realizations that are still a valid list.
+		$validLengths = [0 => true];
+		$existsInvalid = false;
+
+		foreach ($keyTypes as $i => $keyType) {
+			$isOptional = array_key_exists($i, $optional);
+			$value = $keyType instanceof ConstantIntegerType ? $keyType->getValue() : null;
+
+			$newValidLengths = [];
+			foreach (array_keys($validLengths) as $length) {
+				if ($isOptional) {
+					// Skipping the key keeps the realization a valid list prefix.
+					$newValidLengths[$length] = true;
+				}
+
+				if ($value === $length) {
+					// Including the key extends the list into the next slot.
+					$newValidLengths[$length + 1] = true;
+				} else {
+					// Including a non-sequential key yields a non-list realization.
+					$existsInvalid = true;
+				}
+			}
+
+			$validLengths = $newValidLengths;
+			if ($validLengths === []) {
+				// No realization can be a list from here on.
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return $existsInvalid ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
+	}
+
+	/**
 	 * When we're unsetting something not on the array, it will be untouched,
 	 * So the nextAutoIndexes won't change, and the array might still be a list even with PHPStan definition.
 	 *
@@ -3032,12 +3083,24 @@ class ConstantArrayType implements Type
 		/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 		$keyTypes = $keyTypes;
 
+		// Merging widens keys present in only one side into optional keys, so the
+		// result can admit list realizations that neither input did. When the merged
+		// extras are the explicit-never sentinel (i.e. no real extras), the result is
+		// sealed and its list-ness follows purely from the merged shape. Two pure
+		// lists merge into a list (their optional keys are suffix-constrained), so
+		// keep `yes` in that case rather than degrading it from the shape.
+		$naiveIsList = $this->isList->and($otherArray->isList);
+		$mergedIsSealed = $mergedUnsealedKey instanceof NeverType && $mergedUnsealedKey->isExplicit();
+		$isList = $mergedIsSealed && !$naiveIsList->yes()
+			? self::inferIsListFromShape($keyTypes, $optionalKeys)
+			: $naiveIsList;
+
 		return $this->recreate(
 			$keyTypes,
 			$valueTypes,
 			$nextAutoIndexes,
 			$optionalKeys,
-			$this->isList->and($otherArray->isList),
+			$isList,
 			$resultUnsealed,
 		);
 	}
@@ -3064,7 +3127,20 @@ class ConstantArrayType implements Type
 		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
-		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList), $this->unsealed);
+		// Merging widens keys present in only one side into optional keys, so the
+		// result can admit list realizations that neither input did (e.g. the empty
+		// array). When the result carries no real extras it is sealed and its
+		// list-ness follows purely from the merged shape, instead of the too-strict
+		// `$this->isList->and($otherArray->isList)`. Two pure lists merge into a list
+		// (their optional keys are suffix-constrained), so keep `yes` in that case.
+		$naiveIsList = $this->isList->and($otherArray->isList);
+		$mergedIsSealed = $this->unsealed === null
+			|| ($this->unsealed[0] instanceof NeverType && $this->unsealed[0]->isExplicit());
+		$isList = $mergedIsSealed && !$naiveIsList->yes()
+			? self::inferIsListFromShape($this->keyTypes, $optionalKeys)
+			: $naiveIsList;
+
+		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $this->unsealed);
 	}
 
 	/**

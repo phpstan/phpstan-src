@@ -237,7 +237,10 @@ public:
 			zend_long passedVerdict = PT_TRI_YES;
 			bool hasPassedVerdict = false;
 			if (UNEXPECTED(!resolvePassedVerdict(variant, args, hasPassedVerdict, passedVerdict))) return false;
-			if (hasPassedVerdict && passedVerdict == PT_TRI_YES) return true;
+			if (hasPassedVerdict) {
+				if (passedVerdict == PT_TRI_YES) return true;
+				if (passedVerdict == PT_TRI_NO) certain = true;
+			}
 		}
 
 		zend_class_entry *functionReflectionCe = pt_class(PT_CLASS_FUNCTION_REFLECTION);

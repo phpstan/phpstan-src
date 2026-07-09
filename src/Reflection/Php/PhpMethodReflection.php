@@ -57,6 +57,8 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
+	private ?string $name = null;
+
 	/**
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
@@ -150,6 +152,10 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function getName(): string
 	{
+		if ($this->name !== null) {
+			return $this->name;
+		}
+
 		$name = $this->reflection->getName();
 		$lowercaseName = strtolower($name);
 		if ($lowercaseName === $name) {
@@ -167,7 +173,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			}
 		}
 
-		return $name;
+		return $this->name = $name;
 	}
 
 	private function getMethodNameWithCorrectCase(string $lowercaseMethodName, string $traitTarget): ?string

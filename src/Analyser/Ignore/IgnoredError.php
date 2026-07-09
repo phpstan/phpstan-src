@@ -21,6 +21,16 @@ final class IgnoredError
 {
 
 	/**
+	 * FileExcluder construction stats the filesystem (is_file/is_dir), and
+	 * shouldIgnore() runs once per (error, ignore entry with a path) pair, so
+	 * reuse excluders for the same path. Keyed by working directory + path
+	 * because path normalization depends on the working directory.
+	 *
+	 * @var array<string, FileExcluder>
+	 */
+	private static array $fileExcluders = [];
+
+	/**
 	 * @param ExpandedIgnoredErrorData|string $ignoredError
 	 */
 	public static function getIgnoredErrorLabel(array|string $ignoredError): string
@@ -116,7 +126,7 @@ final class IgnoredError
 		}
 
 		if ($path !== null) {
-			$fileExcluder = new FileExcluder($fileHelper, [$path]);
+			$fileExcluder = self::$fileExcluders[$fileHelper->getWorkingDirectory() . "\0" . $path] ??= new FileExcluder($fileHelper, [$path]);
 			$isExcluded = $fileExcluder->isExcludedFromAnalysing($error->getFilePath());
 			if (!$isExcluded && $error->getTraitFilePath() !== null) {
 				return $fileExcluder->isExcludedFromAnalysing($error->getTraitFilePath());

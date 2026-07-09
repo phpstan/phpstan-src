@@ -51,13 +51,14 @@ enum : uint32_t
 	PT_PMR_PHP_DOC_COMMENT,
 	PT_PMR_ATTRIBUTES,
 	PT_PMR_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
+	PT_PMR_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS,
 	PT_PMR_SLOT_COUNT,
 };
 
 const char *const pt_pmr_names[PT_PMR_SLOT_COUNT] = {
 	"name", "variants", "returnType", "declaringClass", "reflection", "phpDocThrowType", "resolvedPhpDocBlock",
 	"deprecatedDescription", "isDeprecated", "isInternal", "isFinal", "isPure", "asserts", "acceptsNamedArguments",
-	"selfOutType", "phpDocComment", "attributes", "pureUnlessCallableIsImpureParameters",
+	"selfOutType", "phpDocComment", "attributes", "pureUnlessCallableIsImpureParameters", "pureUnlessParameterPassedParameters",
 };
 
 struct Layout
@@ -211,11 +212,12 @@ Answer hasSideEffects(zend_object *method, zv::Val &out)
 	return PT_PMR_ANSWERED;
 }
 
-/* getPureUnlessCallableIsImpureParameters(): array_map(static fn (bool $value) =>
- * TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters) */
-Answer pureUnlessCallableIsImpureParameters(zend_object *method, zv::Val &out)
+/* getPureUnlessCallableIsImpureParameters() / getPureUnlessParameterPassedParameters():
+ * array_map(static fn (bool $value) => TrinaryLogic::createFromBoolean($value),
+ * $this->pureUnlessCallableIsImpureParameters / $this->pureUnlessParameterPassedParameters) */
+Answer trinaryMapSlot(zend_object *method, uint32_t slot, zv::Val &out)
 {
-	zval *parameters = slotOf(method, PT_PMR_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS);
+	zval *parameters = slotOf(method, slot);
 	if (UNEXPECTED(parameters == NULL || Z_TYPE_P(parameters) != IS_ARRAY)) return PT_PMR_UNANSWERED;
 	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
 		zval *value = entry.value().deref().raw();
@@ -336,7 +338,9 @@ int pt_php_method_reflection_answer(zend_object *method, pt_method_reflection_me
 			return PT_PMR_ANSWERED;
 		}
 		case PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS:
-			return pureUnlessCallableIsImpureParameters(method, out);
+			return trinaryMapSlot(method, PT_PMR_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS, out);
+		case PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS:
+			return trinaryMapSlot(method, PT_PMR_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS, out);
 		case PT_MR_GET_ASSERTS:
 			return slotAnswer(method, PT_PMR_ASSERTS, out);
 		case PT_MR_ACCEPTS_NAMED_ARGUMENTS: {

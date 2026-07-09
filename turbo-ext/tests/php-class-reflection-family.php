@@ -208,6 +208,7 @@ final class Describer
 			'asserts' => $this->describe($method->getAsserts(), $depth + 1),
 			'attributes' => $this->describe($method->getAttributes(), $depth + 1),
 			'pureUnlessCallableIsImpureParameters' => $method->getPureUnlessCallableIsImpureParameters(),
+			'pureUnlessParameterPassedParameters' => $method->getPureUnlessParameterPassedParameters(),
 			'mustUseReturnValue' => $method->mustUseReturnValue()->describe(),
 			'resolvedPhpDoc' => $this->describe($method->getResolvedPhpDoc(), $depth + 1),
 			'variants' => array_map(fn ($variant) => $this->describeVariant($variant, $depth + 1), $method->getVariants()),

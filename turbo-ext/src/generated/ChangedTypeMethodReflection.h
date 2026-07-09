@@ -81,10 +81,11 @@ inline constexpr char strings[] =
 	"isAbstract\0" /* 652 */
 	"isPure\0" /* 663 */
 	"getPureUnlessCallableIsImpureParameters\0" /* 670 */
-	"getAttributes\0" /* 710 */
-	"mustUseReturnValue\0" /* 724 */
-	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 743 */
-	"getResolvedPhpDoc"; /* 778 */
+	"getPureUnlessParameterPassedParameters\0" /* 710 */
+	"getAttributes\0" /* 749 */
+	"mustUseReturnValue\0" /* 763 */
+	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 782 */
+	"getResolvedPhpDoc"; /* 817 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 15), /* __construct $declaringClass */
 	reg::packed(50, 0, 61), /* __construct $reflection */
@@ -118,9 +119,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(230, 0, 452), /* isAbstract return */
 	reg::packed(230, 0, 452), /* isPure return */
 	reg::packed(230, MAY_BE_ARRAY), /* getPureUnlessCallableIsImpureParameters return */
+	reg::packed(230, MAY_BE_ARRAY), /* getPureUnlessParameterPassedParameters return */
 	reg::packed(230, MAY_BE_ARRAY), /* getAttributes return */
 	reg::packed(230, 0, 452), /* mustUseReturnValue return */
-	reg::packed(230, MAY_BE_NULL, 743), /* getResolvedPhpDoc return */
+	reg::packed(230, MAY_BE_NULL, 782), /* getResolvedPhpDoc return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -153,9 +155,10 @@ inline constexpr sigtab::Sig returnsByReference = { { 633 /* returnsByReference 
 inline constexpr sigtab::Sig isAbstract = { { 652 /* isAbstract */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isPure = { { 663 /* isPure */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getPureUnlessCallableIsImpureParameters = { { 670 /* getPureUnlessCallableIsImpureParameters */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAttributes = { { 710 /* getAttributes */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig mustUseReturnValue = { { 724 /* mustUseReturnValue */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResolvedPhpDoc = { { 778 /* getResolvedPhpDoc */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPureUnlessParameterPassedParameters = { { 710 /* getPureUnlessParameterPassedParameters */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAttributes = { { 749 /* getAttributes */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mustUseReturnValue = { { 763 /* mustUseReturnValue */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedPhpDoc = { { 817 /* getResolvedPhpDoc */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ChangedTypeMethodReflection

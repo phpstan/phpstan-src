@@ -6668,7 +6668,7 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 			'onlyVariant' => $catching(static fn () => $viewVariant($m->getOnlyVariant())),
 			'prototype' => $catching(static fn () => [get_class($m->getPrototype()), $m->getPrototype()->getDeclaringClass()->getName()]),
 			'flags' => $catching(static fn () => [$m->isStatic(), $m->isPrivate(), $m->isPublic(), $m->getDocComment(), $view($m->isDeprecated()), $m->getDeprecatedDescription(), $view($m->isFinal()), $view($m->isFinalByKeyword()), $view($m->isInternal()), $view($m->isBuiltin())]),
-			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
+			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $m->getPureUnlessParameterPassedParameters(), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
 			'attributes' => $catching(static fn () => $viewAttributes($m->getAttributes())),
 			'phpDoc' => $catching(static fn () => $view($m->getResolvedPhpDoc())),
 			'memo' => $catching(static fn () => [$m->getVariants() === $m->getVariants(), $m->getNamedArgumentsVariants() === $m->getNamedArgumentsVariants(), $m->getAsserts() === $m->getAsserts(), $m->getSelfOutType() === $m->getSelfOutType(), $m->hasSideEffects() === $m->hasSideEffects(), $m->getDeclaringClass() === $m->getDeclaringClass()]),
@@ -6725,6 +6725,7 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 		public function hasSideEffects(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean(!$this->answer); }
 		public function isPure(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createMaybe(); }
 		public function getPureUnlessCallableIsImpureParameters(): array { return $this->answer ? ['callback' => true] : []; }
+		public function getPureUnlessParameterPassedParameters(): array { return $this->answer ? ['count' => \PHPStan\TrinaryLogic::createYes()] : []; }
 		public function getAsserts(): \PHPStan\Reflection\Assertions { return $this->inner->getAsserts(); }
 		public function acceptsNamedArguments(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean($this->answer); }
 		public function getSelfOutType(): ?\PHPStan\Type\Type { return $this->answer ? new \PHPStan\Type\Generic\GenericObjectType(\PHPStanTurboTests\PrototypeFixture::class, [(new \PHPStan\Type\Generic\TemplateTypeReference(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithClass(\PHPStanTurboTests\PrototypeFixture::class), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()))->getType()]) : null; }

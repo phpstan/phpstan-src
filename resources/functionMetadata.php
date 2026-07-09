@@ -24,7 +24,7 @@
  *     an argument, e.g. str_replace()'s 'count'.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}|array{pureUnlessCallableIsImpureParameters: array<string, bool>, pureUnlessParameterPassedParameters: array<string, bool>}> */
 return [
 	'BackedEnum::from' => ['hasSideEffects' => false],
 	'BackedEnum::tryFrom' => ['hasSideEffects' => false],
@@ -1642,7 +1642,7 @@ return [
 	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
 	'preg_quote' => ['hasSideEffects' => false],
 	'preg_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
-	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true], 'pureUnlessParameterPassedParameters' => ['count' => true]],
 	'preg_split' => ['hasSideEffects' => false],
 	'property_exists' => ['hasSideEffects' => false],
 	'quoted_printable_decode' => ['hasSideEffects' => false],

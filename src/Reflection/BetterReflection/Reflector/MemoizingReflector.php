@@ -30,6 +30,15 @@ final class MemoizingReflector implements Reflector
 	/** @var array<lowercase-string, ReflectionFunction|null> */
 	private array $functionReflections = [];
 
+	/** @var list<ReflectionClass>|null */
+	private ?array $allClasses = null;
+
+	/** @var list<ReflectionFunction>|null */
+	private ?array $allFunctions = null;
+
+	/** @var list<ReflectionConstant>|null */
+	private ?array $allConstants = null;
+
 	public function __construct(
 		#[AutowiredParameter(ref: '@betterReflectionSourceLocator')]
 		private SourceLocator $sourceLocator,
@@ -133,7 +142,7 @@ final class MemoizingReflector implements Reflector
 	public function reflectAllClasses(): iterable
 	{
 		/** @var list<ReflectionClass> */
-		return $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
+		return $this->allClasses ??= $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
 	}
 
 	/**
@@ -143,7 +152,7 @@ final class MemoizingReflector implements Reflector
 	public function reflectAllFunctions(): iterable
 	{
 		/** @var list<ReflectionFunction> */
-		return $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION));
+		return $this->allFunctions ??= $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION));
 	}
 
 	/**
@@ -153,7 +162,7 @@ final class MemoizingReflector implements Reflector
 	public function reflectAllConstants(): iterable
 	{
 		/** @var list<ReflectionConstant> */
-		return $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT));
+		return $this->allConstants ??= $this->sourceLocator->locateIdentifiersByType($this, new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT));
 	}
 
 }

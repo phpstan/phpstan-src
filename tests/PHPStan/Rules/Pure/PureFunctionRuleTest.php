@@ -434,6 +434,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $count, but $count is not optional, so function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is never pure.',
 				350,
 			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCount().',
+				387,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCountWithExtra().',
+				398,
+			],
 		]);
 	}
 

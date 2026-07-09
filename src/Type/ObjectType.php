@@ -119,6 +119,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private ?string $cachedDescription = null;
 
+	private ?string $cachedPreciseName = null;
+
 	/** @var array<string, list<EnumCaseObjectType>> */
 	private static array $enumCases = [];
 
@@ -680,12 +682,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function describe(VerbosityLevel $level): string
 	{
 		$preciseNameCallback = function (): string {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($this->className)) {
-				return $this->className;
+			if ($this->cachedPreciseName !== null) {
+				return $this->cachedPreciseName;
 			}
 
-			return $reflectionProvider->getClassName($this->className);
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($this->className)) {
+				return $this->cachedPreciseName = $this->className;
+			}
+
+			return $this->cachedPreciseName = $reflectionProvider->getClassName($this->className);
 		};
 
 		$preciseWithSubtracted = fn (): string => $this->className . $this->describeSubtractedType($this->subtractedType, $level);

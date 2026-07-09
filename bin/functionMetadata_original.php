@@ -268,6 +268,7 @@ return [
 	'output_reset_rewrite_vars' => ['hasSideEffects' => true],
 	'pclose' => ['hasSideEffects' => true],
 	'popen' => ['hasSideEffects' => true],
+	'preg_filter' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
 	// 'matches'/'subpatterns': PHP 8+ uses the php-8-stubs parameter name, PHP <8 falls
 	// back to the legacy functionMap.php name.
 	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],

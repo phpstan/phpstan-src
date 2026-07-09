@@ -1634,6 +1634,7 @@ return [
 	'posix_ttyname' => ['hasSideEffects' => false],
 	'posix_uname' => ['hasSideEffects' => false],
 	'pow' => ['hasSideEffects' => false],
+	'preg_filter' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
 	'preg_grep' => ['hasSideEffects' => false],
 	'preg_last_error' => ['hasSideEffects' => true],
 	'preg_last_error_msg' => ['hasSideEffects' => true],

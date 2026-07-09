@@ -456,6 +456,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithMatches().',
 				40,
 			],
+			[
+				'Impure call to function preg_filter() in pure function PureUnlessParameterPassedBuiltin\purePregFilterWithCount().',
+				60,
+			],
 		]);
 	}
 

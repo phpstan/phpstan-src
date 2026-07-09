@@ -15,6 +15,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -34,6 +35,34 @@ final class ConditionalExpressionHolderHelper
 		private TypeSpecifier $typeSpecifier,
 	)
 	{
+	}
+
+	/**
+	 * Pins the boolean value of a whole `&&`/`||` condition (`true` in the
+	 * truthy branch, `false` in the falsey branch) into a scope and runs the
+	 * conditional-expression resolution against it, without re-narrowing the
+	 * operands.
+	 *
+	 * The single-variable case (`if ($cond) { $x = 1; } if ($cond) { echo $x; }`)
+	 * already works because the narrowed variable is stored in the scope and
+	 * becomes a guard when the branches merge. A compound condition narrows no
+	 * single variable to a definite value, so nothing is left to guard on.
+	 * Pinning the condition expression's boolean value gives the merge a guard
+	 * keyed on the whole condition, and re-running the resolution lets a later
+	 * identical `if` re-derive the same narrowing — all while preserving any
+	 * side effects (e.g. assignments) already baked into the operand-narrowed
+	 * scope.
+	 */
+	public function specifyWholeExpressionType(MutatingScope $scope, Expr $expr, bool $value): MutatingScope
+	{
+		$specifiedTypes = $this->typeSpecifier->create(
+			$expr,
+			new ConstantBooleanType($value),
+			TypeSpecifierContext::createTrue(),
+			$scope,
+		)->setRootExpr($expr);
+
+		return $scope->filterBySpecifiedTypes($specifiedTypes);
 	}
 
 	public function augmentDisjunctionTypes(

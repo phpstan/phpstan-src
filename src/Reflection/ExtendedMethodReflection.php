@@ -74,6 +74,11 @@ interface ExtendedMethodReflection extends MethodReflection
 	 */
 	public function getPureUnlessCallableIsImpureParameters(): array;
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
+	public function getPureUnlessParameterPassedParameters(): array;
+
 	/** @return list<AttributeReflection> */
 	public function getAttributes(): array;
 

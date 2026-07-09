@@ -146,6 +146,11 @@ final class ExitFunctionReflection implements FunctionReflection
 		return [];
 	}
 
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return [];
+	}
+
 	public function getAttributes(): array
 	{
 		return [];

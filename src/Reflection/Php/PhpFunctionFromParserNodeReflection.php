@@ -332,6 +332,14 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters);
 	}
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessParameterPassedParameters);
+	}
+
 	public function getAttributes(): array
 	{
 		return $this->attributes;

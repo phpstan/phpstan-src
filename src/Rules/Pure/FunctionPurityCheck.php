@@ -91,8 +91,9 @@ final class FunctionPurityCheck
 			))->identifier(sprintf('pure%s.redundantUnlessCallable', $identifier))->build();
 		}
 
+		$pureUnlessParameterPassedParameters = $functionReflection->getPureUnlessParameterPassedParameters();
 		foreach ($parameters as $parameter) {
-			if (!$parameter->isPureUnlessParameterPassedParameter()->yes()) {
+			if (!array_key_exists($parameter->getName(), $pureUnlessParameterPassedParameters)) {
 				continue;
 			}
 			if ($parameter->isOptional()) {

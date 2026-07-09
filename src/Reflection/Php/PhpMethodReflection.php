@@ -419,6 +419,14 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters);
 	}
 
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessParameterPassedParameters);
+	}
+
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self
 	{
 		return new self(

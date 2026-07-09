@@ -59,3 +59,36 @@ function purePregFilterWithCount(string $s): ?string
 
 	return preg_filter('/a/', 'b', $s, -1, $count);
 }
+
+/**
+ * @phpstan-pure
+ */
+function purePregReplaceCallbackPureCallback(string $s): ?string
+{
+	// preg_replace_callback() carries both flags: the callback is pure and the by-ref
+	// $count is omitted, so the call stays pure.
+	return preg_replace_callback('/a/', static fn (array $m): string => $m[0], $s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function purePregReplaceCallbackWithCount(string $s): ?string
+{
+	$count = 0;
+	// The callback is pure but the by-ref $count is passed, so the call is impure.
+	return preg_replace_callback('/a/', static fn (array $m): string => $m[0], $s, -1, $count);
+}
+
+/**
+ * @phpstan-pure
+ */
+function purePregReplaceCallbackImpureCallback(string $s): ?string
+{
+	// The callback itself is impure, so the call is impure regardless of $count.
+	return preg_replace_callback('/a/', static function (array $m): string {
+		echo $m[0];
+
+		return $m[0];
+	}, $s);
+}

@@ -5,7 +5,7 @@
  * keyed by lowercase function name or "Class::method". resources/functionMetadata.php
  * is generated from this file by bin/generate-function-metadata.php.
  *
- * Each entry is exactly one of these shapes:
+ * Each entry has one of these shapes:
  *
  *   - ['hasSideEffects' => bool]
  *         false: the call is pure. true: the call has side effects.
@@ -17,9 +17,12 @@
  *         the call is pure unless one of the listed (by-ref out) parameters
  *         (keyed by parameter name) receives an argument, e.g. str_replace()
  *         whose only side effect is writing to its optional 'count' argument.
+ *
+ * The last two can be combined for a call that is pure unless either happens,
+ * e.g. preg_replace_callback() (impure callback or a passed 'count').
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}|array{pureUnlessCallableIsImpureParameters: array<string, bool>, pureUnlessParameterPassedParameters: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],
@@ -274,7 +277,7 @@ return [
 	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
 	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
 	'preg_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
-	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true], 'pureUnlessParameterPassedParameters' => ['count' => true]],
 	'similar_text' => ['pureUnlessParameterPassedParameters' => ['percent' => true]],
 	'readfile' => ['hasSideEffects' => true],
 	'rename' => ['hasSideEffects' => true],

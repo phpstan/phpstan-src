@@ -63,26 +63,21 @@ final class SimpleImpurePoint
 			}
 
 			if (!$certain && $scope !== null && $variant !== null) {
+				// A function can carry both flags at once (e.g. preg_replace_callback,
+				// which is pure unless its callback is impure or its $count is passed).
+				// It stays pure only when both verdicts agree it is pure, so combine
+				// them: Yes = pure, No = impure, Maybe = possibly impure.
 				$verdict = self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args);
+				$passedVerdict = self::resolvePureUnlessParameterPassedVerdict($variant, $args);
+				if ($passedVerdict !== null) {
+					$verdict = $verdict === null ? $passedVerdict : $verdict->and($passedVerdict);
+				}
+
 				if ($verdict !== null) {
 					if ($verdict->yes()) {
 						return null;
 					}
 					if ($verdict->no()) {
-						$certain = true;
-					}
-				}
-			}
-
-			if (!$certain && $scope !== null && $variant !== null) {
-				$passedVerdict = self::resolvePureUnlessParameterPassedVerdict($variant, $args);
-				if ($passedVerdict !== null) {
-					if ($passedVerdict->yes()) {
-						// None of the @pure-unless-parameter-passed by-ref parameters
-						// received an argument, so the call is pure.
-						return null;
-					}
-					if ($passedVerdict->no()) {
 						$certain = true;
 					}
 				}

@@ -127,6 +127,9 @@ class ConstantArrayType implements Type
 	/** @var array<int|string, int>|null */
 	private ?array $keyIndexMap = null;
 
+	/** @var array<int, string> */
+	private array $cachedDescriptions = [];
+
 	/**
 	 * @api
 	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
@@ -2462,6 +2465,15 @@ class ConstantArrayType implements Type
 	}
 
 	public function describe(VerbosityLevel $level): string
+	{
+		if (isset($this->cachedDescriptions[$level->getLevelValue()])) {
+			return $this->cachedDescriptions[$level->getLevelValue()];
+		}
+
+		return $this->cachedDescriptions[$level->getLevelValue()] = $this->describeUncached($level);
+	}
+
+	private function describeUncached(VerbosityLevel $level): string
 	{
 		$arrayName = $this->shouldBeDescribedAsAList() ? 'list' : 'array';
 

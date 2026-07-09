@@ -152,6 +152,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return [];
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();

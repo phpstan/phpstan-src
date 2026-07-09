@@ -430,6 +430,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureCallingFirstClassCallablePassingCount().',
 				343,
 			],
+			[
+				'Function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $count, but $count is not optional, so function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is never pure.',
+				350,
+			],
 		]);
 	}
 

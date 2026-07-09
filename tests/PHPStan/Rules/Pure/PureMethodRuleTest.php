@@ -407,4 +407,15 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessParameterPassed(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed-method.php'], [
+			[
+				'Method PureUnlessParameterPassedMethod\Replacer::replace() is marked @pure-unless-parameter-passed for parameter $count, but $count is not optional, so method PureUnlessParameterPassedMethod\Replacer::replace() is never pure.',
+				12,
+			],
+		]);
+	}
+
 }

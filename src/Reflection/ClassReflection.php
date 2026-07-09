@@ -579,6 +579,10 @@ final class ClassReflection
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 
+		if (isset($this->methods[$key])) {
+			return $this->methods[$key];
+		}
+
 		$phpClassReflectionExtension = $this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension();
 		if ($phpClassReflectionExtension->hasMethod($this, $methodName)) {
 			$method = $phpClassReflectionExtension->getMethod($this, $methodName);

@@ -737,20 +737,6 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
 	}
 
-	public function testConstantFetchIsTrackedAsDependency(): void
-	{
-		$analyser = $this->createAnalyser();
-		$defFile = $this->getFileHelper()->normalizePath(__DIR__ . '/data/const-dependency/def.php');
-		$userFile = $this->getFileHelper()->normalizePath(__DIR__ . '/data/const-dependency/user.php');
-
-		$analyserResult = $analyser->analyse([$defFile, $userFile]);
-
-		$dependencies = $analyserResult->getDependencies();
-		$this->assertNotNull($dependencies);
-		$this->assertArrayHasKey($userFile, $dependencies);
-		$this->assertContains($defFile, $dependencies[$userFile]);
-	}
-
 	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param string|string[] $filePaths

@@ -198,18 +198,7 @@ class NodeScopeResolver
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
-	/**
-	 * Memoizes which ExprHandler handles each Expr class so processExprNode() does not
-	 * re-scan every tagged handler on each call. Keyed by Expr class-string; false means
-	 * no handler matched (default handling).
-	 *
-	 * Call-likes (Expr\CallLike) are never memoized: their handlers select on
-	 * isFirstClassCallable(), which the Expr class alone does not determine. Every other
-	 * handler's supports() is a pure instanceof check, so the class fully determines it.
-	 *
-	 * @var array<class-string<Expr>, ExprHandler<Expr>|false>
-	 */
-	private array $exprHandlersByClass = [];
+	private ?ExprHandlerRegistry $exprHandlerRegistry = null;
 
 	/** @var array<string, true> */
 	private array $earlyTerminatingMethodNames;
@@ -2833,31 +2822,7 @@ class NodeScopeResolver
 	 */
 	private function resolveExprHandler(Expr $expr): ?ExprHandler
 	{
-		// Call-likes are excluded from the cache: their handlers select on
-		// isFirstClassCallable(), so the Expr class does not uniquely determine the handler.
-		if (!$expr instanceof Expr\CallLike) {
-			$cached = $this->exprHandlersByClass[get_class($expr)] ?? null;
-			if ($cached !== null) {
-				return $cached === false ? null : $cached;
-			}
-		}
-
-		$matchedHandler = null;
-		/** @var ExprHandler<Expr> $exprHandler */
-		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-			if (!$exprHandler->supports($expr)) {
-				continue;
-			}
-
-			$matchedHandler = $exprHandler;
-			break;
-		}
-
-		if (!$expr instanceof Expr\CallLike) {
-			$this->exprHandlersByClass[get_class($expr)] = $matchedHandler ?? false;
-		}
-
-		return $matchedHandler;
+		return ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
 	}
 
 	/**

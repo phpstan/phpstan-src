@@ -1059,12 +1059,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this->expressionTypes[$exprString]->getType();
 		}
 
-		/** @var ExprHandler<Expr> $exprHandler */
-		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
-			if (!$exprHandler->supports($node)) {
-				continue;
-			}
-
+		$exprHandler = $this->container->getByType(ExprHandlerRegistry::class)->resolve($node);
+		if ($exprHandler !== null) {
 			return $exprHandler->resolveType($this, $node);
 		}
 

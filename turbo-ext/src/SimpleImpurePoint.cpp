@@ -224,22 +224,20 @@ public:
 		}
 
 		if (!certain && scope != NULL && variant != NULL) {
+			/* both verdicts combined: Yes = pure, No = impure, Maybe = possibly impure */
 			zend_long verdict = PT_TRI_YES;
 			bool hasVerdict = false;
 			if (UNEXPECTED(!resolveVerdict(variant, scope, args, hasVerdict, verdict))) return false;
-			if (hasVerdict) {
-				if (verdict == PT_TRI_YES) return true;
-				if (verdict == PT_TRI_NO) certain = true;
-			}
-		}
-
-		if (!certain && scope != NULL && variant != NULL) {
 			zend_long passedVerdict = PT_TRI_YES;
 			bool hasPassedVerdict = false;
 			if (UNEXPECTED(!resolvePassedVerdict(variant, args, hasPassedVerdict, passedVerdict))) return false;
 			if (hasPassedVerdict) {
-				if (passedVerdict == PT_TRI_YES) return true;
-				if (passedVerdict == PT_TRI_NO) certain = true;
+				verdict = hasVerdict ? pt_trinary_and(verdict, passedVerdict) : passedVerdict;
+				hasVerdict = true;
+			}
+			if (hasVerdict) {
+				if (verdict == PT_TRI_YES) return true;
+				if (verdict == PT_TRI_NO) certain = true;
 			}
 		}
 

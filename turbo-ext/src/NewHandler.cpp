@@ -809,19 +809,19 @@ public:
 			bool certain = isPure == PT_TRI_NO;
 			zval *args = exprArgs(expr);
 			if (UNEXPECTED(args == NULL)) return zv::Val();
+			/* both verdicts combined, as createFromVariant() does for calls */
 			bool hasVerdict;
 			zend_long verdict;
 			if (UNEXPECTED(!pt_simple_impure_point_resolve_verdict(parametersAcceptor, scope, args, hasVerdict, verdict))) return zv::Val();
+			bool hasPassedVerdict;
+			zend_long passedVerdict;
+			if (UNEXPECTED(!pt_simple_impure_point_resolve_passed_verdict(parametersAcceptor, args, hasPassedVerdict, passedVerdict))) return zv::Val();
+			if (hasPassedVerdict) {
+				verdict = hasVerdict ? pt_trinary_and(verdict, passedVerdict) : passedVerdict;
+				hasVerdict = true;
+			}
 			if (hasVerdict && verdict == PT_TRI_YES) return zv::Val::null();
 			if (hasVerdict && verdict == PT_TRI_NO) certain = true;
-
-			if (!certain) {
-				bool hasPassedVerdict;
-				zend_long passedVerdict;
-				if (UNEXPECTED(!pt_simple_impure_point_resolve_passed_verdict(parametersAcceptor, args, hasPassedVerdict, passedVerdict))) return zv::Val();
-				if (hasPassedVerdict && passedVerdict == PT_TRI_YES) return zv::Val::null();
-				if (hasPassedVerdict && passedVerdict == PT_TRI_NO) certain = true;
-			}
 
 			return constructorInstantiationImpurePoint(scopeBeforeArgs, expr, constructorReflection, certain);
 		}

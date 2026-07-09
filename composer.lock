@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "08ef80e73e4b97acde2c6a3543687fad",
+  "content-hash": "f128753d8eedc9b2d387a23643fe5234",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -5153,21 +5153,22 @@
     },
     {
       "name": "phpstan/phpstan-phpunit",
-      "version": "2.0.15",
+      "version": "2.0.x-dev",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-phpunit.git",
-        "reference": "0f6ba8e22a3e919353a8f4615ea3cd2e91626c7f"
+        "reference": "2297f6c4cc1a05ba45eb9d297ed352a44a7a9364"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/0f6ba8e22a3e919353a8f4615ea3cd2e91626c7f",
-        "reference": "0f6ba8e22a3e919353a8f4615ea3cd2e91626c7f",
+        "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/2297f6c4cc1a05ba45eb9d297ed352a44a7a9364",
+        "reference": "2297f6c4cc1a05ba45eb9d297ed352a44a7a9364",
         "shasum": ""
       },
       "require": {
+        "phar-io/version": "^3.2",
         "php": "^7.4 || ^8.0",
-        "phpstan/phpstan": "^2.1.32"
+        "phpstan/phpstan": "^2.2.6"
       },
       "conflict": {
         "phpunit/phpunit": "<7.0"
@@ -5177,8 +5178,10 @@
         "php-parallel-lint/php-parallel-lint": "^1.2",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "shipmonk/name-collision-detector": "^2.1"
       },
+      "default-branch": true,
       "type": "phpstan-extension",
       "extra": {
         "phpstan": {
@@ -5203,9 +5206,9 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
-        "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.15"
+        "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
       },
-      "time": "2026-02-11T14:43:43+00:00"
+      "time": "2026-07-06T17:56:46+00:00"
     },
     {
       "name": "phpstan/phpstan-strict-rules",

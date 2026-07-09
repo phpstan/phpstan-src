@@ -342,3 +342,16 @@ function pureCallingFirstClassCallablePassingCount(string $s): string
 	// stays possibly impure.
 	return $f($s, $count);
 }
+
+/**
+ * @param-out int $count
+ * @pure-unless-parameter-passed $count
+ */
+function nonOptionalUnlessParameterPassed(string $subject, int &$count): string
+{
+	// $count is not optional, so it is always passed and the tag can never keep
+	// the function pure.
+	$count = 1;
+
+	return $subject;
+}

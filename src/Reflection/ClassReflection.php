@@ -146,6 +146,12 @@ final class ClassReflection
 	/** @var array<string, ClassReflection>|null */
 	private ?array $cachedInterfaces = null;
 
+	/** @var array<string, ClassReflection>|null */
+	private ?array $cachedTraits = null;
+
+	/** @var array<string, ClassReflection>|null */
+	private ?array $cachedRecursiveTraits = null;
+
 	private ClassReflection|false|null $cachedParentClass = false;
 
 	/** @var array<string, TypeAlias>|null */
@@ -1208,6 +1214,14 @@ final class ClassReflection
 	 */
 	public function getTraits(bool $recursive = false): array
 	{
+		if ($recursive) {
+			if ($this->cachedRecursiveTraits !== null) {
+				return $this->cachedRecursiveTraits;
+			}
+		} elseif ($this->cachedTraits !== null) {
+			return $this->cachedTraits;
+		}
+
 		$traits = [];
 
 		if ($recursive) {
@@ -1224,14 +1238,16 @@ final class ClassReflection
 			$parentClass = $this->getNativeReflection()->getParentClass();
 
 			if ($parentClass !== false) {
-				return array_merge(
+				$traits = array_merge(
 					$traits,
 					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true),
 				);
 			}
+
+			return $this->cachedRecursiveTraits = $traits;
 		}
 
-		return $traits;
+		return $this->cachedTraits = $traits;
 	}
 
 	/**

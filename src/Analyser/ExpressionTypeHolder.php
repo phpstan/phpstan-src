@@ -14,6 +14,7 @@ final class ExpressionTypeHolder
 		private readonly Expr $expr,
 		private readonly Type $type,
 		private readonly TrinaryLogic $certainty,
+		private readonly bool $trackingOnly = false,
 	)
 	{
 	}
@@ -52,22 +53,31 @@ final class ExpressionTypeHolder
 
 	public function and(self $other): self
 	{
+		$newTrackingOnly = $this->trackingOnly || $other->trackingOnly;
+
 		if ($this->type === $other->type || $this->type->equals($other->type)) {
-			if ($this->certainty->and($other->certainty)->yes()) {
+			$newCertainty = $this->certainty->and($other->certainty);
+			if ($newCertainty->yes() && !$newTrackingOnly) {
 				return $this;
 			}
 
-			if ($this->certainty->maybe()) {
+			if ($this->certainty->maybe() && $this->trackingOnly === $newTrackingOnly) {
 				return $this;
 			}
 
-			return $other;
+			return new self(
+				$this->expr,
+				$this->type,
+				$newCertainty,
+				$newTrackingOnly,
+			);
 		}
 
 		return new self(
 			$this->expr,
 			TypeCombinator::union($this->type, $other->type),
 			$this->certainty->and($other->certainty),
+			$newTrackingOnly,
 		);
 	}
 
@@ -84,6 +94,11 @@ final class ExpressionTypeHolder
 	public function getCertainty(): TrinaryLogic
 	{
 		return $this->certainty;
+	}
+
+	public function isTrackingOnly(): bool
+	{
+		return $this->trackingOnly;
 	}
 
 }

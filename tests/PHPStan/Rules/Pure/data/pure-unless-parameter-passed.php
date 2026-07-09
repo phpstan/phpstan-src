@@ -355,3 +355,45 @@ function nonOptionalUnlessParameterPassed(string $subject, int &$count): string
 
 	return $subject;
 }
+
+/**
+ * @param-out int $count
+ * @pure-unless-parameter-passed $count
+ */
+function myReplaceVariadic(string $subject, int &$count = 0, string ...$extra): string
+{
+	$count = 1;
+
+	return $subject;
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicOmittingCount(string $s): string
+{
+	// The signature has a trailing variadic, but the flagged $count is omitted, so
+	// the call stays pure.
+	return myReplaceVariadic($s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicPassingCount(string $s): string
+{
+	$count = 0;
+	// $count is passed, so the call is impure regardless of the trailing variadic.
+	return myReplaceVariadic($s, $count);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicPassingCountWithExtra(string $s): string
+{
+	$count = 0;
+	// $count is passed and the trailing variadic is also filled; the extra variadic
+	// arguments do not affect the flagged parameter, so the call is impure.
+	return myReplaceVariadic($s, $count, 'a', 'b');
+}

@@ -477,15 +477,22 @@ final class ResultCacheManager
 				if (count($cachedFileExportedNodes) === 0) {
 					continue;
 				}
+				$hasTraitNode = false;
 				foreach ($cachedFileExportedNodes as $exportedNode) {
-					if (!$exportedNode instanceof ExportedTraitNode) {
-						continue 2;
+					if ($exportedNode instanceof ExportedTraitNode) {
+						$hasTraitNode = true;
+						break;
 					}
 				}
 
-				// if the file changed but no exported nodes changed and the only exported nodes are traits
-				// reanalyse files with classes using those traits
-				// but not other dependent files
+				if (!$hasTraitNode) {
+					continue;
+				}
+
+				// if the file changed but no exported nodes changed and the file contains a trait
+				// reanalyse files with classes using that trait
+				// but not other dependent files (a body-only change of a non-trait symbol
+				// in the same file does not affect its dependents)
 
 				foreach ($usedTraitDependentFiles as $usedTraitDependentFile) {
 					if (!is_file($usedTraitDependentFile)) {

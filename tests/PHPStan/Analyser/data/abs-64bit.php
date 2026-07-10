@@ -8,6 +8,10 @@ use function PHPStan\Testing\assertType;
 assertType('9.223372036854776E+18', abs(-9223372036854775807 - 1));
 assertType('2147483648|9.223372036854776E+18', abs(PHP_INT_MIN));
 
+// One step away from the overflow, so still an integer.
+assertType('9223372036854775807', abs(-9223372036854775807));
+assertType('2147483647|9223372036854775807', abs(-PHP_INT_MAX));
+
 function integerRanges(int $int): void
 {
 	/** @var int<-9223372036854775808, 0> $int */

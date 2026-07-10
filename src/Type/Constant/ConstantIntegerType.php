@@ -88,6 +88,8 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	{
 		if ($this->value === PHP_INT_MIN) {
 			// The absolute value of the smallest integer is not representable as an int.
+			// Checking is_int(abs($this->value)) instead is dead code to PHPStan itself,
+			// which infers abs(int) as int<0, max>.
 			return new ConstantFloatType(-(float) $this->value);
 		}
 

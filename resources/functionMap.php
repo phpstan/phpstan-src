@@ -5449,7 +5449,7 @@ return [
 'locale_lookup' => ['string|null', 'langtag'=>'array', 'locale'=>'string', 'canonicalize='=>'bool', 'defaultLocale='=>'string'],
 'locale_parse' => ['array|null', 'locale'=>'string'],
 'locale_set_default' => ['bool', 'locale'=>'string'],
-'localeconv' => ['array'],
+'localeconv' => ['array{decimal_point: string, thousands_sep: string, int_curr_symbol: string, currency_symbol: string, mon_decimal_point: string, mon_thousands_sep: string, positive_sign: string, negative_sign: string, int_frac_digits: int, frac_digits: int, p_cs_precedes: int, p_sep_by_space: int, n_cs_precedes: int, n_sep_by_space: int, p_sign_posn: int, n_sign_posn: int, grouping: list<int>}'],
 'localtime' => ['array', 'timestamp='=>'int', 'associative_array='=>'bool'],
 'log' => ['float', 'number'=>'float', 'base='=>'float'],
 'log10' => ['float', 'number'=>'float'],

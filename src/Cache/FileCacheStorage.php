@@ -17,6 +17,7 @@ use function array_keys;
 use function closedir;
 use function dirname;
 use function error_get_last;
+use function file_exists;
 use function hash;
 use function is_dir;
 use function is_file;
@@ -50,6 +51,9 @@ final class FileCacheStorage implements CacheStorage
 		[,, $filePath] = $this->getFilePaths($key);
 
 		return (static function ($variableKey, $filePath) {
+			if (! file_exists($filePath)) {
+				return null;
+			}
 			$cacheItem = @include $filePath;
 			if (!$cacheItem instanceof CacheItem) {
 				return null;

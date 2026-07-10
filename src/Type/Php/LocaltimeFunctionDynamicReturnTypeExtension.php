@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -28,13 +29,13 @@ final class LocaltimeFunctionDynamicReturnTypeExtension implements DynamicFuncti
 	{
 		$args = $functionCall->getArgs();
 
-		$associativeType = count($args) >= 2 ? $scope->getType($args[1]->value)->toBoolean() : null;
+		$associativeType = count($args) >= 2 ? $scope->getType($args[1]->value)->toBoolean() : new ConstantBooleanType(false);
 
-		if ($associativeType !== null && $associativeType->isTrue()->yes()) {
+		if ($associativeType->isTrue()->yes()) {
 			return $this->createAssociativeType();
 		}
 
-		if ($associativeType === null || $associativeType->isFalse()->yes()) {
+		if ($associativeType->isFalse()->yes()) {
 			return $this->createListType();
 		}
 

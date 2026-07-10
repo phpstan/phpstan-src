@@ -20,13 +20,14 @@ use function count;
 use function strtolower;
 
 /**
- * array_all($array, $callback):
- * - true  => every element satisfies the predicate (an empty array qualifies),
- *            so element value/key types are narrowed by the predicate.
- * - false => at least one element fails, so the array is non-empty.
+ * array_any($array, $callback):
+ * - true  => at least one element satisfies the predicate, so the array is
+ *            non-empty (holds even when the callback cannot be analysed).
+ * - false => no element satisfies the predicate (an empty array qualifies), so
+ *            element value/key types are narrowed by the predicate being falsey.
  */
 #[AutowiredService]
-final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class ArrayAnyFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
 	private TypeSpecifier $typeSpecifier;
@@ -40,7 +41,7 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
-		return strtolower($functionReflection->getName()) === 'array_all'
+		return strtolower($functionReflection->getName()) === 'array_any'
 			&& !$context->null();
 	}
 
@@ -60,26 +61,27 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		}
 
 		if ($context->false()) {
-			// At least one element fails the predicate: the array is non-empty.
-			$nonEmptyType = $arrayType->isArray()->yes()
-				? new NonEmptyArrayType()
-				: TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType());
+			// No element satisfies the predicate: narrow value/key types by the
+			// predicate being falsey.
+			$predicates = $this->predicateCallbackResolver->resolve($scope, $callbackArg, ArrayCallbackParameterMapping::valueAndKey());
+			if ($predicates === null || count($predicates) !== 1) {
+				return new SpecifiedTypes();
+			}
 
-			return $this->typeSpecifier->create($arrayArg, $nonEmptyType, TypeSpecifierContext::createTruthy(), $scope);
+			$narrowedType = $this->narrowingHelper->narrowArrayType($scope, $arrayType, $predicates[0], false);
+			if ($narrowedType === null) {
+				return new SpecifiedTypes();
+			}
+
+			return $this->typeSpecifier->create($arrayArg, $narrowedType, TypeSpecifierContext::createTruthy(), $scope);
 		}
 
-		// Every element satisfies the predicate: narrow value/key types.
-		$predicates = $this->predicateCallbackResolver->resolve($scope, $callbackArg, ArrayCallbackParameterMapping::valueAndKey());
-		if ($predicates === null || count($predicates) !== 1) {
-			return new SpecifiedTypes();
-		}
+		// At least one element satisfies the predicate: the array is non-empty.
+		$nonEmptyType = $arrayType->isArray()->yes()
+			? new NonEmptyArrayType()
+			: TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType());
 
-		$narrowedType = $this->narrowingHelper->narrowArrayType($scope, $arrayType, $predicates[0], true);
-		if ($narrowedType === null) {
-			return new SpecifiedTypes();
-		}
-
-		return $this->typeSpecifier->create($arrayArg, $narrowedType, TypeSpecifierContext::createTruthy(), $scope);
+		return $this->typeSpecifier->create($arrayArg, $nonEmptyType, TypeSpecifierContext::createTruthy(), $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

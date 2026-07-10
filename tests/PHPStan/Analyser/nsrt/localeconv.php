@@ -18,9 +18,9 @@ function (): void {
 };
 
 function (int $timestamp, bool $assoc): void {
-	assertType('array{int, int, int, int, int, int, int, int, int}', localtime());
-	assertType('array{int, int, int, int, int, int, int, int, int}', localtime($timestamp));
-	assertType('array{int, int, int, int, int, int, int, int, int}', localtime($timestamp, false));
-	assertType('array{tm_sec: int, tm_min: int, tm_hour: int, tm_mday: int, tm_mon: int, tm_year: int, tm_wday: int, tm_yday: int, tm_isdst: int}', localtime($timestamp, true));
-	assertType('array{int, int, int, int, int, int, int, int, int}|array{tm_sec: int, tm_min: int, tm_hour: int, tm_mday: int, tm_mon: int, tm_year: int, tm_wday: int, tm_yday: int, tm_isdst: int}', localtime($timestamp, $assoc));
+	assertType('array{int<0, 59>, int<0, 59>, int<0, 23>, int<1, 31>, int<0, 11>, int, int<0, 6>, int<0, 365>, int}', localtime());
+	assertType('array{int<0, 59>, int<0, 59>, int<0, 23>, int<1, 31>, int<0, 11>, int, int<0, 6>, int<0, 365>, int}', localtime($timestamp));
+	assertType('array{int<0, 59>, int<0, 59>, int<0, 23>, int<1, 31>, int<0, 11>, int, int<0, 6>, int<0, 365>, int}', localtime($timestamp, false));
+	assertType('array{tm_sec: int<0, 59>, tm_min: int<0, 59>, tm_hour: int<0, 23>, tm_mday: int<1, 31>, tm_mon: int<0, 11>, tm_year: int, tm_wday: int<0, 6>, tm_yday: int<0, 365>, tm_isdst: int}', localtime($timestamp, true));
+	assertType('array{int<0, 59>, int<0, 59>, int<0, 23>, int<1, 31>, int<0, 11>, int, int<0, 6>, int<0, 365>, int}|array{tm_sec: int<0, 59>, tm_min: int<0, 59>, tm_hour: int<0, 23>, tm_mday: int<1, 31>, tm_mon: int<0, 11>, tm_year: int, tm_wday: int<0, 6>, tm_yday: int<0, 365>, tm_isdst: int}', localtime($timestamp, $assoc));
 };

@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -42,10 +43,9 @@ final class LocaltimeFunctionDynamicReturnTypeExtension implements DynamicFuncti
 
 	private function createListType(): Type
 	{
-		$integerType = new IntegerType();
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		for ($i = 0; $i < 9; $i++) {
-			$builder->setOffsetValueType(null, $integerType);
+		foreach ($this->createFieldTypes() as [, $valueType]) {
+			$builder->setOffsetValueType(null, $valueType);
 		}
 
 		return $builder->getArray();
@@ -53,13 +53,33 @@ final class LocaltimeFunctionDynamicReturnTypeExtension implements DynamicFuncti
 
 	private function createAssociativeType(): Type
 	{
-		$integerType = new IntegerType();
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		foreach (['tm_sec', 'tm_min', 'tm_hour', 'tm_mday', 'tm_mon', 'tm_year', 'tm_wday', 'tm_yday', 'tm_isdst'] as $key) {
-			$builder->setOffsetValueType(new ConstantStringType($key), $integerType);
+		foreach ($this->createFieldTypes() as [$key, $valueType]) {
+			$builder->setOffsetValueType(new ConstantStringType($key), $valueType);
 		}
 
 		return $builder->getArray();
+	}
+
+	/**
+	 * Fields of the C localtime struct in order, with the value ranges documented at
+	 * https://www.php.net/manual/en/function.localtime.php
+	 *
+	 * @return list<array{string, Type}>
+	 */
+	private function createFieldTypes(): array
+	{
+		return [
+			['tm_sec', IntegerRangeType::fromInterval(0, 59)],
+			['tm_min', IntegerRangeType::fromInterval(0, 59)],
+			['tm_hour', IntegerRangeType::fromInterval(0, 23)],
+			['tm_mday', IntegerRangeType::fromInterval(1, 31)],
+			['tm_mon', IntegerRangeType::fromInterval(0, 11)],
+			['tm_year', new IntegerType()],
+			['tm_wday', IntegerRangeType::fromInterval(0, 6)],
+			['tm_yday', IntegerRangeType::fromInterval(0, 365)],
+			['tm_isdst', new IntegerType()],
+		];
 	}
 
 }

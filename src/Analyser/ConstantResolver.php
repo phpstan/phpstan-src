@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Php\ConfiguredPhpIntSizeHelper;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\NamespaceAnswerer;
@@ -51,6 +52,7 @@ final class ConstantResolver
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private array $dynamicConstantNames,
 		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
+		private ConfiguredPhpIntSizeHelper $configuredPhpIntSizeHelper,
 		private ?Container $container,
 	)
 	{
@@ -219,17 +221,30 @@ final class ConstantResolver
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_INT_MAX') {
-			return PHP_INT_SIZE === 8
-				? new UnionType([new ConstantIntegerType(2147483647), new ConstantIntegerType(9223372036854775807)])
-				: new ConstantIntegerType(2147483647);
+			// The 64bit literals below cannot be constructed when PHPStan itself runs on 32bit,
+			// so they stay inside branches that are never taken there.
+			if (PHP_INT_SIZE !== 8) {
+				return new ConstantIntegerType(2147483647);
+			}
+			if ($this->configuredPhpIntSizeHelper->getIntSize() === 8) {
+				return new ConstantIntegerType(9223372036854775807);
+			}
+			return new UnionType([new ConstantIntegerType(2147483647), new ConstantIntegerType(9223372036854775807)]);
 		}
 		if ($resolvedConstantName === 'PHP_INT_MIN') {
 			// Why the -1 you might wonder, the answer is to fit it into an int :/ see https://3v4l.org/4SHIQ
-			return PHP_INT_SIZE === 8
-				? new UnionType([new ConstantIntegerType(-9223372036854775807 - 1), new ConstantIntegerType(-2147483647 - 1)])
-				: new ConstantIntegerType(-2147483647 - 1);
+			if (PHP_INT_SIZE !== 8) {
+				return new ConstantIntegerType(-2147483647 - 1);
+			}
+			if ($this->configuredPhpIntSizeHelper->getIntSize() === 8) {
+				return new ConstantIntegerType(-9223372036854775807 - 1);
+			}
+			return new UnionType([new ConstantIntegerType(-9223372036854775807 - 1), new ConstantIntegerType(-2147483647 - 1)]);
 		}
 		if ($resolvedConstantName === 'PHP_INT_SIZE') {
+			if ($this->configuredPhpIntSizeHelper->getIntSize() === 8) {
+				return new ConstantIntegerType(8);
+			}
 			return new UnionType([
 				new ConstantIntegerType(4),
 				new ConstantIntegerType(8),

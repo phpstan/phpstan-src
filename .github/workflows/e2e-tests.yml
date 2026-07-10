@@ -199,6 +199,13 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'ClassMentioningClassUsingBarTrait.php:10:Call to an undefined method ResultCacheE2ETraits\ClassUsingBarTrait::doFooTrait(). [identifier=method.notFound]' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-trait-alongside-class
+              ../../bin/phpstan analyse
+              patch -b src/FooTrait.php < changeFooTraitBody.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'FooTrait.php (in context of class ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait):10:Method ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait::doFooTrait() should return stdClass but returns Exception. [identifier=return.type]' "$OUTPUT"
+          - script: |
               cd e2e/editor-mode
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"

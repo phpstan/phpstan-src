@@ -113,6 +113,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		if (PHP_INT_SIZE === 8) {
 			yield __DIR__ . '/data/predefined-constants-64bit.php';
 			yield __DIR__ . '/data/abs-64bit.php';
+			yield __DIR__ . '/data/unary-minus-64bit.php';
 		} else {
 			yield __DIR__ . '/data/predefined-constants-32bit.php';
 		}

@@ -2623,7 +2623,9 @@ final class InitializerExprTypeResolver
 					/** @var int|float $newValue */
 					$newValue = -$scalarValue;
 					if (!is_int($newValue)) {
-						return $type;
+						// Negating the smallest integer overflows into a float.
+						$newTypes[] = new ConstantFloatType($newValue);
+						continue;
 					}
 					$newTypes[] = new ConstantIntegerType($newValue);
 				} elseif (is_float($scalarValue)) {

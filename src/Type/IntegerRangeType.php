@@ -13,7 +13,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function array_filter;
 use function array_map;
@@ -56,7 +55,21 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new IntegerType();
 		}
 
-		return (new self($min, $max))->shift($shift);
+		$range = (new self($min, $max))->shift($shift);
+		if (!$range instanceof self) {
+			return $range;
+		}
+
+		// Nothing is smaller than the smallest integer, and nothing is bigger than the biggest one,
+		// so an unbounded side that reaches either one holds a single value.
+		if ($range->min === null && $range->max === PHP_INT_MIN) {
+			return new ConstantIntegerType(PHP_INT_MIN);
+		}
+		if ($range->min === PHP_INT_MAX && $range->max === null) {
+			return new ConstantIntegerType(PHP_INT_MAX);
+		}
+
+		return $range;
 	}
 
 	protected static function isDisjoint(?int $minA, ?int $maxA, ?int $minB, ?int $maxB, bool $touchingIsDisjoint = true): bool
@@ -484,12 +497,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	{
 		if ($this->min !== null && $this->min >= 0) {
 			return $this;
-		}
-
-		if ($this->max === PHP_INT_MIN) {
-			// Nothing is smaller than the smallest integer, so this range holds a single value
-			// whose absolute value is not representable as an int.
-			return new ConstantFloatType(-(float) PHP_INT_MIN);
 		}
 
 		// Negating the smallest integer overflows, so its absolute value is treated as unbounded,

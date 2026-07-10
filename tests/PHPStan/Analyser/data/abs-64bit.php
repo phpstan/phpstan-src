@@ -23,7 +23,12 @@ function integerRanges(int $int): void
 	/** @var int<-9223372036854775808, 9223372036854775807> $int */
 	assertType('int<0, max>', abs($int));
 
-	// The only value in this range is the smallest integer.
+	// IntegerRangeType::fromInterval() collapses these to a single value.
 	/** @var int<min, -9223372036854775808> $int */
+	assertType('-9223372036854775808', $int);
 	assertType('9.223372036854776E+18', abs($int));
+
+	/** @var int<9223372036854775807, max> $int */
+	assertType('9223372036854775807', $int);
+	assertType('9223372036854775807', abs($int));
 }

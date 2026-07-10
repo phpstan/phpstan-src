@@ -117,7 +117,7 @@ class IssetBug
 
 }
 
-class FxitureIntegerRangeType
+class FixtureIntegerRangeType
 {
 
 	public function doFoo(int $i, float $f)

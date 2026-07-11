@@ -44,7 +44,6 @@ final class DuplicateFunctionDeclarationRule implements Rule
 			$this->functionMap = [];
 
 			$allFunctions = $this->reflector->reflectAllFunctions();
-			$filteredFunctions = [];
 			foreach ($allFunctions as $reflectionFunction) {
 				$reflectionFunctionName = $reflectionFunction->getName();
 				if (!isset($this->functionMap[$reflectionFunctionName])) {

@@ -52,6 +52,7 @@ final class RequireFileExistsRule implements Rule
 		private ExprPrinter $exprPrinter,
 		#[AutowiredParameter(ref: '%featureToggles.magicDirInInclude%')]
 		private bool $checkMagicDirInInclude,
+		private FileHelper $fileHelper,
 	)
 	{
 	}
@@ -188,10 +189,16 @@ final class RequireFileExistsRule implements Rule
 		$rightPaths = $this->resolveFilePaths($expr->right, $scope, $magicDirFallback);
 		foreach ($this->resolveFilePaths($expr->left, $scope, $magicDirFallback) as $left) {
 			foreach ($rightPaths as $rightPath) {
-				$paths[] = new ConstantStringType($left->getValue() . $rightPath->getValue());
+				$normalizedPath = $this->fileHelper->normalizeSeparator($left->getValue() . $rightPath->getValue());
+				$paths[$normalizedPath] = $normalizedPath;
 			}
 		}
-		return $paths;
+
+		$list = [];
+		foreach ($paths as $path) {
+			$list[] = new ConstantStringType($path);
+		}
+		return $list;
 	}
 
 	private function isInFileExists(Include_ $node, Scope $scope): bool

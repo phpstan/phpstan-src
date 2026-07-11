@@ -25,6 +25,9 @@ use function strtolower;
 final class DuplicateClassDeclarationRule implements Rule
 {
 
+	/** @var array<class-string|trait-string, list<ReflectionClass>>|null */
+	private ?array $classMap = null;
+
 	public function __construct(private Reflector $reflector, private RelativePathHelper $relativePathHelper)
 	{
 	}
@@ -38,21 +41,27 @@ final class DuplicateClassDeclarationRule implements Rule
 	{
 		$thisClass = $node->getClassReflection();
 		$className = $thisClass->getName();
-		$allClasses = $this->reflector->reflectAllClasses();
-		$filteredClasses = [];
-		foreach ($allClasses as $reflectionClass) {
-			if ($reflectionClass->getName() !== $className) {
-				continue;
-			}
 
-			$filteredClasses[] = $reflectionClass;
+		// this rule runs at the very end of the analysis,
+		// so all classes already have been discovered at this point.
+		if ($this->classMap === null) {
+			$this->classMap = [];
+
+			$allClasses = $this->reflector->reflectAllClasses();
+			foreach ($allClasses as $reflectionClass) {
+				$reflectionClassName = $reflectionClass->getName();
+				if (!isset($this->classMap[$reflectionClassName])) {
+					$this->classMap[$reflectionClassName] = [];
+				}
+				$this->classMap[$reflectionClassName][] = $reflectionClass;
+			}
 		}
 
-		if (count($filteredClasses) < 2) {
+		if (!isset($this->classMap[$className]) || count($this->classMap[$className]) < 2) {
 			return [];
 		}
 
-		$filteredClasses = array_filter($filteredClasses, static fn (ReflectionClass $class) => $class->getStartLine() !== $thisClass->getNativeReflection()->getStartLine());
+		$filteredClasses = array_filter($this->classMap[$className], static fn (ReflectionClass $class) => $class->getStartLine() !== $thisClass->getNativeReflection()->getStartLine());
 
 		$identifierType = strtolower($thisClass->getClassTypeDescription());
 

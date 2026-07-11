@@ -34,6 +34,7 @@ use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_merge;
 use function count;
+use function in_array;
 
 #[AutowiredService]
 final class DependencyResolver
@@ -369,11 +370,8 @@ final class DependencyResolver
 			}
 		} elseif ($node instanceof Node\Expr\ConstFetch) {
 			$constantName = $node->name;
-			$lowercasedConstantName = $constantName->toLowerString();
 			if (
-				$lowercasedConstantName !== 'true'
-				&& $lowercasedConstantName !== 'false'
-				&& $lowercasedConstantName !== 'null'
+				!in_array($constantName->toLowerString(), ['true', 'false', 'null'], true)
 				&& $this->reflectionProvider->hasConstant($constantName, $scope)
 			) {
 				$dependenciesReflections[] = $this->reflectionProvider->getConstant($constantName, $scope);

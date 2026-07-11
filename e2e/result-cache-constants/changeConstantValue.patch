@@ -1,0 +1,8 @@
+--- src/Constants.php
++++ src/Constants.php
+@@ -2,4 +2,4 @@
+ 
+ namespace ResultCacheE2EConstants;
+ 
+-const SOME_MODE = 1;
++const SOME_MODE = 5;

@@ -11,17 +11,12 @@ use function get_class;
  * Resolves which ExprHandler handles a given Expr, memoizing the result by
  * Expr class so dispatch does not re-scan every tagged handler (a linear
  * supports() sweep) on each call.
- *
- * Call-likes (Expr\CallLike) are never memoized: their handlers select on
- * isFirstClassCallable(), which the Expr class alone does not determine. Every
- * other handler's supports() is a pure instanceof check, so the class fully
- * determines it.
  */
 #[AutowiredService]
 final class ExprHandlerRegistry
 {
 
-	/** @var array<class-string<Expr>, ExprHandler<Expr>|false> */
+	/** @var array<non-empty-string, ExprHandler<Expr>|false> */
 	private array $exprHandlersByClass = [];
 
 	public function __construct(private Container $container)
@@ -33,11 +28,14 @@ final class ExprHandlerRegistry
 	 */
 	public function resolve(Expr $expr): ?ExprHandler
 	{
-		if (!$expr instanceof Expr\CallLike) {
-			$cached = $this->exprHandlersByClass[get_class($expr)] ?? null;
-			if ($cached !== null) {
-				return $cached === false ? null : $cached;
-			}
+		$cacheKey = get_class($expr);
+		if ($expr instanceof Expr\CallLike) {
+			$cacheKey .= '|' . $expr->isFirstClassCallable();
+		}
+
+		$cached = $this->exprHandlersByClass[$cacheKey] ?? null;
+		if ($cached !== null) {
+			return $cached === false ? null : $cached;
 		}
 
 		$matchedHandler = null;
@@ -51,9 +49,7 @@ final class ExprHandlerRegistry
 			break;
 		}
 
-		if (!$expr instanceof Expr\CallLike) {
-			$this->exprHandlersByClass[get_class($expr)] = $matchedHandler ?? false;
-		}
+		$this->exprHandlersByClass[$cacheKey] = $matchedHandler ?? false;
 
 		return $matchedHandler;
 	}

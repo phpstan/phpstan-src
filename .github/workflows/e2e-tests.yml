@@ -360,6 +360,19 @@ jobs:
               ../../bin/phpstan -vvv
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-constants
+              ../../bin/phpstan analyse
+              patch -b src/Constants.php < changeConstantValue.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'ClassUsingConstant.php:13:Method ResultCacheE2EConstants\ClassUsingConstant::getMode() should return int<1, 3> but returns 5. [identifier=return.type]' "$OUTPUT"
+              mv src/Constants.php.orig src/Constants.php
+              ../../bin/phpstan analyse
+              patch -b src/Constants.php < renameConstant.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'ClassUsingConstant.php:13:Constant SOME_MODE not found. [identifier=constant.notFound]' "$OUTPUT"
+          - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test
               ../../bin/phpstan

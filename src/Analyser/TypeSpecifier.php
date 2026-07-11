@@ -91,22 +91,12 @@ final class TypeSpecifier
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
-		$exprHandler = $this->resolveExprHandler($expr);
+		$exprHandler = ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
 		if ($exprHandler !== null) {
 			return $exprHandler->specifyTypes($this, $scope, $expr, $context);
 		}
 
 		return $this->specifyDefaultTypes($scope, $expr, $context);
-	}
-
-	/**
-	 * Resolves the ExprHandler for the given expression, memoizing the result by Expr class.
-	 *
-	 * @return ExprHandler<Expr>|null
-	 */
-	private function resolveExprHandler(Expr $expr): ?ExprHandler
-	{
-		return ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
 	}
 
 	/** @internal */

@@ -44,7 +44,6 @@ use function array_last;
 use function array_map;
 use function array_merge;
 use function count;
-use function get_class;
 use function in_array;
 use function strtolower;
 use function substr;

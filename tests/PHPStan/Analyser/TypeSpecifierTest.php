@@ -863,7 +863,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$n' => 'mixed~int<' . (PHP_INT_MIN + 1) . ', max>',
 				],
 				[
-					'$n' => 'mixed~(0.0|bool|int<min, ' . PHP_INT_MIN . '>|null)',
+					// int<min, PHP_INT_MIN> holds a single value
+					'$n' => 'mixed~(' . PHP_INT_MIN . '|0.0|bool|null)',
 				],
 			],
 			[
@@ -875,7 +876,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$n' => 'mixed~(0.0|int<min, ' . (PHP_INT_MAX - 1) . '>|false|null)',
 				],
 				[
-					'$n' => 'mixed~(int<' . PHP_INT_MAX . ', max>|true)',
+					// int<PHP_INT_MAX, max> holds a single value
+					'$n' => 'mixed~(' . PHP_INT_MAX . '|true)',
 				],
 			],
 			[

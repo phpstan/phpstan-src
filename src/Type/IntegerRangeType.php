@@ -55,7 +55,21 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new IntegerType();
 		}
 
-		return (new self($min, $max))->shift($shift);
+		$range = (new self($min, $max))->shift($shift);
+		if (!$range instanceof self) {
+			return $range;
+		}
+
+		// Nothing is smaller than the smallest integer, and nothing is bigger than the biggest one,
+		// so an unbounded side that reaches either one holds a single value.
+		if ($range->min === null && $range->max === PHP_INT_MIN) {
+			return new ConstantIntegerType(PHP_INT_MIN);
+		}
+		if ($range->min === PHP_INT_MAX && $range->max === null) {
+			return new ConstantIntegerType(PHP_INT_MAX);
+		}
+
+		return $range;
 	}
 
 	protected static function isDisjoint(?int $minA, ?int $maxA, ?int $minB, ?int $maxB, bool $touchingIsDisjoint = true): bool
@@ -485,13 +499,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return $this;
 		}
 
-		if ($this->max === null || $this->max >= 0) {
-			$inversedMin = $this->min !== null ? $this->min * -1 : null;
+		// Negating the smallest integer overflows, so its absolute value is treated as unbounded,
+		// the same way an unbounded lower bound is. This keeps abs(int<min, 0>) and
+		// abs(int<-9223372036854775808, 0>) in agreement.
+		$inversedMin = $this->min !== null && $this->min !== PHP_INT_MIN ? -$this->min : null;
 
+		if ($this->max === null || $this->max >= 0) {
 			return self::fromInterval(0, $inversedMin !== null && $this->max !== null ? max($inversedMin, $this->max) : null);
 		}
 
-		return self::fromInterval($this->max * -1, $this->min !== null ? $this->min * -1 : null);
+		return self::fromInterval(-$this->max, $inversedMin);
 	}
 
 	public function toString(): Type

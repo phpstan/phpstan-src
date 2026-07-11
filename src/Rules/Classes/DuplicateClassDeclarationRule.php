@@ -9,6 +9,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InClassNode;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_filter;
@@ -24,6 +25,8 @@ use function strtolower;
 #[ValidatesStubFiles]
 final class DuplicateClassDeclarationRule implements Rule
 {
+
+	/** @var array<class-string|trait-string, list<ReflectionClass>>|null */
 	private ?array $classMap = null;
 
 	public function __construct(private Reflector $reflector, private RelativePathHelper $relativePathHelper)
@@ -40,6 +43,8 @@ final class DuplicateClassDeclarationRule implements Rule
 		$thisClass = $node->getClassReflection();
 		$className = $thisClass->getName();
 
+		// this rule runs at the very end of the analysis,
+		// so all classes already have been discovered at this point.
 		if ($this->classMap === null) {
 			$this->classMap = [];
 

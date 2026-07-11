@@ -240,6 +240,25 @@ final class ExportedNodeResolver
 			return new ExportedConstantsNode($constants);
 		}
 
+		if (
+			$node instanceof Node\Expr\FuncCall
+			&& $node->name instanceof Name
+			&& $node->name->toLowerString() === 'define'
+		) {
+			$args = $node->getArgs();
+			if (
+				isset($args[0], $args[1])
+				&& $args[0]->value instanceof Node\Scalar\String_
+			) {
+				return new ExportedConstantsNode([
+					new ExportedConstantNode(
+						$args[0]->value->value,
+						$this->exprPrinter->printExpr($args[1]->value),
+					),
+				]);
+			}
+		}
+
 		return null;
 	}
 

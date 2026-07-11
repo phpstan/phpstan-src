@@ -40,6 +40,8 @@ final class DuplicateFunctionDeclarationRule implements Rule
 		$thisFunction = $node->getFunctionReflection();
 		$functionName = $thisFunction->getName();
 
+		// this rule runs at the very end of the analysis,
+		// so all function already have been discovered at this point.
 		if ($this->functionMap === null) {
 			$this->functionMap = [];
 

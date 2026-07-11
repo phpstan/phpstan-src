@@ -9,7 +9,6 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InClassNode;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_filter;

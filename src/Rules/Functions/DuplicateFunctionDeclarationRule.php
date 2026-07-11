@@ -23,6 +23,9 @@ use function sprintf;
 final class DuplicateFunctionDeclarationRule implements Rule
 {
 
+	/** @var array<non-empty-string, list<ReflectionFunction>>|null */
+	private ?array $functionMap = null;
+
 	public function __construct(private Reflector $reflector, private RelativePathHelper $relativePathHelper)
 	{
 	}
@@ -35,25 +38,31 @@ final class DuplicateFunctionDeclarationRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$thisFunction = $node->getFunctionReflection();
-		$allFunctions = $this->reflector->reflectAllFunctions();
-		$filteredFunctions = [];
-		foreach ($allFunctions as $reflectionFunction) {
-			if ($reflectionFunction->getName() !== $thisFunction->getName()) {
-				continue;
-			}
+		$functionName = $thisFunction->getName();
 
-			$filteredFunctions[] = $reflectionFunction;
+		if ($this->functionMap === null) {
+			$this->functionMap = [];
+
+			$allFunctions = $this->reflector->reflectAllFunctions();
+			$filteredFunctions = [];
+			foreach ($allFunctions as $reflectionFunction) {
+				$reflectionFunctionName = $reflectionFunction->getName();
+				if (!isset($this->functionMap[$reflectionFunctionName])) {
+					$this->functionMap[$reflectionFunctionName] = [];
+				}
+				$this->functionMap[$reflectionFunctionName][] = $reflectionFunction;
+			}
 		}
 
-		if (count($filteredFunctions) < 2) {
+		if (!isset($this->functionMap[$functionName]) || count($this->functionMap[$functionName]) < 2) {
 			return [];
 		}
 
 		return [
 			RuleErrorBuilder::message(sprintf(
 				"Function %s declared multiple times:\n%s",
-				$thisFunction->getName(),
-				implode("\n", array_map(fn (ReflectionFunction $function) => sprintf('- %s:%d', $this->relativePathHelper->getRelativePath($function->getFileName() ?? 'unknown'), $function->getStartLine()), $filteredFunctions)),
+				$functionName,
+				implode("\n", array_map(fn (ReflectionFunction $function) => sprintf('- %s:%d', $this->relativePathHelper->getRelativePath($function->getFileName() ?? 'unknown'), $function->getStartLine()), $this->functionMap[$functionName])),
 			))->identifier('function.duplicate')->build(),
 		];
 	}

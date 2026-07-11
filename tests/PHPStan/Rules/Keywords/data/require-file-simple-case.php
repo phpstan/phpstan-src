@@ -12,3 +12,5 @@ include $fileThatDoesNotExist;
 include_once $fileThatDoesNotExist;
 require $fileThatDoesNotExist;
 require_once $fileThatDoesNotExist;
+
+$fileThatExists = __DIR__ . \DIRECTORY_SEPARATOR . 'include-me-to-prove-you-work.txt';

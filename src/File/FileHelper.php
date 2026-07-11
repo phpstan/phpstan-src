@@ -90,8 +90,7 @@ final class FileHelper
 			$path = $originalPath;
 		}
 
-		$path = str_replace(['\\', '//', '///', '////'], '/', $path);
-
+		$path = $this->normalizeSeparator($path);
 		$pathRoot = str_starts_with($path, '/') ? $directorySeparator : '';
 		$pathParts = explode('/', trim($path, '/'));
 
@@ -111,6 +110,11 @@ final class FileHelper
 		}
 
 		return self::$normalizedPathsCache[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
+	}
+
+	public function normalizeSeparator(string $path): string
+	{
+		return str_replace(['\\', '//', '///', '////'], '/', $path);
 	}
 
 }

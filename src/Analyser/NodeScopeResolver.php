@@ -2793,7 +2793,7 @@ class NodeScopeResolver
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 
-		$exprHandler = $this->resolveExprHandler($expr);
+		$exprHandler = ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
 		if ($exprHandler !== null) {
 			return $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		}
@@ -2812,16 +2812,6 @@ class NodeScopeResolver
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
-	}
-
-	/**
-	 * Resolves the ExprHandler for the given expression, memoizing the result by Expr class.
-	 *
-	 * @return ExprHandler<Expr>|null
-	 */
-	private function resolveExprHandler(Expr $expr): ?ExprHandler
-	{
-		return ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
 	}
 
 	/**

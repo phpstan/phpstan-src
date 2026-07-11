@@ -31,6 +31,9 @@ final class ExprHandlerRegistry
 		$cacheKey = get_class($expr);
 		if ($expr instanceof Expr\CallLike) {
 			$cacheKey .= '|' . $expr->isFirstClassCallable();
+			if ($expr instanceof Expr\New_) {
+				$cacheKey .= '|' . get_class($expr->class);
+			}
 		}
 
 		$cached = $this->exprHandlersByClass[$cacheKey] ?? null;

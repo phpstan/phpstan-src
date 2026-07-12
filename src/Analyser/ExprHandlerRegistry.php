@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use function get_class;
+use function spl_object_id;
 
 /**
  * Resolves which ExprHandler handles a given Expr, memoizing the result by
@@ -16,17 +17,13 @@ use function get_class;
 final class ExprHandlerRegistry
 {
 
-	/** @var array<non-empty-string, ExprHandler<Expr>|false> */
-	private array $exprHandlersByClass = [];
-
-	public function __construct(private Container $container)
-	{
-	}
+	/** @var array<int, array<non-empty-string, ExprHandler<Expr>|false>> */
+	private static array $exprHandlersByClass = [];
 
 	/**
 	 * @return ExprHandler<Expr>|null
 	 */
-	public function resolve(Expr $expr): ?ExprHandler
+	public static function resolve(Expr $expr, Container $container): ?ExprHandler
 	{
 		$cacheKey = get_class($expr);
 		if ($expr instanceof Expr\CallLike) {
@@ -36,14 +33,16 @@ final class ExprHandlerRegistry
 			}
 		}
 
-		$cached = $this->exprHandlersByClass[$cacheKey] ?? null;
+		$containerId = spl_object_id($container);
+		self::$exprHandlersByClass[$containerId] ??= [];
+		$cached = self::$exprHandlersByClass[$containerId][$cacheKey] ?? null;
 		if ($cached !== null) {
 			return $cached === false ? null : $cached;
 		}
 
 		$matchedHandler = null;
 		/** @var ExprHandler<Expr> $exprHandler */
-		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+		foreach ($container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
 			if (!$exprHandler->supports($expr)) {
 				continue;
 			}
@@ -52,7 +51,7 @@ final class ExprHandlerRegistry
 			break;
 		}
 
-		$this->exprHandlersByClass[$cacheKey] = $matchedHandler ?? false;
+		self::$exprHandlersByClass[$containerId][$cacheKey] = $matchedHandler ?? false;
 
 		return $matchedHandler;
 	}

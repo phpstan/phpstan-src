@@ -59,8 +59,6 @@ final class TypeSpecifier
 	/** @var StaticMethodTypeSpecifyingExtension[][]|null */
 	private ?array $staticMethodTypeSpecifyingExtensionsByClass = null;
 
-	private ?ExprHandlerRegistry $exprHandlerRegistry = null;
-
 	/**
 	 * @param FunctionTypeSpecifyingExtension[] $functionTypeSpecifyingExtensions
 	 * @param MethodTypeSpecifyingExtension[] $methodTypeSpecifyingExtensions
@@ -91,7 +89,7 @@ final class TypeSpecifier
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
-		$exprHandler = ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
+		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
 			return $exprHandler->specifyTypes($this, $scope, $expr, $context);
 		}

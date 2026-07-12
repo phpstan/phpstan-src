@@ -197,8 +197,6 @@ class NodeScopeResolver
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
-	private ?ExprHandlerRegistry $exprHandlerRegistry = null;
-
 	/** @var array<string, true> */
 	private array $earlyTerminatingMethodNames;
 
@@ -2793,7 +2791,7 @@ class NodeScopeResolver
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 
-		$exprHandler = ($this->exprHandlerRegistry ??= $this->container->getByType(ExprHandlerRegistry::class))->resolve($expr);
+		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
 			return $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		}

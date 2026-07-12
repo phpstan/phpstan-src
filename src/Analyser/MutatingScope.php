@@ -3186,30 +3186,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return false;
 		}
 
-		$nodeFinder = new NodeFinder();
-		$expressionToInvalidateClass = get_class($exprToInvalidate);
-		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
-			if (
-				$exprStringToInvalidate === '$this'
-				&& $node instanceof Name
-				&& (
-					in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
-					|| ($this->getClassReflection() !== null && $this->getClassReflection()->is($this->resolveName($node)))
-				)
-			) {
-				return true;
-			}
-
-			if (!$node instanceof $expressionToInvalidateClass) {
-				return false;
-			}
-
-			$nodeString = $this->getNodeKey($node);
-
-			return $nodeString === $exprStringToInvalidate;
-		});
-
-		if ($found === null) {
+		if (!$this->containsExpressionToInvalidate($expr, get_class($exprToInvalidate), $exprStringToInvalidate)) {
 			return false;
 		}
 
@@ -3230,6 +3207,55 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return true;
+	}
+
+	/**
+	 * Depth-first pre-order search for the invalidated expression, replacing a
+	 * NodeFinder::findFirst() call - this runs for every (stored expression,
+	 * invalidated expression) pair whose keys pass the substring pre-filter,
+	 * so the traverser/visitor machinery overhead was significant.
+	 *
+	 * @param class-string<Expr> $expressionToInvalidateClass
+	 */
+	private function containsExpressionToInvalidate(Node $node, string $expressionToInvalidateClass, string $exprStringToInvalidate): bool
+	{
+		if (
+			$exprStringToInvalidate === '$this'
+			&& $node instanceof Name
+			&& (
+				in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
+				|| ($this->getClassReflection() !== null && $this->getClassReflection()->is($this->resolveName($node)))
+			)
+		) {
+			return true;
+		}
+
+		if (
+			$node instanceof $expressionToInvalidateClass
+			&& $this->getNodeKey($node) === $exprStringToInvalidate
+		) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				if ($this->containsExpressionToInvalidate($subNode, $expressionToInvalidateClass, $exprStringToInvalidate)) {
+					return true;
+				}
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $subNodeItem) {
+					if (
+						$subNodeItem instanceof Node
+						&& $this->containsExpressionToInvalidate($subNodeItem, $expressionToInvalidateClass, $exprStringToInvalidate)
+					) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private function isPrivatePropertyOfDifferentClass(Expr $expr, ClassReflection $invalidatingClass): bool

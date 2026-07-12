@@ -579,7 +579,7 @@ final class ClassReflection
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 
-		if (isset($this->methods[$key])) {
+		if (array_key_exists($key, $this->methods)) {
 			return $this->methods[$key];
 		}
 

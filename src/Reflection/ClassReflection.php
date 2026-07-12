@@ -579,6 +579,10 @@ final class ClassReflection
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 
+		if (array_key_exists($key, $this->methods)) {
+			return $this->methods[$key];
+		}
+
 		$phpClassReflectionExtension = $this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension();
 		if ($phpClassReflectionExtension->hasMethod($this, $methodName)) {
 			$method = $phpClassReflectionExtension->getMethod($this, $methodName);
@@ -733,28 +737,30 @@ final class ClassReflection
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 
+		if (array_key_exists($key, $this->properties)) {
+			return $this->properties[$key];
+		}
+
 		$phpClassReflectionExtension = $this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension();
-		if (!isset($this->properties[$key])) {
-			if ($phpClassReflectionExtension->hasProperty($this, $propertyName)) {
-				$property = $this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension()->getProperty($this, $propertyName, $scope);
+		if ($phpClassReflectionExtension->hasProperty($this, $propertyName)) {
+			$property = $this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension()->getProperty($this, $propertyName, $scope);
+			if ($scope->canReadProperty($property)) {
+				return $this->properties[$key] = $property;
+			}
+			$this->properties[$key] = $property;
+		}
+
+		if ($this->allowsDynamicProperties()) {
+			foreach ($this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions() as $extension) {
+				if (!$extension->hasProperty($this, $propertyName)) {
+					continue;
+				}
+
+				$property = $this->wrapExtendedProperty($propertyName, $extension->getProperty($this, $propertyName));
 				if ($scope->canReadProperty($property)) {
 					return $this->properties[$key] = $property;
 				}
 				$this->properties[$key] = $property;
-			}
-
-			if ($this->allowsDynamicProperties()) {
-				foreach ($this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions() as $extension) {
-					if (!$extension->hasProperty($this, $propertyName)) {
-						continue;
-					}
-
-					$property = $this->wrapExtendedProperty($propertyName, $extension->getProperty($this, $propertyName));
-					if ($scope->canReadProperty($property)) {
-						return $this->properties[$key] = $property;
-					}
-					$this->properties[$key] = $property;
-				}
 			}
 		}
 

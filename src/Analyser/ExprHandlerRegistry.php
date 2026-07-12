@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use WeakMap;
 use function get_class;
 use function spl_object_id;
 
@@ -17,8 +18,8 @@ use function spl_object_id;
 final class ExprHandlerRegistry
 {
 
-	/** @var array<int, array<non-empty-string, ExprHandler<Expr>|false>> */
-	private static array $exprHandlersByClass = [];
+	/** @var WeakMap<Container, array<non-empty-string, ExprHandler<Expr>|false>>|null */
+	private static ?WeakMap $exprHandlersByClass = null;
 
 	/**
 	 * @return ExprHandler<Expr>|null
@@ -33,9 +34,9 @@ final class ExprHandlerRegistry
 			}
 		}
 
-		$containerId = spl_object_id($container);
-		self::$exprHandlersByClass[$containerId] ??= [];
-		$cached = self::$exprHandlersByClass[$containerId][$cacheKey] ?? null;
+		self::$exprHandlersByClass ??= new WeakMap();
+		self::$exprHandlersByClass[$container] ??= [];
+		$cached = self::$exprHandlersByClass[$container][$cacheKey] ?? null;
 		if ($cached !== null) {
 			return $cached === false ? null : $cached;
 		}
@@ -51,7 +52,7 @@ final class ExprHandlerRegistry
 			break;
 		}
 
-		self::$exprHandlersByClass[$containerId][$cacheKey] = $matchedHandler ?? false;
+		self::$exprHandlersByClass[$container][$cacheKey] = $matchedHandler ?? false;
 
 		return $matchedHandler;
 	}

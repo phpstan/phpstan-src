@@ -9,8 +9,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -22,6 +20,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private PhpVersion $phpVersion,
+		private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper,
 	)
 	{
 	}
@@ -39,7 +38,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 		Scope $scope,
 	): ?Type
 	{
-		if (!isset($funcCall->getArgs()[3])) {
+		if (!isset($funcCall->getArgs()[2])) {
 			return null;
 		}
 
@@ -50,31 +49,14 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 			return null;
 		}
 
-		$flagsExpr = $funcCall->getArgs()[3]->value;
+		$flagsExpr = $funcCall->getArgs()[2]->value;
 		$flagsType = $scope->getType($flagsExpr);
 
-		if ($flagsType->isConstantArray()->yes()) {
-			$flagsType = $flagsType->getOffsetValueType(new ConstantStringType('flags'));
-		}
-
-		$flag = $this->getConstant();
-
-		if ($flag !== null && $flagsType instanceof ConstantIntegerType && ($flagsType->getValue() & $flag) === $flag) {
+		if (!$this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->no()) {
 			return new ObjectType('Filter\FilterFailedException');
 		}
 
 		return null;
-	}
-
-	private function getConstant(): ?int
-	{
-		$constant = $this->reflectionProvider->getConstant(new Name('FILTER_THROW_ON_FAILURE'), null);
-		$valueType = $constant->getValueType();
-		if (!$valueType instanceof ConstantIntegerType) {
-			return null;
-		}
-
-		return $valueType->getValue();
 	}
 
 }

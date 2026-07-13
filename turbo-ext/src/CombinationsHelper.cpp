@@ -31,7 +31,7 @@ public:
 			/* combinations([]) yields a single empty combination */
 			zv::Arr result = zv::Arr::create(0);
 			result.push(zv::Arr::create(0));
-			return result;
+			return zv::Val(std::move(result));
 		}
 
 		/* borrow the inner array of each element (the input owns them) */
@@ -128,7 +128,7 @@ private:
 		}
 
 		efree(indices);
-		return result;
+		return zv::Val(std::move(result));
 	}
 };
 

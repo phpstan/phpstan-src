@@ -34,6 +34,24 @@
 
 #include <Zend/zend_weakrefs.h>
 
+/* zend_weakrefs_hash_clean()/_destroy() only exist since PHP 8.5; on 8.4 the
+ * same unregister-then-destroy is spelled out with the 8.4-available API. */
+#if PHP_VERSION_ID < 80500
+static zend_always_inline void pt_weakrefs_hash_destroy(HashTable *ht)
+{
+	zend_ulong objKey;
+	ZEND_HASH_MAP_FOREACH_NUM_KEY(ht, objKey) {
+		zend_weakrefs_hash_del(ht, zend_weakref_key_to_object(objKey));
+	} ZEND_HASH_FOREACH_END();
+	zend_hash_destroy(ht);
+}
+#else
+static zend_always_inline void pt_weakrefs_hash_destroy(HashTable *ht)
+{
+	zend_weakrefs_hash_destroy(ht);
+}
+#endif
+
 namespace phpstanturbo {
 
 /* Beyond this argument count a call is computed without consulting the memo:
@@ -501,8 +519,8 @@ void pt_type_combinator_cache_rshutdown()
 		return;
 	}
 	zend_hash_destroy(&pt_memo);
-	zend_weakrefs_hash_destroy(&pt_type_hashes);
-	zend_weakrefs_hash_destroy(&pt_obj_serials);
+	pt_weakrefs_hash_destroy(&pt_type_hashes);
+	pt_weakrefs_hash_destroy(&pt_obj_serials);
 	zend_hash_destroy(&pt_ce_kinds);
 	pt_fn_do_union = NULL;
 	pt_fn_do_intersect = NULL;

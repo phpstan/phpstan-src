@@ -62,8 +62,12 @@ struct Tables
 	int YY2TBLSTATE;
 	int numNonLeafStates;
 	int numRules;             /* count of ruleToLength */
-	int *phpTokenToSymbol;    /* dense, phpTokenToSymbolSize entries, -1 = invalid */
+	int *phpTokenToSymbol;    /* dense, phpTokenToSymbolSize entries, -1 = invalid;
+	                             entry for token id k sits at k + phpTokenToSymbolBias
+	                             (php-parser polyfills tokens missing on the host PHP
+	                             with ids counting down from -1) */
 	int phpTokenToSymbolSize;
+	int phpTokenToSymbolBias;
 	int *actionBase;          /* numStates*2 (leaf-extended) as stored */
 	int actionBaseSize;
 	int *action;

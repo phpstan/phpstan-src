@@ -50,7 +50,7 @@ final class TurboExtensionEnabler
 	 * The native classes must match the PHP implementations exactly, so the
 	 * extension is only enabled when its version is the expected one. The
 	 * version is the short SHA of the last commit touching turbo-ext/src/,
-	 * enforced by the turbo-ext.yml version job.
+	 * enforced by the phar.yml turbo-version job.
 	 */
 	public const EXPECTED_EXTENSION_VERSION = 'c206bb5';
 

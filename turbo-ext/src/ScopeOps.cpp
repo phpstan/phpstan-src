@@ -318,7 +318,7 @@ public:
 		if (UNEXPECTED(!mergeVariableHoldersInto(merged, ours, theirs))) {
 			return zv::Val();
 		}
-		return merged;
+		return zv::Val(std::move(merged));
 	}
 
 	/* Mirrors ScopeOps::finishMerge(). Returns [filteredMerged, mergedNative]. */
@@ -410,7 +410,7 @@ public:
 		zv::Arr result = zv::Arr::create(2);
 		result.push(std::move(filteredMerged));
 		result.push(std::move(mergedNative));
-		return result;
+		return zv::Val(std::move(result));
 	}
 
 	/* Mirrors ScopeOps::intersectConditionalExpressions(). */
@@ -452,7 +452,7 @@ public:
 			tableAddNew(result.table(), key, idx, std::move(intersected));
 		}
 
-		return result;
+		return zv::Val(std::move(result));
 	}
 
 	/*
@@ -735,7 +735,7 @@ public:
 		}
 
 		if (!result.isUndef()) {
-			return result;
+			return zv::Val(std::move(result));
 		}
 		return zv::Arr::copyOfTable(conditional.table());
 	}
@@ -898,7 +898,7 @@ public:
 		result.push(std::move(resultExpr));
 		result.push(std::move(resultNative));
 		result.push(std::move(resultConditional));
-		return result;
+		return zv::Val(std::move(result));
 	}
 
 	/*
@@ -957,7 +957,7 @@ public:
 		zv::Arr result = zv::Arr::create(2);
 		result.push(std::move(resultExpr));
 		result.push(std::move(resultNative));
-		return result;
+		return zv::Val(std::move(result));
 	}
 
 	/* Mirrors ScopeOps::shouldInvalidateExpression(). */
@@ -1026,7 +1026,7 @@ public:
 		if (specs != NULL) {
 			efree(specs);
 		}
-		return result;
+		return zv::Val(std::move(result));
 	}
 
 	/*
@@ -1155,7 +1155,7 @@ public:
 		zv::Arr result = zv::Arr::create(2);
 		result.push(std::move(conditions));
 		result.push(std::move(specified));
-		return result;
+		return zv::Val(std::move(result));
 	}
 
 private:

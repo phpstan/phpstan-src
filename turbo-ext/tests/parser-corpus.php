@@ -67,17 +67,14 @@ function summarizeErrors(PhpParser\ErrorHandler\Collecting $handler): string
 	return implode("\n", $out);
 }
 
-$checked = 0;
-$failed = 0;
-$parseErrors = 0;
-$firstDiffs = [];
-
-foreach ($files as $file) {
-	$code = file_get_contents($file);
-	if ($code === false) {
-		continue;
-	}
-
+/**
+ * Parses $code with both engines; returns the list of divergences and whether
+ * the (identical-on-both-sides) run collected parse errors.
+ *
+ * @return array{list<string>, bool}
+ */
+function compareParse(string $code, PhpParser\Parser\Php8 $parserForNative, PhpParser\Parser\Php8 $parserForPhp): array
+{
 	$nativeHandler = new PhpParser\ErrorHandler\Collecting();
 	$phpHandler = new PhpParser\ErrorHandler\Collecting();
 
@@ -98,7 +95,6 @@ foreach ($files as $file) {
 	}
 	$phpTokens = count($parserForPhp->getTokens());
 
-	$checked++;
 	$problems = [];
 	if ($nativeThrew !== $phpThrew) {
 		$problems[] = sprintf('throw mismatch: native=%s php=%s', $nativeThrew ?? '-', $phpThrew ?? '-');
@@ -110,9 +106,6 @@ foreach ($files as $file) {
 	$phpErrors = summarizeErrors($phpHandler);
 	if ($nativeErrors !== $phpErrors) {
 		$problems[] = sprintf("errors mismatch:\n--- native ---\n%s\n--- php ---\n%s", $nativeErrors, $phpErrors);
-	}
-	if ($phpErrors !== '') {
-		$parseErrors++;
 	}
 	if ($problems === []) {
 		$nativeSer = $nativeAst === null ? 'NULL' : serialize($nativeAst);
@@ -133,10 +126,60 @@ foreach ($files as $file) {
 		}
 	}
 
+	return [$problems, $phpErrors !== ''];
+}
+
+$checked = 0;
+$failed = 0;
+$parseErrors = 0;
+$firstDiffs = [];
+
+foreach ($files as $file) {
+	$code = file_get_contents($file);
+	if ($code === false) {
+		continue;
+	}
+
+	[$problems, $hadParseErrors] = compareParse($code, $parserForNative, $parserForPhp);
+
+	$checked++;
+	if ($hadParseErrors) {
+		$parseErrors++;
+	}
 	if ($problems !== []) {
 		$failed++;
 		if (count($firstDiffs) < 10) {
 			$firstDiffs[] = sprintf("=== %s ===\n%s", $file, implode("\n", $problems));
+		}
+	}
+}
+
+// The corpus above runs the plain lexer; these snippets run the emulative
+// lexer, which on hosts older than the targeted version polyfills missing
+// tokens with ids assigned from -1 downward (php-parser's
+// defineCompatibilityTokens()) — negative token ids then appear in the actual
+// token stream, not just among phpTokenToSymbol's keys. On the newest host the
+// same snippets remain a plain differential over natively-tokenized syntax.
+$emulativeSnippets = [
+	'<?php $r = "abc" |> strlen(...);',
+	'<?php $r = "abc" |> (fn ($s) => $s . "!") |> strtoupper(...);',
+	'<?php (void) foo();',
+	'<?php class C { public private(set) int $x = 1; }',
+];
+$emulativeParserForNative = new PhpParser\Parser\Php8(new PhpParser\Lexer\Emulative($phpVersion), $phpVersion);
+$emulativeParserForPhp = new PhpParser\Parser\Php8(new PhpParser\Lexer\Emulative($phpVersion), $phpVersion);
+
+foreach ($emulativeSnippets as $snippet) {
+	[$problems, $hadParseErrors] = compareParse($snippet, $emulativeParserForNative, $emulativeParserForPhp);
+
+	$checked++;
+	if ($hadParseErrors) {
+		$parseErrors++;
+	}
+	if ($problems !== []) {
+		$failed++;
+		if (count($firstDiffs) < 10) {
+			$firstDiffs[] = sprintf("=== emulative: %s ===\n%s", $snippet, implode("\n", $problems));
 		}
 	}
 }

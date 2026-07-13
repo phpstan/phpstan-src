@@ -525,26 +525,45 @@ static bool readIntProp(zval *obj, const char *name, int *out)
 	return true;
 }
 
-/* copies a packed-or-sparse int array property into a malloc'd dense int array */
-static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSize)
+/* copies a packed-or-sparse int array property into a malloc'd dense int array;
+ * negative keys shift the whole array so the entry for key k sits at k + *outBias
+ * (php-parser assigns compat-token ids from -1 downward on hosts whose tokenizer
+ * lacks them — see defineCompatibilityTokens()). Callers reading 0-based grammar
+ * tables pass outBias = NULL; a negative key then fails the read (delegate to the
+ * PHP twin) instead of silently shifting the table's indexing. */
+static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSize, int *outBias)
 {
 	zv::Ref slot = zv::ObjRef(obj).prop(name, strlen(name));
 	if (slot.raw() == NULL || !slot.isArray()) {
 		return false;
 	}
 	HashTable *ht = slot.asArrayTable();
-	zend_ulong maxKey = 0;
+	zend_long maxKey = -1;
+	zend_long minKey = 0;
 	zend_ulong idx;
+	zend_string *strKey;
 	zval *v;
-	ZEND_HASH_FOREACH_NUM_KEY_VAL(ht, idx, v) {
+	ZEND_HASH_FOREACH_KEY_VAL(ht, idx, strKey, v) {
 		(void) v;
-		if (idx > maxKey) {
-			maxKey = idx;
+		if (strKey != NULL) {
+			return false;
+		}
+		zend_long key = (zend_long) idx;
+		if (key > maxKey) {
+			maxKey = key;
+		}
+		if (key < minKey) {
+			minKey = key;
 		}
 	} ZEND_HASH_FOREACH_END();
-	int size = (int) maxKey + 1;
+	if (minKey < 0 && outBias == NULL) {
+		return false;
+	}
+	int bias = (int) -minKey;
+	int size = (int) (maxKey - minKey) + 1;
 	if (zend_hash_num_elements(ht) == 0) {
 		size = 0;
+		bias = 0;
 	}
 	int *arr = (int *) malloc(sizeof(int) * (size_t) (size > 0 ? size : 1));
 	for (int i = 0; i < size; i++) {
@@ -552,11 +571,14 @@ static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSiz
 	}
 	ZEND_HASH_FOREACH_NUM_KEY_VAL(ht, idx, v) {
 		if (Z_TYPE_P(v) == IS_LONG) {
-			arr[idx] = (int) Z_LVAL_P(v);
+			arr[(zend_long) idx + bias] = (int) Z_LVAL_P(v);
 		}
 	} ZEND_HASH_FOREACH_END();
 	*out = arr;
 	*outSize = size;
+	if (outBias != NULL) {
+		*outBias = bias;
+	}
 	return true;
 }
 
@@ -592,17 +614,17 @@ static bool extractTables(zval *parserObj)
 		&& readIntProp(parserObj, "numNonLeafStates", &t->numNonLeafStates);
 	int unusedSize;
 	ok = ok
-		&& readIntArrayProp(parserObj, "phpTokenToSymbol", &t->phpTokenToSymbol, &t->phpTokenToSymbolSize)
-		&& readIntArrayProp(parserObj, "actionBase", &t->actionBase, &t->actionBaseSize)
-		&& readIntArrayProp(parserObj, "action", &t->action, &unusedSize)
-		&& readIntArrayProp(parserObj, "actionCheck", &t->actionCheck, &unusedSize)
-		&& readIntArrayProp(parserObj, "actionDefault", &t->actionDefault, &unusedSize)
-		&& readIntArrayProp(parserObj, "gotoBase", &t->gotoBase, &unusedSize)
-		&& readIntArrayProp(parserObj, "goto", &t->gotoTable, &unusedSize)
-		&& readIntArrayProp(parserObj, "gotoCheck", &t->gotoCheck, &unusedSize)
-		&& readIntArrayProp(parserObj, "gotoDefault", &t->gotoDefault, &unusedSize)
-		&& readIntArrayProp(parserObj, "ruleToNonTerminal", &t->ruleToNonTerminal, &unusedSize)
-		&& readIntArrayProp(parserObj, "ruleToLength", &t->ruleToLength, &t->numRules);
+		&& readIntArrayProp(parserObj, "phpTokenToSymbol", &t->phpTokenToSymbol, &t->phpTokenToSymbolSize, &t->phpTokenToSymbolBias)
+		&& readIntArrayProp(parserObj, "actionBase", &t->actionBase, &t->actionBaseSize, NULL)
+		&& readIntArrayProp(parserObj, "action", &t->action, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "actionCheck", &t->actionCheck, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "actionDefault", &t->actionDefault, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "gotoBase", &t->gotoBase, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "goto", &t->gotoTable, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "gotoCheck", &t->gotoCheck, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "gotoDefault", &t->gotoDefault, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "ruleToNonTerminal", &t->ruleToNonTerminal, &unusedSize, NULL)
+		&& readIntArrayProp(parserObj, "ruleToLength", &t->ruleToLength, &t->numRules, NULL);
 	if (!ok) {
 		return false;
 	}
@@ -621,7 +643,7 @@ static bool extractTables(zval *parserObj)
 		zval *v;
 		ZEND_HASH_FOREACH_NUM_KEY_VAL(slot.asArrayTable(), idx, v) {
 			(void) v;
-			if ((int) idx < size) {
+			if ((zend_long) idx >= 0 && (zend_long) idx < size) {
 				t->dropTokens[idx] = true;
 			}
 		} ZEND_HASH_FOREACH_END();
@@ -785,19 +807,23 @@ zv::Val ParserEngine::doParse()
 				do {
 					tokenPos++;
 					tokenId = tokens[tokenPos].id;
-					/* bound by dropTokensSize, not phpTokenToSymbolSize:
-					 * T_BAD_CHARACTER (id 411 on 8.5) sits above the
-					 * grammar's symbol map and must still be dropped */
-				} while (tokenId < t->dropTokensSize && t->dropTokens[tokenId]);
+					/* negative ids are php-parser compat tokens (the
+					 * emulative lexer polyfills newer-PHP tokens on an
+					 * older host) — never dropped; bound by dropTokensSize,
+					 * not phpTokenToSymbolSize: T_BAD_CHARACTER (id 411 on
+					 * 8.5) sits above the grammar's symbol map and must
+					 * still be dropped */
+				} while (tokenId >= 0 && tokenId < t->dropTokensSize && t->dropTokens[tokenId]);
 
 				tokenText = tokens[tokenPos].text;
-				if (tokenId >= t->phpTokenToSymbolSize || t->phpTokenToSymbol[tokenId] < 0) {
+				int mapIdx = tokenId + t->phpTokenToSymbolBias;
+				if (mapIdx < 0 || mapIdx >= t->phpTokenToSymbolSize || t->phpTokenToSymbol[mapIdx] < 0) {
 					zend_throw_exception_ex(spl_ce_RangeException, 0,
 						"The lexer returned an invalid token (id=%d, value=%s)",
 						tokenId, ZSTR_VAL(tokenText));
 					return zv::Val();
 				}
-				symbol = t->phpTokenToSymbol[tokenId];
+				symbol = t->phpTokenToSymbol[mapIdx];
 			}
 
 			int idx = t->actionBase[state] + symbol;

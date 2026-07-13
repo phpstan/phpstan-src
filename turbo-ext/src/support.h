@@ -26,6 +26,9 @@
 #pragma GCC diagnostic ignored "-Winconsistent-missing-override"
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+/* zend_vm_opcodes.h uses the preserve_none calling convention, which not
+ * every gcc/libc target supports — gcc then warns the attribute is ignored */
+#pragma GCC diagnostic ignored "-Wattributes"
 
 #include <phpcpp.h>
 

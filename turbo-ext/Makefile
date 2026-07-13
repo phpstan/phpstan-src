@@ -35,9 +35,13 @@ CXXFLAGS += -DPHPSTANTURBO_VERSION='"$(PHPSTANTURBO_VERSION)"'
 
 # Undefined PHP engine symbols are resolved by the php binary at load time;
 # GNU ld allows them in shared objects by default, Darwin needs the flag.
+# On Linux, fold libstdc++/libgcc into the .so statically so a distributed
+# binary does not depend on the build host's GLIBCXX_*/GCC_* symbol versions.
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 LINK_FLAGS := -undefined dynamic_lookup
+else
+LINK_FLAGS := -static-libstdc++ -static-libgcc
 endif
 
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
@@ -62,11 +66,17 @@ $(filter src/parser/%.o,$(OBJECTS)): src/parser/ParserEngine.h src/zv.h
 
 src/parser/ParserRunner.o: src/parser/ParserRunnerActionsSplit.h
 
-# PHP-CPP carries one local patch (patches/php-cpp-base-count-int64.patch,
-# needed on LP64 Darwin, a no-op cast on Linux); application is idempotent.
+# PHP-CPP carries local patches (each a no-op where not needed; application is
+# idempotent): php-cpp-base-count-int64.patch for LP64 Darwin, and
+# php-cpp-musl-cstdint.patch because musl's headers, unlike glibc's, don't
+# transitively provide int16_t where PHP-CPP uses it.
+PHPCPP_PATCHES := php-cpp-base-count-int64.patch php-cpp-musl-cstdint.patch
+
 phpcpp:
-	git -C $(PHPCPP_DIR) apply --reverse --check ../patches/php-cpp-base-count-int64.patch 2>/dev/null || \
-		git -C $(PHPCPP_DIR) apply ../patches/php-cpp-base-count-int64.patch
+	for p in $(PHPCPP_PATCHES); do \
+		git -C $(PHPCPP_DIR) apply --reverse --check ../patches/$$p 2>/dev/null || \
+			git -C $(PHPCPP_DIR) apply ../patches/$$p || exit 1; \
+	done
 	$(MAKE) -C $(PHPCPP_DIR)
 
 clean:

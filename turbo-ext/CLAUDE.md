@@ -86,7 +86,7 @@ php -d extension=$(pwd)/phpstan_turbo.so tests/smoke.php   # must print ALL OK
 ```
 
 The three `-Wno-` exemptions are for zend macro expansions only (documented in
-`.github/workflows/turbo-ext.yml`); new warnings in our code are fixed, not
+`.github/workflows/phar.yml`); new warnings in our code are fixed, not
 exempted. Use `-I` for PHP-CPP headers, never `-isystem` (Apple clang lets a
 stale `/usr/local/include/phpcpp.h` shadow `-isystem` paths); third-party
 header noise is handled by the pragma guards in `support.h`.
@@ -140,7 +140,7 @@ Follow README.md's "Updating php-parser" procedure. The agent-relevant traps:
   proves what the corpus contains: new syntax needs fixtures in the repo
   before the check means anything for it.
 - Finish with both pins: `SUPPORTED_PHP_PARSER_VERSION` in
-  `.github/workflows/turbo-ext.yml` plus the extension version bump in
+  `.github/workflows/phar.yml` plus the extension version bump in
   `TurboExtensionEnabler` (`src/parser/` changed).
 
 ## PHP-side constraints

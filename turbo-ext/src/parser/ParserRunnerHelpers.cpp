@@ -750,7 +750,7 @@ zv::Val ParserEngine::handleNamespaces(zv::Ref stmts)
 	if (lastNs != NULL) {
 		closePendingNamespace();
 	}
-	return resultStmts;
+	return zv::Val(std::move(resultStmts));
 }
 
 /* ===== handleBuiltinTypes ===== */

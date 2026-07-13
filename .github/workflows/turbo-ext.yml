@@ -18,6 +18,9 @@ concurrency:
 env:
   # Pin PHP-CPP to the commit the extension was developed against.
   PHP_CPP_COMMIT: "382a5f0386c8c46650e670366418e6ef55e71830"
+  # The php-parser version whose grammar tables and semantic actions the
+  # native parser engine (turbo-ext/src/parser/) was ported against.
+  SUPPORTED_PHP_PARSER_VERSION: "v5.8.0"
 
 jobs:
   version:
@@ -46,6 +49,15 @@ jobs:
       - name: "Check the shadowed PHP and C++ implementations are in sync (method parity)"
         run: "php turbo-ext/bin/side-by-side.php --check"
 
+      - name: "Check the vendored php-parser matches the version the native parser engine was ported against"
+        run: |
+          INSTALLED="$(jq -r '.packages[] | select(.name == "nikic/php-parser") | .version' composer.lock)"
+          echo "composer.lock: $INSTALLED, native engine ported against: $SUPPORTED_PHP_PARSER_VERSION"
+          if [ "$INSTALLED" != "$SUPPORTED_PHP_PARSER_VERSION" ]; then
+            echo "::error::nikic/php-parser was updated to $INSTALLED but turbo-ext/src/parser/ was ported against $SUPPORTED_PHP_PARSER_VERSION."
+            echo "::error::Update procedure: diff ParserAbstract.php helpers between the two versions (grammar tables need nothing — they are read at run time), run turbo-ext/bin/generate-parser-actions.php and port any flagged closure bodies via action-overrides/, run turbo-ext/tests/parser-corpus.php until byte-identical, run the full suite, then bump SUPPORTED_PHP_PARSER_VERSION here and the extension version pin."
+            exit 1
+          fi
 
       - name: "Check TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION against the last commit touching turbo-ext/src or a shadowed PHP class"
         run: |
@@ -149,6 +161,8 @@ jobs:
           php turbo-ext/bin/generate-parser-actions.php
           git diff --exit-code turbo-ext/src/parser/
 
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
 
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

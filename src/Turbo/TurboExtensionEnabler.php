@@ -123,6 +123,7 @@ final class TurboExtensionEnabler
 		require_once __DIR__ . '/../../turbo-ext/stubs/NodeTraverser.php';
 		require_once __DIR__ . '/../../turbo-ext/stubs/ScopeOps.php';
 		require_once __DIR__ . '/../../turbo-ext/stubs/NodeScanner.php';
+		require_once __DIR__ . '/../../turbo-ext/stubs/ParserRunner.php';
 	}
 
 }

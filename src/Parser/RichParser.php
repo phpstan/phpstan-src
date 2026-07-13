@@ -72,7 +72,7 @@ final class RichParser implements Parser
 	public function parseString(string $sourceCode): array
 	{
 		$errorHandler = new Collecting();
-		$nodes = $this->parser->parse($sourceCode, $errorHandler);
+		$nodes = ParserRunner::parse($this->parser, $sourceCode, $errorHandler);
 
 		$tokens = $this->parser->getTokens();
 		if ($errorHandler->hasErrors()) {

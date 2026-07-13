@@ -19,6 +19,10 @@
         "php": "src/Node/NodeScanner.php",
         "cpp": "turbo-ext/src/NodeScanner.cpp"
     },
+    "PHPStan\\Parser\\ParserRunner": {
+        "php": "src/Parser/ParserRunner.php",
+        "cpp": "turbo-ext/src/parser/ParserRunner.cpp"
+    },
     "PHPStan\\TrinaryLogic": {
         "php": "src/TrinaryLogic.php",
         "cpp": "turbo-ext/src/TrinaryLogic.cpp"

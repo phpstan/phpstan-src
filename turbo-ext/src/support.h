@@ -135,6 +135,7 @@ void pt_register_combinations_helper();
 void pt_register_node_traverser();
 void pt_register_scope_ops();
 void pt_register_node_scanner();
+void pt_register_parser_runner();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();

@@ -77,7 +77,8 @@ struct Tables
 	int *ruleToLength;
 	zend_string **symbolToName; /* borrowed persistent copies (interned dup) */
 	int symbolToNameSize;
-	bool *dropTokens;           /* indexed by php token id, size phpTokenToSymbolSize */
+	bool *dropTokens;           /* indexed by php token id */
+	int dropTokensSize;         /* ≥ phpTokenToSymbolSize: T_BAD_CHARACTER sits above the grammar's symbol map */
 };
 
 /* Per-node-class construction plan, cached per process in the class registry. */
@@ -89,7 +90,13 @@ struct NodeClassInfo
 	int propSlots[16];
 	uint32_t attrsSlot; /* slot of NodeAbstract::$attributes */
 	int numProps;
-	bool useCtor; /* subNodes-style or otherwise non-trivial ctor */
+	/* The slot-write plan is derived lazily, on the first resolve that wants
+	 * it — the registry entry must not depend on which caller saw the class
+	 * first (isInstanceOf() resolves with useCtor=true; letting that poison
+	 * the cache once made every later Node\Arg construction take the ctor
+	 * path, whose attributes-last convention Arg's signature breaks). */
+	enum PlanState : uint8_t { PLAN_NONE = 0, PLAN_OK, PLAN_FAILED };
+	PlanState planState;
 };
 
 /*
@@ -229,6 +236,9 @@ private:
 	void emitError(zend_string *msg, zv::Val attributes); /* msg borrowed */
 	/* `throw new Error(...)`: records the abort; the caller must return */
 	void fatalError(const char *msg, zv::Val attributes);
+	/* doParse()'s catch (Error $e) for a pending exception thrown by PHP
+	 * code the engine called (node ctors, String_::parseEscapeSequences) */
+	void abortForPendingException();
 
 	/* ===== class resolution + node creation (scoped-phar safe) ===== */
 

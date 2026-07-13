@@ -256,53 +256,56 @@ NodeClassInfo *ParserEngine::resolveNodeClass(const char *alias, bool useCtor)
 	}
 	size_t aliasLen = strlen(alias);
 	zval *cached = zend_hash_str_find(&g_classRegistry, alias, aliasLen);
+	NodeClassInfo *cls;
 	if (cached != NULL) {
-		return (NodeClassInfo *) Z_PTR_P(cached);
-	}
+		cls = (NodeClassInfo *) Z_PTR_P(cached);
+	} else {
+		/* try PhpParser\Node\<alias>, then PhpParser\<alias> */
+		zend_class_entry *ce = NULL;
+		{
+			const char *nodePrefix = "PhpParser\\Node\\";
+			size_t rl = strlen(nodePrefix) + aliasLen;
+			char *rel = (char *) emalloc(rl + 1);
+			memcpy(rel, nodePrefix, strlen(nodePrefix));
+			memcpy(rel + strlen(nodePrefix), alias, aliasLen + 1);
+			ce = lookupClassPrefixed(rel, rl);
+			efree(rel);
+		}
+		if (ce == NULL) {
+			const char *plainPrefix = "PhpParser\\";
+			size_t rl = strlen(plainPrefix) + aliasLen;
+			char *rel = (char *) emalloc(rl + 1);
+			memcpy(rel, plainPrefix, strlen(plainPrefix));
+			memcpy(rel + strlen(plainPrefix), alias, aliasLen + 1);
+			ce = lookupClassPrefixed(rel, rl);
+			efree(rel);
+		}
+		if (ce == NULL) {
+			return NULL;
+		}
 
-	/* try PhpParser\Node\<alias>, then PhpParser\<alias> */
-	zend_class_entry *ce = NULL;
-	{
-		const char *nodePrefix = "PhpParser\\Node\\";
-		size_t rl = strlen(nodePrefix) + aliasLen;
-		char *rel = (char *) emalloc(rl + 1);
-		memcpy(rel, nodePrefix, strlen(nodePrefix));
-		memcpy(rel + strlen(nodePrefix), alias, aliasLen + 1);
-		ce = lookupClassPrefixed(rel, rl);
-		efree(rel);
-	}
-	if (ce == NULL) {
-		const char *plainPrefix = "PhpParser\\";
-		size_t rl = strlen(plainPrefix) + aliasLen;
-		char *rel = (char *) emalloc(rl + 1);
-		memcpy(rel, plainPrefix, strlen(plainPrefix));
-		memcpy(rel + strlen(plainPrefix), alias, aliasLen + 1);
-		ce = lookupClassPrefixed(rel, rl);
-		efree(rel);
-	}
-	if (ce == NULL) {
-		return NULL;
-	}
+		cls = (NodeClassInfo *) malloc(sizeof(NodeClassInfo));
+		memset(cls, 0, sizeof(*cls));
+		cls->ce = ce;
+		cls->attrsSlot = UINT32_MAX;
 
-	NodeClassInfo *cls = (NodeClassInfo *) malloc(sizeof(NodeClassInfo));
-	memset(cls, 0, sizeof(*cls));
-	cls->ce = ce;
-	cls->useCtor = useCtor;
-	cls->attrsSlot = UINT32_MAX;
-
-	{
 		int32_t attrsOffset = pt_instance_prop_offset(ce, "attributes", sizeof("attributes") - 1);
 		if (attrsOffset >= 0) {
 			cls->attrsSlot = (uint32_t) attrsOffset;
 		}
+
+		zval ptr;
+		ZVAL_PTR(&ptr, cls);
+		zend_hash_str_add(&g_classRegistry, alias, aliasLen, &ptr);
 	}
 
-	if (!useCtor) {
-		/* derive the property-write plan from the constructor's parameter names */
-		zend_function *ctor = ce->constructor;
-		if (ctor == NULL || ctor->type != ZEND_USER_FUNCTION || cls->attrsSlot == UINT32_MAX) {
-			cls->useCtor = true;
-		} else {
+	if (!useCtor && cls->planState == NodeClassInfo::PLAN_NONE) {
+		/* derive the property-write plan from the constructor's parameter
+		 * names — lazily, so a useCtor=true resolve (isInstanceOf) seeing the
+		 * class first cannot deny later slot-write callers the plan */
+		cls->planState = NodeClassInfo::PLAN_FAILED;
+		zend_function *ctor = cls->ce->constructor;
+		if (ctor != NULL && ctor->type == ZEND_USER_FUNCTION && cls->attrsSlot != UINT32_MAX) {
 			uint32_t numArgs = ctor->op_array.num_args;
 			int nprops = 0;
 			bool ok = true;
@@ -315,24 +318,20 @@ NodeClassInfo *ParserEngine::resolveNodeClass(const char *alias, bool useCtor)
 					ok = false;
 					break;
 				}
-				int32_t off = pt_instance_prop_offset(ce, ZSTR_VAL(argName), ZSTR_LEN(argName));
+				int32_t off = pt_instance_prop_offset(cls->ce, ZSTR_VAL(argName), ZSTR_LEN(argName));
 				if (off < 0) {
 					ok = false;
 					break;
 				}
 				cls->propSlots[nprops++] = off;
 			}
-			if (!ok) {
-				cls->useCtor = true;
-			} else {
+			if (ok) {
 				cls->numProps = nprops;
+				cls->planState = NodeClassInfo::PLAN_OK;
 			}
 		}
 	}
 
-	zval ptr;
-	ZVAL_PTR(&ptr, cls);
-	zend_hash_str_add(&g_classRegistry, alias, aliasLen, &ptr);
 	return cls;
 }
 
@@ -347,7 +346,7 @@ zv::Val ParserEngine::createNode(const char *alias, bool useCtor, zv::Val attrib
 	zval attrs = attributes.take();
 	zval node;
 
-	if (!cls->useCtor && nprops == cls->numProps) {
+	if (!useCtor && cls->planState == NodeClassInfo::PLAN_OK && nprops == cls->numProps) {
 		object_init_ex(&node, cls->ce);
 		zend_object *zobj = Z_OBJ(node);
 		for (int i = 0; i < nprops; i++) {
@@ -380,34 +379,45 @@ zv::Val ParserEngine::createNode(const char *alias, bool useCtor, zv::Val attrib
 	zend_call_known_function(cls->ce->constructor, Z_OBJ(node), cls->ce, NULL, argc, args, NULL);
 	zval_ptr_dtor(&attrs);
 	if (EG(exception) != NULL) {
-		/* a PhpParser\Error thrown from a ctor mirrors the PHP engine's catch */
-		zend_object *ex = EG(exception);
-		if (g_errorCe != NULL && instanceof_function(ex->ce, g_errorCe)) {
-			zval rvMsg, rvAttrs;
-			ZVAL_UNDEF(&rvMsg);
-			ZVAL_UNDEF(&rvAttrs);
-			zend_function *getMsg = pt_find_method(ex->ce, "getrawmessage", sizeof("getrawmessage") - 1);
-			zend_function *getAttrs = pt_find_method(ex->ce, "getattributes", sizeof("getattributes") - 1);
-			zend_object *exKeepAlive = ex;
-			GC_ADDREF(exKeepAlive);
-			zend_clear_exception();
-			if (getMsg != NULL) {
-				zend_call_known_function(getMsg, exKeepAlive, exKeepAlive->ce, &rvMsg, 0, NULL, NULL);
-			}
-			if (getAttrs != NULL) {
-				zend_call_known_function(getAttrs, exKeepAlive, exKeepAlive->ce, &rvAttrs, 0, NULL, NULL);
-			}
-			OBJ_RELEASE(exKeepAlive);
-			aborted = true;
-			abortErrorMsg = zv::Val::adopt(rvMsg);
-			abortErrorAttrs = zv::Val::adopt(rvAttrs);
-		} else {
-			aborted = true; /* propagate the pending exception */
-		}
+		abortForPendingException();
 		zval_ptr_dtor(&node);
 		return zv::Val();
 	}
 	return zv::Val::adopt(node);
+}
+
+/*
+ * Mirrors doParse()'s catch (Error $e): a pending PhpParser\Error becomes the
+ * aborted/abortErrorMsg channel (so it reaches the error handler with a
+ * startLine), any other pending exception just marks the parse aborted and
+ * propagates. Callers that invoke PHP code which may throw PhpParser\Error
+ * (node constructors, String_::parseEscapeSequences) must route through this.
+ */
+void ParserEngine::abortForPendingException()
+{
+	zend_object *ex = EG(exception);
+	if (g_errorCe != NULL && instanceof_function(ex->ce, g_errorCe)) {
+		zval rvMsg, rvAttrs;
+		ZVAL_UNDEF(&rvMsg);
+		ZVAL_UNDEF(&rvAttrs);
+		zend_function *getMsg = pt_find_method(ex->ce, "getrawmessage", sizeof("getrawmessage") - 1);
+		zend_function *getAttrs = pt_find_method(ex->ce, "getattributes", sizeof("getattributes") - 1);
+		zend_object *exKeepAlive = ex;
+		GC_ADDREF(exKeepAlive);
+		zend_clear_exception();
+		if (getMsg != NULL) {
+			zend_call_known_function(getMsg, exKeepAlive, exKeepAlive->ce, &rvMsg, 0, NULL, NULL);
+		}
+		if (getAttrs != NULL) {
+			zend_call_known_function(getAttrs, exKeepAlive, exKeepAlive->ce, &rvAttrs, 0, NULL, NULL);
+		}
+		OBJ_RELEASE(exKeepAlive);
+		aborted = true;
+		abortErrorMsg = zv::Val::adopt(rvMsg);
+		abortErrorAttrs = zv::Val::adopt(rvAttrs);
+	} else {
+		aborted = true; /* propagate the pending exception */
+	}
 }
 
 bool ParserEngine::isInstanceOf(zv::Ref value, const char *alias)
@@ -605,6 +615,7 @@ static bool extractTables(zval *parserObj)
 		}
 		int size = t->phpTokenToSymbolSize > 1024 ? t->phpTokenToSymbolSize : 1024;
 		t->dropTokens = (bool *) malloc(sizeof(bool) * (size_t) size);
+		t->dropTokensSize = size;
 		memset(t->dropTokens, 0, sizeof(bool) * (size_t) size);
 		zend_ulong idx;
 		zval *v;
@@ -774,7 +785,10 @@ zv::Val ParserEngine::doParse()
 				do {
 					tokenPos++;
 					tokenId = tokens[tokenPos].id;
-				} while (tokenId < t->phpTokenToSymbolSize && t->dropTokens[tokenId]);
+					/* bound by dropTokensSize, not phpTokenToSymbolSize:
+					 * T_BAD_CHARACTER (id 411 on 8.5) sits above the
+					 * grammar's symbol map and must still be dropped */
+				} while (tokenId < t->dropTokensSize && t->dropTokens[tokenId]);
 
 				tokenText = tokens[tokenPos].text;
 				if (tokenId >= t->phpTokenToSymbolSize || t->phpTokenToSymbol[tokenId] < 0) {

@@ -198,9 +198,14 @@ public:
 
 inline void Ref::assign(Val owned)
 {
-	zval_ptr_dtor(z);
+	/* engine idiom (cf. zend_assign_to_variable): install the new value
+	 * before releasing the old one — a __destruct re-reading the slot must
+	 * observe the new value, not a freed zval */
+	zval old;
+	ZVAL_COPY_VALUE(&old, z);
 	zval v = owned.take();
 	ZVAL_COPY_VALUE(z, &v);
+	zval_ptr_dtor(&old);
 }
 
 /* Owned zend_string: move-only RAII. NULL is the empty state, so a failed
@@ -518,10 +523,13 @@ public:
 
 	void propAtWrite(uint32_t slot, Val owned)
 	{
+		/* new value in before the old one's dtor runs — see Ref::assign() */
 		zval *p = OBJ_PROP_NUM(obj, slot);
-		zval_ptr_dtor(p);
+		zval old;
+		ZVAL_COPY_VALUE(&old, p);
 		zval v = owned.take();
 		ZVAL_COPY_VALUE(p, &v);
+		zval_ptr_dtor(&old);
 	}
 
 	/* $obj->$name = $value through the engine write path (magic methods and

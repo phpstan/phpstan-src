@@ -505,13 +505,13 @@ static bool pt_call_print_expr(zval *expr_printer, zend_object *node, zval *resu
 	return true;
 }
 
-zend_string *pt_node_key(zend_object *node, zval *expr_printer)
+/* The printed form of the expression, without pt_node_key's attribute-derived
+ * suffixes — the equivalent of a plain $exprPrinter->printExpr($node) call
+ * (which caches through the printer attribute). Owned string; NULL on
+ * failure with an exception pending. */
+static zend_string *pt_node_printed_expr(zend_object *node, zval *expr_printer)
 {
 	pt_node_class_info *info = pt_get_node_class_info(node->ce);
-	zend_string *key = NULL;
-	zval *attr;
-
-	pt_init_strs();
 
 	if (info == NULL) {
 		return NULL;
@@ -523,7 +523,7 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 		ZVAL_DEREF(name);
 		if (Z_TYPE_P(name) == IS_STRING) {
 			zend_string *name_str = Z_STR_P(name);
-			key = zend_string_alloc(ZSTR_LEN(name_str) + 1, 0);
+			zend_string *key = zend_string_alloc(ZSTR_LEN(name_str) + 1, 0);
 			ZSTR_VAL(key)[0] = '$';
 			memcpy(ZSTR_VAL(key) + 1, ZSTR_VAL(name_str), ZSTR_LEN(name_str));
 			ZSTR_VAL(key)[ZSTR_LEN(key)] = '\0';
@@ -531,15 +531,41 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 		}
 	}
 
-	attr = pt_node_attribute(node, pt_str_cache_printer);
+	zval *attr = pt_node_attribute(node, pt_str_cache_printer);
 	if (attr != NULL && Z_TYPE_P(attr) == IS_STRING) {
-		key = zend_string_copy(Z_STR_P(attr));
-	} else {
-		zval printed;
-		if (!pt_call_print_expr(expr_printer, node, &printed)) {
-			return NULL;
+		return zend_string_copy(Z_STR_P(attr));
+	}
+
+	zval printed;
+	if (!pt_call_print_expr(expr_printer, node, &printed)) {
+		return NULL;
+	}
+	return Z_STR(printed); /* take ownership */
+}
+
+zend_string *pt_node_key(zend_object *node, zval *expr_printer)
+{
+	zend_string *key;
+
+	pt_init_strs();
+
+	/* the Variable fast path returns before any suffix handling below, same
+	 * as the twin: a Variable node never carries the suffix attributes */
+	pt_node_class_info *info = pt_get_node_class_info(node->ce);
+	if (info == NULL) {
+		return NULL;
+	}
+	if (info->is_variable && info->name_offset >= 0) {
+		zval *name = OBJ_PROP(node, info->name_offset);
+		ZVAL_DEREF(name);
+		if (Z_TYPE_P(name) == IS_STRING) {
+			return pt_node_printed_expr(node, expr_printer);
 		}
-		key = Z_STR(printed); /* take ownership */
+	}
+
+	key = pt_node_printed_expr(node, expr_printer);
+	if (key == NULL) {
+		return NULL;
 	}
 
 	/* FunctionLike with arrayMapArgs + startFilePos: append the array_map
@@ -583,7 +609,10 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 						}
 						smart_str_appendc(&str, ':');
 						{
-							zend_string *arg_key = pt_node_key(Z_OBJ_P(value_prop), expr_printer);
+							/* plain printExpr like the twin — NOT the full node
+							 * key: an argument carrying its own suffix
+							 * attributes must not have them appended here */
+							zend_string *arg_key = pt_node_printed_expr(Z_OBJ_P(value_prop), expr_printer);
 							if (arg_key == NULL) {
 								smart_str_free(&str);
 								zend_string_release(key);

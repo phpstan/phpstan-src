@@ -293,10 +293,9 @@ static void pt_trinary_lazy(INTERNAL_FUNCTION_PARAMETERS, LazyEvaluation::Mode m
 		Z_PARAM_FUNC(fci, fcc)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (mode == LazyEvaluation::MAX_MIN && UNEXPECTED(zend_hash_num_elements(objects) == 0)) {
-		pt_throw_should_not_happen();
-		RETURN_THROWS();
-	}
+	/* no empty-array check for MAX_MIN: unlike extremeIdentity()/maxMin(), the
+	 * PHP twin's lazyMaxMin([]) returns Yes ($min starts at YES), and run()'s
+	 * accumulator reproduces that */
 
 	zval objectsZv;
 	ZVAL_ARR(&objectsZv, objects);

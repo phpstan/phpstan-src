@@ -1,0 +1,215 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Turbo Extension"
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "2.2.x"
+
+concurrency:
+  group: turbo-ext-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  cancel-in-progress: true
+
+env:
+  # Pin PHP-CPP to the commit the extension was developed against.
+  PHP_CPP_COMMIT: "382a5f0386c8c46650e670366418e6ef55e71830"
+
+jobs:
+  version:
+    name: "Extension Version Check"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # git log over turbo-ext/src needs full history
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - name: "Check the shadowed PHP and C++ implementations are in sync (method parity)"
+        run: "php turbo-ext/bin/side-by-side.php --check"
+
+
+      - name: "Check TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION against the last commit touching turbo-ext/src or a shadowed PHP class"
+        run: |
+          # A change to either side of a shadowed pair must bump the version:
+          # watch turbo-ext/src plus the repo-local PHP files from the manifest
+          # (vendored entries are governed by composer.lock instead).
+          mapfile -t MAPPED_PHP < <(jq -r '.[] | select(.vendored != true) | .php' turbo-ext/shadowed-classes.json)
+          EXPECTED_SHA="$(git log -1 --format=%H -- turbo-ext/src "${MAPPED_PHP[@]}" | cut -c1-7)"
+          ENABLER="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "last commit touching turbo-ext/src or a shadowed PHP class: $EXPECTED_SHA"
+          echo "TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION:          $ENABLER"
+          if [ "$ENABLER" != "$EXPECTED_SHA" ]; then
+            echo "::error::TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION must be the short SHA of the last commit touching turbo-ext/src/ or a PHP class listed in turbo-ext/shadowed-classes.json."
+            echo "::error::After changing either side, verify the implementations still match and add a follow-up commit setting the constant to that commit's short SHA (the binary bakes its version from git at build time)."
+            exit 1
+          fi
+
+  compile:
+    name: "Compile Extension"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: ["ubuntu-latest", "macos-latest"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          # The Makefile bakes the extension version via git log over the
+          # watched paths; a shallow clone would resolve every build to the
+          # checked-out commit itself — on pull requests the synthetic merge
+          # commit, which matches nothing.
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - name: "Cache PHP-CPP"
+        id: "cache-php-cpp"
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: "turbo-ext/PHP-CPP"
+          key: "php-cpp-${{ env.PHP_CPP_COMMIT }}-php-8.5-${{ matrix.operating-system }}"
+
+      - name: "Clone and build PHP-CPP"
+        if: steps.cache-php-cpp.outputs.cache-hit != 'true'
+        working-directory: "turbo-ext"
+        run: |
+          git clone https://github.com/CopernicaMarketingSoftware/PHP-CPP.git PHP-CPP
+          git -C PHP-CPP checkout "$PHP_CPP_COMMIT"
+          ln -sfn include PHP-CPP/phpcpp
+          # On LP64 Darwin int64_t is long long, so returning long from
+          # count() makes the Php::Value construction ambiguous; the cast is a
+          # no-op on Linux, so the patch applies everywhere.
+          git -C PHP-CPP apply ../patches/php-cpp-base-count-int64.patch
+          make -C PHP-CPP -j"$(getconf _NPROCESSORS_ONLN)"
+
+      - name: "Compile phpstan_turbo with strict warnings"
+        working-directory: "turbo-ext"
+        # Exemptions, each caused by third-party macro expansions, not our code:
+        # -Wno-assume: zend's parameter-parsing macros expand __builtin_assume
+        #   with (potential) side effects
+        # -Wno-unused-parameter: PHP_METHOD's fixed signature
+        #   (execute_data/return_value are not used by every method)
+        # -Wno-unicode: zend arginfo macros stringify namespaced class names;
+        #   clang lexes the \N in "PhpParser\NodeVisitor" as a universal
+        #   character name (GCC ignores the unknown -Wno- flag)
+        run: |
+          ln -sfn include PHP-CPP/phpcpp
+          make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode"
+
+      - name: "Verify the built extension reports the expected version"
+        run: |
+          REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
+
+      - name: "Parser actions are generated (regenerate and diff)"
+        run: |
+          php turbo-ext/bin/generate-parser-actions.php
+          git diff --exit-code turbo-ext/src/parser/
+
+
+      - name: "Upload extension artifact"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "phpstan_turbo-${{ matrix.operating-system }}"
+          path: "turbo-ext/phpstan_turbo.so"
+          if-no-files-found: "error"
+
+  run:
+    name: "Run with Extension"
+    needs: "compile"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: ["ubuntu-latest", "macos-latest"]
+        script: ["make tests", "make phpstan"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - name: "Download extension artifact"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "phpstan_turbo-${{ matrix.operating-system }}"
+          path: "turbo-ext"
+
+      - name: "Install extension"
+        run: |
+          sudo bash -c "echo 'extension=$GITHUB_WORKSPACE/turbo-ext/phpstan_turbo.so' >> $(php -r 'echo php_ini_loaded_file();')"
+          php -m | grep phpstan_turbo
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Verify the extension is active"
+        run: |
+          php -r '
+            require "src/Turbo/TurboExtensionEnabler.php";
+            PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
+            require "vendor/autoload.php";
+            if (!(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass() || !(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass()->isInternal()) {
+              fwrite(STDERR, "turbo extension is not shadowing ScopeOps" . PHP_EOL);
+              exit(1);
+            }
+          '
+
+      - name: "Run"
+        run: ${{ matrix.script }}

@@ -23,6 +23,17 @@ $pinnedToSupportPhp72 = [
 	'nette/php-generator',
 ];
 
+$unknownClasses = [
+	'JetBrains\PhpStorm\Pure', // not present on composer's classmap
+	'PHPStan\ExtensionInstaller\GeneratedConfig', // generated
+];
+if (!class_exists('PHPStanTurbo\Runtime')) {
+	// provided by the optional phpstan_turbo extension (turbo-ext/); the ignore
+	// must be conditional — on machines with the extension loaded the class
+	// exists and a static ignore would be reported as unused
+	$unknownClasses[] = 'PHPStanTurbo\Runtime';
+}
+
 return $config
 	->addPathToScan(__DIR__ . '/../bin', true)
 	->ignoreErrorsOnPackages(
@@ -35,7 +46,4 @@ return $config
 	->ignoreErrorsOnPackage('phpunit/phpunit', [ErrorType::DEV_DEPENDENCY_IN_PROD]) // prepared test tooling
 	->ignoreErrorsOnPackage('jetbrains/phpstorm-stubs', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV]) // there is no direct usage, but we need newer version then required by ondrejmirtes/BetterReflection
 	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS, ErrorType::UNKNOWN_FUNCTION, ErrorType::SHADOW_DEPENDENCY]) // to be able to test invalid symbols
-	->ignoreUnknownClasses([
-		'JetBrains\PhpStorm\Pure', // not present on composer's classmap
-		'PHPStan\ExtensionInstaller\GeneratedConfig', // generated
-	]);
+	->ignoreUnknownClasses($unknownClasses);

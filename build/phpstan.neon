@@ -19,6 +19,8 @@ parameters:
 		- ../tests
 	bootstrapFiles:
 		- ../tests/phpstan-bootstrap.php
+	scanFiles:
+		- ../turbo-ext/analysis-stub.php
 	cache:
 		nodesByStringCountMax: 128
 	checkUninitializedProperties: true

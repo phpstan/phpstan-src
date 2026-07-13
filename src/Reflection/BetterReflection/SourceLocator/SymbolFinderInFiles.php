@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_filter;
 use function array_slice;
 use function count;
@@ -17,6 +18,7 @@ use function sprintf;
 use function str_contains;
 use function strtolower;
 
+#[AutowiredService]
 final class SymbolFinderInFiles
 {
 

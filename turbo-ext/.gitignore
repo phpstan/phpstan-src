@@ -1,3 +1,6 @@
-/vendor
-/ext
-/.zephir
+/PHP-CPP/
+/src/*.o
+/src/parser/*.o
+/phpstan_turbo.so
+/side-by-side.html
+/version.stamp

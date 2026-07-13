@@ -1,0 +1,31 @@
+{
+    "PHPStan\\Analyser\\ConditionalExpressionHolder": {
+        "php": "src/Analyser/ConditionalExpressionHolder.php",
+        "cpp": "turbo-ext/src/ConditionalExpressionHolder.cpp"
+    },
+    "PHPStan\\Analyser\\ExpressionTypeHolder": {
+        "php": "src/Analyser/ExpressionTypeHolder.php",
+        "cpp": "turbo-ext/src/ExpressionTypeHolder.cpp"
+    },
+    "PHPStan\\Analyser\\ScopeOps": {
+        "php": "src/Analyser/ScopeOps.php",
+        "cpp": "turbo-ext/src/ScopeOps.cpp"
+    },
+    "PHPStan\\Internal\\CombinationsHelper": {
+        "php": "src/Internal/CombinationsHelper.php",
+        "cpp": "turbo-ext/src/CombinationsHelper.cpp"
+    },
+    "PHPStan\\Node\\NodeScanner": {
+        "php": "src/Node/NodeScanner.php",
+        "cpp": "turbo-ext/src/NodeScanner.cpp"
+    },
+    "PHPStan\\TrinaryLogic": {
+        "php": "src/TrinaryLogic.php",
+        "cpp": "turbo-ext/src/TrinaryLogic.cpp"
+    },
+    "PhpParser\\NodeTraverser": {
+        "php": "vendor/nikic/php-parser/lib/PhpParser/NodeTraverser.php",
+        "cpp": "turbo-ext/src/NodeTraverser.cpp",
+        "vendored": true
+    }
+}

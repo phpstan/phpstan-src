@@ -140,6 +140,22 @@ class Foo {
 		}
 	}
 
+	/**
+	 * Strict `=== false` comparison. The else branch is the truthy result of
+	 * array_any() (at least one match, so the array is non-empty); it exercises
+	 * the falsey-but-not-false type-specifier context.
+	 *
+	 * @param array<mixed> $array
+	 */
+	public function testStrictFalseComparison($array) {
+		if (array_any($array, fn ($value) => $value === null) === false) {
+			assertType("array<mixed~null>", $array);
+		} else {
+			assertType("non-empty-array<mixed>", $array);
+		}
+		assertType("array<mixed>", $array);
+	}
+
 }
 
 /**

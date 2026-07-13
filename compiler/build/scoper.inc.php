@@ -240,6 +240,10 @@ return [
 	],
 	'exclude-namespaces' => [
 		'PHPStan',
+		// the native turbo extension's classes — must match the loaded
+		// extension exactly, never prefixed (segment-aware matching means the
+		// PHPStan entry above does not cover this name)
+		'PHPStanTurbo',
 		'PHPUnit',
 		'PhpParser',
 		'Hoa',

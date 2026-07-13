@@ -84,11 +84,13 @@ final class ArrayFilterFunctionReturnTypeHelper
 			throw new ShouldNotHappenException();
 		}
 
-		$mapping = match ($mode) {
-			self::USE_ITEM => ArrayCallbackParameterMapping::item(),
-			self::USE_KEY => ArrayCallbackParameterMapping::key(),
-			self::USE_BOTH => ArrayCallbackParameterMapping::valueAndKey(),
-		};
+		if ($mode === self::USE_ITEM) {
+			$mapping = ArrayCallbackParameterMapping::item();
+		} elseif ($mode === self::USE_KEY) {
+			$mapping = ArrayCallbackParameterMapping::key();
+		} else {
+			$mapping = ArrayCallbackParameterMapping::valueAndKey();
+		}
 
 		$predicates = $this->predicateCallbackResolver->resolve($scope, $callbackArg, $mapping);
 		if ($predicates === null) {

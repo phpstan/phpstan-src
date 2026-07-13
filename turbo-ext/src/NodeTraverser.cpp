@@ -203,6 +203,12 @@ public:
 	~NodeTraverser()
 	{
 		if (plan != NULL) {
+			/* the plan owns its visitor references: removeVisitor() (or any
+			 * userland write to $this->visitors) during traversal must not be
+			 * able to free a visitor the plan still dispatches to */
+			for (uint32_t i = 0; i < nplanned; i++) {
+				OBJ_RELEASE(plan[i].visitor);
+			}
 			efree(plan);
 		}
 	}
@@ -370,6 +376,11 @@ private:
 			if (!value.instanceOf(nodeIface)) {
 				continue;
 			}
+			/* Own a reference for the whole block: a visitor writing to the
+			 * parent's property from a hook can otherwise drop the node's
+			 * last reference while later hooks still run on it. The PHP twin
+			 * survives that by construction ($subNode owns a reference). */
+			zv::Val subNodeOwned = zv::Val::copyOf(zv::Ref(value.raw()));
 			zend_object *subNode = value.asObject();
 
 			bool traverseChildren = true;
@@ -401,6 +412,7 @@ private:
 					if (UNEXPECTED(!writeSubnode(node, info->names[i], retRef))) {
 						return;
 					}
+					subNodeOwned = zv::Val::copyOf(retRef);
 					subNode = retRef.asObject();
 					continue;
 				}
@@ -465,6 +477,7 @@ private:
 					if (UNEXPECTED(!writeSubnode(node, info->names[i], retRef))) {
 						return;
 					}
+					subNodeOwned = zv::Val::copyOf(retRef);
 					subNode = retRef.asObject();
 					continue;
 				}
@@ -748,6 +761,8 @@ private:
 			}
 			pt_visitor_plan *p = &plan[i];
 			p->visitor = visitor.asObject();
+			GC_ADDREF(p->visitor);
+			nplanned = i + 1;
 			p->ce = p->visitor->ce;
 			p->enter_fn = findHook(p->ce, "enternode", sizeof("enternode") - 1);
 			p->leave_fn = findHook(p->ce, "leavenode", sizeof("leavenode") - 1);
@@ -821,6 +836,8 @@ private:
 	zend_object *self;
 	pt_visitor_plan *plan = NULL;
 	uint32_t nvisitors = 0;
+	/* how many plan entries own a visitor reference (build can fail mid-way) */
+	uint32_t nplanned = 0;
 	bool stop = false;
 	bool failed = false;
 };

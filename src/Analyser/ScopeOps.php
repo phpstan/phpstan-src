@@ -25,7 +25,6 @@ use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
-use function array_merge;
 use function count;
 use function get_class;
 use function in_array;
@@ -307,7 +306,11 @@ final class ScopeOps
 
 		return [
 			$mergedExpressionTypes,
-			array_merge($mergedNativeExpressionTypes, array_filter(self::mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes), $filter)),
+			// + instead of array_merge: the key sets are disjoint (matching entries were
+			// unset from both native maps above), and array_merge would renumber
+			// integer-coerced expression keys (an expression printing as '5' is stored
+			// under int key 5), corrupting them. The native implementation preserves keys.
+			$mergedNativeExpressionTypes + array_filter(self::mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes), $filter),
 		];
 	}
 

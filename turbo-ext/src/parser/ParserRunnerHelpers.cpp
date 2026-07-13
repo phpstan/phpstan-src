@@ -113,10 +113,11 @@ static zend_long tokenConstant(const char *name, size_t len, zend_long *cache)
 	return *cache;
 }
 
-/* isset($this->dropTokens[$token->id]) */
+/* isset($this->dropTokens[$token->id]) — bound by dropTokensSize:
+ * T_BAD_CHARACTER sits above the grammar's symbol map */
 static bool isDropToken(const Tables *tables, int id)
 {
-	return id >= 0 && id < tables->phpTokenToSymbolSize && tables->dropTokens[id];
+	return id >= 0 && id < tables->dropTokensSize && tables->dropTokens[id];
 }
 
 /* ===== numeric parsing helpers ===== */
@@ -466,6 +467,14 @@ void ParserEngine::parseEscapeSequencesInPart(zv::Ref partNode, const char *quot
 	zend_call_known_function(fn, NULL, cls->ce, &retval, 3, args, NULL);
 	zval_ptr_dtor(&args[1]);
 	zval_ptr_dtor(&args[0]);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		/* parseEscapeSequences throws PhpParser\Error for oversized \u{…}
+		 * codepoints; doParse's catch (Error $e) must see it as an abort,
+		 * not a raw exception escaping mid-reduce */
+		zval_ptr_dtor(&retval);
+		abortForPendingException();
+		return;
+	}
 	if (Z_TYPE(retval) == IS_UNDEF) {
 		return;
 	}

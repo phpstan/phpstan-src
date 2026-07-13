@@ -31,6 +31,10 @@ $dirs = [
 	'vendor/phpstan/phpdoc-parser/src',
 	'vendor/symfony',
 	'stubs',
+	// regression fixtures for behavior only malformed/exotic input exercises
+	// (dropped T_BAD_CHARACTER, aborting escape-sequence errors, the
+	// first-class-callable exit() construction-plan poisoning)
+	'turbo-ext/tests/parser-fixtures',
 ];
 
 $files = [];

@@ -133,6 +133,17 @@ foreach (['extremeIdentity', 'maxMin'] as $m) {
 	}
 }
 
+// lazyMaxMin([]) does NOT throw — it returns Yes ($min starts at YES), unlike
+// its non-lazy sibling
+$neverCalled = static function ($o) {
+	throw new \LogicException('callback must not run for an empty array');
+};
+check(
+	TrinaryLogic::lazyMaxMin([], $neverCalled)->describe() === \PHPStanTurbo\TrinaryLogic::lazyMaxMin([], $neverCalled)->describe()
+	&& \PHPStanTurbo\TrinaryLogic::lazyMaxMin([], $neverCalled)->yes(),
+	'lazyMaxMin([]) returns Yes',
+);
+
 // ---- CombinationsHelper ----
 $cases = [
 	[],

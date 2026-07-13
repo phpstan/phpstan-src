@@ -108,10 +108,11 @@ public:
 	}
 
 	/*
-	 * Mirrors ScopeOps::getTypeFromCache(). On a hit *keyOut stays NULL and
-	 * the resolved Type is returned; on a miss null is returned and *keyOut
-	 * receives the computed key (owned by the caller) so the PHP slow path
-	 * can proceed without recomputing it.
+	 * Mirrors ScopeOps::getTypeFromCache(). *keyOut receives the computed key
+	 * (owned by the caller) on both hit and miss, like the twin's
+	 * unconditional `$key = ...` assignment; it stays NULL only when an
+	 * exception is pending. A stored null counts as a miss — the twin's
+	 * `?? null` cannot distinguish it from an absent entry either.
 	 */
 	static zv::Val getTypeFromCache(zval *scope, zend_object *node, zend_string **keyOut)
 	{
@@ -137,8 +138,10 @@ public:
 		}
 		if (EXPECTED(Z_TYPE_P(table) == IS_ARRAY)) {
 			zval *found = zend_symtable_find(Z_ARRVAL_P(table), key.get());
-			if (found != NULL) {
-				return zv::Val::copyOf(zv::Ref(found));
+			if (found != NULL && Z_TYPE_P(found) != IS_NULL) {
+				zv::Val result = zv::Val::copyOf(zv::Ref(found));
+				*keyOut = key.take();
+				return result;
 			}
 		}
 
@@ -1121,6 +1124,12 @@ public:
 						}
 						zv::Ref conditionHolder = conditionEntry.value().deref();
 						zv::Ref specifiedHolder = zv::Ref(specifiedSlot).deref();
+						/* Pass 1 validates only the entries it reaches before
+						 * its first mismatch, so these can be unchecked here;
+						 * the twin raises a catchable Error on wrong types */
+						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()) || !pt_check_holder(specifiedHolder.raw()))) {
+							return zv::Val();
+						}
 						if (pt_holder_certainty_value(conditionHolder.asObject()) != pt_holder_certainty_value(specifiedHolder.asObject())) {
 							all = false;
 							break;
@@ -2088,7 +2097,7 @@ void pt_register_scope_ops()
 			RETURN_THROWS();
 		}
 		if (key != NULL) {
-			/* cache miss: hand the computed key to the by-ref parameter */
+			/* hand the computed key to the by-ref parameter (hit and miss) */
 			if (Z_ISREF_P(key_out)) {
 				ZEND_TRY_ASSIGN_REF_STR(key_out, key);
 			} else {

@@ -19,6 +19,10 @@ public:
 	/* caps the result array's pre-allocation hint, not the product itself */
 	static constexpr zend_ulong SIZE_HINT_LIMIT = 1048576;
 
+	/* combinations() refuses products beyond this instead of letting the
+	 * multiply overflow and silently truncate the result */
+	static constexpr zend_ulong PRODUCT_LIMIT = 1ULL << 32;
+
 	/* UNDEF = pending exception */
 	static zv::Val combinations(zv::ArrRef arrays)
 	{
@@ -57,11 +61,29 @@ public:
 				vecs[i] = NULL;
 				continue;
 			}
+			if (UNEXPECTED(total > PRODUCT_LIMIT / sizes[i])) {
+				/* The PHP twin is a lazy generator and never materializes the
+				 * product, but every consumer iterates it fully, so a product
+				 * this size is unreachable in practice. Failing loudly beats
+				 * the silent truncation an overflowed multiply would cause. */
+				for (uint32_t k = 0; k < i; k++) {
+					if (vecs[k] != NULL) {
+						efree(vecs[k]);
+					}
+				}
+				efree(vecs);
+				efree(sizes);
+				efree(inner);
+				pt_throw_should_not_happen();
+				return zv::Val();
+			}
 			total *= sizes[i];
 			vecs[i] = (zval **) emalloc(sizes[i] * sizeof(zval *));
 			uint32_t j = 0;
 			for (auto entry : innerArr) {
-				vecs[i][j++] = entry.value().raw();
+				/* deref like the twin's by-value foreach: a reference slot
+				 * must not propagate a shared reference into every combination */
+				vecs[i][j++] = entry.value().deref().raw();
 			}
 		}
 

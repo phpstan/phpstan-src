@@ -199,9 +199,10 @@ jobs:
   turbo-compile:
     name: "Compile Turbo Extension"
     runs-on: ${{ matrix.target.runs-on }}
-    # Container legs pin the oldest supported userland independently of the
-    # runner image: ubuntu:22.04 keeps the glibc symbol floor at 2.34 (RHEL 9,
-    # Ubuntu 22.04+, Debian 12+), alpine:3.23 builds the musl variants.
+    # Container legs pin the built binaries' userland floor independently of
+    # the runner image: ubuntu:24.04 sets the glibc symbol floor (2.39 —
+    # Ubuntu 24.04+, Debian 13+; swap in an older container to lower it),
+    # alpine:3.24 builds the musl variants.
     container: ${{ matrix.target.container }}
     timeout-minutes: 30
 
@@ -215,22 +216,22 @@ jobs:
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
-            container: "ubuntu:22.04"
+            container: "ubuntu:24.04"
             family: "gnu"
             artifact: "phpstan_turbo"
           - name: "linux-gnu-arm64"
             runs-on: "ubuntu-24.04-arm"
-            container: "ubuntu:22.04"
+            container: "ubuntu:24.04"
             family: "gnu"
             artifact: "phpstan_turbo"
           - name: "linux-musl-x86_64"
             runs-on: "ubuntu-latest"
-            container: "alpine:3.23"
+            container: "alpine:3.24"
             family: "musl"
             artifact: "phpstan_turbo"
           - name: "linux-musl-arm64"
             runs-on: "ubuntu-24.04-arm"
-            container: "alpine:3.23"
+            container: "alpine:3.24"
             family: "musl"
             artifact: "phpstan_turbo"
 
@@ -249,7 +250,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
-          apt-get install -y software-properties-common gnupg ca-certificates git make g++ zstd
+          apt-get install -y software-properties-common gnupg ca-certificates git make g++ patch zstd
           add-apt-repository -y ppa:ondrej/php
           apt-get install -y "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml" composer
           ln -sf "/usr/bin/php$PHP_MINOR" /usr/local/bin/php
@@ -259,7 +260,7 @@ jobs:
         if: matrix.target.family == 'musl'
         run: |
           V="$(echo "$PHP_MINOR" | tr -d .)"
-          apk add --no-cache bash git make g++ musl-dev linux-headers tar zstd composer \
+          apk add --no-cache bash git make g++ musl-dev linux-headers patch tar zstd composer \
             "php$V" "php$V-dev" "php$V-ctype" "php$V-mbstring" "php$V-tokenizer" \
             "php$V-iconv" "php$V-openssl" "php$V-phar" "php$V-dom" "php$V-xml" \
             "php$V-xmlwriter" "php$V-simplexml"
@@ -295,7 +296,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: "turbo-ext/PHP-CPP"
-          key: "php-cpp-${{ env.PHP_CPP_COMMIT }}-php-${{ matrix.php-version }}-${{ matrix.target.name }}-${{ hashFiles('turbo-ext/patches/*.patch') }}"
+          key: "php-cpp-${{ env.PHP_CPP_COMMIT }}-php-${{ matrix.php-version }}-${{ matrix.target.name }}-${{ matrix.target.container }}-${{ hashFiles('turbo-ext/patches/*.patch') }}"
 
       - name: "Clone and build PHP-CPP"
         if: steps.cache-php-cpp.outputs.cache-hit != 'true'
@@ -334,9 +335,15 @@ jobs:
 
       - name: "Install Composer dependencies (containers)"
         if: matrix.target.family != 'macos'
-        # explicitly under the matrix PHP so platform requirements are checked
-        # against the binary the tests below run on
-        run: php /usr/bin/composer install --no-interaction --no-progress
+        # The distro composer wrapper runs under the distro-default PHP, not
+        # the matrix one — fine here: installing from composer.lock is
+        # PHP-version-independent, and platform requirements are ignored
+        # because they would be checked against the wrapper's PHP; the matrix
+        # PHP running the tests below has all the required extensions and
+        # fails loudly if one goes missing. (Never `php /usr/bin/composer` —
+        # on Alpine that is a shell script, which php would happily "run" by
+        # printing it and exiting 0 without installing anything.)
+        run: composer install --no-interaction --no-progress --ignore-platform-reqs
 
       - name: "Smoke test (differential: native vs PHP implementations)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php

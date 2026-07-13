@@ -226,4 +226,10 @@ jobs:
           '
 
       - name: "Run"
+        # The memo's per-worker footprint grows with files-per-worker; macOS
+        # runners have few cores, so each of their few workers analyses enough
+        # files to tip the default 450M limit that a many-worker Linux runner
+        # stays under.
+        env:
+          PHPSTAN_MEMORY_LIMIT: ${{ matrix.operating-system == 'macos-latest' && '1G' || '450M' }}
         run: ${{ matrix.script }}

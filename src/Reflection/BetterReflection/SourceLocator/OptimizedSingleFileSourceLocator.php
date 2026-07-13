@@ -52,13 +52,57 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		return sprintf('v2-%s-%s', $fileHash, $this->phpVersion->getVersionString());
 	}
 
+	/**
+	 * All symbols this file declares, lowercased (constants case-normalized).
+	 *
+	 * Populated from the cache or by fetching the file's nodes; used by
+	 * OptimizedPsrAutoloaderLocator to index known locators by symbol instead
+	 * of sweeping them linearly on every lookup.
+	 *
+	 * @internal
+	 * @return array{classes: array<string, true>, functions: array<string, true>, constants: array<string, true>}
+	 */
+	public function getPresentSymbols(): array
+	{
+		if ($this->presentSymbols !== null) {
+			return $this->presentSymbols;
+		}
+
+		$variableCacheKey = $this->getVariableCacheKey($this->fileName);
+		$presentSymbolsCacheKey = sprintf('osfsl-%s-presentSymbols', $this->fileName);
+		$cached = $this->cache->load($presentSymbolsCacheKey, $variableCacheKey);
+		if ($cached !== null) {
+			return $this->presentSymbols = $cached;
+		}
+
+		$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($this->fileName);
+		$presentSymbols = [
+			'classes' => [],
+			'functions' => [],
+			'constants' => [],
+		];
+		foreach (array_keys($fetchedNodesResult->getClassNodes()) as $className) {
+			$presentSymbols['classes'][$className] = true;
+		}
+		foreach (array_keys($fetchedNodesResult->getFunctionNodes()) as $functionName) {
+			$presentSymbols['functions'][$functionName] = true;
+		}
+		foreach (array_keys($fetchedNodesResult->getConstantNodes()) as $constantName) {
+			$presentSymbols['constants'][$constantName] = true;
+		}
+
+		$this->presentSymbols = $presentSymbols;
+		$this->cache->save($presentSymbolsCacheKey, $variableCacheKey, $presentSymbols);
+
+		return $presentSymbols;
+	}
+
 	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
-		$presentSymbolsCacheKey = sprintf('osfsl-%s-presentSymbols', $this->fileName);
 		if ($this->presentSymbols === null) {
 			$variableCacheKey = $this->getVariableCacheKey($this->fileName);
-			$this->presentSymbols = $this->cache->load($presentSymbolsCacheKey, $variableCacheKey);
+			$this->presentSymbols = $this->cache->load(sprintf('osfsl-%s-presentSymbols', $this->fileName), $variableCacheKey);
 		}
 		if ($this->presentSymbols !== null) {
 			if ($identifier->isClass()) {
@@ -119,7 +163,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 			}
 
 			$this->presentSymbols = $presentSymbols;
-			$this->cache->save($presentSymbolsCacheKey, $variableCacheKey, $presentSymbols);
+			$this->cache->save(sprintf('osfsl-%s-presentSymbols', $this->fileName), $variableCacheKey, $presentSymbols);
 		}
 
 		$nodeToReflection = new NodeToReflection();

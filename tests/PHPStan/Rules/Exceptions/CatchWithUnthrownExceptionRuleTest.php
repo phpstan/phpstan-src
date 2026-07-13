@@ -299,6 +299,12 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4863.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.5.0')]
+	public function testFilterVarThrowOnFailure(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter-var-throw-on-failure.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug5866(): void
 	{

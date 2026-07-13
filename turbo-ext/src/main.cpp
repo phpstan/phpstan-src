@@ -83,17 +83,20 @@ PHPCPP_EXPORT void *get_module()
 			pt_register_scope_ops();
 			pt_register_node_scanner();
 			pt_register_parser_runner();
+			pt_register_type_combinator_cache();
 		});
 
 		extension.onRequest([]() {
 			pt_support_rinit();
 			pt_node_traverser_rinit();
 			pt_scope_ops_rinit();
+			pt_type_combinator_cache_rinit();
 		});
 
 		extension.onIdle([]() {
 			pt_scope_ops_rshutdown();
 			pt_node_traverser_rshutdown();
+			pt_type_combinator_cache_rshutdown();
 			pt_support_rshutdown();
 		});
 	}

@@ -79,6 +79,8 @@ enum {
 	PT_CLASS_NODE_VISITOR_ABSTRACT,
 	PT_CLASS_CLOSURE_EXPR,
 	PT_CLASS_ARROW_FUNCTION,
+	PT_CLASS_TYPE,
+	PT_CLASS_RECURSION_GUARD,
 	/* classes the extension instantiates; configured to the stub subclasses
 	 * so created objects satisfy the original PHPStan type hints */
 	PT_CLASS_TRINARY_IMPL,
@@ -126,6 +128,7 @@ void pt_support_rshutdown();
 extern zend_class_entry *pt_ce_trinary;
 extern zend_class_entry *pt_ce_expr_type_holder;
 extern zend_class_entry *pt_ce_cond_expr_holder;
+extern zend_class_entry *pt_ce_type_combinator_cache;
 
 /* registration hooks, called from the extension's onStartup */
 void pt_register_trinary_logic();
@@ -136,12 +139,15 @@ void pt_register_node_traverser();
 void pt_register_scope_ops();
 void pt_register_node_scanner();
 void pt_register_parser_runner();
+void pt_register_type_combinator_cache();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();
 void pt_node_traverser_rshutdown();
 void pt_scope_ops_rinit();
 void pt_scope_ops_rshutdown();
+void pt_type_combinator_cache_rinit();
+void pt_type_combinator_cache_rshutdown();
 
 /* }}} */
 

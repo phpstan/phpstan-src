@@ -24,6 +24,8 @@ if (!extension_loaded('phpstan_turbo')) {
 
 \PHPStanTurbo\Runtime::configure([
 	'typeCombinator' => \PHPStan\Type\TypeCombinator::class,
+	'type' => \PHPStan\Type\Type::class,
+	'recursionGuard' => \PHPStan\Type\RecursionGuard::class,
 	'booleanType' => \PHPStan\Type\BooleanType::class,
 	'constantBooleanType' => \PHPStan\Type\Constant\ConstantBooleanType::class,
 	'shouldNotHappenException' => \PHPStan\ShouldNotHappenException::class,
@@ -214,6 +216,56 @@ try {
 	check(false, 'CEH empty should throw');
 } catch (\PHPStan\ShouldNotHappenException) {
 }
+
+// ---- TypeCombinatorCache ----
+// The native class memoizes on a structural key of the arguments and calls back into
+// TypeCombinator::doUnion() and friends on a miss. TypeCombinator itself is unshadowed
+// here (the enabler never ran), so it is the unmemoized reference implementation.
+$cacheLevel = \PHPStan\Type\VerbosityLevel::cache();
+$describe = static fn (\PHPStan\Type\Type $t): string => $t->describe($cacheLevel);
+
+$intT = new \PHPStan\Type\IntegerType();
+$stringT = new \PHPStan\Type\StringType();
+$nullT = new \PHPStan\Type\NullType();
+$oneT = new \PHPStan\Type\Constant\ConstantIntegerType(1);
+$tenT = new \PHPStan\Type\Constant\ConstantIntegerType(10);
+$arrayT = new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType());
+$nonEmpty = new \PHPStan\Type\Accessory\NonEmptyArrayType();
+
+$unions = [
+	[$intT, $stringT],
+	[$oneT, $tenT, $nullT],
+	[new \PHPStan\Type\UnionType([$oneT, $tenT]), $nullT],
+];
+foreach ($unions as $i => $args) {
+	$native = \PHPStanTurbo\TypeCombinatorCache::union(...$args);
+	$php = \PHPStan\Type\TypeCombinator::union(...$args);
+	check($describe($native) === $describe($php), "TCC union #$i: {$describe($native)} vs {$describe($php)}");
+}
+
+$native = \PHPStanTurbo\TypeCombinatorCache::intersect($arrayT, $nonEmpty);
+$php = \PHPStan\Type\TypeCombinator::intersect($arrayT, $nonEmpty);
+check($describe($native) === $describe($php), 'TCC intersect: ' . $describe($native) . ' vs ' . $describe($php));
+
+$nullable = \PHPStan\Type\TypeCombinator::union($intT, $nullT);
+$native = \PHPStanTurbo\TypeCombinatorCache::remove($nullable, $nullT);
+$php = \PHPStan\Type\TypeCombinator::remove($nullable, $nullT);
+check($describe($native) === $describe($php), 'TCC remove: ' . $describe($native) . ' vs ' . $describe($php));
+
+// a repeated call must hit the memo and hand back the very same instance
+$first = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT);
+$second = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType());
+check($first === $second, 'TCC memo hit on structurally equal arguments');
+
+// explicit and implicit mixed are different values and must not share a memo entry
+$explicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\MixedType(true), $intT);
+$implicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\MixedType(false), $intT);
+check($describe($explicit) !== $describe($implicit), 'TCC keeps explicit/implicit mixed apart');
+
+\PHPStanTurbo\TypeCombinatorCache::clearCache();
+$afterClear = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT);
+check($describe($afterClear) === $describe($first), 'TCC clearCache keeps results correct');
+check($afterClear !== $first, 'TCC clearCache actually drops entries');
 
 echo $failures === 0 ? "ALL OK\n" : "$failures FAILURES\n";
 exit($failures === 0 ? 0 : 1);

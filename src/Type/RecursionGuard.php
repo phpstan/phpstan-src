@@ -7,7 +7,14 @@ use function spl_object_id;
 final class RecursionGuard
 {
 
-	/** @var true[] */
+	/**
+	 * While this is non-empty, run() and runOnObjectIdentity() short-circuit to ErrorType,
+	 * so a type operation's result depends on the call stack and not only on its arguments.
+	 * The native extension reads this property to know when it must not memoize
+	 * TypeCombinator's operations (see PHPStanTurbo\TypeCombinatorCache).
+	 *
+	 * @var true[]
+	 */
 	private static array $context = [];
 
 	/**

@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -55,6 +56,28 @@ use const PHP_INT_MIN;
 final class TypeCombinator
 {
 
+	/**
+	 * Turned on by TurboExtensionEnabler when the native extension is active, so that
+	 * union(), intersect() and remove() route through the memoizing TypeCombinatorCache.
+	 * Without the extension the operations run exactly as they always have — the flag
+	 * costs a property read, and nothing else changes.
+	 */
+	private static ?bool $cacheEnabled = null;
+
+	/**
+	 * Memoization hands back shared Type instances, and a Type lazily resolves a
+	 * ClassReflection belonging to the container that created it — so the cache must
+	 * not outlive its container.
+	 */
+	public static function clearCache(): void
+	{
+		if ((self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) === false) {
+			return;
+		}
+
+		TypeCombinatorCache::clearCache();
+	}
+
 	public static function addNull(Type $type): Type
 	{
 		$nullType = new NullType();
@@ -67,6 +90,16 @@ final class TypeCombinator
 	}
 
 	public static function remove(Type $fromType, Type $typeToRemove): Type
+	{
+		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
+			return TypeCombinatorCache::remove($fromType, $typeToRemove);
+		}
+
+		return self::doRemove($fromType, $typeToRemove);
+	}
+
+	/** @internal Delegated to from TypeCombinatorCache, which the native extension shadows to memoize it. */
+	public static function doRemove(Type $fromType, Type $typeToRemove): Type
 	{
 		if ($typeToRemove instanceof UnionType) {
 			foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
@@ -154,6 +187,16 @@ final class TypeCombinator
 	}
 
 	public static function union(Type ...$types): Type
+	{
+		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
+			return TypeCombinatorCache::union(...$types);
+		}
+
+		return self::doUnion(...$types);
+	}
+
+	/** @internal Delegated to from TypeCombinatorCache, which the native extension shadows to memoize it. */
+	public static function doUnion(Type ...$types): Type
 	{
 		$typesCount = count($types);
 		if ($typesCount === 0) {
@@ -1593,6 +1636,16 @@ final class TypeCombinator
 	}
 
 	public static function intersect(Type ...$types): Type
+	{
+		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
+			return TypeCombinatorCache::intersect(...$types);
+		}
+
+		return self::doIntersect(...$types);
+	}
+
+	/** @internal Delegated to from TypeCombinatorCache, which the native extension shadows to memoize it. */
+	public static function doIntersect(Type ...$types): Type
 	{
 		$typesCount = count($types);
 		if ($typesCount === 0) {

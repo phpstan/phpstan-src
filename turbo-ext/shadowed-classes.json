@@ -27,6 +27,10 @@
         "php": "src/TrinaryLogic.php",
         "cpp": "turbo-ext/src/TrinaryLogic.cpp"
     },
+    "PHPStan\\Type\\TypeCombinatorCache": {
+        "php": "src/Type/TypeCombinatorCache.php",
+        "cpp": "turbo-ext/src/TypeCombinatorCache.cpp"
+    },
     "PhpParser\\NodeTraverser": {
         "php": "vendor/nikic/php-parser/lib/PhpParser/NodeTraverser.php",
         "cpp": "turbo-ext/src/NodeTraverser.cpp",

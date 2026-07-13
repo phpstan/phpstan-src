@@ -47,6 +47,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_NODE_VISITOR_ABSTRACT */ {"nodeVisitorAbstract", "PhpParser\\NodeVisitorAbstract"},
 	/* PT_CLASS_CLOSURE_EXPR */ {"closureExpr", "PhpParser\\Node\\Expr\\Closure"},
 	/* PT_CLASS_ARROW_FUNCTION */ {"arrowFunction", "PhpParser\\Node\\Expr\\ArrowFunction"},
+	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
+	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
 	/* PT_CLASS_TRINARY_IMPL */ {"trinaryLogicImpl", NULL},
 	/* PT_CLASS_ETH_IMPL */ {"expressionTypeHolderImpl", NULL},
 	/* PT_CLASS_CEH_IMPL */ {"conditionalExpressionHolderImpl", NULL},

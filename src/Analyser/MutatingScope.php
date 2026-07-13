@@ -3992,17 +3992,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
-			$exprIsGuardExcluded = array_key_exists($exprString, $guardsToExclude);
 			foreach ($variableTypeGuards as $guardExprString => $guardHolder) {
-				// A subtype-absorbed target (kept only for re-narrowing) paired with a
-				// constant-array guard never helps: such a guard represents a unique
-				// literal value that is not re-asserted as a condition later, yet the
-				// downstream isSuperTypeOf() guard machinery pays to compare these
-				// (potentially huge) constant arrays on every branch merge. Skip them.
-				if ($exprIsGuardExcluded && $guardHolder->getType()->isConstantArray()->yes()) {
-					continue;
-				}
-
 				if (
 					array_key_exists($guardExprString, $theirExpressionTypes)
 					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()

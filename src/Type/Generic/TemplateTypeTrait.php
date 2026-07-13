@@ -403,7 +403,9 @@ trait TemplateTypeTrait
 		}
 
 		$bound = TypeCombinator::remove($this->getBound(), $typeToRemove);
-		if ($this->getBound() === $bound) {
+		// Value comparison, not identity: remove() returning the very same instance when it
+		// removes nothing is an implementation detail, not part of its contract.
+		if ($this->getBound()->equals($bound)) {
 			return null;
 		}
 

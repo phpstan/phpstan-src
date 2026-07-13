@@ -34,14 +34,14 @@ class Bar extends Foo
 	{
 		assertType('$this(Bug12575\Bar<T of object (class Bug12575\Bar, argument)>)&static(Bug12575\Bar<Bug12575\A&T of object (class Bug12575\Bar, argument)>)', $this->add(A::class));
 		assertType('$this(Bug12575\Bar<T of object (class Bug12575\Bar, argument)>)&static(Bug12575\Bar<Bug12575\A&T of object (class Bug12575\Bar, argument)>)', $this);
-		assertType('T of object (class Bug12575\Bar, argument)', $this->getT());
+		assertType('T of object (class Bug12575\Bar, parameter)', $this->getT());
 	}
 
 	public function doBar(): void
 	{
 		$this->add(B::class);
 		assertType('$this(Bug12575\Bar<T of object (class Bug12575\Bar, argument)>)&static(Bug12575\Bar<Bug12575\B&T of object (class Bug12575\Bar, argument)>)', $this);
-		assertType('T of object (class Bug12575\Bar, argument)', $this->getT());
+		assertType('T of object (class Bug12575\Bar, parameter)', $this->getT());
 	}
 
 	/**

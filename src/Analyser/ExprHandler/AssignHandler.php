@@ -463,7 +463,10 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$truthyType = TypeCombinator::removeFalsey($type);
-				if ($truthyType !== $type) {
+				// Value comparison, not identity: remove() happens to hand back the very same
+				// instance when it removes nothing, but that is not part of its contract — the
+				// falsey loop below already compares with equals().
+				if (!$truthyType->equals($type)) {
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);

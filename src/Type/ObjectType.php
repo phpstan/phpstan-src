@@ -119,6 +119,18 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private ?string $cachedDescription = null;
 
+	/**
+	 * The reflection resolved on demand by getClassReflection(), kept apart from the one
+	 * handed to the constructor. The constructor's reflection is part of the type's value
+	 * — it can differ from what the provider would return (an anonymous class is identified
+	 * by its start line, a final-by-keyword override changes subtyping) — and so it belongs
+	 * in the cache key. A lazily fetched one is merely a cache: folding it into the key made
+	 * describe(VerbosityLevel::cache()) depend on whether the fetch had happened yet, which
+	 * made TypeCombinator::union() — which dedupes on that key — depend on cache warmth
+	 * rather than on its arguments' values.
+	 */
+	private ?ClassReflection $lazyClassReflection = null;
+
 	/** @var array<string, list<EnumCaseObjectType>> */
 	private static array $enumCases = [];
 
@@ -1783,8 +1795,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getNakedClassReflection(): ?ClassReflection
 	{
-		if ($this->classReflection !== null) {
-			return $this->classReflection;
+		$classReflection = $this->resolvedClassReflection();
+		if ($classReflection !== null) {
+			return $classReflection;
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
@@ -1797,20 +1810,27 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getClassReflection(): ?ClassReflection
 	{
-		if ($this->classReflection === null) {
+		$classReflection = $this->resolvedClassReflection();
+		if ($classReflection === null) {
 			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 			if (!$reflectionProvider->hasClass($this->className)) {
 				return null;
 			}
 
-			$this->classReflection = $reflectionProvider->getClass($this->className);
+			$classReflection = $this->lazyClassReflection = $reflectionProvider->getClass($this->className);
 		}
 
-		if ($this->classReflection->isGeneric()) {
-			return $this->classReflection->withTypes(array_values($this->classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
+		if ($classReflection->isGeneric()) {
+			return $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
 		}
 
-		return $this->classReflection;
+		return $classReflection;
+	}
+
+	/** The reflection already known, from either source — never triggers a fetch. */
+	private function resolvedClassReflection(): ?ClassReflection
+	{
+		return $this->classReflection ?? $this->lazyClassReflection;
 	}
 
 	public function getAncestorWithClassName(string $className): ?self
@@ -1819,7 +1839,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return $this;
 		}
 
-		if ($this->classReflection !== null && $className === $this->classReflection->getName()) {
+		$resolvedClassReflection = $this->resolvedClassReflection();
+		if ($resolvedClassReflection !== null && $className === $resolvedClassReflection->getName()) {
 			return $this;
 		}
 

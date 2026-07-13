@@ -1,0 +1,22 @@
+<?php declare(strict_types = 1);
+
+/**
+ * Symbol stub for PHPStan's self-analysis (registered via scanFiles in
+ * build/phpstan.neon). Never executed or autoloaded. Only symbols referenced
+ * from analysed code need to appear here; the runtime stubs in
+ * turbo-ext/stubs/ are not part of the analysed paths.
+ */
+
+namespace PHPStanTurbo;
+
+final class Runtime
+{
+
+	/**
+	 * @param array<string, class-string> $classMap
+	 */
+	public static function configure(array $classMap): void
+	{
+	}
+
+}

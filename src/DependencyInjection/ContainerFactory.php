@@ -201,15 +201,17 @@ final class ContainerFactory
 		PhpVersionStaticAccessor::registerInstance($container->getByType(PhpVersion::class));
 		ObjectType::resetCaches();
 
-		// Type operations read global state — the bleeding-edge toggle, the unsafe
-		// array-string-key-casting level, the reflection provider, the PHP version — so a
-		// memoized result is only valid for the state it was computed under.
-		TypeCombinator::clearCache();
-
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
 		ReportUnsafeArrayStringKeyCastingToggle::setLevel($container->getParameter('reportUnsafeArrayStringKeyCasting'));
+
+		// Type operations read global state — the toggles above, the reflection provider,
+		// the PHP version — so a memoized result is only valid for the state it was computed
+		// under. Clearing must be the LAST step: building the typeSpecifier service runs
+		// extension constructors that can already perform type operations, and entries
+		// memoized before the toggles are set would encode the previous container's state.
+		TypeCombinator::clearCache();
 	}
 
 	public function getCurrentWorkingDirectory(): string

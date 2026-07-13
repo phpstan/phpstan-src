@@ -352,6 +352,45 @@ jobs:
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
+  turbo-artifact:
+    name: "Aggregate Turbo Extension Artifact"
+    needs: "turbo-compile"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Download extension artifacts"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: "phpstan_turbo-*"
+          path: "turbo-artifacts"
+
+      - name: "Arrange the distribution layout"
+        # phpstan_turbo-<target>-php<minor> → <target>/phpstan_turbo-<minor>.so,
+        # derived from the artifact names so new targets need no change here.
+        # The integration/extension/other test workflows in phpstan/phpstan
+        # download this artifact next to the phar under test.
+        run: |
+          for dir in turbo-artifacts/phpstan_turbo-*; do
+            name="${dir#turbo-artifacts/phpstan_turbo-}"
+            target="${name%-php*}"
+            minor="${name##*-php}"
+            install -D -m 644 "$dir/phpstan_turbo.so" "turbo-ext-dist/$target/phpstan_turbo-$minor.so"
+          done
+          find turbo-ext-dist -type f | sort
+
+      - name: "Upload aggregated artifact"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "turbo-ext-files"
+          path: "turbo-ext-dist"
+          if-no-files-found: "error"
+
   turbo-run:
     name: "Run with Turbo Extension"
     needs: "turbo-compile"
@@ -419,7 +458,9 @@ jobs:
 
   integration-tests:
     if: github.event_name == 'pull_request'
-    needs: compiler-tests
+    needs:
+      - compiler-tests
+      - turbo-artifact
     uses: phpstan/phpstan/.github/workflows/integration-tests.yml@2.2.x
     with:
       ref: 2.2.x
@@ -427,7 +468,9 @@ jobs:
 
   extension-tests:
     if: github.event_name == 'pull_request'
-    needs: compiler-tests
+    needs:
+      - compiler-tests
+      - turbo-artifact
     uses: phpstan/phpstan/.github/workflows/extension-tests.yml@2.2.x
     with:
       ref: 2.2.x
@@ -435,7 +478,9 @@ jobs:
 
   other-tests:
     if: github.event_name == 'pull_request'
-    needs: compiler-tests
+    needs:
+      - compiler-tests
+      - turbo-artifact
     uses: phpstan/phpstan/.github/workflows/other-tests.yml@2.2.x
     with:
       ref: 2.2.x

@@ -75,7 +75,16 @@ class IntersectionType implements CompoundType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	private bool $sortedTypes = false;
+	/**
+	 * Sorting must not reorder $types: describe() sorts for readability, but $types is the
+	 * type's value — getTypes() exposes it and callers merge array shapes in that order. It
+	 * used to be sorted in place, so describing a union permanently changed what getTypes()
+	 * returned, making an immutable value object's observable state depend on what had been
+	 * called on it before.
+	 *
+	 * @var list<Type>|null
+	 */
+	private ?array $sortedTypesCache = null;
 
 	private ?TrinaryLogic $isBoolean = null;
 
@@ -138,14 +147,7 @@ class IntersectionType implements CompoundType
 	 */
 	private function getSortedTypes(): array
 	{
-		if ($this->sortedTypes) {
-			return $this->types;
-		}
-
-		$this->types = UnionTypeHelper::sortTypes($this->types);
-		$this->sortedTypes = true;
-
-		return $this->types;
+		return $this->sortedTypesCache ??= UnionTypeHelper::sortTypes($this->types);
 	}
 
 	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap

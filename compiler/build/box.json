@@ -15,7 +15,8 @@
     "conf",
     "src",
     "resources",
-    "stubs"
+    "stubs",
+    "turbo-ext/stubs"
   ],
   "force-autodiscovery": true,
   "output": "tmp/phpstan.phar",

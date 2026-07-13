@@ -307,6 +307,23 @@ class Foo {
 		}
 	}
 
+	/**
+	 * Strict `=== false` comparison. The else branch is the truthy result of
+	 * array_all(), so elements are narrowed there; it exercises the falsey-but-
+	 * not-false type-specifier context, which a plain `if (array_all(...))` does
+	 * not reach.
+	 *
+	 * @param array<mixed> $array
+	 */
+	public function testStrictFalseComparison($array) {
+		if (array_all($array, fn ($value) => is_int($value)) === false) {
+			assertType("non-empty-array<mixed>", $array);
+		} else {
+			assertType("array<int>", $array);
+		}
+		assertType("array<mixed>", $array);
+	}
+
 }
 
 /**

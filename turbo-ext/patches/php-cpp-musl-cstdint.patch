@@ -1,0 +1,12 @@
+diff --git a/phpcpp.h b/phpcpp.h
+index 1b0da15..094e5ac 100644
+--- a/phpcpp.h
++++ b/phpcpp.h
+@@ -23,6 +23,7 @@
+ #include <map>
+ #include <set>
+ #include <functional>
++#include <cstdint>
+ 
+ /**
+  *  Include all headers files that are related to this library

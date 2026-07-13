@@ -14,6 +14,13 @@ concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true
 
+env:
+  # Pin PHP-CPP to the commit the extension was developed against.
+  PHP_CPP_COMMIT: "382a5f0386c8c46650e670366418e6ef55e71830"
+  # The php-parser version whose grammar tables and semantic actions the
+  # native parser engine (turbo-ext/src/parser/) was ported against.
+  SUPPORTED_PHP_PARSER_VERSION: "v5.8.0"
+
 jobs:
   compiler-tests:
     name: "Compiler Tests"
@@ -136,6 +143,377 @@ jobs:
               - 'compiler/**'
               - '.github/workflows/phar.yml'
               - '.github/scripts/**'
+
+  turbo-version:
+    name: "Turbo Extension Version Check"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # git log over turbo-ext/src needs full history
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - name: "Check the shadowed PHP and C++ implementations are in sync (method parity)"
+        run: "php turbo-ext/bin/side-by-side.php --check"
+
+      - name: "Check the vendored php-parser matches the version the native parser engine was ported against"
+        run: |
+          INSTALLED="$(jq -r '.packages[] | select(.name == "nikic/php-parser") | .version' composer.lock)"
+          echo "composer.lock: $INSTALLED, native engine ported against: $SUPPORTED_PHP_PARSER_VERSION"
+          if [ "$INSTALLED" != "$SUPPORTED_PHP_PARSER_VERSION" ]; then
+            echo "::error::nikic/php-parser was updated to $INSTALLED but turbo-ext/src/parser/ was ported against $SUPPORTED_PHP_PARSER_VERSION."
+            echo "::error::Update procedure: diff ParserAbstract.php helpers between the two versions (grammar tables need nothing — they are read at run time), run turbo-ext/bin/generate-parser-actions.php and port any flagged closure bodies via action-overrides/, run turbo-ext/tests/parser-corpus.php until byte-identical, run the full suite, then bump SUPPORTED_PHP_PARSER_VERSION here and the extension version pin."
+            exit 1
+          fi
+
+      - name: "Check TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION against the last commit touching turbo-ext/src or a shadowed PHP class"
+        run: |
+          # A change to either side of a shadowed pair must bump the version:
+          # watch turbo-ext/src plus the repo-local PHP files from the manifest
+          # (vendored entries are governed by composer.lock instead).
+          mapfile -t MAPPED_PHP < <(jq -r '.[] | select(.vendored != true) | .php' turbo-ext/shadowed-classes.json)
+          EXPECTED_SHA="$(git log -1 --format=%H -- turbo-ext/src "${MAPPED_PHP[@]}" | cut -c1-7)"
+          ENABLER="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "last commit touching turbo-ext/src or a shadowed PHP class: $EXPECTED_SHA"
+          echo "TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION:          $ENABLER"
+          if [ "$ENABLER" != "$EXPECTED_SHA" ]; then
+            echo "::error::TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION must be the short SHA of the last commit touching turbo-ext/src/ or a PHP class listed in turbo-ext/shadowed-classes.json."
+            echo "::error::After changing either side, verify the implementations still match and add a follow-up commit setting the constant to that commit's short SHA (the binary bakes its version from git at build time)."
+            exit 1
+          fi
+
+  turbo-compile:
+    name: "Compile Turbo Extension"
+    runs-on: ${{ matrix.target.runs-on }}
+    # Container legs pin the oldest supported userland independently of the
+    # runner image: ubuntu:22.04 keeps the glibc symbol floor at 2.34 (RHEL 9,
+    # Ubuntu 22.04+, Debian 12+), alpine:3.23 builds the musl variants.
+    container: ${{ matrix.target.container }}
+    timeout-minutes: 30
+
+    env:
+      PHP_MINOR: ${{ matrix.php-version }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.4", "8.5"]
+        target:
+          - name: "linux-gnu-x86_64"
+            runs-on: "ubuntu-latest"
+            container: "ubuntu:22.04"
+            family: "gnu"
+            artifact: "phpstan_turbo"
+          - name: "linux-gnu-arm64"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ubuntu:22.04"
+            family: "gnu"
+            artifact: "phpstan_turbo"
+          - name: "linux-musl-x86_64"
+            runs-on: "ubuntu-latest"
+            container: "alpine:3.23"
+            family: "musl"
+            artifact: "phpstan_turbo"
+          - name: "linux-musl-arm64"
+            runs-on: "ubuntu-24.04-arm"
+            container: "alpine:3.23"
+            family: "musl"
+            artifact: "phpstan_turbo"
+          # The macOS slices are merged into one universal binary (and signed
+          # + notarized) by the turbo-macos-universal job below, so their
+          # artifacts carry the turbo-slice prefix that the commit job's
+          # phpstan_turbo-* download pattern does not match.
+          - name: "macos-x86_64"
+            runs-on: "macos-15-intel" # the last x86_64 macOS image, available until August 2027
+            family: "macos"
+            artifact: "turbo-slice"
+          - name: "macos-arm64"
+            runs-on: "macos-latest"
+            family: "macos"
+            artifact: "turbo-slice"
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        if: matrix.target.family == 'macos'
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      # Container legs install PHP and tooling before checkout: actions/checkout
+      # needs git inside the container, and the build needs php/php-config
+      # symlinks pointing at the matrix PHP version.
+      - name: "Install PHP and build tools (Ubuntu container)"
+        if: matrix.target.family == 'gnu'
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y software-properties-common gnupg ca-certificates git make g++ zstd
+          add-apt-repository -y ppa:ondrej/php
+          apt-get install -y "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml" composer
+          ln -sf "/usr/bin/php$PHP_MINOR" /usr/local/bin/php
+          ln -sf "/usr/bin/php-config$PHP_MINOR" /usr/local/bin/php-config
+
+      - name: "Install PHP and build tools (Alpine container)"
+        if: matrix.target.family == 'musl'
+        run: |
+          V="$(echo "$PHP_MINOR" | tr -d .)"
+          apk add --no-cache bash git make g++ musl-dev linux-headers tar zstd composer \
+            "php$V" "php$V-dev" "php$V-ctype" "php$V-mbstring" "php$V-tokenizer" \
+            "php$V-iconv" "php$V-openssl" "php$V-phar" "php$V-dom" "php$V-xml" \
+            "php$V-xmlwriter" "php$V-simplexml"
+          ln -sf "/usr/bin/php$V" /usr/local/bin/php
+          ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          # The Makefile bakes the extension version via git log over the
+          # watched paths; a shallow clone would resolve every build to the
+          # checked-out commit itself — on pull requests the synthetic merge
+          # commit, which matches nothing.
+          fetch-depth: 0
+
+      - name: "Install PHP (macOS)"
+        if: matrix.target.family == 'macos'
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Cache PHP-CPP"
+        id: "cache-php-cpp"
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: "turbo-ext/PHP-CPP"
+          key: "php-cpp-${{ env.PHP_CPP_COMMIT }}-php-${{ matrix.php-version }}-${{ matrix.target.name }}-${{ hashFiles('turbo-ext/patches/*.patch') }}"
+
+      - name: "Clone and build PHP-CPP"
+        if: steps.cache-php-cpp.outputs.cache-hit != 'true'
+        working-directory: "turbo-ext"
+        # `make phpcpp` applies the local patches from turbo-ext/patches/
+        # before building.
+        run: |
+          git clone https://github.com/CopernicaMarketingSoftware/PHP-CPP.git PHP-CPP
+          git -C PHP-CPP checkout "$PHP_CPP_COMMIT"
+          ln -sfn include PHP-CPP/phpcpp
+          make phpcpp -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+
+      - name: "Compile phpstan_turbo with strict warnings"
+        working-directory: "turbo-ext"
+        # Exemptions, each caused by third-party macro expansions, not our code:
+        # -Wno-assume: zend's parameter-parsing macros expand __builtin_assume
+        #   with (potential) side effects
+        # -Wno-unused-parameter: PHP_METHOD's fixed signature
+        #   (execute_data/return_value are not used by every method)
+        # -Wno-unicode: zend arginfo macros stringify namespaced class names;
+        #   clang lexes the \N in "PhpParser\NodeVisitor" as a universal
+        #   character name (GCC ignores the unknown -Wno- flag)
+        run: |
+          ln -sfn include PHP-CPP/phpcpp
+          make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+
+      - name: "Verify the built extension reports the expected version"
+        run: |
+          REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        if: matrix.target.family == 'macos'
+
+      - name: "Install Composer dependencies (containers)"
+        if: matrix.target.family != 'macos'
+        # explicitly under the matrix PHP so platform requirements are checked
+        # against the binary the tests below run on
+        run: php /usr/bin/composer install --no-interaction --no-progress
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
+
+      - name: "Parser actions are generated (regenerate and diff)"
+        run: |
+          php turbo-ext/bin/generate-parser-actions.php
+          git diff --exit-code turbo-ext/src/parser/
+
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Upload extension artifact"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
+          path: "turbo-ext/phpstan_turbo.so"
+          if-no-files-found: "error"
+
+  turbo-macos-universal:
+    name: "Turbo macOS Universal Binary"
+    needs: "turbo-compile"
+    runs-on: "macos-latest"
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.4", "8.5"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Download x86_64 slice"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "turbo-slice-macos-x86_64-php${{ matrix.php-version }}"
+          path: "slice-x86_64"
+
+      - name: "Download arm64 slice"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "turbo-slice-macos-arm64-php${{ matrix.php-version }}"
+          path: "slice-arm64"
+
+      - name: "Merge the slices into a universal binary"
+        run: |
+          lipo -create slice-x86_64/phpstan_turbo.so slice-arm64/phpstan_turbo.so -output phpstan_turbo.so
+          lipo -info phpstan_turbo.so
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Verify the universal binary loads"
+        run: php -d extension="$PWD/phpstan_turbo.so" -m | grep phpstan_turbo
+
+      # Signing and notarization run only on push (branch and tag) builds —
+      # pull requests from forks cannot see the secrets.
+      - name: "Import Developer ID certificate"
+        if: github.event_name == 'push'
+        uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+
+      - name: "Sign the universal binary"
+        if: github.event_name == 'push'
+        run: |
+          IDENTITY="$(security find-identity -v -p codesigning | awk -F'"' '/Developer ID Application/ {print $2; exit}')"
+          [ -n "$IDENTITY" ]
+          codesign --force --timestamp --options runtime --sign "$IDENTITY" phpstan_turbo.so
+          codesign --verify --verbose=2 phpstan_turbo.so
+
+      - name: "Notarize"
+        if: github.event_name == 'push'
+        env:
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        # A bare .so cannot be stapled (stapler only handles apps, disk images
+        # and packages), so Gatekeeper validates the ticket online. Quarantine
+        # is only set by browser downloads anyway — composer/git/curl installs
+        # never see it.
+        run: |
+          ditto -c -k phpstan_turbo.so phpstan_turbo.zip
+          KEY_FILE="$RUNNER_TEMP/apple_api_key.p8"
+          printf '%s' "$APPLE_API_KEY_P8" > "$KEY_FILE"
+          xcrun notarytool submit phpstan_turbo.zip --key "$KEY_FILE" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID" --wait
+          rm "$KEY_FILE" phpstan_turbo.zip
+
+      - name: "Upload universal binary artifact"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "phpstan_turbo-macos-php${{ matrix.php-version }}"
+          path: "phpstan_turbo.so"
+          if-no-files-found: "error"
+
+  turbo-run:
+    name: "Run with Turbo Extension"
+    needs: "turbo-compile"
+    runs-on: ${{ matrix.setup.operating-system }}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        setup:
+          - operating-system: "ubuntu-latest"
+            artifact: "phpstan_turbo-linux-gnu-x86_64-php8.5"
+          - operating-system: "macos-latest"
+            artifact: "turbo-slice-macos-arm64-php8.5"
+        script: ["make tests", "make phpstan"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - name: "Download extension artifact"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "${{ matrix.setup.artifact }}"
+          path: "turbo-ext"
+
+      - name: "Install extension"
+        run: |
+          sudo bash -c "echo 'extension=$GITHUB_WORKSPACE/turbo-ext/phpstan_turbo.so' >> $(php -r 'echo php_ini_loaded_file();')"
+          php -m | grep phpstan_turbo
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Verify the extension is active"
+        run: |
+          php -r '
+            require "src/Turbo/TurboExtensionEnabler.php";
+            PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
+            require "vendor/autoload.php";
+            if (!(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass() || !(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass()->isInternal()) {
+              fwrite(STDERR, "turbo extension is not shadowing ScopeOps" . PHP_EOL);
+              exit(1);
+            }
+          '
+
+      - name: "Run"
+        # The memo's per-worker footprint grows with files-per-worker; macOS
+        # runners have few cores, so each of their few workers analyses enough
+        # files to tip the default 450M limit that a many-worker Linux runner
+        # stays under.
+        env:
+          PHPSTAN_MEMORY_LIMIT: ${{ matrix.setup.operating-system == 'macos-latest' && '1G' || '450M' }}
+        run: ${{ matrix.script }}
 
   integration-tests:
     if: github.event_name == 'pull_request'
@@ -308,7 +686,11 @@ jobs:
   commit:
     name: "Commit PHAR"
     if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.2.x' || startsWith(github.ref, 'refs/tags/'))"
-    needs: compiler-tests
+    needs:
+      - compiler-tests
+      - turbo-version
+      - turbo-compile
+      - turbo-macos-universal
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:
@@ -371,31 +753,77 @@ jobs:
             echo "result=same" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: "Check turbo extension version"
+        id: turbo-difference
+        run: |
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" phpstan-src/src/Turbo/TurboExtensionEnabler.php)"
+          CURRENT="$(cat phpstan-dist/turbo-ext/.version 2>/dev/null || echo none)"
+          echo "enabler expects: $EXPECTED, dist carries: $CURRENT"
+          if [[ "$EXPECTED" != "$CURRENT" ]]; then
+            echo "result=different" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=same" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$EXPECTED" >> "$GITHUB_OUTPUT"
+
+      # The phar is staged only when its checksum changed (or on tags, which
+      # always produce a commit) — a turbo-only update must not churn the
+      # byte-unstable phar; the turbo binaries are staged only when the
+      # extension version changed, since native builds are never
+      # byte-reproducible (signing timestamps, Mach-O UUIDs).
       - name: "Download phpstan.phar"
+        if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: phar-file
 
       - name: "mv PHAR"
+        if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         run: mv phpstan.phar phpstan-dist/phpstan.phar
 
       - name: "chmod PHAR"
+        if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         run: chmod 755 phpstan-dist/phpstan.phar
 
       - name: "Update checksum"
+        if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         run: |
           echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
           echo ${{ github.event.head_commit.id }} >> phpstan-dist/.phar-checksum
 
       - name: "Sign PHAR"
+        if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         working-directory: phpstan-dist
         run: rm phpstan.phar.asc && gpg --command-fd 0 --pinentry-mode loopback -u "$GPG_ID" --batch --detach-sign --armor --output phpstan.phar.asc phpstan.phar
         env:
           GPG_ID: ${{ steps.import-gpg.outputs.fingerprint }}
 
       - name: "Verify PHAR"
+        if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         working-directory: phpstan-dist
         run: "gpg --verify phpstan.phar.asc"
+
+      - name: "Download turbo extension artifacts"
+        if: steps.turbo-difference.outputs.result == 'different'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: "phpstan_turbo-*"
+          path: "turbo-artifacts"
+
+      - name: "Stage turbo extension binaries"
+        if: steps.turbo-difference.outputs.result == 'different'
+        env:
+          TURBO_VERSION: ${{ steps.turbo-difference.outputs.version }}
+        run: |
+          for target in linux-gnu-x86_64 linux-gnu-arm64 linux-musl-x86_64 linux-musl-arm64; do
+            for v in 8.4 8.5; do
+              install -D -m 644 "turbo-artifacts/phpstan_turbo-$target-php$v/phpstan_turbo.so" "phpstan-dist/turbo-ext/$target/phpstan_turbo-$v.so"
+            done
+          done
+          for v in 8.4 8.5; do
+            install -D -m 644 "turbo-artifacts/phpstan_turbo-macos-php$v/phpstan_turbo.so" "phpstan-dist/turbo-ext/macos/phpstan_turbo-$v.so"
+          done
+          echo "$TURBO_VERSION" > phpstan-dist/turbo-ext/.version
 
       - name: "Install lucky_commit"
         uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0 # v3.4.0
@@ -404,7 +832,7 @@ jobs:
           args: --no-default-features
 
       - name: "Commit PHAR - development"
-        if: "!startsWith(github.ref, 'refs/tags/') && steps.checksum-difference.outputs.result == 'different'"
+        if: "!startsWith(github.ref, 'refs/tags/') && (steps.checksum-difference.outputs.result == 'different' || steps.turbo-difference.outputs.result == 'different')"
         working-directory: phpstan-dist
         env:
           INPUT_LOG: ${{ steps.git-log.outputs.log }}

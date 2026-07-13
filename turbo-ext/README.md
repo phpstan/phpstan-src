@@ -37,7 +37,7 @@ at build time — the Makefile computes it from git over that same watched set
 — so only the expected side, `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`,
 is declared by hand. After changing either side of a shadowed pair, verify the
 implementations still match and add a follow-up commit updating the constant
-to the short SHA of the changing commit; the `turbo-ext.yml` version job
+to the short SHA of the changing commit; the phar.yml `turbo-version` job
 enforces the SHA and the compile job verifies the built binary reports what
 the enabler expects. Builds outside a git checkout bake the version "dev",
 which the enabler rejects — the extension then simply stays inactive.
@@ -107,7 +107,7 @@ collected errors, and identical token streams. It runs in CI on every build.
 ### Updating php-parser
 
 The CI version job pins the php-parser version the engine was ported against
-(`SUPPORTED_PHP_PARSER_VERSION` in `.github/workflows/turbo-ext.yml`), so a
+(`SUPPORTED_PHP_PARSER_VERSION` in `.github/workflows/phar.yml`), so a
 `composer.lock` bump fails CI until the engine is consciously re-verified:
 
 1. **Diff what is actually ported.** Only two vendored files matter:

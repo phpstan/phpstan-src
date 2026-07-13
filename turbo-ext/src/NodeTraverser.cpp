@@ -334,7 +334,7 @@ public:
 		/* persist stopTraversal like the PHP implementation */
 		selfObj.propAtWrite(PT_NT_PROP_STOP, zv::Val::boolean(stop));
 
-		return nodes;
+		return zv::Val(std::move(nodes));
 	}
 
 private:

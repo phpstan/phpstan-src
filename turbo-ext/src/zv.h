@@ -375,7 +375,12 @@ public:
 	}
 };
 
-/* Owned PHP array under construction. */
+/* Owned PHP array under construction.
+ *
+ * Returning an Arr local from a Val-returning function must be spelled
+ * `return zv::Val(std::move(x));` — the glibc-2.35 baseline compiler
+ * (gcc 11) predates P1825's implicit derived-to-base move on return and
+ * would require the deleted copy constructor. */
 class Arr : public Val
 {
 public:

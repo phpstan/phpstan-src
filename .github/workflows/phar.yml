@@ -276,6 +276,13 @@ jobs:
           # commit, which matches nothing.
           fetch-depth: 0
 
+      # In container legs the workspace volume is owned by the host runner
+      # user while steps run as the container user, so git refuses the repo
+      # ("dubious ownership") — which would silently bake the version as
+      # "dev" via the Makefile's $(shell git log ...) fallback.
+      - name: "Trust the checkout despite the container/host uid mismatch"
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: "Install PHP (macOS)"
         if: matrix.target.family == 'macos'
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2

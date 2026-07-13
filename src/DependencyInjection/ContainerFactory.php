@@ -32,6 +32,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeCombinator;
 use function array_diff_key;
 use function array_intersect;
 use function array_key_exists;
@@ -199,6 +200,12 @@ final class ContainerFactory
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
 		PhpVersionStaticAccessor::registerInstance($container->getByType(PhpVersion::class));
 		ObjectType::resetCaches();
+
+		// Type operations read global state — the bleeding-edge toggle, the unsafe
+		// array-string-key-casting level, the reflection provider, the PHP version — so a
+		// memoized result is only valid for the state it was computed under.
+		TypeCombinator::clearCache();
+
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);

@@ -34,6 +34,8 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\RecursionGuard;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use PHPStanTurbo\Runtime;
@@ -52,9 +54,20 @@ final class TurboExtensionEnabler
 	 */
 	public const EXPECTED_EXTENSION_VERSION = '8d04889';
 
+	private static bool $typeCombinatorCacheEnabled = false;
+
 	public static function isLoaded(): bool
 	{
 		return extension_loaded('phpstan_turbo');
+	}
+
+	/**
+	 * Read lazily by TypeCombinator: enableIfLoaded() runs before the Composer
+	 * autoloader, so it cannot touch autoloadable classes itself.
+	 */
+	public static function isTypeCombinatorCacheEnabled(): bool
+	{
+		return self::$typeCombinatorCacheEnabled;
 	}
 
 	public static function enableIfLoaded(): void
@@ -78,6 +91,8 @@ final class TurboExtensionEnabler
 		// original type hints.
 		Runtime::configure([
 			'typeCombinator' => TypeCombinator::class,
+			'type' => Type::class,
+			'recursionGuard' => RecursionGuard::class,
 			'booleanType' => BooleanType::class,
 			'constantBooleanType' => ConstantBooleanType::class,
 			'shouldNotHappenException' => ShouldNotHappenException::class,
@@ -124,6 +139,9 @@ final class TurboExtensionEnabler
 		require_once __DIR__ . '/../../turbo-ext/stubs/ScopeOps.php';
 		require_once __DIR__ . '/../../turbo-ext/stubs/NodeScanner.php';
 		require_once __DIR__ . '/../../turbo-ext/stubs/ParserRunner.php';
+		require_once __DIR__ . '/../../turbo-ext/stubs/TypeCombinatorCache.php';
+
+		self::$typeCombinatorCacheEnabled = true;
 	}
 
 }

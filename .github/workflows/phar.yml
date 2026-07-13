@@ -233,18 +233,6 @@ jobs:
             container: "alpine:3.23"
             family: "musl"
             artifact: "phpstan_turbo"
-          # The macOS slices are merged into one universal binary (and signed
-          # + notarized) by the turbo-macos-universal job below, so their
-          # artifacts carry the turbo-slice prefix that the commit job's
-          # phpstan_turbo-* download pattern does not match.
-          - name: "macos-x86_64"
-            runs-on: "macos-15-intel" # the last x86_64 macOS image, available until August 2027
-            family: "macos"
-            artifact: "turbo-slice"
-          - name: "macos-arm64"
-            runs-on: "macos-latest"
-            family: "macos"
-            artifact: "turbo-slice"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -364,90 +352,6 @@ jobs:
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
-  turbo-macos-universal:
-    name: "Turbo macOS Universal Binary"
-    needs: "turbo-compile"
-    runs-on: "macos-latest"
-    timeout-minutes: 30
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version: ["8.4", "8.5"]
-
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
-        with:
-          egress-policy: audit
-
-      - name: "Download x86_64 slice"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: "turbo-slice-macos-x86_64-php${{ matrix.php-version }}"
-          path: "slice-x86_64"
-
-      - name: "Download arm64 slice"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: "turbo-slice-macos-arm64-php${{ matrix.php-version }}"
-          path: "slice-arm64"
-
-      - name: "Merge the slices into a universal binary"
-        run: |
-          lipo -create slice-x86_64/phpstan_turbo.so slice-arm64/phpstan_turbo.so -output phpstan_turbo.so
-          lipo -info phpstan_turbo.so
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-
-      - name: "Verify the universal binary loads"
-        run: php -d extension="$PWD/phpstan_turbo.so" -m | grep phpstan_turbo
-
-      # Signing and notarization run only on push (branch and tag) builds —
-      # pull requests from forks cannot see the secrets.
-      - name: "Import Developer ID certificate"
-        if: github.event_name == 'push'
-        uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
-        with:
-          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_P12 }}
-          p12-password: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-
-      - name: "Sign the universal binary"
-        if: github.event_name == 'push'
-        run: |
-          IDENTITY="$(security find-identity -v -p codesigning | awk -F'"' '/Developer ID Application/ {print $2; exit}')"
-          [ -n "$IDENTITY" ]
-          codesign --force --timestamp --options runtime --sign "$IDENTITY" phpstan_turbo.so
-          codesign --verify --verbose=2 phpstan_turbo.so
-
-      - name: "Notarize"
-        if: github.event_name == 'push'
-        env:
-          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
-        # A bare .so cannot be stapled (stapler only handles apps, disk images
-        # and packages), so Gatekeeper validates the ticket online. Quarantine
-        # is only set by browser downloads anyway — composer/git/curl installs
-        # never see it.
-        run: |
-          ditto -c -k phpstan_turbo.so phpstan_turbo.zip
-          KEY_FILE="$RUNNER_TEMP/apple_api_key.p8"
-          printf '%s' "$APPLE_API_KEY_P8" > "$KEY_FILE"
-          xcrun notarytool submit phpstan_turbo.zip --key "$KEY_FILE" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID" --wait
-          rm "$KEY_FILE" phpstan_turbo.zip
-
-      - name: "Upload universal binary artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: "phpstan_turbo-macos-php${{ matrix.php-version }}"
-          path: "phpstan_turbo.so"
-          if-no-files-found: "error"
-
   turbo-run:
     name: "Run with Turbo Extension"
     needs: "turbo-compile"
@@ -460,8 +364,6 @@ jobs:
         setup:
           - operating-system: "ubuntu-latest"
             artifact: "phpstan_turbo-linux-gnu-x86_64-php8.5"
-          - operating-system: "macos-latest"
-            artifact: "turbo-slice-macos-arm64-php8.5"
         script: ["make tests", "make phpstan"]
 
     steps:
@@ -690,7 +592,6 @@ jobs:
       - compiler-tests
       - turbo-version
       - turbo-compile
-      - turbo-macos-universal
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:
@@ -819,9 +720,6 @@ jobs:
             for v in 8.4 8.5; do
               install -D -m 644 "turbo-artifacts/phpstan_turbo-$target-php$v/phpstan_turbo.so" "phpstan-dist/turbo-ext/$target/phpstan_turbo-$v.so"
             done
-          done
-          for v in 8.4 8.5; do
-            install -D -m 644 "turbo-artifacts/phpstan_turbo-macos-php$v/phpstan_turbo.so" "phpstan-dist/turbo-ext/macos/phpstan_turbo-$v.so"
           done
           echo "$TURBO_VERSION" > phpstan-dist/turbo-ext/.version
 

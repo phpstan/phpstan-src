@@ -173,6 +173,28 @@ php;
 		if ($root === false) {
 			return;
 		}
+
+		// The turbo extension shadows these classes with stubs that
+		// TurboExtensionEnabler declares before the Composer autoloader
+		// registers; preloading the PHP twins by path would then fatal with a
+		// class redeclaration. Without the extension they load lazily through
+		// the autoloader.
+		$manifestContents = file_get_contents($root . '/turbo-ext/shadowed-classes.json');
+		if ($manifestContents === false) {
+			throw new ShouldNotHappenException('Could not read turbo-ext/shadowed-classes.json');
+		}
+
+		/** @var array<string, array{php: string, cpp: string, vendored?: bool}> $manifest */
+		$manifest = json_decode($manifestContents, true);
+		$shadowedFiles = [];
+		foreach ($manifest as $entry) {
+			$shadowedFile = realpath($root . '/' . $entry['php']);
+			if ($shadowedFile === false) {
+				throw new ShouldNotHappenException(sprintf('Shadowed file %s does not exist', $entry['php']));
+			}
+			$shadowedFiles[] = $shadowedFile;
+		}
+
 		$output = '';
 		foreach ($finder->files()->name('*.php')->in([
 			$this->buildDir . '/src',
@@ -184,6 +206,9 @@ php;
 			$realPath = $phpFile->getRealPath();
 			if ($realPath === false) {
 				return;
+			}
+			if (in_array($realPath, $shadowedFiles, true)) {
+				continue;
 			}
 			if (in_array($realPath, [
 				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Expr/ArrayItem.php',

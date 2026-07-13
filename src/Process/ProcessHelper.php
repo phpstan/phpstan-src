@@ -3,6 +3,7 @@
 namespace PHPStan\Process;
 
 use PHPStan\Command\AnalyseCommand;
+use PHPStan\Turbo\TurboExtensionSelector;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function escapeshellarg;
@@ -41,6 +42,13 @@ final class ProcessHelper
 		if ($input->getOption('memory-limit') === null) {
 			$processCommandArray[] = '-d';
 			$processCommandArray[] = 'memory_limit=' . ini_get('memory_limit');
+		}
+
+		$turboExtension = TurboExtensionSelector::findExtensionForWorkers();
+		if ($turboExtension !== null) {
+			$processCommandArray[] = '-d';
+			// quote value so PHP will parse it as a string when the path contains a bitwise operator like ~
+			$processCommandArray[] = 'extension=' . escapeshellarg("'" . $turboExtension . "'");
 		}
 
 		foreach ([$mainScript, $commandName] as $arg) {

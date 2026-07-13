@@ -82,6 +82,7 @@ PHPCPP_EXPORT void *get_module()
 			pt_register_node_traverser();
 			pt_register_scope_ops();
 			pt_register_node_scanner();
+			pt_register_parser_runner();
 		});
 
 		extension.onRequest([]() {

@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Match_;
@@ -39,7 +38,6 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
-use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -107,7 +105,6 @@ use Throwable;
 use function abs;
 use function array_filter;
 use function array_key_exists;
-use function array_key_first;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -119,7 +116,6 @@ use function array_values;
 use function assert;
 use function count;
 use function explode;
-use function get_class;
 use function implode;
 use function in_array;
 use function is_array;
@@ -127,13 +123,11 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function sprintf;
-use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
 use function uksort;
-use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 use const PHP_VERSION_ID;
@@ -142,12 +136,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 {
 
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
-	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
-
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
 
-	/** @var Type[] */
-	private array $resolvedTypes = [];
+	/**
+	 * @internal accessed by ScopeOps (native and PHP implementations)
+	 * @var array<string, Type>
+	 */
+	public array $resolvedTypes = [];
 
 	/** @var array<string, static> */
 	private array $truthyScopes = [];
@@ -358,7 +353,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
-	private function isReadonlyPropertyFetch(PropertyFetch $expr, bool $allowOnlyOnThis): bool
+	/** @internal called by ScopeOps */
+	public function isReadonlyPropertyFetch(PropertyFetch $expr, bool $allowOnlyOnThis): bool
 	{
 		if (!$this->phpVersion->supportsReadOnlyProperties()) {
 			return false;
@@ -716,20 +712,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
-		if ($this->isGlobalVariable($variableName)) {
-			return TrinaryLogic::createYes();
-		}
-
-		$varExprString = '$' . $variableName;
-		if (!isset($this->expressionTypes[$varExprString])) {
-			if ($this->canAnyVariableExist()) {
-				return TrinaryLogic::createMaybe();
-			}
-
-			return TrinaryLogic::createNo();
-		}
-
-		return $this->expressionTypes[$varExprString]->getCertainty();
+		return ScopeOps::hasVariableType($this, $variableName);
 	}
 
 	/** @api */
@@ -971,12 +954,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function getType(Expr $node): Type
 	{
-		$key = $this->getNodeKey($node);
-
-		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node));
+		$type = ScopeOps::getTypeFromCache($this, $node, $key);
+		if ($type !== null) {
+			return $type;
 		}
-		return $this->resolvedTypes[$key];
+
+		return $this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node));
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -996,25 +979,56 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return '$' . $node->name;
 		}
 
-		$key = $this->exprPrinter->printExpr($node);
-		$attributes = $node->getAttributes();
-		if (
-			$node instanceof Node\FunctionLike
-			&& (($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
-			&& (($attributes['startFilePos'] ?? null) !== null)
-		) {
-			$key .= '/*' . $attributes['startFilePos'];
-			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] as $arg) {
-				$key .= ':' . $this->exprPrinter->printExpr($arg->value);
-			}
-			$key .= '*/';
-		}
+		return ScopeOps::nodeKey($node, $this->exprPrinter);
+	}
 
-		if (($attributes[self::KEEP_VOID_ATTRIBUTE_NAME] ?? null) === true) {
-			$key .= '/*' . self::KEEP_VOID_ATTRIBUTE_NAME . '*/';
-		}
+	/** @internal */
+	public function getExprPrinter(): ExprPrinter
+	{
+		return $this->exprPrinter;
+	}
 
-		return $key;
+	/**
+	 * Creates a copy of this scope with the given expression tables and flags
+	 * replaced, keeping context, function, namespace and everything else.
+	 *
+	 * @internal called by ScopeOps
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, bool> $currentlyAssignedExpressions
+	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
+	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack
+	 */
+	public function duplicateWith(
+		array $expressionTypes,
+		array $nativeExpressionTypes,
+		array $conditionalExpressions,
+		array $currentlyAssignedExpressions,
+		array $currentlyAllowedUndefinedExpressions,
+		array $inFunctionCallsStack,
+		bool $inFirstLevelStatement,
+		bool $afterExtractCall,
+	): self
+	{
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$inFirstLevelStatement,
+			$currentlyAssignedExpressions,
+			$currentlyAllowedUndefinedExpressions,
+			$inFunctionCallsStack,
+			$afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
 	}
 
 	public function getClosureScopeCacheKey(): string
@@ -1050,13 +1064,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 		}
 
-		if (
-			!$node instanceof Variable
-			&& !$node instanceof Expr\Closure
-			&& !$node instanceof Expr\ArrowFunction
-			&& $this->hasExpressionType($node)->yes()
-		) {
-			return $this->expressionTypes[$exprString]->getType();
+		$expressionType = ScopeOps::expressionTypeByKey($this, $node, $exprString);
+		if ($expressionType !== null) {
+			return $expressionType;
 		}
 
 		$exprHandler = ExprHandlerRegistry::resolve($node, $this->container);
@@ -1370,15 +1380,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
-		if ($node instanceof Variable && is_string($node->name)) {
-			return $this->hasVariableType($node->name);
-		}
-
-		$exprString = $this->getNodeKey($node);
-		if (!isset($this->expressionTypes[$exprString])) {
-			return TrinaryLogic::createNo();
-		}
-		return $this->expressionTypes[$exprString]->getCertainty();
+		return ScopeOps::hasExpressionType($this, $node, $this->exprPrinter);
 	}
 
 	/**
@@ -2829,7 +2831,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					array_merge($intertwinedPropagatedFrom, [$variableName]),
 				);
 			} else {
-				$targetRootVar = $this->getIntertwinedRefRootVariableName($expressionType->getExpr()->getExpr());
+				$targetRootVar = ScopeOps::getIntertwinedRefRootVariableName($expressionType->getExpr()->getExpr());
 				if ($targetRootVar !== null && in_array($targetRootVar, $intertwinedPropagatedFrom, true)) {
 					continue;
 				}
@@ -2978,23 +2980,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
-		$scope = $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
+		/** @var static $scope */
+		$scope = ScopeOps::scopeWith(
+			$this,
 			$expressionTypes,
 			$nativeTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			$this->inFunctionCallsStack,
+			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
 		);
 
 		if ($expr instanceof AlwaysRememberedExpr) {
@@ -3057,208 +3053,39 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self
 	{
-		$expressionTypes = $this->expressionTypes;
-		$nativeExpressionTypes = $this->nativeExpressionTypes;
-		$invalidated = false;
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 
-		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
-			$exprExpr = $exprTypeHolder->getExpr();
-			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
-				continue;
-			}
-
-			unset($expressionTypes[$exprString]);
-			unset($nativeExpressionTypes[$exprString]);
-			$invalidated = true;
-		}
-
-		$newConditionalExpressions = [];
-		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-			if (count($holders) === 0) {
-				continue;
-			}
-			$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr), $requireMoreCharacters, $invalidatingClass)) {
-				$invalidated = true;
-				continue;
-			}
-			$filteredHolders = [];
-			foreach ($holders as $key => $holder) {
-				$shouldKeep = true;
-				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, false, $invalidatingClass)) {
-						$invalidated = true;
-						$shouldKeep = false;
-						break;
-					}
-				}
-				if (!$shouldKeep) {
-					continue;
-				}
-
-				$filteredHolders[$key] = $holder;
-			}
-			if (count($filteredHolders) <= 0) {
-				continue;
-			}
-
-			$newConditionalExpressions[$conditionalExprString] = $filteredHolders;
-		}
-
-		if (!$invalidated) {
+		$result = ScopeOps::invalidateExpressionEntries(
+			$this,
+			$this->exprPrinter,
+			$exprStringToInvalidate,
+			$expressionToInvalidate,
+			$requireMoreCharacters,
+			$invalidatingClass,
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+		);
+		if ($result === null) {
 			return $this;
 		}
 
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$nativeExpressionTypes,
-			$newConditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
+			$result[0],
+			$result[1],
+			$result[2],
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			[],
+			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
 		);
 	}
 
-	private function getIntertwinedRefRootVariableName(Expr $expr): ?string
-	{
-		if ($expr instanceof Variable && is_string($expr->name)) {
-			return $expr->name;
-		}
-		if ($expr instanceof Expr\ArrayDimFetch) {
-			return $this->getIntertwinedRefRootVariableName($expr->var);
-		}
-		return null;
-	}
-
-	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
-	{
-		if (
-			$expr instanceof IntertwinedVariableByReferenceWithExpr
-			&& $exprToInvalidate instanceof Variable
-			&& is_string($exprToInvalidate->name)
-			&& (
-				$expr->getVariableName() === $exprToInvalidate->name
-				|| $this->getIntertwinedRefRootVariableName($expr->getExpr()) === $exprToInvalidate->name
-				|| $this->getIntertwinedRefRootVariableName($expr->getAssignedExpr()) === $exprToInvalidate->name
-			)
-		) {
-			return false;
-		}
-
-		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
-			return false;
-		}
-
-		// Variables will not contain traversable expressions. skip the NodeFinder overhead
-		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
-			return $exprStringToInvalidate === $exprString;
-		}
-
-		// getNodeKey() is the pretty-printed expression, and the standard printer is
-		// compositional: the key of any sub-expression appears verbatim as a substring of
-		// the key of the expression containing it. So if the invalidated expression's key
-		// does not appear anywhere in this expression's key, this expression cannot contain
-		// it and we can skip the expensive AST traversal below.
-		// Carve-outs where that invariant does not hold:
-		// - '$this' is special-cased in the visitor to also match self/static/parent,
-		// - PHPStan's virtual nodes (printed as '__phpstan…') use non-compositional printers
-		//   (e.g. a wrapped variable is printed by name, not as '$name'),
-		// - keys carrying a getNodeKey() suffix ('/*…*/') are not plain substrings.
-		if (
-			$exprStringToInvalidate !== '$this'
-			&& !str_contains($exprStringToInvalidate, '__phpstan')
-			&& !str_contains($exprStringToInvalidate, '/*')
-			&& !str_contains($exprString, '__phpstan')
-			&& !str_contains($exprString, $exprStringToInvalidate)
-		) {
-			return false;
-		}
-
-		if (!$this->containsExpressionToInvalidate($expr, get_class($exprToInvalidate), $exprStringToInvalidate)) {
-			return false;
-		}
-
-		if (
-			$expr instanceof PropertyFetch
-			&& $requireMoreCharacters
-			&& $this->isReadonlyPropertyFetch($expr, false)
-		) {
-			return false;
-		}
-
-		if (
-			$invalidatingClass !== null
-			&& $requireMoreCharacters
-			&& $this->isPrivatePropertyOfDifferentClass($expr, $invalidatingClass)
-		) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Depth-first pre-order search for the invalidated expression, replacing a
-	 * NodeFinder::findFirst() call - this runs for every (stored expression,
-	 * invalidated expression) pair whose keys pass the substring pre-filter,
-	 * so the traverser/visitor machinery overhead was significant.
-	 *
-	 * @param class-string<Expr> $expressionToInvalidateClass
-	 */
-	private function containsExpressionToInvalidate(Node $node, string $expressionToInvalidateClass, string $exprStringToInvalidate): bool
-	{
-		if (
-			$exprStringToInvalidate === '$this'
-			&& $node instanceof Name
-			&& (
-				in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
-				|| ($this->getClassReflection() !== null && $this->getClassReflection()->is($this->resolveName($node)))
-			)
-		) {
-			return true;
-		}
-
-		if (
-			$node instanceof $expressionToInvalidateClass
-			&& $this->getNodeKey($node) === $exprStringToInvalidate
-		) {
-			return true;
-		}
-
-		foreach ($node->getSubNodeNames() as $subNodeName) {
-			$subNode = $node->$subNodeName;
-			if ($subNode instanceof Node) {
-				if ($this->containsExpressionToInvalidate($subNode, $expressionToInvalidateClass, $exprStringToInvalidate)) {
-					return true;
-				}
-			} elseif (is_array($subNode)) {
-				foreach ($subNode as $subNodeItem) {
-					if (
-						$subNodeItem instanceof Node
-						&& $this->containsExpressionToInvalidate($subNodeItem, $expressionToInvalidateClass, $exprStringToInvalidate)
-					) {
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-
-	private function isPrivatePropertyOfDifferentClass(Expr $expr, ClassReflection $invalidatingClass): bool
+	/** @internal called by ScopeOps */
+	public function isPrivatePropertyOfDifferentClass(Expr $expr, ClassReflection $invalidatingClass): bool
 	{
 		if ($expr instanceof Expr\StaticPropertyFetch || $expr instanceof PropertyFetch) {
 			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
@@ -3276,47 +3103,27 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
 	{
-		$exprStringToInvalidate = null;
-		$expressionTypes = $this->expressionTypes;
-		$nativeExpressionTypes = $this->nativeExpressionTypes;
-		$invalidated = false;
-		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
-			$expr = $exprTypeHolder->getExpr();
-			if (!$expr instanceof MethodCall) {
-				continue;
-			}
-
-			$exprStringToInvalidate ??= $this->getNodeKey($expressionToInvalidate);
-			if ($this->getNodeKey($expr->var) !== $exprStringToInvalidate) {
-				continue;
-			}
-
-			unset($expressionTypes[$exprString]);
-			unset($nativeExpressionTypes[$exprString]);
-			$invalidated = true;
-		}
-
-		if (!$invalidated) {
+		$result = ScopeOps::invalidateMethodsOnExpression(
+			$this->exprPrinter,
+			$this->getNodeKey($expressionToInvalidate),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+		);
+		if ($result === null) {
 			return $this;
 		}
 
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$nativeExpressionTypes,
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
+			$result[0],
+			$result[1],
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			[],
+			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3449,38 +3256,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
 	{
-		$typeSpecifications = [];
-		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
-				continue;
-			}
-			$typeSpecifications[] = [
-				'sure' => true,
-				'exprString' => (string) $exprString,
-				'expr' => $expr,
-				'type' => $type,
-			];
-		}
-		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
-				continue;
-			}
-			$typeSpecifications[] = [
-				'sure' => false,
-				'exprString' => (string) $exprString,
-				'expr' => $expr,
-				'type' => $type,
-			];
-		}
-
-		usort($typeSpecifications, static function (array $a, array $b): int {
-			$length = strlen($a['exprString']) - strlen($b['exprString']);
-			if ($length !== 0) {
-				return $length;
-			}
-
-			return $b['sure'] - $a['sure']; // @phpstan-ignore minus.leftNonNumeric, minus.rightNonNumeric
-		});
+		$typeSpecifications = ScopeOps::buildTypeSpecifications($specifiedTypes->getSureTypes(), $specifiedTypes->getSureNotTypes());
 
 		$scope = $this;
 		$specifiedExpressions = [];
@@ -3516,62 +3292,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
 		}
 
-		$conditions = [];
-		$originallySpecifiedExprStrings = $specifiedExpressions;
-		$prevSpecifiedCount = -1;
-		while (count($specifiedExpressions) !== $prevSpecifiedCount) {
-			$prevSpecifiedCount = count($specifiedExpressions);
-			foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
-				if (array_key_exists($conditionalExprString, $conditions)) {
-					continue;
-				}
+		[$conditions] = ScopeOps::matchConditionalExpressions($scope->conditionalExpressions, $specifiedExpressions);
 
-				// Pass 1: Prefer exact matches
-				foreach ($conditionalExpressions as $conditionalExpression) {
-					if (
-						$conditionalExpression->getTypeHolder()->getCertainty()->no()
-						&& array_key_exists($conditionalExprString, $originallySpecifiedExprStrings)
-					) {
-						continue;
-					}
-					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (
-							!array_key_exists($holderExprString, $specifiedExpressions)
-							|| !$conditionalTypeHolder->equals($specifiedExpressions[$holderExprString])
-						) {
-							continue 2;
-						}
-					}
+		return $this->applyFilteredConditions($scope, $conditions, $specifiedTypes);
+	}
 
-					$conditions[$conditionalExprString][] = $conditionalExpression;
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-				}
-
-				if (array_key_exists($conditionalExprString, $conditions)) {
-					continue;
-				}
-
-				// Pass 2: Supertype match. Only runs when Pass 1 found no exact match for this expression.
-				foreach ($conditionalExpressions as $conditionalExpression) {
-					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
-						continue;
-					}
-					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (
-							!array_key_exists($holderExprString, $specifiedExpressions)
-							|| !$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
-							|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
-						) {
-							continue 2;
-						}
-					}
-
-					$conditions[$conditionalExprString][] = $conditionalExpression;
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-				}
-			}
-		}
-
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditions
+	 * @return static
+	 */
+	private function applyFilteredConditions(self $scope, array $conditions, SpecifiedTypes $specifiedTypes): self
+	{
 		foreach ($conditions as $conditionalExprString => $expressions) {
 			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
 			if ($certainty->no()) {
@@ -3595,23 +3326,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		/** @var static */
-		return $scope->scopeFactory->create(
-			$scope->context,
-			$scope->isDeclareStrictTypes(),
-			$scope->getFunction(),
-			$scope->getNamespace(),
+		return ScopeOps::scopeWith(
+			$scope,
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
 			$this->mergeConditionalExpressions($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
-			$scope->inClosureBindScopeClasses,
-			$scope->anonymousFunctionReflection,
-			$scope->inFirstLevelStatement,
 			$scope->currentlyAssignedExpressions,
 			$scope->currentlyAllowedUndefinedExpressions,
 			$scope->inFunctionCallsStack,
+			$scope->inFirstLevelStatement,
 			$scope->afterExtractCall,
-			$scope->parentScope,
-			$scope->nativeTypesPromoted,
 		);
 	}
 
@@ -3641,23 +3365,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$existing[$holder->getKey()] = $holder;
 		}
 		$conditionalExpressions[$exprString] = $existing;
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
+
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			$this->inFunctionCallsStack,
+			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3671,23 +3390,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this->scopeOutOfFirstLevelStatement;
 		}
 
-		$scope = $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
+		/** @var static $scope */
+		$scope = ScopeOps::scopeWith(
+			$this,
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			false,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			$this->inFunctionCallsStack,
+			false,
 			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3711,8 +3424,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$ourExpressionTypes = $this->expressionTypes;
 		$theirExpressionTypes = $otherScope->expressionTypes;
 
-		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
-		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
+		$mergedExpressionTypes = ScopeOps::mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
+		$conditionalExpressions = ScopeOps::intersectConditionalExpressions($this->conditionalExpressions, $otherScope->conditionalExpressions);
 		if ($preserveVacuousConditionals) {
 			$conditionalExpressions = $this->preserveVacuousConditionalExpressions(
 				$conditionalExpressions,
@@ -3725,109 +3438,39 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$ourExpressionTypes,
 			);
 		}
-		$conditionalExpressions = $this->createConditionalExpressions(
+		$conditionalExpressions = ScopeOps::createConditionalExpressions(
 			$conditionalExpressions,
 			$ourExpressionTypes,
 			$theirExpressionTypes,
 			$mergedExpressionTypes,
 		);
-		$conditionalExpressions = $this->createConditionalExpressions(
+		$conditionalExpressions = ScopeOps::createConditionalExpressions(
 			$conditionalExpressions,
 			$theirExpressionTypes,
 			$ourExpressionTypes,
 			$mergedExpressionTypes,
 		);
 
-		$filter = static function (ExpressionTypeHolder $expressionTypeHolder) {
-			if ($expressionTypeHolder->getCertainty()->yes()) {
-				return true;
-			}
-
-			$expr = $expressionTypeHolder->getExpr();
-
-			return $expr instanceof Variable
-				|| $expr instanceof FuncCall
-				|| $expr instanceof VirtualNode;
-		};
-
-		$mergedExpressionTypes = array_filter($mergedExpressionTypes, $filter);
-
-		$ourNativeExpressionTypes = $this->nativeExpressionTypes;
-		$theirNativeExpressionTypes = $otherScope->nativeExpressionTypes;
-		$mergedNativeExpressionTypes = [];
-		foreach ($ourNativeExpressionTypes as $exprString => $expressionTypeHolder) {
-			if (!array_key_exists($exprString, $theirNativeExpressionTypes)) {
-				continue;
-			}
-			if (!array_key_exists($exprString, $ourExpressionTypes)) {
-				continue;
-			}
-			if (!array_key_exists($exprString, $theirExpressionTypes)) {
-				continue;
-			}
-			if (!$expressionTypeHolder->equals($ourExpressionTypes[$exprString])) {
-				continue;
-			}
-			if (!$theirNativeExpressionTypes[$exprString]->equals($theirExpressionTypes[$exprString])) {
-				continue;
-			}
-			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
-				continue;
-			}
-			$mergedNativeExpressionTypes[$exprString] = $mergedExpressionTypes[$exprString];
-			unset($ourNativeExpressionTypes[$exprString]);
-			unset($theirNativeExpressionTypes[$exprString]);
-		}
-
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
+		[$mergedExpressionTypes, $mergedNativeTypes] = ScopeOps::finishMerge(
 			$mergedExpressionTypes,
-			array_merge($mergedNativeExpressionTypes, array_filter($this->mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes), $filter)),
+			$ourExpressionTypes,
+			$theirExpressionTypes,
+			$this->nativeExpressionTypes,
+			$otherScope->nativeExpressionTypes,
+		);
+
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
+			$mergedExpressionTypes,
+			$mergedNativeTypes,
 			$conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
+			[],
+			[],
+			[],
 			$this->inFirstLevelStatement,
-			[],
-			[],
-			[],
 			$this->afterExtractCall && $otherScope->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
 		);
-	}
-
-	/**
-	 * @param array<string, ConditionalExpressionHolder[]> $otherConditionalExpressions
-	 * @return array<string, ConditionalExpressionHolder[]>
-	 */
-	private function intersectConditionalExpressions(array $otherConditionalExpressions): array
-	{
-		$newConditionalExpressions = [];
-		foreach ($this->conditionalExpressions as $exprString => $holders) {
-			if (!array_key_exists($exprString, $otherConditionalExpressions)) {
-				continue;
-			}
-
-			$otherHolders = $otherConditionalExpressions[$exprString];
-			$intersectedHolders = [];
-			foreach ($holders as $key => $holder) {
-				if (!array_key_exists($key, $otherHolders)) {
-					continue;
-				}
-				$intersectedHolders[$key] = $holder;
-			}
-
-			if (count($intersectedHolders) === 0) {
-				continue;
-			}
-
-			$newConditionalExpressions[$exprString] = $intersectedHolders;
-		}
-
-		return $newConditionalExpressions;
 	}
 
 	/**
@@ -3891,220 +3534,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $result;
 	}
 
-	/**
-	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, ExpressionTypeHolder> $ourExpressionTypes
-	 * @param array<string, ExpressionTypeHolder> $theirExpressionTypes
-	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
-	 * @return array<string, ConditionalExpressionHolder[]>
-	 */
-	private function createConditionalExpressions(
-		array $conditionalExpressions,
-		array $ourExpressionTypes,
-		array $theirExpressionTypes,
-		array $mergedExpressionTypes,
-	): array
-	{
-		$newVariableTypes = $ourExpressionTypes;
-
-		// When our-branch type is a subtype of their-branch type, the union
-		// absorbs it (merged === their). Such a variable is a poor *guard* —
-		// asserting its our-branch type later wouldn't reliably select this
-		// branch — but it remains a valid conditional *target*, so only exclude
-		// it from guard selection instead of dropping it entirely.
-		$guardsToExclude = [];
-		foreach ($theirExpressionTypes as $exprString => $holder) {
-			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
-				continue;
-			}
-
-			if (!$mergedExpressionTypes[$exprString]->equalTypes($holder)) {
-				continue;
-			}
-
-			if (
-				array_key_exists($exprString, $newVariableTypes)
-				&& !$newVariableTypes[$exprString]->getCertainty()->equals($holder->getCertainty())
-				&& $newVariableTypes[$exprString]->equalTypes($holder)
-			) {
-				continue;
-			}
-
-			$guardsToExclude[$exprString] = true;
-		}
-
-		$typeGuards = [];
-		foreach ($newVariableTypes as $exprString => $holder) {
-			if ($holder->getExpr() instanceof VirtualNode) {
-				continue;
-			}
-			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
-				continue;
-			}
-			if (!$holder->getCertainty()->yes()) {
-				continue;
-			}
-			if (array_key_exists($exprString, $guardsToExclude)) {
-				continue;
-			}
-
-			if (
-				array_key_exists($exprString, $theirExpressionTypes)
-				&& !$theirExpressionTypes[$exprString]->getCertainty()->yes()
-			) {
-				continue;
-			}
-
-			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
-				continue;
-			}
-
-			$typeGuards[$exprString] = $holder;
-		}
-
-		if (count($typeGuards) === 0) {
-			return $conditionalExpressions;
-		}
-
-		// Both isSuperTypeOf() checks below depend only on the guard (and its
-		// their-branch type), not on the target $exprString, so their results are
-		// invariant across the target loop. Cache them per guard to avoid
-		// recomputing expensive supertype checks on big union / constant-array
-		// types once per (target, guard) pair.
-		$guardIsSuperTypeOfTheirExprCache = [];
-		$theirExprIsSuperTypeOfGuardCache = [];
-
-		foreach ($newVariableTypes as $exprString => $holder) {
-			if ($holder->getExpr() instanceof VirtualNode) {
-				continue;
-			}
-			if (
-				array_key_exists($exprString, $mergedExpressionTypes)
-				&& $mergedExpressionTypes[$exprString]->equals($holder)
-			) {
-				continue;
-			}
-
-			$variableTypeGuards = $typeGuards;
-			unset($variableTypeGuards[$exprString]);
-
-			if (count($variableTypeGuards) === 0) {
-				continue;
-			}
-
-			$exprIsGuardExcluded = array_key_exists($exprString, $guardsToExclude);
-			foreach ($variableTypeGuards as $guardExprString => $guardHolder) {
-				// A subtype-absorbed target (kept only for re-narrowing) paired with a
-				// constant-array guard never helps: such a guard represents a unique
-				// literal value that is not re-asserted as a condition later, yet the
-				// downstream isSuperTypeOf() guard machinery pays to compare these
-				// (potentially huge) constant arrays on every branch merge. Skip them.
-				if ($exprIsGuardExcluded && $guardHolder->getType()->isConstantArray()->yes()) {
-					continue;
-				}
-
-				if (
-					array_key_exists($guardExprString, $theirExpressionTypes)
-					&& $theirExpressionTypes[$guardExprString]->getCertainty()->yes()
-				) {
-					$guardIsSuperTypeOfTheirExpr = $guardIsSuperTypeOfTheirExprCache[$guardExprString] ??= $guardHolder->getType()->isSuperTypeOf($theirExpressionTypes[$guardExprString]->getType());
-
-					// The reverse isSuperTypeOf() check is expensive on big union /
-					// constant-array types, so it is evaluated last and only when the
-					// cheaper forward-based conditions did not already decide.
-					if (
-						$guardIsSuperTypeOfTheirExpr->yes()
-						|| (
-							array_key_exists($exprString, $theirExpressionTypes)
-							&& $theirExpressionTypes[$exprString]->getCertainty()->yes()
-							&& !$guardIsSuperTypeOfTheirExpr->no()
-						)
-						|| (
-							!array_key_exists($exprString, $theirExpressionTypes)
-							&& $holder->getType()->equals($guardHolder->getType())
-							&& !$guardIsSuperTypeOfTheirExpr->no()
-						)
-						|| ($theirExprIsSuperTypeOfGuardCache[$guardExprString] ??= $theirExpressionTypes[$guardExprString]->getType()->isSuperTypeOf($guardHolder->getType()))->yes()
-					) {
-						continue;
-					}
-				}
-
-				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
-				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
-			}
-		}
-
-		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
-			if (array_key_exists($exprString, $ourExpressionTypes)) {
-				continue;
-			}
-
-			foreach ($typeGuards as $guardExprString => $guardHolder) {
-				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));
-				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
-			}
-		}
-
-		return $conditionalExpressions;
-	}
-
-	/**
-	 * @param array<string, ExpressionTypeHolder> $ourVariableTypeHolders
-	 * @param array<string, ExpressionTypeHolder> $theirVariableTypeHolders
-	 * @return array<string, ExpressionTypeHolder>
-	 */
-	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
-	{
-		$intersectedVariableTypeHolders = [];
-		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isGlobalVariable($node->name);
-		$nodeFinder = new NodeFinder();
-		foreach ($ourVariableTypeHolders as $exprString => $variableTypeHolder) {
-			if (isset($theirVariableTypeHolders[$exprString])) {
-				if ($variableTypeHolder === $theirVariableTypeHolders[$exprString]) {
-					$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder;
-					continue;
-				}
-
-				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
-			} else {
-				$expr = $variableTypeHolder->getExpr();
-
-				$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
-				if ($containsSuperGlobal === null) {
-					$containsSuperGlobal = $nodeFinder->findFirst($expr, $globalVariableCallback) !== null;
-					$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
-				}
-				if ($containsSuperGlobal === true) {
-					continue;
-				}
-
-				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($expr, $variableTypeHolder->getType());
-			}
-		}
-
-		foreach ($theirVariableTypeHolders as $exprString => $variableTypeHolder) {
-			if (isset($intersectedVariableTypeHolders[$exprString])) {
-				continue;
-			}
-
-			$expr = $variableTypeHolder->getExpr();
-
-			$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
-			if ($containsSuperGlobal === null) {
-				$containsSuperGlobal = $nodeFinder->findFirst($expr, $globalVariableCallback) !== null;
-				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
-			}
-			if ($containsSuperGlobal === true) {
-				continue;
-			}
-
-			$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($expr, $variableTypeHolder->getType());
-		}
-
-		return $intersectedVariableTypeHolders;
-	}
-
 	public function mergeInitializedProperties(self $calledMethodScope): self
 	{
 		$scope = $this;
@@ -4150,7 +3579,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$finallyScope->nativeExpressionTypes,
 				$originalFinallyScope->nativeExpressionTypes,
 			),
-			$this->intersectConditionalExpressions($finallyScope->conditionalExpressions),
+			ScopeOps::intersectConditionalExpressions($this->conditionalExpressions, $finallyScope->conditionalExpressions),
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -4295,7 +3724,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->getNamespace(),
 			$expressionTypes,
 			$nativeTypes,
-			$this->intersectConditionalExpressions($finalScope->conditionalExpressions),
+			ScopeOps::intersectConditionalExpressions($this->conditionalExpressions, $finalScope->conditionalExpressions),
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -4355,7 +3784,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
-				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
+				if (!ScopeOps::shouldInvalidateExpression($this, $this->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
 					continue;
 				}
 

@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Node\NodeScanner;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
@@ -23,7 +24,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_map;
 use function array_reverse;
-use function is_array;
 use function is_string;
 use function strtolower;
 
@@ -287,33 +287,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 
 	private function nodeIsOrContainsYield(Node $node): bool
 	{
-		if ($node instanceof Node\Expr\Yield_) {
-			return true;
-		}
-
-		if ($node instanceof Node\Expr\YieldFrom) {
-			return true;
-		}
-
-		foreach ($node->getSubNodeNames() as $nodeName) {
-			$nodeProperty = $node->$nodeName;
-
-			if ($nodeProperty instanceof Node && $this->nodeIsOrContainsYield($nodeProperty)) {
-				return true;
-			}
-
-			if (!is_array($nodeProperty)) {
-				continue;
-			}
-
-			foreach ($nodeProperty as $nodePropertyArrayItem) {
-				if ($nodePropertyArrayItem instanceof Node && $this->nodeIsOrContainsYield($nodePropertyArrayItem)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return NodeScanner::nodeIsOrContainsYield($node);
 	}
 
 	public function getAsserts(): Assertions

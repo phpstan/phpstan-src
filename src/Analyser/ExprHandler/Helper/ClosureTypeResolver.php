@@ -21,16 +21,19 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ArrayReduceArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -38,6 +41,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
 use function array_key_exists;
@@ -100,7 +104,9 @@ final class ClosureTypeResolver
 		$callableParameters = null;
 		$nativeCallableParameters = null;
 		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+		$arrayReduceArgs = $expr->getAttribute(ArrayReduceArgVisitor::ATTRIBUTE_NAME);
 		$immediatelyInvokedArgs = $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
+		$arrayReducePass = null;
 		if ($arrayMapArgs !== null) {
 			$callableParameters = [];
 			$nativeCallableParameters = [];
@@ -108,59 +114,75 @@ final class ClosureTypeResolver
 				$callableParameters[] = new DummyParameter('item', $scope->getType($funcCallArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 				$nativeCallableParameters[] = new DummyParameter('item', $scope->getNativeType($funcCallArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
+		} elseif ($arrayReduceArgs !== null) {
+			[$reduceArrayArg, $reduceInitialArg] = $arrayReduceArgs;
+			$reduceInitialType = $reduceInitialArg !== null ? $scope->getType($reduceInitialArg->value) : new NullType();
+			$callableParameters = [
+				new DummyParameter('carry', $reduceInitialType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+				new DummyParameter('item', $scope->getType($reduceArrayArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+			];
+			$nativeCallableParameters = [
+				new DummyParameter('carry', new MixedType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+				new DummyParameter('item', $scope->getNativeType($reduceArrayArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+			];
+			$arrayReducePass = 1;
 		} elseif ($immediatelyInvokedArgs !== null) {
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
 				$callableParameters[] = new DummyParameter('item', $scope->getType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 				$nativeCallableParameters[] = new DummyParameter('item', $scope->getNativeType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} else {
-			$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
-			if ($inFunctionCallsStackCount > 0) {
-				[, $inParameter] = $scope->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
-				if ($inParameter !== null) {
-					$callableParameters = $this->nodeScopeResolver->createCallableParameters($scope, $expr, null, $inParameter->getType());
-					$nativeType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
-					$nativeCallableParameters = $this->nodeScopeResolver->createNativeCallableParameters($scope, $expr, null, $nativeType);
-				}
-			}
+			[$callableParameters, $nativeCallableParameters] = $this->getCallableParametersFromCallStack($scope, $expr);
 		}
 
 		if ($expr instanceof ArrowFunction) {
-			$arrowScope = $scope->enterArrowFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
+			while (true) {
+				$arrowScope = $scope->enterArrowFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
 
-			if ($expr->expr instanceof Yield_ || $expr->expr instanceof YieldFrom) {
-				$yieldNode = $expr->expr;
+				if ($expr->expr instanceof Yield_ || $expr->expr instanceof YieldFrom) {
+					$yieldNode = $expr->expr;
 
-				if ($yieldNode instanceof Yield_) {
-					if ($yieldNode->key === null) {
-						$keyType = new IntegerType();
+					if ($yieldNode instanceof Yield_) {
+						if ($yieldNode->key === null) {
+							$keyType = new IntegerType();
+						} else {
+							$keyType = $arrowScope->getType($yieldNode->key);
+						}
+
+						if ($yieldNode->value === null) {
+							$valueType = new NullType();
+						} else {
+							$valueType = $arrowScope->getType($yieldNode->value);
+						}
 					} else {
-						$keyType = $arrowScope->getType($yieldNode->key);
+						$yieldFromType = $arrowScope->getType($yieldNode->expr);
+						$keyType = $arrowScope->getIterableKeyType($yieldFromType);
+						$valueType = $arrowScope->getIterableValueType($yieldFromType);
 					}
 
-					if ($yieldNode->value === null) {
-						$valueType = new NullType();
-					} else {
-						$valueType = $arrowScope->getType($yieldNode->value);
-					}
+					$returnType = new GenericObjectType(Generator::class, [
+						$keyType,
+						$valueType,
+						new MixedType(),
+						new VoidType(),
+					]);
 				} else {
-					$yieldFromType = $arrowScope->getType($yieldNode->expr);
-					$keyType = $arrowScope->getIterableKeyType($yieldFromType);
-					$valueType = $arrowScope->getIterableValueType($yieldFromType);
+					$returnType = $arrowScope->getKeepVoidType($expr->expr);
+					if ($expr->returnType !== null) {
+						$nativeReturnType = $scope->getFunctionType($expr->returnType, false, false);
+						$returnType = MutatingScope::intersectButNotNever($nativeReturnType, $returnType);
+					}
 				}
 
-				$returnType = new GenericObjectType(Generator::class, [
-					$keyType,
-					$valueType,
-					new MixedType(),
-					new VoidType(),
-				]);
-			} else {
-				$returnType = $arrowScope->getKeepVoidType($expr->expr);
-				if ($expr->returnType !== null) {
-					$nativeReturnType = $scope->getFunctionType($expr->returnType, false, false);
-					$returnType = MutatingScope::intersectButNotNever($nativeReturnType, $returnType);
+				if ($arrayReducePass !== null && $callableParameters !== null) {
+					$nextPassParameters = $this->getNextArrayReducePassParameters($scope, $expr, $arrayReducePass, $callableParameters, $nativeCallableParameters, $returnType);
+					if ($nextPassParameters !== null) {
+						[$callableParameters, $nativeCallableParameters, $arrayReducePass] = $nextPassParameters;
+						continue;
+					}
 				}
+
+				break;
 			}
 
 			$arrowFunctionImpurePoints = [];
@@ -239,145 +261,157 @@ final class ClosureTypeResolver
 				);
 			}
 
-			self::$resolveClosureTypeDepth++;
+			while (true) {
+				self::$resolveClosureTypeDepth++;
 
-			$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
-			$closureReturnStatements = [];
-			$closureYieldStatements = [];
-			$onlyNeverExecutionEnds = null;
-			$closureImpurePoints = [];
-			$invalidateExpressions = [];
+				$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
+				$closureReturnStatements = [];
+				$closureYieldStatements = [];
+				$onlyNeverExecutionEnds = null;
+				$closureImpurePoints = [];
+				$invalidateExpressions = [];
 
-			try {
-				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($expr, $expr->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$onlyNeverExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
-					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
-						return;
-					}
+				try {
+					$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($expr, $expr->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$onlyNeverExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
+						if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+							return;
+						}
 
-					if ($node instanceof InvalidateExprNode) {
-						$invalidateExpressions[] = $node;
-						return;
-					}
+						if ($node instanceof InvalidateExprNode) {
+							$invalidateExpressions[] = $node;
+							return;
+						}
 
-					if ($node instanceof PropertyAssignNode) {
-						$closureImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-						$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
-						return;
-					}
+						if ($node instanceof PropertyAssignNode) {
+							$closureImpurePoints[] = new ImpurePoint(
+								$scope,
+								$node,
+								'propertyAssign',
+								'property assignment',
+								true,
+							);
+							$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
+							return;
+						}
 
-					if ($node instanceof ExecutionEndNode) {
-						if ($node->getStatementResult()->isAlwaysTerminating()) {
-							foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
-								if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
-									$onlyNeverExecutionEnds = false;
-									continue;
+						if ($node instanceof ExecutionEndNode) {
+							if ($node->getStatementResult()->isAlwaysTerminating()) {
+								foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
+									if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
+										$onlyNeverExecutionEnds = false;
+										continue;
+									}
+
+									if ($onlyNeverExecutionEnds === null) {
+										$onlyNeverExecutionEnds = true;
+									}
+
+									break;
 								}
 
-								if ($onlyNeverExecutionEnds === null) {
-									$onlyNeverExecutionEnds = true;
+								if (count($node->getStatementResult()->getExitPoints()) === 0) {
+									if ($onlyNeverExecutionEnds === null) {
+										$onlyNeverExecutionEnds = true;
+									}
 								}
-
-								break;
+							} else {
+								$onlyNeverExecutionEnds = false;
 							}
 
-							if (count($node->getStatementResult()->getExitPoints()) === 0) {
-								if ($onlyNeverExecutionEnds === null) {
-									$onlyNeverExecutionEnds = true;
-								}
-							}
-						} else {
-							$onlyNeverExecutionEnds = false;
+							return;
 						}
 
-						return;
-					}
-
-					if ($node instanceof Node\Stmt\Return_) {
-						$closureReturnStatements[] = [$node, $scope];
-					}
-
-					if (!$node instanceof Yield_ && !$node instanceof YieldFrom) {
-						return;
-					}
-
-					$closureYieldStatements[] = [$node, $scope];
-				}, StatementContext::createTopLevel());
-			} finally {
-				self::$resolveClosureTypeDepth--;
-			}
-
-			$throwPoints = $closureStatementResult->getThrowPoints();
-			$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());
-
-			$returnTypes = [];
-			$hasNull = false;
-			foreach ($closureReturnStatements as [$returnNode, $returnScope]) {
-				if ($returnNode->expr === null) {
-					$hasNull = true;
-					continue;
-				}
-
-				$returnTypes[] = $returnScope->toMutatingScope()->getType($returnNode->expr);
-			}
-
-			if (count($returnTypes) === 0) {
-				if ($onlyNeverExecutionEnds === true && !$hasNull) {
-					$returnType = new NonAcceptingNeverType();
-				} else {
-					$returnType = new VoidType();
-				}
-			} else {
-				if ($onlyNeverExecutionEnds === true) {
-					$returnTypes[] = new NonAcceptingNeverType();
-				}
-				if ($hasNull) {
-					$returnTypes[] = new NullType();
-				}
-				$returnType = TypeCombinator::union(...$returnTypes);
-			}
-
-			if (count($closureYieldStatements) > 0) {
-				$keyTypes = [];
-				$valueTypes = [];
-				foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
-					if ($yieldNode instanceof Yield_) {
-						if ($yieldNode->key === null) {
-							$keyTypes[] = new IntegerType();
-						} else {
-							$keyTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->key);
+						if ($node instanceof Node\Stmt\Return_) {
+							$closureReturnStatements[] = [$node, $scope];
 						}
 
-						if ($yieldNode->value === null) {
-							$valueTypes[] = new NullType();
-						} else {
-							$valueTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->value);
+						if (!$node instanceof Yield_ && !$node instanceof YieldFrom) {
+							return;
 						}
 
+						$closureYieldStatements[] = [$node, $scope];
+					}, StatementContext::createTopLevel());
+				} finally {
+					self::$resolveClosureTypeDepth--;
+				}
+
+				$throwPoints = $closureStatementResult->getThrowPoints();
+				$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());
+
+				$returnTypes = [];
+				$hasNull = false;
+				foreach ($closureReturnStatements as [$returnNode, $returnScope]) {
+					if ($returnNode->expr === null) {
+						$hasNull = true;
 						continue;
 					}
 
-					$yieldFromType = $yieldScope->toMutatingScope()->getType($yieldNode->expr);
-					$keyTypes[] = $yieldScope->toMutatingScope()->getIterableKeyType($yieldFromType);
-					$valueTypes[] = $yieldScope->toMutatingScope()->getIterableValueType($yieldFromType);
+					$returnTypes[] = $returnScope->toMutatingScope()->getType($returnNode->expr);
 				}
 
-				$returnType = new GenericObjectType(Generator::class, [
-					TypeCombinator::union(...$keyTypes),
-					TypeCombinator::union(...$valueTypes),
-					new MixedType(),
-					$returnType,
-				]);
-			} else {
-				if ($expr->returnType !== null) {
-					$nativeReturnType = $scope->getFunctionType($expr->returnType, false, false);
-					$returnType = MutatingScope::intersectButNotNever($nativeReturnType, $returnType);
+				if (count($returnTypes) === 0) {
+					if ($onlyNeverExecutionEnds === true && !$hasNull) {
+						$returnType = new NonAcceptingNeverType();
+					} else {
+						$returnType = new VoidType();
+					}
+				} else {
+					if ($onlyNeverExecutionEnds === true) {
+						$returnTypes[] = new NonAcceptingNeverType();
+					}
+					if ($hasNull) {
+						$returnTypes[] = new NullType();
+					}
+					$returnType = TypeCombinator::union(...$returnTypes);
 				}
+
+				if (count($closureYieldStatements) > 0) {
+					$keyTypes = [];
+					$valueTypes = [];
+					foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
+						if ($yieldNode instanceof Yield_) {
+							if ($yieldNode->key === null) {
+								$keyTypes[] = new IntegerType();
+							} else {
+								$keyTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->key);
+							}
+
+							if ($yieldNode->value === null) {
+								$valueTypes[] = new NullType();
+							} else {
+								$valueTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->value);
+							}
+
+							continue;
+						}
+
+						$yieldFromType = $yieldScope->toMutatingScope()->getType($yieldNode->expr);
+						$keyTypes[] = $yieldScope->toMutatingScope()->getIterableKeyType($yieldFromType);
+						$valueTypes[] = $yieldScope->toMutatingScope()->getIterableValueType($yieldFromType);
+					}
+
+					$returnType = new GenericObjectType(Generator::class, [
+						TypeCombinator::union(...$keyTypes),
+						TypeCombinator::union(...$valueTypes),
+						new MixedType(),
+						$returnType,
+					]);
+				} else {
+					if ($expr->returnType !== null) {
+						$nativeReturnType = $scope->getFunctionType($expr->returnType, false, false);
+						$returnType = MutatingScope::intersectButNotNever($nativeReturnType, $returnType);
+					}
+				}
+
+				if ($arrayReducePass !== null && $callableParameters !== null) {
+					$nextPassParameters = $this->getNextArrayReducePassParameters($scope, $expr, $arrayReducePass, $callableParameters, $nativeCallableParameters, $returnType);
+					if ($nextPassParameters !== null) {
+						[$callableParameters, $nativeCallableParameters, $arrayReducePass] = $nextPassParameters;
+						continue;
+					}
+				}
+
+				break;
 			}
 
 			$usedVariables = [];
@@ -457,6 +491,88 @@ final class ClosureTypeResolver
 			mustUseReturnValue: $mustUseReturnValue,
 			isStatic: TrinaryLogic::createFromBoolean($expr->static),
 		);
+	}
+
+	/**
+	 * @return array{ParameterReflection[]|null, ParameterReflection[]|null}
+	 */
+	private function getCallableParametersFromCallStack(
+		MutatingScope $scope,
+		Node\Expr\Closure|ArrowFunction $expr,
+	): array
+	{
+		$callableParameters = null;
+		$nativeCallableParameters = null;
+		$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
+		if ($inFunctionCallsStackCount > 0) {
+			[, $inParameter] = $scope->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
+			if ($inParameter !== null) {
+				$callableParameters = $this->nodeScopeResolver->createCallableParameters($scope, $expr, null, $inParameter->getType());
+				$nativeType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
+				$nativeCallableParameters = $this->nodeScopeResolver->createNativeCallableParameters($scope, $expr, null, $nativeType);
+			}
+		}
+
+		return [$callableParameters, $nativeCallableParameters];
+	}
+
+	/**
+	 * Decides whether the body of an array_reduce() callback needs to be analysed again.
+	 *
+	 * The first pass types $carry as the initial argument. When the callback's return
+	 * type escapes it, the carry type is widened and verified in a second pass. When
+	 * even the widened type is not a fixed point, the callback is analysed once more
+	 * with the parameter types it would have without this inference.
+	 *
+	 * @param ParameterReflection[] $callableParameters
+	 * @param ParameterReflection[]|null $nativeCallableParameters
+	 * @return array{ParameterReflection[]|null, ParameterReflection[]|null, int}|null parameters and pass number for the next pass, or null when no more passes are needed
+	 */
+	private function getNextArrayReducePassParameters(
+		MutatingScope $scope,
+		Node\Expr\Closure|ArrowFunction $expr,
+		int $pass,
+		array $callableParameters,
+		?array $nativeCallableParameters,
+		Type $returnType,
+	): ?array
+	{
+		if ($pass >= 3 || !isset($callableParameters[0])) {
+			return null;
+		}
+
+		$carryType = $callableParameters[0]->getType();
+		if ($carryType->isSuperTypeOf($returnType)->yes()) {
+			return null;
+		}
+
+		if ($pass === 1) {
+			$callableParameters[0] = new DummyParameter('carry', self::widenArrayReduceCarryType($carryType, $returnType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+
+			return [$callableParameters, $nativeCallableParameters, 2];
+		}
+
+		// the widened carry type is not a fixed point - fall back to the naive behaviour
+		[$callableParameters, $nativeCallableParameters] = $this->getCallableParametersFromCallStack($scope, $expr);
+
+		return [$callableParameters, $nativeCallableParameters, 3];
+	}
+
+	/** Widens while preserving constant array shapes so that the second pass can converge. */
+	private static function widenArrayReduceCarryType(Type $initialType, Type $returnType): Type
+	{
+		$union = TypeCombinator::union($initialType, $returnType);
+		$constantArrays = $union->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			$generalized = [];
+			foreach ($constantArrays as $constantArray) {
+				$generalized[] = $constantArray->generalizeValues();
+			}
+
+			return TypeCombinator::union(...$generalized);
+		}
+
+		return $union->generalize(GeneralizePrecision::lessSpecific());
 	}
 
 }

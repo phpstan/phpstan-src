@@ -26,6 +26,40 @@ function check(bool $cond, string $msg): void
 	}
 }
 
+class SmokeBase
+{
+	private string $secret = 's';
+	protected int $p = 1;
+
+	public function secretSum(): string
+	{
+		return $this->secret . '/' . $this->p;
+	}
+}
+
+class SmokeValue extends SmokeBase
+{
+	public function __construct(
+		public readonly string $name,
+		public ?SmokeValue $peer = null,
+	) {
+	}
+
+	public function secretSum(): string
+	{
+		return $this->name . '/' . parent::secretSum();
+	}
+}
+
+class SmokeWaker
+{
+	public $a = 1;
+
+	public function __wakeup(): void
+	{
+	}
+}
+
 // Shared fixtures — both sides compare against the same literals.
 function fixtures(): array
 {
@@ -95,7 +129,10 @@ if ($mode === 'child-read') {
 	check(ArenaCache::lookup('fixtures') === fixtures(), 'child: fixtures round-trip identical');
 	check(ArenaCache::lookup('missing') === null, 'child: missing record is null');
 	check(!ArenaCache::hasRecord('missing'), 'child: hasRecord(missing) false');
-	check(!ArenaCache::hasRecord('rejected-object'), 'child: object publish left no record');
+	check(!ArenaCache::hasRecord('rejected-closure'), 'child: closure publish left no record');
+	$objects = ArenaCache::lookup('objects');
+	check($objects['a'] instanceof SmokeValue && $objects['a']->secretSum() === 'alpha/s/1', 'child: object round-trips cross-process');
+	check($objects['again'] === $objects['a'] && $objects['a']->peer->peer === $objects['a'], 'child: identity and cycle survive cross-process');
 
 	$rows = hashFixtures();
 	check(ArenaCache::lookupHash('sigmap', 'strlen') === $rows['strlen'], 'child: hash entry strlen');
@@ -172,10 +209,28 @@ check(ArenaCache::create('bad id!') === null, 'parent: invalid run id refused');
 
 ArenaCache::publish('fixtures', fixtures());
 ArenaCache::publishHash('sigmap', hashFixtures());
-ArenaCache::publish('rejected-object', new stdClass());
-ArenaCache::publish('rejected-nested-object', ['a' => [new stdClass()]]);
-check(!ArenaCache::hasRecord('rejected-object'), 'parent: object publish aborted');
-check(!ArenaCache::hasRecord('rejected-nested-object'), 'parent: nested object publish aborted');
+
+// plain value objects round-trip through the object codec, with private and
+// readonly properties, shared instances and cycles preserved
+$alpha = new SmokeValue('alpha');
+$beta = new SmokeValue('beta', $alpha);
+$alpha->peer = $beta;
+ArenaCache::publish('objects', ['a' => $alpha, 'b' => $beta, 'again' => $alpha, 'plain' => (object) ['k' => [1, 2]]]);
+check(ArenaCache::hasRecord('objects'), 'parent: object payload published');
+$objects = ArenaCache::lookup('objects');
+check($objects['a'] instanceof SmokeValue && $objects['a']->name === 'alpha', 'parent: object round-trips');
+check($objects['a']->secretSum() === 'alpha/s/1', 'parent: private + protected props round-trip');
+check($objects['again'] === $objects['a'], 'parent: shared instance identity preserved');
+check($objects['a']->peer === $objects['b'] && $objects['b']->peer->peer === $objects['b'], 'parent: cycle intact');
+
+// anything the codec cannot represent stays per-process, silently
+ArenaCache::publish('rejected-closure', ['fn' => static function (): void {
+}]);
+ArenaCache::publish('rejected-wakeup', new SmokeWaker());
+ArenaCache::publish('rejected-internal', ['dt' => new DateTime()]);
+check(!ArenaCache::hasRecord('rejected-closure'), 'parent: closure publish aborted');
+check(!ArenaCache::hasRecord('rejected-wakeup'), 'parent: __wakeup class publish aborted');
+check(!ArenaCache::hasRecord('rejected-internal'), 'parent: internal class publish aborted');
 check(ArenaCache::lookup('fixtures') === fixtures(), 'parent: own fixtures readback');
 
 // value with a reference inside: dereferenced transparently

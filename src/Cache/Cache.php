@@ -4,7 +4,6 @@ namespace PHPStan\Cache;
 
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use function is_array;
 
 #[AutowiredService]
 final class Cache
@@ -26,25 +25,25 @@ final class Cache
 	 */
 	public function load(string $key, string $variableKey)
 	{
-		// Every data-only entry is also shared across the run's parallel
-		// workers through the shared-memory arena (turbo extension only; the
-		// seam is a no-op otherwise): whichever process loads or saves an
-		// entry first publishes it, and the others skip the include() of the
-		// var_export'd cache file. Payloads carrying objects stay per-worker
-		// — encoding them transiently double-buffers at exactly the moments
-		// worker memory peaks (measured, not guessed).
+		// Every entry is also shared across the run's parallel workers
+		// through the shared-memory arena (turbo extension only; the seam is
+		// a no-op otherwise): whichever process loads or saves an entry first
+		// publishes it, and the others skip the include() of the var_export'd
+		// cache file. The arena's codec covers scalars, arrays and plain
+		// value objects, and interns repeated strings on read like include()
+		// does; payloads it cannot represent just stay per-worker.
 		$arenaKey = null;
 		if ($this->isArenaUsable()) {
 			$arenaKey = 'fcs:' . $key . "\0" . $variableKey;
 			$cached = ArenaCache::lookup($arenaKey);
-			if (is_array($cached)) {
+			if ($cached !== null) {
 				return $cached;
 			}
 		}
 
 		$data = $this->storage->load($key, $variableKey);
 		if ($data !== null && $arenaKey !== null) {
-			$this->publishToArena($arenaKey, $data);
+			ArenaCache::publish($arenaKey, $data);
 		}
 
 		return $data;
@@ -63,7 +62,7 @@ final class Cache
 			return;
 		}
 
-		$this->publishToArena('fcs:' . $key . "\0" . $variableKey, $data);
+		ArenaCache::publish('fcs:' . $key . "\0" . $variableKey, $data);
 	}
 
 	/**
@@ -82,20 +81,6 @@ final class Cache
 		}
 
 		return $this->arenaUsable;
-	}
-
-	/**
-	 * @param mixed $data
-	 */
-	private function publishToArena(string $arenaKey, $data): void
-	{
-		if (!is_array($data)) {
-			return;
-		}
-
-		// the arena's native serializer silently rejects anything that is
-		// not data-only (objects inside) — those entries stay per-worker
-		ArenaCache::publish($arenaKey, $data);
 	}
 
 }

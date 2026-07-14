@@ -29,13 +29,18 @@
  *    loser's bytes become dead space. Wasteful, never unsafe — the same
  *    philosophy as the odsl directory-scan lock's cold-cache races.
  *
- * Records are self-contained flat blobs of *data-only* PHP values (null,
- * bool, int, float, string, array). Objects, resources and cycles are not
- * serializable here; publish simply aborts and the key stays computable
- * locally. Nothing in the mapped region is ever seen by the PHP GC — reads
- * materialize fresh per-process zvals — so shared pages are never dirtied by
- * refcounting. Offsets, never pointers: every process maps at whatever base
- * address it gets.
+ * Records are self-contained flat blobs of PHP values: scalars, arrays, and
+ * plain userland objects (no serialization hooks, no custom create handler
+ * — see objectClassCodecable(); shared instances and cycles travel as
+ * TAG_OBJREF). Anything else — closures, resources, hook-bearing classes —
+ * aborts the publish and the key stays computable locally. Reads intern
+ * repeated strings per record, matching the property include() gets from
+ * compiler literal interning, and rebuild objects through the engine with
+ * the declaring scope, so typed/readonly properties behave as in the
+ * unserializer. Nothing in the mapped region is ever seen by the PHP GC —
+ * reads materialize fresh per-process zvals — so shared pages are never
+ * dirtied by refcounting. Offsets, never pointers: every process maps at
+ * whatever base address it gets.
  *
  * Two record kinds exist: a plain value, and a "hash record" that carries its
  * own open-addressed table of entries so a single map published once (e.g.
@@ -87,7 +92,7 @@ static constexpr size_t RUN_ID_LENGTH_LIMIT = 20;
 static constexpr uint64_t HASH_RECORD_MIN_SLOTS = 8;
 
 static constexpr uint64_t ARENA_MAGIC = 0x414E455241545350ULL; /* "PSTARENA" */
-static constexpr uint32_t ARENA_FORMAT_VERSION = 1;
+static constexpr uint32_t ARENA_FORMAT_VERSION = 2;
 
 struct ArenaHeader
 {
@@ -205,6 +210,11 @@ static constexpr uint8_t TAG_INT = 3;
 static constexpr uint8_t TAG_DOUBLE = 4;
 static constexpr uint8_t TAG_STRING = 5;
 static constexpr uint8_t TAG_ARRAY = 7;
+/* plain userland object: class name, prop count, then per prop the mangled
+ * name and value; instances get implicit sequential ids in first-encounter
+ * order, and repeats/cycles reference them via TAG_OBJREF */
+static constexpr uint8_t TAG_OBJECT = 8;
+static constexpr uint8_t TAG_OBJREF = 9;
 
 struct WriteBuffer
 {
@@ -234,7 +244,48 @@ struct WriteBuffer
 	}
 };
 
-static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth)
+/* Write-side context: object identity across one value tree, so shared
+ * instances serialize once and cycles terminate (TAG_OBJREF). */
+struct SerializeCtx
+{
+	HashTable seenObjects; /* (uintptr_t) zend_object* -> IS_LONG sequential id */
+	bool seenInited = false;
+	uint32_t nextObjectId = 0;
+
+	~SerializeCtx()
+	{
+		if (seenInited) {
+			zend_hash_destroy(&seenObjects);
+		}
+	}
+};
+
+/* Plain userland value classes only: anything with serialization hooks, a
+ * custom create handler, or internal-class semantics keeps its established
+ * per-worker behavior (the whole publish aborts). Enums are rejected too —
+ * cases are process singletons that a flat record cannot represent. */
+static bool objectClassCodecable(zend_class_entry *ce)
+{
+	if (ce->type == ZEND_INTERNAL_CLASS && ce != zend_standard_class_def) {
+		return false;
+	}
+	if ((ce->ce_flags & (ZEND_ACC_INTERFACE | ZEND_ACC_ABSTRACT | ZEND_ACC_ENUM)) != 0) {
+		return false;
+	}
+	if (ce->__serialize != NULL || ce->__unserialize != NULL) {
+		return false;
+	}
+	if (zend_hash_str_exists(&ce->function_table, "__wakeup", sizeof("__wakeup") - 1)
+		|| zend_hash_str_exists(&ce->function_table, "__sleep", sizeof("__sleep") - 1)) {
+		return false;
+	}
+	if (ce->create_object != NULL) {
+		return false;
+	}
+	return true;
+}
+
+static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth, SerializeCtx &ctx)
 {
 	if (depth > SERIALIZE_DEPTH_LIMIT) {
 		return false;
@@ -278,15 +329,74 @@ static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth)
 					out.u8(0);
 					out.u64((uint64_t) entry.indexKey());
 				}
-				if (!serializeValue(out, entry.value().raw(), depth + 1)) {
+				if (!serializeValue(out, entry.value().raw(), depth + 1, ctx)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		case IS_OBJECT: {
+			zend_object *obj = Z_OBJ_P(value);
+			zend_class_entry *ce = obj->ce;
+			if (!objectClassCodecable(ce)) {
+				return false;
+			}
+
+			if (!ctx.seenInited) {
+				zend_hash_init(&ctx.seenObjects, 8, NULL, NULL, 0);
+				ctx.seenInited = true;
+			}
+			zval *seenId = zend_hash_index_find(&ctx.seenObjects, (zend_ulong) (uintptr_t) obj);
+			if (seenId != NULL) {
+				out.u8(TAG_OBJREF);
+				out.u32((uint32_t) Z_LVAL_P(seenId));
+				return true;
+			}
+			zval idZv;
+			ZVAL_LONG(&idZv, (zend_long) ctx.nextObjectId++);
+			zend_hash_index_add(&ctx.seenObjects, (zend_ulong) (uintptr_t) obj, &idZv);
+
+			out.u8(TAG_OBJECT);
+			out.u32((uint32_t) ZSTR_LEN(ce->name));
+			out.blob(ZSTR_VAL(ce->name), ZSTR_LEN(ce->name));
+
+			/* the get_properties view exposes declared props as INDIRECT
+			 * slots (mangled keys for private/protected) plus dynamic ones;
+			 * uninitialized typed props are UNDEF after deref and skipped —
+			 * the same shape serialize() writes for hook-free classes */
+			HashTable *props = obj->handlers->get_properties(obj);
+			uint32_t propCount = 0;
+			for (zv::ArrayEntry entry : zv::TableRef(props)) {
+				zval *propValue = entry.value().raw();
+				ZVAL_DEINDIRECT(propValue);
+				if (Z_ISUNDEF_P(propValue)) {
+					continue;
+				}
+				if (entry.stringKeyOrNull() == NULL) {
+					return false; /* numeric-keyed dynamic prop: not worth supporting */
+				}
+				propCount++;
+			}
+			out.u32(propCount);
+			for (zv::ArrayEntry entry : zv::TableRef(props)) {
+				zval *propValue = entry.value().raw();
+				ZVAL_DEINDIRECT(propValue);
+				if (Z_ISUNDEF_P(propValue)) {
+					continue;
+				}
+				zend_string *propKey = entry.stringKey();
+				out.u32((uint32_t) ZSTR_LEN(propKey));
+				out.blob(ZSTR_VAL(propKey), ZSTR_LEN(propKey));
+				if (!serializeValue(out, propValue, depth + 1, ctx)) {
 					return false;
 				}
 			}
 			return true;
 		}
 		default:
-			/* objects, resources, everything non-data: this value cannot be
-			 * shared; the caller drops the whole publish */
+			/* resources, closures via their internal class, everything
+			 * non-data: this value cannot be shared; the caller drops the
+			 * whole publish */
 			return false;
 	}
 }
@@ -336,7 +446,45 @@ struct ReadCursor
 	}
 };
 
-static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth)
+/* Read-side context. The intern table gives one materialization the same
+ * property include() gets from compiler literal interning: every repeated
+ * string (values AND array keys) within one record shares one zend_string —
+ * without it, string-heavy payloads retain measurably more than the
+ * include()d equivalent. The object vector resolves TAG_OBJREF by the
+ * implicit first-encounter ids the writer used. */
+struct DeserializeCtx
+{
+	HashTable interns; /* zend_string keyed by itself (content) -> same ptr */
+	bool internsInited = false;
+	std::vector<zend_object *> objects; /* borrowed; owned by the value tree */
+
+	~DeserializeCtx()
+	{
+		if (internsInited) {
+			zend_hash_destroy(&interns);
+		}
+	}
+};
+
+/* Returns a borrowed zend_string for the bytes, shared with every previous
+ * occurrence in this record. */
+static zend_string *internString(DeserializeCtx &ctx, const char *bytes, size_t len)
+{
+	if (!ctx.internsInited) {
+		zend_hash_init(&ctx.interns, 32, NULL, NULL, 0);
+		ctx.internsInited = true;
+	}
+	zend_string *existing = (zend_string *) zend_hash_str_find_ptr(&ctx.interns, bytes, len);
+	if (existing != NULL) {
+		return existing;
+	}
+	zend_string *created = zend_string_init(bytes, len, 0);
+	zend_hash_add_new_ptr(&ctx.interns, created, created);
+	zend_string_release(created); /* the table's key reference keeps it alive */
+	return created;
+}
+
+static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth, DeserializeCtx &ctx)
 {
 	if (depth > SERIALIZE_DEPTH_LIMIT) {
 		return false;
@@ -378,7 +526,7 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth)
 			if (!in.u32(&len) || !in.need(len)) {
 				return false;
 			}
-			ZVAL_STRINGL(out, (const char *) in.p, len);
+			ZVAL_STR_COPY(out, internString(ctx, (const char *) in.p, len));
 			in.p += len;
 			return true;
 		}
@@ -404,18 +552,18 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth)
 					if (!in.u32(&keyLen) || !in.need(keyLen)) {
 						goto array_fail;
 					}
-					const char *keyBytes = (const char *) in.p;
+					zend_string *key = internString(ctx, (const char *) in.p, keyLen);
 					in.p += keyLen;
-					if (!deserializeValue(in, &entryValue, depth + 1)) {
+					if (!deserializeValue(in, &entryValue, depth + 1, ctx)) {
 						goto array_fail;
 					}
-					zend_hash_str_update(arr, keyBytes, keyLen, &entryValue);
+					zend_hash_update(arr, key, &entryValue);
 				} else if (keyKind == 0) {
 					uint64_t intKey;
 					if (!in.u64(&intKey)) {
 						goto array_fail;
 					}
-					if (!deserializeValue(in, &entryValue, depth + 1)) {
+					if (!deserializeValue(in, &entryValue, depth + 1, ctx)) {
 						goto array_fail;
 					}
 					zend_hash_index_update(arr, (zend_ulong) intKey, &entryValue);
@@ -428,6 +576,80 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth)
 		array_fail:
 			zend_array_destroy(arr);
 			return false;
+		}
+		case TAG_OBJECT: {
+			uint32_t nameLen;
+			if (!in.u32(&nameLen) || !in.need(nameLen)) {
+				return false;
+			}
+			zend_string *className = internString(ctx, (const char *) in.p, nameLen);
+			in.p += nameLen;
+			zend_class_entry *ce = zend_lookup_class(className);
+			if (ce == NULL || EG(exception) != NULL || !objectClassCodecable(ce)) {
+				return false;
+			}
+			zval objZv;
+			if (object_init_ex(&objZv, ce) != SUCCESS) {
+				return false;
+			}
+			/* registered before the children parse so cycles resolve */
+			ctx.objects.push_back(Z_OBJ(objZv));
+			uint32_t propCount;
+			if (!in.u32(&propCount) || (size_t) propCount > (size_t) (in.end - in.p)) {
+				goto object_fail;
+			}
+			for (uint32_t i = 0; i < propCount; i++) {
+				uint32_t keyLen;
+				if (!in.u32(&keyLen) || !in.need(keyLen)) {
+					goto object_fail;
+				}
+				zend_string *mangledName = internString(ctx, (const char *) in.p, keyLen);
+				in.p += keyLen;
+
+				zval propValue;
+				if (!deserializeValue(in, &propValue, depth + 1, ctx)) {
+					goto object_fail;
+				}
+
+				/* the write goes through the engine with the declaring scope
+				 * (private/protected mangling decides it), so visibility,
+				 * typed-property verification and readonly initialization
+				 * behave exactly as in the unserializer */
+				const char *unmangledClass = NULL;
+				const char *unmangledProp = NULL;
+				size_t unmangledPropLen = 0;
+				if (zend_unmangle_property_name_ex(mangledName, &unmangledClass, &unmangledProp, &unmangledPropLen) != SUCCESS) {
+					zval_ptr_dtor(&propValue);
+					goto object_fail;
+				}
+				zend_class_entry *scope = ce;
+				if (unmangledClass != NULL && unmangledClass[0] != '*') {
+					zend_string *scopeName = internString(ctx, unmangledClass, strlen(unmangledClass));
+					scope = zend_lookup_class(scopeName);
+					if (scope == NULL || EG(exception) != NULL) {
+						zval_ptr_dtor(&propValue);
+						goto object_fail;
+					}
+				}
+				zend_update_property(scope, Z_OBJ(objZv), unmangledProp, unmangledPropLen, &propValue);
+				zval_ptr_dtor(&propValue);
+				if (EG(exception) != NULL) {
+					goto object_fail;
+				}
+			}
+			ZVAL_COPY_VALUE(out, &objZv);
+			return true;
+		object_fail:
+			zval_ptr_dtor(&objZv);
+			return false;
+		}
+		case TAG_OBJREF: {
+			uint32_t objectId;
+			if (!in.u32(&objectId) || (size_t) objectId >= ctx.objects.size()) {
+				return false;
+			}
+			ZVAL_OBJ_COPY(out, ctx.objects[objectId]);
+			return true;
 		}
 		default:
 			return false;
@@ -576,7 +798,10 @@ static bool hashRecordBuild(WriteBuffer &out, HashTable *entries)
 		uint64_t entryOffset = out.bytes.size();
 		out.u32((uint32_t) keyLen);
 		out.blob(keyBytes, keyLen);
-		if (!serializeValue(out, entry.value().raw(), 0)) {
+		/* each entry stream is self-contained — object ids and OBJREFs must
+		 * not cross entry boundaries, entries deserialize independently */
+		SerializeCtx entryCtx;
+		if (!serializeValue(out, entry.value().raw(), 0, entryCtx)) {
 			return false;
 		}
 
@@ -615,6 +840,7 @@ static bool hashRecordAll(const RecordView &view, zval *result)
 	}
 
 	zend_array *all = zend_new_array(8);
+	DeserializeCtx ctx;
 	uint64_t pos = sizeof(uint64_t) + slotCount * sizeof(uint64_t);
 	while (pos < payloadLen) {
 		uint32_t keyLen;
@@ -633,7 +859,11 @@ static bool hashRecordAll(const RecordView &view, zval *result)
 			in.p = payload + pos;
 			in.end = payload + payloadLen;
 			zval entryValue;
-			if (!deserializeValue(in, &entryValue, 0)) {
+			/* interns carry across entries (like include()'s per-file
+			 * literals); object ids do not — each entry stream was written
+			 * with its own id sequence */
+			ctx.objects.clear();
+			if (!deserializeValue(in, &entryValue, 0, ctx)) {
 				goto all_fail;
 			}
 			pos = (uint64_t) (in.p - payload);
@@ -686,7 +916,8 @@ static bool hashRecordFind(const RecordView &view, const char *entryKey, size_t 
 			ReadCursor in;
 			in.p = (const uint8_t *) keyBytes + keyLen;
 			in.end = payload + payloadLen;
-			return deserializeValue(in, result, 0);
+			DeserializeCtx ctx;
+			return deserializeValue(in, result, 0, ctx);
 		}
 	}
 	return false;
@@ -910,7 +1141,8 @@ public:
 		in.p = view.payload;
 		in.end = view.payload + view.header->payloadLen;
 		zval result;
-		if (!deserializeValue(in, &result, 0)) {
+		DeserializeCtx ctx;
+		if (!deserializeValue(in, &result, 0, ctx)) {
 			return;
 		}
 		RETVAL_ZVAL(&result, 0, 0);
@@ -926,7 +1158,8 @@ public:
 			return;
 		}
 		WriteBuffer payload;
-		if (!serializeValue(payload, value, 0)) {
+		SerializeCtx ctx;
+		if (!serializeValue(payload, value, 0, ctx)) {
 			return;
 		}
 		publishRecord(ZSTR_VAL(key), ZSTR_LEN(key), RECORD_KIND_VALUE, payload);

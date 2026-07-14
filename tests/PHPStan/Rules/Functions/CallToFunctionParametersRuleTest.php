@@ -1440,6 +1440,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
 	public function testCurlSetOptCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/curl_setopt_callback.php'], [

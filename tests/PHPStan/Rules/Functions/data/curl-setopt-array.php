@@ -65,3 +65,12 @@ function doBar($options) {
 	curl_setopt_array($curl, $options);
 }
 
+function callbackOption() {
+	$curl = curl_init();
+	curl_setopt_array($curl, [
+		\CURLOPT_WRITEFUNCTION => function ($ch, string $data): bool { // invalid, must return int
+			return true;
+		},
+	]);
+}
+

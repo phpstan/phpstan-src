@@ -64,6 +64,32 @@ final class FinalWithParent extends A
 	public function parentOfThis(): void
 	{
 		assertType("'Bug14951\\\\A'", get_parent_class($this));
+		assertType("'Bug14951\\\\A'", get_parent_class(static::class));
+	}
+
+}
+
+/** @final */
+class PhpDocFinalNoParent
+{
+
+	public function parentOfThis(): void
+	{
+		// A @final class cannot be subclassed either, so there is no subclass widening.
+		assertType('false', get_parent_class($this));
+		assertType('false', get_parent_class(static::class));
+	}
+
+}
+
+/** @final */
+class PhpDocFinalWithParent extends A
+{
+
+	public function parentOfThis(): void
+	{
+		assertType("'Bug14951\\\\A'", get_parent_class($this));
+		assertType("'Bug14951\\\\A'", get_parent_class(static::class));
 	}
 
 }

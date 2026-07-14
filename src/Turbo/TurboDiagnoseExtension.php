@@ -21,9 +21,11 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 
 	public function print(Output $output): void
 	{
+		$workerBinary = TurboExtensionSelector::findExtensionForWorkers();
+
 		$output->writeLineFormatted(sprintf(
 			'<info>Turbo extension:</info> %s',
-			$this->describeStatus(),
+			$this->describeStatus($workerBinary),
 		));
 
 		$isMusl = TurboExtensionSelector::isMusl();
@@ -41,20 +43,24 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		));
 
 		if (TurboExtensionEnabler::isLoaded()) {
-			$workerBinary = 'loaded via php.ini, workers inherit it';
+			$workerBinaryLine = 'loaded via php.ini, workers inherit it';
 		} else {
-			$workerBinary = TurboExtensionSelector::findExtensionForWorkers() ?? 'none found';
+			$workerBinaryLine = $workerBinary ?? 'none found';
 		}
 		$output->writeLineFormatted(sprintf(
 			'<info>Turbo worker binary:</info> %s',
-			$workerBinary,
+			$workerBinaryLine,
 		));
 		$output->writeLineFormatted('');
 	}
 
-	private function describeStatus(): string
+	private function describeStatus(?string $workerBinary): string
 	{
 		if (!TurboExtensionEnabler::isLoaded()) {
+			if ($workerBinary !== null) {
+				return 'enabled in worker processes (the main process runs without it)';
+			}
+
 			return 'not loaded';
 		}
 		if (getenv('PHPSTAN_TURBO') === '0') {

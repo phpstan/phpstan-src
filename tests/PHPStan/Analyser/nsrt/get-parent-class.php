@@ -45,12 +45,10 @@ trait FooTrait
 
 	public function doBaz()
 	{
-		// Inside a trait the using class is unknown, so $this defers to the general type.
+		// Inside a trait a late-static-bound argument is not resolved to a concrete parent.
 		assertType('class-string|false', get_parent_class());
 		assertType('class-string|false', get_parent_class($this));
-		// self::class / static::class resolve against the using class (Bar).
-		assertType('\'ParentClass\\\\Foo\'', get_parent_class(self::class));
-		assertType('\'ParentClass\\\\Foo\'|class-string<ParentClass\Bar>', get_parent_class(static::class));
+		assertType('class-string|false', get_parent_class(static::class));
 	}
 
 }

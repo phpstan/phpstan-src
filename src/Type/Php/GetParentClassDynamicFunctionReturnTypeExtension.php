@@ -76,6 +76,12 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 			}
 		}
 
+		// Inside a trait a late-static-bound value cannot be resolved to a concrete parent,
+		// same as `$this` above.
+		if ($scope->isInTrait() && $valueType instanceof StaticType) {
+			return null;
+		}
+
 		$classNames = $valueType->getObjectClassNames();
 		if (count($classNames) > 0) {
 			// A `$this`/`static` value can be an instance of a subclass through late static

@@ -73,7 +73,8 @@ foreach ($manifest as $twinClass => $entry) {
 
 	// the manifest must point at the file the class actually lives in
 	// (bin/side-by-side.php parses that file's source as the PHP side)
-	$actualFile = substr(realpath($twin->getFileName()), strlen(realpath($root)) + 1);
+	// normalized to forward slashes: the manifest stores portable paths
+	$actualFile = str_replace(DIRECTORY_SEPARATOR, '/', substr(realpath($twin->getFileName()), strlen(realpath($root)) + 1));
 	if ($actualFile !== $entry['php']) {
 		$problems[] = sprintf('lives in %s, but the manifest says %s — regenerate with bin/side-by-side.php --update-manifest', $actualFile, $entry['php']);
 	}

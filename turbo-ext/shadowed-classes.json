@@ -11,6 +11,10 @@
         "php": "src/Analyser/ScopeOps.php",
         "cpp": "turbo-ext/src/ScopeOps.cpp"
     },
+    "PHPStan\\Cache\\ArenaCache": {
+        "php": "src/Cache/ArenaCache.php",
+        "cpp": "turbo-ext/src/ArenaCache.cpp"
+    },
     "PHPStan\\Internal\\CombinationsHelper": {
         "php": "src/Internal/CombinationsHelper.php",
         "cpp": "turbo-ext/src/CombinationsHelper.cpp"

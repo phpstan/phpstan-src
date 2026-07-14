@@ -23,7 +23,7 @@ if (PHP_PHPSTAN_TURBO != "no") {
 	// directory by splitting on backslashes only — with forward slashes the
 	// objects compile flat while the link list expects the subpath
 	EXTENSION("phpstan_turbo",
-		"src\\main.cpp src\\support.cpp src\\CombinationsHelper.cpp src\\ConditionalExpressionHolder.cpp src\\ExpressionTypeHolder.cpp src\\NodeScanner.cpp src\\NodeTraverser.cpp src\\ScopeOps.cpp src\\TrinaryLogic.cpp src\\TypeCombinatorCache.cpp",
+		"src\\main.cpp src\\support.cpp src\\ArenaCache.cpp src\\CombinationsHelper.cpp src\\ConditionalExpressionHolder.cpp src\\ExpressionTypeHolder.cpp src\\NodeScanner.cpp src\\NodeTraverser.cpp src\\ScopeOps.cpp src\\TrinaryLogic.cpp src\\TypeCombinatorCache.cpp",
 		true,
 		flags);
 	ADD_SOURCES(configure_module_dirname + "/src/parser",

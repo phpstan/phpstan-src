@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\Cache\ArenaCache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
@@ -28,8 +29,20 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, mixed[]> */
 	private static array $signatureMaps = [];
 
+	/**
+	 * Rows already fetched from the shared arena (false = authoritatively
+	 * absent there), so steady-state lookups cost one local array access —
+	 * the same as reading the full map would.
+	 *
+	 * @var array<string, mixed[]|false>
+	 */
+	private static array $arenaSignatureRows = [];
+
 	/** @var array<string, array{hasSideEffects: bool}>|null */
 	private static ?array $functionMetadata = null;
+
+	/** @var array<string, array{hasSideEffects: bool}|false> */
+	private static array $arenaMetadataRows = [];
 
 	public function __construct(
 		private SignatureMapParser $parser,
@@ -48,7 +61,42 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 
 	public function hasFunctionSignature(string $name): bool
 	{
-		return array_key_exists(strtolower($name), $this->getSignatureMap());
+		return $this->getSignatureMapEntry(strtolower($name)) !== null;
+	}
+
+	/**
+	 * A row of the merged signature map, preferring the run's shared arena:
+	 * the first process to need the map builds and publishes it, workers
+	 * after that materialize only the rows they touch instead of the whole
+	 * multi-megabyte map.
+	 *
+	 * @return mixed[]|null
+	 */
+	private function getSignatureMapEntry(string $lowerName): ?array
+	{
+		$cacheKey = sprintf('%d-%d', $this->phpVersion->getVersionId(), $this->stricterFunctionMap ? 1 : 0);
+		if (array_key_exists($cacheKey, self::$signatureMaps)) {
+			return self::$signatureMaps[$cacheKey][$lowerName] ?? null;
+		}
+
+		$memoKey = $cacheKey . '/' . $lowerName;
+		if (array_key_exists($memoKey, self::$arenaSignatureRows)) {
+			$row = self::$arenaSignatureRows[$memoKey];
+			return $row === false ? null : $row;
+		}
+
+		$recordKey = 'sigmap-' . $cacheKey;
+		if (ArenaCache::hasRecord($recordKey)) {
+			$row = ArenaCache::lookupHash($recordKey, $lowerName);
+			if (!is_array($row)) {
+				$row = null;
+			}
+			self::$arenaSignatureRows[$memoKey] = $row ?? false;
+
+			return $row;
+		}
+
+		return $this->getSignatureMap()[$lowerName] ?? null;
 	}
 
 	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array
@@ -77,9 +125,12 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 		if (!$reflectionFunction instanceof ReflectionMethod && !$reflectionFunction instanceof ReflectionFunction && $reflectionFunction !== null) {
 			throw new ShouldNotHappenException();
 		}
-		$signatureMap = self::getSignatureMap();
+		$signatureRow = $this->getSignatureMapEntry($functionName);
+		if ($signatureRow === null) {
+			throw new ShouldNotHappenException(sprintf('Function %s is not in the signature map.', $functionName));
+		}
 		$signature = $this->parser->getFunctionSignature(
-			$signatureMap[$functionName],
+			$signatureRow,
 			$className,
 		);
 		$parameters = [];
@@ -130,8 +181,36 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 
 	public function hasFunctionMetadata(string $name): bool
 	{
-		$signatureMap = self::getFunctionMetadataMap();
-		return array_key_exists(strtolower($name), $signatureMap);
+		return $this->getFunctionMetadataEntry(strtolower($name)) !== null;
+	}
+
+	/**
+	 * @return array{hasSideEffects: bool}|null
+	 */
+	private function getFunctionMetadataEntry(string $lowerName): ?array
+	{
+		if (self::$functionMetadata !== null) {
+			return self::$functionMetadata[$lowerName] ?? null;
+		}
+
+		if (array_key_exists($lowerName, self::$arenaMetadataRows)) {
+			$row = self::$arenaMetadataRows[$lowerName];
+			return $row === false ? null : $row;
+		}
+
+		if (ArenaCache::hasRecord('funcmeta')) {
+			$row = ArenaCache::lookupHash('funcmeta', $lowerName);
+			if (!is_array($row)) {
+				$row = null;
+			}
+
+			/** @var array{hasSideEffects: bool}|null $row */
+			self::$arenaMetadataRows[$lowerName] = $row ?? false;
+
+			return $row;
+		}
+
+		return self::getFunctionMetadataMap()[$lowerName] ?? null;
 	}
 
 	/**
@@ -147,13 +226,12 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	 */
 	public function getFunctionMetadata(string $functionName): array
 	{
-		$functionName = strtolower($functionName);
-
-		if (!$this->hasFunctionMetadata($functionName)) {
+		$entry = $this->getFunctionMetadataEntry(strtolower($functionName));
+		if ($entry === null) {
 			throw new ShouldNotHappenException();
 		}
 
-		return self::getFunctionMetadataMap()[$functionName];
+		return $entry;
 	}
 
 	/**
@@ -165,6 +243,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 			/** @var array<string, array{hasSideEffects: bool}> $metadata */
 			$metadata = require __DIR__ . '/../../../resources/functionMetadata.php';
 			self::$functionMetadata = array_change_key_case($metadata, CASE_LOWER);
+			ArenaCache::publishHash('funcmeta', self::$functionMetadata);
 		}
 
 		return self::$functionMetadata;
@@ -223,7 +302,10 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php85delta.php');
 		}
 
-		return self::$signatureMaps[$cacheKey] = $signatureMap;
+		self::$signatureMaps[$cacheKey] = $signatureMap;
+		ArenaCache::publishHash('sigmap-' . $cacheKey, $signatureMap);
+
+		return $signatureMap;
 	}
 
 	/**

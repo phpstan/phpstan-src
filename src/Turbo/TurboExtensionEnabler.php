@@ -190,6 +190,7 @@ final class TurboExtensionEnabler
 		require_once __DIR__ . '/../../turbo-ext/stubs/NodeScanner.php';
 		require_once __DIR__ . '/../../turbo-ext/stubs/ParserRunner.php';
 		require_once __DIR__ . '/../../turbo-ext/stubs/TypeCombinatorCache.php';
+		require_once __DIR__ . '/../../turbo-ext/stubs/ArenaCache.php';
 
 		self::$typeCombinatorCacheEnabled = true;
 		self::$enabled = true;

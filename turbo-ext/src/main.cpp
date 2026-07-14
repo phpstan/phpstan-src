@@ -68,6 +68,14 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_node_scanner();
 	pt_register_parser_runner();
 	pt_register_type_combinator_cache();
+	pt_register_arena_cache();
+
+	return SUCCESS;
+}
+
+static PHP_MSHUTDOWN_FUNCTION(phpstan_turbo)
+{
+	pt_arena_mshutdown();
 
 	return SUCCESS;
 }
@@ -113,7 +121,7 @@ zend_module_entry phpstan_turbo_module_entry = {
 	"phpstan_turbo",
 	NULL, /* functions */
 	PHP_MINIT(phpstan_turbo),
-	NULL, /* MSHUTDOWN */
+	PHP_MSHUTDOWN(phpstan_turbo),
 	PHP_RINIT(phpstan_turbo),
 	PHP_RSHUTDOWN(phpstan_turbo),
 	NULL, /* MINFO */

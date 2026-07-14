@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use Override;
+use PHPStan\Cache\ArenaCache;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\Parallel\WorkerRunner;
 use PHPStan\ShouldNotHappenException;
@@ -45,6 +46,7 @@ final class WorkerCommand extends Command
 				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes'),
 				new InputOption('port', mode: InputOption::VALUE_REQUIRED),
 				new InputOption('identifier', mode: InputOption::VALUE_REQUIRED),
+				new InputOption('arena', mode: InputOption::VALUE_REQUIRED),
 				new InputOption('tmp-file', mode: InputOption::VALUE_REQUIRED),
 				new InputOption('instead-of', mode: InputOption::VALUE_REQUIRED),
 			])
@@ -62,6 +64,7 @@ final class WorkerCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$port = $input->getOption('port');
 		$identifier = $input->getOption('identifier');
+		$arena = $input->getOption('arena');
 		$tmpFile = $input->getOption('tmp-file');
 		$insteadOfFile = $input->getOption('instead-of');
 
@@ -74,6 +77,7 @@ final class WorkerCommand extends Command
 			|| (!is_bool($allowXdebug))
 			|| !is_string($port)
 			|| !is_string($identifier)
+			|| (!is_string($arena) && $arena !== null)
 			|| (!is_string($tmpFile) && $tmpFile !== null)
 			|| (!is_string($insteadOfFile) && $insteadOfFile !== null)
 		) {
@@ -110,6 +114,16 @@ final class WorkerCommand extends Command
 			return 1;
 		} catch (InceptionNotSuccessfulException) {
 			return 1;
+		}
+
+		// Attach to the run's shared-memory arena (turbo extension only; the
+		// seam is a no-op otherwise) before WorkerRunner sends its hello — the
+		// master unlinks the arena name once every worker has checked in. A
+		// failed attach (late respawn, extension absent) is fine: this worker
+		// just computes everything locally. Forked workers skip this entirely —
+		// they inherit the parent's mapping.
+		if ($arena !== null) {
+			ArenaCache::attach($arena);
 		}
 
 		// Everything after the boot lives in WorkerRunner so a pcntl_fork()-ed

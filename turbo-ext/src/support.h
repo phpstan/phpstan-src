@@ -140,6 +140,7 @@ void pt_register_scope_ops();
 void pt_register_node_scanner();
 void pt_register_parser_runner();
 void pt_register_type_combinator_cache();
+void pt_register_arena_cache();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();
@@ -148,6 +149,10 @@ void pt_scope_ops_rinit();
 void pt_scope_ops_rshutdown();
 void pt_type_combinator_cache_rinit();
 void pt_type_combinator_cache_rshutdown();
+
+/* module-shutdown backstop: destroys the arena mapping if the run skipped
+ * ArenaCache::destroy() on a graceful exit */
+void pt_arena_mshutdown();
 
 /* }}} */
 

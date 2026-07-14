@@ -138,6 +138,24 @@ parameters:
 			path: ../src/Internal/CombinationsHelper.php
 			reportUnmatched: false
 		-
+			# the seam API of the turbo-shadowed pair; whole-value records are
+			# exercised by turbo-ext/tests/arena-smoke.php and future consumers
+			identifier: shipmonk.deadMethod
+			path: ../src/Cache/ArenaCache.php
+			reportUnmatched: false
+		-
+			# the turbo extension shadows this seam class; the ?string is the
+			# contract of the pair, the PHP twin honestly never creates an arena
+			message: '#^Method PHPStan\\Cache\\ArenaCache\:\:create\(\) never returns string so it can be removed from the return type\.$#'
+			count: 1
+			path: ../src/Cache/ArenaCache.php
+		-
+			# ArenaCache::attach() is only pure in the unshadowed PHP twin; with
+			# the turbo extension active it maps the run's shared-memory arena
+			message: '#^Call to PHPStan\\Cache\\ArenaCache\:\:attach\(\) on a separate line has no effect\.$#'
+			count: 1
+			path: ../src/Command/WorkerCommand.php
+		-
 			rawMessage: 'Property PHPStan\Command\CommandHelper::$reservedMemory is never read' # intentional
 			reportUnmatched: false
 	reportStaticMethodSignatures: true

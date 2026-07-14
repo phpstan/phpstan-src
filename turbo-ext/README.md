@@ -156,6 +156,32 @@ assignment-only constructors — and fails the build on anything it cannot
 prove it handles. A brand-new node class with constructor logic shows up as
 such a failure and needs an entry in the generator's class-policy tables.
 
+## The shared-memory arena
+
+`src/ArenaCache.cpp` (shadowing `PHPStan\Cache\ArenaCache`, whose PHP twin is
+a cache that never hits) shares lazily-computed read-mostly data across the
+parallel worker processes of a single run. The master creates a named
+shared-memory object (POSIX `shm_open` / Windows pagefile-backed section)
+before spawning workers and passes the name via the worker command's
+`--arena` option; whichever process first computes a record publishes it,
+and the arena's physical pages are shared, so N workers stop paying N
+copies. Lifetime is exactly one run — no persistence, no invalidation: the
+master unlinks the name once every worker's TCP hello arrived (the mapping
+stays valid; the kernel reclaims the memory with the last process, even
+after SIGKILL) and destroys the mapping when the analysis ends.
+`PHPSTAN_ARENA=0` disables just the arena.
+
+Records are flat, offset-based, position-independent blobs of data-only PHP
+values — nothing in the mapping is ever seen by the GC, so shared pages are
+never dirtied by refcounting. Publication is lock-free (bump-allocate,
+write, CAS an index slot from 0 with release ordering); racing publishers of
+the same key converge on the first writer, wasteful-not-unsafe. Corruption
+degrades to a miss via bounds checks — the caller recomputes locally, like a
+worker that never attached. First consumer: the function signature map
+(`FunctionSignatureMapProvider`), published once as a hash record and read
+per-row, so workers stop materializing the multi-megabyte merged map.
+`tests/arena-smoke.php` is the cross-process differential test.
+
 ## Building
 
 ```bash

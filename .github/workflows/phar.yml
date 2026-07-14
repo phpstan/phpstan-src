@@ -374,6 +374,9 @@ jobs:
       - name: "Smoke test (differential: native vs PHP implementations)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
 
+      - name: "Arena smoke test (cross-process shared-memory records)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
+
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
 
@@ -490,6 +493,10 @@ jobs:
       - name: "Smoke test (differential: native vs PHP implementations)"
         shell: bash
         run: php -d extension="$TURBO_DLL" turbo-ext/tests/smoke.php
+
+      - name: "Arena smoke test (cross-process shared-memory records)"
+        shell: bash
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/arena-smoke.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"
         shell: bash

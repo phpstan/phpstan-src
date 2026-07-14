@@ -9,6 +9,7 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Cache\ArenaCache;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -27,6 +28,7 @@ use function array_sum;
 use function count;
 use function defined;
 use function escapeshellarg;
+use function getenv;
 use function ini_get;
 use function max;
 use function memory_get_usage;
@@ -81,6 +83,19 @@ final class ParallelAnalyser
 		$jobs = array_reverse($schedule->getJobs());
 
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
+
+		// Single-run shared-memory arena (turbo extension only; the seam is a
+		// no-op otherwise). Workers receive the name via the --arena option and
+		// attach before sending their hello. The spawn loop below starts one
+		// process per available slot unless there are no jobs at all.
+		// PHPSTAN_ARENA=0 disables just the arena, like PHPSTAN_TURBO=0
+		// disables the whole extension.
+		$arenaName = null;
+		if ($numberOfProcesses > 1 && getenv('PHPSTAN_ARENA') !== '0') {
+			$arenaName = ArenaCache::create(Random::generate());
+		}
+		$expectedWorkerCount = count($jobs) === 0 ? 0 : $numberOfProcesses;
+		$helloCount = 0;
 		$someChildEnded = false;
 		$errors = [];
 		$filteredPhpErrors = [];
@@ -104,7 +119,11 @@ final class ParallelAnalyser
 		$deferred = new Deferred();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+			if ($arenaName !== null) {
+				ArenaCache::destroy();
+			}
+
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
 				$internalErrors[] = new InternalError(
 					'Some parallel worker jobs have not finished.',
@@ -134,15 +153,24 @@ final class ParallelAnalyser
 				processedFiles: $allProcessedFiles,
 			));
 		});
-		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
+		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs, $arenaName, $expectedWorkerCount, &$helloCount): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$decoder = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: $this->decoderBufferSize);
 			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
-			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder): void {
+			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder, $arenaName, $expectedWorkerCount, &$helloCount): void {
 				if ($data['action'] !== 'hello') {
 					return;
+				}
+
+				// Workers attach to the arena before saying hello; once every
+				// spawned worker checked in, the name can go away — the mapping
+				// stays valid, and the kernel reclaims it with the last process
+				// no matter how the run ends.
+				$helloCount++;
+				if ($arenaName !== null && $helloCount === $expectedWorkerCount) {
+					ArenaCache::unlinkName();
 				}
 
 				$identifier = $data['identifier'];
@@ -190,6 +218,11 @@ final class ParallelAnalyser
 				'--identifier',
 				$processIdentifier,
 			];
+
+			if ($arenaName !== null) {
+				$commandOptions[] = '--arena';
+				$commandOptions[] = escapeshellarg($arenaName);
+			}
 
 			if ($tmpFile !== null && $insteadOfFile !== null) {
 				$commandOptions[] = '--tmp-file';

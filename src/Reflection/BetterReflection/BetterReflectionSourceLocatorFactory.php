@@ -12,10 +12,12 @@ use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\CachedPhpInternalSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
@@ -53,6 +55,7 @@ final class BetterReflectionSourceLocatorFactory
 		private Parser $parser,
 		#[AutowiredParameter(ref: '@php8PhpParser')]
 		private Parser $php8Parser,
+		private Cache $cache,
 		private PhpVersion $phpVersion,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
@@ -175,7 +178,11 @@ final class BetterReflectionSourceLocatorFactory
 			}
 
 			$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
-			$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
+			$locators[] = new SkipClassAliasSourceLocator(new CachedPhpInternalSourceLocator(
+				new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber),
+				$this->cache,
+				$this->phpVersion,
+			));
 
 			$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
 			$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

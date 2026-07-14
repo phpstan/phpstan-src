@@ -25,6 +25,8 @@ final class ComposerHelper
 
 	private static ?string $phpDocParserVersion = null;
 
+	private static ?string $phpStormStubsVersion = null;
+
 	/** @var array<string, mixed[]> */
 	private static array $decodedCache = [];
 
@@ -137,6 +139,21 @@ final class ComposerHelper
 		}
 
 		return self::$phpDocParserVersion = self::processPackageVersion($rootPackage);
+	}
+
+	public static function getPhpStormStubsVersion(): string
+	{
+		if (self::$phpStormStubsVersion !== null) {
+			return self::$phpStormStubsVersion;
+		}
+
+		$installed = self::getInstalled();
+		$package = $installed['versions']['jetbrains/phpstorm-stubs'] ?? null;
+		if ($package === null) {
+			return self::$phpStormStubsVersion = self::UNKNOWN_VERSION;
+		}
+
+		return self::$phpStormStubsVersion = self::processPackageVersion($package);
 	}
 
 	/**

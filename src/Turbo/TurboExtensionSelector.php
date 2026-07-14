@@ -84,7 +84,7 @@ final class TurboExtensionSelector
 	 * libc has no PHP constant; this is the same filesystem heuristic
 	 * datadog-setup.php uses.
 	 */
-	private static function isMusl(): bool
+	public static function isMusl(): bool
 	{
 		if (is_file('/etc/alpine-release')) {
 			return true;

@@ -297,10 +297,12 @@ function checkStructure(array $manifest): array
 			preg_match_all('~stubs/(\w+)\.php~', file_get_contents('src/Turbo/TurboExtensionEnabler.php'), $m);
 			return $m[1];
 		})(),
-		'class-defining .cpp files (PHP_METHOD or reg::Class)' => array_values(array_filter(array_map(
+		// main.cpp hosts extension-only classes (Runtime) that shadow no PHP
+		// implementation — they never get a manifest entry.
+		'class-defining .cpp files (PHP_METHOD or reg::Class)' => array_values(array_diff(array_filter(array_map(
 			static fn ($f) => preg_match('~PHP_METHOD\(PHPStanTurbo_|reg::Class\s+\w+\("PHPStanTurbo~', file_get_contents($f)) === 1 ? basename($f, '.cpp') : null,
 			array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
-		))),
+		)), ['main'])),
 	];
 	foreach ($sets as $what => $names) {
 		foreach (array_diff($names, array_keys($fromManifest)) as $extra) {

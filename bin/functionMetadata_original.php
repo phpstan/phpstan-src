@@ -14,7 +14,7 @@
  *         (keyed by parameter name) receives an impure callable, e.g. array_map()
  *         whose only side effects come from its 'callback' argument.
  *   - ['pureUnlessParameterPassedParameters' => array<string, true>]
- *         the call is pure unless one of the listed (by-ref out) parameters
+ *         the call is pure unless one of the listed (by-ref out) optional parameters
  *         (keyed by parameter name) receives an argument, e.g. str_replace()
  *         whose only side effect is writing to its optional 'count' argument.
  *

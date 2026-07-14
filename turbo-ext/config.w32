@@ -1,0 +1,30 @@
+// phpstan_turbo — Windows build (php-devel-pack: phpize && configure && nmake).
+// The extension version is baked from the PHPSTANTURBO_VERSION environment
+// variable at configure time (the CI workflow computes it the same way the
+// Makefile does); it defaults to "dev", which the enabler rejects.
+
+ARG_ENABLE("phpstan-turbo", "phpstan turbo extension", "no");
+
+if (PHP_PHPSTAN_TURBO != "no") {
+	var version = WScript.CreateObject("WScript.Shell").Environment("PROCESS")("PHPSTANTURBO_VERSION");
+	if (!version || version == "") {
+		version = "dev";
+	}
+
+	// /EHsc: the C++ standard library assumes unwinding; /bigobj: the
+	// generated parser action files exceed the default section limit.
+	// The version is passed as a bare token (main.cpp stringizes it) —
+	// quote characters do not survive the configure-to-nmake pipeline.
+	var flags = "/std:c++17 /EHsc /bigobj /DPHPSTANTURBO_VERSION_RAW=" + version;
+
+	// backslash-separated paths: confutils' ADD_SOURCES derives the object
+	// directory by splitting on backslashes only — with forward slashes the
+	// objects compile flat while the link list expects the subpath
+	EXTENSION("phpstan_turbo",
+		"src\\main.cpp src\\support.cpp src\\CombinationsHelper.cpp src\\ConditionalExpressionHolder.cpp src\\ExpressionTypeHolder.cpp src\\NodeScanner.cpp src\\NodeTraverser.cpp src\\ScopeOps.cpp src\\TrinaryLogic.cpp src\\TypeCombinatorCache.cpp",
+		true,
+		flags);
+	ADD_SOURCES(configure_module_dirname + "/src/parser",
+		"ParserRunner.cpp ParserRunnerActions1.cpp ParserRunnerActions2.cpp ParserRunnerActions3.cpp ParserRunnerHelpers.cpp",
+		"phpstan_turbo");
+}

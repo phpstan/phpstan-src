@@ -166,6 +166,20 @@ make          # builds phpstan_turbo.so
 The only requirements are a C++17 compiler and `php-config` on PATH (or
 passed as `make PHP_CONFIG=...`).
 
+On Windows the extension builds through the standard PHP extension pipeline
+(`config.w32`): with a PHP devel pack, [php-sdk-binary-tools] and a VS2022
+x64 developer prompt, run `phpize && configure --enable-phpstan-turbo &&
+nmake` inside `turbo-ext/`. The toolset generation matters for distribution:
+PHP's module loader rejects DLLs linked with a newer MSVC generation than
+the PHP core, and the official php.net binaries are built with VS2022
+(toolset 14.4x) — so CI builds on `windows-2022`, not `windows-latest`
+(whose VS2026 image links with 14.5x). Set the `PHPSTANTURBO_VERSION`
+environment variable before `configure` to bake the version (the Makefile
+computes it from git automatically; `config.w32` reads it from the
+environment).
+
+[php-sdk-binary-tools]: https://github.com/php/php-sdk-binary-tools
+
 ## Enabling
 
 Add to `php.ini` (recommended — parallel worker processes inherit it):

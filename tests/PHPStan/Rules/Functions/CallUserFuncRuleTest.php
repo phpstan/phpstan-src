@@ -45,6 +45,32 @@ class CallUserFuncRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testForwardStaticCall(): void
+	{
+		$this->analyse([__DIR__ . '/data/forward-static-call.php'], [
+			[
+				'Callable passed to forward_static_call() invoked with 0 parameters, 1 required.',
+				21,
+			],
+			[
+				'Parameter #1 $name of callable passed to forward_static_call() expects string, int given.',
+				22,
+			],
+			[
+				'Callable passed to forward_static_call() invoked with 0 parameters, 1 required.',
+				23,
+			],
+			[
+				'Callable passed to forward_static_call_array() invoked with 0 parameters, 1 required.',
+				25,
+			],
+			[
+				'Parameter #1 $name of callable passed to forward_static_call_array() expects string, int given.',
+				26,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{

@@ -20,6 +20,12 @@ env:
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.8.0"
+  # Composer for the turbo container legs, pinned by checksum. The distro
+  # composers are unusable there: jammy's 2.2.6 fatals under PHP 8.5, and
+  # Alpine's /usr/bin/composer is a shell wrapper hardwired to the
+  # distro-default PHP.
+  COMPOSER_VERSION: "2.9.2"
+  COMPOSER_PHAR_SHA256: "471f2d857abf0ec18af7b055e61472214d91adb24f9bdbbb864c1c64faad7dd6"
 
 jobs:
   compiler-tests:
@@ -200,9 +206,11 @@ jobs:
     name: "Compile Turbo Extension"
     runs-on: ${{ matrix.target.runs-on }}
     # Container legs pin the built binaries' userland floor independently of
-    # the runner image: ubuntu:24.04 sets the glibc symbol floor (2.39 —
-    # Ubuntu 24.04+, Debian 13+; swap in an older container to lower it),
-    # alpine:3.24 builds the musl variants.
+    # the runner image: ubuntu:22.04 keeps the glibc symbol floor at 2.34
+    # (RHEL 9, Ubuntu 22.04+, Debian 12+), alpine:3.24 builds the musl
+    # variant. There is no linux-musl-arm64 leg: JavaScript-based actions
+    # cannot run in Alpine containers on arm64 runners (the runner only
+    # ships an x64 musl Node).
     container: ${{ matrix.target.container }}
     timeout-minutes: 30
 
@@ -216,21 +224,16 @@ jobs:
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
-            container: "ubuntu:24.04"
+            container: "ubuntu:22.04"
             family: "gnu"
             artifact: "phpstan_turbo"
           - name: "linux-gnu-arm64"
             runs-on: "ubuntu-24.04-arm"
-            container: "ubuntu:24.04"
+            container: "ubuntu:22.04"
             family: "gnu"
             artifact: "phpstan_turbo"
           - name: "linux-musl-x86_64"
             runs-on: "ubuntu-latest"
-            container: "alpine:3.24"
-            family: "musl"
-            artifact: "phpstan_turbo"
-          - name: "linux-musl-arm64"
-            runs-on: "ubuntu-24.04-arm"
             container: "alpine:3.24"
             family: "musl"
             artifact: "phpstan_turbo"
@@ -250,9 +253,9 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
-          apt-get install -y software-properties-common gnupg ca-certificates git make g++ patch zstd
+          apt-get install -y software-properties-common gnupg ca-certificates curl git make g++ patch unzip zstd
           add-apt-repository -y ppa:ondrej/php
-          apt-get install -y "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml" composer
+          apt-get install -y "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-curl" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml"
           ln -sf "/usr/bin/php$PHP_MINOR" /usr/local/bin/php
           ln -sf "/usr/bin/php-config$PHP_MINOR" /usr/local/bin/php-config
 
@@ -260,10 +263,10 @@ jobs:
         if: matrix.target.family == 'musl'
         run: |
           V="$(echo "$PHP_MINOR" | tr -d .)"
-          apk add --no-cache bash git make g++ musl-dev linux-headers patch tar zstd composer \
-            "php$V" "php$V-dev" "php$V-ctype" "php$V-mbstring" "php$V-tokenizer" \
-            "php$V-iconv" "php$V-openssl" "php$V-phar" "php$V-dom" "php$V-xml" \
-            "php$V-xmlwriter" "php$V-simplexml"
+          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+            "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
+            "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
+            "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
           ln -sf "/usr/bin/php$V" /usr/local/bin/php
           ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
 
@@ -335,15 +338,14 @@ jobs:
 
       - name: "Install Composer dependencies (containers)"
         if: matrix.target.family != 'macos'
-        # The distro composer wrapper runs under the distro-default PHP, not
-        # the matrix one — fine here: installing from composer.lock is
-        # PHP-version-independent, and platform requirements are ignored
-        # because they would be checked against the wrapper's PHP; the matrix
-        # PHP running the tests below has all the required extensions and
-        # fails loudly if one goes missing. (Never `php /usr/bin/composer` —
-        # on Alpine that is a shell script, which php would happily "run" by
-        # printing it and exiting 0 without installing anything.)
-        run: composer install --no-interaction --no-progress --ignore-platform-reqs
+        # checksum-pinned composer, run under the matrix PHP so platform
+        # requirements are validated against the interpreter the tests below
+        # run on
+        run: |
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          php composer.phar install --no-interaction --no-progress
+          rm composer.phar
 
       - name: "Smoke test (differential: native vs PHP implementations)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
@@ -775,7 +777,7 @@ jobs:
         env:
           TURBO_VERSION: ${{ steps.turbo-difference.outputs.version }}
         run: |
-          for target in linux-gnu-x86_64 linux-gnu-arm64 linux-musl-x86_64 linux-musl-arm64; do
+          for target in linux-gnu-x86_64 linux-gnu-arm64 linux-musl-x86_64; do
             for v in 8.4 8.5; do
               install -D -m 644 "turbo-artifacts/phpstan_turbo-$target-php$v/phpstan_turbo.so" "phpstan-dist/turbo-ext/$target/phpstan_turbo-$v.so"
             done

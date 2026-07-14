@@ -107,15 +107,6 @@ final class WorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
-		try {
-			[$analysedFiles] = $inceptionResult->getFiles();
-		} catch (PathNotFoundException $e) {
-			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
-			return 1;
-		} catch (InceptionNotSuccessfulException) {
-			return 1;
-		}
-
 		// Attach to the run's shared-memory arena (turbo extension only; the
 		// seam is a no-op otherwise) before WorkerRunner sends its hello — the
 		// master unlinks the arena name once every worker has checked in. A
@@ -124,6 +115,28 @@ final class WorkerCommand extends Command
 		// they inherit the parent's mapping.
 		if ($arena !== null) {
 			ArenaCache::attach($arena);
+		}
+
+		// The master published the analysed-file list its job schedule was
+		// built from; walking the analysed paths again would just re-derive
+		// the same list. The parser router must still learn it — that is a
+		// side effect of the walk this shortcut skips. (The router normally
+		// also sees the project stub files the stub excluder later removes;
+		// those are never analysed, so their ignore-collection routing is
+		// unused either way.)
+		$analysedFiles = ArenaCache::lookup('analysed-files');
+		if (is_array($analysedFiles)) {
+			$pathRoutingParser = $container->getService('pathRoutingParser');
+			$pathRoutingParser->setAnalysedFiles($analysedFiles);
+		} else {
+			try {
+				[$analysedFiles] = $inceptionResult->getFiles();
+			} catch (PathNotFoundException $e) {
+				$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
+				return 1;
+			} catch (InceptionNotSuccessfulException) {
+				return 1;
+			}
 		}
 
 		// Everything after the boot lives in WorkerRunner so a pcntl_fork()-ed

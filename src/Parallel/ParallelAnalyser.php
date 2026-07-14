@@ -93,6 +93,12 @@ final class ParallelAnalyser
 		$arenaName = null;
 		if ($numberOfProcesses > 1 && getenv('PHPSTAN_ARENA') !== '0') {
 			$arenaName = ArenaCache::create(Random::generate());
+			if ($arenaName !== null) {
+				// the workers' boot re-derives this list by walking the
+				// analysed paths again; publishing what the schedule was
+				// already built from lets them skip that walk
+				ArenaCache::publish('analysed-files', $allAnalysedFiles);
+			}
 		}
 		$expectedWorkerCount = count($jobs) === 0 ? 0 : $numberOfProcesses;
 		$helloCount = 0;

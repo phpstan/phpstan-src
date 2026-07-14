@@ -1,0 +1,95 @@
+<?php declare(strict_types = 1);
+
+namespace Bug14951;
+
+use function PHPStan\Testing\assertType;
+
+class A
+{
+
+	public function isDirectChildOfA(): bool
+	{
+		// $this can be an instance of a subclass, so get_parent_class($this)
+		// may return A::class (for a direct child) — not just false.
+		assertType('class-string<Bug14951\A>|false', get_parent_class($this));
+
+		// The sibling functions already model late static binding, so they do not have the
+		// same problem: they keep the subclass possibility instead of pinning to this class.
+		assertType('class-string<static(Bug14951\A)>', get_called_class());
+		assertType('class-string<$this(Bug14951\A)>', get_class($this));
+
+		// A class-string argument (e.g. self::class) names an exact class, not a runtime
+		// value, so it keeps the exact parent — no subclass widening.
+		assertType('false', get_parent_class(self::class));
+
+		// static::class is late static bound just like $this, so it is widened the same way.
+		assertType('class-string<Bug14951\A>|false', get_parent_class(static::class));
+
+		return get_parent_class($this) === self::class;
+	}
+
+}
+
+class B extends A
+{
+
+	public function parentOfThis(): void
+	{
+		assertType('\'Bug14951\\\\A\'|class-string<Bug14951\B>', get_parent_class($this));
+		// self::class is the exact class B, so its parent is exactly A.
+		assertType("'Bug14951\\\\A'", get_parent_class(self::class));
+		// static::class is late static bound, matching get_parent_class($this).
+		assertType('\'Bug14951\\\\A\'|class-string<Bug14951\B>', get_parent_class(static::class));
+	}
+
+}
+
+final class FinalNoParent
+{
+
+	public function parentOfThis(): void
+	{
+		// Final class cannot be subclassed, so the parent is exactly false.
+		assertType('false', get_parent_class($this));
+		assertType('false', get_parent_class(static::class));
+		// ... and get_called_class() is pinned to the final class.
+		assertType("'Bug14951\\\\FinalNoParent'", get_called_class());
+	}
+
+}
+
+final class FinalWithParent extends A
+{
+
+	public function parentOfThis(): void
+	{
+		assertType("'Bug14951\\\\A'", get_parent_class($this));
+		assertType("'Bug14951\\\\A'", get_parent_class(static::class));
+	}
+
+}
+
+/** @final */
+class PhpDocFinalNoParent
+{
+
+	public function parentOfThis(): void
+	{
+		// A @final class cannot be subclassed either, so there is no subclass widening.
+		assertType('false', get_parent_class($this));
+		assertType('false', get_parent_class(static::class));
+	}
+
+}
+
+/** @final */
+class PhpDocFinalWithParent extends A
+{
+
+	public function parentOfThis(): void
+	{
+		assertType("'Bug14951\\\\A'", get_parent_class($this));
+		assertType("'Bug14951\\\\A'", get_parent_class(static::class));
+	}
+
+}

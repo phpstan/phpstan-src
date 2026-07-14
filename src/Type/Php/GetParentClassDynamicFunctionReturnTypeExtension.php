@@ -12,6 +12,9 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -63,9 +66,45 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 			return TypeCombinator::union(...array_map(fn (ConstantStringType $stringType): Type => $this->findParentClassNameType($stringType->getValue()), $constantStrings));
 		}
 
-		$classNames = $argType->getObjectClassNames();
+		// A `static::class` string refers to the same late-static-bound type as `$this`/`static`,
+		// so unwrap it and reuse the object handling below. Non-class-string types resolve to
+		// an ErrorType here, so they are left alone.
+		$valueType = $argType;
+		$classStringObjectType = $argType->getClassStringObjectType();
+		if ($classStringObjectType instanceof StaticType) {
+			$valueType = $classStringObjectType;
+		}
+
+		// Inside a trait a late-static-bound value cannot be resolved to a concrete parent,
+		// same as `$this` above.
+		if ($scope->isInTrait() && $valueType instanceof StaticType) {
+			return null;
+		}
+
+		$classNames = $valueType->getObjectClassNames();
 		if (count($classNames) > 0) {
-			return TypeCombinator::union(...array_map(fn (string $classNames): Type => $this->findParentClassNameType($classNames), $classNames));
+			// A `$this`/`static` value can be an instance of a subclass through late static
+			// binding. For a non-final class the parent class is then not pinned to the declared
+			// parent: a direct child's parent is the class itself, a deeper descendant's parent is
+			// some subclass. So the result also includes `class-string<Class>`.
+			$isLateStaticBound = $valueType instanceof StaticType;
+
+			$types = [];
+			foreach ($classNames as $className) {
+				$types[] = $this->findParentClassNameType($className);
+
+				if (
+					!$isLateStaticBound
+					|| !$this->reflectionProvider->hasClass($className)
+					|| $this->reflectionProvider->getClass($className)->isFinal()
+				) {
+					continue;
+				}
+
+				$types[] = new GenericClassStringType(new ObjectType($className));
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		return null;

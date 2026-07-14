@@ -574,9 +574,13 @@ private:
 		zval classNameZv, methodNameZv;
 		ZVAL_STR(&classNameZv, className.get());
 		ZVAL_STR(&methodNameZv, methodName.get());
-		zv::Val classNode = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, &classNameZv);
+		// The original call's position attributes are propagated to the name nodes too,
+		// so rule errors about the synthesized call point at the original call site.
+		zv::Args classArgv{&classNameZv, attributes.raw()};
+		zv::Val classNode = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 2, classArgv);
 		if (UNEXPECTED(classNode.isUndef())) return zv::Val();
-		zv::Val methodNode = pt_type_new(PT_CLASS_IDENTIFIER, 1, &methodNameZv);
+		zv::Args methodArgv{&methodNameZv, attributes.raw()};
+		zv::Val methodNode = pt_type_new(PT_CLASS_IDENTIFIER, 2, methodArgv);
 		if (UNEXPECTED(methodNode.isUndef())) return zv::Val();
 		zv::Val args = callArgs(funcCall);
 		if (UNEXPECTED(args.isUndef())) return zv::Val();

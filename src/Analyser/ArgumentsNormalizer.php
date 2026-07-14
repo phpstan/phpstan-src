@@ -4,12 +4,14 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node as PhpParserNode;
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
@@ -19,16 +21,19 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_values;
 use function count;
+use function explode;
 use function is_string;
 use function key;
 use function ksort;
 use function max;
 use function sprintf;
+use function str_contains;
 
 /**
  * @api
@@ -191,6 +196,91 @@ final class ArgumentsNormalizer
 			$passThruArgs,
 			self::attributesWithoutPrintedForm($callUserFuncArrayCall),
 		), $acceptsNamedArguments];
+	}
+
+	/**
+	 * @return array{ParametersAcceptor, FuncCall|StaticCall, TrinaryLogic}|null
+	 */
+	public static function reorderForwardStaticCallArguments(
+		FuncCall $forwardStaticCallCall,
+		Scope $scope,
+	): ?array
+	{
+		$result = self::reorderCallUserFuncArguments($forwardStaticCallCall, $scope);
+		if ($result === null) {
+			return null;
+		}
+
+		[$parametersAcceptor, $innerFuncCall, $acceptsNamedArguments] = $result;
+
+		return [
+			$parametersAcceptor,
+			self::createForwardingStaticCall($innerFuncCall, $scope) ?? $innerFuncCall,
+			$acceptsNamedArguments,
+		];
+	}
+
+	/**
+	 * @return array{ParametersAcceptor, FuncCall|StaticCall, TrinaryLogic}|null
+	 */
+	public static function reorderForwardStaticCallArrayArguments(
+		FuncCall $forwardStaticCallArrayCall,
+		Scope $scope,
+	): ?array
+	{
+		$result = self::reorderCallUserFuncArrayArguments($forwardStaticCallArrayCall, $scope);
+		if ($result === null) {
+			return null;
+		}
+
+		[$parametersAcceptor, $innerFuncCall, $acceptsNamedArguments] = $result;
+
+		return [
+			$parametersAcceptor,
+			self::createForwardingStaticCall($innerFuncCall, $scope) ?? $innerFuncCall,
+			$acceptsNamedArguments,
+		];
+	}
+
+	/**
+	 * Turns a normalized callable invocation into a static call marked as a forwarding call
+	 * (a call that forwards the caller's late static binding, like self:: and parent:: do),
+	 * when the callable names a class and a method. Returns null for other callables.
+	 */
+	private static function createForwardingStaticCall(FuncCall $funcCall, Scope $scope): ?StaticCall
+	{
+		$callableExpr = $funcCall->name;
+		if (!$callableExpr instanceof Expr) {
+			return null;
+		}
+
+		$callableType = $scope->getType($callableExpr);
+
+		$className = null;
+		$methodName = null;
+		$constantArrays = $callableType->getConstantArrays();
+		$constantStrings = $callableType->getConstantStrings();
+		if (count($constantArrays) === 1) {
+			$classStrings = $constantArrays[0]->getOffsetValueType(new ConstantIntegerType(0))->getConstantStrings();
+			$methodStrings = $constantArrays[0]->getOffsetValueType(new ConstantIntegerType(1))->getConstantStrings();
+			if (count($classStrings) === 1 && count($methodStrings) === 1) {
+				$className = $classStrings[0]->getValue();
+				$methodName = $methodStrings[0]->getValue();
+			}
+		} elseif (count($constantStrings) === 1 && str_contains($constantStrings[0]->getValue(), '::')) {
+			[$className, $methodName] = explode('::', $constantStrings[0]->getValue(), 2);
+		}
+
+		if ($className === null || $className === '' || $methodName === null || $methodName === '') {
+			return null;
+		}
+
+		return new StaticCall(
+			new FullyQualified($className),
+			new Identifier($methodName),
+			$funcCall->getArgs(),
+			$funcCall->getAttributes(),
+		);
 	}
 
 	public static function reorderFuncArguments(

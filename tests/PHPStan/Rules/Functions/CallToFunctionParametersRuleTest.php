@@ -1440,6 +1440,43 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testCurlSetOptCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/curl_setopt_callback.php'], [
+			[
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, string): int)|null, Closure(mixed, string): true given.',
+				13,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, string): int)|null, Closure(mixed, string): true given.',
+				17,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, resource, int): string)|null, Closure(mixed, mixed, int): 0 given.',
+				21,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, int, int, int, int): int)|null, Closure(mixed, int, int, int, int): false given.',
+				25,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, int, int, int, int): int)|null, Closure(mixed, int, int, int, int): \'\' given.',
+				29,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testCurlSetOptPrereqCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/curl_setopt_prereq.php'], [
+			[
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, string, string, int, int): int)|null, Closure(mixed, string, string, int, int): true given.',
+				13,
+			],
+		]);
+	}
+
 	public function testCurlSetOptInvalidShare(): void
 	{
 		if (PHP_VERSION_ID < 80000) {
@@ -1477,6 +1514,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				"Parameter #2 \$options of function curl_setopt_array expects array{19913: bool, 10102: string, 68: int, 13: int, 84: int}, array{19913: '123', 10102: '', 68: 10, 13: 30, 84: false} given.",
 				54,
 				'Offset 19913 (bool) does not accept type string.',
+			],
+			[
+				'Parameter #2 $options of function curl_setopt_array expects array{20011: (callable(CurlHandle, string): int)|null}, array{20011: Closure(mixed, string): true} given.',
+				70,
+				'Offset 20011 ((callable(CurlHandle, string): int)|null) does not accept type Closure(mixed, string): true.',
 			],
 
 		]);

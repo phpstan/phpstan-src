@@ -1250,6 +1250,35 @@ final class ParametersAcceptorSelector
 			return $shareType;
 		}
 
+		$curlHandleType = PhpVersionStaticAccessor::getInstance()->supportsCurlShareHandle()
+			? new ObjectType('CurlHandle')
+			: new ResourceType();
+
+		// callback options: [parameter types passed to the callback (after the handle), expected return type]
+		$callbackConstants = [
+			'CURLOPT_WRITEFUNCTION' => [[new StringType()], new IntegerType()],
+			'CURLOPT_HEADERFUNCTION' => [[new StringType()], new IntegerType()],
+			'CURLOPT_READFUNCTION' => [[new ResourceType(), new IntegerType()], new StringType()],
+			'CURLOPT_PROGRESSFUNCTION' => [[new IntegerType(), new IntegerType(), new IntegerType(), new IntegerType()], new IntegerType()],
+			'CURLOPT_XFERINFOFUNCTION' => [[new IntegerType(), new IntegerType(), new IntegerType(), new IntegerType()], new IntegerType()],
+			'CURLOPT_PREREQFUNCTION' => [[new StringType(), new StringType(), new IntegerType(), new IntegerType()], new IntegerType()],
+		];
+		foreach ($callbackConstants as $constName => [$paramTypes, $returnType]) {
+			if (defined($constName) && constant($constName) === $curlOpt) {
+				$parameters = [
+					new DummyParameter('handle', $curlHandleType, false, PassedByReference::createNo(), false, null),
+				];
+				foreach ($paramTypes as $i => $paramType) {
+					$parameters[] = new DummyParameter('param' . $i, $paramType, false, PassedByReference::createNo(), false, null);
+				}
+
+				return new UnionType([
+					new CallableType($parameters, $returnType, false),
+					new NullType(),
+				]);
+			}
+		}
+
 		// unknown constant
 		return null;
 	}

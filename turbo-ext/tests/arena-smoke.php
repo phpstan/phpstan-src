@@ -126,12 +126,33 @@ if ($mode === 'child-race') {
 }
 
 if ($mode === 'child-late') {
-	// spawned after unlink: attach must fail gracefully, lookups miss
+	// Spawned after the master unlinked the name while still holding the
+	// mapping. The platforms guarantee reclamation differently: POSIX names
+	// are gone after shm_unlink (attach fails, the child computes locally),
+	// Windows sections are handle-refcounted and keep their name resolvable
+	// while any process holds a handle — a late worker simply joins the
+	// still-live arena. Both are correct; what matters is that nothing leaks
+	// once every process exits (covered by child-after-destroy).
 	$name = $argv[2];
-	check(!ArenaCache::attach($name), 'late child: attach fails after unlink');
-	check(ArenaCache::lookup('fixtures') === null, 'late child: lookup misses without arena');
-	check(!ArenaCache::hasRecord('fixtures'), 'late child: hasRecord false without arena');
-	ArenaCache::publish('late', [1]); // must be a silent no-op
+	if (PHP_OS_FAMILY === 'Windows') {
+		check(ArenaCache::attach($name), 'late child: attach joins the still-live section on Windows');
+		check(ArenaCache::lookup('fixtures') === fixtures(), 'late child: reads work on Windows');
+	} else {
+		check(!ArenaCache::attach($name), 'late child: attach fails after unlink');
+		check(ArenaCache::lookup('fixtures') === null, 'late child: lookup misses without arena');
+		check(!ArenaCache::hasRecord('fixtures'), 'late child: hasRecord false without arena');
+	}
+	ArenaCache::publish('late', [1]); // silent no-op without an arena, harmless with one
+	global $failures;
+	exit($failures === 0 ? 0 : 1);
+}
+
+if ($mode === 'child-after-destroy') {
+	// spawned after the master destroyed its mapping and no process holds
+	// the arena anymore: the name must be gone on every platform
+	$name = $argv[2];
+	check(!ArenaCache::attach($name), 'post-destroy child: attach fails');
+	check(ArenaCache::lookup('fixtures') === null, 'post-destroy child: lookup misses');
 	global $failures;
 	exit($failures === 0 ? 0 : 1);
 }
@@ -206,6 +227,11 @@ check(!ArenaCache::hasRecord('fixtures'), 'parent: hasRecord false after destroy
 ArenaCache::publish('post-destroy', [1]);
 check(ArenaCache::lookup('post-destroy') === null, 'parent: publish after destroy is no-op');
 ArenaCache::destroy(); // idempotent
+
+// ---- no process holds the arena anymore: the name is gone everywhere ----
+[$exitCode, $stdout] = waitChild(spawnChild('child-after-destroy', $name));
+echo $stdout;
+check($exitCode === 0, 'child-after-destroy exit code 0');
 
 if ($failures === 0) {
 	echo "ALL OK\n";

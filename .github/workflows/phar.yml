@@ -347,9 +347,115 @@ jobs:
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
+  turbo-compile-windows:
+    name: "Compile Turbo Extension (Windows)"
+    # windows-latest and windows-2025 serve the VS2026 image, whose 14.5x
+    # toolset links DLLs the official php.net binaries (built with vs17,
+    # toolset 14.4x) refuse to load — PHP's loader rejects modules linked
+    # with a newer toolset generation than the core. The windows-2022 image
+    # is the one that ships VS2022.
+    runs-on: "windows-2022"
+    timeout-minutes: 40
+
+    env:
+      # php/php-sdk-binary-tools — the toolchain every PHP Windows build
+      # uses (ships bison and the unix tools phpize/configure expect).
+      PHP_SDK_COMMIT: "c73faaf1cce914e2fc04da5587132f8f425996af" # php-sdk-2.7.1
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.4", "8.5"]
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          # full history: the extension version is baked from git log over
+          # the watched paths
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Compute the extension version and download the build tools"
+        shell: bash
+        run: |
+          MAPPED_PHP=$(jq -r '[.[] | select(.vendored != true) | .php] | join(" ")' turbo-ext/shadowed-classes.json)
+          SHA=$(git log -1 --format=%H -- turbo-ext/src $MAPPED_PHP | cut -c1-7)
+          echo "extension version: $SHA"
+          echo "PHPSTANTURBO_VERSION=$SHA" >> "$GITHUB_ENV"
+
+          FULL=$(php -r 'echo PHP_VERSION;')
+          PACK="php-devel-pack-$FULL-nts-Win32-vs17-x64.zip"
+          echo "devel pack: $PACK"
+          curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/$PACK" \
+            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK"
+          unzip -q devel-pack.zip -d /c/php-devel
+
+          git clone -q https://github.com/php/php-sdk-binary-tools.git /c/php-sdk
+          git -C /c/php-sdk checkout -q "$PHP_SDK_COMMIT"
+
+      - name: "Set up MSVC environment"
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: x64
+
+      - name: "Build the extension"
+        shell: cmd
+        working-directory: turbo-ext
+        run: |
+          for /d %%d in (C:\php-devel\php-*-devel-*) do set DEVEL=%%d
+          set PATH=%DEVEL%;C:\php-sdk\bin;C:\php-sdk\msys2\usr\bin;%PATH%
+          call phpize.bat
+          if errorlevel 1 exit /b 1
+          call configure.bat --enable-phpstan-turbo
+          if errorlevel 1 exit /b 1
+          nmake
+
+      - name: "Verify the built extension reports the expected version"
+        shell: bash
+        run: |
+          DLL=$(find turbo-ext -name "php_phpstan_turbo.dll" | head -1)
+          [ -n "$DLL" ]
+          TURBO_DLL=$(cygpath -w "$PWD/$DLL")
+          echo "TURBO_DLL=$TURBO_DLL" >> "$GITHUB_ENV"
+          echo "DLL_PATH=$DLL" >> "$GITHUB_ENV"
+          REPORTED="$(php -d extension="$TURBO_DLL" -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        shell: bash
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/smoke.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        shell: bash
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/signature-parity.php
+
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        shell: bash
+        run: php -d extension="$TURBO_DLL" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Upload extension artifact"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}"
+          path: "${{ env.DLL_PATH }}"
+          if-no-files-found: "error"
+
   turbo-artifact:
     name: "Aggregate Turbo Extension Artifact"
-    needs: "turbo-compile"
+    needs:
+      - turbo-compile
+      - turbo-compile-windows
     runs-on: "ubuntu-latest"
     timeout-minutes: 5
 
@@ -375,7 +481,9 @@ jobs:
             name="${dir#turbo-artifacts/phpstan_turbo-}"
             target="${name%-php*}"
             minor="${name##*-php}"
-            install -D -m 644 "$dir/phpstan_turbo.so" "turbo-ext-dist/$target/phpstan_turbo-$minor.so"
+            for file in "$dir"/*; do
+              install -D -m 644 "$file" "turbo-ext-dist/$target/phpstan_turbo-$minor.${file##*.}"
+            done
           done
           find turbo-ext-dist -type f | sort
 
@@ -632,6 +740,7 @@ jobs:
       - compiler-tests
       - turbo-version
       - turbo-compile
+      - turbo-compile-windows
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:
@@ -756,9 +865,12 @@ jobs:
         env:
           TURBO_VERSION: ${{ steps.turbo-difference.outputs.version }}
         run: |
-          for target in linux-gnu-x86_64 linux-gnu-arm64 linux-musl-x86_64; do
-            for v in 8.4 8.5; do
-              install -D -m 644 "turbo-artifacts/phpstan_turbo-$target-php$v/phpstan_turbo.so" "phpstan-dist/turbo-ext/$target/phpstan_turbo-$v.so"
+          for dir in turbo-artifacts/phpstan_turbo-*; do
+            name="${dir#turbo-artifacts/phpstan_turbo-}"
+            target="${name%-php*}"
+            minor="${name##*-php}"
+            for file in "$dir"/*; do
+              install -D -m 644 "$file" "phpstan-dist/turbo-ext/$target/phpstan_turbo-$minor.${file##*.}"
             done
           done
           echo "$TURBO_VERSION" > phpstan-dist/turbo-ext/.version

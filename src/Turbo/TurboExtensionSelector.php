@@ -21,8 +21,9 @@ use const PHP_ZTS;
  * so worker processes can load it via `-d extension=`.
  *
  * The binaries are committed to the phpstan/phpstan repository next to
- * phpstan.phar (turbo-ext/<platform>/phpstan_turbo-<minor>.so) by the
- * phar.yml commit job, so they only exist for phar-based installations —
+ * phpstan.phar (turbo-ext/<platform>/phpstan_turbo-<minor>.so, .dll on
+ * Windows) by the phar.yml commit job, so they only exist for phar-based
+ * installations —
  * a source checkout loads its locally built extension through php.ini
  * instead. Only NTS non-debug builds are shipped. Workers run the regular
  * entrypoint, so TurboExtensionEnabler still gates activation on the
@@ -54,7 +55,14 @@ final class TurboExtensionSelector
 			return null;
 		}
 
-		$file = sprintf('%s/turbo-ext/%s/phpstan_turbo-%d.%d.so', dirname($pharPath), $platform, PHP_MAJOR_VERSION, PHP_MINOR_VERSION);
+		$file = sprintf(
+			'%s/turbo-ext/%s/phpstan_turbo-%d.%d.%s',
+			dirname($pharPath),
+			$platform,
+			PHP_MAJOR_VERSION,
+			PHP_MINOR_VERSION,
+			PHP_OS_FAMILY === 'Windows' ? 'dll' : 'so',
+		);
 		if (!is_file($file)) {
 			return null;
 		}
@@ -67,6 +75,9 @@ final class TurboExtensionSelector
 		if ($osFamily === 'Darwin') {
 			// one universal binary covers x86_64 and arm64
 			return 'macos';
+		}
+		if ($osFamily === 'Windows') {
+			return $machine === 'AMD64' || $machine === 'x86_64' ? 'windows-x86_64' : null;
 		}
 		if ($osFamily !== 'Linux') {
 			return null;

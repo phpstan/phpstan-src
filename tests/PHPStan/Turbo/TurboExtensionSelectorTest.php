@@ -22,7 +22,9 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 		yield ['Linux', 'aarch64', true, 'linux-musl-arm64'];
 		yield ['Linux', 'riscv64', false, null];
 		yield ['Linux', 'i686', true, null];
-		yield ['Windows', 'AMD64', false, null];
+		yield ['Windows', 'AMD64', false, 'windows-x86_64'];
+		yield ['Windows', 'x86', false, null];
+		yield ['Windows', 'ARM64', false, null];
 		yield ['BSD', 'x86_64', false, null];
 		yield ['Unknown', 'x86_64', false, null];
 	}

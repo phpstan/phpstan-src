@@ -8,7 +8,9 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
@@ -27,6 +29,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\FuncCallScopeEffectsHelper;
+use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
@@ -111,6 +114,7 @@ final class FuncCallHandler implements ExprHandler
 		#[AutowiredExtensions(of: DynamicFunctionThrowTypeExtension::class)]
 		private ExtensionsCollection $dynamicFunctionThrowTypeExtensions,
 		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
+		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 		#[AutowiredParameter]
@@ -907,6 +911,24 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
+		if ($functionReflection->getName() === 'forward_static_call') {
+			$result = ArgumentsNormalizer::reorderForwardStaticCallArguments($expr, $reflectionScope);
+			if ($result !== null) {
+				[, $innerCall] = $result;
+
+				return $this->resolveForwardStaticCallType($reflectionScope, $innerCall) ?? $getType($innerCall);
+			}
+		}
+
+		if ($functionReflection->getName() === 'forward_static_call_array') {
+			$result = ArgumentsNormalizer::reorderForwardStaticCallArrayArguments($expr, $reflectionScope);
+			if ($result !== null) {
+				[, $innerCall] = $result;
+
+				return $this->resolveForwardStaticCallType($reflectionScope, $innerCall) ?? $getType($innerCall);
+			}
+		}
+
 		if ($preResolvedAcceptor !== null) {
 			$parametersAcceptor = $preResolvedAcceptor;
 		} else {
@@ -950,6 +972,42 @@ final class FuncCallHandler implements ExprHandler
 		// the typeCallback keeps void; ExpressionResult projects void->null for
 		// value reads, getKeepVoidType() keeps it
 		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr);
+	}
+
+	/**
+	 * forward_static_call() is a forwarding call: it keeps the caller's late static binding
+	 * (like self:: and parent:: do). The named class is therefore resolved without resetting
+	 * static:: to it — resolveTypeByName() already yields the caller-bound ancestor type when
+	 * the named class is an ancestor, and a plain object type otherwise, matching the runtime
+	 * behavior of only forwarding within the caller's own ancestry.
+	 *
+	 * The synthesized static call is resolved here directly instead of through
+	 * MutatingScope::getType(), because it would be indistinguishable from a real,
+	 * non-forwarding static call on the same class in the scope's expression-type cache.
+	 * Returns null for closures and other callables, which have their own lexical scope
+	 * and are resolved as-is.
+	 */
+	private function resolveForwardStaticCallType(MutatingScope $scope, FuncCall|StaticCall $innerCall): ?Type
+	{
+		if (
+			$innerCall instanceof StaticCall
+			&& $innerCall->class instanceof Name
+			&& $innerCall->name instanceof Identifier
+		) {
+			$callType = $this->methodCallReturnTypeHelper->methodCallReturnType(
+				$scope,
+				$scope->resolveTypeByName($innerCall->class),
+				$innerCall->name->toString(),
+				$innerCall,
+			);
+			if ($callType !== null) {
+				return $callType;
+			}
+
+			return new ErrorType();
+		}
+
+		return null;
 	}
 
 	/**

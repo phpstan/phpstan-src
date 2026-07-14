@@ -257,6 +257,9 @@ pt_property_site pt_fch_attributes_site;
 pt_property_site pt_fch_closure_uses_site;
 pt_property_site pt_fch_use_by_ref_site;
 pt_property_site pt_fch_use_var_site;
+pt_property_site pt_fch_static_call_class_site;
+pt_property_site pt_fch_static_call_name_site;
+pt_property_site pt_fch_identifier_name_site;
 
 /* $value instanceof <class-map class> — a class not declared yet has no
  * instances (no autoload, as instanceof); false with an exception pending
@@ -537,7 +540,7 @@ public:
 	{
 		static const uint32_t order[] = {
 			slots::reflectionProvider, slots::dynamicFunctionThrowTypeExtensions, slots::dynamicReturnTypeExtensionRegistry,
-			slots::implicitThrows, slots::rememberPossiblyImpureFunctionValues, slots::scopeEffectsHelper,
+			slots::methodCallReturnTypeHelper, slots::implicitThrows, slots::rememberPossiblyImpureFunctionValues, slots::scopeEffectsHelper,
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper,
 			slots::earlyTerminatingHelper, slots::storagePrimer, slots::impossibleCheckTypeHelper,
 			slots::closureTypeResolver, slots::argumentsHandler, slots::closureProcessor, slots::assignHandler,
@@ -2026,6 +2029,32 @@ private:
 		return resolveReturnType(nodeScopeResolver, beforeScope, nativeTypesPromoted, expr, nameResult, nativeTypesPromoted || Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL ? NULL : resolvedParametersAcceptor, argsResult);
 	}
 
+	/* Mirrors resolveForwardStaticCallType(): the type, or null for a
+	 * callable that is not a named static method */
+	zv::Val resolveForwardStaticCallType(zval *scope, zval *innerCall) const
+	{
+		if (!isA(innerCall, PT_CLASS_STATIC_CALL)) return zv::Val::null();
+		if (UNEXPECTED(EG(exception))) return zv::Val();
+		zval *class_ = nodeProp(pt_fch_static_call_class_site, innerCall, PT_LC("class"));
+		if (UNEXPECTED(class_ == NULL)) return zv::Val();
+		if (!isA(class_, PT_CLASS_NAME)) return zv::Val::null();
+		zval *name = nodeProp(pt_fch_static_call_name_site, innerCall, PT_LC("name"));
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		if (!isA(name, PT_CLASS_IDENTIFIER)) return zv::Val::null();
+		if (UNEXPECTED(EG(exception))) return zv::Val();
+
+		zv::Val classType = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(scope), Z_OBJ_P(class_));
+		if (UNEXPECTED(classType.isUndef())) return zv::Val();
+		zval *methodName = nodeProp(pt_fch_identifier_name_site, name, PT_LC("name"));
+		if (UNEXPECTED(methodName == NULL)) return zv::Val();
+		zv::Val methodNameHold = zv::Val::copyOf(zv::Ref(methodName));
+		zv::Val callType = pt_method_call_return_type_helper_method_call_return_type(slot(slots::methodCallReturnTypeHelper), scope, classType.raw(), methodNameHold.raw(), innerCall, NULL, NULL);
+		if (UNEXPECTED(callType.isUndef())) return zv::Val();
+		if (!callType.isNull()) return callType;
+
+		return pt_type_new_error_type();
+	}
+
 	/* the `$getType` closure of resolveReturnType() */
 	static zv::Val getTypeOf(zval *e, zval *expr, zval *nameResult, zval *reflectionScope, zval *nodeScopeResolver, zval *argsResult, bool nativeTypesPromoted)
 	{
@@ -2170,6 +2199,27 @@ private:
 				zval *innerFuncCall = arrayIndex(result.raw(), 1);
 				if (UNEXPECTED(innerFuncCall == NULL)) return zv::Val();
 				zv::Val innerHold = zv::Val::copyOf(zv::Ref(innerFuncCall));
+				if (UNEXPECTED(!innerHold.ref().isObject())) {
+					zend_type_error("PHPStan\\Analyser\\ExprHandler\\FuncCallHandler::{closure}(): Argument #1 ($e) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(innerHold.raw()));
+					return zv::Val();
+				}
+				return getTypeOf(innerHold.raw(), expr, nameResult, reflectionScope, nodeScopeResolver, argsResult, nativeTypesPromoted);
+			}
+		}
+
+		for (bool arrayVariant : { false, true }) {
+			bool isForwardStaticCall;
+			if (UNEXPECTED(!(arrayVariant ? functionNameIs(functionReflection.raw(), "forward_static_call_array", isForwardStaticCall) : functionNameIs(functionReflection.raw(), "forward_static_call", isForwardStaticCall)))) return zv::Val();
+			if (!isForwardStaticCall) continue;
+			zv::Val result = (arrayVariant ? ptcall::reorderForwardStaticCallArrayArguments(expr, reflectionScope) : ptcall::reorderForwardStaticCallArguments(expr, reflectionScope));
+			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			if (!result.isNull()) {
+				zval *innerCall = arrayIndex(result.raw(), 1);
+				if (UNEXPECTED(innerCall == NULL)) return zv::Val();
+				zv::Val innerHold = zv::Val::copyOf(zv::Ref(innerCall));
+				zv::Val forwarded = resolveForwardStaticCallType(reflectionScope, innerHold.raw());
+				if (UNEXPECTED(forwarded.isUndef())) return zv::Val();
+				if (!forwarded.isNull()) return forwarded;
 				if (UNEXPECTED(!innerHold.ref().isObject())) {
 					zend_type_error("PHPStan\\Analyser\\ExprHandler\\FuncCallHandler::{closure}(): Argument #1 ($e) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(innerHold.raw()));
 					return zv::Val();
@@ -2892,12 +2942,13 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL;
+		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *methodCallReturnTypeHelper = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL;
 		bool implicitThrows, rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(17, 17)
+		ZEND_PARSE_PARAMETERS_START(18, 18)
 			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_OBJECT(dynamicFunctionThrowTypeExtensions)
 			Z_PARAM_OBJECT(dynamicReturnTypeExtensionRegistry)
+			Z_PARAM_OBJECT(methodCallReturnTypeHelper)
 			Z_PARAM_BOOL(implicitThrows)
 			Z_PARAM_BOOL(rememberPossiblyImpureFunctionValues)
 			Z_PARAM_OBJECT(scopeEffectsHelper)
@@ -2916,7 +2967,7 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 		zval implicitThrowsValue, rememberValue;
 		ZVAL_BOOL(&implicitThrowsValue, implicitThrows);
 		ZVAL_BOOL(&rememberValue, rememberPossiblyImpureFunctionValues);
-		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference };
+		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, methodCallReturnTypeHelper, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference };
 		FuncCallHandler(Z_OBJ_P(ZEND_THIS)).construct(argv);
 	});
 

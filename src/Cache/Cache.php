@@ -10,7 +10,7 @@ use function is_array;
 final class Cache
 {
 
-	private bool $arenaUsable = false;
+	private ?bool $arenaUsable = null;
 
 	public function __construct(
 		#[AutowiredParameter(ref: '@cacheStorage')]
@@ -67,22 +67,18 @@ final class Cache
 	}
 
 	/**
-	 * Whether this process is attached to a run's arena — probed with a
+	 * Whether this process is attached to a run's arena — probed once with a
 	 * canary record because the answer is not directly observable through
 	 * the seam: without the extension or without an arena the publish is a
-	 * no-op and the canary never appears. Memoized once it turns true;
-	 * re-probed (two near-free calls) while false, so the master flips to
-	 * publishing after it creates the arena.
+	 * no-op and the canary never appears. Workers attach at boot, before any
+	 * cache traffic; a process that touches the cache before its arena
+	 * exists just stays unshared for its lifetime.
 	 */
 	private function isArenaUsable(): bool
 	{
-		if ($this->arenaUsable) {
-			return true;
-		}
-
-		ArenaCache::publish('fcs-arena-canary', true);
-		if (ArenaCache::hasRecord('fcs-arena-canary')) {
-			$this->arenaUsable = true;
+		if ($this->arenaUsable === null) {
+			ArenaCache::publish('fcs-arena-canary', true);
+			$this->arenaUsable = ArenaCache::hasRecord('fcs-arena-canary');
 		}
 
 		return $this->arenaUsable;

@@ -437,7 +437,7 @@ jobs:
         shell: bash
         run: |
           MAPPED_PHP=$(jq -r '[.[] | select(.vendored != true) | .php] | join(" ")' turbo-ext/shadowed-classes.json)
-          SHA=$(git log -1 --format=%H -- turbo-ext/src $MAPPED_PHP | cut -c1-7)
+          SHA=$(git log -1 --format=%H -- turbo-ext/src "$MAPPED_PHP" | cut -c1-7)
           echo "extension version: $SHA"
           echo "PHPSTANTURBO_VERSION=$SHA" >> "$GITHUB_ENV"
 

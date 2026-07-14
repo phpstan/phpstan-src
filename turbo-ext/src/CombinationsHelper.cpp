@@ -52,6 +52,7 @@ public:
 		zval ***vecs = (zval ***) emalloc(n * sizeof(zval **));
 		zend_ulong total = 1;
 		bool hasEmptyInner = false;
+
 		for (i = 0; i < n; i++) {
 			zv::ArrRef innerArr(inner[i]);
 			sizes[i] = innerArr.size();

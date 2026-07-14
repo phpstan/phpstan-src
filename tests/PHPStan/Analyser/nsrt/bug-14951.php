@@ -18,6 +18,10 @@ class A
 		assertType('class-string<static(Bug14951\A)>', get_called_class());
 		assertType('class-string<$this(Bug14951\A)>', get_class($this));
 
+		// A class-string argument (e.g. self::class) names an exact class, not a runtime
+		// value, so it keeps the exact parent — no subclass widening.
+		assertType('false', get_parent_class(self::class));
+
 		return get_parent_class($this) === self::class;
 	}
 
@@ -29,6 +33,8 @@ class B extends A
 	public function parentOfThis(): void
 	{
 		assertType('\'Bug14951\\\\A\'|class-string<Bug14951\B>', get_parent_class($this));
+		// self::class is the exact class B, so its parent is exactly A.
+		assertType("'Bug14951\\\\A'", get_parent_class(self::class));
 	}
 
 }

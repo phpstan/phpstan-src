@@ -14,12 +14,15 @@
  *    the entry disappears with the object: the cache retains nothing and an object
  *    address can never be mistaken for a freed one's. Composite types hash from
  *    their children's cached hashes, so hashing a new type costs O(#properties),
- *    not O(tree).
- *  - the memo itself, keyed by the operation plus its arguments' hashes.
+ *    not O(tree). Property-less types are not cached at all — their class-only
+ *    hash is cheaper to recompute than to look up.
+ *  - the memo itself: a flat open-addressing table whose 128-bit key folds the
+ *    operation, the argument count and the arguments' hashes together. 24 bytes
+ *    per slot, no per-entry allocation.
  *
  * The hash is 128 bits precisely so the key can be trusted without keeping the
  * arguments alive to re-verify a hit: over the ~10^5 distinct keys of a run the
- * collision probability is ~10^-27. A 64-bit key would be ~10^-9 per run, which
+ * collision probability is ~10^-28. A 64-bit key would be ~10^-9 per run, which
  * across a user base is a silently wrong analysis result — not acceptable.
  *
  * The memo is cleared whenever a container is created (TypeCombinator::clearCache()).
@@ -55,7 +58,7 @@ static zend_always_inline void pt_weakrefs_hash_destroy(HashTable *ht)
 namespace phpstanturbo {
 
 /* Beyond this argument count a call is computed without consulting the memo:
- * the key would not fit the stack buffer and such calls are vanishingly rare. */
+ * such calls are vanishingly rare and each argument adds hashing cost. */
 static constexpr uint32_t MEMO_ARGS_LIMIT = 16;
 
 /* Depth guard for the structural walk. Types nest ~10 deep; anything beyond this
@@ -63,8 +66,11 @@ static constexpr uint32_t MEMO_ARGS_LIMIT = 16;
  * because a coarse hash would be an unsound key. */
 static constexpr uint32_t HASH_DEPTH_LIMIT = 64;
 
-/* Safety net on memo growth; a self-analysis run settles at ~1.3e5 entries. */
+/* Safety net on memo growth; a self-analysis run settles at ~1.5e5 entries. */
 static constexpr uint32_t MEMO_ENTRIES_LIMIT = 1 << 19;
+
+/* Initial slot count of the memo table; must be a power of two. */
+static constexpr uint32_t MEMO_INITIAL_CAPACITY_LIMIT = 1 << 13;
 
 struct Hash128
 {
@@ -72,43 +78,19 @@ struct Hash128
 	uint64_t b;
 };
 
-/* A memo entry owns its result. */
-struct MemoEntry
+/* An occupied memo slot owns its result; result == NULL marks an empty slot. */
+struct MemoSlot
 {
+	Hash128 key;
 	zend_object *result;
 };
 
-/* The weak map derives its key from the object address the way the engine does
- * (see zend_weakrefs.c). That derivation is an engine internal, so the entry keeps
- * the object it belongs to and every hit is checked against it: should the engine
- * ever key differently, this degrades to a cache miss instead of handing back
- * another object's hash. */
-struct TypeHash
-{
-	zend_object *obj;
-	Hash128 hash;
-};
-
-/* Objects outside the type system (ClassReflection, method reflections held in
- * ObjectType::$methodCache, …) take part in the hash by identity. They must NOT be hashed
- * by address: addresses are reused once an object is freed, so two different types could
- * hash alike — and they vary between runs, which made results non-deterministic. Each such
- * object instead gets a serial that is never reused. */
-struct ObjSerial
-{
-	zend_object *obj;
-	uint64_t serial;
-};
-
-static inline zend_ulong weakKey(const zend_object *obj)
-{
-	return ((zend_ulong) (uintptr_t) obj) >> ZEND_MM_ALIGNMENT_LOG2;
-}
-
-static HashTable pt_type_hashes;   /* weak: zend_object* -> Hash128* */
-static HashTable pt_memo;          /* binary key -> MemoEntry* */
+static HashTable pt_type_hashes;   /* weak: zend_object* -> Hash128 packed in the bucket zval */
 static HashTable pt_ce_kinds;      /* zend_class_entry* -> kind|slots */
-static HashTable pt_obj_serials;   /* weak: zend_object* -> ObjSerial* (identity-hashed objects) */
+static HashTable pt_obj_serials;   /* weak: zend_object* -> IS_LONG serial (identity-hashed objects) */
+static MemoSlot *pt_memo_slots = NULL;
+static uint32_t pt_memo_mask = 0;
+static uint32_t pt_memo_count = 0;
 static uint64_t pt_next_serial = 1;
 static bool pt_cache_inited = false;
 
@@ -199,21 +181,25 @@ static CePlan cePlan(zend_class_entry *ce)
 
 static uint64_t objSerial(zend_object *obj)
 {
-	ObjSerial *known = (ObjSerial *) zend_hash_index_find_ptr(&pt_obj_serials, weakKey(obj));
-	if (known != NULL && known->obj == obj) {
-		return known->serial;
+	/* Objects outside the type system (ClassReflection, method reflections held in
+	 * ObjectType::$methodCache, …) take part in the hash by identity. They must NOT
+	 * be hashed by address: addresses are reused once an object is freed, so two
+	 * different types could hash alike — and they vary between runs, which made
+	 * results non-deterministic. Each such object instead gets a serial that is
+	 * never reused, held as a plain IS_LONG in the weak map. */
+	zval *known = zend_hash_index_find(&pt_obj_serials, zend_object_to_weakref_key(obj));
+	if (known != NULL) {
+		return (uint64_t) Z_LVAL_P(known);
 	}
 
-	ObjSerial *entry = (ObjSerial *) emalloc(sizeof(ObjSerial));
-	entry->obj = obj;
-	entry->serial = pt_next_serial++;
-	if (zend_weakrefs_hash_add_ptr(&pt_obj_serials, obj, entry) == NULL) {
-		uint64_t serial = entry->serial;
-		efree(entry);
-		return serial;
+	uint64_t serial = pt_next_serial;
+	zval value;
+	ZVAL_LONG(&value, (zend_long) serial);
+	if (zend_weakrefs_hash_add(&pt_obj_serials, obj, &value) != NULL) {
+		pt_next_serial++;
 	}
 
-	return entry->serial;
+	return serial;
 }
 
 static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth);
@@ -298,15 +284,38 @@ static bool hashZval(zval *value, Hash128 &h, uint32_t depth)
 	}
 }
 
+/* The hash of a property-less object is a pure function of its class, computed
+ * here exactly as the walk below would (no slots to mix). Both hashObject callers
+ * guarantee the object is CE_STRUCTURAL, so the plan does not need consulting. */
+static zend_always_inline bool hashZeroSlotObject(zend_object *obj, Hash128 &out)
+{
+	if (obj->ce->default_properties_count != 0) {
+		return false;
+	}
+	Hash128 h = { FNV_OFFSET_A, FNV_OFFSET_B };
+	mixU64(h, (uint64_t) (uintptr_t) obj->ce);
+	out = h;
+
+	return true;
+}
+
 static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 {
 	if (UNEXPECTED(depth > HASH_DEPTH_LIMIT)) {
 		return false;
 	}
 
-	TypeHash *cached = (TypeHash *) zend_hash_index_find_ptr(&pt_type_hashes, weakKey(obj));
-	if (cached != NULL && cached->obj == obj) {
-		out = cached->hash;
+	/* Argless leaf types (MixedType, NullType, …) are ~30% of hashed objects;
+	 * recomputing their class-only hash is cheaper than a table lookup, and
+	 * caching it would spend a map entry plus an EG(weakrefs) registration per
+	 * instance to save nothing. */
+	if (hashZeroSlotObject(obj, out)) {
+		return true;
+	}
+
+	Hash128 *cached = (Hash128 *) zend_hash_index_find_ptr(&pt_type_hashes, zend_object_to_weakref_key(obj));
+	if (cached != NULL) {
+		out = *cached;
 		return true;
 	}
 
@@ -321,11 +330,15 @@ static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 		}
 	}
 
-	TypeHash *stored = (TypeHash *) emalloc(sizeof(TypeHash));
-	stored->obj = obj;
-	stored->hash = h;
+	/* The 16 hash bytes live behind a real IS_PTR value; they cannot go into the
+	 * bucket zval itself, because a bucket only carries 8 payload bytes — u1 is
+	 * type_info the engine inspects (zend_hash_rehash treats Z_TYPE == IS_UNDEF
+	 * as a hole) and u2 is Z_NEXT, the collision chain, overwritten on insert.
+	 * NULL return = already registered by a re-entrant walk; the existing entry
+	 * holds the same bytes (the hash is a pure function of the object's value). */
+	Hash128 *stored = (Hash128 *) emalloc(sizeof(Hash128));
+	*stored = h;
 	if (zend_weakrefs_hash_add_ptr(&pt_type_hashes, obj, stored) == NULL) {
-		/* Already registered by a re-entrant walk; keep the existing entry. */
 		efree(stored);
 	}
 
@@ -384,23 +397,42 @@ static bool guardActive()
 
 
 
-/* {{{ the memo */
-
-static void memoEntryDtor(zval *zv)
-{
-	MemoEntry *entry = (MemoEntry *) Z_PTR_P(zv);
-	OBJ_RELEASE(entry->result);
-	efree(entry);
-}
-
 static void typeHashDtor(zval *zv)
 {
 	efree(Z_PTR_P(zv));
 }
 
-static void objSerialDtor(zval *zv)
+/* {{{ the memo */
+
+/* Returns the slot for the key: either the occupied slot holding it, or the
+ * empty slot where it belongs. The table's load never reaches 1 (memoGrow()
+ * keeps it at 3/4 at most), so the probe always terminates. */
+static zend_always_inline MemoSlot *memoFind(Hash128 key)
 {
-	efree(Z_PTR_P(zv));
+	/* FNV-1a's low bits mix worst; fold the high half in before masking. */
+	uint32_t idx = (uint32_t) (key.a ^ (key.a >> 32)) & pt_memo_mask;
+	for (;;) {
+		MemoSlot *slot = &pt_memo_slots[idx];
+		if (slot->result == NULL || (slot->key.a == key.a && slot->key.b == key.b)) {
+			return slot;
+		}
+		idx = (idx + 1) & pt_memo_mask;
+	}
+}
+
+static void memoGrow()
+{
+	uint32_t oldCapacity = pt_memo_mask + 1;
+	MemoSlot *oldSlots = pt_memo_slots;
+
+	pt_memo_slots = (MemoSlot *) ecalloc(oldCapacity * 2, sizeof(MemoSlot));
+	pt_memo_mask = oldCapacity * 2 - 1;
+	for (uint32_t i = 0; i < oldCapacity; i++) {
+		if (oldSlots[i].result != NULL) {
+			*memoFind(oldSlots[i].key) = oldSlots[i];
+		}
+	}
+	efree(oldSlots);
 }
 
 /* Mirrors PHPStan\Type\TypeCombinatorCache. */
@@ -415,13 +447,12 @@ public:
 
 	static void run(INTERNAL_FUNCTION_PARAMETERS, Op op, zend_function *fn, zval *args, uint32_t argc)
 	{
-		uint8_t key[2 + MEMO_ARGS_LIMIT * sizeof(Hash128)];
-		size_t keyLen = 0;
+		Hash128 key = { FNV_OFFSET_A, FNV_OFFSET_B };
 		bool memoizable = argc > 0 && argc <= MEMO_ARGS_LIMIT && !guardActive();
 
 		if (memoizable) {
-			key[keyLen++] = (uint8_t) op;
-			key[keyLen++] = (uint8_t) argc;
+			mixByte(key, (uint8_t) op);
+			mixByte(key, (uint8_t) argc);
 			for (uint32_t i = 0; i < argc; i++) {
 				zval *arg = &args[i];
 				ZVAL_DEREF(arg);
@@ -430,16 +461,16 @@ public:
 					memoizable = false;
 					break;
 				}
-				memcpy(key + keyLen, &h, sizeof(h));
-				keyLen += sizeof(h);
+				mixU64(key, h.a);
+				mixU64(key, h.b);
 			}
 		}
 
 		if (memoizable) {
-			MemoEntry *hit = (MemoEntry *) zend_hash_str_find_ptr(&pt_memo, (const char *) key, keyLen);
-			if (hit != NULL) {
-				GC_ADDREF(hit->result);
-				RETVAL_OBJ(hit->result);
+			MemoSlot *slot = memoFind(key);
+			if (slot->result != NULL) {
+				GC_ADDREF(slot->result);
+				RETVAL_OBJ(slot->result);
 				return;
 			}
 		}
@@ -453,22 +484,41 @@ public:
 			return;
 		}
 
-		if (memoizable && zend_hash_num_elements(&pt_memo) < MEMO_ENTRIES_LIMIT) {
-			MemoEntry *entry = (MemoEntry *) emalloc(sizeof(MemoEntry));
-			entry->result = Z_OBJ_P(return_value);
-			GC_ADDREF(entry->result);
-			if (zend_hash_str_add_ptr(&pt_memo, (const char *) key, keyLen, entry) == NULL) {
-				OBJ_RELEASE(entry->result);
-				efree(entry);
+		if (memoizable && pt_memo_count < MEMO_ENTRIES_LIMIT) {
+			/* Fresh lookup: the callback re-enters these operations for nested
+			 * types, which may have inserted this very key or grown the table. */
+			MemoSlot *slot = memoFind(key);
+			if (slot->result == NULL) {
+				slot->key = key;
+				slot->result = Z_OBJ_P(return_value);
+				GC_ADDREF(slot->result);
+				pt_memo_count++;
+
+				if ((uint64_t) pt_memo_count * 4 > (uint64_t) (pt_memo_mask + 1) * 3) {
+					memoGrow();
+				}
 			}
 		}
 	}
 
 	static void clear()
 	{
-		if (pt_cache_inited) {
-			zend_hash_clean(&pt_memo);
+		if (!pt_cache_inited) {
+			return;
 		}
+		for (uint32_t i = 0; i <= pt_memo_mask; i++) {
+			if (pt_memo_slots[i].result != NULL) {
+				OBJ_RELEASE(pt_memo_slots[i].result);
+			}
+		}
+		if (pt_memo_mask + 1 > MEMO_INITIAL_CAPACITY_LIMIT) {
+			efree(pt_memo_slots);
+			pt_memo_slots = (MemoSlot *) ecalloc(MEMO_INITIAL_CAPACITY_LIMIT, sizeof(MemoSlot));
+			pt_memo_mask = MEMO_INITIAL_CAPACITY_LIMIT - 1;
+		} else {
+			memset(pt_memo_slots, 0, (size_t) (pt_memo_mask + 1) * sizeof(MemoSlot));
+		}
+		pt_memo_count = 0;
 	}
 };
 
@@ -480,16 +530,17 @@ using phpstanturbo::pt_ce_kinds;
 using phpstanturbo::pt_fn_do_intersect;
 using phpstanturbo::pt_fn_do_remove;
 using phpstanturbo::pt_fn_do_union;
-using phpstanturbo::pt_memo;
+using phpstanturbo::pt_memo_slots;
+using phpstanturbo::pt_memo_mask;
+using phpstanturbo::pt_memo_count;
 using phpstanturbo::pt_obj_serials;
 using phpstanturbo::pt_next_serial;
-using phpstanturbo::objSerialDtor;
 using phpstanturbo::pt_guard_ce;
 using phpstanturbo::pt_guard_resolved;
 using phpstanturbo::pt_guard_unavailable;
 using phpstanturbo::pt_type_hashes;
-using phpstanturbo::memoEntryDtor;
 using phpstanturbo::typeHashDtor;
+using phpstanturbo::MEMO_INITIAL_CAPACITY_LIMIT;
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
@@ -503,9 +554,11 @@ void pt_type_combinator_cache_rinit()
 		return;
 	}
 	zend_hash_init(&pt_type_hashes, 4096, NULL, typeHashDtor, 0);
-	zend_hash_init(&pt_memo, 4096, NULL, memoEntryDtor, 0);
 	zend_hash_init(&pt_ce_kinds, 128, NULL, NULL, 0);
-	zend_hash_init(&pt_obj_serials, 1024, NULL, objSerialDtor, 0);
+	zend_hash_init(&pt_obj_serials, 1024, NULL, NULL, 0);
+	pt_memo_slots = (phpstanturbo::MemoSlot *) ecalloc(MEMO_INITIAL_CAPACITY_LIMIT, sizeof(phpstanturbo::MemoSlot));
+	pt_memo_mask = MEMO_INITIAL_CAPACITY_LIMIT - 1;
+	pt_memo_count = 0;
 	pt_next_serial = 1;
 	pt_guard_ce = NULL;
 	pt_guard_resolved = false;
@@ -518,7 +571,11 @@ void pt_type_combinator_cache_rshutdown()
 	if (!pt_cache_inited) {
 		return;
 	}
-	zend_hash_destroy(&pt_memo);
+	TypeCombinatorCache::clear();
+	efree(pt_memo_slots);
+	pt_memo_slots = NULL;
+	pt_memo_mask = 0;
+	pt_memo_count = 0;
 	pt_weakrefs_hash_destroy(&pt_type_hashes);
 	pt_weakrefs_hash_destroy(&pt_obj_serials);
 	zend_hash_destroy(&pt_ce_kinds);

@@ -66,13 +66,23 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 			return TypeCombinator::union(...array_map(fn (ConstantStringType $stringType): Type => $this->findParentClassNameType($stringType->getValue()), $constantStrings));
 		}
 
-		$classNames = $argType->getObjectClassNames();
+		// A `static::class` string refers to the same late-static-bound type as `$this`/`static`,
+		// so unwrap it and reuse the object handling below.
+		$valueType = $argType;
+		if ($argType->isClassString()->yes()) {
+			$classStringObjectType = $argType->getClassStringObjectType();
+			if ($classStringObjectType instanceof StaticType) {
+				$valueType = $classStringObjectType;
+			}
+		}
+
+		$classNames = $valueType->getObjectClassNames();
 		if (count($classNames) > 0) {
 			// A `$this`/`static` value can be an instance of a subclass through late static
 			// binding. For a non-final class the parent class is then not pinned to the declared
 			// parent: a direct child's parent is the class itself, a deeper descendant's parent is
 			// some subclass. So the result also includes `class-string<Class>`.
-			$isLateStaticBound = $argType instanceof StaticType;
+			$isLateStaticBound = $valueType instanceof StaticType;
 
 			$types = [];
 			foreach ($classNames as $className) {

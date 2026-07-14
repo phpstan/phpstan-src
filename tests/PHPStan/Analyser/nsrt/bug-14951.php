@@ -22,6 +22,9 @@ class A
 		// value, so it keeps the exact parent — no subclass widening.
 		assertType('false', get_parent_class(self::class));
 
+		// static::class is late static bound just like $this, so it is widened the same way.
+		assertType('class-string<Bug14951\A>|false', get_parent_class(static::class));
+
 		return get_parent_class($this) === self::class;
 	}
 
@@ -35,6 +38,8 @@ class B extends A
 		assertType('\'Bug14951\\\\A\'|class-string<Bug14951\B>', get_parent_class($this));
 		// self::class is the exact class B, so its parent is exactly A.
 		assertType("'Bug14951\\\\A'", get_parent_class(self::class));
+		// static::class is late static bound, matching get_parent_class($this).
+		assertType('\'Bug14951\\\\A\'|class-string<Bug14951\B>', get_parent_class(static::class));
 	}
 
 }
@@ -46,6 +51,7 @@ final class FinalNoParent
 	{
 		// Final class cannot be subclassed, so the parent is exactly false.
 		assertType('false', get_parent_class($this));
+		assertType('false', get_parent_class(static::class));
 		// ... and get_called_class() is pinned to the final class.
 		assertType("'Bug14951\\\\FinalNoParent'", get_called_class());
 	}

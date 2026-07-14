@@ -595,6 +595,58 @@ static bool hashRecordBuild(WriteBuffer &out, HashTable *entries)
 	return true;
 }
 
+/* Rebuilds the entire entries map of a hash record in publication order (the
+ * entries region is append-only, so walking it sequentially reproduces the
+ * source array's insertion order). Returns false on any inconsistency; the
+ * caller degrades to a miss. Integer-like keys round-trip through the
+ * symtable the same way PHP array keys do. */
+static bool hashRecordAll(const RecordView &view, zval *result)
+{
+	const uint8_t *payload = view.payload;
+	uint64_t payloadLen = view.header->payloadLen;
+	if (payloadLen < sizeof(uint64_t)) {
+		return false;
+	}
+	uint64_t slotCount;
+	memcpy(&slotCount, payload, sizeof(slotCount));
+	if (slotCount == 0 || (slotCount & (slotCount - 1)) != 0
+		|| slotCount > (payloadLen - sizeof(uint64_t)) / sizeof(uint64_t)) {
+		return false;
+	}
+
+	zend_array *all = zend_new_array(8);
+	uint64_t pos = sizeof(uint64_t) + slotCount * sizeof(uint64_t);
+	while (pos < payloadLen) {
+		uint32_t keyLen;
+		if (payloadLen - pos < sizeof(keyLen)) {
+			goto all_fail;
+		}
+		memcpy(&keyLen, payload + pos, sizeof(keyLen));
+		pos += sizeof(keyLen);
+		if (payloadLen - pos < keyLen) {
+			goto all_fail;
+		}
+		{
+			const char *keyBytes = (const char *) payload + pos;
+			pos += keyLen;
+			ReadCursor in;
+			in.p = payload + pos;
+			in.end = payload + payloadLen;
+			zval entryValue;
+			if (!deserializeValue(in, &entryValue, 0)) {
+				goto all_fail;
+			}
+			pos = (uint64_t) (in.p - payload);
+			zend_symtable_str_update(all, keyBytes, keyLen, &entryValue);
+		}
+	}
+	ZVAL_ARR(result, all);
+	return true;
+all_fail:
+	zend_array_destroy(all);
+	return false;
+}
+
 /* Looks entryKey up inside a hash record; returns false for "absent" and
  * fills result on a hit. Bounds-checked against the record's payloadLen. */
 static bool hashRecordFind(const RecordView &view, const char *entryKey, size_t entryKeyLen, zval *result)
@@ -894,6 +946,20 @@ public:
 		RETVAL_ZVAL(&result, 0, 0);
 	}
 
+	static void lookupHashAll(zend_string *recordKey, zval *return_value)
+	{
+		RETVAL_NULL();
+		RecordView view;
+		if (!findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &view) || view.header->kind != RECORD_KIND_HASH) {
+			return;
+		}
+		zval result;
+		if (!hashRecordAll(view, &result)) {
+			return;
+		}
+		RETVAL_ZVAL(&result, 0, 0);
+	}
+
 	static void publishHash(zend_string *recordKey, HashTable *entries)
 	{
 		if (pt_arena_base == NULL) {
@@ -986,6 +1052,14 @@ void pt_register_arena_cache()
 			Z_PARAM_STR(entryKey)
 		ZEND_PARSE_PARAMETERS_END();
 		phpstanturbo::ArenaCache::lookupHash(recordKey, entryKey, return_value);
+	});
+
+	cls.method("lookupHashAll", reg::PublicStatic, 1, { reg::stringArg("recordKey") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *recordKey;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_STR(recordKey)
+		ZEND_PARSE_PARAMETERS_END();
+		phpstanturbo::ArenaCache::lookupHashAll(recordKey, return_value);
 	});
 
 	cls.method("publishHash", reg::PublicStatic, 2, { reg::stringArg("recordKey"), reg::arrayArg("entries") }, [](INTERNAL_FUNCTION_PARAMETERS) {

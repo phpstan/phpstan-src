@@ -104,6 +104,9 @@ if ($mode === 'child-read') {
 	check(ArenaCache::lookupHash('sigmap', 'nope') === null, 'child: absent hash entry');
 	check(ArenaCache::lookupHash('fixtures', 'strlen') === null, 'child: lookupHash on value record is null');
 	check(ArenaCache::lookup('sigmap') === null, 'child: lookup on hash record is null');
+	check(ArenaCache::lookupHashAll('sigmap') === $rows, 'child: lookupHashAll identical incl. order and int keys');
+	check(ArenaCache::lookupHashAll('fixtures') === null, 'child: lookupHashAll on value record is null');
+	check(ArenaCache::lookupHashAll('missing') === null, 'child: lookupHashAll on missing record is null');
 
 	ArenaCache::publish('from-child', ['pid' => 'child-wrote-this']);
 	global $failures;
@@ -160,10 +163,11 @@ $withRef = ['r' => &$shared];
 ArenaCache::publish('with-ref', $withRef);
 check(ArenaCache::lookup('with-ref') === ['r' => 'refd'], 'parent: references serialize by value');
 
-// empty hash record: exists, every entry absent
+// empty hash record: exists, every entry absent, enumerates to []
 ArenaCache::publishHash('empty-hash', []);
 check(ArenaCache::hasRecord('empty-hash'), 'parent: empty hash record exists');
 check(ArenaCache::lookupHash('empty-hash', 'anything') === null, 'parent: empty hash record has no entries');
+check(ArenaCache::lookupHashAll('empty-hash') === [], 'parent: empty hash record enumerates to []');
 
 // duplicate publish of an existing key is a no-op, first write wins
 ArenaCache::publish('fixtures', ['clobbered' => true]);

@@ -69,6 +69,18 @@ final class ArenaCache
 	}
 
 	/**
+	 * The entire entries map of a hash record, in the insertion order it was
+	 * published with — for the rare consumers that must enumerate, at the
+	 * price of materializing every entry locally.
+	 *
+	 * @return mixed[]|null
+	 */
+	public static function lookupHashAll(string $recordKey): ?array
+	{
+		return null;
+	}
+
+	/**
 	 * @param mixed[] $entries
 	 */
 	public static function publishHash(string $recordKey, array $entries): void

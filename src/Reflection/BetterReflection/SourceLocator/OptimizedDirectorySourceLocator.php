@@ -14,6 +14,7 @@ use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Cache\ArenaCache;
 use PHPStan\Cache\Cache;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\Internal\ComposerHelper;
@@ -24,13 +25,31 @@ use function array_key_exists;
 use function array_values;
 use function current;
 use function hash_file;
+use function is_array;
+use function is_string;
 use function sprintf;
 use function strtolower;
 
 final class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
+	/** @var array<string, string|false> */
+	private array $arenaClassLookups = [];
+
+	/** @var array<string, array<int, string>|false> */
+	private array $arenaFunctionLookups = [];
+
+	/** @var array<string, string|false> */
+	private array $arenaConstantLookups = [];
+
+	private bool $hydratedFromArena = false;
+
 	/**
+	 * With $arenaKeyPrefix set, the maps start empty and names resolve lazily
+	 * from the run's shared arena (published by whichever process built this
+	 * directory's index first), so the worker materializes only the names it
+	 * touches instead of the whole index.
+	 *
 	 * @param array<string, string> $classToFile
 	 * @param array<string, array<int, string>> $functionToFiles
 	 * @param array<string, string> $constantToFile
@@ -42,6 +61,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
+		private ?string $arenaKeyPrefix = null,
 	)
 	{
 	}
@@ -90,9 +110,17 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 		foreach ($files as $file) {
 			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
-			$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
-			if ($cachedReflection === null) {
-				continue;
+			// The run's shared arena spares every worker after the first the
+			// include() of the same var_export'd reflection blob; the variable
+			// cache key carries the file hash, so the record binds to content.
+			$arenaKey = $reflectionCacheKey . "\0" . $variableCacheKey;
+			$cachedReflection = ArenaCache::lookup($arenaKey);
+			if (!is_array($cachedReflection)) {
+				$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
+				if ($cachedReflection === null) {
+					continue;
+				}
+				ArenaCache::publish($arenaKey, $cachedReflection);
 			}
 
 			if ($identifier->isConstant()) {
@@ -127,7 +155,9 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($fetchedFile, $identifier);
 			$classReflection = $this->nodeToReflection($reflector, $fetchedClassNode);
-			$this->cache->save($reflectionCacheKey, $variableCacheKey, $classReflection->exportToCache());
+			$exportedReflection = $classReflection->exportToCache();
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $exportedReflection);
+			ArenaCache::publish($reflectionCacheKey . "\0" . $variableCacheKey, $exportedReflection);
 
 			return $classReflection;
 		} elseif ($identifier->isFunction()) {
@@ -149,7 +179,9 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier); // @phpstan-ignore variable.undefined
 			$functionReflection = $this->nodeToReflection($reflector, $fetchedFunctionNode);
-			$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
+			$exportedReflection = $functionReflection->exportToCache();
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $exportedReflection);
+			ArenaCache::publish($reflectionCacheKey . "\0" . $variableCacheKey, $exportedReflection);
 
 			return $functionReflection;
 		} elseif ($identifier->isConstant()) {
@@ -175,7 +207,9 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 				$fetchedConstantNode,
 				$this->findConstantPositionInConstNode($fetchedConstantNode->getNode(), $identifierName),
 			);
-			$this->cache->save($reflectionCacheKey, $variableCacheKey, $constantReflection->exportToCache());
+			$exportedReflection = $constantReflection->exportToCache();
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $exportedReflection);
+			ArenaCache::publish($reflectionCacheKey . "\0" . $variableCacheKey, $exportedReflection);
 
 			return $constantReflection;
 		}
@@ -200,20 +234,48 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 	private function findFileByClass(string $className): ?string
 	{
-		if (!array_key_exists($className, $this->classToFile)) {
+		if (array_key_exists($className, $this->classToFile)) {
+			return $this->classToFile[$className];
+		}
+
+		if ($this->arenaKeyPrefix === null) {
 			return null;
 		}
 
-		return $this->classToFile[$className];
+		if (array_key_exists($className, $this->arenaClassLookups)) {
+			$file = $this->arenaClassLookups[$className];
+		} else {
+			$file = ArenaCache::lookupHash($this->arenaKeyPrefix . '-classes', $className);
+			if (!is_string($file)) {
+				$file = false;
+			}
+			$this->arenaClassLookups[$className] = $file;
+		}
+
+		return $file === false ? null : $file;
 	}
 
 	private function findFileByConstant(string $constantName): ?string
 	{
-		if (!array_key_exists($constantName, $this->constantToFile)) {
+		if (array_key_exists($constantName, $this->constantToFile)) {
+			return $this->constantToFile[$constantName];
+		}
+
+		if ($this->arenaKeyPrefix === null) {
 			return null;
 		}
 
-		return $this->constantToFile[$constantName];
+		if (array_key_exists($constantName, $this->arenaConstantLookups)) {
+			$file = $this->arenaConstantLookups[$constantName];
+		} else {
+			$file = ArenaCache::lookupHash($this->arenaKeyPrefix . '-constants', $constantName);
+			if (!is_string($file)) {
+				$file = false;
+			}
+			$this->arenaConstantLookups[$constantName] = $file;
+		}
+
+		return $file === false ? null : $file;
 	}
 
 	/**
@@ -221,11 +283,62 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	 */
 	private function findFilesByFunction(string $functionName): array
 	{
-		if (!array_key_exists($functionName, $this->functionToFiles)) {
+		if (array_key_exists($functionName, $this->functionToFiles)) {
+			return $this->functionToFiles[$functionName];
+		}
+
+		if ($this->arenaKeyPrefix === null) {
 			return [];
 		}
 
-		return $this->functionToFiles[$functionName];
+		if (array_key_exists($functionName, $this->arenaFunctionLookups)) {
+			$files = $this->arenaFunctionLookups[$functionName];
+		} else {
+			/** @var array<int, string>|mixed $files */
+			$files = ArenaCache::lookupHash($this->arenaKeyPrefix . '-functions', $functionName);
+			if (!is_array($files)) {
+				$files = false;
+			}
+			$this->arenaFunctionLookups[$functionName] = $files;
+		}
+
+		return $files === false ? [] : $files;
+	}
+
+	/**
+	 * Enumeration needs the full maps: hydrates them from the arena records
+	 * in their publication order, which equals the insertion order a locally
+	 * built index would have. A null (a corrupt record — impossible with an
+	 * intact arena, the factory gated on all three records) leaves a map
+	 * empty rather than failing the run.
+	 */
+	private function hydrateSymbolsFromArena(): void
+	{
+		if ($this->arenaKeyPrefix === null || $this->hydratedFromArena) {
+			return;
+		}
+
+		$this->hydratedFromArena = true;
+
+		/** @var array<string, string>|null $classes */
+		$classes = ArenaCache::lookupHashAll($this->arenaKeyPrefix . '-classes');
+		if ($classes !== null) {
+			$this->classToFile = $classes;
+		}
+
+		/** @var array<string, array<int, string>>|null $functions */
+		$functions = ArenaCache::lookupHashAll($this->arenaKeyPrefix . '-functions');
+		if ($functions !== null) {
+			$this->functionToFiles = $functions;
+		}
+
+		/** @var array<string, string>|null $constants */
+		$constants = ArenaCache::lookupHashAll($this->arenaKeyPrefix . '-constants');
+		if ($constants === null) {
+			return;
+		}
+
+		$this->constantToFile = $constants;
 	}
 
 	/**
@@ -234,6 +347,8 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
+		$this->hydrateSymbolsFromArena();
+
 		$reflections = [];
 		if ($identifierType->isClass()) {
 			foreach ($this->classToFile as $file) {

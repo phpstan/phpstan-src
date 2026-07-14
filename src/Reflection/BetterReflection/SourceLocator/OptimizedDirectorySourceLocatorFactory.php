@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PHPStan\Cache\ArenaCache;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -16,12 +17,15 @@ use function flock;
 use function fopen;
 use function hash_file;
 use function hrtime;
+use function ksort;
+use function serialize;
 use function sha1;
 use function sprintf;
 use function usleep;
 use const LOCK_EX;
 use const LOCK_NB;
 use const LOCK_UN;
+use const SORT_STRING;
 
 #[AutowiredService]
 final class OptimizedDirectorySourceLocatorFactory
@@ -73,6 +77,31 @@ final class OptimizedDirectorySourceLocatorFactory
 	private function createCachedDirectorySourceLocator(array $fileHashes, string $cacheKey): OptimizedDirectorySourceLocator
 	{
 		$variableCacheKey = sprintf('v1-%s', $this->phpVersion->supportsEnums() ? 'enums' : 'no-enums');
+
+		// The run's shared arena binds the symbol index to the exact content
+		// fingerprint of the directory: a worker seeing the same file hashes
+		// reuses the index another process already validated and published —
+		// no include() of the cache blob, no validation pass, and names are
+		// materialized lazily one by one. A worker whose view differs (a file
+		// changed mid-run) misses the fingerprint and builds locally.
+		$sortedFileHashes = $fileHashes;
+		ksort($sortedFileHashes, SORT_STRING);
+		$arenaKeyPrefix = sprintf('odsl-arena-%s', sha1($cacheKey . "\0" . $variableCacheKey . "\0" . serialize($sortedFileHashes)));
+		if (
+			ArenaCache::hasRecord($arenaKeyPrefix . '-classes')
+			&& ArenaCache::hasRecord($arenaKeyPrefix . '-functions')
+			&& ArenaCache::hasRecord($arenaKeyPrefix . '-constants')
+		) {
+			return new OptimizedDirectorySourceLocator(
+				$this->fileNodesFetcher,
+				$this->cache,
+				$this->phpVersion,
+				[],
+				[],
+				[],
+				$arenaKeyPrefix,
+			);
+		}
 
 		$originalFileHashes = $fileHashes;
 
@@ -148,6 +177,12 @@ final class OptimizedDirectorySourceLocatorFactory
 		}
 
 		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($cached);
+
+		// Publication order matters: the reader above requires all three
+		// records, so a partially-published index is never consumed.
+		ArenaCache::publishHash($arenaKeyPrefix . '-classes', $classToFile);
+		ArenaCache::publishHash($arenaKeyPrefix . '-functions', $functionToFiles);
+		ArenaCache::publishHash($arenaKeyPrefix . '-constants', $constantToFile);
 
 		return new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,

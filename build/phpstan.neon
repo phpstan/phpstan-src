@@ -144,10 +144,10 @@ parameters:
 			path: ../src/Cache/ArenaCache.php
 			reportUnmatched: false
 		-
-			# the turbo extension shadows this seam class; the ?string is the
-			# contract of the pair, the PHP twin honestly never creates an arena
-			message: '#^Method PHPStan\\Cache\\ArenaCache\:\:create\(\) never returns string so it can be removed from the return type\.$#'
-			count: 1
+			# the turbo extension shadows this seam class; the nullable returns
+			# are the contract of the pair, the PHP twin honestly never hits
+			message: '#^Method PHPStan\\Cache\\ArenaCache\:\:(?:create|lookupHashAll)\(\) never returns .+ so it can be removed from the return type\.$#'
+			count: 2
 			path: ../src/Cache/ArenaCache.php
 		-
 			# ArenaCache::attach() is only pure in the unshadowed PHP twin; with

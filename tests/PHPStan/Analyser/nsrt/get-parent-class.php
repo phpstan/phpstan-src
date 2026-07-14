@@ -10,7 +10,7 @@ class Foo
 	public function doFoo()
 	{
 		assertType('false', get_parent_class());
-		assertType('false', get_parent_class($this));
+		assertType('class-string<ParentClass\Foo>|false', get_parent_class($this));
 		assertType('class-string<$this(ParentClass\Foo)>', get_class($this));
 		assertType('\'ParentClass\\\\Foo\'', get_class());
 	}
@@ -25,7 +25,7 @@ class Bar extends Foo
 	public function doBar()
 	{
 		assertType('\'ParentClass\\\\Foo\'', get_parent_class());
-		assertType('\'ParentClass\\\\Foo\'', get_parent_class($this));
+		assertType('\'ParentClass\\\\Foo\'|class-string<ParentClass\Bar>', get_parent_class($this));
 	}
 
 }

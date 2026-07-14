@@ -12,6 +12,9 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -65,7 +68,24 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 
 		$classNames = $argType->getObjectClassNames();
 		if (count($classNames) > 0) {
-			return TypeCombinator::union(...array_map(fn (string $classNames): Type => $this->findParentClassNameType($classNames), $classNames));
+			// A `$this`/`static` value can be an instance of a subclass through late static
+			// binding. For a non-final class the parent class is then not pinned to the declared
+			// parent: a direct child's parent is the class itself, a deeper descendant's parent is
+			// some subclass. So the result also includes `class-string<Class>`.
+			$isLateStaticBound = $argType instanceof StaticType;
+
+			return TypeCombinator::union(...array_map(function (string $className) use ($isLateStaticBound): Type {
+				$parentType = $this->findParentClassNameType($className);
+				if (!$isLateStaticBound || !$this->reflectionProvider->hasClass($className)) {
+					return $parentType;
+				}
+
+				if ($this->reflectionProvider->getClass($className)->isFinal()) {
+					return $parentType;
+				}
+
+				return TypeCombinator::union($parentType, new GenericClassStringType(new ObjectType($className)));
+			}, $classNames));
 		}
 
 		return null;

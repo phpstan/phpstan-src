@@ -11,7 +11,11 @@ CXX ?= c++
 # CI overrides with stricter settings, e.g. WARN_FLAGS="-Wall -Wextra -Werror"
 # (the Zend engine headers are exempted via the pragma guard in src/support.h)
 WARN_FLAGS ?= -Wall
+# ZEND_ENABLE_STATIC_TSRMLS_CACHE: on ZTS builds EG()/CG() go through the
+# per-thread cache main.cpp defines instead of a ts_resource lookup per
+# access; a no-op on NTS builds.
 CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
+	-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 \
 	`$(PHP_CONFIG) --includes`
 
 # The extension version is the short SHA of the last commit touching

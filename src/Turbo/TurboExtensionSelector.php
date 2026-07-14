@@ -25,7 +25,9 @@ use const PHP_ZTS;
  * Windows) by the phar.yml commit job, so they only exist for phar-based
  * installations —
  * a source checkout loads its locally built extension through php.ini
- * instead. Only NTS non-debug builds are shipped. Workers run the regular
+ * instead. Only non-debug builds are shipped; ZTS variants (-zts filename
+ * suffix) exist for linux-gnu and Windows so hosts with a thread-safe PHP
+ * (like PMMP's bundled build) are covered too. Workers run the regular
  * entrypoint, so TurboExtensionEnabler still gates activation on the
  * expected extension version.
  */
@@ -41,7 +43,7 @@ final class TurboExtensionSelector
 		if (getenv('PHPSTAN_TURBO') === '0') {
 			return null;
 		}
-		if ((bool) PHP_ZTS || (bool) PHP_DEBUG) {
+		if ((bool) PHP_DEBUG) {
 			return null;
 		}
 
@@ -56,11 +58,12 @@ final class TurboExtensionSelector
 		}
 
 		$file = sprintf(
-			'%s/turbo-ext/%s/phpstan_turbo-%d.%d.%s',
+			'%s/turbo-ext/%s/phpstan_turbo-%d.%d%s.%s',
 			dirname($pharPath),
 			$platform,
 			PHP_MAJOR_VERSION,
 			PHP_MINOR_VERSION,
+			(bool) PHP_ZTS ? '-zts' : '',
 			PHP_OS_FAMILY === 'Windows' ? 'dll' : 'so',
 		);
 		if (!is_file($file)) {

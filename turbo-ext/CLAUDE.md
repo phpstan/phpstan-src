@@ -112,7 +112,11 @@ Output identity: `--error-format=raw` runs in both modes must diff empty.
   never plain `zend_hash_find` on user-derived keys.
 - Private userland methods are callable from C via `ce->function_table`
   lookup + `zend_call_known_function` — no visibility check applies.
-- Globals are plain statics (NTS-only build); keep new state in `pt_globals`.
+- Globals are plain statics; keep new state in `pt_globals`. This holds in
+  ZTS builds too — PHPStan's CLI processes are single-threaded (parallelism
+  is worker processes, not threads) — but only EG()/CG() access is truly
+  thread-aware (via the TSRMLS cache in `main.cpp`), so never introduce
+  actual multi-threaded use.
 - Fibers can suspend from internal frames — native code may be re-entered.
 - Cloned scopes must reset per-instance memo properties to constructor
   defaults, and native factories must instantiate the `…Impl` stub classes.

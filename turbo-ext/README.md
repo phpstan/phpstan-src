@@ -164,7 +164,10 @@ make          # builds phpstan_turbo.so
 ```
 
 The only requirements are a C++17 compiler and `php-config` on PATH (or
-passed as `make PHP_CONFIG=...`).
+passed as `make PHP_CONFIG=...`). Both NTS and ZTS interpreters are
+supported — the build inherits thread-safety from the `php-config` it is
+pointed at (ZTS hosts like PMMP's bundled PHP get a matching build; PHPStan
+itself only ever runs the native code single-threaded).
 
 On Windows the extension builds through the standard PHP extension pipeline
 (`config.w32`): with a PHP devel pack, [php-sdk-binary-tools] and a VS2022

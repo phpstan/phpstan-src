@@ -208,7 +208,11 @@ jobs:
     # (RHEL 9, Ubuntu 22.04+, Debian 12+), alpine:3.24 builds the musl
     # variant. There is no linux-musl-arm64 leg: JavaScript-based actions
     # cannot run in Alpine containers on arm64 runners (the runner only
-    # ships an x64 musl Node).
+    # ships an x64 musl Node). The ZTS legs (for hosts with a thread-safe
+    # PHP, like PMMP's bundled build) run directly on ubuntu-22.04 runners —
+    # same glibc floor — because no distro packages ZTS PHP (neither
+    # ppa:ondrej/php nor Alpine); setup-php provides thread-safe builds.
+    # No musl ZTS for the same packaging reason.
     container: ${{ matrix.target.container }}
     timeout-minutes: 30
 
@@ -235,6 +239,16 @@ jobs:
             container: "alpine:3.24"
             family: "musl"
             artifact: "phpstan_turbo"
+          - name: "linux-gnu-x86_64"
+            runs-on: "ubuntu-22.04"
+            family: "zts"
+            artifact: "phpstan_turbo"
+            suffix: "-zts"
+          - name: "linux-gnu-arm64"
+            runs-on: "ubuntu-22.04-arm"
+            family: "zts"
+            artifact: "phpstan_turbo"
+            suffix: "-zts"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -292,6 +306,21 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
+      - name: "Install PHP (ZTS runner)"
+        if: matrix.target.family == 'zts'
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        env:
+          phpts: "ts"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      # Guards against setup-php silently falling back to an NTS build,
+      # which would ship an NTS binary under the -zts name.
+      - name: "Verify the interpreter is thread-safe"
+        if: matrix.target.family == 'zts'
+        run: "php -r 'exit((bool) PHP_ZTS ? 0 : 1);'"
+
       - name: "Compile phpstan_turbo with strict warnings"
         working-directory: "turbo-ext"
         # Exemptions, each caused by third-party macro expansions, not our code:
@@ -343,7 +372,7 @@ jobs:
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
+          name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.target.suffix }}"
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
@@ -366,6 +395,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ["8.4", "8.5"]
+        ts: ["nts", "zts"]
 
     steps:
       - name: "Checkout"
@@ -378,6 +408,8 @@ jobs:
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        env:
+          phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -391,7 +423,9 @@ jobs:
           echo "PHPSTANTURBO_VERSION=$SHA" >> "$GITHUB_ENV"
 
           FULL=$(php -r 'echo PHP_VERSION;')
-          PACK="php-devel-pack-$FULL-nts-Win32-vs17-x64.zip"
+          # thread-safe devel packs carry no infix, NTS ones carry -nts
+          INFIX=$([ "${{ matrix.ts }}" = "zts" ] && echo "" || echo "-nts")
+          PACK="php-devel-pack-$FULL$INFIX-Win32-vs17-x64.zip"
           echo "devel pack: $PACK"
           curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/$PACK" \
             || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK"
@@ -429,6 +463,11 @@ jobs:
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
+          # the loader rejects a ts-mismatched DLL, so php loading it above
+          # proves the DLL matches the interpreter; assert the interpreter
+          # itself so both sides cannot silently be NTS on the zts leg
+          WANT_ZTS=$([ "${{ matrix.ts }}" = "zts" ] && echo 1 || echo 0)
+          [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$WANT_ZTS" ]
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
@@ -447,7 +486,7 @@ jobs:
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}"
+          name: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
           path: "${{ env.DLL_PATH }}"
           if-no-files-found: "error"
 
@@ -472,8 +511,9 @@ jobs:
           path: "turbo-artifacts"
 
       - name: "Arrange the distribution layout"
-        # phpstan_turbo-<target>-php<minor> → <target>/phpstan_turbo-<minor>.so,
-        # derived from the artifact names so new targets need no change here.
+        # phpstan_turbo-<target>-php<minor>[-zts] →
+        # <target>/phpstan_turbo-<minor>[-zts].<so|dll>, derived from the
+        # artifact names so new targets need no change here.
         # The integration/extension/other test workflows in phpstan/phpstan
         # download this artifact next to the phar under test.
         run: |

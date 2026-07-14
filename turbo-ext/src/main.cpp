@@ -51,6 +51,10 @@ static void ZEND_FASTCALL runtimeConfigure(INTERNAL_FUNCTION_PARAMETERS)
 
 static PHP_MINIT_FUNCTION(phpstan_turbo)
 {
+#ifdef ZTS
+	ZEND_TSRMLS_CACHE_UPDATE();
+#endif
+
 	reg::Class runtime("PHPStanTurbo\\Runtime");
 	runtime.method("configure", reg::PublicStatic, 1, { reg::arrayArg("classMap") }, runtimeConfigure);
 	runtime.register_();
@@ -70,6 +74,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 
 static PHP_RINIT_FUNCTION(phpstan_turbo)
 {
+#ifdef ZTS
+	ZEND_TSRMLS_CACHE_UPDATE();
+#endif
+
 	pt_support_rinit();
 	pt_node_traverser_rinit();
 	pt_scope_ops_rinit();
@@ -89,6 +97,16 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 }
 
 extern "C" {
+
+/* ZTS builds resolve EG()/CG() through this per-thread cache (the build
+ * defines ZEND_ENABLE_STATIC_TSRMLS_CACHE; php.h declares the extern in
+ * every translation unit). The extension's own state stays in plain statics
+ * regardless: PHPStan's CLI processes are single-threaded — parallelism is
+ * worker processes, not threads — so a ZTS build (for hosts like PMMP's
+ * bundled PHP) never runs our code from two threads at once. */
+#ifdef ZTS
+ZEND_TSRMLS_CACHE_DEFINE()
+#endif
 
 zend_module_entry phpstan_turbo_module_entry = {
 	STANDARD_MODULE_HEADER,

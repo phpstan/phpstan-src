@@ -13,9 +13,11 @@ if (PHP_PHPSTAN_TURBO != "no") {
 
 	// /EHsc: the C++ standard library assumes unwinding; /bigobj: the
 	// generated parser action files exceed the default section limit.
+	// ZEND_ENABLE_STATIC_TSRMLS_CACHE: ZTS builds resolve EG()/CG() through
+	// the per-thread cache main.cpp defines (a no-op on NTS builds).
 	// The version is passed as a bare token (main.cpp stringizes it) —
 	// quote characters do not survive the configure-to-nmake pipeline.
-	var flags = "/std:c++17 /EHsc /bigobj /DPHPSTANTURBO_VERSION_RAW=" + version;
+	var flags = "/std:c++17 /EHsc /bigobj /DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /DPHPSTANTURBO_VERSION_RAW=" + version;
 
 	// backslash-separated paths: confutils' ADD_SOURCES derives the object
 	// directory by splitting on backslashes only — with forward slashes the

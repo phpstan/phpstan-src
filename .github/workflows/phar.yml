@@ -344,15 +344,19 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: matrix.target.family == 'macos'
 
-      - name: "Install Composer dependencies (containers)"
+      - name: "Install Composer dependencies (pinned composer)"
         if: matrix.target.family != 'macos'
         # checksum-pinned composer, run under the matrix PHP so platform
         # requirements are validated against the interpreter the tests below
-        # run on
+        # run on. COMPOSER_HOME is isolated: on the runner (ZTS) legs,
+        # setup-php seeds ~/.composer/auth.json with the workflow's GitHub
+        # token, which this pinned composer rejects at startup ("github oauth
+        # token contains invalid characters") — everything here comes from
+        # packagist dists, no auth needed.
         run: |
           curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
           echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
-          php composer.phar install --no-interaction --no-progress
+          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
       - name: "Smoke test (differential: native vs PHP implementations)"

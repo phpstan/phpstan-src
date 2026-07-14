@@ -110,17 +110,9 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 		foreach ($files as $file) {
 			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
-			// The run's shared arena spares every worker after the first the
-			// include() of the same var_export'd reflection blob; the variable
-			// cache key carries the file hash, so the record binds to content.
-			$arenaKey = $reflectionCacheKey . "\0" . $variableCacheKey;
-			$cachedReflection = ArenaCache::lookup($arenaKey);
-			if (!is_array($cachedReflection)) {
-				$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
-				if ($cachedReflection === null) {
-					continue;
-				}
-				ArenaCache::publish($arenaKey, $cachedReflection);
+			$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
+			if ($cachedReflection === null) {
+				continue;
 			}
 
 			if ($identifier->isConstant()) {
@@ -155,9 +147,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($fetchedFile, $identifier);
 			$classReflection = $this->nodeToReflection($reflector, $fetchedClassNode);
-			$exportedReflection = $classReflection->exportToCache();
-			$this->cache->save($reflectionCacheKey, $variableCacheKey, $exportedReflection);
-			ArenaCache::publish($reflectionCacheKey . "\0" . $variableCacheKey, $exportedReflection);
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $classReflection->exportToCache());
 
 			return $classReflection;
 		} elseif ($identifier->isFunction()) {
@@ -179,9 +169,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier); // @phpstan-ignore variable.undefined
 			$functionReflection = $this->nodeToReflection($reflector, $fetchedFunctionNode);
-			$exportedReflection = $functionReflection->exportToCache();
-			$this->cache->save($reflectionCacheKey, $variableCacheKey, $exportedReflection);
-			ArenaCache::publish($reflectionCacheKey . "\0" . $variableCacheKey, $exportedReflection);
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
 
 			return $functionReflection;
 		} elseif ($identifier->isConstant()) {
@@ -207,9 +195,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 				$fetchedConstantNode,
 				$this->findConstantPositionInConstNode($fetchedConstantNode->getNode(), $identifierName),
 			);
-			$exportedReflection = $constantReflection->exportToCache();
-			$this->cache->save($reflectionCacheKey, $variableCacheKey, $exportedReflection);
-			ArenaCache::publish($reflectionCacheKey . "\0" . $variableCacheKey, $exportedReflection);
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $constantReflection->exportToCache());
 
 			return $constantReflection;
 		}

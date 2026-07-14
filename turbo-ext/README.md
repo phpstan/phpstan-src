@@ -177,9 +177,16 @@ never dirtied by refcounting. Publication is lock-free (bump-allocate,
 write, CAS an index slot from 0 with release ordering); racing publishers of
 the same key converge on the first writer, wasteful-not-unsafe. Corruption
 degrades to a miss via bounds checks — the caller recomputes locally, like a
-worker that never attached. First consumer: the function signature map
-(`FunctionSignatureMapProvider`), published once as a hash record and read
-per-row, so workers stop materializing the multi-megabyte merged map.
+worker that never attached.
+
+Consumers: the function signature map (`FunctionSignatureMapProvider`),
+published once as a hash record and read per-row so workers stop
+materializing the multi-megabyte merged map; the per-directory symbol
+indexes (`OptimizedDirectorySourceLocatorFactory`), fingerprint-bound and
+read lazily per name; and — generically — every data-only entry of
+`PHPStan\Cache\Cache`, so each var_export'd cache blob is include()d by one
+process per run instead of every worker (object-carrying payloads stay
+per-worker: encoding them double-buffers exactly when worker memory peaks).
 `tests/arena-smoke.php` is the cross-process differential test.
 
 ## Building

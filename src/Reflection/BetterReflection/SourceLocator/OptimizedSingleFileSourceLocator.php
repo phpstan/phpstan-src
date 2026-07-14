@@ -14,7 +14,6 @@ use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\Cache\ArenaCache;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\File\CouldNotReadFileException;
@@ -25,7 +24,6 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_keys;
 use function hash_file;
-use function is_array;
 use function sprintf;
 use function strtolower;
 
@@ -72,7 +70,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 
 		$variableCacheKey = $this->getVariableCacheKey($this->fileName);
 		$presentSymbolsCacheKey = sprintf('osfsl-%s-presentSymbols', $this->fileName);
-		$cached = $this->loadPresentSymbols($presentSymbolsCacheKey, $variableCacheKey);
+		$cached = $this->cache->load($presentSymbolsCacheKey, $variableCacheKey);
 		if ($cached !== null) {
 			return $this->presentSymbols = $cached;
 		}
@@ -95,33 +93,8 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 
 		$this->presentSymbols = $presentSymbols;
 		$this->cache->save($presentSymbolsCacheKey, $variableCacheKey, $presentSymbols);
-		ArenaCache::publish($presentSymbolsCacheKey . "\0" . $variableCacheKey, $presentSymbols);
 
 		return $presentSymbols;
-	}
-
-	/**
-	 * Loads the present-symbols index, preferring the run's shared arena over
-	 * the per-worker include() of the disk cache blob.
-	 *
-	 * @param non-empty-string $presentSymbolsCacheKey
-	 * @return array{classes: array<string, true>, functions: array<string, true>, constants: array<string, true>}|null
-	 */
-	private function loadPresentSymbols(string $presentSymbolsCacheKey, string $variableCacheKey): ?array
-	{
-		$arenaKey = $presentSymbolsCacheKey . "\0" . $variableCacheKey;
-		$cached = ArenaCache::lookup($arenaKey);
-		if (is_array($cached)) {
-			/** @var array{classes: array<string, true>, functions: array<string, true>, constants: array<string, true>} $cached */
-			return $cached;
-		}
-
-		$cached = $this->cache->load($presentSymbolsCacheKey, $variableCacheKey);
-		if ($cached !== null) {
-			ArenaCache::publish($arenaKey, $cached);
-		}
-
-		return $cached;
 	}
 
 	#[Override]
@@ -129,7 +102,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 	{
 		if ($this->presentSymbols === null) {
 			$variableCacheKey = $this->getVariableCacheKey($this->fileName);
-			$this->presentSymbols = $this->loadPresentSymbols(sprintf('osfsl-%s-presentSymbols', $this->fileName), $variableCacheKey);
+			$this->presentSymbols = $this->cache->load(sprintf('osfsl-%s-presentSymbols', $this->fileName), $variableCacheKey);
 		}
 		if ($this->presentSymbols !== null) {
 			if ($identifier->isClass()) {
@@ -155,14 +128,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		$reflectionCacheKey = sprintf('osfsl-%s-%s-%s', $this->fileName, $identifier->getType()->getName(), $identifier->getName());
 		$variableCacheKey ??= $this->getVariableCacheKey($this->fileName);
 		$reflectionVariableCacheKey = sprintf('%s-%s', $variableCacheKey, ComposerHelper::getBetterReflectionVersion());
-		$reflectionArenaKey = $reflectionCacheKey . "\0" . $reflectionVariableCacheKey;
-		$cachedReflection = ArenaCache::lookup($reflectionArenaKey);
-		if (!is_array($cachedReflection)) {
-			$cachedReflection = $this->cache->load($reflectionCacheKey, $reflectionVariableCacheKey);
-			if ($cachedReflection !== null) {
-				ArenaCache::publish($reflectionArenaKey, $cachedReflection);
-			}
-		}
+		$cachedReflection = $this->cache->load($reflectionCacheKey, $reflectionVariableCacheKey);
 		if ($cachedReflection !== null) {
 			if ($identifier->isConstant()) {
 				return ReflectionConstant::importFromCache($reflector, $cachedReflection);
@@ -197,9 +163,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 			}
 
 			$this->presentSymbols = $presentSymbols;
-			$presentSymbolsCacheKey = sprintf('osfsl-%s-presentSymbols', $this->fileName);
-			$this->cache->save($presentSymbolsCacheKey, $variableCacheKey, $presentSymbols);
-			ArenaCache::publish($presentSymbolsCacheKey . "\0" . $variableCacheKey, $presentSymbols);
+			$this->cache->save(sprintf('osfsl-%s-presentSymbols', $this->fileName), $variableCacheKey, $presentSymbols);
 		}
 
 		$nodeToReflection = new NodeToReflection();
@@ -221,9 +185,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 					throw new ShouldNotHappenException();
 				}
 
-				$exportedReflection = $classReflection->exportToCache();
-				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $exportedReflection);
-				ArenaCache::publish($reflectionArenaKey, $exportedReflection);
+				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $classReflection->exportToCache());
 
 				return $classReflection;
 			}
@@ -247,9 +209,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 					throw new ShouldNotHappenException();
 				}
 
-				$exportedReflection = $functionReflection->exportToCache();
-				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $exportedReflection);
-				ArenaCache::publish($reflectionArenaKey, $exportedReflection);
+				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $functionReflection->exportToCache());
 
 				return $functionReflection;
 			}
@@ -296,9 +256,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 					throw new ShouldNotHappenException();
 				}
 
-				$exportedReflection = $constantReflection->exportToCache();
-				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $exportedReflection);
-				ArenaCache::publish($reflectionArenaKey, $exportedReflection);
+				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $constantReflection->exportToCache());
 
 				return $constantReflection;
 			}

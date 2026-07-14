@@ -539,7 +539,7 @@ jobs:
     needs:
       - turbo-compile
       - turbo-compile-windows
-    runs-on: ${{ matrix.setup.operating-system }}
+    runs-on: ${{ matrix.operating-system }}
     timeout-minutes: 60
 
     defaults:
@@ -548,16 +548,14 @@ jobs:
 
     strategy:
       fail-fast: false
+      # windows-latest only runs the DLL, it cannot build it: the DLL is
+      # linked with the 14.4x toolset on windows-2022, and the loader's
+      # linker-generation gate is one-directional (module <= core), so the
+      # vs17-built official PHP loads it fine.
       matrix:
-        setup:
-          - operating-system: "ubuntu-latest"
-            artifact: "phpstan_turbo-linux-gnu-x86_64-php8.5"
-          # windows-latest only runs the DLL, it cannot build it: the DLL is
-          # linked with the 14.4x toolset on windows-2022, and the loader's
-          # linker-generation gate is one-directional (module <= core), so the
-          # vs17-built official PHP loads it fine.
-          - operating-system: "windows-latest"
-            artifact: "phpstan_turbo-windows-x86_64-php8.5"
+        operating-system: ["ubuntu-latest", "windows-latest"]
+        php-version: ["8.4", "8.5"]
+        ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
 
     steps:
@@ -573,14 +571,16 @@ jobs:
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        env:
+          phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
         with:
           coverage: "none"
-          php-version: "8.5"
+          php-version: "${{ matrix.php-version }}"
 
       - name: "Download extension artifact"
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: "${{ matrix.setup.artifact }}"
+          name: "phpstan_turbo-${{ matrix.operating-system == 'windows-latest' && 'windows-x86_64' || 'linux-gnu-x86_64' }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
           path: "turbo-ext"
 
       - name: "Install extension"
@@ -618,12 +618,11 @@ jobs:
           '
 
       - name: "Run"
-        # The memo's per-worker footprint grows with files-per-worker; macOS
-        # runners have few cores, so each of their few workers analyses enough
-        # files to tip the default 450M limit that a many-worker Linux runner
-        # stays under.
+        # The memo's per-worker footprint grows with files-per-worker; a
+        # future few-core leg (macOS runners) needs 1G where these many-worker
+        # runners stay under the default 450M.
         env:
-          PHPSTAN_MEMORY_LIMIT: ${{ matrix.setup.operating-system == 'macos-latest' && '1G' || '450M' }}
+          PHPSTAN_MEMORY_LIMIT: "450M"
         # The Windows runner image ships GNU make only inside its MSYS2
         # install, which is not on PATH.
         run: |

@@ -74,18 +74,22 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 			// some subclass. So the result also includes `class-string<Class>`.
 			$isLateStaticBound = $argType instanceof StaticType;
 
-			return TypeCombinator::union(...array_map(function (string $className) use ($isLateStaticBound): Type {
-				$parentType = $this->findParentClassNameType($className);
-				if (!$isLateStaticBound || !$this->reflectionProvider->hasClass($className)) {
-					return $parentType;
+			$types = [];
+			foreach ($classNames as $className) {
+				$types[] = $this->findParentClassNameType($className);
+
+				if (
+					!$isLateStaticBound
+					|| !$this->reflectionProvider->hasClass($className)
+					|| $this->reflectionProvider->getClass($className)->isFinal()
+				) {
+					continue;
 				}
 
-				if ($this->reflectionProvider->getClass($className)->isFinal()) {
-					return $parentType;
-				}
+				$types[] = new GenericClassStringType(new ObjectType($className));
+			}
 
-				return TypeCombinator::union($parentType, new GenericClassStringType(new ObjectType($className)));
-			}, $classNames));
+			return TypeCombinator::union(...$types);
 		}
 
 		return null;

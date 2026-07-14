@@ -28,6 +28,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocat
 use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_merge;
 use function array_unique;
 use function count;
@@ -122,6 +123,17 @@ final class BetterReflectionSourceLocatorFactory
 			$analysedFiles = array_unique(array_merge($analysedFiles, $this->scanFiles));
 			foreach ($analysedFiles as $analysedFile) {
 				$fileLocators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
+			}
+
+			if (TurboExtensionEnabler::isActive()) {
+				// With the turbo extension active, the shadowed class names are
+				// declared by the stub shells extending the native classes;
+				// reflection has to keep seeing the real implementations, which
+				// the AutoloadSourceLocator below can no longer provide (it
+				// would resolve the class names to the stub files).
+				foreach (TurboExtensionEnabler::getShadowedClassSourceFiles() as $shadowedClassSourceFile) {
+					$fileLocators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($shadowedClassSourceFile);
+				}
 			}
 
 			$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));

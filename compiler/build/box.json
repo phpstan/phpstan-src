@@ -9,7 +9,8 @@
   "files": [
 	"preload.php",
 	"vendor/composer/installed.php",
-    "vendor/attributes.php"
+    "vendor/attributes.php",
+    "turbo-ext/shadowed-classes.json"
   ],
   "directories": [
     "conf",

@@ -496,9 +496,15 @@ jobs:
 
   turbo-run:
     name: "Run with Turbo Extension"
-    needs: "turbo-compile"
+    needs:
+      - turbo-compile
+      - turbo-compile-windows
     runs-on: ${{ matrix.setup.operating-system }}
     timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: bash
 
     strategy:
       fail-fast: false
@@ -506,6 +512,12 @@ jobs:
         setup:
           - operating-system: "ubuntu-latest"
             artifact: "phpstan_turbo-linux-gnu-x86_64-php8.5"
+          # windows-latest only runs the DLL, it cannot build it: the DLL is
+          # linked with the 14.4x toolset on windows-2022, and the loader's
+          # linker-generation gate is one-directional (module <= core), so the
+          # vs17-built official PHP loads it fine.
+          - operating-system: "windows-latest"
+            artifact: "phpstan_turbo-windows-x86_64-php8.5"
         script: ["make tests", "make phpstan"]
 
     steps:
@@ -532,8 +544,23 @@ jobs:
           path: "turbo-ext"
 
       - name: "Install extension"
+        # The ini line needs a native path and the redirection a POSIX one,
+        # hence the cygpath round-trip on Windows; setup-php's Linux ini is
+        # root-owned, hence the sudo fallback.
         run: |
-          sudo bash -c "echo 'extension=$GITHUB_WORKSPACE/turbo-ext/phpstan_turbo.so' >> $(php -r 'echo php_ini_loaded_file();')"
+          FILE="$(find turbo-ext -maxdepth 1 \( -name phpstan_turbo.so -o -name php_phpstan_turbo.dll \) | head -1)"
+          [ -n "$FILE" ]
+          EXT="$PWD/$FILE"
+          INI="$(php -r 'echo php_ini_loaded_file();')"
+          if command -v cygpath > /dev/null; then
+            EXT="$(cygpath -w "$EXT")"
+            INI="$(cygpath -u "$INI")"
+          fi
+          if [ -w "$INI" ]; then
+            echo "extension=$EXT" >> "$INI"
+          else
+            sudo bash -c "echo 'extension=$EXT' >> '$INI'"
+          fi
           php -m | grep phpstan_turbo
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
@@ -557,7 +584,13 @@ jobs:
         # stays under.
         env:
           PHPSTAN_MEMORY_LIMIT: ${{ matrix.setup.operating-system == 'macos-latest' && '1G' || '450M' }}
-        run: ${{ matrix.script }}
+        # The Windows runner image ships GNU make only inside its MSYS2
+        # install, which is not on PATH.
+        run: |
+          if ! command -v make > /dev/null && [ -e /c/msys64/usr/bin/make.exe ]; then
+            export PATH="$PATH:/c/msys64/usr/bin"
+          fi
+          ${{ matrix.script }}
 
   integration-tests:
     if: github.event_name == 'pull_request'

@@ -275,9 +275,11 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
+		// The original call's position attributes are propagated to the name nodes too,
+		// so rule errors about the synthesized call point at the original call site.
 		return new StaticCall(
-			new FullyQualified($className),
-			new Identifier($methodName),
+			new FullyQualified($className, $funcCall->getAttributes()),
+			new Identifier($methodName, $funcCall->getAttributes()),
 			$funcCall->getArgs(),
 			$funcCall->getAttributes(),
 		);

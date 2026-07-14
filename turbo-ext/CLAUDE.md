@@ -27,8 +27,8 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
 3. **Implement natively**: one class per `.cpp` in `src/`, namespace
    `PHPStanTurbo`, class **non-final**, `instanceof`-style checks instead of
    exact class-entry comparisons. Hot classes are registered with the raw
-   Zend API in `main.cpp`'s `onStartup` (never PHP-CPP trampolines —
-   `Php::Parameters` allocates per call). Reuse the `pt_*` helpers in
+   Zend API in `main.cpp`'s MINIT (raw handler pointers, nothing that
+   allocates per call). Reuse the `pt_*` helpers in
    `support.h`/`support.cpp` before writing new ones.
 
    **Style**: the logic lives in a C++ handle class in `namespace
@@ -38,8 +38,8 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    in `reg.h` — one `cls.method("name", flags, requiredArgs, { args... },
    lambda)` declaration per method, where the lambda body is only
    ZEND_PARSE_PARAMETERS glue + one delegation line (see TrinaryLogic.cpp).
-   Never register hot classes via PHP-CPP's `Php::Class` — its trampoline
-   boxes every argument per call. Use the zero-cost
+   Never introduce per-call argument boxing in a registration path — raw
+   handler pointers only. Use the zero-cost
    wrappers in `zv.h` — borrowed `zv::Ref` views vs owned move-only
    `zv::Val` RAII values (UNDEF `Val` = pending exception), `zv::ArrRef`
    range-for instead of hand-rolled `ZEND_HASH_FOREACH` (it handles the
@@ -87,9 +87,7 @@ php -d extension=$(pwd)/phpstan_turbo.so tests/smoke.php   # must print ALL OK
 
 The three `-Wno-` exemptions are for zend macro expansions only (documented in
 `.github/workflows/phar.yml`); new warnings in our code are fixed, not
-exempted. Use `-I` for PHP-CPP headers, never `-isystem` (Apple clang lets a
-stale `/usr/local/include/phpcpp.h` shadow `-isystem` paths); third-party
-header noise is handled by the pragma guards in `support.h`.
+exempted. Zend header noise is handled by the pragma guards in `support.h`.
 
 ## Benchmark protocol
 

@@ -1,23 +1,17 @@
 #
-# phpstan_turbo — build with a locally built PHP-CPP (statically linked).
+# phpstan_turbo — a plain Zend extension, no framework dependencies.
 #
 #   make            builds phpstan_turbo.so
-#   make phpcpp     builds the bundled PHP-CPP library first
 #   make clean
 #
 
 PHP_CONFIG ?= php-config
-PHPCPP_DIR := PHP-CPP
 
 CXX ?= c++
 # CI overrides with stricter settings, e.g. WARN_FLAGS="-Wall -Wextra -Werror"
-# (third-party headers — PHP-CPP, zend — are exempted via the pragma guard in
-# src/support.h; -isystem is not usable here because Apple clang lets the
-# default /usr/local/include shadow -isystem paths, picking up a stale
-# system-installed PHP-CPP)
+# (the Zend engine headers are exempted via the pragma guard in src/support.h)
 WARN_FLAGS ?= -Wall
 CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
-	-I$(PHPCPP_DIR) \
 	`$(PHP_CONFIG) --includes`
 
 # The extension version is the short SHA of the last commit touching
@@ -47,10 +41,8 @@ endif
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 
-PHPCPP_LIB := $(wildcard $(PHPCPP_DIR)/libphpcpp.a.*)
-
-phpstan_turbo.so: $(OBJECTS) $(PHPCPP_LIB)
-	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) -o $@ $(OBJECTS) $(PHPCPP_LIB)
+phpstan_turbo.so: $(OBJECTS)
+	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) -o $@ $(OBJECTS)
 
 src/%.o: src/%.cpp src/support.h src/zv.h src/reg.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -66,20 +58,7 @@ $(filter src/parser/%.o,$(OBJECTS)): src/parser/ParserEngine.h src/zv.h
 
 src/parser/ParserRunner.o: src/parser/ParserRunnerActionsSplit.h
 
-# PHP-CPP carries local patches (each a no-op where not needed; application is
-# idempotent): php-cpp-base-count-int64.patch for LP64 Darwin, and
-# php-cpp-musl-cstdint.patch because musl's headers, unlike glibc's, don't
-# transitively provide int16_t where PHP-CPP uses it.
-PHPCPP_PATCHES := php-cpp-base-count-int64.patch php-cpp-musl-cstdint.patch
-
-phpcpp:
-	for p in $(PHPCPP_PATCHES); do \
-		git -C $(PHPCPP_DIR) apply --reverse --check ../patches/$$p 2>/dev/null || \
-			git -C $(PHPCPP_DIR) apply ../patches/$$p || exit 1; \
-	done
-	$(MAKE) -C $(PHPCPP_DIR)
-
 clean:
 	rm -f $(OBJECTS) phpstan_turbo.so version.stamp
 
-.PHONY: phpcpp clean FORCE
+.PHONY: clean FORCE

@@ -1,8 +1,7 @@
 # phpstan_turbo — native acceleration extension for PHPStan
 
-**Experimental.** A C++ extension built with
-[PHP-CPP](https://github.com/CopernicaMarketingSoftware/PHP-CPP) that
-reimplements PHPStan's hottest code paths natively. It is entirely optional:
+**Experimental.** A plain Zend C++ extension (no framework dependencies)
+that reimplements PHPStan's hottest code paths natively. It is entirely optional:
 PHPStan behaves identically without it, just slower. With the extension
 loaded, analysis output is bit-for-bit identical — only faster (~25% on
 PHPStan's own single-threaded self-analysis).
@@ -161,16 +160,11 @@ such a failure and needs an entry in the generator's class-policy tables.
 
 ```bash
 cd turbo-ext
-git clone https://github.com/CopernicaMarketingSoftware/PHP-CPP.git  # if absent
-ln -sfn include PHP-CPP/phpcpp
-make phpcpp   # builds the bundled PHP-CPP (static lib)
 make          # builds phpstan_turbo.so
 ```
 
-PHP-CPP carries one local patch, `patches/php-cpp-base-count-int64.patch`
-(on macOS/arm64 `long` matches no `Php::Value` constructor unambiguously).
-`make phpcpp` applies it automatically, and the CI workflow applies the same
-file — the patch lives in exactly one place.
+The only requirements are a C++17 compiler and `php-config` on PATH (or
+passed as `make PHP_CONFIG=...`).
 
 ## Enabling
 
@@ -189,10 +183,10 @@ the zero-cost wrappers in `src/zv.h` — borrowed `zv::Ref` views, owned
 move-only `zv::Val` RAII values, range-for HashTable iteration. The wrappers
 compile to the same instructions as the raw zend macros (verified by
 interleaved A/B benchmark), so readability costs nothing. Classes register
-through the fluent builder in `src/reg.h` — PHP-CPP's `extension.add()` look,
-but emitting the raw zend structures with raw handler pointers, so there is
-no per-call trampoline or `Php::Parameters` boxing; each method's name,
-flags, signature and parameter-parsing glue live together in one declaration.
+through the fluent builder in `src/reg.h`, which emits the raw zend
+structures with raw handler pointers — no per-call trampoline or argument
+boxing; each method's name, flags, signature and parameter-parsing glue live
+together in one declaration.
 Raw zend form remains where an abstraction would not be provably free —
 always with a comment saying so.
 
@@ -210,12 +204,11 @@ Measured in the July 2026 benchmarks (callback-free absorptions gained
    plans/caches).
 4. **Third-party userland objects degrade per-operation, never per-element.**
 5. **No materialization at the boundary** — operate on the engine's own
-   zvals/hashtables in place. This is also why the hot classes are registered
-   with the raw Zend API inside PHP-CPP's `onStartup` rather than through
-   PHP-CPP's call trampolines: `Php::Parameters` allocates a vector of
-   `Php::Value` per call, which is exactly the per-element boundary cost these
-   rules forbid. PHP-CPP hosts the extension lifecycle and the cold-path
-   `Runtime` class.
+   zvals/hashtables in place. This is also why every class is registered with
+   raw handler pointers: a framework trampoline that boxes each argument per
+   call is exactly the per-element boundary cost these rules forbid. (The
+   extension originally hosted its lifecycle in PHP-CPP; it is a plain Zend
+   module since the Windows port.)
 6. **Never shadow a DI-service class.** Nette's `getByType()` normalizes
    requested types through reflection to the real class name and breaks
    containers cached in the other mode.

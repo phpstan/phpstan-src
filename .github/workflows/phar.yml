@@ -15,8 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Pin PHP-CPP to the commit the extension was developed against.
-  PHP_CPP_COMMIT: "382a5f0386c8c46650e670366418e6ef55e71830"
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.8.0"
@@ -294,24 +292,6 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
-      - name: "Cache PHP-CPP"
-        id: "cache-php-cpp"
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: "turbo-ext/PHP-CPP"
-          key: "php-cpp-${{ env.PHP_CPP_COMMIT }}-php-${{ matrix.php-version }}-${{ matrix.target.name }}-${{ matrix.target.container }}-${{ hashFiles('turbo-ext/patches/*.patch') }}"
-
-      - name: "Clone and build PHP-CPP"
-        if: steps.cache-php-cpp.outputs.cache-hit != 'true'
-        working-directory: "turbo-ext"
-        # `make phpcpp` applies the local patches from turbo-ext/patches/
-        # before building.
-        run: |
-          git clone https://github.com/CopernicaMarketingSoftware/PHP-CPP.git PHP-CPP
-          git -C PHP-CPP checkout "$PHP_CPP_COMMIT"
-          ln -sfn include PHP-CPP/phpcpp
-          make phpcpp -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
-
       - name: "Compile phpstan_turbo with strict warnings"
         working-directory: "turbo-ext"
         # Exemptions, each caused by third-party macro expansions, not our code:
@@ -323,7 +303,6 @@ jobs:
         #   clang lexes the \N in "PhpParser\NodeVisitor" as a universal
         #   character name (GCC ignores the unknown -Wno- flag)
         run: |
-          ln -sfn include PHP-CPP/phpcpp
           make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
       - name: "Verify the built extension reports the expected version"

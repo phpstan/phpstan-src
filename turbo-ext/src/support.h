@@ -15,22 +15,19 @@
 #ifndef PHPSTANTURBO_SUPPORT_H
 #define PHPSTANTURBO_SUPPORT_H
 
-/* Third-party headers (PHP-CPP, the Zend engine) are not warning-clean under
- * the strict flags this extension is built with in CI; exempt them without
- * relaxing the flags for our own code. The -Wpragmas / -Wunknown-warning-option
- * ignores make the compiler-specific entries below portable across gcc/clang. */
+/* The Zend engine headers are not warning-clean under the strict flags this
+ * extension is built with in CI; exempt them without relaxing the flags for
+ * our own code. The -Wpragmas / -Wunknown-warning-option ignores make the
+ * compiler-specific entries below portable across gcc/clang. */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Winconsistent-missing-override"
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 /* zend_vm_opcodes.h uses the preserve_none calling convention, which not
  * every gcc/libc target supports — gcc then warns the attribute is ignored */
 #pragma GCC diagnostic ignored "-Wattributes"
-
-#include <phpcpp.h>
 
 extern "C" {
 #include "php.h"

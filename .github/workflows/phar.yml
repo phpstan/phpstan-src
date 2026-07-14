@@ -262,12 +262,24 @@ jobs:
       # symlinks pointing at the matrix PHP version.
       - name: "Install PHP and build tools (Ubuntu container)"
         if: matrix.target.family == 'gnu'
+        # apt mirrors 404 mid-sync (the fetched index can reference a
+        # superseded .deb already pruned from the pool); only a fresh index
+        # fixes that, so update+install retries as a unit
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install -y software-properties-common gnupg ca-certificates curl git make g++ patch unzip zstd
+          apt_install() {
+            for attempt in 1 2 3; do
+              if apt-get update && apt-get install -y "$@"; then
+                return 0
+              fi
+              echo "apt-get failed (attempt $attempt), retrying with a fresh index"
+              sleep 15
+            done
+            return 1
+          }
+          apt_install software-properties-common gnupg ca-certificates curl git make g++ patch unzip zstd
           add-apt-repository -y ppa:ondrej/php
-          apt-get install -y "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-curl" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml"
+          apt_install "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-curl" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml"
           ln -sf "/usr/bin/php$PHP_MINOR" /usr/local/bin/php
           ln -sf "/usr/bin/php-config$PHP_MINOR" /usr/local/bin/php-config
 

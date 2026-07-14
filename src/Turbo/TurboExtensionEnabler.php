@@ -39,8 +39,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use PHPStanTurbo\Runtime;
+use function dirname;
 use function extension_loaded;
+use function file_get_contents;
 use function getenv;
+use function is_file;
+use function json_decode;
 use function phpversion;
 
 final class TurboExtensionEnabler
@@ -56,9 +60,55 @@ final class TurboExtensionEnabler
 
 	private static bool $typeCombinatorCacheEnabled = false;
 
+	private static bool $enabled = false;
+
 	public static function isLoaded(): bool
 	{
 		return extension_loaded('phpstan_turbo');
+	}
+
+	/**
+	 * Whether enableIfLoaded() actually activated the extension — the stubs
+	 * shadow the PHP implementations only in that case.
+	 */
+	public static function isActive(): bool
+	{
+		return self::$enabled;
+	}
+
+	/**
+	 * The real source files of the shadowed classes. With the extension
+	 * active, the class names are declared by the stub shells, so reflection
+	 * needs these files fed to it explicitly — resolving the class names
+	 * through the autoloader would reflect the stubs.
+	 *
+	 * @return list<string>
+	 */
+	public static function getShadowedClassSourceFiles(): array
+	{
+		$root = dirname(__DIR__, 2);
+		$manifestPath = $root . '/turbo-ext/shadowed-classes.json';
+		if (!is_file($manifestPath)) {
+			return [];
+		}
+
+		$manifestContents = file_get_contents($manifestPath);
+		if ($manifestContents === false) {
+			return [];
+		}
+
+		/** @var array<string, array{php: string, cpp: string, vendored?: bool}> $manifest */
+		$manifest = json_decode($manifestContents, true);
+		$files = [];
+		foreach ($manifest as $entry) {
+			$file = $root . '/' . $entry['php'];
+			if (!is_file($file)) {
+				continue;
+			}
+			$files[] = $file;
+		}
+
+		return $files;
 	}
 
 	/**
@@ -142,6 +192,7 @@ final class TurboExtensionEnabler
 		require_once __DIR__ . '/../../turbo-ext/stubs/TypeCombinatorCache.php';
 
 		self::$typeCombinatorCacheEnabled = true;
+		self::$enabled = true;
 	}
 
 }

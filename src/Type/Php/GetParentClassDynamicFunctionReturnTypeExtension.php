@@ -67,13 +67,12 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 		}
 
 		// A `static::class` string refers to the same late-static-bound type as `$this`/`static`,
-		// so unwrap it and reuse the object handling below.
+		// so unwrap it and reuse the object handling below. Non-class-string types resolve to
+		// an ErrorType here, so they are left alone.
 		$valueType = $argType;
-		if ($argType->isClassString()->yes()) {
-			$classStringObjectType = $argType->getClassStringObjectType();
-			if ($classStringObjectType instanceof StaticType) {
-				$valueType = $classStringObjectType;
-			}
+		$classStringObjectType = $argType->getClassStringObjectType();
+		if ($classStringObjectType instanceof StaticType) {
+			$valueType = $classStringObjectType;
 		}
 
 		// Inside a trait a late-static-bound value cannot be resolved to a concrete parent,

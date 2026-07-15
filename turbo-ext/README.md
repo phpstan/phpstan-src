@@ -1,10 +1,40 @@
 # phpstan_turbo — native acceleration extension for PHPStan
 
-**Experimental.** A plain Zend C++ extension (no framework dependencies)
-that reimplements PHPStan's hottest code paths natively. It is entirely optional:
-PHPStan behaves identically without it, just slower. With the extension
-loaded, analysis output is bit-for-bit identical — only faster (~25% on
-PHPStan's own single-threaded self-analysis).
+**Experimental.** A native extension that reimplements PHPStan's hottest
+code paths in C++. It is entirely optional: PHPStan behaves identically
+without it, just slower. With the extension loaded, analysis output is
+bit-for-bit identical — only faster (~25% on PHPStan's own single-threaded
+self-analysis).
+
+## Installation
+
+**Most users do not need to install anything.** The
+[phpstan/phpstan](https://github.com/phpstan/phpstan) Composer package ships
+prebuilt binaries for the most common platforms — Linux (glibc and musl,
+x86_64 and arm64), macOS, and Windows (x86_64), for PHP 8.3 and newer — and
+PHPStan automatically loads the one matching your runtime into its worker
+processes.
+
+Installing the extension with [PIE](https://github.com/php/pie) is only
+needed when you download and run `phpstan.phar` manually, outside of
+Composer (the prebuilt binaries ship next to the phar in the Composer
+package, not inside it):
+
+```bash
+pie install phpstan/turbo
+```
+
+Useful to know:
+
+- `vendor/bin/phpstan diagnose` reports the extension's status.
+- `PHPSTAN_TURBO=0` turns it off.
+- The extension only activates when its version matches the one your PHPStan
+  release expects — on a mismatch PHPStan prints a note and runs without it,
+  so an outdated extension can never affect results, only speed.
+
+# Developer notes
+
+A plain Zend C++ extension, no framework dependencies.
 
 ## How it works — the stub-shadowing pattern
 

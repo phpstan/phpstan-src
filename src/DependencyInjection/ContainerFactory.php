@@ -388,11 +388,15 @@ final class ContainerFactory
 		$parameterSchema = null;
 		foreach ($statements as $statement) {
 			$processedArguments = array_map(fn ($argument) => $this->processArgument($argument), $statement->arguments);
+			$entity = $statement->getEntity();
+			if (!is_string($entity)) {
+				throw new ShouldNotHappenException();
+			}
 			if ($parameterSchema === null) {
 				/** @var Type|AnyOf|Structure $parameterSchema */
-				$parameterSchema = Expect::{$statement->getEntity()}(...$processedArguments);
+				$parameterSchema = Expect::{$entity}(...$processedArguments);
 			} else {
-				$parameterSchema->{$statement->getEntity()}(...$processedArguments);
+				$parameterSchema->{$entity}(...$processedArguments);
 			}
 		}
 

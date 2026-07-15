@@ -22,6 +22,7 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -48,6 +49,7 @@ final class AccessStaticPropertiesCheck
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
@@ -59,13 +61,23 @@ final class AccessStaticPropertiesCheck
 	 */
 	public function check(StaticPropertyFetch $node, Scope $scope, bool $write): array
 	{
+		$errors = [];
 		if ($node->name instanceof Node\VarLikeIdentifier) {
 			$names = [$node->name->name];
 		} else {
 			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
+
+			if (!$write) {
+				$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringCastableName(
+					$scope,
+					$node->name,
+					'Static property name for %s must be a string, but %s was given.',
+					$node->class,
+					'staticProperty.nameNotString',
+				));
+			}
 		}
 
-		$errors = [];
 		foreach ($names as $name) {
 			$errors = array_merge($errors, $this->processSingleProperty($scope, $node, $name, $write));
 		}

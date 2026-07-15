@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -20,19 +21,20 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new AccessStaticPropertiesRule(
 			new AccessStaticPropertiesCheck(
 				$reflectionProvider,
-				new RuleLevelHelper(
-					$reflectionProvider,
-					checkNullables: true,
-					checkThisOnly: false,
-					checkUnionTypes: true,
-					checkExplicitMixed: false,
-					checkImplicitMixed: false,
-					checkBenevolentUnionTypes: false,
-					discoveringSymbolsTip: true,
-				),
+				$ruleLevelHelper,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck(self::getContainer()),
@@ -40,6 +42,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 					self::getContainer(),
 				),
 				new PhpVersion(PHP_VERSION_ID),
+				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 				discoveringSymbolsTip: true,
 			),
 		);
@@ -295,6 +298,32 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	public function testClassExists(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-properties-class-exists.php'], []);
+	}
+
+	public function testDynamicStaticPropertyName(): void
+	{
+		$this->analyse([__DIR__ . '/data/dynamic-static-property-name.php'], [
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object was given.',
+				19,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but array was given.',
+				20,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object was given.',
+				26,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but object|string was given.',
+				31,
+			],
+			[
+				'Static property name for DynamicStaticPropertyName\Foo must be a string, but int|object was given.',
+				32,
+			],
+		]);
 	}
 
 	public function testBug5143(): void

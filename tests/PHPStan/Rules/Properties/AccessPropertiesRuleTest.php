@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -26,23 +27,24 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: $this->checkThisOnly,
+			checkUnionTypes: $this->checkUnionTypes,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new AccessPropertiesRule(
 			new AccessPropertiesCheck(
 				$reflectionProvider,
-				new RuleLevelHelper(
-					$reflectionProvider,
-					checkNullables: true,
-					checkThisOnly: $this->checkThisOnly,
-					checkUnionTypes: $this->checkUnionTypes,
-					checkExplicitMixed: false,
-					checkImplicitMixed: false,
-					checkBenevolentUnionTypes: false,
-					discoveringSymbolsTip: true,
-				),
+				$ruleLevelHelper,
 				new PhpVersion(PHP_VERSION_ID),
+				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 				reportMagicProperties: true,
 				checkDynamicProperties: $this->checkDynamicProperties,
-				checkNonStringableDynamicAccess: true,
 			),
 		);
 	}

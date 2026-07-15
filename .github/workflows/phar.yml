@@ -222,7 +222,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5"]
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
@@ -416,7 +416,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -486,8 +486,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5"]
         ts: ["nts", "zts"]
+        # The official 8.3 Windows binaries are built with VS16 (linker
+        # 14.2x) and PHP's module loader is one-directional (module toolset
+        # generation <= core's), so the 8.3 DLL must be linked with the v142
+        # toolset — which the windows-2022 image ships alongside the default
+        # v143. The devel pack name carries the same vs infix.
+        include:
+          - php-version: "8.3"
+            vs: "vs16"
+            toolset: "14.29"
+          - php-version: "8.4"
+            vs: "vs17"
+          - php-version: "8.5"
+            vs: "vs17"
 
     steps:
       - name: "Checkout"
@@ -517,7 +530,7 @@ jobs:
           FULL=$(php -r 'echo PHP_VERSION;')
           # thread-safe devel packs carry no infix, NTS ones carry -nts
           INFIX=$([ "${{ matrix.ts }}" = "zts" ] && echo "" || echo "-nts")
-          PACK="php-devel-pack-$FULL$INFIX-Win32-vs17-x64.zip"
+          PACK="php-devel-pack-$FULL$INFIX-Win32-${{ matrix.vs }}-x64.zip"
           echo "devel pack: $PACK"
           curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/$PACK" \
             || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK"
@@ -530,6 +543,8 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
         with:
           arch: x64
+          # empty on the vs17 legs = the image's default (latest) toolset
+          toolset: ${{ matrix.toolset }}
 
       - name: "Build the extension"
         shell: cmd
@@ -652,11 +667,11 @@ jobs:
       # vs17-built official PHP loads it fine.
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest"]
-        php-version: ["8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
         # macOS runs the shipped ad-hoc-signed universal binary; there is no
-        # macOS zts build, and 8.4 coverage comes from the other legs.
+        # macOS zts build, and 8.3/8.4 coverage comes from the other legs.
         include:
           - operating-system: "macos-latest"
             php-version: "8.5"

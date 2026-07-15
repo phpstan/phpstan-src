@@ -206,13 +206,15 @@ jobs:
     # Container legs pin the built binaries' userland floor independently of
     # the runner image: ubuntu:22.04 keeps the glibc symbol floor at 2.34
     # (RHEL 9, Ubuntu 22.04+, Debian 12+), alpine:3.24 builds the musl
-    # variant. There is no linux-musl-arm64 leg: JavaScript-based actions
-    # cannot run in Alpine containers on arm64 runners (the runner only
-    # ships an x64 musl Node). The ZTS legs (for hosts with a thread-safe
-    # PHP, like PMMP's bundled build) run directly on ubuntu-22.04 runners —
-    # same glibc floor — because no distro packages ZTS PHP (neither
-    # ppa:ondrej/php nor Alpine); setup-php provides thread-safe builds.
-    # No musl ZTS for the same packaging reason.
+    # variant. The linux-musl-arm64 leg lives in the separate
+    # turbo-compile-musl-arm64 job below: JavaScript-based actions cannot run
+    # in Alpine containers on arm64 runners (the runner only ships an x64
+    # musl Node), so that job drives the Alpine container through docker exec
+    # instead of a `container:` leg. The ZTS legs (for hosts with a
+    # thread-safe PHP, like PMMP's bundled build) run directly on
+    # ubuntu-22.04 runners — same glibc floor — because no distro packages
+    # ZTS PHP (neither ppa:ondrej/php nor Alpine); setup-php provides
+    # thread-safe builds. No musl ZTS for the same packaging reason.
     container: ${{ matrix.target.container }}
     timeout-minutes: 30
 
@@ -404,6 +406,118 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.target.suffix }}"
+          path: "turbo-ext/phpstan_turbo.so"
+          if-no-files-found: "error"
+
+  turbo-compile-musl-arm64:
+    name: "Compile Turbo Extension (musl arm64)"
+    # The arm64 counterpart of the linux-musl-x86_64 leg in turbo-compile.
+    # It cannot be a `container: alpine` leg there: JavaScript-based actions
+    # cannot run in Alpine containers on arm64 runners (the runner only
+    # ships an x64 musl Node). Instead the workflow steps run on the arm64
+    # host and only the build and test commands run inside a long-lived
+    # Alpine container via docker exec — native arm64, no QEMU. The steps
+    # mirror the musl leg of turbo-compile one for one.
+    runs-on: "ubuntu-24.04-arm"
+    timeout-minutes: 30
+
+    env:
+      PHP_MINOR: ${{ matrix.php-version }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.3", "8.4", "8.5"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          # The Makefile bakes the extension version via git log over the
+          # watched paths; a shallow clone would resolve every build to the
+          # checked-out commit itself — on pull requests the synthetic merge
+          # commit, which matches nothing.
+          fetch-depth: 0
+
+      - name: "Start the Alpine build container"
+        run: |
+          docker run -d --name alpine-build \
+            -v "$PWD:/work" -w /work \
+            -e PHP_MINOR -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            alpine:3.24 sleep 7200
+
+      - name: "Install PHP and build tools"
+        run: |
+          docker exec -i alpine-build sh -e <<'EOF'
+          V="$(echo "$PHP_MINOR" | tr -d .)"
+          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+            "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
+            "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
+            "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
+          ln -sf "/usr/bin/php$V" /usr/local/bin/php
+          ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
+          EOF
+
+      # The workspace volume is owned by the host runner user while the
+      # container runs as root, so git refuses the repo ("dubious
+      # ownership") — which would silently bake the version as "dev" via
+      # the Makefile's $(shell git log ...) fallback.
+      - name: "Trust the checkout despite the container/host uid mismatch"
+        run: docker exec alpine-build git config --global --add safe.directory /work
+
+      - name: "Compile phpstan_turbo with strict warnings"
+        run: |
+          docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
+          make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          EOF
+
+      - name: "Verify the built extension reports the expected version"
+        run: |
+          docker exec -i alpine-build sh -e <<'EOF'
+          REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+          EOF
+
+      - name: "Install Composer dependencies (pinned composer)"
+        run: |
+          docker exec -i alpine-build sh -e <<'EOF'
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
+          rm composer.phar
+          EOF
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/smoke.php
+
+      - name: "Arena smoke test (cross-process shared-memory records)"
+        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/arena-smoke.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
+
+      - name: "Parser actions are generated (regenerate and diff)"
+        run: |
+          docker exec -i alpine-build sh -e <<'EOF'
+          php turbo-ext/bin/generate-parser-actions.php
+          git diff --exit-code turbo-ext/src/parser/
+          EOF
+
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Upload extension artifact"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}"
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
@@ -605,6 +719,7 @@ jobs:
     name: "Aggregate Turbo Extension Artifact"
     needs:
       - turbo-compile
+      - turbo-compile-musl-arm64
       - turbo-compile-windows
       - turbo-macos-universal
     runs-on: "ubuntu-latest"
@@ -937,6 +1052,7 @@ jobs:
       - compiler-tests
       - turbo-version
       - turbo-compile
+      - turbo-compile-musl-arm64
       - turbo-compile-windows
       - turbo-macos-universal
     runs-on: "ubuntu-latest"

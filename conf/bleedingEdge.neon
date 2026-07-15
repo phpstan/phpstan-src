@@ -22,3 +22,4 @@ parameters:
 		checkDynamicConstantNameValues: true
 		unusedLabel: true
 		newOnNonObject: true
+		finiteTypesInHaystack: true

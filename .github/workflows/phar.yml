@@ -253,8 +253,11 @@ jobs:
             command -v autoconf > /dev/null || brew install autoconf
           fi
           cp -R turbo-ext "$RUNNER_TEMP/turbo-ext"
-          mapfile -t MAPPED_PHP < <(jq -r '.[] | select(.vendored != true) | .php' turbo-ext/shadowed-classes.json)
-          git log -1 --format=%H -- turbo-ext/src "${MAPPED_PHP[@]}" | cut -c1-7 > "$RUNNER_TEMP/turbo-ext/VERSION.txt"
+          # macOS runs the stock /bin/bash 3.2, which has no mapfile — join
+          # the manifest paths into one string and let the shell word-split it
+          MAPPED_PHP="$(jq -r '[.[] | select(.vendored != true) | .php] | join(" ")' turbo-ext/shadowed-classes.json)"
+          # shellcheck disable=SC2086
+          git log -1 --format=%H -- turbo-ext/src $MAPPED_PHP | cut -c1-7 > "$RUNNER_TEMP/turbo-ext/VERSION.txt"
           echo "VERSION.txt: $(cat "$RUNNER_TEMP/turbo-ext/VERSION.txt")"
           cd "$RUNNER_TEMP/turbo-ext"
           phpize
@@ -274,6 +277,10 @@ jobs:
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/smoke.php
 
       - name: "Arena smoke test (cross-process shared-memory records)"
+        # the test's child processes locate the extension through TURBO_DLL —
+        # its default, turbo-ext/phpstan_turbo.so, only exists in Makefile builds
+        env:
+          TURBO_DLL: ${{ runner.temp }}/turbo-ext/modules/phpstan_turbo.so
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"
@@ -724,7 +731,11 @@ jobs:
         shell: bash
         run: |
           MAPPED_PHP=$(jq -r '[.[] | select(.vendored != true) | .php] | join(" ")' turbo-ext/shadowed-classes.json)
-          SHA=$(git log -1 --format=%H -- turbo-ext/src "$MAPPED_PHP" | cut -c1-7)
+          # unquoted on purpose: the joined manifest paths must word-split
+          # into one pathspec each (quoted, they were a single pathspec that
+          # matched nothing, silently narrowing the watched set to turbo-ext/src)
+          # shellcheck disable=SC2086
+          SHA=$(git log -1 --format=%H -- turbo-ext/src $MAPPED_PHP | cut -c1-7)
           echo "extension version: $SHA"
           echo "PHPSTANTURBO_VERSION=$SHA" >> "$GITHUB_ENV"
 

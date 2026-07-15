@@ -332,6 +332,32 @@ function checkStructure(array $manifest): array
 	return $problems;
 }
 
+/**
+ * The Unix builds glob their sources (the Makefile wildcard, config.m4's
+ * echo), but config.w32 lists them explicitly — a new .cpp missing from that
+ * list only surfaces as an unresolved external on the Windows link.
+ *
+ * @return list<string> problems
+ */
+function checkWindowsSources(): array
+{
+	$problems = [];
+	preg_match_all('~(\w+)\.cpp~', file_get_contents('turbo-ext/config.w32'), $m);
+	$listed = $m[1];
+	$actual = array_map(
+		static fn ($f) => basename($f, '.cpp'),
+		array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
+	);
+	foreach (array_diff($actual, $listed) as $missing) {
+		$problems[] = sprintf('%s.cpp is missing from the source lists in turbo-ext/config.w32 — the Windows build would fail with an unresolved external at link time', $missing);
+	}
+	foreach (array_diff($listed, $actual) as $extra) {
+		$problems[] = sprintf('turbo-ext/config.w32 mentions %s.cpp, which does not exist under turbo-ext/src/', $extra);
+	}
+
+	return $problems;
+}
+
 if (in_array('--update-manifest', $argv, true)) {
 	// Regenerate the manifest from ground truth: each stub names the shadowed
 	// class, the autoloader locates its PHP implementation (the enabler is NOT
@@ -374,7 +400,7 @@ $check = in_array('--check', $argv, true);
 
 if ($check) {
 	$failed = false;
-	foreach (checkStructure($manifest) as $problem) {
+	foreach (array_merge(checkStructure($manifest), checkWindowsSources()) as $problem) {
 		printf("✗ %s\n", $problem);
 		$failed = true;
 	}

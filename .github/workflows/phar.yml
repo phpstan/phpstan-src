@@ -1001,24 +1001,50 @@ jobs:
             echo "result=same" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: "Check turbo extension version"
+      - name: "Download turbo extension artifacts"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: "phpstan_turbo-*"
+          path: "turbo-artifacts"
+
+      - name: "Check turbo extension version and binary set"
         id: turbo-difference
         run: |
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" phpstan-src/src/Turbo/TurboExtensionEnabler.php)"
           CURRENT="$(cat phpstan-dist/turbo-ext/.version 2>/dev/null || echo none)"
           echo "enabler expects: $EXPECTED, dist carries: $CURRENT"
+          RESULT=same
+          VERSION_CHANGED=no
           if [[ "$EXPECTED" != "$CURRENT" ]]; then
-            echo "result=different" >> "$GITHUB_OUTPUT"
-          else
-            echo "result=same" >> "$GITHUB_OUTPUT"
+            RESULT=different
+            VERSION_CHANGED=yes
           fi
+          # A new compile-matrix leg (new PHP minor or platform) produces
+          # binaries the dist does not carry even though the extension
+          # version is unchanged.
+          for dir in turbo-artifacts/phpstan_turbo-*; do
+            [ -d "$dir" ] || continue
+            name="${dir#turbo-artifacts/phpstan_turbo-}"
+            target="${name%-php*}"
+            minor="${name##*-php}"
+            for file in "$dir"/*; do
+              dist_file="phpstan-dist/turbo-ext/$target/phpstan_turbo-$minor.${file##*.}"
+              if [[ ! -f "$dist_file" ]]; then
+                echo "missing from dist: $dist_file"
+                RESULT=different
+              fi
+            done
+          done
+          echo "result=$RESULT" >> "$GITHUB_OUTPUT"
+          echo "version-changed=$VERSION_CHANGED" >> "$GITHUB_OUTPUT"
           echo "version=$EXPECTED" >> "$GITHUB_OUTPUT"
 
       # The phar is staged only when its checksum changed (or on tags, which
       # always produce a commit) — a turbo-only update must not churn the
-      # byte-unstable phar; the turbo binaries are staged only when the
-      # extension version changed, since native builds are never
-      # byte-reproducible (signing timestamps, Mach-O UUIDs).
+      # byte-unstable phar; existing turbo binaries are overwritten only when
+      # the extension version changed, since native builds are never
+      # byte-reproducible (signing timestamps, Mach-O UUIDs). Binaries the
+      # dist does not carry at all are staged even at an unchanged version.
       - name: "Download phpstan.phar"
         if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -1051,24 +1077,22 @@ jobs:
         working-directory: phpstan-dist
         run: "gpg --verify phpstan.phar.asc"
 
-      - name: "Download turbo extension artifacts"
-        if: steps.turbo-difference.outputs.result == 'different'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: "phpstan_turbo-*"
-          path: "turbo-artifacts"
-
       - name: "Stage turbo extension binaries"
         if: steps.turbo-difference.outputs.result == 'different'
         env:
           TURBO_VERSION: ${{ steps.turbo-difference.outputs.version }}
+          VERSION_CHANGED: ${{ steps.turbo-difference.outputs.version-changed }}
         run: |
           for dir in turbo-artifacts/phpstan_turbo-*; do
+            [ -d "$dir" ] || continue
             name="${dir#turbo-artifacts/phpstan_turbo-}"
             target="${name%-php*}"
             minor="${name##*-php}"
             for file in "$dir"/*; do
-              install -D -m 644 "$file" "phpstan-dist/turbo-ext/$target/phpstan_turbo-$minor.${file##*.}"
+              dest="phpstan-dist/turbo-ext/$target/phpstan_turbo-$minor.${file##*.}"
+              if [[ "$VERSION_CHANGED" == "yes" || ! -f "$dest" ]]; then
+                install -D -m 644 "$file" "$dest"
+              fi
             done
           done
           echo "$TURBO_VERSION" > phpstan-dist/turbo-ext/.version

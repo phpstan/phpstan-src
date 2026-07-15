@@ -51,6 +51,7 @@ parametersSchema:
 		checkDynamicConstantNameValues: bool()
 		unusedLabel: bool()
 		newOnNonObject: bool()
+		finiteTypesInHaystack: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

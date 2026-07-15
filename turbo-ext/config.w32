@@ -1,12 +1,18 @@
 // phpstan_turbo — Windows build (php-devel-pack: phpize && configure && nmake).
 // The extension version is baked from the PHPSTANTURBO_VERSION environment
 // variable at configure time (the CI workflow computes it the same way the
-// Makefile does); it defaults to "dev", which the enabler rejects.
+// Makefile does), falling back to VERSION.txt (the monorepo SHA, generated
+// and committed into the phpstan/turbo-ext subsplit by its workflow —
+// builds there have no usable git history); with neither it defaults to
+// "dev", which the enabler rejects.
 
 ARG_ENABLE("phpstan-turbo", "phpstan turbo extension", "no");
 
 if (PHP_PHPSTAN_TURBO != "no") {
 	var version = WScript.CreateObject("WScript.Shell").Environment("PROCESS")("PHPSTANTURBO_VERSION");
+	if ((!version || version == "") && FSO.FileExists(configure_module_dirname + "\\VERSION.txt")) {
+		version = file_get_contents(configure_module_dirname + "\\VERSION.txt").replace(/\s/g, "");
+	}
 	if (!version || version == "") {
 		version = "dev";
 	}

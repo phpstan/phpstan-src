@@ -11,9 +11,10 @@
 #include "support.h"
 #include "reg.h"
 
-/* Baked from git (short SHA of the last commit touching the watched set);
- * "dev" outside a git checkout, which the enabler rejects. The Makefile
- * passes the quoted string directly; config.w32 passes the bare token as
+/* The short SHA of the last commit touching the watched set: baked from git
+ * by the Makefile (quoted string passed directly), or from the VERSION.txt
+ * the subsplit workflow commits into phpstan/turbo-ext; "dev" with neither,
+ * which the enabler rejects. config.w32 and config.m4 pass the bare token as
  * PHPSTANTURBO_VERSION_RAW — quote characters do not survive the Windows
  * configure-to-nmake pipeline — and it is stringized here. */
 #ifdef PHPSTANTURBO_VERSION_RAW

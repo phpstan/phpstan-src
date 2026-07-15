@@ -38,8 +38,13 @@ is declared by hand. After changing either side of a shadowed pair, verify the
 implementations still match and add a follow-up commit updating the constant
 to the short SHA of the changing commit; the phar.yml `turbo-version` job
 enforces the SHA and the compile job verifies the built binary reports what
-the enabler expects. Builds outside a git checkout bake the version "dev",
-which the enabler rejects — the extension then simply stays inactive.
+the enabler expects. Builds outside the monorepo — the phpstan/turbo-ext
+subsplit and PIE source builds from it — cannot ask git (the subsplit's
+replayed commits have different SHAs, tarballs have no checkout at all), so
+the subsplit workflow generates and commits a `VERSION.txt` there and the
+builds fall back to it; the file must never exist in the monorepo. With
+neither git nor `VERSION.txt` the version bakes as "dev", which the enabler
+rejects — the extension then simply stays inactive.
 
 ## Keeping the two implementations in sync
 
@@ -202,6 +207,21 @@ supported — the build inherits thread-safety from the `php-config` it is
 pointed at (ZTS hosts like PMMP's bundled PHP get a matching build; PHPStan
 itself only ever runs the native code single-threaded).
 
+The standard `phpize && ./configure && make` pipeline works too
+(`config.m4`) — it is what [PIE] drives when it builds the phpstan/turbo
+package from source, e.g. for combinations without a prebuilt binary. That
+path bakes the version from `VERSION.txt` (present only in the
+phpstan/turbo-ext subsplit, where its workflow commits it — in the monorepo
+build with `make` instead), and its `./configure` overwrites this
+directory's Makefile with the generated one (`git restore Makefile` brings
+it back; PIE builds in its own extracted copy). The hand-written Makefile
+stays the primary build: it statically links libstdc++/libgcc on Linux —
+the distributed binaries must not depend on the build host's GLIBCXX symbol
+versions — and carries the strict warning setup, neither of which survives
+the libtool link.
+
+[PIE]: https://github.com/php/pie
+
 On Windows the extension builds through the standard PHP extension pipeline
 (`config.w32`): with a PHP devel pack, [php-sdk-binary-tools] and a VS2022
 x64 developer prompt, run `phpize && configure --enable-phpstan-turbo &&
@@ -212,7 +232,7 @@ the PHP core, and the official php.net binaries are built with VS2022
 (whose VS2026 image links with 14.5x). Set the `PHPSTANTURBO_VERSION`
 environment variable before `configure` to bake the version (the Makefile
 computes it from git automatically; `config.w32` reads it from the
-environment).
+environment, falling back to `VERSION.txt`).
 
 [php-sdk-binary-tools]: https://github.com/php/php-sdk-binary-tools
 

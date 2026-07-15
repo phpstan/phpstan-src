@@ -199,6 +199,93 @@ jobs:
             echo "::error::After changing either side, verify the implementations still match and add a follow-up commit setting the constant to that commit's short SHA (the binary bakes its version from git at build time)."
             exit 1
           fi
+          # VERSION.txt is generated into the phpstan/turbo-ext subsplit by
+          # subsplit-turbo-ext.yml; a copy committed here would go stale and
+          # silently win over git in phpize builds.
+          if [ -e turbo-ext/VERSION.txt ]; then
+            echo "::error::turbo-ext/VERSION.txt must not exist in the monorepo — it is generated per replayed commit by the subsplit-turbo-ext.yml workflow."
+            exit 1
+          fi
+
+  turbo-phpize:
+    # Builds through phpize && ./configure && make — the pipeline PIE drives
+    # when it falls back to a source build of the phpstan/turbo package
+    # (config.m4). The distributed binaries keep coming from the Makefile
+    # legs in turbo-compile: the libtool link here cannot statically fold
+    # libstdc++/libgcc into the .so, which the shipped Linux binaries need
+    # to stay independent of the host's GLIBCXX symbol versions. One PHP
+    # version suffices — per-version compile coverage comes from
+    # turbo-compile; this job guards the build system itself.
+    name: "Turbo Extension phpize Build"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: ["ubuntu-latest", "macos-latest"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # the VERSION.txt written below bakes from git log over turbo-ext/src
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - name: "Build via phpize outside the checkout"
+        # The copy is deliberately outside the git checkout and gets a
+        # VERSION.txt generated the same way subsplit-turbo-ext.yml commits
+        # it into phpstan/turbo-ext — the exact shape a PIE source build
+        # sees: no monorepo history, the version supplied by the file.
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            command -v autoconf > /dev/null || brew install autoconf
+          fi
+          cp -R turbo-ext "$RUNNER_TEMP/turbo-ext"
+          mapfile -t MAPPED_PHP < <(jq -r '.[] | select(.vendored != true) | .php' turbo-ext/shadowed-classes.json)
+          git log -1 --format=%H -- turbo-ext/src "${MAPPED_PHP[@]}" | cut -c1-7 > "$RUNNER_TEMP/turbo-ext/VERSION.txt"
+          echo "VERSION.txt: $(cat "$RUNNER_TEMP/turbo-ext/VERSION.txt")"
+          cd "$RUNNER_TEMP/turbo-ext"
+          phpize
+          ./configure
+          make -j"$(getconf _NPROCESSORS_ONLN)"
+
+      - name: "Verify the built extension reports the expected version"
+        run: |
+          REPORTED="$(php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/smoke.php
+
+      - name: "Arena smoke test (cross-process shared-memory records)"
+        run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
+
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "make install into a scratch root (PIE finishes with make install)"
+        run: |
+          make -C "$RUNNER_TEMP/turbo-ext" install INSTALL_ROOT="$RUNNER_TEMP/install-root"
+          find "$RUNNER_TEMP/install-root" -name 'phpstan_turbo.so' | grep .
 
   turbo-compile:
     name: "Compile Turbo Extension"

@@ -4,3 +4,39 @@
 /phpstan_turbo.so
 /side-by-side.html
 /version.stamp
+
+# Generated and committed into the phpstan/turbo-ext subsplit by
+# subsplit-turbo-ext.yml — must not exist in the monorepo (builds here take
+# the version from git; a stale copy would poison phpize builds).
+/VERSION.txt
+
+# phpize/configure artifacts (the PIE build path; note that ./configure also
+# overwrites the committed Makefile — git restore brings it back)
+/.libs/
+/acinclude.m4
+/aclocal.m4
+/autom4te.cache/
+/build/
+/config.guess
+/config.h
+/config.h.in
+/config.log
+/config.nice
+/config.status
+/config.sub
+/configure
+/configure.ac
+/install-sh
+/libtool
+/ltmain.sh
+/Makefile.fragments
+/Makefile.global
+/Makefile.objects
+/missing
+/mkinstalldirs
+/modules/
+/run-tests.php
+/src/*.lo
+/src/parser/*.lo
+/src/.libs/
+/src/parser/.libs/

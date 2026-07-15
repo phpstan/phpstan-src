@@ -73,8 +73,10 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
 10. **Version bump**: commit the change, then a follow-up commit setting
     `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION` to
     `git log -1 --format=%H -- turbo-ext/src <shadowed PHP files> | cut -c1-7`.
-    The binary's own version is baked from git at build time, so only the
-    PHP constant is hand-edited. The bump cannot be part of the same commit —
+    The binary's own version is baked from git at build time (builds outside
+    the monorepo read the VERSION.txt that subsplit-turbo-ext.yml generates
+    into phpstan/turbo-ext — never create that file here), so only the PHP
+    constant is hand-edited. The bump cannot be part of the same commit —
     the SHA would change under it.
 
 ## Build and verify commands

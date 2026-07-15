@@ -1,0 +1,28 @@
+{
+	"name": "phpstan/turbo",
+	"description": "Native acceleration extension for PHPStan",
+	"license": [
+		"MIT"
+	],
+	"type": "php-ext",
+	"homepage": "https://phpstan.org",
+	"require": {
+		"php": "~8.3.0 || ~8.4.0 || ~8.5.0"
+	},
+	"php-ext": {
+		"extension-name": "phpstan_turbo",
+		"download-url-method": [
+			"pre-packaged-binary",
+			"composer-default"
+		],
+		"os-families": [
+			"linux",
+			"darwin",
+			"windows"
+		]
+	},
+	"support": {
+		"issues": "https://github.com/phpstan/phpstan/issues",
+		"source": "https://github.com/phpstan/turbo-ext"
+	}
+}

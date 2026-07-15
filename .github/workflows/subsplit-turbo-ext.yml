@@ -1,0 +1,124 @@
+# Monorepo-style subsplit: replays every commit that touches turbo-ext/ onto
+# https://github.com/phpstan/turbo-ext, where the extension is distributed
+# standalone (the phpstan/turbo PIE package on Packagist).
+#
+# Each replayed commit keeps the original message, author, committer and
+# dates, and its tree is the commit's turbo-ext/ subtree — plus a
+# "Split-From: <monorepo sha>" trailer and a generated VERSION.txt carrying
+# the extension version at that commit (the monorepo short SHA the enabler
+# pins; builds in the split cannot compute it — replayed commits have
+# different SHAs, and PIE tarballs have no git at all). The trailer is what
+# makes the replay incremental and idempotent: a run reads the most recent
+# trailer from the split repository and replays only the commits made since,
+# on top of the split branch's current head. A failed or skipped run is
+# simply caught up by the next one (or by a manual workflow_dispatch).
+# git subtree split is not used because it walks the entire monorepo history
+# on every run, which takes tens of minutes at this repository's size.
+#
+# When a new maintained branch (2.3.x, ...) starts, update the branch trigger
+# below (like phar.yml) and create the same-named branch in phpstan/turbo-ext
+# from the previous branch's head — that head's trailer keeps the replay
+# incremental across the branch point.
+
+name: "Subsplit turbo-ext"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "2.2.x"
+    paths:
+      - "turbo-ext/**"
+      - ".github/workflows/subsplit-turbo-ext.yml"
+
+# The replay chain builds on the split branch's current head; two runs
+# building on the same head would race each other, so queue them instead.
+concurrency:
+  group: subsplit-turbo-ext
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  subsplit:
+    name: "Replay turbo-ext commits"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # the replay walks the full history of the branch
+
+      - name: "Replay commits touching turbo-ext/ and push them to phpstan/turbo-ext"
+        env:
+          PUSH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          PREFIX="turbo-ext"
+
+          # The split branch must already exist (see the header comment); the
+          # fetch fails loudly when it does not.
+          git fetch --no-tags https://github.com/phpstan/turbo-ext.git "refs/heads/$BRANCH"
+          target_head="$(git rev-parse FETCH_HEAD)"
+
+          # The most recent Split-From trailer marks where the previous
+          # replay stopped. No trailer anywhere (the split repository only
+          # has its initial commit) means the full history gets replayed.
+          last_synced="$(git log FETCH_HEAD --format='%(trailers:key=Split-From,valueonly)' | grep -m1 . || true)"
+          if [ -n "$last_synced" ] && ! git merge-base --is-ancestor "$last_synced" HEAD; then
+            echo "::error::$BRANCH does not contain $last_synced, the most recent Split-From trailer in the split repository. Was the branch history rewritten?"
+            exit 1
+          fi
+
+          # Every commit touching turbo-ext/ so far sits on the first-parent
+          # chain (verified July 2026), and first-parent order is append-only,
+          # so the replay never reorders. A maintained-branch forward merge
+          # that touches turbo-ext/ replays as the merge commit itself.
+          mapfile -t commits < <(git rev-list --reverse --first-parent ${last_synced:+"$last_synced.."}HEAD -- "$PREFIX")
+          if [ "${#commits[@]}" -eq 0 ]; then
+            echo "The split repository is up to date at $target_head."
+            exit 0
+          fi
+
+          parent="$target_head"
+          for commit in "${commits[@]}"; do
+            # The version at this commit, mirroring the Makefile's git
+            # computation: the last commit touching turbo-ext/src or a
+            # non-vendored PHP class from the manifest as it existed at this
+            # commit ("dev" before that layout existed).
+            watched=("$PREFIX/src")
+            while IFS= read -r mapped; do
+              watched+=("$mapped")
+            done < <(git show "$commit:$PREFIX/shadowed-classes.json" 2>/dev/null | jq -r '.[] | select(.vendored != true) | .php' 2>/dev/null || true)
+            version="$(git log -1 --format=%H "$commit" -- "${watched[@]}" | cut -c1-7)"
+            blob="$(printf '%s\n' "${version:-dev}" | git hash-object -w --stdin)"
+            # a commit removing the directory altogether replays as an empty tree
+            if subtree="$(git rev-parse -q --verify "$commit:$PREFIX")"; then
+              tree="$({ git ls-tree "$subtree" | awk -F'\t' '$2 != "VERSION.txt"'; printf '100644 blob %s\tVERSION.txt\n' "$blob"; } | git mktree)"
+            else
+              tree="$(git hash-object -t tree /dev/null)"
+            fi
+            parent="$(
+              git log -1 --format=%B "$commit" \
+                | git interpret-trailers --trailer "Split-From: $commit" \
+                | GIT_AUTHOR_NAME="$(git log -1 --format=%an "$commit")" \
+                  GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae "$commit")" \
+                  GIT_AUTHOR_DATE="$(git log -1 --format=%aD "$commit")" \
+                  GIT_COMMITTER_NAME="$(git log -1 --format=%cn "$commit")" \
+                  GIT_COMMITTER_EMAIL="$(git log -1 --format=%ce "$commit")" \
+                  GIT_COMMITTER_DATE="$(git log -1 --format=%cD "$commit")" \
+                  git commit-tree "$tree" -p "$parent"
+            )"
+            echo "$commit -> $parent"
+          done
+
+          echo "Replayed ${#commits[@]} commit(s), pushing to $BRANCH"
+          git push "https://x-access-token:${PUSH_TOKEN}@github.com/phpstan/turbo-ext.git" "$parent:refs/heads/$BRANCH"

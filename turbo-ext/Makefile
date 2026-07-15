@@ -21,11 +21,22 @@ CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 # The extension version is the short SHA of the last commit touching
 # turbo-ext/src/ or a shadowed PHP twin (the same watched set the CI version
 # job enforces against TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION),
-# computed from git at build time and baked in via -D. Outside a git checkout
-# it degrades to "dev", which the enabler rejects — the extension then simply
-# stays inactive. version.stamp makes a SHA change rebuild main.o.
+# computed from git at build time and baked in via -D. Outside the monorepo
+# (the phpstan/turbo-ext subsplit, a release tarball) git yields nothing —
+# and the subsplit's replayed commits have different SHAs anyway — so
+# VERSION.txt carries the monorepo SHA instead: subsplit-turbo-ext.yml
+# generates and commits it per replayed commit, and it must never exist in
+# the monorepo (the .txt suffix is load-bearing — C++ stdlibs #include
+# <version>, and with the extension root on the include path a file named
+# VERSION satisfies that include on case-insensitive filesystems). With
+# neither source it degrades to "dev", which the enabler rejects — the
+# extension then simply stays inactive. version.stamp makes a SHA change
+# rebuild main.o.
 MAPPED_PHP := $(shell php -n -r 'echo implode(" ", array_map(static fn ($$e) => $$e["php"], array_filter(json_decode(file_get_contents("shadowed-classes.json"), true), static fn ($$e) => !($$e["vendored"] ?? false))));' 2>/dev/null)
 PHPSTANTURBO_VERSION := $(shell git -C .. log -1 --format=%H -- turbo-ext/src $(MAPPED_PHP) 2>/dev/null | cut -c1-7)
+ifeq ($(PHPSTANTURBO_VERSION),)
+PHPSTANTURBO_VERSION := $(strip $(shell cat VERSION.txt 2>/dev/null))
+endif
 ifeq ($(PHPSTANTURBO_VERSION),)
 PHPSTANTURBO_VERSION := dev
 endif

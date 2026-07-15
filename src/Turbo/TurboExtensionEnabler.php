@@ -68,6 +68,29 @@ final class TurboExtensionEnabler
 	}
 
 	/**
+	 * The version of the loaded extension when it does not pass the
+	 * enableIfLoaded() version gate. Null when the extension is not loaded,
+	 * deliberately disabled, or compatible.
+	 */
+	public static function getIncompatibleLoadedVersion(): ?string
+	{
+		if (!self::isLoaded()) {
+			return null;
+		}
+
+		if (getenv('PHPSTAN_TURBO') === '0') {
+			return null;
+		}
+
+		$version = phpversion('phpstan_turbo');
+		if ($version === self::EXPECTED_EXTENSION_VERSION) {
+			return null;
+		}
+
+		return $version === false ? 'unknown' : $version;
+	}
+
+	/**
 	 * Whether enableIfLoaded() actually activated the extension — the stubs
 	 * shadow the PHP implementations only in that case.
 	 */

@@ -15,7 +15,14 @@
 # git subtree split is not used because it walks the entire monorepo history
 # on every run, which takes tens of minutes at this repository's size.
 #
-# When a new maintained branch (2.3.x, ...) starts, update the branch trigger
+# Tag pushes (2.2.*) first bring the split branch up to date and then tag
+# the split commit replayed from the last turbo-ext-touching commit at or
+# before the tagged monorepo commit. Packagist picks the tag up as a
+# phpstan/turbo release, and the release workflow in phpstan/phpstan
+# attaches the PIE binary assets to a phpstan/turbo-ext release of the same
+# name.
+#
+# When a new maintained branch (2.3.x, ...) starts, update the triggers
 # below (like phar.yml) and create the same-named branch in phpstan/turbo-ext
 # from the previous branch's head — that head's trailer keeps the replay
 # incremental across the branch point.
@@ -27,9 +34,8 @@ on:
   push:
     branches:
       - "2.2.x"
-    paths:
-      - "turbo-ext/**"
-      - ".github/workflows/subsplit-turbo-ext.yml"
+    tags:
+      - "2.2.*"
 
 # The replay chain builds on the split branch's current head; two runs
 # building on the same head would race each other, so queue them instead.
@@ -60,9 +66,26 @@ jobs:
       - name: "Replay commits touching turbo-ext/ and push them to phpstan/turbo-ext"
         env:
           PUSH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-          BRANCH: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           PREFIX="turbo-ext"
+
+          # A tag lives on its maintained branch (2.2.8 → 2.2.x). The replay
+          # always follows the branch — a tag run just also marks the split
+          # commit corresponding to the tagged monorepo commit afterwards.
+          if [ "$REF_TYPE" = "tag" ]; then
+            BRANCH="${REF_NAME%.*}.x"
+            git fetch --no-tags origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+            replay_tip="$(git rev-parse "refs/remotes/origin/$BRANCH")"
+            if ! git merge-base --is-ancestor HEAD "$replay_tip"; then
+              echo "::error::Tag $REF_NAME does not point into branch $BRANCH."
+              exit 1
+            fi
+          else
+            BRANCH="$REF_NAME"
+            replay_tip="$(git rev-parse HEAD)"
+          fi
 
           # The split branch must already exist (see the header comment); the
           # fetch fails loudly when it does not.
@@ -73,7 +96,7 @@ jobs:
           # replay stopped. No trailer anywhere (the split repository only
           # has its initial commit) means the full history gets replayed.
           last_synced="$(git log FETCH_HEAD --format='%(trailers:key=Split-From,valueonly)' | grep -m1 . || true)"
-          if [ -n "$last_synced" ] && ! git merge-base --is-ancestor "$last_synced" HEAD; then
+          if [ -n "$last_synced" ] && ! git merge-base --is-ancestor "$last_synced" "$replay_tip"; then
             echo "::error::$BRANCH does not contain $last_synced, the most recent Split-From trailer in the split repository. Was the branch history rewritten?"
             exit 1
           fi
@@ -82,43 +105,73 @@ jobs:
           # chain (verified July 2026), and first-parent order is append-only,
           # so the replay never reorders. A maintained-branch forward merge
           # that touches turbo-ext/ replays as the merge commit itself.
-          mapfile -t commits < <(git rev-list --reverse --first-parent ${last_synced:+"$last_synced.."}HEAD -- "$PREFIX")
-          if [ "${#commits[@]}" -eq 0 ]; then
+          mapfile -t commits < <(git rev-list --reverse --first-parent ${last_synced:+"$last_synced.."}"$replay_tip" -- "$PREFIX")
+
+          tip="$target_head"
+          if [ "${#commits[@]}" -gt 0 ]; then
+            for commit in "${commits[@]}"; do
+              # The version at this commit, mirroring the Makefile's git
+              # computation: the last commit touching turbo-ext/src or a
+              # non-vendored PHP class from the manifest as it existed at this
+              # commit ("dev" before that layout existed).
+              watched=("$PREFIX/src")
+              while IFS= read -r mapped; do
+                watched+=("$mapped")
+              done < <(git show "$commit:$PREFIX/shadowed-classes.json" 2>/dev/null | jq -r '.[] | select(.vendored != true) | .php' 2>/dev/null || true)
+              version="$(git log -1 --format=%H "$commit" -- "${watched[@]}" | cut -c1-7)"
+              blob="$(printf '%s\n' "${version:-dev}" | git hash-object -w --stdin)"
+              # a commit removing the directory altogether replays as an empty tree
+              if subtree="$(git rev-parse -q --verify "$commit:$PREFIX")"; then
+                tree="$({ git ls-tree "$subtree" | awk -F'\t' '$2 != "VERSION.txt"'; printf '100644 blob %s\tVERSION.txt\n' "$blob"; } | git mktree)"
+              else
+                tree="$(git hash-object -t tree /dev/null)"
+              fi
+              tip="$(
+                git log -1 --format=%B "$commit" \
+                  | git interpret-trailers --trailer "Split-From: $commit" \
+                  | GIT_AUTHOR_NAME="$(git log -1 --format=%an "$commit")" \
+                    GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae "$commit")" \
+                    GIT_AUTHOR_DATE="$(git log -1 --format=%aD "$commit")" \
+                    GIT_COMMITTER_NAME="$(git log -1 --format=%cn "$commit")" \
+                    GIT_COMMITTER_EMAIL="$(git log -1 --format=%ce "$commit")" \
+                    GIT_COMMITTER_DATE="$(git log -1 --format=%cD "$commit")" \
+                    git commit-tree "$tree" -p "$tip"
+              )"
+              echo "$commit -> $tip"
+            done
+
+            echo "Replayed ${#commits[@]} commit(s), pushing to $BRANCH"
+            git push "https://x-access-token:${PUSH_TOKEN}@github.com/phpstan/turbo-ext.git" "$tip:refs/heads/$BRANCH"
+          else
             echo "The split repository is up to date at $target_head."
+          fi
+
+          if [ "$REF_TYPE" != "tag" ]; then
             exit 0
           fi
 
-          parent="$target_head"
-          for commit in "${commits[@]}"; do
-            # The version at this commit, mirroring the Makefile's git
-            # computation: the last commit touching turbo-ext/src or a
-            # non-vendored PHP class from the manifest as it existed at this
-            # commit ("dev" before that layout existed).
-            watched=("$PREFIX/src")
-            while IFS= read -r mapped; do
-              watched+=("$mapped")
-            done < <(git show "$commit:$PREFIX/shadowed-classes.json" 2>/dev/null | jq -r '.[] | select(.vendored != true) | .php' 2>/dev/null || true)
-            version="$(git log -1 --format=%H "$commit" -- "${watched[@]}" | cut -c1-7)"
-            blob="$(printf '%s\n' "${version:-dev}" | git hash-object -w --stdin)"
-            # a commit removing the directory altogether replays as an empty tree
-            if subtree="$(git rev-parse -q --verify "$commit:$PREFIX")"; then
-              tree="$({ git ls-tree "$subtree" | awk -F'\t' '$2 != "VERSION.txt"'; printf '100644 blob %s\tVERSION.txt\n' "$blob"; } | git mktree)"
-            else
-              tree="$(git hash-object -t tree /dev/null)"
-            fi
-            parent="$(
-              git log -1 --format=%B "$commit" \
-                | git interpret-trailers --trailer "Split-From: $commit" \
-                | GIT_AUTHOR_NAME="$(git log -1 --format=%an "$commit")" \
-                  GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae "$commit")" \
-                  GIT_AUTHOR_DATE="$(git log -1 --format=%aD "$commit")" \
-                  GIT_COMMITTER_NAME="$(git log -1 --format=%cn "$commit")" \
-                  GIT_COMMITTER_EMAIL="$(git log -1 --format=%ce "$commit")" \
-                  GIT_COMMITTER_DATE="$(git log -1 --format=%cD "$commit")" \
-                  git commit-tree "$tree" -p "$parent"
-            )"
-            echo "$commit -> $parent"
-          done
+          # Tag the split commit replayed from the last turbo-ext-touching
+          # commit at or before the tagged monorepo commit (HEAD on tag runs).
+          tag_src="$(git rev-list -1 --first-parent HEAD -- "$PREFIX")"
+          if [ -z "$tag_src" ]; then
+            echo "::error::No commit touching $PREFIX/ precedes tag $REF_NAME."
+            exit 1
+          fi
+          split_commit="$(git log "$tip" --format='%H%x09%(trailers:key=Split-From,valueonly,separator=)' | awk -F'\t' -v want="$tag_src" '$2 == want {print $1; exit}')"
+          if [ -z "$split_commit" ]; then
+            echo "::error::No split commit carries Split-From: $tag_src — was $tag_src replayed?"
+            exit 1
+          fi
 
-          echo "Replayed ${#commits[@]} commit(s), pushing to $BRANCH"
-          git push "https://x-access-token:${PUSH_TOKEN}@github.com/phpstan/turbo-ext.git" "$parent:refs/heads/$BRANCH"
+          existing="$(git ls-remote https://github.com/phpstan/turbo-ext.git "refs/tags/$REF_NAME" | cut -f1)"
+          if [ "$existing" = "$split_commit" ]; then
+            echo "Tag $REF_NAME already points at $split_commit."
+            exit 0
+          fi
+          if [ -n "$existing" ]; then
+            echo "::error::Tag $REF_NAME already exists in phpstan/turbo-ext at $existing, expected $split_commit. Delete it there if it must move."
+            exit 1
+          fi
+
+          echo "Tagging $split_commit (replayed from $tag_src) as $REF_NAME"
+          git push "https://x-access-token:${PUSH_TOKEN}@github.com/phpstan/turbo-ext.git" "$split_commit:refs/tags/$REF_NAME"

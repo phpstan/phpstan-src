@@ -373,6 +373,22 @@ public:
 		Z_TRY_ADDREF_P(borrowed.raw());
 		zend_hash_next_index_insert(table(), borrowed.raw());
 	}
+
+	/* $a[$index] ?? null */
+	Ref findIndex(zend_ulong index) const
+	{
+		zval *found = zend_hash_index_find(table(), index);
+		return Ref(found); /* raw() == NULL when absent */
+	}
+
+	/* $a[$index] = $value; separates a shared table first (writes through
+	 * the slot), releases a replaced value */
+	void setIndex(zend_ulong index, Ref borrowed)
+	{
+		SEPARATE_ARRAY(z);
+		Z_TRY_ADDREF_P(borrowed.raw());
+		zend_hash_index_update(table(), index, borrowed.raw());
+	}
 };
 
 /* Owned PHP array under construction.

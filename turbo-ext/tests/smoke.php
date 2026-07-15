@@ -278,5 +278,45 @@ $afterClear = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT);
 check($describe($afterClear) === $describe($first), 'TCC clearCache keeps results correct');
 check($afterClear !== $first, 'TCC clearCache actually drops entries');
 
+// ---- ExpressionResultStorage ----
+$makeScope = static function () {
+	static $reflection = null;
+	$reflection ??= new ReflectionClass(\PHPStan\Analyser\MutatingScope::class);
+	return $reflection->newInstanceWithoutConstructor();
+};
+
+foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' => \PHPStanTurbo\ExpressionResultStorage::class] as $label => $storageClass) {
+	$storage = new $storageClass();
+	$exprA = new \PhpParser\Node\Expr\Variable('a');
+	$exprB = new \PhpParser\Node\Expr\Variable('b');
+	$scopeA = $makeScope();
+	$scopeB = $makeScope();
+
+	check($storage->findBeforeScope($exprA) === null, "ERS $label: find on empty storage is null");
+	$storage->storeBeforeScope($exprA, $scopeA);
+	check($storage->findBeforeScope($exprA) === $scopeA, "ERS $label: find returns the stored scope");
+	check($storage->findBeforeScope($exprB) === null, "ERS $label: unknown expr is null");
+	$storage->storeBeforeScope($exprA, $scopeB);
+	check($storage->findBeforeScope($exprA) === $scopeB, "ERS $label: overwrite for the same expr");
+
+	$duplicate = $storage->duplicate();
+	check(get_class($duplicate) === $storageClass, "ERS $label: duplicate creates the same class");
+	check($duplicate->findBeforeScope($exprA) === $scopeB, "ERS $label: duplicate carries stored entries");
+	$duplicate->storeBeforeScope($exprB, $scopeA);
+	check($duplicate->findBeforeScope($exprB) === $scopeA, "ERS $label: store on the duplicate");
+	check($storage->findBeforeScope($exprB) === null, "ERS $label: duplicate stores do not leak back");
+	$storage->storeBeforeScope($exprB, $scopeB);
+	check($duplicate->findBeforeScope($exprB) === $scopeA, "ERS $label: original stores do not leak into the duplicate");
+
+	check($duplicate->pendingFibers === [] && $duplicate->parkedFibers === [], "ERS $label: duplicate starts with empty fiber arrays");
+	$storage->pendingFibers[] = ['marker' => 1];
+	$storage->parkedFibers[] = 'parked';
+	check(count($storage->pendingFibers) === 1 && $storage->parkedFibers === ['parked'], "ERS $label: fiber arrays are appendable");
+	$secondDuplicate = $storage->duplicate();
+	check($secondDuplicate->pendingFibers === [] && $secondDuplicate->parkedFibers === [], "ERS $label: duplicate does not carry fiber arrays");
+	unset($storage->pendingFibers[0]);
+	check($storage->pendingFibers === [], "ERS $label: fiber array entries can be unset");
+}
+
 echo $failures === 0 ? "ALL OK\n" : "$failures FAILURES\n";
 exit($failures === 0 ? 0 : 1);

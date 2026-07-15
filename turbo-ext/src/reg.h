@@ -167,6 +167,18 @@ public:
 		return *this;
 	}
 
+	Class &privateArrayProperty(const char *propertyName)
+	{
+		properties.push_back({ propertyName, PropertyKind::EmptyArray, ZEND_ACC_PRIVATE, 0 });
+		return *this;
+	}
+
+	Class &publicArrayProperty(const char *propertyName)
+	{
+		properties.push_back({ propertyName, PropertyKind::EmptyArray, ZEND_ACC_PUBLIC, 0 });
+		return *this;
+	}
+
 	/* a protected bool property (zend_declare_property_bool) */
 	Class &protectedBoolProperty(const char *propertyName, bool defaultValue)
 	{

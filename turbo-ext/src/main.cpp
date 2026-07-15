@@ -69,6 +69,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_parser_runner();
 	pt_register_type_combinator_cache();
 	pt_register_arena_cache();
+	pt_register_expression_result_storage();
 
 	return SUCCESS;
 }

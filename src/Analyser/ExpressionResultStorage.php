@@ -7,13 +7,21 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Fiber\BeforeScopeForExprRequest;
 use PHPStan\Analyser\Fiber\ParkFiberRequest;
-use SplObjectStorage;
+use function spl_object_id;
 
 final class ExpressionResultStorage
 {
 
-	/** @var SplObjectStorage<Expr, Scope> */
-	private SplObjectStorage $scopes;
+	/**
+	 * Keeps every stored Expr alive so its spl_object_id() cannot be reused
+	 * by another node while $scopesById still maps it.
+	 *
+	 * @var array<int, Expr>
+	 */
+	private array $exprsById = [];
+
+	/** @var array<int, Scope> */
+	private array $scopesById = [];
 
 	/** @var array<array{fiber: Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest>, request: BeforeScopeForExprRequest}> */
 	public array $pendingFibers = [];
@@ -21,26 +29,24 @@ final class ExpressionResultStorage
 	/** @var list<Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest>> */
 	public array $parkedFibers = [];
 
-	public function __construct()
-	{
-		$this->scopes = new SplObjectStorage();
-	}
-
 	public function duplicate(): self
 	{
 		$new = new self();
-		$new->scopes->addAll($this->scopes);
+		$new->exprsById = $this->exprsById;
+		$new->scopesById = $this->scopesById;
 		return $new;
 	}
 
 	public function storeBeforeScope(Expr $expr, Scope $scope): void
 	{
-		$this->scopes[$expr] = $scope;
+		$id = spl_object_id($expr);
+		$this->exprsById[$id] = $expr;
+		$this->scopesById[$id] = $scope;
 	}
 
 	public function findBeforeScope(Expr $expr): ?Scope
 	{
-		return $this->scopes[$expr] ?? null;
+		return $this->scopesById[spl_object_id($expr)] ?? null;
 	}
 
 }

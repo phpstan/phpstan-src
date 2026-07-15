@@ -3,6 +3,10 @@
         "php": "src/Analyser/ConditionalExpressionHolder.php",
         "cpp": "turbo-ext/src/ConditionalExpressionHolder.cpp"
     },
+    "PHPStan\\Analyser\\ExpressionResultStorage": {
+        "php": "src/Analyser/ExpressionResultStorage.php",
+        "cpp": "turbo-ext/src/ExpressionResultStorage.cpp"
+    },
     "PHPStan\\Analyser\\ExpressionTypeHolder": {
         "php": "src/Analyser/ExpressionTypeHolder.php",
         "cpp": "turbo-ext/src/ExpressionTypeHolder.cpp"

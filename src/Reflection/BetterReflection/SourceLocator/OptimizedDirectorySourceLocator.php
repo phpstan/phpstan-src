@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\ArenaCache;
+use PHPStan\File\FileContentHasher;
 use PHPStan\Cache\Cache;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\Internal\ComposerHelper;
@@ -24,7 +25,6 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_values;
 use function current;
-use function hash_file;
 use function is_array;
 use function is_string;
 use function sprintf;
@@ -58,6 +58,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		private FileNodesFetcher $fileNodesFetcher,
 		private Cache $cache,
 		private PhpVersion $phpVersion,
+		private FileContentHasher $fileContentHasher,
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
@@ -71,7 +72,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	 */
 	private function getCacheKeys(string $file, Identifier $identifier): array
 	{
-		$fileHash = hash_file('sha256', $file);
+		$fileHash = $this->fileContentHasher->hash($file);
 		if ($fileHash === false) {
 			throw new CouldNotReadFileException($file);
 		}

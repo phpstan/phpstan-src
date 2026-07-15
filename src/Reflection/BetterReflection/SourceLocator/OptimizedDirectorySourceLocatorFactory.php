@@ -6,6 +6,7 @@ use PHPStan\Cache\ArenaCache;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileContentHasher;
 use PHPStan\File\FileFinder;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
@@ -15,8 +16,8 @@ use function array_keys;
 use function fclose;
 use function flock;
 use function fopen;
-use function hash_file;
 use function hrtime;
+use function is_array;
 use function ksort;
 use function serialize;
 use function sha1;
@@ -41,6 +42,14 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	private const SCAN_LOCK_POLL_INTERVAL_MICROSECONDS = 50_000;
 
+	/**
+	 * The hash lock is polled much finer than the scan lock: every worker
+	 * reaches the same directories in near lockstep at startup, and most
+	 * directories hash in well under the scan lock's 50ms tick, so a coarse
+	 * poll would make lock losers sleep longer than the work they skip.
+	 */
+	private const HASH_LOCK_POLL_INTERVAL_MICROSECONDS = 5_000;
+
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
 		#[AutowiredParameter(ref: '@fileFinderScan')]
@@ -48,6 +57,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		private PhpVersion $phpVersion,
 		private SymbolFinderInFiles $symbolFinderInFiles,
 		private Cache $cache,
+		private FileContentHasher $fileContentHasher,
 		#[AutowiredParameter]
 		private string $tmpDir,
 	)
@@ -56,17 +66,63 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	public function createByDirectory(string $directory): OptimizedDirectorySourceLocator
 	{
-		$files = $this->fileFinder->findFiles([$directory])->getFiles();
-		$fileHashes = [];
-		foreach ($files as $file) {
-			$hash = hash_file('sha256', $file);
-			if ($hash === false) {
-				continue;
+		$cacheKey = sprintf('odsl-%s', $directory);
+		$hashesRecordKey = 'odsl-filehashes-' . $directory;
+
+		// The walk + hash of a directory is identical in every process of a
+		// run, and running it once per worker in parallel multiplies both the
+		// CPU and — on hosts where concurrent open() is expensive — the wall
+		// cost of the analysis startup. When the run has a shared arena, the
+		// first process publishes the file-hash map and everyone else reuses
+		// it. hasRecord() on the analysed-files record (published by the
+		// master before workers spawn) doubles as the "is an arena active?"
+		// probe — the seam has no explicit method for that and only grows one
+		// together with the extension.
+		$arenaActive = ArenaCache::hasRecord('analysed-files');
+		$hashesLock = null;
+		if ($arenaActive) {
+			$shared = ArenaCache::lookup($hashesRecordKey);
+			if (is_array($shared)) {
+				/** @var array<string, string> $shared */
+				return $this->createCachedDirectorySourceLocator($shared, $cacheKey);
 			}
-			$fileHashes[$file] = $hash;
+
+			// Single-flight the walk + hash, same pattern as the cold-cache
+			// scan below: the winner computes and publishes, losers wait and
+			// re-read the record. A lost lock (timeout, unwritable tmp) just
+			// means this worker hashes the directory itself.
+			$hashesLock = $this->acquireDirectoryScanLock('hashes-' . $directory, self::HASH_LOCK_POLL_INTERVAL_MICROSECONDS);
+			if ($hashesLock !== null) {
+				$shared = ArenaCache::lookup($hashesRecordKey);
+				if (is_array($shared)) {
+					$this->releaseDirectoryScanLock($hashesLock);
+
+					/** @var array<string, string> $shared */
+					return $this->createCachedDirectorySourceLocator($shared, $cacheKey);
+				}
+			}
 		}
 
-		$cacheKey = sprintf('odsl-%s', $directory);
+		try {
+			$files = $this->fileFinder->findFiles([$directory])->getFiles();
+			$fileHashes = [];
+			foreach ($files as $file) {
+				$hash = $this->fileContentHasher->hash($file);
+				if ($hash === false) {
+					continue;
+				}
+				$fileHashes[$file] = $hash;
+			}
+
+			if ($arenaActive) {
+				ArenaCache::publish($hashesRecordKey, $fileHashes);
+			}
+		} finally {
+			if ($hashesLock !== null) {
+				$this->releaseDirectoryScanLock($hashesLock);
+			}
+		}
+
 		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
 	}
 
@@ -96,6 +152,7 @@ final class OptimizedDirectorySourceLocatorFactory
 				$this->fileNodesFetcher,
 				$this->cache,
 				$this->phpVersion,
+				$this->fileContentHasher,
 				[],
 				[],
 				[],
@@ -188,6 +245,7 @@ final class OptimizedDirectorySourceLocatorFactory
 			$this->fileNodesFetcher,
 			$this->cache,
 			$this->phpVersion,
+			$this->fileContentHasher,
 			$classToFile,
 			$functionToFiles,
 			$constantToFile,
@@ -202,7 +260,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	 *
 	 * @return resource|null
 	 */
-	private function acquireDirectoryScanLock(string $lockKey)
+	private function acquireDirectoryScanLock(string $lockKey, int $pollIntervalMicroseconds = self::SCAN_LOCK_POLL_INTERVAL_MICROSECONDS)
 	{
 		$lockDirectory = sprintf('%s/cache/locks', $this->tmpDir);
 		try {
@@ -231,7 +289,7 @@ final class OptimizedDirectorySourceLocatorFactory
 				return null;
 			}
 
-			usleep(self::SCAN_LOCK_POLL_INTERVAL_MICROSECONDS);
+			usleep($pollIntervalMicroseconds);
 		}
 
 		return $lockHandle;
@@ -266,7 +324,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	{
 		$fileHashes = [];
 		foreach ($files as $file) {
-			$hash = hash_file('sha256', $file);
+			$hash = $this->fileContentHasher->hash($file);
 			if ($hash === false) {
 				continue;
 			}

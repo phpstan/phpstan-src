@@ -12,6 +12,7 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileContentHasher;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Parser\Parser;
@@ -40,7 +41,6 @@ use function array_merge;
 use function array_pop;
 use function array_reverse;
 use function count;
-use function hash_file;
 use function in_array;
 use function is_array;
 use function is_file;
@@ -83,6 +83,7 @@ final class FileTypeMapper
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
 		private Cache $cache,
+		private FileContentHasher $fileContentHasher,
 		#[AutowiredParameter(ref: '%cache.resolvedPhpDocBlockCacheCountMax%')]
 		private int $resolvedPhpDocBlockCacheCountMax,
 		#[AutowiredParameter(ref: '%cache.nameScopeMapMemoryCacheCountMax%')]
@@ -352,7 +353,7 @@ final class FileTypeMapper
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
 			$filesWithHashes = [];
 			foreach ($files as $file) {
-				$newHash = hash_file('sha256', $file);
+				$newHash = $this->fileContentHasher->hash($file);
 				$filesWithHashes[$file] = $newHash;
 			}
 			$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
@@ -388,7 +389,7 @@ final class FileTypeMapper
 			[$nameScopeMap, $filesWithHashes] = $cached;
 			$useCache = true;
 			foreach ($filesWithHashes as $file => $hash) {
-				$newHash = @hash_file('sha256', $file);
+				$newHash = $this->fileContentHasher->hash($file);
 				if ($newHash === false) {
 					$useCache = false;
 					break;

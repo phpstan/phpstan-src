@@ -159,10 +159,8 @@ cs: cs-install
 cs-fix: cs-install
 	XDEBUG_MODE=off php build-cs/vendor/bin/phpcbf
 
-PHPSTAN_MEMORY_LIMIT ?= 450M
-
 phpstan:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=$(PHPSTAN_MEMORY_LIMIT) bin/phpstan -v
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=450M bin/phpstan -v
 
 phpstan-result-cache:
 	php -d memory_limit=450M bin/phpstan

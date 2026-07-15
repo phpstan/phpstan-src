@@ -45,6 +45,11 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 				'Value ImpossibleInArrayFiniteTypes\Foo::TWO in the haystack passed to in_array() can never be identical to the needle type ImpossibleInArrayFiniteTypes\Foo::ONE.',
 				48,
 			],
+			[
+				'Value \'installed\' in the haystack passed to in_array() can never be identical to the needle type mixed.',
+				98,
+				'Type \'installed\' has already been eliminated from mixed.',
+			],
 		]);
 	}
 

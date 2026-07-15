@@ -13,6 +13,9 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
+use function array_merge;
+use function array_unique;
+use function array_values;
 use function count;
 use function max;
 use function sprintf;
@@ -79,11 +82,13 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 			? ($this->treatPhpDocTypesAsCertain ? $scope->getType($args[2]->value) : $scope->getNativeType($args[2]->value))->isTrue()
 			: TrinaryLogic::createNo();
 
+		/** @var array<string, array{Type, list<string>}> $deadValueTypes */
 		$deadValueTypes = [];
 		$anyPossibleMatch = false;
 		foreach ($constantArrays as $constantArray) {
 			foreach ($constantArray->getValueTypes() as $valueType) {
-				if (!$this->canNeverMatch($needleType, $valueType, $isStrict)) {
+				$canNeverMatchReasons = $this->findCanNeverMatchReasons($needleType, $valueType, $isStrict);
+				if ($canNeverMatchReasons === null) {
 					$anyPossibleMatch = true;
 					continue;
 				}
@@ -92,7 +97,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 					continue;
 				}
 
-				$deadValueTypes[$valueType->describe(VerbosityLevel::precise())] = $valueType;
+				$deadValueTypes[$valueType->describe(VerbosityLevel::precise())] = [$valueType, $canNeverMatchReasons];
 			}
 		}
 
@@ -106,36 +111,57 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 		$verb = $isStrict->no() ? 'equal to' : 'identical to';
 
 		$errors = [];
-		foreach ($deadValueTypes as $valueType) {
-			$errors[] = $this->buildError($valueType, $needleType, $functionName, $verb);
+		foreach ($deadValueTypes as [$valueType, $reasons]) {
+			$errors[] = $this->buildError($valueType, $needleType, $functionName, $verb, $reasons);
 		}
 
 		return $errors;
 	}
 
-	private function canNeverMatch(Type $needleType, Type $valueType, TrinaryLogic $isStrict): bool
+	/**
+	 * @return list<string>|null Reasons for the impossibility when the value can never match, null when it can match.
+	 */
+	private function findCanNeverMatchReasons(Type $needleType, Type $valueType, TrinaryLogic $isStrict): ?array
 	{
 		if ($isStrict->yes()) {
-			return $this->initializerExprTypeResolver->resolveIdenticalType($needleType, $valueType)->type->isFalse()->yes();
+			$result = $this->initializerExprTypeResolver->resolveIdenticalType($needleType, $valueType);
+
+			return $result->type->isFalse()->yes() ? $result->reasons : null;
 		}
 
 		if ($isStrict->no()) {
-			return $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType)->type->isFalse()->yes();
+			$result = $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType);
+
+			return $result->type->isFalse()->yes() ? $result->reasons : null;
 		}
 
-		return $this->initializerExprTypeResolver->resolveIdenticalType($needleType, $valueType)->type->isFalse()->yes()
-			&& $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType)->type->isFalse()->yes();
+		$identicalResult = $this->initializerExprTypeResolver->resolveIdenticalType($needleType, $valueType);
+		if (!$identicalResult->type->isFalse()->yes()) {
+			return null;
+		}
+
+		$equalResult = $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType);
+		if (!$equalResult->type->isFalse()->yes()) {
+			return null;
+		}
+
+		return array_values(array_unique(array_merge($identicalResult->reasons, $equalResult->reasons)));
 	}
 
-	private function buildError(Type $valueType, Type $needleType, string $functionName, string $verb): IdentifierRuleError
+	/**
+	 * @param list<string> $reasons
+	 */
+	private function buildError(Type $valueType, Type $needleType, string $functionName, string $verb, array $reasons): IdentifierRuleError
 	{
 		return RuleErrorBuilder::message(sprintf(
 			'Value %s in the haystack passed to %s() can never be %s the needle type %s.',
-			$valueType->describe(VerbosityLevel::precise()),
+			$valueType->describe(VerbosityLevel::getRecommendedLevelByType($valueType)),
 			$functionName,
 			$verb,
-			$needleType->describe(VerbosityLevel::precise()),
-		))->identifier('function.impossibleHaystackValue')->build();
+			$needleType->describe(VerbosityLevel::getRecommendedLevelByType($needleType)),
+		))->identifier('function.impossibleHaystackValue')
+			->acceptsReasonsTip($reasons)
+			->build();
 	}
 
 }

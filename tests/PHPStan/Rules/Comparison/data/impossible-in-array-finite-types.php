@@ -88,3 +88,14 @@ function noErrorUnionNeedleMatches(int|string $i): void
 		echo 'yes';
 	}
 }
+
+function reportedValueEliminatedFromNeedle(mixed $status): void
+{
+	if ($status === 'installed') {
+		return;
+	}
+
+	if (in_array($status, ['installed', 'active'], true)) {
+		echo 'yes';
+	}
+}

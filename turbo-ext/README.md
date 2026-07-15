@@ -267,6 +267,51 @@ Measured in the July 2026 benchmarks (callback-free absorptions gained
    measuring ≤0.5% get reverted — the failure mode is silent no-gain, and
    unproven native code is pure maintenance debt.
 
+## Performance frontiers (July 2026)
+
+Status quo, measured on PHPStan's own single-threaded self-analysis of `src/`
+(interleaved A/B, user CPU): **59.6s with the extension vs 77.3s without —
+a 23% gain**. The remaining cost is structural, not hotspot-shaped: SPX
+counts ~535M userland calls spread over 20K functions, the top 120 functions
+by exclusive time explain only ~15% of the run, and an on-CPU sample
+attributes 42.7% to VM call mechanics (frame setup, argument passing,
+return-type checks), 23.3% to other VM opcodes, ~8% each to memory/GC and
+syscalls — and only 2.3% to this extension's own code. Every further tier
+therefore means absorbing whole call subtrees, not porting leaf bodies.
+
+What each gain level over the no-extension baseline requires:
+
+- **30%** (−5.5s) — reachable with targeted ports and known PHP-side fixes:
+  a native `ExpressionResultStorage` (the fiber bridge's per-expression
+  before-scope table; its `SplObjectStorage` copies and inserts allocate
+  ~3GB per run), the `CachedParser` content-key re-read fix (72K full-file
+  reads per run just to compute LRU keys), `getName()`/return-type memos in
+  better-reflection (5.3M calls survive), member-lookup pricing
+  (`ObjectType::getMethod` + `getMethodReflection` + dynamic-extension
+  registry sweeps, ~1.9M calls), and the FileTypeMapper cache hydration
+  format.
+- **50%** (−20.9s) — requires the **native expression engine**: the
+  `NodeScopeResolver` expression walk, `ExprHandler` dispatch loop,
+  `ExpressionResult`/holder plumbing and scope-table mutation move into C++,
+  crossing back to PHP only for `Type`-level operations and third-party
+  extensions. `MutatingScope::getType` alone is ~22% of the run inclusive.
+  Estimated 150–250M absorbed frames ≈ 10–15s; a quarter-rewrite, to be
+  approached one handler chain at a time.
+- **70%** (−36.4s) — "everything PHPStan-owned is native": on top of the
+  expression engine, a native `Type` kernel (`isSuperTypeOf`/`accepts`/
+  union/intersection graphs operating natively, PHP `Type` objects as
+  views), the statement-level walk, and native reflection-data storage
+  (extending the arena). The floor left in PHP — rule bodies, vendor
+  better-reflection, phpdoc-parser, third-party plugins — is an estimated
+  15–22s, so this target sits *at* the boundary of what a hybrid can do.
+- **90%** (−51.9s) — below any architecture that keeps PHP rules, dynamic
+  extensions and vendor parsers. This is not a port but a ground-up native
+  analyzer; extension-ecosystem compatibility is the casualty. The realistic
+  ceiling for the hybrid approach is ~60–75%.
+
+(Benchmarks include the ShipMonk dead-code plugin, ~8% of the self-analysis
+run — third-party PHP that no port removes.)
+
 ## Testing
 
 ```bash

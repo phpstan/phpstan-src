@@ -17,8 +17,15 @@
  *    not O(tree). Property-less types are not cached at all — their class-only
  *    hash is cheaper to recompute than to look up.
  *  - the memo itself: a flat open-addressing table whose 128-bit key folds the
- *    operation, the argument count and the arguments' hashes together. 24 bytes
- *    per slot, no per-entry allocation.
+ *    operation, the argument count and the arguments' hashes together, 24 bytes
+ *    per slot. Results are borrowed, not owned: each result object carries the
+ *    list of memo keys mapping to it (an entry in the weak pt_memo_results
+ *    hash), and its death tombstones those slots. The memo therefore pins no
+ *    graphs — an entry lives exactly as long as some live scope holds the
+ *    result anyway. Owning the results instead was measured (July 2026) to
+ *    cost ~100MB of summed worker peaks on parallel runs, while the entries
+ *    that die are the cheap ones: recomputing them is CPU-neutral even at a
+ *    hit rate drop from ~90% to ~70%.
  *
  * The hash is 128 bits precisely so the key can be trusted without keeping the
  * arguments alive to re-verify a hit: over the ~10^5 distinct keys of a run the
@@ -66,7 +73,8 @@ static constexpr uint32_t MEMO_ARGS_LIMIT = 16;
  * because a coarse hash would be an unsound key. */
 static constexpr uint32_t HASH_DEPTH_LIMIT = 64;
 
-/* Safety net on memo growth; a self-analysis run settles at ~1.5e5 entries. */
+/* Safety net on memo growth; with dead results invalidating their entries, a
+ * self-analysis run peaks at ~3.5e4 live entries. */
 static constexpr uint32_t MEMO_ENTRIES_LIMIT = 1 << 19;
 
 /* Initial slot count of the memo table; must be a power of two. */
@@ -78,21 +86,40 @@ struct Hash128
 	uint64_t b;
 };
 
-/* An occupied memo slot owns its result; result == NULL marks an empty slot. */
+/* An occupied memo slot borrows its result; result == NULL marks an empty
+ * slot, result == MEMO_TOMBSTONE a deleted one (the probe chain must stay
+ * intact, so deletion cannot empty a slot). */
 struct MemoSlot
 {
 	Hash128 key;
 	zend_object *result;
 };
 
+#define MEMO_TOMBSTONE ((zend_object *) 1)
+
+/* Each memoized result object carries this list of the memo keys mapping to
+ * it (several keys can produce the same shared instance), held as IS_PTR in
+ * the weak pt_memo_results hash. The engine deletes the entry when the object
+ * dies, and the value dtor tombstones the listed slots. */
+struct KeyList
+{
+	zend_object *obj;
+	uint32_t count;
+	uint32_t cap;
+	Hash128 keys[4]; /* inline head; grown by erealloc */
+};
+
 static HashTable pt_type_hashes;   /* weak: zend_object* -> Hash128 packed in the bucket zval */
 static HashTable pt_ce_kinds;      /* zend_class_entry* -> kind|slots */
 static HashTable pt_obj_serials;   /* weak: zend_object* -> IS_LONG serial (identity-hashed objects) */
+static HashTable pt_memo_results;  /* weak: zend_object* -> IS_PTR KeyList */
 static MemoSlot *pt_memo_slots = NULL;
 static uint32_t pt_memo_mask = 0;
 static uint32_t pt_memo_count = 0;
+static uint32_t pt_memo_tombstones = 0;
 static uint64_t pt_next_serial = 1;
 static bool pt_cache_inited = false;
+static bool pt_invalidate_active = false;
 
 
 static zend_class_entry *pt_guard_ce = NULL;
@@ -404,16 +431,41 @@ static void typeHashDtor(zval *zv)
 
 /* {{{ the memo */
 
-/* Returns the slot for the key: either the occupied slot holding it, or the
- * empty slot where it belongs. The table's load never reaches 1 (memoGrow()
- * keeps it at 3/4 at most), so the probe always terminates. */
-static zend_always_inline MemoSlot *memoFind(Hash128 key)
+/* Occupied slot holding the key, or NULL. The table's live+tombstone load
+ * never reaches 1 (memoGrow() keeps it at 3/4 at most), so the probe always
+ * terminates. */
+static zend_always_inline MemoSlot *memoLookup(Hash128 key)
 {
 	/* FNV-1a's low bits mix worst; fold the high half in before masking. */
 	uint32_t idx = (uint32_t) (key.a ^ (key.a >> 32)) & pt_memo_mask;
 	for (;;) {
 		MemoSlot *slot = &pt_memo_slots[idx];
-		if (slot->result == NULL || (slot->key.a == key.a && slot->key.b == key.b)) {
+		if (slot->result == NULL) {
+			return NULL;
+		}
+		if (slot->result != MEMO_TOMBSTONE && slot->key.a == key.a && slot->key.b == key.b) {
+			return slot;
+		}
+		idx = (idx + 1) & pt_memo_mask;
+	}
+}
+
+/* Slot to insert the key into: the occupied slot already holding it, else the
+ * first tombstone on its probe path, else the terminating empty slot. */
+static zend_always_inline MemoSlot *memoInsertPos(Hash128 key)
+{
+	uint32_t idx = (uint32_t) (key.a ^ (key.a >> 32)) & pt_memo_mask;
+	MemoSlot *tombstone = NULL;
+	for (;;) {
+		MemoSlot *slot = &pt_memo_slots[idx];
+		if (slot->result == NULL) {
+			return tombstone != NULL ? tombstone : slot;
+		}
+		if (slot->result == MEMO_TOMBSTONE) {
+			if (tombstone == NULL) {
+				tombstone = slot;
+			}
+		} else if (slot->key.a == key.a && slot->key.b == key.b) {
 			return slot;
 		}
 		idx = (idx + 1) & pt_memo_mask;
@@ -425,15 +477,99 @@ static void memoGrow()
 	uint32_t oldCapacity = pt_memo_mask + 1;
 	MemoSlot *oldSlots = pt_memo_slots;
 
-	pt_memo_slots = (MemoSlot *) ecalloc(oldCapacity * 2, sizeof(MemoSlot));
-	pt_memo_mask = oldCapacity * 2 - 1;
+	/* Tombstones are dropped by the rehash; only grow the table when live
+	 * entries alone justify it, otherwise rehash at the same size. */
+	uint32_t newCapacity = ((uint64_t) pt_memo_count * 4 > (uint64_t) oldCapacity * 2) ? oldCapacity * 2 : oldCapacity;
+	pt_memo_slots = (MemoSlot *) ecalloc(newCapacity, sizeof(MemoSlot));
+	pt_memo_mask = newCapacity - 1;
+	pt_memo_tombstones = 0;
 	for (uint32_t i = 0; i < oldCapacity; i++) {
-		if (oldSlots[i].result != NULL) {
-			*memoFind(oldSlots[i].key) = oldSlots[i];
+		if (oldSlots[i].result != NULL && oldSlots[i].result != MEMO_TOMBSTONE) {
+			*memoInsertPos(oldSlots[i].key) = oldSlots[i];
 		}
 	}
 	efree(oldSlots);
 }
+
+/* {{{ weak-result mode: invalidation on result death + key-list upkeep */
+
+static void memoInvalidate(const KeyList *list)
+{
+	for (uint32_t i = 0; i < list->count; i++) {
+		Hash128 key = list->keys[i];
+		uint32_t idx = (uint32_t) (key.a ^ (key.a >> 32)) & pt_memo_mask;
+		for (;;) {
+			MemoSlot *slot = &pt_memo_slots[idx];
+			if (slot->result == NULL) {
+				break;
+			}
+			if (slot->result == list->obj && slot->key.a == key.a && slot->key.b == key.b) {
+				slot->result = MEMO_TOMBSTONE;
+				pt_memo_count--;
+				pt_memo_tombstones++;
+				break;
+			}
+			idx = (idx + 1) & pt_memo_mask;
+		}
+	}
+}
+
+/* Value dtor of pt_memo_results: runs when a memoized result object dies (and
+ * on bulk cleanup, where pt_invalidate_active is off and the memo is reset
+ * separately). */
+static void memoResultDtor(zval *zv)
+{
+	KeyList *list = (KeyList *) Z_PTR_P(zv);
+	if (pt_invalidate_active) {
+		memoInvalidate(list);
+	}
+	efree(list);
+}
+
+static void memoTrackResult(zend_object *obj, Hash128 key)
+{
+	zval *existing = zend_hash_index_find(&pt_memo_results, zend_object_to_weakref_key(obj));
+	if (existing != NULL) {
+		KeyList *list = (KeyList *) Z_PTR_P(existing);
+		if (list->count == list->cap) {
+			list->cap *= 2;
+			list = (KeyList *) erealloc(list, sizeof(KeyList) + (list->cap - 4) * sizeof(Hash128));
+			Z_PTR_P(existing) = list;
+		}
+		list->keys[list->count++] = key;
+		return;
+	}
+
+	KeyList *list = (KeyList *) emalloc(sizeof(KeyList));
+	list->obj = obj;
+	list->count = 1;
+	list->cap = 4;
+	list->keys[0] = key;
+	zval value;
+	ZVAL_PTR(&value, list);
+	if (zend_weakrefs_hash_add(&pt_memo_results, obj, &value) == NULL) {
+		efree(list); /* unreachable: the find above showed no entry */
+	}
+}
+
+/* Purge every key list without touching the memo slots (the caller resets
+ * those wholesale). On 8.4 the unregister loop is spelled out, as in
+ * pt_weakrefs_hash_destroy. */
+static void memoResultsClean()
+{
+	pt_invalidate_active = false;
+#if PHP_VERSION_ID < 80500
+	zend_ulong objKey;
+	ZEND_HASH_MAP_FOREACH_NUM_KEY(&pt_memo_results, objKey) {
+		zend_weakrefs_hash_del(&pt_memo_results, zend_weakref_key_to_object(objKey));
+	} ZEND_HASH_FOREACH_END();
+#else
+	zend_weakrefs_hash_clean(&pt_memo_results);
+#endif
+	pt_invalidate_active = true;
+}
+
+/* }}} */
 
 /* Mirrors PHPStan\Type\TypeCombinatorCache. */
 class TypeCombinatorCache
@@ -467,8 +603,8 @@ public:
 		}
 
 		if (memoizable) {
-			MemoSlot *slot = memoFind(key);
-			if (slot->result != NULL) {
+			MemoSlot *slot = memoLookup(key);
+			if (slot != NULL) {
 				GC_ADDREF(slot->result);
 				RETVAL_OBJ(slot->result);
 				return;
@@ -487,14 +623,17 @@ public:
 		if (memoizable && pt_memo_count < MEMO_ENTRIES_LIMIT) {
 			/* Fresh lookup: the callback re-enters these operations for nested
 			 * types, which may have inserted this very key or grown the table. */
-			MemoSlot *slot = memoFind(key);
-			if (slot->result == NULL) {
+			MemoSlot *slot = memoInsertPos(key);
+			if (slot->result == NULL || slot->result == MEMO_TOMBSTONE) {
+				if (slot->result == MEMO_TOMBSTONE) {
+					pt_memo_tombstones--;
+				}
 				slot->key = key;
 				slot->result = Z_OBJ_P(return_value);
-				GC_ADDREF(slot->result);
 				pt_memo_count++;
+				memoTrackResult(slot->result, key);
 
-				if ((uint64_t) pt_memo_count * 4 > (uint64_t) (pt_memo_mask + 1) * 3) {
+				if ((uint64_t) (pt_memo_count + pt_memo_tombstones) * 4 > (uint64_t) (pt_memo_mask + 1) * 3) {
 					memoGrow();
 				}
 			}
@@ -506,11 +645,7 @@ public:
 		if (!pt_cache_inited) {
 			return;
 		}
-		for (uint32_t i = 0; i <= pt_memo_mask; i++) {
-			if (pt_memo_slots[i].result != NULL) {
-				OBJ_RELEASE(pt_memo_slots[i].result);
-			}
-		}
+		memoResultsClean();
 		if (pt_memo_mask + 1 > MEMO_INITIAL_CAPACITY_LIMIT) {
 			efree(pt_memo_slots);
 			pt_memo_slots = (MemoSlot *) ecalloc(MEMO_INITIAL_CAPACITY_LIMIT, sizeof(MemoSlot));
@@ -519,6 +654,7 @@ public:
 			memset(pt_memo_slots, 0, (size_t) (pt_memo_mask + 1) * sizeof(MemoSlot));
 		}
 		pt_memo_count = 0;
+		pt_memo_tombstones = 0;
 	}
 };
 
@@ -533,6 +669,7 @@ using phpstanturbo::pt_fn_do_union;
 using phpstanturbo::pt_memo_slots;
 using phpstanturbo::pt_memo_mask;
 using phpstanturbo::pt_memo_count;
+using phpstanturbo::pt_memo_results;
 using phpstanturbo::pt_obj_serials;
 using phpstanturbo::pt_next_serial;
 using phpstanturbo::pt_guard_ce;
@@ -556,13 +693,16 @@ void pt_type_combinator_cache_rinit()
 	zend_hash_init(&pt_type_hashes, 4096, NULL, typeHashDtor, 0);
 	zend_hash_init(&pt_ce_kinds, 128, NULL, NULL, 0);
 	zend_hash_init(&pt_obj_serials, 1024, NULL, NULL, 0);
+	zend_hash_init(&pt_memo_results, 4096, NULL, phpstanturbo::memoResultDtor, 0);
 	pt_memo_slots = (phpstanturbo::MemoSlot *) ecalloc(MEMO_INITIAL_CAPACITY_LIMIT, sizeof(phpstanturbo::MemoSlot));
 	pt_memo_mask = MEMO_INITIAL_CAPACITY_LIMIT - 1;
 	pt_memo_count = 0;
+	phpstanturbo::pt_memo_tombstones = 0;
 	pt_next_serial = 1;
 	pt_guard_ce = NULL;
 	pt_guard_resolved = false;
 	pt_guard_unavailable = false;
+	phpstanturbo::pt_invalidate_active = true;
 	pt_cache_inited = true;
 }
 
@@ -572,10 +712,13 @@ void pt_type_combinator_cache_rshutdown()
 		return;
 	}
 	TypeCombinatorCache::clear();
+	phpstanturbo::pt_invalidate_active = false;
+	pt_weakrefs_hash_destroy(&pt_memo_results);
 	efree(pt_memo_slots);
 	pt_memo_slots = NULL;
 	pt_memo_mask = 0;
 	pt_memo_count = 0;
+	phpstanturbo::pt_memo_tombstones = 0;
 	pt_weakrefs_hash_destroy(&pt_type_hashes);
 	pt_weakrefs_hash_destroy(&pt_obj_serials);
 	zend_hash_destroy(&pt_ce_kinds);

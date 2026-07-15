@@ -323,26 +323,16 @@ final class AnalyseCommand extends Command
 
 		$incompatibleTurboVersion = TurboExtensionEnabler::getIncompatibleLoadedVersion();
 		if ($incompatibleTurboVersion !== null) {
-			$errorOutput->writeLineFormatted('<comment>Incompatible version of the phpstan_turbo extension</comment>');
-			$errorOutput->writeLineFormatted(sprintf(
-				'The loaded phpstan_turbo extension is version %s',
-				$incompatibleTurboVersion,
-			));
-			$errorOutput->writeLineFormatted(sprintf(
-				'but this PHPStan version expects version %s.',
-				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
-			));
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('The extension stays inactive and PHPStan runs slower than necessary.');
-			$errorOutput->writeLineFormatted('');
-
 			$phpstanVersion = ComposerHelper::getPhpStanVersion();
-			if ($phpstanVersion === ComposerHelper::UNKNOWN_VERSION) {
-				$errorOutput->writeLineFormatted('Update the extension to the version appropriate for your PHPStan version.');
-			} else {
-				$errorOutput->writeLineFormatted(sprintf('Update the extension to the version appropriate for PHPStan %s.', $phpstanVersion));
-			}
-			$errorOutput->writeLineFormatted('');
+			$errorOutput->getStyle()->note(sprintf(
+				'Incompatible version of the phpstan_turbo extension.' . "\n"
+				. 'The loaded extension is version %s but this PHPStan version expects %s.' . "\n"
+				. 'The extension stays inactive and PHPStan runs slower than necessary.' . "\n"
+				. 'Update the extension to the version appropriate for %s.',
+				$incompatibleTurboVersion,
+				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
+				$phpstanVersion === ComposerHelper::UNKNOWN_VERSION ? 'your PHPStan version' : sprintf('PHPStan %s', $phpstanVersion),
+			));
 		}
 
 		if ($pro) {

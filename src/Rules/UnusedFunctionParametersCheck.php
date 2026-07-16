@@ -79,6 +79,9 @@ final class UnusedFunctionParametersCheck
 					return $scope->getDefinedVariables();
 				}
 			}
+			if ($node instanceof Node\Expr\Include_ || $node instanceof Node\Expr\Eval_) {
+				return $scope->getDefinedVariables();
+			}
 			if ($node instanceof Variable && is_string($node->name) && $node->name !== 'this') {
 				return [$node->name];
 			}

@@ -89,12 +89,12 @@ final class UnusedFunctionParametersCheck
 					}
 				} else {
 					$nameType = $scope->getType($node->name);
-					if ($nameType->isString()->yes() && $nameType->getConstantStrings() !== []) {
-						foreach ($nameType->getConstantStrings() as $constantString) {
-							$variableNames[] = $constantString->getValue();
-						}
-					} else {
+					if (!$nameType->isString()->yes() || $nameType->getConstantStrings() === []) {
 						return $scope->getDefinedVariables();
+					}
+
+					foreach ($nameType->getConstantStrings() as $constantString) {
+						$variableNames[] = $constantString->getValue();
 					}
 				}
 			}

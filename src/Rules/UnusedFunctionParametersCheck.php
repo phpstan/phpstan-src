@@ -82,8 +82,13 @@ final class UnusedFunctionParametersCheck
 			if ($node instanceof Node\Expr\Include_ || $node instanceof Node\Expr\Eval_) {
 				return $scope->getDefinedVariables();
 			}
-			if ($node instanceof Variable && is_string($node->name) && $node->name !== 'this') {
-				return [$node->name];
+			if ($node instanceof Variable) {
+				if (!is_string($node->name)) {
+					return $scope->getDefinedVariables();
+				}
+				if ($node->name !== 'this') {
+					return [$node->name];
+				}
 			}
 			if ($node instanceof Node\ClosureUse && is_string($node->var->name)) {
 				return [$node->var->name];

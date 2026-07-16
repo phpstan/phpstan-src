@@ -13,3 +13,16 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function __construct(
+		$usedViaVariableVariable,
+		$name
+	)
+	{
+		echo $$name;
+	}
+
+}

@@ -37,3 +37,9 @@ $name = 'container';
 function () use ($container, $name) {
 	echo $$name;
 };
+
+$otherName = 'notContainer';
+
+function () use ($container, $otherName) {
+	echo $$otherName;
+};

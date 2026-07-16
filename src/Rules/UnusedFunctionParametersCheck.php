@@ -83,11 +83,19 @@ final class UnusedFunctionParametersCheck
 				return $scope->getDefinedVariables();
 			}
 			if ($node instanceof Variable) {
-				if (!is_string($node->name)) {
-					return $scope->getDefinedVariables();
-				}
-				if ($node->name !== 'this') {
-					return [$node->name];
+				if (is_string($node->name)) {
+					if ($node->name !== 'this') {
+						return [$node->name];
+					}
+				} else {
+					$nameType = $scope->getType($node->name);
+					if ($nameType->isString()->yes() && $nameType->getConstantStrings() !== []) {
+						foreach ($nameType->getConstantStrings() as $constantString) {
+							$variableNames[] = $constantString->getValue();
+						}
+					} else {
+						return $scope->getDefinedVariables();
+					}
 				}
 			}
 			if ($node instanceof Node\ClosureUse && is_string($node->var->name)) {

@@ -77,3 +77,17 @@ parameters:
 			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$constantNodes\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
+
+		-
+			rawMessage: "Value 'ReflectionEnumBacke…' in the haystack passed to in_array() can never be identical to the needle type class-string."
+			paths:
+				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php
+
+		-
+			rawMessage: "Value 'ReflectionEnum' in the haystack passed to in_array() can never be identical to the needle type class-string."
+			paths:
+				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php
+		-
+			rawMessage: "Value 'ReflectionFiber' in the haystack passed to in_array() can never be identical to the needle type class-string."
+			paths:
+				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php

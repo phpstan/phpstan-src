@@ -79,11 +79,6 @@ parameters:
 			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
 
 		-
-			rawMessage: "Value 'ReflectionEnumBacke…' in the haystack passed to in_array() can never be identical to the needle type class-string."
-			paths:
-				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php
-
-		-
 			rawMessage: "Value 'ReflectionEnum' in the haystack passed to in_array() can never be identical to the needle type class-string."
 			paths:
 				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php

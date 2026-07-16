@@ -56,3 +56,8 @@ parameters:
 			rawMessage: 'Strict comparison using === between class-string and ''UnitEnum'' will always evaluate to false.'
 			count: 1
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			rawMessage: "Value 'ReflectionEnumBacke…' in the haystack passed to in_array() can never be identical to the needle type class-string."
+			paths:
+				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php

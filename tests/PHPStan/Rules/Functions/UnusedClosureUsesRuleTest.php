@@ -32,6 +32,10 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 				'Anonymous function has an unused use $usedInClosureUse.',
 				10,
 			],
+			[
+				'Anonymous function has an unused use $container.',
+				43,
+			],
 		]);
 	}
 

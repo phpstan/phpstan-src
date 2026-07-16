@@ -25,3 +25,21 @@ function () use ($container) {
 function () use ($container) {
 	eval('echo $container;');
 };
+
+$aap = 684;
+
+$a = function () use ($aap) {
+	require __DIR__ . '/echo_the_value_of_aap.php';
+};
+
+$name = 'container';
+
+function () use ($container, $name) {
+	echo $$name;
+};
+
+$otherName = 'notContainer';
+
+function () use ($container, $otherName) {
+	echo $$otherName;
+};

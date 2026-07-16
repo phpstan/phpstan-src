@@ -87,7 +87,3 @@ parameters:
 			rawMessage: "Value 'ReflectionEnum' in the haystack passed to in_array() can never be identical to the needle type class-string."
 			paths:
 				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php
-		-
-			rawMessage: "Value 'ReflectionFiber' in the haystack passed to in_array() can never be identical to the needle type class-string."
-			paths:
-				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php

@@ -151,12 +151,6 @@ parameters:
 			path: src/Collectors/Registry.php
 
 		-
-			rawMessage: Anonymous function has an unused use $container.
-			identifier: closure.unusedUse
-			count: 1
-			path: src/Command/CommandHelper.php
-
-		-
 			rawMessage: 'Call to static method expand() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
 			identifier: staticMethod.internalClass
 			count: 2
@@ -770,12 +764,6 @@ parameters:
 			identifier: return.internalClass
 			count: 1
 			path: src/Testing/LevelsTestCase.php
-
-		-
-			rawMessage: Anonymous function has an unused use $container.
-			identifier: closure.unusedUse
-			count: 1
-			path: src/Testing/PHPStanTestCase.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'

@@ -298,18 +298,25 @@ jobs:
     name: "Compile Turbo Extension"
     runs-on: ${{ matrix.target.runs-on }}
     # Container legs pin the built binaries' userland floor independently of
-    # the runner image: ubuntu:22.04 keeps the glibc symbol floor at 2.34
-    # (RHEL 9, Ubuntu 22.04+, Debian 12+), alpine:3.24 builds the musl
-    # variant. The linux-musl-arm64 leg lives in the separate
-    # turbo-compile-musl-arm64 job below: JavaScript-based actions cannot run
-    # in Alpine containers on arm64 runners (the runner only ships an x64
-    # musl Node), so that job drives the Alpine container through docker exec
-    # instead of a `container:` leg. The ZTS legs (for hosts with a
-    # thread-safe PHP, like PMMP's bundled build) run directly on
-    # ubuntu-22.04 runners — same glibc floor — because no distro packages
-    # ZTS PHP (neither ppa:ondrej/php nor Alpine); setup-php provides
-    # thread-safe builds. No musl ZTS for the same packaging reason.
-    container: ${{ matrix.target.container }}
+    # the runner image. The gnu legs run in a prebuilt ubuntu:22.04-based
+    # image (.github/turbo-build/Dockerfile, published to GHCR by
+    # turbo-build-image.yml) with the PHP toolchain baked in: the glibc
+    # symbol floor stays at 2.34 (RHEL 9, Ubuntu 22.04+, Debian 12+) and the
+    # jobs run no apt at all — ports.ubuntu.com (the only Ubuntu arm64
+    # mirror) has repeated outages that failed the arm64 legs, and the
+    # from-scratch PPA setup cost ~1 minute on every x86_64 leg. alpine:3.24
+    # builds the musl variant; apk installs take seconds from a CDN, so no
+    # prebuilt image is needed there. The linux-musl-arm64 leg lives in the
+    # separate turbo-compile-musl-arm64 job below: JavaScript-based actions
+    # cannot run in Alpine containers on arm64 runners (the runner only
+    # ships an x64 musl Node), so that job drives the Alpine container
+    # through docker exec instead of a `container:` leg. The ZTS legs (for
+    # hosts with a thread-safe PHP, like PMMP's bundled build) run directly
+    # on ubuntu-22.04 runners — same glibc floor — because no distro
+    # packages ZTS PHP (neither ppa:ondrej/php nor Alpine); setup-php
+    # provides thread-safe builds. No musl ZTS for the same packaging
+    # reason.
+    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.container }}
     timeout-minutes: 30
 
     env:
@@ -322,12 +329,10 @@ jobs:
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
-            container: "ubuntu:22.04"
             family: "gnu"
             artifact: "phpstan_turbo"
           - name: "linux-gnu-arm64"
             runs-on: "ubuntu-24.04-arm"
-            container: "ubuntu:22.04"
             family: "gnu"
             artifact: "phpstan_turbo"
           - name: "linux-musl-x86_64"
@@ -365,32 +370,11 @@ jobs:
         with:
           egress-policy: audit
 
-      # Container legs install PHP and tooling before checkout: actions/checkout
-      # needs git inside the container, and the build needs php/php-config
-      # symlinks pointing at the matrix PHP version.
-      - name: "Install PHP and build tools (Ubuntu container)"
-        if: matrix.target.family == 'gnu'
-        # apt mirrors 404 mid-sync (the fetched index can reference a
-        # superseded .deb already pruned from the pool); only a fresh index
-        # fixes that, so update+install retries as a unit
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt_install() {
-            for attempt in 1 2 3; do
-              if apt-get update && apt-get install -y "$@"; then
-                return 0
-              fi
-              echo "apt-get failed (attempt $attempt), retrying with a fresh index"
-              sleep 15
-            done
-            return 1
-          }
-          apt_install software-properties-common gnupg ca-certificates curl git make g++ patch unzip zstd
-          add-apt-repository -y ppa:ondrej/php
-          apt_install "php$PHP_MINOR-cli" "php$PHP_MINOR-dev" "php$PHP_MINOR-curl" "php$PHP_MINOR-mbstring" "php$PHP_MINOR-xml"
-          ln -sf "/usr/bin/php$PHP_MINOR" /usr/local/bin/php
-          ln -sf "/usr/bin/php-config$PHP_MINOR" /usr/local/bin/php-config
-
+      # The Alpine leg installs PHP and tooling before checkout:
+      # actions/checkout needs git inside the container, and the build needs
+      # php/php-config symlinks pointing at the matrix PHP version. The gnu
+      # legs need no install step — their prebuilt turbo-build image bakes
+      # all of this in.
       - name: "Install PHP and build tools (Alpine container)"
         if: matrix.target.family == 'musl'
         run: |

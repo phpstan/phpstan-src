@@ -15,6 +15,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -32,6 +33,7 @@ final class ConditionalExpressionHolderHelper
 
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
+		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
@@ -245,6 +247,21 @@ final class ConditionalExpressionHolderHelper
 					continue;
 				}
 
+				// The guard (the remaining conditions) must actually identify the
+				// asserted truth value of the condition side. For a relational predicate
+				// like `in_array($needle, $haystack)`, the truthy narrowing of an argument
+				// (`$haystack` becoming non-empty) is only "`$haystack` is truthy" — a
+				// necessary but not sufficient consequence — so re-asserting it (e.g.
+				// `$haystack !== []`) would fire this holder even though the predicate is
+				// false. Skip such an under-approximating guard.
+				if (
+					$conditionSideExpr !== null
+					&& $scope instanceof MutatingScope
+					&& !$this->guardIdentifiesConditionSide($scope, $conditions, $conditionSideExpr, $expr, $holderSideIsNegated)
+				) {
+					continue;
+				}
+
 				$targetScope = $expr instanceof Expr\Variable ? $scope : $rightScope;
 				$targetType = $targetScope->getType($expr);
 				$holderType = $holdersFromSureTypes
@@ -301,6 +318,61 @@ final class ConditionalExpressionHolderHelper
 		}
 
 		return $sideExpr instanceof BooleanOr || $sideExpr instanceof LogicalOr;
+	}
+
+	/**
+	 * Decides whether the guard (the conditions of a single holder, after the
+	 * self-condition has been dropped) identifies the asserted truth value of the
+	 * condition side ($conditionAssertedTrue = true when the holder assumes the
+	 * condition side is true, false when it assumes false). The guard is identifying
+	 * when any of the following holds:
+	 *
+	 * 1. a condition narrows its expression beyond plain truthiness/falsiness — such
+	 *    a narrowing pins down a real value rather than "the expression is truthy";
+	 * 2. the consequent is an offset of a guarded container (the
+	 *    isset()/array_key_exists() shape `$data = ... => $data[$key] = ...`), whose
+	 *    truth PHPStan cannot always re-derive from the offset value type alone
+	 *    (e.g. dynamic keys);
+	 * 3. re-applying the guard forces the condition side to its asserted truth value.
+	 *
+	 * A guard that is only "this expression is truthy/falsy" (e.g. `in_array()`
+	 * making its haystack non-empty) satisfies none of these and identifies nothing.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $conditions
+	 */
+	private function guardIdentifiesConditionSide(MutatingScope $scope, array $conditions, Expr $conditionSideExpr, Expr $targetExpr, bool $conditionAssertedTrue): bool
+	{
+		foreach ($conditions as $condition) {
+			$accessoryScope = $conditionAssertedTrue
+				? $scope->filterByTruthyValue($condition->getExpr())
+				: $scope->filterByFalseyValue($condition->getExpr());
+			if (!$accessoryScope->getType($condition->getExpr())->equals($condition->getType())) {
+				return true;
+			}
+		}
+
+		if (
+			$targetExpr instanceof Expr\ArrayDimFetch
+			&& array_key_exists($this->exprPrinter->printExpr($targetExpr->var), $conditions)
+		) {
+			return true;
+		}
+
+		$sureTypes = [];
+		foreach ($conditions as $exprString => $condition) {
+			$sureTypes[$exprString] = [$condition->getExpr(), $condition->getType()];
+		}
+
+		// filterBySpecifiedTypes applies the narrowings container-before-offset and
+		// intersects them, so an offset guard (`$data['k'] = mixed~null`) is not
+		// clobbered by its container guard (`$data = ...hasOffset('k')`). Applying
+		// them naively one by one would drop the offset narrowing.
+		$guardScope = $scope->filterBySpecifiedTypes(new SpecifiedTypes($sureTypes, []));
+		$conditionSideType = $guardScope->getType($conditionSideExpr)->toBoolean();
+
+		return $conditionAssertedTrue
+			? $conditionSideType->isTrue()->yes()
+			: $conditionSideType->isFalse()->yes();
 	}
 
 	private function isTrackableExpression(Expr $expr): bool

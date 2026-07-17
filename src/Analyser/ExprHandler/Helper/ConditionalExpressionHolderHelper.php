@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\MutatingScope;
@@ -15,6 +16,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -32,6 +34,7 @@ final class ConditionalExpressionHolderHelper
 
 	public function __construct(
 		private TypeSpecifier $typeSpecifier,
+		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
@@ -141,7 +144,7 @@ final class ConditionalExpressionHolderHelper
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	public function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null): array
+	public function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, Scope $rightScope, ?Expr $holderSideExpr = null, ?Expr $conditionSideExpr = null): array
 	{
 		// The condition side asserts that its sub-expression evaluates truthy.
 		// When that sub-expression is itself a compound boolean (e.g. `$a && $b`),
@@ -191,6 +194,13 @@ final class ConditionalExpressionHolderHelper
 			$holders = [];
 			$holderTypes = $holdersFromSureTypes ? $holderSpecifiedTypes->getSureTypes() : $holderSpecifiedTypes->getSureNotTypes();
 
+			// Trackable sub-expressions (operands) of the condition-side arm, used
+			// by the skip below to detect targets whose antecedent would collapse to
+			// an insufficient independent-sibling narrowing.
+			$conditionSideExprStrings = $conditionSideExpr !== null
+				? $this->collectExpressionStrings($conditionSideExpr)
+				: [];
+
 			// A holder side that is itself a compound boolean cannot always be split
 			// into independent per-expression holders. In the `BooleanAnd` false
 			// context the holder asserts its side is false: when that side is a
@@ -213,6 +223,17 @@ final class ConditionalExpressionHolderHelper
 				// `$a === $b`) that got dropped, so the antecedent no longer constrains
 				// it. Projecting a consequent onto it would fire unsoundly. Skip it.
 				if (array_key_exists($exprString, $droppedNoOpConditions)) {
+					continue;
+				}
+
+				// The target is an operand of the condition-side arm (e.g. the needle
+				// of `in_array($needle, $haystack)`), so that arm's truth depends on
+				// the target. Building a holder for it drops the target's own
+				// self-condition and would keep only the arm's side narrowing of an
+				// independent sibling operand (e.g. `$haystack` being non-empty). That
+				// sibling is necessary but not sufficient for the arm to be true, so
+				// firing a consequent on the target from it alone is unsound. Skip it.
+				if ($this->conditionSideHasIndependentOperand($exprString, $conditionSideExprStrings)) {
 					continue;
 				}
 
@@ -296,6 +317,63 @@ final class ConditionalExpressionHolderHelper
 		return $expr instanceof Expr\PropertyFetch
 			|| $expr instanceof Expr\ArrayDimFetch
 			|| $expr instanceof Expr\StaticPropertyFetch;
+	}
+
+	/**
+	 * Every trackable sub-expression of $expr, keyed by its printed string so
+	 * keys can be matched against SpecifiedTypes keys.
+	 *
+	 * @return array<string, Expr>
+	 */
+	private function collectExpressionStrings(Expr $expr): array
+	{
+		$result = [];
+		foreach ((new NodeFinder())->findInstanceOf($expr, Expr::class) as $subExpr) {
+			if (!$this->isTrackableExpression($subExpr)) {
+				continue;
+			}
+
+			$result[$this->exprPrinter->printExpr($subExpr)] = $subExpr;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * The condition-side arm mentions an operand that is structurally independent
+	 * of $targetExprString (neither an ancestor nor a descendant of it). Such an
+	 * operand's narrowing is only a side effect of the arm being true, never a
+	 * condition sufficient to establish it.
+	 *
+	 * @param array<string, Expr> $conditionSideExprStrings
+	 */
+	private function conditionSideHasIndependentOperand(string $targetExprString, array $conditionSideExprStrings): bool
+	{
+		if (!array_key_exists($targetExprString, $conditionSideExprStrings)) {
+			return false;
+		}
+
+		$targetSubExprStrings = $this->collectExpressionStrings($conditionSideExprStrings[$targetExprString]);
+
+		foreach ($conditionSideExprStrings as $operandExprString => $operandExpr) {
+			if ($operandExprString === $targetExprString) {
+				continue;
+			}
+
+			// Descendant of the target (e.g. `$data` inside `$data['x']`) or an
+			// ancestor of it — either way the operand refers to the same access
+			// path, so it does capture the arm's truth. Not independent.
+			if (
+				array_key_exists($operandExprString, $targetSubExprStrings)
+				|| array_key_exists($targetExprString, $this->collectExpressionStrings($operandExpr))
+			) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

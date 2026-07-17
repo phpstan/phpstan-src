@@ -103,6 +103,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
+use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
@@ -3325,6 +3326,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 		}
 
+		$scope = $scope->refreshDependentCallsAndFetches(array_keys($specifiedExpressions));
+
 		/** @var static */
 		return ScopeOps::scopeWith(
 			$scope,
@@ -3337,6 +3340,105 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope->inFirstLevelStatement,
 			$scope->afterExtractCall,
 		);
+	}
+
+	/**
+	 * When a receiver expression is narrowed, method calls and property fetches
+	 * on it that were narrowed by earlier control flow must be refined too, so
+	 * their remembered type combines with the one derived from the now-narrower
+	 * receiver.
+	 *
+	 * @param string[] $narrowedExprStrings
+	 */
+	private function refreshDependentCallsAndFetches(array $narrowedExprStrings): self
+	{
+		if (count($narrowedExprStrings) === 0) {
+			return $this;
+		}
+
+		$narrowedExprStringsMap = array_fill_keys($narrowedExprStrings, true);
+
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$changed = false;
+
+		foreach ($this->expressionTypes as $exprString => $holder) {
+			$expr = $holder->getExpr();
+			if (
+				!$expr instanceof MethodCall
+				&& !$expr instanceof Expr\NullsafeMethodCall
+				&& !$expr instanceof PropertyFetch
+				&& !$expr instanceof Expr\NullsafePropertyFetch
+			) {
+				continue;
+			}
+
+			if (($expr instanceof MethodCall || $expr instanceof Expr\NullsafeMethodCall) && $expr->isFirstClassCallable()) {
+				continue;
+			}
+
+			if (!array_key_exists($this->getNodeKey($expr->var), $narrowedExprStringsMap)) {
+				continue;
+			}
+
+			$freshType = $this->resolveExprHandlerType($this, $expr);
+			$newType = TypeCombinator::intersect($holder->getType(), $freshType);
+			if (!$newType->equals($holder->getType())) {
+				$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $newType, $holder->getCertainty());
+				$changed = true;
+			}
+
+			if (!array_key_exists($exprString, $nativeExpressionTypes)) {
+				continue;
+			}
+
+			$nativeHolder = $nativeExpressionTypes[$exprString];
+			$freshNativeType = $this->resolveExprHandlerType($this->promoteNativeTypes(), $expr);
+			$newNativeType = TypeCombinator::intersect($nativeHolder->getType(), $freshNativeType);
+			if ($newNativeType->equals($nativeHolder->getType())) {
+				continue;
+			}
+
+			$nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($expr, $newNativeType, $nativeHolder->getCertainty());
+			$changed = true;
+		}
+
+		if (!$changed) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
+	private function resolveExprHandlerType(self $scope, Expr $node): Type
+	{
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($scope->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($node)) {
+				continue;
+			}
+
+			return $exprHandler->resolveType($scope, $node);
+		}
+
+		return new MixedType();
 	}
 
 	/**

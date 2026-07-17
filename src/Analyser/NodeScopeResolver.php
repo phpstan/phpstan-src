@@ -3656,7 +3656,8 @@ class NodeScopeResolver
 					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
 					if ($closureThisType !== null) {
 						$restoreThisScope = $scopeToPass;
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes());
+						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
+							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
 					}
 				}
 
@@ -3722,7 +3723,8 @@ class NodeScopeResolver
 				) {
 					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
 					if ($closureThisType !== null) {
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes());
+						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
+							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
 					}
 				}
 

@@ -23,7 +23,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
-		));
+		), true);
 	}
 
 	public function testCoalesceRule(): void
@@ -386,12 +386,20 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug14213(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], [
-			[
-				'Variable $x1 on left side of ?? always exists and is always null.',
-				22,
-			],
-		]);
+		$errors = [];
+		if (PHP_VERSION_ID >= 80100) {
+			// This is only detected with FiberScope.
+			$errors[] = [
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				21,
+			];
+		}
+		$errors[] = [
+			'Variable $x1 on left side of ?? always exists and is always null.',
+			22,
+		];
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], $errors);
 	}
 
 	public function testBug11488(): void
@@ -448,6 +456,72 @@ class NullCoalesceRuleTest extends RuleTestCase
 			[
 				'Property Bug14459Hooked\DtoHooked::$policyholderId (stdClass) on left side of ?? is not nullable.',
 				21,
+			],
+		]);
+	}
+
+	public function testBug4337(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4337.php'], [
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				37,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				42,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				47,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				53,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				58,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				63,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				69,
+			],
+			[
+				'Coalesce operator ??= is unnecessary because the left side is always set and the right side is null.',
+				75,
+			],
+		]);
+	}
+
+	public function testBug12179(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12179.php'], [
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				8,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				24,
+			],
+		]);
+	}
+
+	public function testBug9966(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9966.php'], [
+			[
+				'Offset \'key1\' on array{key1: string, key2: string|null, key3?: string, key4?: string|null} on left side of ?? always exists and is not nullable.',
+				9,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				12,
 			],
 		]);
 	}

@@ -497,8 +497,8 @@ final class FileTypeMapper
 					}
 				}
 
-				$className = array_last($classStack) ?? null;
-				$functionName = array_last($functionStack) ?? null;
+				$className = array_last($classStack);
+				$functionName = array_last($functionStack);
 				$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
 
 				$phpDocNode = null;
@@ -519,7 +519,7 @@ final class FileTypeMapper
 							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNode);
 						}
 
-						$parentNameScope = array_last($typeMapStack) ?? null;
+						$parentNameScope = array_last($typeMapStack);
 
 						$typeMapStack[] = new IntermediaryNameScope(
 							$namespace,
@@ -535,7 +535,7 @@ final class FileTypeMapper
 					} elseif ($node instanceof Node\Stmt\ClassLike) {
 						$typeAliasStack[] = [];
 					} else {
-						$parentNameScope = array_last($typeMapStack) ?? null;
+						$parentNameScope = array_last($typeMapStack);
 						$typeMapStack[] = new IntermediaryNameScope(
 							$namespace,
 							$uses,
@@ -566,7 +566,7 @@ final class FileTypeMapper
 						)
 					) && !array_key_exists($nameScopeKey, $nameScopeMap)
 				) {
-					$parentNameScope = array_last($typeMapStack) ?? null;
+					$parentNameScope = array_last($typeMapStack);
 					$typeAliasesMap = array_last($typeAliasStack) ?? [];
 					$nameScopeMap[$nameScopeKey] = new IntermediaryNameScope(
 						$namespace,
@@ -653,7 +653,7 @@ final class FileTypeMapper
 							continue;
 						}
 
-						$className = array_last($classStack) ?? null;
+						$className = array_last($classStack);
 						if ($className === null) {
 							throw new ShouldNotHappenException();
 						}

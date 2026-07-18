@@ -48,6 +48,7 @@ parameters:
 		checkDynamicConstantNameValues: false
 		unusedLabel: false
 		newOnNonObject: false
+		unnecessaryNullCoalesce: false
 		finiteTypesInHaystack: false
 	fileExtensions:
 		- php

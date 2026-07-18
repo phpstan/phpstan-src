@@ -477,7 +477,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 		return new FunctionSignature(
 			$parameters,
-			TypehintHelper::decideType($returnType, $phpDocReturnType ?? null),
+			TypehintHelper::decideType($returnType, $phpDocReturnType),
 			$returnType,
 			$variadic,
 		);

@@ -103,6 +103,14 @@ class SwitchConditionRuleTest extends RuleTestCase
 				'Case 1.0 in switch is a duplicate of case 1 on line 149.',
 				153,
 			],
+			[
+				'Case true in switch is a duplicate of case 1 on line 149.',
+				155,
+			],
+			[
+				'Case false in switch is a duplicate of case 0 on line 157.',
+				159,
+			],
 		]);
 	}
 

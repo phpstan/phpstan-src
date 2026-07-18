@@ -166,9 +166,7 @@ final class SwitchConditionRule implements Rule
 	 * A later `case` is a duplicate of an earlier one when both match the exact
 	 * same set of subject values. Besides identical values, `switch` compares
 	 * with loose `==`, so two numerically-equal constants (e.g. 1, '1' and 1.0)
-	 * are duplicates too - they cannot be told apart by a `switch`. Booleans,
-	 * null and non-numeric strings are intentionally left to the strict check
-	 * because their loose-comparison match sets are broader than a single value.
+	 * are duplicates too - they cannot be told apart by a `switch`.
 	 */
 	private function isDuplicateCase(Type $seenType, Type $caseValueType): bool
 	{
@@ -176,18 +174,7 @@ final class SwitchConditionRule implements Rule
 			return true;
 		}
 
-		if (!$this->isNumericConstant($seenType) || !$this->isNumericConstant($caseValueType)) {
-			return false;
-		}
-
 		return $seenType->looseCompare($caseValueType, $this->phpVersion)->isTrue()->yes();
-	}
-
-	private function isNumericConstant(Type $type): bool
-	{
-		return $type->isInteger()->yes()
-			|| $type->isFloat()->yes()
-			|| $type->isNumericString()->yes();
 	}
 
 }

@@ -24,6 +24,7 @@ class IssetRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			true,
 		));
 	}
 
@@ -336,20 +337,8 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
-				'Using nullsafe property access "?->aaa" in isset() is unnecessary. Use -> instead.',
-				18,
-			],
-			[
-				'Using nullsafe property access "?->aaa" in isset() is unnecessary. Use -> instead.',
-				29,
-			],
-			[
 				'Expression in isset() is not nullable.',
 				41,
-			],
-			[
-				'Using nullsafe property access "?->aaa" in isset() is unnecessary. Use -> instead.',
-				67,
 			],
 			[
 				'Expression in isset() is not nullable.',

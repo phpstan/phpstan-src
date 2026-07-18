@@ -31,6 +31,8 @@ final class IssetCheck
 		private bool $checkAdvancedIsset,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -259,15 +261,35 @@ final class IssetCheck
 		}
 
 		if ($expr instanceof Expr\NullsafePropertyFetch) {
-			if ($expr->name instanceof Node\Identifier) {
-				return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name, $operatorDescription))
-					->identifier('nullsafe.neverNull')
-					->build();
+			// Only redundant when the operand itself is never null; otherwise the
+			// ?-> produces the null that ??/isset()/empty() handles. A nullable
+			// operand can still wrap a never-null one ($a?->b?->c), so recurse.
+			$operandType = $this->treatPhpDocTypesAsCertain
+				? $scope->getScopeType($expr->var)
+				: $scope->getScopeNativeType($expr->var);
+			if (!$operandType->isNull()->no()) {
+				if ($expr->var instanceof Expr\NullsafePropertyFetch) {
+					return $this->check($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback);
+				}
+
+				return null;
 			}
 
-			return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->(Expression)" %s is unnecessary. Use -> instead.', $operatorDescription))
-				->identifier('nullsafe.neverNull')
-				->build();
+			$message = $expr->name instanceof Node\Identifier
+				? sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name, $operatorDescription)
+				: sprintf('Using nullsafe property access "?->(Expression)" %s is unnecessary. Use -> instead.', $operatorDescription);
+
+			$ruleErrorBuilder = RuleErrorBuilder::message($message)->identifier('nullsafe.neverNull');
+
+			if (
+				$this->treatPhpDocTypesAsCertain
+				&& $this->treatPhpDocTypesAsCertainTip
+				&& !$scope->getScopeNativeType($expr->var)->isNull()->no()
+			) {
+				$ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+			}
+
+			return $ruleErrorBuilder->build();
 		}
 
 		return null;

@@ -62,7 +62,7 @@ class HelloWorld
 	public ?HelloWorld $prop = null;
 	public function edgeCaseWithMethodCall(): void
 	{
-		// only ?->aaa should be reported
+		// nothing to report: every ?-> operand can be null (phpstan/phpstan#14311)
 		$this->get()?->prop?->get()?->aaa ?? 'edge';
 		isset($this->get()?->prop?->get()?->aaa) ?: 'edge';
 		empty($this->get()?->prop?->get()?->aaa) ?: 'edge';

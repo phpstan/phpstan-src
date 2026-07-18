@@ -25,6 +25,7 @@ class EmptyRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			true,
 		));
 	}
 
@@ -117,27 +118,11 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Using nullsafe property access "?->aaa" in empty() is unnecessary. Use -> instead.',
-				19,
-			],
-			[
-				'Using nullsafe property access "?->aaa" in empty() is unnecessary. Use -> instead.',
-				30,
-			],
-			[
-				'Using nullsafe property access "?->aaa" in empty() is unnecessary. Use -> instead.',
 				42,
-			],
-			[
-				'Using nullsafe property access "?->notFalsy" in empty() is unnecessary. Use -> instead.',
-				54,
 			],
 			[
 				'Expression in empty() is not falsy.',
 				59,
-			],
-			[
-				'Using nullsafe property access "?->aaa" in empty() is unnecessary. Use -> instead.',
-				68,
 			],
 			[
 				'Using nullsafe property access "?->(Expression)" in empty() is unnecessary. Use -> instead.',

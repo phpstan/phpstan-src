@@ -26,6 +26,7 @@ use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
+use function array_slice;
 use function count;
 use function get_class;
 use function in_array;

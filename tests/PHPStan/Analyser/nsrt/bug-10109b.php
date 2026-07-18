@@ -89,3 +89,41 @@ function noSideEffectInCondition(): void
 
 	assertType('0', $x);
 }
+
+function doWhileDecrement(): void
+{
+	// do-while evaluates its condition once at the bottom (via getFalseyScope()), so the side
+	// effect is applied exactly once and the after-loop type is already sound without recovery.
+	$x = 5;
+	do {
+	} while (--$x > 0);
+
+	assertType('int<min, 0>', $x);
+}
+
+function doWhilePreIncrement(): void
+{
+	$x = 5;
+	do {
+	} while (++$x < 10);
+
+	assertType('int<10, max>', $x);
+}
+
+function doWhileAssignInCondition(): void
+{
+	$x = 5;
+	do {
+	} while (($x = $x - 1) > 0);
+
+	assertType('int<min, 0>', $x);
+}
+
+function doWhilePostDecrement(): void
+{
+	$x = 5;
+	do {
+	} while ($x-- > 0);
+
+	assertType('int<min, -1>', $x);
+}

@@ -6,6 +6,7 @@ use Fiber;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -57,6 +58,13 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		if ($node instanceof TypeExpr) {
+			// Scope-independent by construction - suspending would park this
+			// fiber until the end of the function because the node is never
+			// visited by NodeScopeResolver, and would resolve to the same type.
+			return $node->getExprType();
+		}
+
 		/** @var Scope $beforeScope */
 		$beforeScope = Fiber::suspend(
 			new BeforeScopeForExprRequest($node, $this),
@@ -79,6 +87,11 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
+		if ($expr instanceof TypeExpr) {
+			// See getType() - same reasoning
+			return $expr->getExprType();
+		}
+
 		/** @var Scope $beforeScope */
 		$beforeScope = Fiber::suspend(
 			new BeforeScopeForExprRequest($expr, $this),

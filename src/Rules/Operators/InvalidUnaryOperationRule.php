@@ -61,7 +61,9 @@ final class InvalidUnaryOperationRule implements Rule
 		$newNode = clone $node;
 		$newNode->setAttribute('phpstan_cache_printer', null);
 		$newNode->expr = new TypeExpr($exprType);
-		if (!$scope->getType($newNode) instanceof ErrorType) {
+		// getScopeType(): the node was synthesized right here, so NodeScopeResolver
+		// never visits it and there is no before-scope to wait for
+		if (!$scope->getScopeType($newNode) instanceof ErrorType) {
 			return [];
 		}
 

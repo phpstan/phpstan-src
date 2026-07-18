@@ -46,6 +46,7 @@ use function is_string;
 use function lcfirst;
 use function max;
 use function sprintf;
+use function strtolower;
 
 #[AutowiredService]
 final class FunctionCallParametersCheck
@@ -331,7 +332,7 @@ final class FunctionCallParametersCheck
 			$errors[] = $error;
 		}
 
-		foreach ($this->checkFileReferences($argumentsWithParameters, $scope) as $error) {
+		foreach ($this->checkFileReferences($argumentsWithParameters, $scope, $funcCall) as $error) {
 			$errors[] = $error;
 		}
 
@@ -800,9 +801,14 @@ final class FunctionCallParametersCheck
 	 * @param array<int, array{Expr, Type|null, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}> $argumentsWithParameters
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkFileReferences(array $argumentsWithParameters, Scope $scope): array
+	private function checkFileReferences(array $argumentsWithParameters, Scope $scope, Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall): array
 	{
 		if (!$this->checkFileReferences || $this->fileExistenceChecker === null) {
+			return [];
+		}
+
+		if ($this->isFileExistenceTestingCall($funcCall, $scope)) {
+			// e.g. is_file()/file_exists() legitimately receive paths that may not exist
 			return [];
 		}
 
@@ -843,6 +849,21 @@ final class FunctionCallParametersCheck
 		}
 
 		return $errors;
+	}
+
+	private function isFileExistenceTestingCall(Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall, Scope $scope): bool
+	{
+		if (!$funcCall instanceof Node\Expr\FuncCall || !$funcCall->name instanceof Node\Name) {
+			return false;
+		}
+
+		if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
+			return false;
+		}
+
+		$functionName = strtolower($this->reflectionProvider->getFunction($funcCall->name, $scope)->getName());
+
+		return in_array($functionName, FileExistenceChecker::FILE_EXISTENCE_FUNCTIONS, true);
 	}
 
 	/**

@@ -84,3 +84,17 @@ namespace FileReferenceTest {
 	new PromotedLoader('file-reference-missing.php');
 
 }
+
+namespace {
+
+	// File-existence-testing functions legitimately receive paths that may not
+	// exist, so they are exempt even when annotated with #[FileReference].
+	// See https://youtrack.jetbrains.com/issue/WI-85516
+	function is_file(#[\JetBrains\PhpStorm\FileReference] string $path): bool
+	{
+		return true;
+	}
+
+	is_file('file-reference-missing.php');
+
+}

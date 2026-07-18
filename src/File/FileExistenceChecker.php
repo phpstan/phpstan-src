@@ -25,6 +25,22 @@ use const PATH_SEPARATOR;
 final class FileExistenceChecker
 {
 
+	/**
+	 * Functions whose whole purpose is to test whether a path exists, so passing
+	 * them a non-existent path is expected and must not be reported.
+	 *
+	 * Relevant once phpstorm-stubs annotate these with #[JetBrains\PhpStorm\FileReference]:
+	 * @see https://youtrack.jetbrains.com/issue/WI-85516/FileReference-and-builtin-functions-like-isfile
+	 */
+	public const FILE_EXISTENCE_FUNCTIONS = [
+		'file_exists',
+		'is_file',
+		'is_readable',
+		'is_writable',
+		'is_writeable',
+		'is_executable',
+	];
+
 	public function __construct(
 		#[AutowiredParameter]
 		private string $currentWorkingDirectory,

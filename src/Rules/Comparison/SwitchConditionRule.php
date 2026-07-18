@@ -9,6 +9,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\SwitchConditionNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
@@ -27,6 +28,7 @@ final class SwitchConditionRule implements Rule
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private ExprPrinter $exprPrinter,
+		private PhpVersion $phpVersion,
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
@@ -62,7 +64,7 @@ final class SwitchConditionRule implements Rule
 				$caseValueType = $finiteTypes[0];
 				$firstSeen = null;
 				foreach ($seenCases as $seenCase) {
-					if ($seenCase['type']->equals($caseValueType)) {
+					if ($this->isDuplicateCase($seenCase['type'], $caseValueType)) {
 						$firstSeen = $seenCase;
 						break;
 					}
@@ -158,6 +160,34 @@ final class SwitchConditionRule implements Rule
 	private function isConstantBoolean(Type $type): bool
 	{
 		return $type->isTrue()->yes() || $type->isFalse()->yes();
+	}
+
+	/**
+	 * A later `case` is a duplicate of an earlier one when both match the exact
+	 * same set of subject values. Besides identical values, `switch` compares
+	 * with loose `==`, so two numerically-equal constants (e.g. 1, '1' and 1.0)
+	 * are duplicates too - they cannot be told apart by a `switch`. Booleans,
+	 * null and non-numeric strings are intentionally left to the strict check
+	 * because their loose-comparison match sets are broader than a single value.
+	 */
+	private function isDuplicateCase(Type $seenType, Type $caseValueType): bool
+	{
+		if ($seenType->equals($caseValueType)) {
+			return true;
+		}
+
+		if (!$this->isNumericConstant($seenType) || !$this->isNumericConstant($caseValueType)) {
+			return false;
+		}
+
+		return $seenType->looseCompare($caseValueType, $this->phpVersion)->isTrue()->yes();
+	}
+
+	private function isNumericConstant(Type $type): bool
+	{
+		return $type->isInteger()->yes()
+			|| $type->isFloat()->yes()
+			|| $type->isNumericString()->yes();
 	}
 
 }

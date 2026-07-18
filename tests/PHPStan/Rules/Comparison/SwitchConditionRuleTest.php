@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
@@ -35,6 +36,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(ExprPrinter::class),
+				self::getContainer()->getByType(PhpVersion::class),
 				$this->treatPhpDocTypesAsCertain,
 			),
 			new ConstantConditionInTraitRule(),
@@ -92,6 +94,14 @@ class SwitchConditionRuleTest extends RuleTestCase
 			[
 				'Case null in switch is a duplicate of case null on line 108.',
 				112,
+			],
+			[
+				'Case \'1\' in switch is a duplicate of case 1 on line 149.',
+				151,
+			],
+			[
+				'Case 1.0 in switch is a duplicate of case 1 on line 149.',
+				153,
 			],
 		]);
 	}

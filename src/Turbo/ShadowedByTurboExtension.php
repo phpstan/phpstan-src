@@ -18,9 +18,6 @@ use Attribute;
 final class ShadowedByTurboExtension
 {
 
-	/**
-	 * @param class-string $turboClass
-	 */
 	public function __construct(public string $turboClass)
 	{
 	}

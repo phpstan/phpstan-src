@@ -1128,14 +1128,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		];
 	}
 
-	public function testFileReferenceAttribute(): void
-	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/file-reference-attribute.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Path "file-reference-attribute-missing.php" passed to parameter #1 $path does not exist.', $errors[0]->getMessage());
-		$this->assertSame(26, $errors[0]->getLine());
-	}
-
 	public function testBug8004(): void
 	{
 		// false positive

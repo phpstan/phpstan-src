@@ -31,7 +31,7 @@ function neverVariable(int $i): void
 {
 	if ($i !== $i) {
 		assertType('*NEVER*', $i);
-		assertType('bool', $i === null);
-		assertType('bool', $i !== null);
+		assertType('false', $i === null);
+		assertType('true', $i !== null);
 	}
 }

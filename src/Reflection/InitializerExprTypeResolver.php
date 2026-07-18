@@ -1947,10 +1947,7 @@ final class InitializerExprTypeResolver
 	public function resolveIdenticalType(Type $leftType, Type $rightType): TypeResult
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			// A never-typed operand has no value to compare, so the result is
-			// undecided. This mirrors how never behaves as a boolean condition and
-			// keeps always-true/false rules from piling onto already-unreachable code.
-			return new TypeResult(new BooleanType(), []);
+			return new TypeResult(new ConstantBooleanType(false), []);
 		}
 
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {

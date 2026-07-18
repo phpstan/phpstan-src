@@ -766,12 +766,28 @@ public:
 			zend_string_equals_literal(exprStringToInvalidate, "$this"),
 		};
 
+		/* Mirrors the twin's $canUseKeyPrefilter: outside shouldInvalidate()'s
+		 * compositional-key carve-outs, a key that does not contain the
+		 * invalidated key as a substring cannot belong to an expression
+		 * containing the invalidated one, so the much more expensive
+		 * per-expression check can be skipped without being called. */
+		const bool canUseKeyPrefilter = !query.isThis
+			&& !strContains(exprStringToInvalidate, "__phpstan", sizeof("__phpstan") - 1)
+			&& !strContains(exprStringToInvalidate, "/*", 2);
+
 		bool invalidated = false;
 		zv::Arr resultExpr, resultNative; /* stay UNDEF until the first hit */
 
 		for (auto entry : expressionTypes) {
 			zend_string *key = entry.stringKeyOrNull();
 			zend_ulong idx = entry.indexKey();
+
+			if (canUseKeyPrefilter && key != NULL
+				&& !strContains(key, "__phpstan", sizeof("__phpstan") - 1)
+				&& !strContainsStr(key, exprStringToInvalidate)) {
+				continue;
+			}
+
 			zv::Ref holder = entry.value().deref();
 
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
@@ -813,20 +829,27 @@ public:
 				continue;
 			}
 
-			/* first holder's type-holder expr decides whole-group invalidation */
-			{
+			/* first holder's type-holder expr decides whole-group invalidation;
+			 * entries are keyed by the printed form of their target expression
+			 * (see the ConditionalExpressionHolder creation sites), so the key
+			 * doubles as the target's node key: it feeds the same substring
+			 * gate as a prefilter and there is no need to re-print the
+			 * expression for the full check */
+			if (!canUseKeyPrefilter || key == NULL
+				|| strContains(key, "__phpstan", sizeof("__phpstan") - 1)
+				|| strContainsStr(key, exprStringToInvalidate)) {
 				zv::Ref firstHolder = (*holdersTable.begin()).value().deref();
 				if (UNEXPECTED(!firstHolder.instanceOf(pt_ce_cond_expr_holder))) {
 					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
 					return zv::Val();
 				}
 				zend_object *firstExpr = holderExpr(zv::ObjRef(firstHolder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER));
-				zv::Str firstKey = zv::Str::adopt(pt_node_key(firstExpr, exprPrinter));
-				if (UNEXPECTED(firstKey.isNull())) {
-					return zv::Val();
-				}
+				zend_string *entryKey = key != NULL ? key : zend_long_to_str((zend_long) idx);
 				bool failed = false;
-				bool drop = shouldInvalidate(query, firstKey.get(), firstExpr, requireMoreCharacters, &failed);
+				bool drop = shouldInvalidate(query, entryKey, firstExpr, requireMoreCharacters, &failed);
+				if (key == NULL) {
+					zend_string_release(entryKey);
+				}
 				if (UNEXPECTED(failed)) {
 					return zv::Val();
 				}
@@ -836,9 +859,30 @@ public:
 				}
 			}
 
-			zv::Arr filtered; /* stays UNDEF until the first kept holder */
+			/* Lazily materialized: stays UNDEF while every holder seen so far
+			 * is kept, so the common no-drop case reuses the original array
+			 * instead of rebuilding it holder by holder. */
+			zv::Arr filtered;
+			uint32_t keptCount = 0;
 			for (auto holderEntry : holdersTable) {
+				zend_string *holderKey = holderEntry.stringKeyOrNull();
 				zv::Ref holder = holderEntry.value().deref();
+
+				/* The holder's array key (ConditionalExpressionHolder::getKey())
+				 * embeds every condition's expression key verbatim, so when the
+				 * invalidated key does not occur in it, none of the conditions
+				 * can contain the invalidated expression and the holder can be
+				 * kept without inspecting its conditions. */
+				if (canUseKeyPrefilter && holderKey != NULL
+					&& !strContains(holderKey, "__phpstan", sizeof("__phpstan") - 1)
+					&& !strContainsStr(holderKey, exprStringToInvalidate)) {
+					if (!filtered.isUndef()) {
+						tableAddNewCopy(filtered.table(), holderKey, holderEntry.indexKey(), holder);
+					} else {
+						keptCount++;
+					}
+					continue;
+				}
 				if (UNEXPECTED(!holder.instanceOf(pt_ce_cond_expr_holder))) {
 					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
 					return zv::Val();
@@ -869,16 +913,35 @@ public:
 						}
 					}
 				}
-				if (!keep) {
+				if (keep) {
+					if (!filtered.isUndef()) {
+						tableAddNewCopy(filtered.table(), holderKey, holderEntry.indexKey(), holder);
+					} else {
+						keptCount++;
+					}
 					continue;
 				}
+
 				if (filtered.isUndef()) {
-					filtered = zv::Arr::create(0);
+					/* copy the kept prefix (mirrors the twin's array_slice) */
+					filtered = zv::Arr::create(keptCount);
+					uint32_t copied = 0;
+					for (auto keptEntry : holdersTable) {
+						if (copied == keptCount) {
+							break;
+						}
+						tableAddNewCopy(filtered.table(), keptEntry.stringKeyOrNull(), keptEntry.indexKey(), keptEntry.value().deref());
+						copied++;
+					}
 				}
-				tableAddNewCopy(filtered.table(), holderEntry.stringKeyOrNull(), holderEntry.indexKey(), holder);
 			}
 
 			if (filtered.isUndef()) {
+				/* nothing dropped — share the original holders array */
+				tableAddNewCopy(resultConditional.table(), key, idx, holders);
+				continue;
+			}
+			if (zend_hash_num_elements(filtered.table()) == 0) {
 				continue;
 			}
 			tableAddNew(resultConditional.table(), key, idx, std::move(filtered));
@@ -1038,6 +1101,18 @@ public:
 	{
 		zv::Arr conditions = zv::Arr::create(0);
 		zv::Arr specified = zv::Arr::adoptTable(zend_array_dup(specifiedInput.table()));
+
+		/* Every holder has at least one condition (enforced by the
+		 * ConditionalExpressionHolder constructor) and both passes require all
+		 * of a holder's conditions to be among the specified expressions, so
+		 * with nothing specified nothing can ever match. */
+		if (zend_hash_num_elements(specified.table()) == 0) {
+			zv::Arr result = zv::Arr::create(2);
+			result.push(std::move(conditions));
+			result.push(std::move(specified));
+			return zv::Val(std::move(result));
+		}
+
 		uint32_t previousCount = UINT32_MAX;
 
 		while (zend_hash_num_elements(specified.table()) != previousCount) {

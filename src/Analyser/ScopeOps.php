@@ -577,9 +577,25 @@ final class ScopeOps
 	{
 		$invalidated = false;
 
+		// Mirrors the compositional-key shortcut in shouldInvalidateExpression(): outside
+		// the carve-outs listed there, a key that does not contain the invalidated key as
+		// a substring cannot belong to an expression containing the invalidated one, so
+		// the much more expensive per-expression check can be skipped without being called.
+		$canUseKeyPrefilter = $exprStringToInvalidate !== '$this'
+			&& !str_contains($exprStringToInvalidate, '__phpstan')
+			&& !str_contains($exprStringToInvalidate, '/*');
+
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$exprString = (string) $exprString;
+			if (
+				$canUseKeyPrefilter
+				&& !str_contains($exprString, '__phpstan')
+				&& !str_contains($exprString, $exprStringToInvalidate)
+			) {
+				continue;
+			}
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprExpr, (string) $exprString, $requireMoreCharacters, $invalidatingClass)) {
+			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
 				continue;
 			}
 
@@ -593,13 +609,43 @@ final class ScopeOps
 			if (count($holders) === 0) {
 				continue;
 			}
-			$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-			if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstExpr, self::nodeKey($firstExpr, $exprPrinter), $requireMoreCharacters, $invalidatingClass)) {
-				$invalidated = true;
-				continue;
+			// Entries are keyed by the printed form of their target expression (see the
+			// ConditionalExpressionHolder creation sites), so the key doubles as the
+			// target's node key and there is no need to re-print the expression here.
+			$conditionalExprString = (string) $conditionalExprString; // @phpstan-ignore cast.useless
+			if (
+				!$canUseKeyPrefilter
+				|| str_contains($conditionalExprString, '__phpstan')
+				|| str_contains($conditionalExprString, $exprStringToInvalidate)
+			) {
+				$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
+				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $conditionalExprString, $requireMoreCharacters, $invalidatingClass)) {
+					$invalidated = true;
+					continue;
+				}
 			}
-			$filteredHolders = [];
+			// Lazily materialized: stays null while every holder seen so far is kept (so far
+			// always the first $keptCount ones), so the common no-drop case reuses the
+			// original array instead of rebuilding it holder by holder.
+			$filteredHolders = null;
+			$keptCount = 0;
 			foreach ($holders as $key => $holder) {
+				// The holder's array key (ConditionalExpressionHolder::getKey()) embeds every
+				// condition's expression key verbatim, so when the invalidated key does not
+				// occur in it, none of the conditions can contain the invalidated expression
+				// and the holder can be kept without inspecting its conditions.
+				if (
+					$canUseKeyPrefilter
+					&& !str_contains((string) $key, '__phpstan')
+					&& !str_contains((string) $key, $exprStringToInvalidate)
+				) {
+					if ($filteredHolders !== null) {
+						$filteredHolders[$key] = $holder;
+					} else {
+						$keptCount++;
+					}
+					continue;
+				}
 				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
@@ -609,11 +655,20 @@ final class ScopeOps
 						break;
 					}
 				}
-				if (!$shouldKeep) {
+				if ($shouldKeep) {
+					if ($filteredHolders !== null) {
+						$filteredHolders[$key] = $holder;
+					} else {
+						$keptCount++;
+					}
 					continue;
 				}
 
-				$filteredHolders[$key] = $holder;
+				$filteredHolders ??= array_slice($holders, 0, $keptCount, true);
+			}
+			if ($filteredHolders === null) {
+				$newConditionalExpressions[$conditionalExprString] = $holders;
+				continue;
 			}
 			if (count($filteredHolders) <= 0) {
 				continue;
@@ -805,6 +860,12 @@ final class ScopeOps
 	public static function matchConditionalExpressions(array $conditionalExpressions, array $specifiedExpressions): array
 	{
 		$conditions = [];
+		if ($specifiedExpressions === []) {
+			// Every holder has at least one condition (enforced by the ConditionalExpressionHolder
+			// constructor) and both matching passes require all of a holder's conditions to be
+			// among the specified expressions, so nothing can ever match.
+			return [$conditions, $specifiedExpressions];
+		}
 		$originallySpecifiedExprStrings = $specifiedExpressions;
 		$prevSpecifiedCount = -1;
 		while (count($specifiedExpressions) !== $prevSpecifiedCount) {

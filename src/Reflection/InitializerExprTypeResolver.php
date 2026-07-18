@@ -1978,6 +1978,10 @@ final class InitializerExprTypeResolver
 	 */
 	public function resolveEqualType(Type $leftType, Type $rightType): TypeResult
 	{
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return new TypeResult(new ConstantBooleanType(false), []);
+		}
+
 		if (
 			($leftType->isEnum()->yes() && $rightType->isTrue()->no())
 			|| ($rightType->isEnum()->yes() && $leftType->isTrue()->no())

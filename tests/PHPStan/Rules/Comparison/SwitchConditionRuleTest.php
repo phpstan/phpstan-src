@@ -147,10 +147,10 @@ class SwitchConditionRuleTest extends RuleTestCase
 				'Switch condition comparison between int<5, max> and 1 is always false.',
 				50,
 			],
-			// No error for the non-constant `case $other` on line 66: the earlier
-			// cases exhaust the subject to `never`, and a `never` operand keeps the
-			// loose comparison undecided rather than always-false (see #5906), so we
-			// deliberately do not pile an always-false report onto unreachable code.
+			[
+				'Switch condition comparison between *NEVER* and string is always false.',
+				72,
+			],
 		]);
 	}
 

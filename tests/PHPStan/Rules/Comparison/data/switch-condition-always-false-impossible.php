@@ -56,10 +56,10 @@ class Foo
 
 	/**
 	 * Once the earlier cases have exhausted the subject, it narrows to `never`.
-	 * A `never` operand leaves the loose comparison undecided (never has no
-	 * value to compare), so the trailing case is intentionally not reported as
-	 * always-false: it sits on already-unreachable code and flagging it would
-	 * just pile onto that. No error is expected here.
+	 * A `never` operand makes the loose comparison always-false (consistently
+	 * with strict comparison), so the trailing case is reported as always-false
+	 * just like the equivalent `match` arm / `if`-`elseif` chain on an exhausted
+	 * subject.
 	 *
 	 * @param 'a'|'b' $s
 	 */

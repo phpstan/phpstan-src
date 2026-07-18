@@ -260,6 +260,10 @@ Bugs in PHPStan's type system rarely live alone. A fix in one accessory type usu
 
 Every threshold, fan-out cap, recursion bound, or collection-size limit must be a class constant whose name ends in `_LIMIT`, declared at the top of the owning class. Inline numerics in conditionals (`if (count($this->optionalKeys) <= 10)`) are not acceptable — extract to `self::OPTIONAL_KEYS_LIMIT` (or similar) so the threshold is named, discoverable, and tunable in one place.
 
+### Classes marked with `#[ShadowedByTurboExtension]` have a native C++ mirror
+
+Classes carrying the `PHPStan\Turbo\ShadowedByTurboExtension` attribute are reimplemented natively by the phpstan_turbo extension; `turbo-ext/shadowed-classes.json` maps each class to its `.cpp` file. The two implementations must behave identically — analysis output is bit-for-bit identical with the extension on or off. When editing such a class, always check whether the `.cpp` mirror in `turbo-ext/` needs the same change; if it does, port it following `turbo-ext/CLAUDE.md` (method parity check, differential smoke test, full test suite with the extension loaded). Either way, any commit touching a shadowed PHP file or `turbo-ext/src/` requires the follow-up commit bumping `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION` to that commit's short SHA.
+
 ### Testing patterns
 
 - **Rule tests**: Extend `RuleTestCase`, implement `getRule()`, call `$this->analyse([__DIR__ . '/data/my-test.php'], [...expected errors...])`. Expected errors are `[message, line]` pairs. Test data files live in `tests/PHPStan/Rules/*/data/`.

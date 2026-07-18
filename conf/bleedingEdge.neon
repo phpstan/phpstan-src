@@ -24,3 +24,4 @@ parameters:
 		newOnNonObject: true
 		unnecessaryNullCoalesce: true
 		finiteTypesInHaystack: true
+		checkFileReferences: true

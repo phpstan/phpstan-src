@@ -51,6 +51,7 @@ class InstantiationRuleTest extends RuleTestCase
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
 				fileExistenceChecker: self::getContainer()->getByType(FileExistenceChecker::class),
+				checkFileReferences: true,
 			),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),

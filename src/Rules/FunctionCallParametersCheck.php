@@ -68,6 +68,8 @@ final class FunctionCallParametersCheck
 		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
 		private ?FileExistenceChecker $fileExistenceChecker = null,
+		#[AutowiredParameter(ref: '%featureToggles.checkFileReferences%')]
+		private bool $checkFileReferences = false,
 	)
 	{
 	}
@@ -800,7 +802,7 @@ final class FunctionCallParametersCheck
 	 */
 	private function checkFileReferences(array $argumentsWithParameters, Scope $scope): array
 	{
-		if ($this->fileExistenceChecker === null) {
+		if (!$this->checkFileReferences || $this->fileExistenceChecker === null) {
 			return [];
 		}
 

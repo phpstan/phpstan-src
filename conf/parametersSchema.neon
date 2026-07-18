@@ -53,6 +53,7 @@ parametersSchema:
 		newOnNonObject: bool()
 		unnecessaryNullCoalesce: bool()
 		finiteTypesInHaystack: bool()
+		checkFileReferences: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

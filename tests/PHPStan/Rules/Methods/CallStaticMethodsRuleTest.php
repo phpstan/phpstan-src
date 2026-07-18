@@ -72,6 +72,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
 				fileExistenceChecker: self::getContainer()->getByType(FileExistenceChecker::class),
+				checkFileReferences: true,
 			),
 		);
 	}

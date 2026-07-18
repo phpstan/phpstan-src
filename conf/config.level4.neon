@@ -42,6 +42,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\Comparison\SwitchConditionRule

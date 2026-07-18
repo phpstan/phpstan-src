@@ -247,7 +247,7 @@
 		}
 	],
 	"scripts": {
-		"post-autoload-dump": "@php build/generate-turbo-stubs.php"
+		"post-autoload-dump": "@php -r \"if (is_file('build/generate-turbo-stubs.php')) include 'build/generate-turbo-stubs.php';\""
 	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,

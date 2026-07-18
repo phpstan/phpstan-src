@@ -34,6 +34,8 @@ use function is_array;
 use function is_string;
 use function str_contains;
 use function strlen;
+use function strpos;
+use function substr_compare;
 use function usort;
 
 /**
@@ -44,6 +46,9 @@ final class ScopeOps
 {
 
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
+
+	/** Virtual-node key prefixes whose printers include all children verbatim. */
+	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanPossiblyImpure(', '__phpstanRemembered('];
 
 	/**
 	 * Mirrors MutatingScope::getNodeKey().
@@ -590,8 +595,8 @@ final class ScopeOps
 			$exprString = (string) $exprString;
 			if (
 				$canUseKeyPrefilter
-				&& !str_contains($exprString, '__phpstan')
 				&& !str_contains($exprString, $exprStringToInvalidate)
+				&& !self::keyMayHideSubExpressions($exprString)
 			) {
 				continue;
 			}
@@ -616,8 +621,8 @@ final class ScopeOps
 			$conditionalExprString = (string) $conditionalExprString; // @phpstan-ignore cast.useless
 			if (
 				!$canUseKeyPrefilter
-				|| str_contains($conditionalExprString, '__phpstan')
 				|| str_contains($conditionalExprString, $exprStringToInvalidate)
+				|| self::keyMayHideSubExpressions($conditionalExprString)
 			) {
 				$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
 				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $conditionalExprString, $requireMoreCharacters, $invalidatingClass)) {
@@ -637,8 +642,8 @@ final class ScopeOps
 				// and the holder can be kept without inspecting its conditions.
 				if (
 					$canUseKeyPrefilter
-					&& !str_contains((string) $key, '__phpstan')
 					&& !str_contains((string) $key, $exprStringToInvalidate)
+					&& !self::keyMayHideSubExpressions((string) $key)
 				) {
 					if ($filteredHolders !== null) {
 						$filteredHolders[$key] = $holder;
@@ -702,7 +707,23 @@ final class ScopeOps
 	): ?array
 	{
 		$invalidated = false;
+
+		// Same compositional-key shortcut as in invalidateExpressionEntries(): a method
+		// call's key embeds its receiver's key verbatim, so when the invalidated key
+		// does not occur in the entry's key, the receiver cannot match and the entry
+		// can be kept without re-printing the receiver.
+		$canUseKeyPrefilter = !str_contains($exprStringToInvalidate, '__phpstan')
+			&& !str_contains($exprStringToInvalidate, '/*');
+
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$exprString = (string) $exprString; // @phpstan-ignore cast.useless
+			if (
+				$canUseKeyPrefilter
+				&& !str_contains($exprString, $exprStringToInvalidate)
+				&& !self::keyMayHideSubExpressions($exprString)
+			) {
+				continue;
+			}
 			$expr = $exprTypeHolder->getExpr();
 			if (!$expr instanceof MethodCall) {
 				continue;
@@ -722,6 +743,34 @@ final class ScopeOps
 		}
 
 		return [$expressionTypes, $nativeExpressionTypes];
+	}
+
+	/**
+	 * Whether an expression key may textually hide the content of its sub-expressions.
+	 *
+	 * The standard printer is compositional - the key of any sub-expression appears
+	 * verbatim as a substring of the key of the expression containing it - but most
+	 * PHPStan virtual nodes (printed as '__phpstan...') are not: e.g. a wrapped
+	 * variable can be printed by name only. The wrappers in
+	 * COMPOSITIONAL_VIRTUAL_KEY_PREFIXES are the exceptions - they print all of
+	 * their children verbatim - so only a '__phpstan' occurrence that does not
+	 * start one of them signals a possibly non-compositional key.
+	 */
+	private static function keyMayHideSubExpressions(string $exprString): bool
+	{
+		$offset = 0;
+		while (($pos = strpos($exprString, '__phpstan', $offset)) !== false) {
+			foreach (self::COMPOSITIONAL_VIRTUAL_KEY_PREFIXES as $prefix) {
+				if (substr_compare($exprString, $prefix, $pos, strlen($prefix)) === 0) {
+					$offset = $pos + strlen($prefix);
+					continue 2;
+				}
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -747,7 +796,15 @@ final class ScopeOps
 		}
 
 		// Variables will not contain traversable expressions. skip the NodeFinder overhead
-		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			if ($requireMoreCharacters) {
+				// a variable cannot contain more than itself, and the exact match
+				// was already rejected above - this also covers the '$this'
+				// invalidation run for every impure method call, where the substring
+				// gate below cannot be used
+				return false;
+			}
+
 			return $exprStringToInvalidate === $exprString;
 		}
 
@@ -758,15 +815,16 @@ final class ScopeOps
 		// it and we can skip the expensive AST traversal below.
 		// Carve-outs where that invariant does not hold:
 		// - '$this' is special-cased in the visitor to also match self/static/parent,
-		// - PHPStan's virtual nodes (printed as '__phpstan…') use non-compositional printers
-		//   (e.g. a wrapped variable is printed by name, not as '$name'),
+		// - most PHPStan virtual nodes (printed as '__phpstan…') use non-compositional
+		//   printers (e.g. a wrapped variable is printed by name, not as '$name') -
+		//   see keyMayHideSubExpressions() for the compositional exceptions,
 		// - keys carrying a getNodeKey() suffix ('/*…*/') are not plain substrings.
 		if (
 			$exprStringToInvalidate !== '$this'
 			&& !str_contains($exprStringToInvalidate, '__phpstan')
 			&& !str_contains($exprStringToInvalidate, '/*')
-			&& !str_contains($exprString, '__phpstan')
 			&& !str_contains($exprString, $exprStringToInvalidate)
+			&& !self::keyMayHideSubExpressions($exprString)
 		) {
 			return false;
 		}

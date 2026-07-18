@@ -783,8 +783,8 @@ public:
 			zend_ulong idx = entry.indexKey();
 
 			if (canUseKeyPrefilter && key != NULL
-				&& !strContains(key, "__phpstan", sizeof("__phpstan") - 1)
-				&& !strContainsStr(key, exprStringToInvalidate)) {
+				&& !strContainsStr(key, exprStringToInvalidate)
+				&& !keyMayHideSubExpressions(key)) {
 				continue;
 			}
 
@@ -836,8 +836,8 @@ public:
 			 * gate as a prefilter and there is no need to re-print the
 			 * expression for the full check */
 			if (!canUseKeyPrefilter || key == NULL
-				|| strContains(key, "__phpstan", sizeof("__phpstan") - 1)
-				|| strContainsStr(key, exprStringToInvalidate)) {
+				|| strContainsStr(key, exprStringToInvalidate)
+				|| keyMayHideSubExpressions(key)) {
 				zv::Ref firstHolder = (*holdersTable.begin()).value().deref();
 				if (UNEXPECTED(!firstHolder.instanceOf(pt_ce_cond_expr_holder))) {
 					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
@@ -874,8 +874,8 @@ public:
 				 * can contain the invalidated expression and the holder can be
 				 * kept without inspecting its conditions. */
 				if (canUseKeyPrefilter && holderKey != NULL
-					&& !strContains(holderKey, "__phpstan", sizeof("__phpstan") - 1)
-					&& !strContainsStr(holderKey, exprStringToInvalidate)) {
+					&& !strContainsStr(holderKey, exprStringToInvalidate)
+					&& !keyMayHideSubExpressions(holderKey)) {
 					if (!filtered.isUndef()) {
 						tableAddNewCopy(filtered.table(), holderKey, holderEntry.indexKey(), holder);
 					} else {
@@ -979,7 +979,20 @@ public:
 		bool invalidated = false;
 		zv::Arr resultExpr, resultNative; /* stay UNDEF until the first hit */
 
+		/* Same compositional-key shortcut as in invalidateExpressionEntries(): a
+		 * method call's key embeds its receiver's key verbatim, so when the
+		 * invalidated key does not occur in the entry's key, the receiver cannot
+		 * match and the entry can be kept without re-printing the receiver. */
+		const bool canUseKeyPrefilter = !strContains(exprStringToInvalidate, "__phpstan", sizeof("__phpstan") - 1)
+			&& !strContains(exprStringToInvalidate, "/*", 2);
+
 		for (auto entry : expressionTypes) {
+			zend_string *entryKey = entry.stringKeyOrNull();
+			if (canUseKeyPrefilter && entryKey != NULL
+				&& !strContainsStr(entryKey, exprStringToInvalidate)
+				&& !keyMayHideSubExpressions(entryKey)) {
+				continue;
+			}
 			zv::Ref holder = entry.value().deref();
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
 				return zv::Val();
@@ -1600,6 +1613,39 @@ private:
 		return zend_memnstr(ZSTR_VAL(haystack), needle, len, ZSTR_VAL(haystack) + ZSTR_LEN(haystack)) != NULL;
 	}
 
+	/*
+	 * Mirrors ScopeOps::keyMayHideSubExpressions(): a '__phpstan' occurrence
+	 * that does not start one of the compositional virtual-node wrappers
+	 * signals a key that may textually hide its sub-expressions.
+	 */
+	static bool keyMayHideSubExpressions(zend_string *key)
+	{
+		static const struct { const char *prefix; size_t len; } compositionalPrefixes[] = {
+			{ "__phpstanPossiblyImpure(", sizeof("__phpstanPossiblyImpure(") - 1 },
+			{ "__phpstanRemembered(", sizeof("__phpstanRemembered(") - 1 },
+		};
+
+		const char *pos = ZSTR_VAL(key);
+		const char *end = pos + ZSTR_LEN(key);
+		for (;;) {
+			const char *found = zend_memnstr(pos, "__phpstan", sizeof("__phpstan") - 1, end);
+			if (found == NULL) {
+				return false;
+			}
+			bool isCompositional = false;
+			for (const auto &candidate : compositionalPrefixes) {
+				if ((size_t) (end - found) >= candidate.len && memcmp(found, candidate.prefix, candidate.len) == 0) {
+					pos = found + candidate.len;
+					isCompositional = true;
+					break;
+				}
+			}
+			if (!isCompositional) {
+				return true;
+			}
+		}
+	}
+
 	static bool strContainsStr(zend_string *haystack, zend_string *needle)
 	{
 		return ZSTR_LEN(needle) <= ZSTR_LEN(haystack)
@@ -1801,9 +1847,16 @@ private:
 		/* Variables will not contain traversable expressions: direct compare */
 		{
 			pt_node_class_info *info = pt_get_node_class_info(expr->ce);
-			if (info != NULL && info->is_variable && info->name_offset >= 0 && !requireMoreCharacters) {
+			if (info != NULL && info->is_variable && info->name_offset >= 0) {
 				zv::Ref name = zv::ObjRef(expr).propAtOffset((uint32_t) info->name_offset).deref();
 				if (name.isString()) {
+					if (requireMoreCharacters) {
+						/* a variable cannot contain more than itself, and the
+						 * exact match was already rejected above - this also
+						 * covers the '$this' invalidation run for every impure
+						 * method call, where the substring gate cannot be used */
+						return false;
+					}
 					return zend_string_equals(query.exprStringToInvalidate, exprString);
 				}
 			}
@@ -1813,8 +1866,8 @@ private:
 		if (!query.isThis
 			&& !strContains(query.exprStringToInvalidate, "__phpstan", sizeof("__phpstan") - 1)
 			&& !strContains(query.exprStringToInvalidate, "/*", 2)
-			&& !strContains(exprString, "__phpstan", sizeof("__phpstan") - 1)
-			&& !strContainsStr(exprString, query.exprStringToInvalidate)) {
+			&& !strContainsStr(exprString, query.exprStringToInvalidate)
+			&& !keyMayHideSubExpressions(exprString)) {
 			return false;
 		}
 

@@ -2,14 +2,16 @@
 
 namespace PHPStan\Cache;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
 /**
  * Cross-process sharing seam for a single analysis run.
  *
  * This PHP implementation shares nothing: create() never yields an arena,
  * lookups always miss and publishes are dropped — callers fall through to
  * computing values locally, which is exactly PHPStan's behavior without the
- * turbo extension. The extension shadows this class with a shared-memory
- * arena: the master process creates it under a per-run name before spawning
+ * turbo extension. The native implementation is a shared-memory arena:
+ * the master process creates it under a per-run name before spawning
  * parallel workers, every worker maps it, and whichever process computes a
  * record first publishes it for the others. The arena lives exactly as long
  * as the run — the master unlinks the name once all workers have attached
@@ -25,6 +27,7 @@ namespace PHPStan\Cache;
  *
  * @internal
  */
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ArenaCache')]
 final class ArenaCache
 {
 

@@ -4,9 +4,11 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionTypeHolder')]
 final class ExpressionTypeHolder
 {
 

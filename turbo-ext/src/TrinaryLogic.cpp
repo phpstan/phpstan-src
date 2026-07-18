@@ -2,7 +2,7 @@
  * PHPStanTurbo\TrinaryLogic — native implementation of PHPStan\TrinaryLogic.
  *
  * When the extension is enabled, PHPStan\TrinaryLogic is declared as an empty
- * final subclass of this class (turbo-ext/stubs/TrinaryLogic.php). Instances
+ * final subclass of this class (the generated vendor/turbo-stubs.php). Instances
  * are always of that subclass — the singletons are created from the
  * configured trinaryLogicImpl class — so userland type hints keep working.
  *

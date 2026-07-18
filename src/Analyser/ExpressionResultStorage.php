@@ -7,8 +7,10 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Fiber\BeforeScopeForExprRequest;
 use PHPStan\Analyser\Fiber\ParkFiberRequest;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function spl_object_id;
 
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionResultStorage')]
 final class ExpressionResultStorage
 {
 

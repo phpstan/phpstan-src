@@ -2,9 +2,11 @@
 
 namespace PHPStan\Internal;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use Traversable;
 use function array_pop;
 
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\CombinationsHelper')]
 final class CombinationsHelper
 {
 

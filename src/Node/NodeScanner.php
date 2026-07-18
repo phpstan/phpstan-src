@@ -3,14 +3,13 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_array;
 
 /**
  * Recursive AST queries over php-parser node graphs.
- *
- * When the phpstan_turbo extension is loaded, this class is shadowed by a stub
- * extending the extension's native implementation.
  */
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\NodeScanner')]
 final class NodeScanner
 {
 

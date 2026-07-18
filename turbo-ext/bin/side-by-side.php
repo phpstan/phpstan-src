@@ -275,10 +275,47 @@ function analyzePair(string $className, array $entry): array
 }
 
 /**
- * The manifest must stay complete: every stub, every enabler require_once and
- * every per-class .cpp file must correspond to a manifest entry (and vice
- * versa), and stubs must be empty shells — a shadowed class missing from the
- * manifest would silently escape the parity and version-coupling checks.
+ * The stub declarations of the generated vendor/turbo-stubs.php:
+ * class name => native base name. Strict line-based parse — anything not
+ * matching the generator's shape (empty one-line shells; a member declared
+ * in a stub would exist only when the extension is loaded) is reported
+ * through $problems, so a hand edit cannot slip past the structure check.
+ *
+ * @param list<string> $problems
+ * @return array<string, string>
+ */
+function parseTurboStubs(string $file, array &$problems): array
+{
+	$stubs = [];
+	$namespace = null;
+	foreach (file($file) as $i => $line) {
+		$line = rtrim($line, "\n");
+		if ($line === '' || $line === '}' || str_starts_with($line, '<?php') || str_starts_with($line, '//')) {
+			continue;
+		}
+		if (preg_match('~^namespace ([\w\\\\]+) \{$~', $line, $m) === 1) {
+			$namespace = $m[1];
+			continue;
+		}
+		if ($namespace !== null && preg_match('~^\t(?:final )?class (\w+) extends \\\\PHPStanTurbo\\\\(\w+) \{\}$~', $line, $m) === 1) {
+			if ($m[1] !== $m[2]) {
+				$problems[] = sprintf('%s:%d: class %s extends \PHPStanTurbo\%s — the names must match', $file, $i + 1, $m[1], $m[2]);
+			}
+			$stubs[$namespace . '\\' . $m[1]] = $m[2];
+			continue;
+		}
+		$problems[] = sprintf('%s:%d: unexpected line %s — stubs must be empty shells declared as "class X extends \PHPStanTurbo\X {}"', $file, $i + 1, var_export($line, true));
+	}
+
+	return $stubs;
+}
+
+/**
+ * The manifest must stay complete: every ShadowedByTurboExtension attribute,
+ * every stub in the generated vendor/turbo-stubs.php and every per-class
+ * .cpp file must correspond to a manifest entry (and vice versa) — a
+ * shadowed class missing from the manifest would silently escape the parity
+ * and version-coupling checks.
  *
  * @return list<string> problems
  */
@@ -287,45 +324,57 @@ function checkStructure(array $manifest): array
 	$problems = [];
 
 	$fromManifest = [];
+	$fromManifestNonVendored = [];
 	foreach ($manifest as $className => $entry) {
-		$fromManifest[basename($entry['cpp'], '.cpp')] = $className;
+		$base = basename($entry['cpp'], '.cpp');
+		$fromManifest[$base] = $className;
+		if (!($entry['vendored'] ?? false)) {
+			$fromManifestNonVendored[$base] = $className;
+		}
+	}
+
+	// vendored classes cannot carry the attribute (their stubs are hardcoded
+	// in build/generate-turbo-stubs.php), so the attribute scan only binds
+	// the non-vendored manifest entries
+	$attributed = [];
+	foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('src', FilesystemIterator::SKIP_DOTS)) as $file) {
+		if ($file->getExtension() !== 'php') {
+			continue;
+		}
+		if (preg_match('~#\[ShadowedByTurboExtension\(turboClass: \'PHPStanTurbo\\\\(\w+)\'\)\]~', file_get_contents($file->getPathname()), $m) !== 1) {
+			continue;
+		}
+		$attributed[] = $m[1];
 	}
 
 	$sets = [
-		'turbo-ext/stubs/*.php' => array_map(static fn ($f) => basename($f, '.php'), glob('turbo-ext/stubs/*.php')),
-		'require_once in TurboExtensionEnabler' => (static function (): array {
-			preg_match_all('~stubs/(\w+)\.php~', file_get_contents('src/Turbo/TurboExtensionEnabler.php'), $m);
-			return $m[1];
-		})(),
+		'#[ShadowedByTurboExtension] classes under src/' => [$attributed, $fromManifestNonVendored],
 		// main.cpp hosts extension-only classes (Runtime) that shadow no PHP
 		// implementation — they never get a manifest entry.
-		'class-defining .cpp files (PHP_METHOD or reg::Class)' => array_values(array_diff(array_filter(array_map(
+		'class-defining .cpp files (PHP_METHOD or reg::Class)' => [array_values(array_diff(array_filter(array_map(
 			static fn ($f) => preg_match('~PHP_METHOD\(PHPStanTurbo_|reg::Class\s+\w+\("PHPStanTurbo~', file_get_contents($f)) === 1 ? basename($f, '.cpp') : null,
 			array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
-		)), ['main'])),
+		)), ['main'])), $fromManifest],
 	];
-	foreach ($sets as $what => $names) {
-		foreach (array_diff($names, array_keys($fromManifest)) as $extra) {
+	foreach ($sets as $what => [$names, $manifestSubset]) {
+		foreach (array_diff($names, array_keys($manifestSubset)) as $extra) {
 			$problems[] = sprintf('%s from %s has no entry in shadowed-classes.json', $extra, $what);
 		}
-		foreach (array_diff(array_keys($fromManifest), $names) as $missing) {
-			$problems[] = sprintf('manifest entry %s (%s) is missing from %s', $fromManifest[$missing], $missing, $what);
+		foreach (array_diff(array_keys($manifestSubset), $names) as $missing) {
+			$problems[] = sprintf('manifest entry %s (%s) is missing from %s', $manifestSubset[$missing], $missing, $what);
 		}
 	}
 
-	// stubs must be empty final shells extending the matching native class
-	foreach (glob('turbo-ext/stubs/*.php') as $stubFile) {
-		$base = basename($stubFile, '.php');
-		$src = file_get_contents($stubFile);
-		if (preg_match('~class\s+(\w+)\s+extends\s+\\\\PHPStanTurbo\\\\(\w+)\s*\{(.*)\}~s', $src, $m) !== 1) {
-			$problems[] = sprintf('%s does not declare "class X extends \PHPStanTurbo\X"', $stubFile);
-			continue;
+	// the generated stubs file exists on any composer-installed checkout; the
+	// CI structure check runs without vendor/, where the attribute scan above
+	// still binds the manifest
+	if (is_file('vendor/turbo-stubs.php')) {
+		$stubs = parseTurboStubs('vendor/turbo-stubs.php', $problems);
+		foreach (array_diff(array_keys($stubs), array_keys($manifest)) as $extra) {
+			$problems[] = sprintf('%s from vendor/turbo-stubs.php has no entry in shadowed-classes.json', $extra);
 		}
-		if ($m[1] !== $base || $m[2] !== $base) {
-			$problems[] = sprintf('%s: class %s extends \PHPStanTurbo\%s — names must both match the file name', $stubFile, $m[1], $m[2]);
-		}
-		if (trim($m[3]) !== '') {
-			$problems[] = sprintf('%s: the stub body must be empty — a member declared here would exist only when the extension is loaded', $stubFile);
+		foreach (array_diff(array_keys($manifest), array_keys($stubs)) as $missing) {
+			$problems[] = sprintf('manifest entry %s is missing from vendor/turbo-stubs.php — run composer dump-autoload', $missing);
 		}
 	}
 
@@ -359,24 +408,30 @@ function checkWindowsSources(): array
 }
 
 if (in_array('--update-manifest', $argv, true)) {
-	// Regenerate the manifest from ground truth: each stub names the shadowed
-	// class, the autoloader locates its PHP implementation (the enabler is NOT
-	// run, so class names resolve to the originals, not the stubs), and the
-	// native file is the same-named .cpp. Run this after adding a shadowed
-	// class; the CI checks then verify the committed manifest matches reality.
+	// Regenerate the manifest from ground truth: each declaration in the
+	// generated vendor/turbo-stubs.php names a shadowed class, the autoloader
+	// locates its PHP implementation (the enabler is NOT run, so class names
+	// resolve to the originals, not the stubs), and the native file is the
+	// same-named .cpp. Run this after adding a shadowed class (composer
+	// dump-autoload regenerates the stubs from the ShadowedByTurboExtension
+	// attributes first); the CI checks then verify the committed manifest
+	// matches reality.
+	if (!is_file('vendor/turbo-stubs.php')) {
+		fwrite(STDERR, "vendor/turbo-stubs.php does not exist — run composer dump-autoload first\n");
+		exit(1);
+	}
+	$parseProblems = [];
+	$stubs = parseTurboStubs('vendor/turbo-stubs.php', $parseProblems);
+	if ($parseProblems !== []) {
+		foreach ($parseProblems as $problem) {
+			fwrite(STDERR, $problem . "\n");
+		}
+		exit(1);
+	}
 	require $root . '/vendor/autoload.php';
 	$entries = [];
-	foreach (glob('turbo-ext/stubs/*.php') as $stubFile) {
-		$src = file_get_contents($stubFile);
-		if (preg_match('~^namespace\s+([\w\\\\]+);~m', $src, $ns) !== 1
-			|| preg_match('~class\s+(\w+)\s+extends\s+\\\\PHPStanTurbo\\\\\w+~', $src, $cls) !== 1
-		) {
-			fwrite(STDERR, sprintf("cannot parse %s\n", $stubFile));
-			exit(1);
-		}
-		$className = $ns[1] . '\\' . $cls[1];
+	foreach ($stubs as $className => $base) {
 		$phpFile = substr(realpath((new ReflectionClass($className))->getFileName()), strlen(realpath($root)) + 1);
-		$base = basename($stubFile, '.php');
 		$cppFile = 'turbo-ext/src/' . $base . '.cpp';
 		if (!is_file($cppFile)) {
 			$cppFile = 'turbo-ext/src/parser/' . $base . '.cpp';

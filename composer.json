@@ -246,6 +246,9 @@
 			}
 		}
 	],
+	"scripts": {
+		"post-autoload-dump": "@php build/generate-turbo-stubs.php"
+	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"bin": [

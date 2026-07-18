@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
 /**
  * Memoization seam for TypeCombinator's binary operations.
  *
  * This PHP implementation performs no caching at all — it delegates straight to
- * TypeCombinator. The native extension shadows this class and memoizes each
- * operation on a structural key of its arguments; roughly 91% of the calls in a
+ * TypeCombinator. The native implementation memoizes each operation on a
+ * structural key of its arguments; roughly 91% of the calls in a
  * self-analysis run repeat an argument tuple that was already computed.
  *
  * The cache is scoped to a single container: memoization hands back shared Type
@@ -16,6 +18,7 @@ namespace PHPStan\Type;
  *
  * @internal
  */
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\TypeCombinatorCache')]
 final class TypeCombinatorCache
 {
 

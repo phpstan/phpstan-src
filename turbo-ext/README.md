@@ -46,11 +46,17 @@ Every shadowed piece of PHP code follows the same three steps:
    existing value class like `PHPStan\TrinaryLogic`.
 2. The extension implements the same class natively in the `PHPStanTurbo`
    namespace (one class per file in `src/`).
-3. When the extension is enabled, `PHPStan\Turbo\TurboExtensionEnabler`
-   `require`s an empty stub from `stubs/` — `final class Foo extends
-   \PHPStanTurbo\Foo {}` — *before* the Composer autoloader registers.
-   All PHP code keeps calling the original class name, transparently getting
-   the native implementation via inheritance.
+3. The PHP class is marked with the `#[ShadowedByTurboExtension]` attribute
+   naming its native counterpart. On every `composer dump-autoload`,
+   `build/generate-turbo-stubs.php` collects the attributes with runtime
+   reflection and generates `vendor/turbo-stubs.php` — an empty stub shell
+   per class, `final class Foo extends \PHPStanTurbo\Foo {}` (shadowed
+   classes living in vendor/ cannot carry the attribute and are hardcoded in
+   the generator; currently `PhpParser\NodeTraverser`). When the extension
+   is enabled, `PHPStan\Turbo\TurboExtensionEnabler` `require`s that file
+   *before* the Composer autoloader registers. All PHP code keeps calling
+   the original class name, transparently getting the native implementation
+   via inheritance.
 
 Because instances must satisfy the original type hints, the native code never
 instantiates its own classes directly: `TurboExtensionEnabler` passes the stub
@@ -81,8 +87,9 @@ rejects — the extension then simply stays inactive.
 `shadowed-classes.json` is the manifest of shadowed pairs: each PHP class and
 the C++ file implementing it natively. It is not edited by hand:
 `php bin/side-by-side.php --update-manifest` regenerates it from ground truth
-(each stub in `stubs/` names the shadowed class, the Composer autoloader
-locates its PHP implementation, the same-named `.cpp` is the native side).
+(each declaration in the generated `vendor/turbo-stubs.php` names the
+shadowed class, the Composer autoloader locates its PHP implementation, the
+same-named `.cpp` is the native side).
 Run it after a native port is brought on par with the PHP implementation and
 the behaviour is verified by tests — then the CI checks below hold the
 committed manifest against both sides. It drives three things:
@@ -92,9 +99,10 @@ committed manifest against both sides. It drives three things:
   `PHP_METHOD` counterpart in the C++ file and every `PHP_METHOD` corresponds
   to a method of the PHP class. Non-public PHP methods may stay PHP-only
   (native code inlines them or uses C helpers). It also verifies the manifest
-  is complete — stubs, the enabler's `require_once` list and the per-class
-  `.cpp` files must all correspond 1:1 to manifest entries — and that stubs
-  are empty shells (a member declared in a stub would exist only when the
+  is complete — the `#[ShadowedByTurboExtension]` attributes, the generated
+  `vendor/turbo-stubs.php` (when present) and the per-class `.cpp` files must
+  all correspond 1:1 to manifest entries — and that the generated stubs are
+  empty shells (a member declared in a stub would exist only when the
   extension is loaded).
 - **CI signature parity** — `php tests/signature-parity.php` (compile job,
   needs the built extension) reflects each native class against its PHP twin:

@@ -157,6 +157,15 @@ final class TurboExtensionEnabler
 			return;
 		}
 
+		// Generated on composer dump-autoload by build/generate-turbo-stubs.php
+		// from the ShadowedByTurboExtension attributes (plus the hardcoded
+		// vendored PhpParser\NodeTraverser). Missing when the dump skipped
+		// scripts — run without the extension rather than fatal.
+		$stubsFile = dirname(__DIR__, 2) . '/vendor/turbo-stubs.php';
+		if (!is_file($stubsFile)) {
+			return;
+		}
+
 		// Class names the extension needs at runtime, passed as ::class
 		// constants so they stay correct under the scoped phar. The *Impl
 		// entries name the classes the extension instantiates — these are the
@@ -201,20 +210,11 @@ final class TurboExtensionEnabler
 			'conditionalExpressionHolderImpl' => ConditionalExpressionHolder::class,
 		]);
 
-		// Shadow the PHP implementations with stubs extending the extension's
-		// native classes. The stubs are declared before the Composer autoloader
-		// registers, so later references to the original names resolve to them.
-		require_once __DIR__ . '/../../turbo-ext/stubs/TrinaryLogic.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/ExpressionTypeHolder.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/ConditionalExpressionHolder.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/CombinationsHelper.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/NodeTraverser.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/ScopeOps.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/NodeScanner.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/ParserRunner.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/TypeCombinatorCache.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/ArenaCache.php';
-		require_once __DIR__ . '/../../turbo-ext/stubs/ExpressionResultStorage.php';
+		// Shadow the PHP implementations with the generated stubs extending the
+		// extension's native classes. The stubs are declared before the Composer
+		// autoloader registers, so later references to the original names
+		// resolve to them.
+		require_once $stubsFile;
 
 		self::$typeCombinatorCacheEnabled = true;
 		self::$enabled = true;

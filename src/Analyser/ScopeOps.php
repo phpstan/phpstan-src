@@ -20,6 +20,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use function array_filter;
@@ -36,12 +37,8 @@ use function usort;
 
 /**
  * Hot scope-table operations extracted from MutatingScope.
- *
- * When the phpstan_turbo extension is loaded, this class is shadowed by a stub
- * extending the extension's native implementation (see
- * PHPStan\Turbo\TurboExtensionEnabler), so every method here must behave
- * exactly like its native counterpart.
  */
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ScopeOps')]
 final class ScopeOps
 {
 

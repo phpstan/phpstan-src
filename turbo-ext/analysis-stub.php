@@ -3,8 +3,8 @@
 /**
  * Symbol stub for PHPStan's self-analysis (registered via scanFiles in
  * build/phpstan.neon). Never executed or autoloaded. Only symbols referenced
- * from analysed code need to appear here; the runtime stubs in
- * turbo-ext/stubs/ are not part of the analysed paths.
+ * from analysed code need to appear here; the generated runtime stubs
+ * (vendor/turbo-stubs.php) are not part of the analysed paths.
  */
 
 namespace PHPStanTurbo;

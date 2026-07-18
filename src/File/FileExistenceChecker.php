@@ -48,12 +48,9 @@ final class FileExistenceChecker
 	{
 	}
 
-	/**
-	 * @param list<string> $baseDirectories
-	 */
-	public function fileExists(string $path, string $scriptDirectory, array $baseDirectories = []): bool
+	public function fileExists(string $path, string $scriptDirectory): bool
 	{
-		return $this->exists($path, $scriptDirectory, $baseDirectories, false);
+		return $this->exists($path, $scriptDirectory, [], false);
 	}
 
 	/**
@@ -61,7 +58,7 @@ final class FileExistenceChecker
 	 *
 	 * @param list<string> $baseDirectories
 	 */
-	public function pathExists(string $path, string $scriptDirectory, array $baseDirectories = []): bool
+	public function pathExists(string $path, string $scriptDirectory, array $baseDirectories): bool
 	{
 		return $this->exists($path, $scriptDirectory, $baseDirectories, true);
 	}

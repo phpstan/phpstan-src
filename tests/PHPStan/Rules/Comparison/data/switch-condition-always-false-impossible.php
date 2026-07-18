@@ -55,12 +55,6 @@ class Foo
 	}
 
 	/**
-	 * Once the earlier cases have exhausted the subject, it narrows to `never`.
-	 * A `never` operand makes the loose comparison always-false (consistently
-	 * with strict comparison), so the trailing case is reported as always-false
-	 * just like the equivalent `match` arm / `if`-`elseif` chain on an exhausted
-	 * subject.
-	 *
 	 * @param 'a'|'b' $s
 	 */
 	public function nonConstantCaseOnExhaustedSubject(string $s, string $other): void

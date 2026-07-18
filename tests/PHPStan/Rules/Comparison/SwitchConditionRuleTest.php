@@ -149,7 +149,7 @@ class SwitchConditionRuleTest extends RuleTestCase
 			],
 			[
 				'Switch condition comparison between *NEVER* and string is always false.',
-				72,
+				66,
 			],
 		]);
 	}

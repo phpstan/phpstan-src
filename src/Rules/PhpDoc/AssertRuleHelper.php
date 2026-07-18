@@ -81,7 +81,9 @@ final class AssertRuleHelper
 			}
 
 			$assertedExpr = $assert->getParameter()->getExpr(new TypeExpr($parametersByName[$parameterName]));
-			$assertedExprType = $scope->getType($assertedExpr);
+			// getScopeType(): the expression was synthesized right here, so
+			// NodeScopeResolver never visits it and there is no before-scope to wait for
+			$assertedExprType = $scope->getScopeType($assertedExpr);
 			$assertedExprString = $assert->getParameter()->describe();
 			if ($assertedExprType instanceof ErrorType) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown %s.', $assertedExprString))

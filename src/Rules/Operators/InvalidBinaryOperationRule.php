@@ -101,7 +101,9 @@ final class InvalidBinaryOperationRule implements Rule
 			$newRight = $newNode->right;
 		}
 
-		if (!$scope->getType($newNode) instanceof ErrorType) {
+		// getScopeType(): the node was synthesized right here, so NodeScopeResolver
+		// never visits it and there is no before-scope to wait for
+		if (!$scope->getScopeType($newNode) instanceof ErrorType) {
 			return [];
 		}
 

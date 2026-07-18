@@ -25,7 +25,14 @@ final class ExpressionResultStorage
 	/** @var array<int, Scope> */
 	private array $scopesById = [];
 
-	/** @var array<array{fiber: Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest>, request: BeforeScopeForExprRequest}> */
+	/**
+	 * Keyed by spl_object_id() of the requested Expr, so resolving a stored
+	 * before-scope touches only the fibers waiting for that expression. The
+	 * request object keeps the Expr alive, so its id cannot be reused while
+	 * the entry exists.
+	 *
+	 * @var array<int, non-empty-list<array{fiber: Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest>, request: BeforeScopeForExprRequest}>>
+	 */
 	public array $pendingFibers = [];
 
 	/** @var list<Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest>> */

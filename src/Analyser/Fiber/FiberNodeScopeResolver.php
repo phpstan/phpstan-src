@@ -14,6 +14,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_pop;
 use function count;
 use function get_debug_type;
+use function spl_object_id;
 
 #[AutowiredService(as: FiberNodeScopeResolver::class)]
 final class FiberNodeScopeResolver extends NodeScopeResolver
@@ -71,7 +72,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 					continue;
 				}
 
-				$storage->pendingFibers[] = [
+				$storage->pendingFibers[spl_object_id($request->expr)][] = [
 					'fiber' => $fiber,
 					'request' => $request,
 				];
@@ -98,43 +99,40 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 	{
 		start:
 
-		foreach ($storage->pendingFibers as $key => $pending) {
-			$request = $pending['request'];
-			$beforeScope = $storage->findBeforeScope($request->expr);
+		foreach ($storage->pendingFibers as $exprId => $pendingList) {
+			unset($storage->pendingFibers[$exprId]);
 
-			if ($beforeScope !== null) {
-				throw new ShouldNotHappenException('Pending fibers at the end should be about synthetic nodes');
+			foreach ($pendingList as $pending) {
+				$request = $pending['request'];
+				$beforeScope = $storage->findBeforeScope($request->expr);
+
+				if ($beforeScope !== null) {
+					throw new ShouldNotHappenException('Pending fibers at the end should be about synthetic nodes');
+				}
+
+				$fiber = $pending['fiber'];
+				$request = $fiber->resume($request->scope);
+				$this->runFiberForNodeCallback($storage, $fiber, $request);
 			}
 
-			unset($storage->pendingFibers[$key]);
-
-			$fiber = $pending['fiber'];
-			$request = $fiber->resume($request->scope);
-			$this->runFiberForNodeCallback($storage, $fiber, $request);
-
-			// Break and restart the loop since the array may have been modified
+			// Break and restart the loop since the resumed fibers
+			// may have added new pending entries
 			goto start;
 		}
 	}
 
 	private function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
 	{
-		start:
+		$exprId = spl_object_id($expr);
+		while (isset($storage->pendingFibers[$exprId])) {
+			$pendingList = $storage->pendingFibers[$exprId];
+			unset($storage->pendingFibers[$exprId]);
 
-		foreach ($storage->pendingFibers as $key => $pending) {
-			$request = $pending['request'];
-			if ($request->expr !== $expr) {
-				continue;
+			foreach ($pendingList as $pending) {
+				$fiber = $pending['fiber'];
+				$request = $fiber->resume($result);
+				$this->runFiberForNodeCallback($storage, $fiber, $request);
 			}
-
-			unset($storage->pendingFibers[$key]);
-
-			$fiber = $pending['fiber'];
-			$request = $fiber->resume($result);
-			$this->runFiberForNodeCallback($storage, $fiber, $request);
-
-			// Break and restart the loop since the array may have been modified
-			goto start;
 		}
 	}
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -70,6 +71,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				fileExistenceChecker: self::getContainer()->getByType(FileExistenceChecker::class),
 			),
 		);
 	}
@@ -1055,6 +1057,17 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/class-exists-on-static-call.php'], []);
+	}
+
+	public function testFileReferenceAttribute(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/../data/file-reference.php'], [
+			[
+				'Path "file-reference-missing.php" passed to parameter #1 $path does not exist.',
+				80,
+			],
+		]);
 	}
 
 }

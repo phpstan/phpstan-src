@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Keywords;
 
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
@@ -18,10 +19,10 @@ class RequireFileExistsRuleNoConstantPathTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RequireFileExistsRule(
-			$this->currentWorkingDirectory,
 			self::getContainer()->getByType(ExprPrinter::class),
 			true,
 			self::getContainer()->getByType(FileHelper::class),
+			new FileExistenceChecker($this->currentWorkingDirectory),
 		);
 	}
 

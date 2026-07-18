@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -49,6 +50,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				fileExistenceChecker: self::getContainer()->getByType(FileExistenceChecker::class),
 			),
 		);
 	}
@@ -3025,6 +3027,24 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #1 $a of function Bug11494\test expects array{long: string, details: string}|array{short: string}, array{short: \'thing\', extra: \'other\'} given.',
 				18,
 				"• Type #1 from the union: Array does not have offset 'long'.\n• Type #2 from the union: Sealed array shape does not accept array with extra key 'extra'.",
+			],
+		]);
+	}
+
+	public function testFileReferenceAttribute(): void
+	{
+		$this->analyse([__DIR__ . '/../data/file-reference.php'], [
+			[
+				'Path "file-reference-missing.php" passed to parameter #1 $path does not exist.',
+				57,
+			],
+			[
+				'Path "file-reference-nested.php" passed to parameter #1 $path does not exist.',
+				59,
+			],
+			[
+				'Path "file-reference-missing.php" passed to parameter #1 $path does not exist.',
+				67,
 			],
 		]);
 	}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -49,6 +50,7 @@ class InstantiationRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				fileExistenceChecker: self::getContainer()->getByType(FileExistenceChecker::class),
 			),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
@@ -724,6 +726,20 @@ class InstantiationRuleTest extends RuleTestCase
 			[
 				'Cannot instantiate class using array<int, string>.',
 				50,
+			],
+		]);
+	}
+
+	public function testFileReferenceAttribute(): void
+	{
+		$this->analyse([__DIR__ . '/../data/file-reference.php'], [
+			[
+				'Path "file-reference-missing.php" passed to parameter #1 $path does not exist.',
+				71,
+			],
+			[
+				'Path "file-reference-missing.php" passed to parameter #1 $path does not exist.',
+				84,
 			],
 		]);
 	}

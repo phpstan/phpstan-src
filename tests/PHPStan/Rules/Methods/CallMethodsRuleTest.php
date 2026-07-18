@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -59,6 +60,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
+				fileExistenceChecker: self::getContainer()->getByType(FileExistenceChecker::class),
 			),
 		);
 	}
@@ -4254,6 +4256,19 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $value of method Bug14893\ClassStringCase<T of object>::acceptsClassString() expects class-string<T of object>, string given.',
 				137,
+			],
+		]);
+	}
+
+	public function testFileReferenceAttribute(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../data/file-reference.php'], [
+			[
+				'Path "file-reference-missing.php" passed to parameter #1 $path does not exist.',
+				76,
 			],
 		]);
 	}

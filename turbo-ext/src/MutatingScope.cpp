@@ -4882,6 +4882,21 @@ public:
 		return scopeFactoryCreate(a);
 	}
 
+	zv::Val withoutThis()
+	{
+		CreateArgs a;
+		if (UNEXPECTED(!fillFromSlots(a))) return zv::Val();
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, "nativeExpressionTypes"))) return zv::Val();
+		zv::Arr expressionTypes = zv::Arr::copyOfTable(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()));
+		zv::Arr nativeExpressionTypes = zv::Arr::copyOfTable(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()));
+		zend_hash_str_del(expressionTypes.table(), PT_LC("$this"));
+		zend_hash_str_del(nativeExpressionTypes.table(), PT_LC("$this"));
+		if (UNEXPECTED(!fillDispatched(a, true, true))) return zv::Val();
+		a.setOwned(CreateArgs::EXPRESSION_TYPES, std::move(expressionTypes));
+		a.setOwned(CreateArgs::NATIVE_EXPRESSION_TYPES, std::move(nativeExpressionTypes));
+		return scopeFactoryCreate(a);
+	}
+
 	/* }}} */
 
 	/* }}} */
@@ -5356,15 +5371,12 @@ public:
 			expressionTypes.set(exprString, zv::Val::copyOf(entry.value().deref()));
 		}
 
-		zval thisNameZv;
-		ZVAL_STR(&thisNameZv, ZSTR_KNOWN(ZEND_STR_THIS));
-		zv::Val hasThis = thisHasVariableType(&thisNameZv);
-		if (UNEXPECTED(hasThis.isUndef())) return zv::Val();
-		zend_long thisCertainty = pt_type_trinary_value(hasThis.raw());
-		if (UNEXPECTED(thisCertainty < 0)) return zv::Val();
+		zval *thisHolder = zend_hash_str_find(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()), PT_LC("$this"));
 		zv::Ref isStatic = nodeProp(closure, PT_LC("static"));
 		if (UNEXPECTED(isStatic.raw() == NULL)) return zv::Val();
-		if (thisCertainty == PT_TRI_YES && !zend_is_true(isStatic.deref().raw())) {
+		if (thisHolder != NULL && !zend_is_true(isStatic.deref().raw())) {
+			zend_long thisCertainty = holderCertainty(zv::Ref(thisHolder));
+			if (UNEXPECTED(thisCertainty < 0)) return zv::Val();
 			zv::Val node = newVariable(PT_LC("this"));
 			if (UNEXPECTED(node.isUndef())) return zv::Val();
 			zv::Val type = thisGetType(node.raw());
@@ -5372,11 +5384,12 @@ public:
 			zv::Val nativeType = thisGetNativeType(node.raw());
 			if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
 			zv::Str thisKey = zv::Str::adopt(zend_string_init(PT_LC("$this"), 0));
-			setHolder(expressionTypes, thisKey.get(), node.raw(), type.raw(), PT_TRI_YES);
-			setHolder(nativeTypes, thisKey.get(), node.raw(), nativeType.raw(), PT_TRI_YES);
+			zend_long newThisCertainty = thisCertainty == PT_TRI_YES ? PT_TRI_YES : PT_TRI_MAYBE;
+			setHolder(expressionTypes, thisKey.get(), node.raw(), type.raw(), newThisCertainty);
+			setHolder(nativeTypes, thisKey.get(), node.raw(), nativeType.raw(), newThisCertainty);
 
-			bool supportsReadOnlyProperties;
-			if (UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES, supportsReadOnlyProperties))) return zv::Val();
+			bool supportsReadOnlyProperties = false;
+			if (thisCertainty == PT_TRI_YES && UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES, supportsReadOnlyProperties))) return zv::Val();
 			if (supportsReadOnlyProperties) {
 				for (auto entry : zv::ArrRef(nonStaticExpressions.raw())) {
 					zend_string *exprString = entry.stringKeyOrNull();
@@ -11900,6 +11913,12 @@ zv::Val pt_mutating_scope_with_closure_bind_scope_classes(zend_object *scope, zv
 	return pt_type_call(scope, PT_LC("withclosurebindscopeclasses"), 1, scopeClasses);
 }
 
+zv::Val pt_mutating_scope_without_this(zend_object *scope)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope)) return MutatingScope(scope).withoutThis();
+	return pt_type_call(scope, PT_LC("withoutthis"), 0, NULL);
+}
+
 zv::Val pt_mutating_scope_restore_this(zend_object *scope, zval *restoreThisScope)
 {
 	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(restoreThisScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(restoreThisScope), pt_ce_mutating_scope))) return MutatingScope(scope).restoreThis(Z_OBJ_P(restoreThisScope));
@@ -12839,6 +12858,8 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	});
 
 	cls.method<&MutatingScope::withClosureBindScopeClasses, zp::Arr>(sigs::withClosureBindScopeClasses);
+
+	cls.method<&MutatingScope::withoutThis>(sigs::withoutThis);
 
 	/* }}} */
 

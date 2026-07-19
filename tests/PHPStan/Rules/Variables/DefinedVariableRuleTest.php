@@ -495,6 +495,18 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testParamClosureThisOptional(): void
+	{
+		$this->cliArgumentsVariablesRegistered = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/param-closure-this-optional.php'], [
+			[
+				'Variable $this might not be defined.',
+				29,
+			],
+		]);
+	}
+
 	public function testBug14418(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

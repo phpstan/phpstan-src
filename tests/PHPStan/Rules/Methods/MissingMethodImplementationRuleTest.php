@@ -40,6 +40,7 @@ class MissingMethodImplementationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3469.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug3958(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3958.php'], []);

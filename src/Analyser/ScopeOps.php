@@ -41,7 +41,10 @@ use function usort;
 /**
  * Hot scope-table operations extracted from MutatingScope.
  */
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ScopeOps')]
+#[ShadowedByTurboExtension(
+	turboClass: 'PHPStanTurbo\ScopeOps',
+	implementation: __DIR__ . '/../../turbo-ext/src/ScopeOps.cpp',
+)]
 final class ScopeOps
 {
 

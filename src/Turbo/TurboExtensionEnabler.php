@@ -103,14 +103,15 @@ final class TurboExtensionEnabler
 	 * The real source files of the shadowed classes. With the extension
 	 * active, the class names are declared by the stub shells, so reflection
 	 * needs these files fed to it explicitly — resolving the class names
-	 * through the autoloader would reflect the stubs.
+	 * through the autoloader would reflect the stubs. The manifest is
+	 * generated next to the stubs by build/generate-turbo-stubs.php.
 	 *
 	 * @return list<string>
 	 */
 	public static function getShadowedClassSourceFiles(): array
 	{
 		$root = dirname(__DIR__, 2);
-		$manifestPath = $root . '/turbo-ext/shadowed-classes.json';
+		$manifestPath = $root . '/vendor/turbo-shadowed-classes.json';
 		if (!is_file($manifestPath)) {
 			return [];
 		}

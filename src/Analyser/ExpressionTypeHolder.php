@@ -8,7 +8,10 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionTypeHolder')]
+#[ShadowedByTurboExtension(
+	turboClass: 'PHPStanTurbo\ExpressionTypeHolder',
+	implementation: __DIR__ . '/../../turbo-ext/src/ExpressionTypeHolder.cpp',
+)]
 final class ExpressionTypeHolder
 {
 

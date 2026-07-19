@@ -187,15 +187,20 @@ jobs:
       - name: "Check TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION against the last commit touching turbo-ext/src or a shadowed PHP class"
         run: |
           # A change to either side of a shadowed pair must bump the version:
-          # watch turbo-ext/src plus the repo-local PHP files from the manifest
-          # (vendored entries are governed by composer.lock instead).
-          mapfile -t MAPPED_PHP < <(jq -r '.[] | select(.vendored != true) | .php' turbo-ext/shadowed-classes.json)
+          # watch turbo-ext/src plus the repo-local PHP classes carrying the
+          # ShadowedByTurboExtension attribute (the vendored PhpParser pair is
+          # governed by composer.lock instead). The fixed-string pattern drops
+          # the attribute syntax's leading "#[" prefix's hash and the paren to
+          # stay identical to the turbo-ext/Makefile's grep (make cannot hold
+          # either character in its $(shell) call), so every computation of
+          # the watched set agrees.
+          mapfile -t MAPPED_PHP < <(grep -rlF '[ShadowedByTurboExtension' src)
           EXPECTED_SHA="$(git log -1 --format=%H -- turbo-ext/src "${MAPPED_PHP[@]}" | cut -c1-7)"
           ENABLER="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "last commit touching turbo-ext/src or a shadowed PHP class: $EXPECTED_SHA"
           echo "TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION:          $ENABLER"
           if [ "$ENABLER" != "$EXPECTED_SHA" ]; then
-            echo "::error::TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION must be the short SHA of the last commit touching turbo-ext/src/ or a PHP class listed in turbo-ext/shadowed-classes.json."
+            echo "::error::TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION must be the short SHA of the last commit touching turbo-ext/src/ or a PHP class carrying the ShadowedByTurboExtension attribute."
             echo "::error::After changing either side, verify the implementations still match and add a follow-up commit setting the constant to that commit's short SHA (the binary bakes its version from git at build time)."
             exit 1
           fi
@@ -253,9 +258,10 @@ jobs:
             command -v autoconf > /dev/null || brew install autoconf
           fi
           cp -R turbo-ext "$RUNNER_TEMP/turbo-ext"
-          # macOS runs the stock /bin/bash 3.2, which has no mapfile — join
-          # the manifest paths into one string and let the shell word-split it
-          MAPPED_PHP="$(jq -r '[.[] | select(.vendored != true) | .php] | join(" ")' turbo-ext/shadowed-classes.json)"
+          # macOS runs the stock /bin/bash 3.2, which has no mapfile — let the
+          # shell word-split the newline-separated attributed paths (the
+          # pattern matches the turbo-ext/Makefile's grep, see turbo-version)
+          MAPPED_PHP="$(grep -rlF '[ShadowedByTurboExtension' src)"
           # shellcheck disable=SC2086
           git log -1 --format=%H -- turbo-ext/src $MAPPED_PHP | cut -c1-7 > "$RUNNER_TEMP/turbo-ext/VERSION.txt"
           echo "VERSION.txt: $(cat "$RUNNER_TEMP/turbo-ext/VERSION.txt")"
@@ -714,8 +720,8 @@ jobs:
       - name: "Compute the extension version and download the build tools"
         shell: bash
         run: |
-          MAPPED_PHP=$(jq -r '[.[] | select(.vendored != true) | .php] | join(" ")' turbo-ext/shadowed-classes.json)
-          # unquoted on purpose: the joined manifest paths must word-split
+          MAPPED_PHP=$(grep -rlF '[ShadowedByTurboExtension' src)
+          # unquoted on purpose: the attributed paths must word-split
           # into one pathspec each (quoted, they were a single pathspec that
           # matched nothing, silently narrowing the watched set to turbo-ext/src)
           # shellcheck disable=SC2086

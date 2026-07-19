@@ -84,37 +84,41 @@ rejects — the extension then simply stays inactive.
 
 ## Keeping the two implementations in sync
 
-`shadowed-classes.json` is the manifest of shadowed pairs: each PHP class and
-the C++ file implementing it natively. It is not edited by hand:
-`php bin/side-by-side.php --update-manifest` regenerates it from ground truth
-(each declaration in the generated `vendor/turbo-stubs.php` names the
-shadowed class, the Composer autoloader locates its PHP implementation, the
-same-named `.cpp` is the native side).
-Run it after a native port is brought on par with the PHP implementation and
-the behaviour is verified by tests — then the CI checks below hold the
-committed manifest against both sides. It drives three things:
+The manifest of shadowed pairs — each PHP class and the C++ file
+implementing it natively — is derived from the `#[ShadowedByTurboExtension]`
+attributes: the attributed file is the PHP side, the attribute names the
+native class and the implementing `.cpp`. Nothing is maintained by hand;
+`build/generate-turbo-stubs.php` derives the same map into
+`vendor/turbo-shadowed-classes.json` on every `composer dump-autoload` (for
+the runtime consumers: the enabler's reflection sources, the phar's preload
+builder, `tests/signature-parity.php`), and the vendored
+`PhpParser\NodeTraverser` pair, which cannot carry the attribute, is
+hardcoded in that script and in `bin/side-by-side.php`. The manifest drives
+three things:
 
 - **CI method parity** — `php bin/side-by-side.php --check` (part of the
   version job) verifies every public method of each PHP class has a
   `PHP_METHOD` counterpart in the C++ file and every `PHP_METHOD` corresponds
   to a method of the PHP class. Non-public PHP methods may stay PHP-only
   (native code inlines them or uses C helpers). It also verifies the manifest
-  is complete — the `#[ShadowedByTurboExtension]` attributes, the generated
-  `vendor/turbo-stubs.php` (when present) and the per-class `.cpp` files must
-  all correspond 1:1 to manifest entries — and that the generated stubs are
-  empty shells (a member declared in a stub would exist only when the
-  extension is loaded).
+  is complete — the per-class `.cpp` files, the generated
+  `vendor/turbo-stubs.php` and `vendor/turbo-shadowed-classes.json` (when
+  present) must all correspond 1:1 to the attributes — and that the generated
+  stubs are empty shells (a member declared in a stub would exist only when
+  the extension is loaded).
 - **CI signature parity** — `php tests/signature-parity.php` (compile job,
-  needs the built extension) reflects each native class against its PHP twin:
-  visibility, staticness, parameter names/optionality/by-ref/variadic, and
+  needs the built extension and vendor/) reflects each native class against
+  its PHP twin: visibility, staticness, parameter
+  names/optionality/by-ref/variadic, and
   types. It also verifies each manifest entry points at the file the class
   actually lives in (and that the `vendored` flag matches), so a stale
-  manifest fails instead of silently comparing against the wrong source. Native arginfo may erase types to none/`object` (it cannot bake
+  autoloader dump fails instead of silently comparing against the wrong
+  source. Native arginfo may erase types to none/`object` (it cannot bake
   class names of phar-prefixed namespaces into the binary, and engine-level
   type checks cost per call), but what it does declare must match, and
   parameter names must match exactly — a renamed parameter would break named
   arguments only in turbo mode.
-- **CI version coupling** — the version job watches the manifest's PHP files
+- **CI version coupling** — the version job watches the attributed PHP files
   in addition to `turbo-ext/src/` (see above), so a PHP-side edit cannot
   silently diverge from the native port. The vendored `PhpParser\NodeTraverser`
   pair is excluded from the git check; it is pinned by `composer.lock`.

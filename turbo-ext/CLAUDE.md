@@ -53,14 +53,13 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    (scoped-phar safety). Classes the native code *instantiates* get `…Impl`
    entries naming the stub, so instances satisfy the original type hints.
 5. **Mark the class** with `#[ShadowedByTurboExtension(turboClass:
-   'PHPStanTurbo\Foo')]` and run `composer dump-autoload` —
-   `build/generate-turbo-stubs.php` regenerates the stub shells in
-   `vendor/turbo-stubs.php` from the attributes (shadowed classes living in
-   vendor/ cannot carry the attribute and are hardcoded in that script).
-6. **Regenerate the manifest**: `php bin/side-by-side.php --update-manifest`
-   (derives `shadowed-classes.json` from the generated
-   `vendor/turbo-stubs.php` + the autoloader — never edit it by hand), then
-   run `php bin/side-by-side.php --check` — method parity must pass.
+   'PHPStanTurbo\Foo', implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
+   and run `composer dump-autoload` — `build/generate-turbo-stubs.php`
+   regenerates the stub shells in `vendor/turbo-stubs.php` and the manifest
+   of shadowed pairs in `vendor/turbo-shadowed-classes.json` from the
+   attributes (shadowed classes living in vendor/ cannot carry the attribute
+   and are hardcoded in that script and in `bin/side-by-side.php`).
+6. **Check method parity**: `php bin/side-by-side.php --check` must pass.
 7. **Extend `tests/smoke.php`** with differential coverage (native result
    must equal the PHP implementation's result on the same inputs).
 8. **Verify**: strict build, smoke test,

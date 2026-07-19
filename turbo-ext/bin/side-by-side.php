@@ -2,15 +2,15 @@
 
 /**
  * Pairs the shadowed PHP classes with their native C++ implementations by
- * method name, driven by turbo-ext/shadowed-classes.json.
+ * method name, driven by the ShadowedByTurboExtension attributes.
  *
  * Usage:
  *   php turbo-ext/bin/side-by-side.php --check
  *       Verify the two implementations are in sync (used by CI):
- *       every manifest file exists, every public method of the PHP class
- *       has a PHP_METHOD counterpart in the C++ file, and every PHP_METHOD
- *       corresponds to a method of the PHP class. Vendored entries are
- *       skipped when vendor/ is not installed.
+ *       every shadowed pair's files exist, every public method of the PHP
+ *       class has a PHP_METHOD counterpart in the C++ file, and every
+ *       PHP_METHOD corresponds to a method of the PHP class. Vendored
+ *       entries are skipped when vendor/ is not installed.
  *
  *   php turbo-ext/bin/side-by-side.php [output.html]
  *       Render a side-by-side HTML view of each method pair
@@ -24,8 +24,57 @@ error_reporting(E_ALL);
 $root = dirname(__DIR__, 2);
 chdir($root);
 
-$manifestFile = 'turbo-ext/shadowed-classes.json';
-$manifest = json_decode(file_get_contents($manifestFile), true, 8, JSON_THROW_ON_ERROR);
+/**
+ * The manifest of shadowed pairs, derived from the ShadowedByTurboExtension
+ * attributes under src/: the attributed file is the PHP side, the attribute
+ * names the native class and the .cpp implementing it. The vendored
+ * PhpParser\NodeTraverser pair cannot carry the attribute and is hardcoded —
+ * in build/generate-turbo-stubs.php too, which derives the same map into
+ * vendor/turbo-shadowed-classes.json with runtime reflection instead of this
+ * textual scan (checkStructure() holds the two derivations against each
+ * other, and a class this scan misses still fails --check: its .cpp would
+ * have no manifest entry).
+ *
+ * @return array<string, array{php: string, cpp: string, vendored?: bool}>
+ */
+function buildManifest(): array
+{
+	$manifest = [
+		'PhpParser\NodeTraverser' => [
+			'php' => 'vendor/nikic/php-parser/lib/PhpParser/NodeTraverser.php',
+			'cpp' => 'turbo-ext/src/NodeTraverser.cpp',
+			'vendored' => true,
+		],
+	];
+
+	foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('src', FilesystemIterator::SKIP_DOTS)) as $file) {
+		if ($file->getExtension() !== 'php') {
+			continue;
+		}
+		$path = str_replace(DIRECTORY_SEPARATOR, '/', $file->getPathname());
+		if (preg_match('~#\[ShadowedByTurboExtension\(\s*turboClass:\s*\'PHPStanTurbo\\\\\w+\',\s*implementation:\s*__DIR__\s*\.\s*\'([^\']+)\',?\s*\)\]~', file_get_contents($path), $m) !== 1) {
+			continue;
+		}
+
+		// src/ is PSR-4 for the PHPStan namespace, so the class name follows
+		// from the path; the __DIR__-relative implementation resolves against
+		// the attributed file's directory
+		$className = 'PHPStan\\' . strtr(substr($path, strlen('src/'), -strlen('.php')), '/', '\\');
+		$cpp = realpath(dirname($path) . $m[1]);
+		$manifest[$className] = [
+			'php' => $path,
+			'cpp' => $cpp === false
+				? dirname($path) . $m[1] // missing — analyzePair() reports it
+				: str_replace(DIRECTORY_SEPARATOR, '/', substr($cpp, strlen((string) realpath('.')) + 1)),
+		];
+	}
+
+	ksort($manifest);
+
+	return $manifest;
+}
+
+$manifest = buildManifest();
 
 /**
  * @return array<string, array{visibility: string, static: bool, startLine: int, endLine: int}>
@@ -311,11 +360,11 @@ function parseTurboStubs(string $file, array &$problems): array
 }
 
 /**
- * The manifest must stay complete: every ShadowedByTurboExtension attribute,
- * every stub in the generated vendor/turbo-stubs.php and every per-class
- * .cpp file must correspond to a manifest entry (and vice versa) — a
- * shadowed class missing from the manifest would silently escape the parity
- * and version-coupling checks.
+ * The derived manifest must stay complete: every per-class .cpp file, every
+ * stub in the generated vendor/turbo-stubs.php and every entry of the
+ * generated vendor/turbo-shadowed-classes.json must correspond to a manifest
+ * entry (and vice versa) — a shadowed class the attribute scan misses would
+ * silently escape the parity and version-coupling checks.
  *
  * @return list<string> problems
  */
@@ -324,57 +373,39 @@ function checkStructure(array $manifest): array
 	$problems = [];
 
 	$fromManifest = [];
-	$fromManifestNonVendored = [];
 	foreach ($manifest as $className => $entry) {
-		$base = basename($entry['cpp'], '.cpp');
-		$fromManifest[$base] = $className;
-		if (!($entry['vendored'] ?? false)) {
-			$fromManifestNonVendored[$base] = $className;
-		}
+		$fromManifest[basename($entry['cpp'], '.cpp')] = $className;
 	}
 
-	// vendored classes cannot carry the attribute (their stubs are hardcoded
-	// in build/generate-turbo-stubs.php), so the attribute scan only binds
-	// the non-vendored manifest entries
-	$attributed = [];
-	foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('src', FilesystemIterator::SKIP_DOTS)) as $file) {
-		if ($file->getExtension() !== 'php') {
-			continue;
-		}
-		if (preg_match('~#\[ShadowedByTurboExtension\(turboClass: \'PHPStanTurbo\\\\(\w+)\'\)\]~', file_get_contents($file->getPathname()), $m) !== 1) {
-			continue;
-		}
-		$attributed[] = $m[1];
+	// main.cpp hosts extension-only classes (Runtime) that shadow no PHP
+	// implementation — they never get a manifest entry.
+	$cppClasses = array_values(array_diff(array_filter(array_map(
+		static fn ($f) => preg_match('~PHP_METHOD\(PHPStanTurbo_|reg::Class\s+\w+\("PHPStanTurbo~', file_get_contents($f)) === 1 ? basename($f, '.cpp') : null,
+		array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
+	)), ['main']));
+	foreach (array_diff($cppClasses, array_keys($fromManifest)) as $extra) {
+		$problems[] = sprintf('%s from class-defining .cpp files (PHP_METHOD or reg::Class) has no ShadowedByTurboExtension attribute naming it', $extra);
+	}
+	foreach (array_diff(array_keys($fromManifest), $cppClasses) as $missing) {
+		$problems[] = sprintf('shadowed class %s (%s) is missing from the class-defining .cpp files (PHP_METHOD or reg::Class)', $fromManifest[$missing], $missing);
 	}
 
-	$sets = [
-		'#[ShadowedByTurboExtension] classes under src/' => [$attributed, $fromManifestNonVendored],
-		// main.cpp hosts extension-only classes (Runtime) that shadow no PHP
-		// implementation — they never get a manifest entry.
-		'class-defining .cpp files (PHP_METHOD or reg::Class)' => [array_values(array_diff(array_filter(array_map(
-			static fn ($f) => preg_match('~PHP_METHOD\(PHPStanTurbo_|reg::Class\s+\w+\("PHPStanTurbo~', file_get_contents($f)) === 1 ? basename($f, '.cpp') : null,
-			array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
-		)), ['main'])), $fromManifest],
-	];
-	foreach ($sets as $what => [$names, $manifestSubset]) {
-		foreach (array_diff($names, array_keys($manifestSubset)) as $extra) {
-			$problems[] = sprintf('%s from %s has no entry in shadowed-classes.json', $extra, $what);
-		}
-		foreach (array_diff(array_keys($manifestSubset), $names) as $missing) {
-			$problems[] = sprintf('manifest entry %s (%s) is missing from %s', $manifestSubset[$missing], $missing, $what);
-		}
-	}
-
-	// the generated stubs file exists on any composer-installed checkout; the
-	// CI structure check runs without vendor/, where the attribute scan above
-	// still binds the manifest
+	// the generated files exist on any composer-installed checkout (the CI
+	// structure check runs without vendor/) and must match the attributes
+	// they were derived from — a mismatch means a stale autoloader dump
 	if (is_file('vendor/turbo-stubs.php')) {
 		$stubs = parseTurboStubs('vendor/turbo-stubs.php', $problems);
 		foreach (array_diff(array_keys($stubs), array_keys($manifest)) as $extra) {
-			$problems[] = sprintf('%s from vendor/turbo-stubs.php has no entry in shadowed-classes.json', $extra);
+			$problems[] = sprintf('%s from vendor/turbo-stubs.php has no ShadowedByTurboExtension attribute — run composer dump-autoload', $extra);
 		}
 		foreach (array_diff(array_keys($manifest), array_keys($stubs)) as $missing) {
-			$problems[] = sprintf('manifest entry %s is missing from vendor/turbo-stubs.php — run composer dump-autoload', $missing);
+			$problems[] = sprintf('shadowed class %s is missing from vendor/turbo-stubs.php — run composer dump-autoload', $missing);
+		}
+	}
+	if (is_file('vendor/turbo-shadowed-classes.json')) {
+		$generated = json_decode(file_get_contents('vendor/turbo-shadowed-classes.json'), true, 8, JSON_THROW_ON_ERROR);
+		if ($generated != $manifest) {
+			$problems[] = 'vendor/turbo-shadowed-classes.json does not match the ShadowedByTurboExtension attributes — run composer dump-autoload';
 		}
 	}
 
@@ -405,50 +436,6 @@ function checkWindowsSources(): array
 	}
 
 	return $problems;
-}
-
-if (in_array('--update-manifest', $argv, true)) {
-	// Regenerate the manifest from ground truth: each declaration in the
-	// generated vendor/turbo-stubs.php names a shadowed class, the autoloader
-	// locates its PHP implementation (the enabler is NOT run, so class names
-	// resolve to the originals, not the stubs), and the native file is the
-	// same-named .cpp. Run this after adding a shadowed class (composer
-	// dump-autoload regenerates the stubs from the ShadowedByTurboExtension
-	// attributes first); the CI checks then verify the committed manifest
-	// matches reality.
-	if (!is_file('vendor/turbo-stubs.php')) {
-		fwrite(STDERR, "vendor/turbo-stubs.php does not exist — run composer dump-autoload first\n");
-		exit(1);
-	}
-	$parseProblems = [];
-	$stubs = parseTurboStubs('vendor/turbo-stubs.php', $parseProblems);
-	if ($parseProblems !== []) {
-		foreach ($parseProblems as $problem) {
-			fwrite(STDERR, $problem . "\n");
-		}
-		exit(1);
-	}
-	require $root . '/vendor/autoload.php';
-	$entries = [];
-	foreach ($stubs as $className => $base) {
-		$phpFile = substr(realpath((new ReflectionClass($className))->getFileName()), strlen(realpath($root)) + 1);
-		$cppFile = 'turbo-ext/src/' . $base . '.cpp';
-		if (!is_file($cppFile)) {
-			$cppFile = 'turbo-ext/src/parser/' . $base . '.cpp';
-		}
-		$entry = [
-			'php' => $phpFile,
-			'cpp' => $cppFile,
-		];
-		if (str_starts_with($phpFile, 'vendor/')) {
-			$entry['vendored'] = true;
-		}
-		$entries[$className] = $entry;
-	}
-	ksort($entries);
-	file_put_contents($manifestFile, json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
-	printf("wrote %s (%d classes)\n", $manifestFile, count($entries));
-	exit(0);
 }
 
 $check = in_array('--check', $argv, true);
@@ -566,7 +553,7 @@ pre { border: 1px solid var(--border); border-radius: 6px; padding: .6rem; overf
 @media (max-width: 1000px) { .pair { grid-template-columns: 1fr; } }
 </style>
 <h1>phpstan_turbo — shadowed classes, PHP ↔ C++</h1>
-<p>Generated from <code>turbo-ext/shadowed-classes.json</code> at commit <code>{$gitHead}</code>
+<p>Derived from the <code>ShadowedByTurboExtension</code> attributes at commit <code>{$gitHead}</code>
 by <code>php turbo-ext/bin/side-by-side.php</code>. Left: the PHP implementation
 (used when the extension is not loaded). Right: the native implementation the
 stub shadows it with.</p>

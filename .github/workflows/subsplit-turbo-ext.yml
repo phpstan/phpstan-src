@@ -112,9 +112,17 @@ jobs:
             for commit in "${commits[@]}"; do
               # The version at this commit, mirroring the Makefile's git
               # computation: the last commit touching turbo-ext/src or a
-              # non-vendored PHP class from the manifest as it existed at this
-              # commit ("dev" before that layout existed).
+              # non-vendored shadowed PHP twin as of this commit ("dev"
+              # before that layout existed). The twins are the classes
+              # carrying the ShadowedByTurboExtension attribute (the
+              # fixed-string pattern matches the turbo-ext/Makefile's grep);
+              # commits predating the attribute carried the same set in the
+              # since-retired turbo-ext/shadowed-classes.json manifest, so
+              # both sources are unioned (duplicate pathspecs are harmless).
               watched=("$PREFIX/src")
+              while IFS= read -r mapped; do
+                watched+=("${mapped#"$commit":}")
+              done < <(git grep -lF '[ShadowedByTurboExtension' "$commit" -- src 2>/dev/null || true)
               while IFS= read -r mapped; do
                 watched+=("$mapped")
               done < <(git show "$commit:$PREFIX/shadowed-classes.json" 2>/dev/null | jq -r '.[] | select(.vendored != true) | .php' 2>/dev/null || true)

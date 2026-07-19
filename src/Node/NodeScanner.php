@@ -9,7 +9,10 @@ use function is_array;
 /**
  * Recursive AST queries over php-parser node graphs.
  */
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\NodeScanner')]
+#[ShadowedByTurboExtension(
+	turboClass: 'PHPStanTurbo\NodeScanner',
+	implementation: __DIR__ . '/../../turbo-ext/src/NodeScanner.cpp',
+)]
 final class NodeScanner
 {
 

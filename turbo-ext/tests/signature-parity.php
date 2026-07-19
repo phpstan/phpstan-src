@@ -24,7 +24,13 @@ if (!extension_loaded('phpstan_turbo')) {
 
 require $root . '/vendor/autoload.php';
 
-$manifest = json_decode(file_get_contents('turbo-ext/shadowed-classes.json'), true, 8, JSON_THROW_ON_ERROR);
+// generated next to vendor/turbo-stubs.php by build/generate-turbo-stubs.php
+$manifestFile = 'vendor/turbo-shadowed-classes.json';
+if (!is_file($manifestFile)) {
+	fwrite(STDERR, $manifestFile . " does not exist — run composer dump-autoload first\n");
+	exit(1);
+}
+$manifest = json_decode(file_get_contents($manifestFile), true, 8, JSON_THROW_ON_ERROR);
 
 // Native arginfo deliberately erases most types to none or object: it cannot
 // bake class-name strings of prefixed namespaces into the binary (the scoped
@@ -76,7 +82,7 @@ foreach ($manifest as $twinClass => $entry) {
 	// normalized to forward slashes: the manifest stores portable paths
 	$actualFile = str_replace(DIRECTORY_SEPARATOR, '/', substr(realpath($twin->getFileName()), strlen(realpath($root)) + 1));
 	if ($actualFile !== $entry['php']) {
-		$problems[] = sprintf('lives in %s, but the manifest says %s — regenerate with bin/side-by-side.php --update-manifest', $actualFile, $entry['php']);
+		$problems[] = sprintf('lives in %s, but the manifest says %s — regenerate with composer dump-autoload', $actualFile, $entry['php']);
 	}
 	if (($entry['vendored'] ?? false) !== str_starts_with($actualFile, 'vendor/')) {
 		$problems[] = sprintf('the manifest "vendored" flag does not match the class location %s', $actualFile);

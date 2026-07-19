@@ -32,7 +32,13 @@ CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 # neither source it degrades to "dev", which the enabler rejects — the
 # extension then simply stays inactive. version.stamp makes a SHA change
 # rebuild main.o.
-MAPPED_PHP := $(shell php -n -r 'echo implode(" ", array_map(static fn ($$e) => $$e["php"], array_filter(json_decode(file_get_contents("shadowed-classes.json"), true), static fn ($$e) => !($$e["vendored"] ?? false))));' 2>/dev/null)
+# matches the attribute syntax "#[ShadowedByTurboExtension(" — the pattern
+# drops the leading hash (make treats any literal # on this line as a comment
+# start, even backslash-escaped inside $(shell)) and the opening paren (make
+# balances parens when parsing the $(shell) call); the phar.yml version jobs
+# and subsplit-turbo-ext.yml grep for the same fixed string so every
+# computation of the watched set agrees
+MAPPED_PHP := $(shell cd .. && grep -rlF '[ShadowedByTurboExtension' src 2>/dev/null)
 PHPSTANTURBO_VERSION := $(shell git -C .. log -1 --format=%H -- turbo-ext/src $(MAPPED_PHP) 2>/dev/null | cut -c1-7)
 ifeq ($(PHPSTANTURBO_VERSION),)
 PHPSTANTURBO_VERSION := $(strip $(shell cat VERSION.txt 2>/dev/null))

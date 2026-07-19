@@ -1,13 +1,19 @@
 <?php declare(strict_types = 1);
 
 /**
- * Generates vendor/turbo-stubs.php: one empty stub shell per class carrying
- * the ShadowedByTurboExtension attribute, extending the phpstan_turbo
- * extension's native counterpart the attribute names. Runs on every
- * autoloader dump (composer.json scripts.post-autoload-dump).
- * TurboExtensionEnabler requires the file before the Composer autoloader
- * registers, so with the extension active every reference to the original
- * class name transparently resolves to the native implementation.
+ * Generates two files from the ShadowedByTurboExtension attributes on every
+ * autoloader dump (composer.json scripts.post-autoload-dump):
+ *
+ * - vendor/turbo-stubs.php: one empty stub shell per shadowed class,
+ *   extending the phpstan_turbo extension's native counterpart the attribute
+ *   names. TurboExtensionEnabler requires the file before the Composer
+ *   autoloader registers, so with the extension active every reference to
+ *   the original class name transparently resolves to the native
+ *   implementation.
+ * - vendor/turbo-shadowed-classes.json: the manifest of shadowed pairs
+ *   (each class's PHP source and the .cpp implementing it natively), read
+ *   by TurboExtensionEnabler::getShadowedClassSourceFiles(), the compiler's
+ *   preload builder, and turbo-ext/tests/signature-parity.php.
  *
  * The attributes are read with runtime reflection against the freshly dumped
  * autoloader — unlike ondrejmirtes/composer-attribute-collector, which parses
@@ -29,10 +35,24 @@ $root = dirname(__DIR__);
 
 require_once $root . '/vendor/autoload.php';
 
+$rootReal = realpath($root);
+if ($rootReal === false) {
+	throw new RuntimeException('realpath() failed');
+}
+
+$relativize = static function (string $path) use ($rootReal): string {
+	$real = realpath($path);
+	if ($real === false) {
+		throw new RuntimeException(sprintf('%s does not exist', $path));
+	}
+
+	return str_replace(DIRECTORY_SEPARATOR, '/', substr($real, strlen($rootReal) + 1));
+};
+
 // Shadowed classes living in vendor/ cannot carry the attribute, so their
-// stubs are hardcoded here. Class name => [native class, final]
-$stubs = [
-	'PhpParser\NodeTraverser' => ['PHPStanTurbo\NodeTraverser', false],
+// pairs are hardcoded here. Class name => [native class, final, .cpp file]
+$pairs = [
+	'PhpParser\NodeTraverser' => ['PHPStanTurbo\NodeTraverser', false, 'turbo-ext/src/NodeTraverser.cpp'],
 ];
 
 $sourceDir = $root . '/src';
@@ -62,13 +82,15 @@ foreach ($iterator as $file) {
 		continue;
 	}
 
-	$stubs[$className] = [$attributes[0]->newInstance()->turboClass, $reflection->isFinal()];
+	$attribute = $attributes[0]->newInstance();
+	$pairs[$className] = [$attribute->turboClass, $reflection->isFinal(), $relativize($attribute->implementation)];
 }
 
-ksort($stubs);
+ksort($pairs);
 
 $namespaces = [];
-foreach ($stubs as $className => [$turboClass, $final]) {
+$manifest = [];
+foreach ($pairs as $className => [$turboClass, $final, $cppFile]) {
 	$pos = strrpos($className, '\\');
 	$namespaces[substr($className, 0, $pos)][] = sprintf(
 		"\t%sclass %s extends \\%s {}",
@@ -76,6 +98,16 @@ foreach ($stubs as $className => [$turboClass, $final]) {
 		substr($className, $pos + 1),
 		$turboClass,
 	);
+
+	$phpFile = $relativize((new ReflectionClass($className))->getFileName());
+	$entry = [
+		'php' => $phpFile,
+		'cpp' => $cppFile,
+	];
+	if (str_starts_with($phpFile, 'vendor/')) {
+		$entry['vendored'] = true;
+	}
+	$manifest[$className] = $entry;
 }
 
 $blocks = [];
@@ -100,4 +132,9 @@ PHP,
 	implode("\n\n", $blocks),
 ));
 
-echo sprintf("Generated turbo-stubs.php (%d classes)\n", count($stubs));
+file_put_contents(
+	$root . '/vendor/turbo-shadowed-classes.json',
+	json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n",
+);
+
+echo sprintf("Generated turbo-stubs.php and turbo-shadowed-classes.json (%d classes)\n", count($pairs));

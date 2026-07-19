@@ -6,12 +6,16 @@
   "storage.xml_storage_path": "tests/bench/storage",
   "report.generators": {
     "my-report": {
-      "extends": "aggregate",
+      "extends": "aggregate-preview",
+      "title": null,
+      "description": null,
+      "break": [],
       "cols": {
         "set": null,
         "mem_peak": null,
         "mode": null,
-        "rstdev": null
+        "rstdev": null,
+        "diff": null
       }
     }
   }

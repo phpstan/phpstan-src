@@ -111,22 +111,11 @@ jobs:
           if [ "${#commits[@]}" -gt 0 ]; then
             for commit in "${commits[@]}"; do
               # The version at this commit, mirroring the Makefile's git
-              # computation: the last commit touching turbo-ext/src or a
-              # non-vendored shadowed PHP twin as of this commit ("dev"
-              # before that layout existed). The twins are the classes
-              # carrying the ShadowedByTurboExtension attribute (the
-              # fixed-string pattern matches the turbo-ext/Makefile's grep);
-              # commits predating the attribute carried the same set in the
-              # since-retired turbo-ext/shadowed-classes.json manifest, so
-              # both sources are unioned (duplicate pathspecs are harmless).
-              watched=("$PREFIX/src")
-              while IFS= read -r mapped; do
-                watched+=("${mapped#"$commit":}")
-              done < <(git grep -lF '[ShadowedByTurboExtension' "$commit" -- src 2>/dev/null || true)
-              while IFS= read -r mapped; do
-                watched+=("$mapped")
-              done < <(git show "$commit:$PREFIX/shadowed-classes.json" 2>/dev/null | jq -r '.[] | select(.vendored != true) | .php' 2>/dev/null || true)
-              version="$(git log -1 --format=%H "$commit" -- "${watched[@]}" | cut -c1-7)"
+              # computation: the last commit touching turbo-ext/src as of
+              # this commit ("dev" before that layout existed). Commits
+              # already replayed keep the VERSION.txt committed with them,
+              # even where an older computation produced a different value.
+              version="$(git log -1 --format=%H "$commit" -- "$PREFIX/src" | cut -c1-7)"
               blob="$(printf '%s\n' "${version:-dev}" | git hash-object -w --stdin)"
               # a commit removing the directory altogether replays as an empty tree
               if subtree="$(git rev-parse -q --verify "$commit:$PREFIX")"; then

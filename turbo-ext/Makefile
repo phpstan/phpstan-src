@@ -19,8 +19,8 @@ CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 	`$(PHP_CONFIG) --includes`
 
 # The extension version is the short SHA of the last commit touching
-# turbo-ext/src/ or a shadowed PHP twin (the same watched set the CI version
-# job enforces against TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION),
+# turbo-ext/src/ (the same computation the CI version job enforces against
+# TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION),
 # computed from git at build time and baked in via -D. Outside the monorepo
 # (the phpstan/turbo-ext subsplit, a release tarball) git yields nothing —
 # and the subsplit's replayed commits have different SHAs anyway — so
@@ -32,14 +32,7 @@ CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 # neither source it degrades to "dev", which the enabler rejects — the
 # extension then simply stays inactive. version.stamp makes a SHA change
 # rebuild main.o.
-# matches the attribute syntax "#[ShadowedByTurboExtension(" — the pattern
-# drops the leading hash (make treats any literal # on this line as a comment
-# start, even backslash-escaped inside $(shell)) and the opening paren (make
-# balances parens when parsing the $(shell) call); the phar.yml version jobs
-# and subsplit-turbo-ext.yml grep for the same fixed string so every
-# computation of the watched set agrees
-MAPPED_PHP := $(shell cd .. && grep -rlF '[ShadowedByTurboExtension' src 2>/dev/null)
-PHPSTANTURBO_VERSION := $(shell git -C .. log -1 --format=%H -- turbo-ext/src $(MAPPED_PHP) 2>/dev/null | cut -c1-7)
+PHPSTANTURBO_VERSION := $(shell git -C .. log -1 --format=%H -- turbo-ext/src 2>/dev/null | cut -c1-7)
 ifeq ($(PHPSTANTURBO_VERSION),)
 PHPSTANTURBO_VERSION := $(strip $(shell cat VERSION.txt 2>/dev/null))
 endif

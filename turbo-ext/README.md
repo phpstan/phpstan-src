@@ -66,15 +66,18 @@ factories/singletons instantiate those subclasses.
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
 a mismatched extension is ignored. `PHPSTAN_TURBO=0` disables it explicitly.
 
-The version is the short SHA of the last commit that touched `turbo-ext/src/`
-or one of the shadowed PHP classes. The binary's (actual) version is baked in
-at build time — the Makefile computes it from git over that same watched set
+The version is the short SHA of the last commit that touched `turbo-ext/src/`.
+The binary's (actual) version is baked in at build time — the Makefile
+computes it from git over the same path
 — so only the expected side, `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`,
-is declared by hand. After changing either side of a shadowed pair, verify the
+is declared by hand. After changing the native side, verify the
 implementations still match and add a follow-up commit updating the constant
-to the short SHA of the changing commit; the phar.yml `turbo-version` job
-enforces the SHA and the compile job verifies the built binary reports what
-the enabler expects. Builds outside the monorepo — the phpstan/turbo-ext
+to the short SHA of the changing commit (computed after it lands on the
+target branch — a pull request commit gets a new SHA when rebased); the
+phar.yml `turbo-version` job enforces the SHA and the compile job verifies
+the built binary reports what the enabler expects. A PHP-twin-only edit does
+not move the version — keeping the pair in sync there is on the review and
+the differential tests, not the version gate. Builds outside the monorepo — the phpstan/turbo-ext
 subsplit and PIE source builds from it — cannot ask git (the subsplit's
 replayed commits have different SHAs, tarballs have no checkout at all), so
 the subsplit workflow generates and commits a `VERSION.txt` there and the
@@ -118,10 +121,10 @@ three things:
   type checks cost per call), but what it does declare must match, and
   parameter names must match exactly — a renamed parameter would break named
   arguments only in turbo mode.
-- **CI version coupling** — the version job watches the attributed PHP files
-  in addition to `turbo-ext/src/` (see above), so a PHP-side edit cannot
-  silently diverge from the native port. The vendored `PhpParser\NodeTraverser`
-  pair is excluded from the git check; it is pinned by `composer.lock`.
+- **CI version coupling** — the version job enforces the expected-version
+  constant against `turbo-ext/src/` history (see above), so a native-side
+  edit cannot ship without the explicit bump attesting the pair still
+  matches.
 - **Side-by-side review** — `php bin/side-by-side.php` renders
   `side-by-side.html` (gitignored), pairing each method's PHP and C++
   implementations next to each other for maintenance review.

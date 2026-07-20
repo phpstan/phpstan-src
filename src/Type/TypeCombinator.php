@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
@@ -53,6 +54,7 @@ use const PHP_INT_MIN;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'typeCombinator')]
 final class TypeCombinator
 {
 

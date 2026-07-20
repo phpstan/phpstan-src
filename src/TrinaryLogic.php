@@ -2,6 +2,7 @@
 
 namespace PHPStan;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -38,6 +39,7 @@ use function min;
  * @see https://phpstan.org/developing-extensions/trinary-logic
  */
 #[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\TrinaryLogic', implementation: __DIR__ . '/../turbo-ext/src/TrinaryLogic.cpp')]
+#[ReferencedByTurboExtension(key: 'trinaryLogicImpl')]
 final class TrinaryLogic
 {
 

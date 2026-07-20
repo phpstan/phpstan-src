@@ -3,7 +3,9 @@
 namespace PHPStan;
 
 use Exception;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'shouldNotHappenException')]
 final class ShouldNotHappenException extends Exception
 {
 

@@ -14,6 +14,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -45,6 +46,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
  * @api-do-not-implement
  * @see https://phpstan.org/developing-extensions/type-system
  */
+#[ReferencedByTurboExtension(key: 'type')]
 interface Type
 {
 

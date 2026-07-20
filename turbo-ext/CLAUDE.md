@@ -49,9 +49,13 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    form and say so in a comment. New generic helpers go into `zv.h`
    following its conventions, never as one-offs.
 4. **Class names the native code needs** go through
-   `Runtime::configure()` as `::class` constants in `TurboExtensionEnabler`
-   (scoped-phar safety). Classes the native code *instantiates* get `…Impl`
-   entries naming the stub, so instances satisfy the original type hints.
+   `Runtime::configure()`, fed from the generated `vendor/turbo-class-map.php`:
+   add the key to `pt_class_refs` in `support.cpp` and mark the referenced
+   class with `#[ReferencedByTurboExtension(key: '...')]` (vendored PhpParser
+   classes are hardcoded in `build/generate-turbo-stubs.php` instead —
+   `side-by-side.php --check` enforces the table and the map stay 1:1).
+   Classes the native code *instantiates* get `…Impl` entries naming the
+   stub, so instances satisfy the original type hints.
 5. **Mark the class** with `#[ShadowedByTurboExtension(turboClass:
    'PHPStanTurbo\Foo', implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
    and run `composer dump-autoload` — `build/generate-turbo-stubs.php`

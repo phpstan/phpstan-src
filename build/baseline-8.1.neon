@@ -4,3 +4,7 @@ parameters:
 			identifier: shipmonk.deadProperty.neverRead
 			message: '#\$(turboClass|implementation)#' # read by build/generate-turbo-stubs.php, outside the analysed paths
 			path: ../src/Turbo/ShadowedByTurboExtension.php
+		-
+			identifier: shipmonk.deadProperty.neverRead
+			message: '#\$key#' # read by build/generate-turbo-stubs.php, outside the analysed paths
+			path: ../src/Turbo/ReferencedByTurboExtension.php

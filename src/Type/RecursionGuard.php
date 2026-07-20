@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function spl_object_id;
 
+#[ReferencedByTurboExtension(key: 'recursionGuard')]
 final class RecursionGuard
 {
 

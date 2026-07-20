@@ -25,19 +25,25 @@ $root = dirname(__DIR__, 2);
 chdir($root);
 
 /**
- * The manifest of shadowed pairs, derived from the ShadowedByTurboExtension
- * attributes under src/: the attributed file is the PHP side, the attribute
- * names the native class and the .cpp implementing it. The vendored
- * PhpParser\NodeTraverser pair cannot carry the attribute and is hardcoded —
- * in build/generate-turbo-stubs.php too, which derives the same map into
- * vendor/turbo-shadowed-classes.json with runtime reflection instead of this
- * textual scan (checkStructure() holds the two derivations against each
- * other, and a class this scan misses still fails --check: its .cpp would
- * have no manifest entry).
+ * The manifest of shadowed pairs and the native class-map keys, derived from
+ * the ShadowedByTurboExtension and ReferencedByTurboExtension attributes
+ * under src/: the attributed file is the PHP side; ShadowedByTurboExtension
+ * names the native class and the .cpp implementing it,
+ * ReferencedByTurboExtension names the class-map key the native code
+ * resolves the class through. Vendored classes cannot carry the attributes
+ * and are hardcoded — the PhpParser\NodeTraverser pair here, and both in
+ * build/generate-turbo-stubs.php, which derives the same data into
+ * vendor/turbo-shadowed-classes.json and vendor/turbo-class-map.php with
+ * runtime reflection instead of this textual scan (checkStructure() holds
+ * the derivations against each other, and a class this scan misses still
+ * fails --check: its .cpp or class-map key would have no attribute).
  *
- * @return array<string, array{php: string, cpp: string, vendored?: bool}>
+ * @return array{
+ *     manifest: array<string, array{php: string, cpp: string, vendored?: bool}>,
+ *     referenced: array<string, string> class-map key => class name
+ * }
  */
-function buildManifest(): array
+function scanAttributes(): array
 {
 	$manifest = [
 		'PhpParser\NodeTraverser' => [
@@ -46,35 +52,46 @@ function buildManifest(): array
 			'vendored' => true,
 		],
 	];
+	$referenced = [];
 
 	foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator('src', FilesystemIterator::SKIP_DOTS)) as $file) {
 		if ($file->getExtension() !== 'php') {
 			continue;
 		}
 		$path = str_replace(DIRECTORY_SEPARATOR, '/', $file->getPathname());
-		if (preg_match('~#\[ShadowedByTurboExtension\(\s*turboClass:\s*\'PHPStanTurbo\\\\\w+\',\s*implementation:\s*__DIR__\s*\.\s*\'([^\']+)\',?\s*\)\]~', file_get_contents($path), $m) !== 1) {
+		$contents = file_get_contents($path);
+		if (!str_contains($contents, 'ByTurboExtension')) {
 			continue;
 		}
 
 		// src/ is PSR-4 for the PHPStan namespace, so the class name follows
-		// from the path; the __DIR__-relative implementation resolves against
-		// the attributed file's directory
+		// from the path
 		$className = 'PHPStan\\' . strtr(substr($path, strlen('src/'), -strlen('.php')), '/', '\\');
-		$cpp = realpath(dirname($path) . $m[1]);
-		$manifest[$className] = [
-			'php' => $path,
-			'cpp' => $cpp === false
-				? dirname($path) . $m[1] // missing — analyzePair() reports it
-				: str_replace(DIRECTORY_SEPARATOR, '/', substr($cpp, strlen((string) realpath('.')) + 1)),
-		];
+
+		if (preg_match('~#\[ShadowedByTurboExtension\(\s*turboClass:\s*\'PHPStanTurbo\\\\\w+\',\s*implementation:\s*__DIR__\s*\.\s*\'([^\']+)\',?\s*\)\]~', $contents, $m) === 1) {
+			// the __DIR__-relative implementation resolves against the
+			// attributed file's directory
+			$cpp = realpath(dirname($path) . $m[1]);
+			$manifest[$className] = [
+				'php' => $path,
+				'cpp' => $cpp === false
+					? dirname($path) . $m[1] // missing — analyzePair() reports it
+					: str_replace(DIRECTORY_SEPARATOR, '/', substr($cpp, strlen((string) realpath('.')) + 1)),
+			];
+		}
+
+		if (preg_match('~#\[ReferencedByTurboExtension\(key: \'(\w+)\'\)\]~', $contents, $m) === 1) {
+			$referenced[$m[1]] = $className;
+		}
 	}
 
 	ksort($manifest);
+	ksort($referenced);
 
-	return $manifest;
+	return ['manifest' => $manifest, 'referenced' => $referenced];
 }
 
-$manifest = buildManifest();
+['manifest' => $manifest, 'referenced' => $referenced] = scanAttributes();
 
 /**
  * @return array<string, array{visibility: string, static: bool, startLine: int, endLine: int}>
@@ -413,6 +430,85 @@ function checkStructure(array $manifest): array
 }
 
 /**
+ * The native class-reference table (pt_class_refs in support.cpp) and the
+ * ReferencedByTurboExtension attributes must correspond: every table key
+ * whose class lives in this repo must be claimed by exactly one attribute
+ * (vendored PhpParser classes cannot carry it — the table bakes their names
+ * as defaults, and the generator hardcodes their class-map entries), every
+ * attribute key must exist in the table, and the generated
+ * vendor/turbo-class-map.php (when present) must cover the table exactly.
+ *
+ * @param array<string, string> $referenced
+ * @return list<string> problems
+ */
+function checkClassMap(array $referenced): array
+{
+	$problems = [];
+
+	preg_match_all('~/\* PT_CLASS_\w+ \*/ \{"(\w+)", (NULL|"[^"]*")\}~', file_get_contents('turbo-ext/src/support.cpp'), $m, PREG_SET_ORDER);
+	$tableKeys = [];
+	foreach ($m as [, $key, $default]) {
+		$tableKeys[$key] = $default;
+		if ($default === 'NULL' || str_starts_with($default, '"PHPStan\\')) {
+			if (!isset($referenced[$key])) {
+				$problems[] = sprintf('pt_class_refs key %s (support.cpp) has no #[ReferencedByTurboExtension] attribute claiming it', $key);
+			}
+		}
+	}
+
+	foreach ($referenced as $key => $className) {
+		if (isset($tableKeys[$key])) {
+			continue;
+		}
+		$problems[] = sprintf('%s claims class-map key %s, which does not exist in pt_class_refs (support.cpp)', $className, $key);
+	}
+
+	if (is_file('vendor/turbo-class-map.php')) {
+		$generatedMap = require 'vendor/turbo-class-map.php';
+		foreach (array_diff_key($tableKeys, $generatedMap) as $key => $default) {
+			$problems[] = sprintf('pt_class_refs key %s (support.cpp) is missing from vendor/turbo-class-map.php — hardcode the vendored entry in build/generate-turbo-stubs.php or run composer dump-autoload', $key);
+		}
+		foreach (array_diff_key($generatedMap, $tableKeys) as $key => $className) {
+			$problems[] = sprintf('vendor/turbo-class-map.php entry %s (%s) does not exist in pt_class_refs (support.cpp)', $key, $className);
+		}
+		foreach ($referenced as $key => $className) {
+			if (!isset($generatedMap[$key]) || $generatedMap[$key] === $className) {
+				continue;
+			}
+			$problems[] = sprintf('vendor/turbo-class-map.php maps %s to %s, but the attribute sits on %s — run composer dump-autoload', $key, $generatedMap[$key], $className);
+		}
+	}
+
+	return $problems;
+}
+
+/**
+ * Every shadowed class needs differential coverage: its twin class name must
+ * appear in one of the turbo-ext/tests/ scripts (smoke.php and
+ * arena-smoke.php compare results method by method, parser-corpus.php
+ * compares whole ASTs), so a new port cannot land untested.
+ *
+ * @return list<string> problems
+ */
+function checkSmokeCoverage(array $manifest): array
+{
+	$problems = [];
+	$tests = '';
+	foreach (glob('turbo-ext/tests/*.php') as $testFile) {
+		$tests .= file_get_contents($testFile);
+	}
+	foreach ($manifest as $className => $entry) {
+		$nativeClass = 'PHPStanTurbo\\' . basename($entry['cpp'], '.cpp');
+		if (str_contains($tests, $className) || str_contains($tests, $nativeClass)) {
+			continue;
+		}
+		$problems[] = sprintf('%s has no differential coverage — no turbo-ext/tests/*.php script mentions it or %s', $className, $nativeClass);
+	}
+
+	return $problems;
+}
+
+/**
  * The Unix builds glob their sources (the Makefile wildcard, config.m4's
  * echo), but config.w32 lists them explicitly — a new .cpp missing from that
  * list only surfaces as an unresolved external on the Windows link.
@@ -442,7 +538,7 @@ $check = in_array('--check', $argv, true);
 
 if ($check) {
 	$failed = false;
-	foreach (array_merge(checkStructure($manifest), checkWindowsSources()) as $problem) {
+	foreach (array_merge(checkStructure($manifest), checkClassMap($referenced), checkSmokeCoverage($manifest), checkWindowsSources()) as $problem) {
 		printf("✗ %s\n", $problem);
 		$failed = true;
 	}

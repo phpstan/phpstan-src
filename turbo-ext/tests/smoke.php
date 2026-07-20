@@ -22,26 +22,16 @@ if (!extension_loaded('phpstan_turbo')) {
 	exit(2);
 }
 
-\PHPStanTurbo\Runtime::configure([
-	'typeCombinator' => \PHPStan\Type\TypeCombinator::class,
-	'type' => \PHPStan\Type\Type::class,
-	'recursionGuard' => \PHPStan\Type\RecursionGuard::class,
-	'booleanType' => \PHPStan\Type\BooleanType::class,
-	'constantBooleanType' => \PHPStan\Type\Constant\ConstantBooleanType::class,
-	'shouldNotHappenException' => \PHPStan\ShouldNotHappenException::class,
-	'verbosityLevel' => \PHPStan\Type\VerbosityLevel::class,
-	'variable' => \PhpParser\Node\Expr\Variable::class,
-	'funcCall' => \PhpParser\Node\Expr\FuncCall::class,
-	'virtualNode' => \PHPStan\Node\VirtualNode::class,
-	'node' => \PhpParser\Node::class,
-	'name' => \PhpParser\Node\Name::class,
-	'expr' => \PhpParser\Node\Expr::class,
-	'propertyFetch' => \PhpParser\Node\Expr\PropertyFetch::class,
-	'intertwinedVariableByReferenceWithExpr' => \PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr::class,
-	'arrayDimFetch' => \PhpParser\Node\Expr\ArrayDimFetch::class,
-	'methodCall' => \PhpParser\Node\Expr\MethodCall::class,
-	'functionLike' => \PhpParser\Node\FunctionLike::class,
-]);
+// The generated class map minus the *Impl entries: the enabler is NOT run
+// here, so the original class names are the real PHP twins, not the stub
+// subclasses — configuring the Impl entries would make the native factories
+// instantiate the PHP implementations. Unconfigured, they fall back to the
+// native classes, which is what the differential comparison needs.
+\PHPStanTurbo\Runtime::configure(array_filter(
+	require __DIR__ . '/../../vendor/turbo-class-map.php',
+	static fn (string $key): bool => !str_ends_with($key, 'Impl'),
+	ARRAY_FILTER_USE_KEY,
+));
 
 // ---- TrinaryLogic ----
 $pYes = TrinaryLogic::createYes();
@@ -317,6 +307,292 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	unset($storage->pendingFibers[0]);
 	check($storage->pendingFibers === [], "ERS $label: fiber array entries can be unset");
 }
+
+// ---- NodeScanner ----
+$smokeParserFactory = new \PhpParser\ParserFactory();
+$smokeParser = $smokeParserFactory->createForNewestSupportedVersion();
+$nodeFinder = new \PhpParser\NodeFinder();
+$nodeScannerSnippets = [
+	'<?php function f() { yield 1; }',
+	'<?php function f() { yield from g(); }',
+	'<?php function f() { return 1; }',
+	'<?php function f() { $c = function () { yield 2; }; }',
+	'<?php function f() { $a = [1, [2, new C(yield)]]; }',
+	'<?php echo 1 + 2; class D { public function m() { yield; } }',
+];
+foreach ($nodeScannerSnippets as $si => $code) {
+	$ast = $smokeParser->parse($code);
+	foreach ($nodeFinder->find($ast, static fn (): bool => true) as $ni => $node) {
+		check(
+			\PHPStan\Node\NodeScanner::nodeIsOrContainsYield($node) === \PHPStanTurbo\NodeScanner::nodeIsOrContainsYield($node),
+			"NodeScanner snippet #$si node #$ni (" . $node->getType() . ')',
+		);
+	}
+}
+
+// ---- NodeTraverser ----
+// Fresh ASTs per side (visitors mutate them); the visitors themselves are
+// plain PHP on both sides — that is how PHPStan uses the native traverser.
+$traverserCode = '<?php $x = a($y); remove_me(); function f($p) { $q = $y; } $z = $x; stop_here(); $after = 1;';
+$isCallTo = static function (\PhpParser\Node $node, string $name): bool {
+	return $node instanceof \PhpParser\Node\Stmt\Expression
+		&& $node->expr instanceof \PhpParser\Node\Expr\FuncCall
+		&& $node->expr->name instanceof \PhpParser\Node\Name
+		&& $node->expr->name->toString() === $name;
+};
+$runTraverser = static function (string $traverserClass, bool $withStopper) use ($smokeParser, $traverserCode, $isCallTo): array {
+	$logger = new class extends \PhpParser\NodeVisitorAbstract {
+
+		/** @var list<string> */
+		public array $log = [];
+
+		public function beforeTraverse(array $nodes)
+		{
+			$this->log[] = 'before';
+			return null;
+		}
+
+		public function enterNode(\PhpParser\Node $node)
+		{
+			$this->log[] = 'enter ' . $node->getType();
+			return null;
+		}
+
+		public function leaveNode(\PhpParser\Node $node)
+		{
+			$this->log[] = 'leave ' . $node->getType();
+			return null;
+		}
+
+		public function afterTraverse(array $nodes)
+		{
+			$this->log[] = 'after';
+			return null;
+		}
+
+	};
+	$mutator = new class ($isCallTo) extends \PhpParser\NodeVisitorAbstract {
+
+		public function __construct(private \Closure $isCallTo)
+		{
+		}
+
+		public function enterNode(\PhpParser\Node $node)
+		{
+			if ($node instanceof \PhpParser\Node\Expr\Variable && $node->name === 'y') {
+				return new \PhpParser\Node\Expr\Variable('renamed');
+			}
+			if ($node instanceof \PhpParser\Node\Stmt\Function_) {
+				return \PhpParser\NodeVisitor::DONT_TRAVERSE_CHILDREN;
+			}
+			return null;
+		}
+
+		public function leaveNode(\PhpParser\Node $node)
+		{
+			if (($this->isCallTo)($node, 'remove_me')) {
+				return \PhpParser\NodeVisitor::REMOVE_NODE;
+			}
+			return null;
+		}
+
+	};
+	$stopper = new class ($isCallTo) extends \PhpParser\NodeVisitorAbstract {
+
+		public function __construct(private \Closure $isCallTo)
+		{
+		}
+
+		public function enterNode(\PhpParser\Node $node)
+		{
+			if (($this->isCallTo)($node, 'stop_here')) {
+				return \PhpParser\NodeVisitor::STOP_TRAVERSAL;
+			}
+			return null;
+		}
+
+	};
+
+	$traverser = new $traverserClass();
+	$traverser->addVisitor($logger);
+	$traverser->addVisitor($mutator);
+	if ($withStopper) {
+		$traverser->addVisitor($stopper);
+	}
+	$result = $traverser->traverse($smokeParser->parse($traverserCode));
+
+	return [$logger->log, (new \PhpParser\PrettyPrinter\Standard())->prettyPrintFile($result)];
+};
+foreach ([false, true] as $withStopper) {
+	[$pLog, $pCode] = $runTraverser(\PhpParser\NodeTraverser::class, $withStopper);
+	[$nLog, $nCode] = $runTraverser(\PHPStanTurbo\NodeTraverser::class, $withStopper);
+	$stopLabel = $withStopper ? ' (with STOP_TRAVERSAL)' : '';
+	check($pLog === $nLog, "NodeTraverser: visitor call sequence$stopLabel");
+	check($pCode === $nCode, "NodeTraverser: transformed output$stopLabel");
+}
+
+// ---- ScopeOps ----
+$scopeOpsClasses = ['php' => \PHPStan\Analyser\ScopeOps::class, 'native' => \PHPStanTurbo\ScopeOps::class];
+
+// getIntertwinedRefRootVariableName
+$rootNameCases = [
+	'variable' => new \PhpParser\Node\Expr\Variable('a'),
+	'nested dim fetch' => new \PhpParser\Node\Expr\ArrayDimFetch(
+		new \PhpParser\Node\Expr\ArrayDimFetch(new \PhpParser\Node\Expr\Variable('root'), new \PhpParser\Node\Scalar\Int_(1)),
+		new \PhpParser\Node\Scalar\String_('k'),
+	),
+	'variable variable' => new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('a')),
+	'dim over call' => new \PhpParser\Node\Expr\ArrayDimFetch(new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f')), new \PhpParser\Node\Scalar\Int_(0)),
+	'property fetch' => new \PhpParser\Node\Expr\PropertyFetch(new \PhpParser\Node\Expr\Variable('o'), 'p'),
+];
+foreach ($rootNameCases as $label => $rootNameExpr) {
+	check(
+		\PHPStan\Analyser\ScopeOps::getIntertwinedRefRootVariableName($rootNameExpr) === \PHPStanTurbo\ScopeOps::getIntertwinedRefRootVariableName($rootNameExpr),
+		"ScopeOps getIntertwinedRefRootVariableName: $label",
+	);
+}
+
+// nodeKey
+$exprPrinter = new \PHPStan\Node\Printer\ExprPrinter(new \PHPStan\Node\Printer\Printer());
+$arrayMapClosure = new \PhpParser\Node\Expr\Closure();
+$arrayMapClosure->setAttribute(\PHPStan\Parser\ArrayMapArgVisitor::ATTRIBUTE_NAME, [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('items'))]);
+$arrayMapClosure->setAttribute('startFilePos', 123);
+$nodeKeyCases = [
+	'variable fast path' => new \PhpParser\Node\Expr\Variable('foo'),
+	'variable variable' => new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('foo')),
+	'method call' => new \PhpParser\Node\Expr\MethodCall(new \PhpParser\Node\Expr\Variable('o'), 'm', [new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(1))]),
+	'array_map closure' => $arrayMapClosure,
+];
+foreach ($nodeKeyCases as $label => $nodeKeyExpr) {
+	check(
+		\PHPStan\Analyser\ScopeOps::nodeKey($nodeKeyExpr, $exprPrinter) === \PHPStanTurbo\ScopeOps::nodeKey($nodeKeyExpr, $exprPrinter),
+		"ScopeOps nodeKey: $label",
+	);
+}
+
+// mergeVariableHolders — fresh expression graphs and holders per side: the
+// superglobal scan memoizes into a node attribute, and holders must be the
+// side's own class
+$mergeInputs = static function (string $side): array {
+	$holder = $side === 'php'
+		? static fn ($expr, $type, $certainty) => new \PHPStan\Analyser\ExpressionTypeHolder($expr, $type, $certainty)
+		: static fn ($expr, $type, $certainty) => new \PHPStanTurbo\ExpressionTypeHolder($expr, $type, $certainty);
+	$yes = $side === 'php' ? \PHPStan\TrinaryLogic::createYes() : \PHPStanTurbo\TrinaryLogic::createYes();
+	$maybe = $side === 'php' ? \PHPStan\TrinaryLogic::createMaybe() : \PHPStanTurbo\TrinaryLogic::createMaybe();
+
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+
+	$same = $holder(new \PhpParser\Node\Expr\Variable('same'), $int, $yes);
+	$andExpr = new \PhpParser\Node\Expr\Variable('and');
+	$superGlobalExpr = new \PhpParser\Node\Expr\ArrayDimFetch(new \PhpParser\Node\Expr\Variable('_SERVER'), new \PhpParser\Node\Scalar\String_('x'));
+
+	return [
+		[
+			'$same' => $same,
+			'$and' => $holder($andExpr, $int, $yes),
+			'$onlyOurs' => $holder(new \PhpParser\Node\Expr\Variable('onlyOurs'), $string, $yes),
+			'$_SERVER[\'x\']' => $holder($superGlobalExpr, $string, $yes),
+		],
+		[
+			'$same' => $same,
+			'$and' => $holder($andExpr, $string, $maybe),
+			'$onlyTheirs' => $holder(new \PhpParser\Node\Expr\Variable('onlyTheirs'), $int, $yes),
+		],
+	];
+};
+$mergeResults = [];
+foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
+	[$ours, $theirs] = $mergeInputs($side);
+	$merged = $scopeOpsClass::mergeVariableHolders($ours, $theirs);
+	$described = [];
+	foreach ($merged as $exprString => $mergedHolder) {
+		$described[$exprString] = [
+			$mergedHolder->getCertainty()->describe(),
+			$mergedHolder->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()),
+		];
+	}
+	$mergeResults[$side] = $described;
+	check($merged['$same'] === $ours['$same'], "ScopeOps mergeVariableHolders $side: identical holder is kept");
+}
+check($mergeResults['php'] === $mergeResults['native'], 'ScopeOps mergeVariableHolders: merged keys, certainties and types');
+
+// buildTypeSpecifications — pure, so both sides can share the inputs; the
+// scalar/array/unary-minus entries must be dropped and the result ordered by
+// expression-string length with sure-before-not tie-breaking
+$specInt = new \PHPStan\Type\IntegerType();
+$specString = new \PHPStan\Type\StringType();
+$specSure = [
+	'$bb' => [new \PhpParser\Node\Expr\Variable('bb'), $specInt],
+	'$a' => [new \PhpParser\Node\Expr\Variable('a'), $specInt],
+	"'lit'" => [new \PhpParser\Node\Scalar\String_('lit'), $specString],
+	'-5' => [new \PhpParser\Node\Expr\UnaryMinus(new \PhpParser\Node\Scalar\Int_(5)), $specInt],
+	'[]' => [new \PhpParser\Node\Expr\Array_([]), $specInt],
+];
+$specSureNot = [
+	'$a' => [new \PhpParser\Node\Expr\Variable('a'), $specString],
+	'$o->p' => [new \PhpParser\Node\Expr\PropertyFetch(new \PhpParser\Node\Expr\Variable('o'), 'p'), $specString],
+];
+$specResults = [];
+foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
+	$specResults[$side] = array_map(
+		static fn (array $specification): array => [
+			$specification['sure'],
+			$specification['exprString'],
+			spl_object_id($specification['expr']),
+			$specification['type']->describe(\PHPStan\Type\VerbosityLevel::precise()),
+		],
+		$scopeOpsClass::buildTypeSpecifications($specSure, $specSureNot),
+	);
+}
+check($specResults['php'] === $specResults['native'], 'ScopeOps buildTypeSpecifications: filtering, ordering and tie-breaking');
+
+// matchConditionalExpressions — a holder whose conditions are all among the
+// specified expressions must resolve, transitively (fixed point); '$c'
+// resolves only after '$b' did, '$unmatched' never does
+$matchInputs = static function (string $side): array {
+	$holder = $side === 'php'
+		? static fn ($expr, $type, $certainty) => new \PHPStan\Analyser\ExpressionTypeHolder($expr, $type, $certainty)
+		: static fn ($expr, $type, $certainty) => new \PHPStanTurbo\ExpressionTypeHolder($expr, $type, $certainty);
+	$conditional = $side === 'php'
+		? static fn ($conditions, $typeHolder) => new \PHPStan\Analyser\ConditionalExpressionHolder($conditions, $typeHolder)
+		: static fn ($conditions, $typeHolder) => new \PHPStanTurbo\ConditionalExpressionHolder($conditions, $typeHolder);
+	$yes = $side === 'php' ? \PHPStan\TrinaryLogic::createYes() : \PHPStanTurbo\TrinaryLogic::createYes();
+
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$aExpr = new \PhpParser\Node\Expr\Variable('a');
+
+	return [
+		[
+			'$b' => [$conditional(['$a' => $holder($aExpr, $int, $yes)], $holder(new \PhpParser\Node\Expr\Variable('b'), $string, $yes))],
+			'$c' => [$conditional(['$b' => $holder(new \PhpParser\Node\Expr\Variable('b'), $string, $yes)], $holder(new \PhpParser\Node\Expr\Variable('c'), $int, $yes))],
+			'$unmatched' => [$conditional(['$z' => $holder(new \PhpParser\Node\Expr\Variable('z'), $int, $yes)], $holder(new \PhpParser\Node\Expr\Variable('unmatched'), $int, $yes))],
+		],
+		['$a' => $holder($aExpr, $int, $yes)],
+	];
+};
+$matchResults = [];
+foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
+	[$conditionalExpressions, $specifiedExpressions] = $matchInputs($side);
+	[$remainingConditions, $specified] = $scopeOpsClass::matchConditionalExpressions($conditionalExpressions, $specifiedExpressions);
+	$describedConditions = [];
+	foreach ($remainingConditions as $exprString => $conditionalHolders) {
+		$describedConditions[$exprString] = array_map(static fn ($conditionalHolder): string => $conditionalHolder->getKey(), $conditionalHolders);
+	}
+	$describedSpecified = [];
+	foreach ($specified as $exprString => $specifiedHolder) {
+		$describedSpecified[$exprString] = [
+			$specifiedHolder->getCertainty()->describe(),
+			$specifiedHolder->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()),
+		];
+	}
+	$matchResults[$side] = [$describedConditions, $describedSpecified];
+
+	[, $emptySpecified] = $scopeOpsClass::matchConditionalExpressions($conditionalExpressions, []);
+	check($emptySpecified === [], "ScopeOps matchConditionalExpressions $side: empty specified expressions short-circuit");
+}
+check($matchResults['php'] === $matchResults['native'], 'ScopeOps matchConditionalExpressions: fixed point and remaining conditions');
 
 echo $failures === 0 ? "ALL OK\n" : "$failures FAILURES\n";
 exit($failures === 0 ? 0 : 1);

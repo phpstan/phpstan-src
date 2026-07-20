@@ -11,7 +11,8 @@
 	"vendor/composer/installed.php",
     "vendor/attributes.php",
     "vendor/turbo-stubs.php",
-    "vendor/turbo-shadowed-classes.json"
+    "vendor/turbo-shadowed-classes.json",
+    "vendor/turbo-class-map.php"
   ],
   "directories": [
     "conf",

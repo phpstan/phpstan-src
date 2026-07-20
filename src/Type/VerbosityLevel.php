@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -39,6 +40,7 @@ use PHPStan\Type\Generic\TemplateType;
  * for error messages based on what types are involved — it picks the minimum verbosity
  * needed to distinguish the accepting type from the accepted type.
  */
+#[ReferencedByTurboExtension(key: 'verbosityLevel')]
 final class VerbosityLevel
 {
 

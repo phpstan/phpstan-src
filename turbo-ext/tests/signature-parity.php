@@ -32,9 +32,9 @@ if (!is_file($manifestFile)) {
 }
 $manifest = json_decode(file_get_contents($manifestFile), true, 8, JSON_THROW_ON_ERROR);
 
-// Native arginfo deliberately erases most types to none or object: it cannot
-// bake class-name strings of prefixed namespaces into the binary (the scoped
-// phar renames e.g. PhpParser\*), and engine-level type checks cost per call.
+// Native arginfo deliberately erases most types to none or object: baking
+// class-name strings into the binary would couple it to userland names, and
+// engine-level type checks cost per call.
 // So a native type is checked only when it declares something specific; the
 // PHP twin remains the authority on types either way.
 function isErased(?ReflectionType $type): bool

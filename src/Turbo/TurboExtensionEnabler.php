@@ -2,42 +2,6 @@
 
 namespace PHPStan\Turbo;
 
-use PhpParser\Node;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Expr\ArrayDimFetch;
-use PhpParser\Node\Expr\ArrowFunction;
-use PhpParser\Node\Expr\CallLike;
-use PhpParser\Node\Expr\Closure;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\PropertyFetch;
-use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Expr\UnaryMinus;
-use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Expr\Yield_;
-use PhpParser\Node\Expr\YieldFrom;
-use PhpParser\Node\FunctionLike;
-use PhpParser\Node\Name;
-use PhpParser\Node\Scalar;
-use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\VariadicPlaceholder;
-use PhpParser\NodeVisitorAbstract;
-use PHPStan\Analyser\ConditionalExpressionHolder;
-use PHPStan\Analyser\ExpressionTypeHolder;
-use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
-use PHPStan\Node\VirtualNode;
-use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
-use PHPStan\Type\BooleanType;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\ErrorType;
-use PHPStan\Type\RecursionGuard;
-use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\VerbosityLevel;
 use PHPStanTurbo\Runtime;
 use function dirname;
 use function extension_loaded;
@@ -167,49 +131,17 @@ final class TurboExtensionEnabler
 			return;
 		}
 
-		// Class names the extension needs at runtime, passed as ::class
-		// constants so they stay correct under the scoped phar. The *Impl
-		// entries name the classes the extension instantiates — these are the
-		// stub subclasses loaded below, so that every object satisfies the
-		// original type hints.
-		Runtime::configure([
-			'typeCombinator' => TypeCombinator::class,
-			'type' => Type::class,
-			'recursionGuard' => RecursionGuard::class,
-			'booleanType' => BooleanType::class,
-			'constantBooleanType' => ConstantBooleanType::class,
-			'shouldNotHappenException' => ShouldNotHappenException::class,
-			'verbosityLevel' => VerbosityLevel::class,
-			'variable' => Variable::class,
-			'funcCall' => FuncCall::class,
-			'virtualNode' => VirtualNode::class,
-			'node' => Node::class,
-			'name' => Name::class,
-			'expr' => Expr::class,
-			'propertyFetch' => PropertyFetch::class,
-			'intertwinedVariableByReferenceWithExpr' => IntertwinedVariableByReferenceWithExpr::class,
-			'arrayDimFetch' => ArrayDimFetch::class,
-			'methodCall' => MethodCall::class,
-			'functionLike' => FunctionLike::class,
-			'callLike' => CallLike::class,
-			'staticCall' => StaticCall::class,
-			'newExpr' => New_::class,
-			'classStmt' => Class_::class,
-			'variadicPlaceholder' => VariadicPlaceholder::class,
-			'errorType' => ErrorType::class,
-			'scalar' => Scalar::class,
-			'arrayExpr' => Array_::class,
-			'unaryMinus' => UnaryMinus::class,
-			'yield' => Yield_::class,
-			'yieldFrom' => YieldFrom::class,
-			'stmt' => Stmt::class,
-			'nodeVisitorAbstract' => NodeVisitorAbstract::class,
-			'closureExpr' => Closure::class,
-			'arrowFunction' => ArrowFunction::class,
-			'trinaryLogicImpl' => TrinaryLogic::class,
-			'expressionTypeHolderImpl' => ExpressionTypeHolder::class,
-			'conditionalExpressionHolderImpl' => ConditionalExpressionHolder::class,
-		]);
+		// Class names the extension needs at runtime, generated from the
+		// ReferencedByTurboExtension attributes so a renamed class updates the
+		// map on the next autoloader dump. The *Impl entries name the classes
+		// the extension instantiates — these are the stub subclasses loaded
+		// below, so that every object satisfies the original type hints.
+		$classMapFile = dirname(__DIR__, 2) . '/vendor/turbo-class-map.php';
+		if (!is_file($classMapFile)) {
+			return;
+		}
+
+		Runtime::configure(require $classMapFile);
 
 		// Shadow the PHP implementations with the generated stubs extending the
 		// extension's native classes. The stubs are declared before the Composer

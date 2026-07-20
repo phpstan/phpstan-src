@@ -58,10 +58,14 @@ Every shadowed piece of PHP code follows the same three steps:
    the original class name, transparently getting the native implementation
    via inheritance.
 
-Because instances must satisfy the original type hints, the native code never
-instantiates its own classes directly: `TurboExtensionEnabler` passes the stub
-class names (`…Impl` entries) to `PHPStanTurbo\Runtime::configure()`, and
-factories/singletons instantiate those subclasses.
+Class names the native code references at run time come through
+`PHPStanTurbo\Runtime::configure()`: `TurboExtensionEnabler` feeds it the
+generated `vendor/turbo-class-map.php`, derived from the
+`#[ReferencedByTurboExtension]` attributes (vendored PhpParser classes are
+hardcoded in the generator), so a renamed class updates the map on the next
+autoloader dump. Because instances must satisfy the original type hints, the
+native code never instantiates its own classes directly: the map's `…Impl`
+entries name the stub subclasses, and factories/singletons instantiate those.
 
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
 a mismatched extension is ignored. `PHPSTAN_TURBO=0` disables it explicitly.
@@ -108,7 +112,11 @@ three things:
   `vendor/turbo-stubs.php` and `vendor/turbo-shadowed-classes.json` (when
   present) must all correspond 1:1 to the attributes — and that the generated
   stubs are empty shells (a member declared in a stub would exist only when
-  the extension is loaded).
+  the extension is loaded). It also holds the native class-reference table
+  (`pt_class_refs` in `support.cpp`) against the
+  `#[ReferencedByTurboExtension]` attributes and the generated
+  `vendor/turbo-class-map.php`, and requires every shadowed class to have
+  differential coverage in a `tests/` script.
 - **CI signature parity** — `php tests/signature-parity.php` (compile job,
   needs the built extension and vendor/) reflects each native class against
   its PHP twin: visibility, staticness, parameter
@@ -116,8 +124,8 @@ three things:
   types. It also verifies each manifest entry points at the file the class
   actually lives in (and that the `vendored` flag matches), so a stale
   autoloader dump fails instead of silently comparing against the wrong
-  source. Native arginfo may erase types to none/`object` (it cannot bake
-  class names of phar-prefixed namespaces into the binary, and engine-level
+  source. Native arginfo may erase types to none/`object` (baking class
+  names into the binary would couple it to userland names, and engine-level
   type checks cost per call), but what it does declare must match, and
   parameter names must match exactly — a renamed parameter would break named
   arguments only in turbo mode.
@@ -140,7 +148,8 @@ guard structure and force the version bump ritual, not behavior.
 the `PHPStan\Parser\ParserRunner` seam. The parsing tables are read at run
 time from the first `Php8` parser object seen — they are generated data, so
 nothing is duplicated — and node classes resolve relative to the parser's
-namespace, which keeps the scoped phar working. Tokenization stays in PHP's
+namespace, so no node class name is baked into the binary. Tokenization
+stays in PHP's
 C tokenizer (one `Lexer::tokenize()` crossing per file); everything after —
 the shift/reduce loop, all 482 semantic actions, attribute arrays, node
 construction (direct property-slot writes derived from constructor parameter

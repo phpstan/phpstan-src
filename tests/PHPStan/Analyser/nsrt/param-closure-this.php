@@ -316,3 +316,75 @@ class ImplicitInheritanceMoreComplicated extends Foo
 	}
 
 }
+
+class FooParent
+{
+
+}
+
+class FooChild extends FooParent
+{
+
+	private string $secret = 'secret';
+
+}
+
+class StaticReturnClosureThis
+{
+
+	/**
+	 * @param-closure-this FooChild $cb
+	 */
+	public function withFooChild(callable $cb): void
+	{
+
+	}
+
+	/**
+	 * @param-closure-this Foo $cb
+	 */
+	public function withFoo(callable $cb): void
+	{
+
+	}
+
+}
+
+class TestStaticResolutionInParamClosureThis
+{
+
+	public function testStaticReturnType(StaticReturnClosureThis $o): void
+	{
+		$o->withFoo(function (): static {
+			assertType('ParamClosureThis\Foo', $this);
+			return $this;
+		});
+
+		$o->withFoo(fn (): static => $this);
+	}
+
+	public function testSelfReturnType(StaticReturnClosureThis $o): void
+	{
+		$o->withFooChild(function (): self {
+			assertType('ParamClosureThis\FooChild', $this);
+			return $this;
+		});
+	}
+
+	public function testParentReturnType(StaticReturnClosureThis $o): void
+	{
+		$o->withFooChild(function (): parent {
+			assertType('ParamClosureThis\FooChild', $this);
+			return $this;
+		});
+	}
+
+	public function testNullableStaticReturnType(StaticReturnClosureThis $o): void
+	{
+		$o->withFoo(function (): ?static {
+			assertType('ParamClosureThis\Foo', $this);
+			return rand() ? $this : null;
+		});
+	}
+
+}

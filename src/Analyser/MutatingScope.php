@@ -2020,7 +2020,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
+			$restoreThisScope->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
@@ -2057,6 +2057,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function isInClosureBind(): bool
 	{
 		return $this->inClosureBindScopeClasses !== [];
+	}
+
+	/**
+	 * @param list<non-empty-string> $scopeClasses
+	 */
+	public function withClosureBindScopeClasses(array $scopeClasses): self
+	{
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$scopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
 	}
 
 	/**
@@ -2397,6 +2422,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				false,
 			)), new AccessoryArrayListType()]);
 		}
+		if (
+			$type instanceof Name
+			&& $this->inClosureBindScopeClasses !== []
+			&& $this->inClosureBindScopeClasses !== ['static']
+			&& in_array($type->toLowerString(), ['static', 'self', 'parent'], true)
+			&& $this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])
+		) {
+			return $this->initializerExprTypeResolver->getFunctionType(
+				$type,
+				$isNullable,
+				false,
+				InitializerExprContext::fromClassReflection(
+					$this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]),
+				),
+			);
+		}
+
 		return $this->initializerExprTypeResolver->getFunctionType($type, $isNullable, false, InitializerExprContext::fromScope($this));
 	}
 

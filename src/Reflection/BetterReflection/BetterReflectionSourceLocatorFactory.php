@@ -97,8 +97,6 @@ final class BetterReflectionSourceLocatorFactory
 				$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
 			}
 
-			$astLocator = new Locator($this->parser);
-
 			$analysedDirectories = [];
 			$analysedFiles = [];
 
@@ -184,6 +182,7 @@ final class BetterReflectionSourceLocatorFactory
 			// are never invoked for them - invoking them eagerly here would run
 			// code paths that cannot happen at runtime. They remain useful for
 			// classes that only a custom autoloader can produce (e.g. eval'd).
+			$astLocator = new Locator($this->parser);
 			$locators[] = new AutoloadFunctionsSourceLocator(
 				new AutoloadSourceLocator($this->fileNodesFetcher, false),
 				new ReflectionClassSourceLocator(

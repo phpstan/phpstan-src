@@ -26,7 +26,7 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 	public function __construct(
 		private AutoloadSourceLocator $autoloadSourceLocator,
 		private ReflectionClassSourceLocator $reflectionClassSourceLocator,
-		private bool $prependedToComposer = false,
+		private bool $prependedToComposer,
 	)
 	{
 	}

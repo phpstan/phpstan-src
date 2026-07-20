@@ -203,6 +203,7 @@ final class BetterReflectionSourceLocatorFactory
 					$astLocator,
 					$this->reflectionSourceStubber,
 				),
+				false,
 			);
 
 			$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);

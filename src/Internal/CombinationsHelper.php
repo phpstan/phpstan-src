@@ -6,10 +6,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use Traversable;
 use function array_pop;
 
-#[ShadowedByTurboExtension(
-	turboClass: 'PHPStanTurbo\CombinationsHelper',
-	implementation: __DIR__ . '/../../turbo-ext/src/CombinationsHelper.cpp',
-)]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\CombinationsHelper', implementation: __DIR__ . '/../../turbo-ext/src/CombinationsHelper.cpp')]
 final class CombinationsHelper
 {
 

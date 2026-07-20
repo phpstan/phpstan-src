@@ -27,10 +27,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  *
  * @internal
  */
-#[ShadowedByTurboExtension(
-	turboClass: 'PHPStanTurbo\ArenaCache',
-	implementation: __DIR__ . '/../../turbo-ext/src/ArenaCache.cpp',
-)]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ArenaCache', implementation: __DIR__ . '/../../turbo-ext/src/ArenaCache.cpp')]
 final class ArenaCache
 {
 

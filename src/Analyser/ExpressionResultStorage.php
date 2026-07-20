@@ -10,10 +10,7 @@ use PHPStan\Analyser\Fiber\ParkFiberRequest;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function spl_object_id;
 
-#[ShadowedByTurboExtension(
-	turboClass: 'PHPStanTurbo\ExpressionResultStorage',
-	implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp',
-)]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionResultStorage', implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp')]
 final class ExpressionResultStorage
 {
 

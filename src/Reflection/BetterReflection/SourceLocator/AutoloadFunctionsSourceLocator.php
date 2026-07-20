@@ -12,14 +12,21 @@ use function class_exists;
 use function function_exists;
 use function interface_exists;
 use function PHPStan\autoloadFunctions;
+use function PHPStan\autoloadFunctionsPrependedToComposer;
 use function trait_exists;
 
 final class AutoloadFunctionsSourceLocator implements SourceLocator
 {
 
+	/**
+	 * @param bool $prependedToComposer When true, consult only the autoloaders
+	 *   registered before Composer's class loader (prepended); otherwise consult
+	 *   the ones registered after it (appended).
+	 */
 	public function __construct(
 		private AutoloadSourceLocator $autoloadSourceLocator,
 		private ReflectionClassSourceLocator $reflectionClassSourceLocator,
+		private bool $prependedToComposer = false,
 	)
 	{
 	}
@@ -48,7 +55,9 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 			return null;
 		}
 
-		$autoloadFunctions = autoloadFunctions();
+		$autoloadFunctions = $this->prependedToComposer
+			? autoloadFunctionsPrependedToComposer()
+			: autoloadFunctions();
 		foreach ($autoloadFunctions as $autoloadFunction) {
 			$autoloadFunction($className);
 			$reflection = $this->autoloadSourceLocator->locateIdentifier($reflector, $identifier);

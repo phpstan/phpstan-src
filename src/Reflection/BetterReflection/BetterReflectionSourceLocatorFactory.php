@@ -97,6 +97,21 @@ final class BetterReflectionSourceLocatorFactory
 				$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
 			}
 
+			$astLocator = new Locator($this->parser);
+
+			// Custom autoloaders that bootstrap files registered *before* Composer's
+			// class loader (e.g. spl_autoload_register($fn, true, true)) run before
+			// Composer resolves the class at runtime, so they are consulted before
+			// the static source locators below - mirroring that runtime order.
+			$locators[] = new AutoloadFunctionsSourceLocator(
+				new AutoloadSourceLocator($this->fileNodesFetcher, false),
+				new ReflectionClassSourceLocator(
+					$astLocator,
+					$this->reflectionSourceStubber,
+				),
+				true,
+			);
+
 			$analysedDirectories = [];
 			$analysedFiles = [];
 
@@ -175,14 +190,13 @@ final class BetterReflectionSourceLocatorFactory
 				$this->phpVersion,
 			));
 
-			// Custom autoloaders registered by bootstrap files are consulted only
-			// as a fallback, after the static locators above (analysed files,
-			// Composer class map/PSR-4, PHP internals). At runtime Composer's
-			// class loader resolves such classes first, so their custom autoloaders
-			// are never invoked for them - invoking them eagerly here would run
-			// code paths that cannot happen at runtime. They remain useful for
-			// classes that only a custom autoloader can produce (e.g. eval'd).
-			$astLocator = new Locator($this->parser);
+			// Custom autoloaders registered *after* Composer's class loader are
+			// consulted only as a fallback, after the static locators above
+			// (analysed files, Composer class map/PSR-4, PHP internals). At runtime
+			// Composer's class loader resolves such classes first, so these custom
+			// autoloaders are never invoked for them - invoking them eagerly here
+			// would run code paths that cannot happen at runtime. They remain useful
+			// for classes that only a custom autoloader can produce (e.g. eval'd).
 			$locators[] = new AutoloadFunctionsSourceLocator(
 				new AutoloadSourceLocator($this->fileNodesFetcher, false),
 				new ReflectionClassSourceLocator(

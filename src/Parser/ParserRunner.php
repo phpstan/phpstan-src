@@ -13,10 +13,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  * falling back to $parser->parse() for anything else. Without the extension
  * this delegation is all there is.
  */
-#[ShadowedByTurboExtension(
-	turboClass: 'PHPStanTurbo\ParserRunner',
-	implementation: __DIR__ . '/../../turbo-ext/src/parser/ParserRunner.cpp',
-)]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ParserRunner', implementation: __DIR__ . '/../../turbo-ext/src/parser/ParserRunner.cpp')]
 final class ParserRunner
 {
 

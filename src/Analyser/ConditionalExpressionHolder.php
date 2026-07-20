@@ -9,10 +9,7 @@ use function count;
 use function implode;
 use function sprintf;
 
-#[ShadowedByTurboExtension(
-	turboClass: 'PHPStanTurbo\ConditionalExpressionHolder',
-	implementation: __DIR__ . '/../../turbo-ext/src/ConditionalExpressionHolder.cpp',
-)]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ConditionalExpressionHolder', implementation: __DIR__ . '/../../turbo-ext/src/ConditionalExpressionHolder.cpp')]
 final class ConditionalExpressionHolder
 {
 

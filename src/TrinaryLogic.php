@@ -37,10 +37,7 @@ use function min;
  * @api
  * @see https://phpstan.org/developing-extensions/trinary-logic
  */
-#[ShadowedByTurboExtension(
-	turboClass: 'PHPStanTurbo\TrinaryLogic',
-	implementation: __DIR__ . '/../turbo-ext/src/TrinaryLogic.cpp',
-)]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\TrinaryLogic', implementation: __DIR__ . '/../turbo-ext/src/TrinaryLogic.cpp')]
 final class TrinaryLogic
 {
 

@@ -45,6 +45,7 @@ use function array_slice;
 use function array_unique;
 use function array_values;
 use function count;
+use function get_class;
 use function implode;
 use function sprintf;
 use function str_contains;
@@ -349,7 +350,7 @@ class UnionType implements CompoundType
 	private static function getFiniteMemberKey(Type $type): ?string
 	{
 		if ($type->isConstantScalarValue()->yes() || $type->getEnumCaseObject() !== null) {
-			return $type::class . "\0" . $type->describe(VerbosityLevel::cache());
+			return get_class($type) . "\0" . $type->describe(VerbosityLevel::cache());
 		}
 
 		return null;

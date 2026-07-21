@@ -1472,8 +1472,19 @@ class UnionType implements CompoundType
 	protected function unionTypes(callable $getType): Type
 	{
 		$newTypes = [];
+		$changed = false;
 		foreach ($this->types as $type) {
-			$newTypes[] = $getType($type);
+			$newType = $getType($type);
+			if ($newType !== $type) {
+				$changed = true;
+			}
+			$newTypes[] = $newType;
+		}
+
+		// When every member maps to itself the union is unchanged, so avoid an expensive
+		// re-normalization of a potentially large union. Mirrors traverse() and filterTypes().
+		if (!$changed) {
+			return $this;
 		}
 
 		return TypeCombinator::union(...$newTypes);

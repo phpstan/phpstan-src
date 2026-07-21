@@ -22,18 +22,42 @@ if (!extension_loaded('phpstan_turbo')) {
 	exit(2);
 }
 
-// The generated class map minus the *Impl entries: the enabler is NOT run
-// here, so the original class names are the real PHP twins, not the stub
-// subclasses — configuring the Impl entries would make the native factories
-// instantiate the PHP implementations. Unconfigured, they fall back to the
-// native classes, which is what the differential comparison needs.
+$classMap = require __DIR__ . '/../../vendor/turbo-class-map.php';
+$shadowedClasses = json_decode(file_get_contents(__DIR__ . '/../../vendor/turbo-shadowed-classes.json'), true, 8, JSON_THROW_ON_ERROR);
+
+// The native class-reference table is the authority on the map's shape: the
+// generated map must cover it exactly; an entry without a baked default
+// name is one the native code instantiates, so its class must itself be
+// shadowed (the resolved name is then the stub subclass and created objects
+// satisfy the original type hints); every baked default must equal the
+// mapped class.
+$classRefs = \PHPStanTurbo\Runtime::classRefs();
+ksort($classRefs);
+check(array_keys($classRefs) === array_keys($classMap), 'the class map covers the native class-reference table exactly');
+foreach ($classRefs as $key => $default) {
+	if ($default === null) {
+		check(isset($shadowedClasses[$classMap[$key] ?? '']), "class-map key $key has no native default, so its class must be shadowed");
+	} else {
+		check(($classMap[$key] ?? null) === $default, "class-map key $key must match the native default");
+	}
+}
+
+// The class map minus the shadowed classes: the enabler is NOT run here, so
+// the original class names are the real PHP twins, not the stub subclasses —
+// configuring them would make the native factories instantiate the PHP
+// implementations. Unconfigured, they fall back to the native classes, which
+// is what the differential comparison needs.
 \PHPStanTurbo\Runtime::configure(array_filter(
-	require __DIR__ . '/../../vendor/turbo-class-map.php',
-	static fn (string $key): bool => !str_ends_with($key, 'Impl'),
-	ARRAY_FILTER_USE_KEY,
+	$classMap,
+	static fn (string $class): bool => !isset($shadowedClasses[$class]),
 ));
 
+// each differential section registers the shadowed class it exercises; the
+// completeness check at the end holds the union against the manifest
+$covered = [];
+
 // ---- TrinaryLogic ----
+$covered[\PHPStan\TrinaryLogic::class] = true;
 $pYes = TrinaryLogic::createYes();
 $pNo = TrinaryLogic::createNo();
 $pMaybe = TrinaryLogic::createMaybe();
@@ -135,6 +159,7 @@ check(
 );
 
 // ---- CombinationsHelper ----
+$covered[\PHPStan\Internal\CombinationsHelper::class] = true;
 $cases = [
 	[],
 	[[1, 2, 3]],
@@ -157,6 +182,7 @@ foreach ($cases as $i => $case) {
 }
 
 // ---- ExpressionTypeHolder ----
+$covered[\PHPStan\Analyser\ExpressionTypeHolder::class] = true;
 $expr1 = new \PhpParser\Node\Expr\Variable('a');
 $expr2 = new \PhpParser\Node\Expr\Variable('b');
 $int = new \PHPStan\Type\IntegerType();
@@ -201,6 +227,7 @@ check(\PHPStanTurbo\ExpressionTypeHolder::createMaybe($expr1, $int)->getCertaint
 check(\PHPStanTurbo\ExpressionTypeHolder::createYes($expr1, $int)->getType() === $int, 'ETH createYes type identity');
 
 // ---- ConditionalExpressionHolder ----
+$covered[\PHPStan\Analyser\ConditionalExpressionHolder::class] = true;
 $pCEH = new \PHPStan\Analyser\ConditionalExpressionHolder(
 	['$a' => $pH($expr1, $int, $pYes), '$b' => $pH($expr2, $string, $pMaybe)],
 	$pH($expr2, $string, $pNo),
@@ -219,6 +246,7 @@ try {
 }
 
 // ---- TypeCombinatorCache ----
+$covered[\PHPStan\Type\TypeCombinatorCache::class] = true;
 // The native class memoizes on a structural key of the arguments and calls back into
 // TypeCombinator::doUnion() and friends on a miss. TypeCombinator itself is unshadowed
 // here (the enabler never ran), so it is the unmemoized reference implementation.
@@ -269,6 +297,7 @@ check($describe($afterClear) === $describe($first), 'TCC clearCache keeps result
 check($afterClear !== $first, 'TCC clearCache actually drops entries');
 
 // ---- ExpressionResultStorage ----
+$covered[\PHPStan\Analyser\ExpressionResultStorage::class] = true;
 $makeScope = static function () {
 	static $reflection = null;
 	$reflection ??= new ReflectionClass(\PHPStan\Analyser\MutatingScope::class);
@@ -309,6 +338,7 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 }
 
 // ---- NodeScanner ----
+$covered[\PHPStan\Node\NodeScanner::class] = true;
 $smokeParserFactory = new \PhpParser\ParserFactory();
 $smokeParser = $smokeParserFactory->createForNewestSupportedVersion();
 $nodeFinder = new \PhpParser\NodeFinder();
@@ -331,6 +361,7 @@ foreach ($nodeScannerSnippets as $si => $code) {
 }
 
 // ---- NodeTraverser ----
+$covered[\PhpParser\NodeTraverser::class] = true;
 // Fresh ASTs per side (visitors mutate them); the visitors themselves are
 // plain PHP on both sides — that is how PHPStan uses the native traverser.
 $traverserCode = '<?php $x = a($y); remove_me(); function f($p) { $q = $y; } $z = $x; stop_here(); $after = 1;';
@@ -432,6 +463,7 @@ foreach ([false, true] as $withStopper) {
 }
 
 // ---- ScopeOps ----
+$covered[\PHPStan\Analyser\ScopeOps::class] = true;
 $scopeOpsClasses = ['php' => \PHPStan\Analyser\ScopeOps::class, 'native' => \PHPStanTurbo\ScopeOps::class];
 
 // getIntertwinedRefRootVariableName
@@ -593,6 +625,20 @@ foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
 	check($emptySpecified === [], "ScopeOps matchConditionalExpressions $side: empty specified expressions short-circuit");
 }
 check($matchResults['php'] === $matchResults['native'], 'ScopeOps matchConditionalExpressions: fixed point and remaining conditions');
+
+// ---- differential coverage completeness ----
+// Every shadowed class must be exercised by one of the tests/ scripts; the
+// classes not covered above have their own dedicated script.
+$coveredElsewhere = [
+	\PHPStan\Cache\ArenaCache::class => 'arena-smoke.php',
+	\PHPStan\Parser\ParserRunner::class => 'parser-corpus.php',
+];
+foreach (array_keys($shadowedClasses) as $shadowedClass) {
+	check(
+		isset($covered[$shadowedClass]) || isset($coveredElsewhere[$shadowedClass]),
+		"shadowed class $shadowedClass has no differential coverage — register it in \$covered next to its checks here, or in \$coveredElsewhere",
+	);
+}
 
 echo $failures === 0 ? "ALL OK\n" : "$failures FAILURES\n";
 exit($failures === 0 ? 0 : 1);

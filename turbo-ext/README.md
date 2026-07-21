@@ -52,7 +52,8 @@ Every shadowed piece of PHP code follows the same three steps:
    reflection and generates `vendor/turbo-stubs.php` — an empty stub shell
    per class, `final class Foo extends \PHPStanTurbo\Foo {}` (shadowed
    classes living in vendor/ cannot carry the attribute and are hardcoded in
-   the generator; currently `PhpParser\NodeTraverser`). When the extension
+   `build/TurboAttributeCollector.php`; currently `PhpParser\NodeTraverser`).
+   When the extension
    is enabled, `PHPStan\Turbo\TurboExtensionEnabler` `require`s that file
    *before* the Composer autoloader registers. All PHP code keeps calling
    the original class name, transparently getting the native implementation
@@ -62,10 +63,11 @@ Class names the native code references at run time come through
 `PHPStanTurbo\Runtime::configure()`: `TurboExtensionEnabler` feeds it the
 generated `vendor/turbo-class-map.php`, derived from the
 `#[ReferencedByTurboExtension]` attributes (vendored PhpParser classes are
-hardcoded in the generator), so a renamed class updates the map on the next
+hardcoded in the collector), so a renamed class updates the map on the next
 autoloader dump. Because instances must satisfy the original type hints, the
-native code never instantiates its own classes directly: the map's `…Impl`
-entries name the stub subclasses, and factories/singletons instantiate those.
+native code never instantiates its own classes directly: a referenced class
+that is itself shadowed resolves to its stub subclass, and
+factories/singletons instantiate that.
 
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
 a mismatched extension is ignored. `PHPSTAN_TURBO=0` disables it explicitly.
@@ -100,23 +102,19 @@ native class and the implementing `.cpp`. Nothing is maintained by hand;
 the runtime consumers: the enabler's reflection sources, the phar's preload
 builder, `tests/signature-parity.php`), and the vendored
 `PhpParser\NodeTraverser` pair, which cannot carry the attribute, is
-hardcoded in that script and in `bin/side-by-side.php`. The manifest drives
-three things:
+hardcoded in `build/TurboAttributeCollector.php` — the collection and
+rendering shared by that script and `bin/side-by-side.php`. The manifest
+drives three things:
 
-- **CI method parity** — `php bin/side-by-side.php --check` (part of the
-  version job) verifies every public method of each PHP class has a
+- **CI method parity** — `php bin/side-by-side.php` (part of the version
+  job, needs vendor/) verifies every public method of each PHP class has a
   `PHP_METHOD` counterpart in the C++ file and every `PHP_METHOD` corresponds
   to a method of the PHP class. Non-public PHP methods may stay PHP-only
-  (native code inlines them or uses C helpers). It also verifies the manifest
-  is complete — the per-class `.cpp` files, the generated
-  `vendor/turbo-stubs.php` and `vendor/turbo-shadowed-classes.json` (when
-  present) must all correspond 1:1 to the attributes — and that the generated
-  stubs are empty shells (a member declared in a stub would exist only when
-  the extension is loaded). It also holds the native class-reference table
-  (`pt_class_refs` in `support.cpp`) against the
-  `#[ReferencedByTurboExtension]` attributes and the generated
-  `vendor/turbo-class-map.php`, and requires every shadowed class to have
-  differential coverage in a `tests/` script.
+  (native code inlines them or uses C helpers). It also verifies every
+  class-defining `.cpp` corresponds 1:1 to the attributes, and re-derives the
+  three generated `vendor/turbo-*` files from the attributes and
+  byte-compares them, so a stale autoloader dump (or a hand edit of a
+  generated file) fails.
 - **CI signature parity** — `php tests/signature-parity.php` (compile job,
   needs the built extension and vendor/) reflects each native class against
   its PHP twin: visibility, staticness, parameter
@@ -136,7 +134,11 @@ three things:
 
 Semantic equivalence is still proven by the differential smoke test and by
 running the full test suite with the extension loaded — the manifest checks
-guard structure and force the version bump ritual, not behavior.
+guard structure and force the version bump ritual, not behavior. The smoke
+test also guards two structural invariants at the real runtime: the
+generated class map must cover the native class-reference table exactly
+(`Runtime::classRefs()`), and every shadowed class must have registered
+differential coverage (in `$covered` there, or via its dedicated script).
 
 ## The native parser engine
 

@@ -49,9 +49,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARROW_FUNCTION */ {"arrowFunction", "PhpParser\\Node\\Expr\\ArrowFunction"},
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
-	/* PT_CLASS_TRINARY_IMPL */ {"trinaryLogicImpl", NULL},
-	/* PT_CLASS_ETH_IMPL */ {"expressionTypeHolderImpl", NULL},
-	/* PT_CLASS_CEH_IMPL */ {"conditionalExpressionHolderImpl", NULL},
+	/* PT_CLASS_TRINARY */ {"trinaryLogic", NULL},
+	/* PT_CLASS_ETH */ {"expressionTypeHolder", NULL},
+	/* PT_CLASS_CEH */ {"conditionalExpressionHolder", NULL},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -108,6 +108,20 @@ void pt_class_map_configure(zend_string *key, zend_string *value)
 			ref->ce = NULL;
 			return;
 		}
+	}
+}
+
+void pt_class_refs_dump(zval *return_value)
+{
+	array_init_size(return_value, PT_CLASS_COUNT);
+	for (int idx = 0; idx < PT_CLASS_COUNT; idx++) {
+		zval v;
+		if (pt_class_templates[idx].default_name != NULL) {
+			ZVAL_STRING(&v, pt_class_templates[idx].default_name);
+		} else {
+			ZVAL_NULL(&v);
+		}
+		zend_hash_str_add_new(Z_ARRVAL_P(return_value), pt_class_templates[idx].key, strlen(pt_class_templates[idx].key), &v);
 	}
 }
 
@@ -199,7 +213,7 @@ zval *pt_trinary_singleton(zend_long value)
 {
 	if (UNEXPECTED(!PT_G(trinary_inited))) {
 		static const zend_long values[3] = {PT_TRI_YES, PT_TRI_MAYBE, PT_TRI_NO};
-		zend_class_entry *impl = pt_impl_class(PT_CLASS_TRINARY_IMPL, pt_ce_trinary);
+		zend_class_entry *impl = pt_impl_class(PT_CLASS_TRINARY, pt_ce_trinary);
 		zval *slots[3];
 		slots[0] = &PT_G(trinary_yes);
 		slots[1] = &PT_G(trinary_maybe);
@@ -775,7 +789,7 @@ bool pt_check_holder(zval *zv)
 
 void pt_holder_create(zval *result, zval *expr, zval *type, zend_long certainty)
 {
-	zend_class_entry *impl = pt_impl_class(PT_CLASS_ETH_IMPL, pt_ce_expr_type_holder);
+	zend_class_entry *impl = pt_impl_class(PT_CLASS_ETH, pt_ce_expr_type_holder);
 	zend_object *obj;
 	object_init_ex(result, impl);
 	obj = Z_OBJ_P(result);

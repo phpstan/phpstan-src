@@ -1,0 +1,95 @@
+<?php
+
+class DOMDocument
+{
+
+	/** @var DOMDocumentType|null */
+	public $doctype;
+
+	/** @var DOMElement|null */
+	public $documentElement;
+
+	/** @var null */
+	public $ownerDocument;
+
+	/**
+	 * @param string $name
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagName ($name) {}
+
+	/**
+	 * @param string $namespaceURI
+	 * @param string $localName
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
+
+	/**
+	 * @param non-empty-string $filename
+	 * @param int $options
+	 * @return bool
+	 */
+	public function load ($filename, $options = 0) {}
+
+	/**
+	 * @param non-empty-string $source
+	 * @param int $options
+	 * @return bool
+	 */
+	public function loadXML ($source, $options = 0) {}
+
+	/**
+	 * @param non-empty-string $source
+	 * @param int $options
+	 * @return bool
+	 */
+	public function loadHTML ($source, $options = 0) {}
+
+	/**
+	 * @param non-empty-string $filename
+	 * @param int $options
+	 * @return bool
+	 */
+	public function loadHTMLFile ($filename, $options = 0) {}
+
+	/**
+	 * @param non-empty-string $filename
+	 * @param int $options
+	 * @return int|false
+	 */
+	public function save ($filename, $options = 0) {}
+
+	/**
+	 * @param non-empty-string $filename
+	 * @return int|false
+	 */
+	public function saveHTMLFile ($filename) {}
+
+	/**
+	 * @param non-empty-string $filename
+	 * @param int $flags
+	 * @return bool
+	 */
+	public function schemaValidate ($filename, $flags = 0) {}
+
+	/**
+	 * @param non-empty-string $source
+	 * @param int $flags
+	 * @return bool
+	 */
+	public function schemaValidateSource ($source, $flags = 0) {}
+
+	/**
+	 * @param non-empty-string $filename
+	 * @return bool
+	 */
+	public function relaxNGValidate ($filename) {}
+
+	/**
+	 * @param non-empty-string $source
+	 * @return bool
+	 */
+	public function relaxNGValidateSource ($source) {}
+
+}

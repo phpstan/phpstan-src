@@ -152,7 +152,9 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 		);
 
 		$xml = new DOMDocument();
-		$xml->loadXML($this->getOutputContent());
+		$outputContent = $this->getOutputContent();
+		$this->assertNotSame('', $outputContent);
+		$xml->loadXML($outputContent);
 
 		$this->assertTrue(
 			$xml->schemaValidate(__DIR__ . '/junit-schema.xsd'),

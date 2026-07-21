@@ -4267,4 +4267,54 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14979(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14979.php'], [
+			[
+				"Parameter #1 \$filename of method DOMDocument::load() expects non-empty-string, '' given.",
+				7,
+			],
+			[
+				"Parameter #1 \$source of method DOMDocument::loadXML() expects non-empty-string, '' given.",
+				8,
+			],
+			[
+				"Parameter #1 \$source of method DOMDocument::loadHTML() expects non-empty-string, '' given.",
+				9,
+			],
+			[
+				"Parameter #1 \$filename of method DOMDocument::loadHTMLFile() expects non-empty-string, '' given.",
+				10,
+			],
+			[
+				"Parameter #1 \$filename of method DOMDocument::save() expects non-empty-string, '' given.",
+				11,
+			],
+			[
+				"Parameter #1 \$filename of method DOMDocument::saveHTMLFile() expects non-empty-string, '' given.",
+				12,
+			],
+			[
+				"Parameter #1 \$filename of method DOMDocument::schemaValidate() expects non-empty-string, '' given.",
+				13,
+			],
+			[
+				"Parameter #1 \$source of method DOMDocument::schemaValidateSource() expects non-empty-string, '' given.",
+				14,
+			],
+			[
+				"Parameter #1 \$filename of method DOMDocument::relaxNGValidate() expects non-empty-string, '' given.",
+				15,
+			],
+			[
+				"Parameter #1 \$source of method DOMDocument::relaxNGValidateSource() expects non-empty-string, '' given.",
+				16,
+			],
+		]);
+	}
+
 }

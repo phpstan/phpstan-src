@@ -1,0 +1,28 @@
+<?php
+
+class DOMDocument
+{
+
+	/** @var DOMDocumentType|null */
+	public $doctype;
+
+	/** @var DOMElement|null */
+	public $documentElement;
+
+	/** @var null */
+	public $ownerDocument;
+
+	/**
+	 * @param string $name
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagName ($name) {}
+
+	/**
+	 * @param string $namespaceURI
+	 * @param string $localName
+	 * @return DOMNodeList<DOMElement>
+	 */
+	public function getElementsByTagNameNS ($namespaceURI, $localName) {}
+
+}

@@ -7867,7 +7867,7 @@ return [
 'pg_result_error' => ['string|false', 'result'=>'resource'],
 'pg_result_error_field' => ['string|false|null', 'result'=>'resource', 'fieldcode'=>'int'],
 'pg_result_seek' => ['bool', 'result'=>'resource', 'offset'=>'int'],
-'pg_result_status' => ['mixed', 'result'=>'resource', 'result_type='=>'int'],
+'pg_result_status' => ['string|int', 'result'=>'resource', 'result_type='=>'int'],
 'pg_select' => ['mixed', 'db'=>'resource', 'table'=>'string', 'ids'=>'array', 'options='=>'int', 'result_type='=>'int'],
 'pg_send_execute' => ['bool', 'connection'=>'resource', 'stmtname'=>'string', 'params'=>'array'],
 'pg_send_prepare' => ['bool', 'connection'=>'resource', 'stmtname'=>'string', 'query'=>'string'],

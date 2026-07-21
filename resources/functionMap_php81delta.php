@@ -30,6 +30,7 @@ return [
 		'UnitEnum::cases' => ['list<static>'],
 	],
 	'old' => [
+		'pg_delete' => ['string|bool', 'db'=>'resource', 'table'=>'string', 'ids'=>'array', 'options='=>'int'],
 		'pg_escape_bytea' => ['string', 'connection'=>'resource', 'data'=>'string'],
 		'pg_escape_bytea\'1' => ['string', 'data'=>'string'],
 		'pg_escape_identifier' => ['string|false', 'connection'=>'resource', 'data'=>'string'],
@@ -48,6 +49,7 @@ return [
 		'pg_field_is_null\'1' => ['int', 'result'=>'', 'row'=>'int', 'field_name_or_number'=>'string|int'],
 		'pg_field_prtlen' => ['int|false', 'result'=>'', 'field_name_or_number'=>''],
 		'pg_field_prtlen\'1' => ['int', 'result'=>'', 'row'=>'int', 'field_name_or_number'=>'string|int'],
+		'pg_insert' => ['resource|string|bool', 'db'=>'resource', 'table'=>'string', 'values'=>'array', 'options='=>'int'],
 		'pg_lo_export' => ['bool', 'connection'=>'resource', 'oid'=>'int', 'filename'=>'string'],
 		'pg_lo_export\'1' => ['bool', 'oid'=>'int', 'pathname'=>'string'],
 		'pg_lo_import' => ['int|string|false', 'connection'=>'resource', 'pathname'=>'string', 'oid'=>''],
@@ -62,6 +64,7 @@ return [
 		'pg_query\'1' => ['resource|false', 'query'=>'string'],
 		'pg_query_params' => ['resource|false', 'connection'=>'resource', 'query'=>'string', 'params'=>'array'],
 		'pg_query_params\'1' => ['resource|false', 'query'=>'string', 'params'=>'array'],
+		'pg_select' => ['array<int, array>|string|false', 'db'=>'resource', 'table'=>'string', 'ids'=>'array', 'options='=>'int', 'result_type='=>'int'],
 		'pg_set_client_encoding' => ['int', 'connection'=>'resource', 'encoding'=>'string'],
 		'pg_set_client_encoding\'1' => ['int', 'encoding'=>'string'],
 		'pg_set_error_verbosity' => ['int|false', 'connection'=>'resource', 'verbosity'=>'int'],
@@ -70,5 +73,6 @@ return [
 		'pg_tty\'1' => ['string'],
 		'pg_untrace' => ['bool', 'connection='=>'resource'],
 		'pg_untrace\'1' => ['bool'],
+		'pg_update' => ['string|bool', 'db'=>'resource', 'table'=>'string', 'fields'=>'array', 'ids'=>'array', 'options='=>'int'],
 	]
 ];

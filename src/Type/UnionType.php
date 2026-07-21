@@ -75,6 +75,14 @@ class UnionType implements CompoundType
 	private array $cachedDescriptions = [];
 
 	/**
+	 * Lazily built set of keys of the union's constant-scalar and enum-case members, used to answer
+	 * "is this literal value one of my members?" in O(1). @see isSuperTypeOf()
+	 *
+	 * @var array<string, true>|null
+	 */
+	private ?array $finiteMemberLookup = null;
+
+	/**
 	 * @api
 	 * @param list<Type> $types
 	 */
@@ -204,6 +212,13 @@ class UnionType implements CompoundType
 			return $this->accepts($type->toArrayOrTraversable(), $strictTypes);
 		}
 
+		// Fast path mirroring isSuperTypeOf(): a constant scalar / enum case is accepted as soon as
+		// it is literally one of the union's members, avoiding a linear scan for each comparison.
+		$finiteKey = self::getFiniteMemberKey($type);
+		if ($finiteKey !== null && isset($this->getFiniteMemberLookup()[$finiteKey])) {
+			return AcceptsResult::createYes();
+		}
+
 		foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) {
 			if (!$type->equals(new ObjectType($baseClass))) {
 				continue;
@@ -276,6 +291,15 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOf($this);
 		}
 
+		// Fast path: a constant scalar / enum case is a subtype of this union as soon as it is
+		// literally one of the union's members. Looking it up in a precomputed set avoids a linear
+		// scan (with a describe() per member) for every comparison, turning union-against-union
+		// comparisons of large constant-value unions from O(n*m) into O(n+m).
+		$finiteKey = self::getFiniteMemberKey($otherType);
+		if ($finiteKey !== null && isset($this->getFiniteMemberLookup()[$finiteKey])) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
 		$results = [];
 		foreach ($this->types as $innerType) {
 			$result = $innerType->isSuperTypeOf($otherType);
@@ -294,6 +318,41 @@ class UnionType implements CompoundType
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @return array<string, true>
+	 */
+	private function getFiniteMemberLookup(): array
+	{
+		if ($this->finiteMemberLookup === null) {
+			$lookup = [];
+			foreach ($this->types as $innerType) {
+				$key = self::getFiniteMemberKey($innerType);
+				if ($key === null) {
+					continue;
+				}
+
+				$lookup[$key] = true;
+			}
+
+			$this->finiteMemberLookup = $lookup;
+		}
+
+		return $this->finiteMemberLookup;
+	}
+
+	/**
+	 * Returns a key uniquely identifying a constant-scalar or enum-case type, or null for any other
+	 * type. Equal keys imply equal types, so a member with a matching key is a supertype of $type.
+	 */
+	private static function getFiniteMemberKey(Type $type): ?string
+	{
+		if ($type->isConstantScalarValue()->yes() || $type->getEnumCaseObject() !== null) {
+			return $type::class . "\0" . $type->describe(VerbosityLevel::cache());
+		}
+
+		return null;
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult

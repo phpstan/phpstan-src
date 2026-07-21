@@ -144,6 +144,12 @@ parameters:
 			path: ../src/Cache/ArenaCache.php
 			reportUnmatched: false
 		-
+			# called from build/generate-turbo-stubs.php and
+			# turbo-ext/bin/side-by-side.php, outside the analysed paths
+			identifier: shipmonk.deadMethod
+			path: PHPStan/Build/TurboAttributeCollector.php
+			reportUnmatched: false
+		-
 			# the turbo extension shadows this seam class; the nullable returns
 			# are the contract of the pair, the PHP twin honestly never hits
 			message: '#^Method PHPStan\\Cache\\ArenaCache\:\:(?:create|lookupHashAll)\(\) never returns .+ so it can be removed from the return type\.$#'

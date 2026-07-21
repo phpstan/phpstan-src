@@ -1578,7 +1578,7 @@ private:
 		}
 
 		zval cehRaw;
-		object_init_ex(&cehRaw, pt_impl_class(PT_CLASS_CEH_IMPL, pt_ce_cond_expr_holder));
+		object_init_ex(&cehRaw, pt_impl_class(PT_CLASS_CEH, pt_ce_cond_expr_holder));
 		zv::Val ceh = zv::Val::adopt(cehRaw);
 		zv::ObjRef cehObj(ceh.ref().asObject());
 		cehObj.propAtWrite(PT_CEH_PROP_CONDS, std::move(conditions));

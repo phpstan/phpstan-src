@@ -14,6 +14,7 @@ use Throwable;
 use function array_merge;
 use function count;
 use function get_class;
+use function ksort;
 use function sprintf;
 
 #[AutowiredService]
@@ -44,7 +45,9 @@ final class AnalyserResultFinalizer
 		}
 
 		$nodeType = CollectedDataNode::class;
-		$node = new CollectedDataNode($analyserResult->getCollectedData(), $onlyFiles);
+		$collectedData = $analyserResult->getCollectedData();
+		ksort($collectedData);
+		$node = new CollectedDataNode($collectedData, $onlyFiles);
 
 		$file = 'N/A';
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));

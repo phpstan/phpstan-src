@@ -80,6 +80,30 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			[
+				new BitwiseOr(
+					new ConstFetch(new FullyQualified('JSON_NUMERIC_CHECK')),
+					new Variable('integerVar'),
+				),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new BitwiseOr(
+					new Variable('integerVar'),
+					new ConstFetch(new FullyQualified('JSON_THROW_ON_ERROR')),
+				),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createYes(),
+			],
+			[
+				new BitwiseOr(
+					new ConstFetch(new FullyQualified('JSON_NUMERIC_CHECK')),
+					new Variable('stringVar'),
+				),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createNo(),
+			],
+			[
 				new Variable('mixedVar'),
 				'JSON_THROW_ON_ERROR',
 				TrinaryLogic::createMaybe(),

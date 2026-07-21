@@ -52,20 +52,28 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `Runtime::configure()`, fed from the generated `vendor/turbo-class-map.php`:
    add the key to `pt_class_refs` in `support.cpp` and mark the referenced
    class with `#[ReferencedByTurboExtension(key: '...')]` (vendored PhpParser
-   classes are hardcoded in `build/generate-turbo-stubs.php` instead —
-   `side-by-side.php --check` enforces the table and the map stay 1:1).
-   Classes the native code *instantiates* get `…Impl` entries naming the
-   stub, so instances satisfy the original type hints.
+   classes are hardcoded in `build/TurboAttributeCollector.php` instead —
+   `tests/smoke.php` holds the map against the real compiled table via
+   `Runtime::classRefs()`). A referenced class that is itself shadowed is one
+   the native code *instantiates*: its table entry gets no default name, and
+   the resolved name is the stub subclass, so created instances satisfy the
+   original type hints.
 5. **Mark the class** with `#[ShadowedByTurboExtension(turboClass:
    'PHPStanTurbo\Foo', implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
    and run `composer dump-autoload` — `build/generate-turbo-stubs.php`
-   regenerates the stub shells in `vendor/turbo-stubs.php` and the manifest
-   of shadowed pairs in `vendor/turbo-shadowed-classes.json` from the
-   attributes (shadowed classes living in vendor/ cannot carry the attribute
-   and are hardcoded in that script and in `bin/side-by-side.php`).
-6. **Check method parity**: `php bin/side-by-side.php --check` must pass.
+   regenerates the stub shells in `vendor/turbo-stubs.php`, the manifest of
+   shadowed pairs in `vendor/turbo-shadowed-classes.json` and the class map
+   in `vendor/turbo-class-map.php` from the attributes (shadowed classes
+   living in vendor/ cannot carry the attribute and are hardcoded in
+   `build/TurboAttributeCollector.php`).
+6. **Check method parity**: `php bin/side-by-side.php` must pass (it also
+   re-derives the generated `vendor/turbo-*` files from the attributes and
+   byte-compares them, so a stale autoloader dump fails there).
 7. **Extend `tests/smoke.php`** with differential coverage (native result
-   must equal the PHP implementation's result on the same inputs).
+   must equal the PHP implementation's result on the same inputs) and
+   register the class in `$covered` next to its checks — the completeness
+   check at the end fails for any shadowed class with no registered
+   coverage.
 8. **Verify**: strict build, smoke test,
    `php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php`
    (arginfo parameter names must match the PHP twin exactly — named arguments),

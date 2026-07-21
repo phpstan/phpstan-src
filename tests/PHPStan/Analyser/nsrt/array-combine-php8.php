@@ -110,7 +110,7 @@ function withUnionConstArraysDifferentArraysCount(): void
 		}
 	}
 
-	assertType("non-empty-array<1|'2'|'3', 'apple'|'avocado'|'banana'|'pear'>", array_combine($a, $b));
+	assertType("non-empty-array<1|2|3, 'apple'|'avocado'|'banana'|'pear'>", array_combine($a, $b));
 }
 
 function withUnionConstArraysAndDifferentFiniteKeysCount(bool $bool): void
@@ -123,7 +123,7 @@ function withUnionConstArraysAndDifferentFiniteKeysCount(bool $bool): void
 		$b = ['apple', 'banana'];
 	}
 
-	assertType("non-empty-array<''|'1'|'2', 'apple'|'avocado'|'banana'>", array_combine($a, $b));
+	assertType("non-empty-array<1|2|'', 'apple'|'avocado'|'banana'>", array_combine($a, $b));
 }
 
 /**

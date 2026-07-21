@@ -484,10 +484,10 @@ class ArrayType implements Type
 				return $stringKeyType;
 			}
 
-			return new ArrayType($stringKeyType, $valueType);
+			return new ArrayType($stringKeyType->toArrayKey(), $valueType);
 		}
 
-		return new ArrayType($itemType, $valueType);
+		return new ArrayType($itemType->toArrayKey(), $valueType);
 	}
 
 	public function flipArray(): Type

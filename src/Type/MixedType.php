@@ -223,7 +223,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return new ArrayType($this->getIterableValueType(), $valueType);
+		return new ArrayType($this->getIterableValueType()->toArrayKey(), $valueType);
 	}
 
 	public function flipArray(): Type

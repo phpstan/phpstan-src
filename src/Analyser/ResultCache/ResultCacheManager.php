@@ -851,10 +851,6 @@ final class ResultCacheManager
 	{
 		$errorsByFile = $resultCache->getErrors();
 		foreach ($resultCache->getFilesToAnalyse() as $file) {
-			if (array_key_exists($file, $this->fileReplacements)) {
-				unset($errorsByFile[$file]);
-				$file = $this->fileReplacements[$file];
-			}
 			if (!array_key_exists($file, $freshErrorsByFile)) {
 				unset($errorsByFile[$file]);
 				continue;
@@ -873,10 +869,6 @@ final class ResultCacheManager
 	{
 		$errorsByFile = $resultCache->getLocallyIgnoredErrors();
 		foreach ($resultCache->getFilesToAnalyse() as $file) {
-			if (array_key_exists($file, $this->fileReplacements)) {
-				unset($errorsByFile[$file]);
-				$file = $this->fileReplacements[$file];
-			}
 			if (!array_key_exists($file, $freshLocallyIgnoredErrorsByFile)) {
 				unset($errorsByFile[$file]);
 				continue;
@@ -895,10 +887,6 @@ final class ResultCacheManager
 	{
 		$collectedDataByFile = $resultCache->getCollectedData();
 		foreach ($resultCache->getFilesToAnalyse() as $file) {
-			if (array_key_exists($file, $this->fileReplacements)) {
-				unset($collectedDataByFile[$file]);
-				$file = $this->fileReplacements[$file];
-			}
 			if (!array_key_exists($file, $freshCollectedDataByFile)) {
 				unset($collectedDataByFile[$file]);
 				continue;

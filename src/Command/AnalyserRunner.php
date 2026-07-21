@@ -103,6 +103,8 @@ final class AnalyserRunner
 			$postFileCallback,
 			$debug,
 			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile),
+			$tmpFile,
+			$insteadOfFile,
 		);
 	}
 

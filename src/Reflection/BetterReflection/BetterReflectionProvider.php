@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\BetterReflection;
 use Closure;
 use Nette\Utils\Strings;
 use PhpParser\Node;
+use PHPStan\Analyser\EditorModeFileHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
@@ -101,6 +102,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private FileHelper $fileHelper,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		private EditorModeFileHelper $editorModeFileHelper,
 		#[AutowiredParameter(ref: '%universalObjectCratesClasses%')]
 		private array $universalObjectCratesClasses,
 	)
@@ -182,11 +184,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		if (!$scope->isInTrait()) {
-			$scopeFile = $scope->getFile();
+			$scopeFile = $this->editorModeFileHelper->getAnalysedFile($scope->getFile());
 		} else {
 			$scopeFile = $scope->getTraitReflection()->getFileName();
 			if ($scopeFile === null) {
-				$scopeFile = $scope->getFile();
+				$scopeFile = $this->editorModeFileHelper->getAnalysedFile($scope->getFile());
 			}
 		}
 

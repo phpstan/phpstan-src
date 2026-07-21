@@ -10,21 +10,25 @@ final class ScopeContext
 
 	private function __construct(
 		private string $file,
+		private string $analysisFile,
 		private ?ClassReflection $classReflection,
 		private ?ClassReflection $traitReflection,
 	)
 	{
 	}
 
-	/** @api */
-	public static function create(string $file): self
+	/**
+	 * @api
+	 * @param string|null $analysisFile the file whose content is actually analysed; differs from $file in editor mode (--tmp-file / --instead-of)
+	 */
+	public static function create(string $file, ?string $analysisFile = null): self
 	{
-		return new self($file, classReflection: null, traitReflection: null);
+		return new self($file, $analysisFile ?? $file, classReflection: null, traitReflection: null);
 	}
 
 	public function beginFile(): self
 	{
-		return new self($this->file, classReflection: null, traitReflection: null);
+		return new self($this->file, $this->analysisFile, classReflection: null, traitReflection: null);
 	}
 
 	public function enterClass(ClassReflection $classReflection): self
@@ -35,7 +39,7 @@ final class ScopeContext
 		if ($classReflection->isTrait()) {
 			throw new ShouldNotHappenException();
 		}
-		return new self($this->file, $classReflection, traitReflection: null);
+		return new self($this->file, $this->analysisFile, $classReflection, traitReflection: null);
 	}
 
 	public function enterTrait(ClassReflection $traitReflection): self
@@ -47,7 +51,7 @@ final class ScopeContext
 			throw new ShouldNotHappenException();
 		}
 
-		return new self($this->file, $this->classReflection, $traitReflection);
+		return new self($this->file, $this->analysisFile, $this->classReflection, $traitReflection);
 	}
 
 	public function equals(self $otherContext): bool
@@ -78,6 +82,16 @@ final class ScopeContext
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	/**
+	 * The file whose content is actually analysed. Equal to getFile() except in
+	 * editor mode (--tmp-file / --instead-of), where getFile() is the real path
+	 * while this is the temp file being read.
+	 */
+	public function getAnalysisFile(): string
+	{
+		return $this->analysisFile;
 	}
 
 	public function getClassReflection(): ?ClassReflection

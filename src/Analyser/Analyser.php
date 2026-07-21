@@ -38,6 +38,8 @@ final class Analyser
 	 * @param Closure(string $file): void|null $preFileCallback
 	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 * @param string[]|null $allAnalysedFiles
+	 * @param string|null $tmpFile editor mode (--tmp-file): the temp file present in $files whose content is analysed
+	 * @param string|null $insteadOfFile editor mode (--instead-of): the real path $tmpFile should be reported under
 	 */
 	public function analyse(
 		array $files,
@@ -45,6 +47,8 @@ final class Analyser
 		?Closure $postFileCallback = null,
 		bool $debug = false,
 		?array $allAnalysedFiles = null,
+		?string $tmpFile = null,
+		?string $insteadOfFile = null,
 	): AnalyserResult
 	{
 		if ($allAnalysedFiles === null) {
@@ -83,12 +87,16 @@ final class Analyser
 			}
 
 			try {
+				$reportedFile = $tmpFile !== null && $insteadOfFile !== null && $file === $tmpFile
+					? $insteadOfFile
+					: null;
 				$fileAnalyserResult = $this->fileAnalyser->analyseFile(
 					$file,
 					$allAnalysedFiles,
 					$this->ruleRegistry,
 					$this->collectorRegistry,
 					null,
+					$reportedFile,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());

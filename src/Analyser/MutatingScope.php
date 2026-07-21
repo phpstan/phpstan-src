@@ -251,6 +251,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->context->getFile();
 	}
 
+	/**
+	 * The file whose content is actually analysed. Equal to getFile() except in
+	 * editor mode (--tmp-file / --instead-of), where getFile() is the real path
+	 * while this is the temp file being read.
+	 */
+	public function getAnalysisFile(): string
+	{
+		return $this->context->getAnalysisFile();
+	}
+
 	/** @api */
 	public function getFileDescription(): string
 	{
@@ -919,7 +929,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private function fileHasCompilerHaltStatementCalls(): bool
 	{
-		$nodes = $this->parser->parseFile($this->getFile());
+		$nodes = $this->parser->parseFile($this->getAnalysisFile());
 		foreach ($nodes as $node) {
 			if ($node instanceof Node\Stmt\HaltCompiler) {
 				return true;

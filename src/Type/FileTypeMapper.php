@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use Closure;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
+use PHPStan\Analyser\EditorModeFileHelper;
 use PHPStan\Analyser\IntermediaryNameScope;
 use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
@@ -82,6 +83,7 @@ final class FileTypeMapper
 		private PhpDocNodeResolver $phpDocNodeResolver,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
+		private EditorModeFileHelper $editorModeFileHelper,
 		private Cache $cache,
 		private FileContentHasher $fileContentHasher,
 		#[AutowiredParameter(ref: '%cache.resolvedPhpDocBlockCacheCountMax%')]
@@ -110,7 +112,7 @@ final class FileTypeMapper
 		}
 
 		if ($fileName !== null) {
-			$fileName = $this->fileHelper->normalizePath($fileName);
+			$fileName = $this->editorModeFileHelper->getAnalysedFile($this->fileHelper->normalizePath($fileName));
 		}
 
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
@@ -201,6 +203,7 @@ final class FileTypeMapper
 		?string $functionName,
 	): NameScope
 	{
+		$fileName = $this->editorModeFileHelper->getAnalysedFile($fileName);
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
 		if (isset($this->inProcess[$nameScopeKey])) {
 			if (isset($this->inProcessNameScopes[$nameScopeKey])) {

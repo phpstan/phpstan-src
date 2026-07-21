@@ -54,7 +54,6 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -226,11 +225,6 @@ final class PhpClassReflectionExtension
 					}
 
 					$phpDocType = TypeCombinator::union(...$types);
-					if (count($types) > ObjectType::ENUM_CASES_LIMIT) {
-						// Very large enums would otherwise carry a union of hundreds of constant
-						// members through every type operation. @see ObjectType::ENUM_CASES_LIMIT
-						$phpDocType = $phpDocType->generalize(GeneralizePrecision::lessSpecific());
-					}
 					$nativeType = new MixedType();
 				} else {
 					$phpDocType = TypeCombinator::intersect(

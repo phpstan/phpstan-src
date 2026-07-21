@@ -75,14 +75,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	use NonGeneralizableTypeTrait;
 	use SubstractableTypeTrait;
 
-	/**
-	 * Above this many cases, the `name`/`value` properties of an enum are generalized (to the
-	 * backing type / a string) instead of being expanded into a per-case constant union. Carrying
-	 * a union with hundreds of members through every type operation is quadratically expensive, so
-	 * for very large enums we trade the precise per-case literals for a manageable general type.
-	 */
-	public const ENUM_CASES_LIMIT = 512;
-
 	private const EXTRA_OFFSET_CLASSES = [
 		'DOMNamedNodeMap', // Only read and existence
 		'Dom\NamedNodeMap', // Only read and existence
@@ -223,11 +215,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($nakedClassReflection->isEnum()) {
 			if (
-				(
-					$propertyName === 'name'
-					|| ($propertyName === 'value' && $nakedClassReflection->isBackedEnum())
-				)
-				&& count($this->getEnumCases()) <= self::ENUM_CASES_LIMIT
+				$propertyName === 'name'
+				|| ($propertyName === 'value' && $nakedClassReflection->isBackedEnum())
 			) {
 				$properties = [];
 				foreach ($this->getEnumCases() as $enumCase) {
@@ -332,11 +321,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($nakedClassReflection->isEnum()) {
 			if (
-				(
-					$propertyName === 'name'
-					|| ($propertyName === 'value' && $nakedClassReflection->isBackedEnum())
-				)
-				&& count($this->getEnumCases()) <= self::ENUM_CASES_LIMIT
+				$propertyName === 'name'
+				|| ($propertyName === 'value' && $nakedClassReflection->isBackedEnum())
 			) {
 				$properties = [];
 				foreach ($this->getEnumCases() as $enumCase) {

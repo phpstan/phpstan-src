@@ -368,12 +368,36 @@ class UnionType implements CompoundType
 
 	public function equals(Type $type): bool
 	{
+		if ($this === $type) {
+			return true;
+		}
+
 		if (!$type instanceof static) {
 			return false;
 		}
 
 		if (count($this->types) !== count($type->types)) {
 			return false;
+		}
+
+		// Fast path: when both unions consist solely of finite (constant-scalar / enum-case)
+		// members, equality reduces to comparing their O(1) member-key sets. Because a member's
+		// finite key uniquely identifies it, two equal-sized finite unions are equal exactly when
+		// one's key set contains the other's, avoiding the O(n*m) multiset matching below.
+		$thisLookup = $this->getFiniteMemberLookup();
+		if (count($thisLookup) === count($this->types)) {
+			$otherLookup = $type->getFiniteMemberLookup();
+			if (count($otherLookup) !== count($type->types)) {
+				return false;
+			}
+
+			foreach (array_keys($otherLookup) as $key) {
+				if (!isset($thisLookup[$key])) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		$otherTypes = $type->types;

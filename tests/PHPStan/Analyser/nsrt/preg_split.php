@@ -52,6 +52,8 @@ class HelloWorld
 		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
 		assertType("list<string>|false", preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE));
 		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('list<array{string, int<0, max>}|string>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE | $flags));
+		assertType('list<array{string, int<0, max>}|string>|false', preg_split($pattern, $subject, $offset, $flags | PREG_SPLIT_DELIM_CAPTURE));
 	}
 
 	/**

@@ -40,8 +40,8 @@ final class BitwiseFlagHelper
 		}
 
 		if ($expr instanceof BitwiseOr) {
-			return TrinaryLogic::createFromBoolean($this->bitwiseOrContainsConstant($expr->left, $scope, $constName)->yes() ||
-				$this->bitwiseOrContainsConstant($expr->right, $scope, $constName)->yes());
+			return $this->bitwiseOrContainsConstant($expr->left, $scope, $constName)
+				->or($this->bitwiseOrContainsConstant($expr->right, $scope, $constName));
 		}
 
 		$fqcn = new FullyQualified($constName);

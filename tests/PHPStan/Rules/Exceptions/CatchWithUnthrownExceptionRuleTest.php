@@ -321,6 +321,16 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testJsonMaybeThrowWithDynamicFlags(): void
+	{
+		$this->analyse([__DIR__ . '/data/json-maybe-throw-dynamic-flags.php'], [
+			[
+				'Dead catch - JsonException is never thrown in the try block.',
+				35,
+			],
+		]);
+	}
+
 	public function testBug9066(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9066.php'], [

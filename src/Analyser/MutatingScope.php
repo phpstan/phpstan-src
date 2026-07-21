@@ -4453,9 +4453,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if ($typeWithMethod instanceof UnionType) {
 			$typeWithMethod = $typeWithMethod->filterTypes(static fn (Type $innerType) => $innerType->hasMethod($methodName)->yes());
-		}
-
-		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
+			if ($typeWithMethod instanceof NeverType) {
+				return null;
+			}
+		} elseif (!$typeWithMethod->hasMethod($methodName)->yes()) {
 			return null;
 		}
 
@@ -4491,8 +4492,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if ($typeWithProperty instanceof UnionType) {
 			$typeWithProperty = $typeWithProperty->filterTypes(static fn (Type $innerType) => $innerType->hasProperty($propertyName)->yes());
-		}
-		if (!$typeWithProperty->hasProperty($propertyName)->yes()) {
+			if ($typeWithProperty instanceof NeverType) {
+				return null;
+			}
+		} elseif (!$typeWithProperty->hasProperty($propertyName)->yes()) {
 			return null;
 		}
 
@@ -4504,8 +4507,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if ($typeWithProperty instanceof UnionType) {
 			$typeWithProperty = $typeWithProperty->filterTypes(static fn (Type $innerType) => $innerType->hasInstanceProperty($propertyName)->yes());
-		}
-		if (!$typeWithProperty->hasInstanceProperty($propertyName)->yes()) {
+			if ($typeWithProperty instanceof NeverType) {
+				return null;
+			}
+		} elseif (!$typeWithProperty->hasInstanceProperty($propertyName)->yes()) {
 			return null;
 		}
 
@@ -4517,8 +4522,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if ($typeWithProperty instanceof UnionType) {
 			$typeWithProperty = $typeWithProperty->filterTypes(static fn (Type $innerType) => $innerType->hasStaticProperty($propertyName)->yes());
-		}
-		if (!$typeWithProperty->hasStaticProperty($propertyName)->yes()) {
+			if ($typeWithProperty instanceof NeverType) {
+				return null;
+			}
+		} elseif (!$typeWithProperty->hasStaticProperty($propertyName)->yes()) {
 			return null;
 		}
 
@@ -4529,8 +4536,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if ($typeWithConstant instanceof UnionType) {
 			$typeWithConstant = $typeWithConstant->filterTypes(static fn (Type $innerType) => $innerType->hasConstant($constantName)->yes());
-		}
-		if (!$typeWithConstant->hasConstant($constantName)->yes()) {
+
+			if ($typeWithConstant instanceof NeverType) {
+				return null;
+			}
+		} elseif (!$typeWithConstant->hasConstant($constantName)->yes()) {
 			return null;
 		}
 

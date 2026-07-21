@@ -22,4 +22,4 @@ parameters:
 			message: '#^Strict comparison using \=\=\= between list\<non\-falsy\-string\> and false will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
-			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
+			path: ../src/Type/Php/MbFunctionsReturnTypeExtensionTrait.php

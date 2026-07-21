@@ -321,12 +321,17 @@ jobs:
               ../../bin/phpstan clear-result-cache
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
               ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
-              # An ignoreErrors path may target the error by the trait file or by the using-class
-              # file - both keep working (no BC break).
+              # The deduplicated error is attributed to the trait file: an ignoreErrors path
+              # targeting the trait file matches, a using-class path does not - consistently
+              # with both an empty and a primed result cache.
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon")
+              ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon")
+              ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
               # A generated baseline suppresses the error on re-run, with both an empty and a
               # primed result cache (the issue reported baseline generation as impossible).
               ../../bin/phpstan --generate-baseline=baseline.neon

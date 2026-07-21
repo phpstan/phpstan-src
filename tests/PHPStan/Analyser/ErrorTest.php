@@ -25,12 +25,17 @@ class ErrorTest extends PHPStanTestCase
 		$withoutTraitContext = $error->removeTraitContext();
 		// The error is now reported directly in the trait: the displayed file is
 		// the trait, and traitFilePath is kept so the editor URL and the
-		// trait-file ignore lookups resolve to the trait (#14718). filePath stays
-		// the using-class file, so an ignoreErrors path keyed on either the trait
-		// or the using-class file keeps matching (no BC break).
+		// trait-file ignore lookups resolve to the trait (#14718).
 		$this->assertSame('trait.php', $withoutTraitContext->getFile());
-		$this->assertSame('user.php', $withoutTraitContext->getFilePath());
 		$this->assertSame('trait.php', $withoutTraitContext->getTraitFilePath());
+	}
+
+	public function testRemoveTraitContextAttributesErrorToTraitFile(): void
+	{
+		$error = new Error('Message', 'trait.php (in context of class C)', 11, true, 'user.php', 'trait.php');
+
+		$withoutTraitContext = $error->removeTraitContext();
+		$this->assertSame('trait.php', $withoutTraitContext->getFilePath());
 	}
 
 	public static function dataValidIdentifier(): iterable

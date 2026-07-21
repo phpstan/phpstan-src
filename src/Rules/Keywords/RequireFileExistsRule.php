@@ -11,6 +11,7 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\IdentifierRuleError;
@@ -18,13 +19,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
-use function array_merge;
 use function dirname;
-use function explode;
-use function get_include_path;
-use function is_file;
 use function sprintf;
-use const PATH_SEPARATOR;
 
 /**
  * @implements Rule<Include_>
@@ -33,26 +29,12 @@ use const PATH_SEPARATOR;
 final class RequireFileExistsRule implements Rule
 {
 
-	/**
-	 * Functions that, when they return true, guarantee the path exists on the
-	 * filesystem, so guarding a require/include with them suppresses the error.
-	 */
-	private const FILE_EXISTENCE_FUNCTIONS = [
-		'file_exists',
-		'is_file',
-		'is_readable',
-		'is_writable',
-		'is_writeable',
-		'is_executable',
-	];
-
 	public function __construct(
-		#[AutowiredParameter]
-		private string $currentWorkingDirectory,
 		private ExprPrinter $exprPrinter,
 		#[AutowiredParameter(ref: '%featureToggles.magicDirInInclude%')]
 		private bool $checkMagicDirInInclude,
 		private FileHelper $fileHelper,
+		private FileExistenceChecker $fileExistenceChecker,
 	)
 	{
 	}
@@ -91,37 +73,9 @@ final class RequireFileExistsRule implements Rule
 		return $errors;
 	}
 
-	/**
-	 * We cannot use `stream_resolve_include_path` as it works based on the calling script.
-	 * This method simulates the behavior of `stream_resolve_include_path` but for the given scope.
-	 * The priority order is the following:
-	 * 	1. The current working directory.
-	 * 	2. The include path.
-	 *  3. The path of the script that is being executed.
-	 */
 	private function doesFileExist(string $path, Scope $scope): bool
 	{
-		$directories = array_merge(
-			[$this->currentWorkingDirectory],
-			explode(PATH_SEPARATOR, get_include_path()),
-			[dirname($scope->getFile())],
-		);
-
-		foreach ($directories as $directory) {
-			if ($this->doesFileExistForDirectory($path, $directory)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private function doesFileExistForDirectory(string $path, string $workingDirectory): bool
-	{
-		$fileHelper = new FileHelper($workingDirectory);
-		$absolutePath = $fileHelper->absolutizePath($path);
-
-		return is_file($absolutePath);
+		return $this->fileExistenceChecker->fileExists($path, dirname($scope->getFile()));
 	}
 
 	private function getErrorMessage(Include_ $node, string $filePath): IdentifierRuleError
@@ -203,7 +157,7 @@ final class RequireFileExistsRule implements Rule
 
 	private function isInFileExists(Include_ $node, Scope $scope): bool
 	{
-		foreach (self::FILE_EXISTENCE_FUNCTIONS as $funcName) {
+		foreach (FileExistenceChecker::FILE_EXISTENCE_FUNCTIONS as $funcName) {
 			$expr = new FuncCall(new FullyQualified($funcName), [
 				new Arg($node->expr),
 			]);

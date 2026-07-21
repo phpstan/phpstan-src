@@ -10,6 +10,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileExistenceChecker;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -37,6 +38,7 @@ use function array_key_exists;
 use function array_last;
 use function array_merge;
 use function count;
+use function dirname;
 use function implode;
 use function in_array;
 use function is_int;
@@ -44,10 +46,13 @@ use function is_string;
 use function lcfirst;
 use function max;
 use function sprintf;
+use function strtolower;
 
 #[AutowiredService]
 final class FunctionCallParametersCheck
 {
+
+	private const FILE_REFERENCE_ATTRIBUTE = 'JetBrains\PhpStorm\FileReference';
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
@@ -63,6 +68,9 @@ final class FunctionCallParametersCheck
 		private bool $checkExtraArguments,
 		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
+		private ?FileExistenceChecker $fileExistenceChecker = null,
+		#[AutowiredParameter(ref: '%featureToggles.checkFileReferences%')]
+		private bool $checkFileReferences = false,
 	)
 	{
 	}
@@ -321,6 +329,10 @@ final class FunctionCallParametersCheck
 
 		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCallLine, $isBuiltin, $arguments, $hasNamedArguments, $missingParameterMessage, $unknownParameterMessage);
 		foreach ($addedErrors as $error) {
+			$errors[] = $error;
+		}
+
+		foreach ($this->checkFileReferences($argumentsWithParameters, $scope, $funcCall) as $error) {
 			$errors[] = $error;
 		}
 
@@ -780,6 +792,110 @@ final class FunctionCallParametersCheck
 		}
 
 		return [$errors, $newArguments];
+	}
+
+	/**
+	 * Validates constant-string arguments passed to parameters annotated with
+	 * #[JetBrains\PhpStorm\FileReference], reusing the include/require file resolution.
+	 *
+	 * @param array<int, array{Expr, Type|null, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}> $argumentsWithParameters
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkFileReferences(array $argumentsWithParameters, Scope $scope, Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall): array
+	{
+		if (!$this->checkFileReferences || $this->fileExistenceChecker === null) {
+			return [];
+		}
+
+		if ($this->isFileExistenceTestingCall($funcCall, $scope)) {
+			// e.g. is_file()/file_exists() legitimately receive paths that may not exist
+			return [];
+		}
+
+		$errors = [];
+		$scriptDirectory = dirname($scope->getFile());
+		foreach ($argumentsWithParameters as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter]) {
+			if ($unpack) {
+				continue;
+			}
+			if (!$parameter instanceof ExtendedParameterReflection) {
+				continue;
+			}
+
+			$baseDirectories = $this->getFileReferenceBaseDirectories($parameter);
+			if ($baseDirectories === null) {
+				continue;
+			}
+
+			$argumentValueType ??= $scope->getType($argumentValue);
+			foreach ($argumentValueType->getConstantStrings() as $constantString) {
+				$path = $constantString->getValue();
+				if ($path === '') {
+					continue;
+				}
+				if ($this->fileExistenceChecker->pathExists($path, $scriptDirectory, $baseDirectories)) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Path "%s" passed to %s does not exist.',
+					$path,
+					lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+				))
+					->identifier('argument.fileReference')
+					->line($argumentLine)
+					->build();
+			}
+		}
+
+		return $errors;
+	}
+
+	private function isFileExistenceTestingCall(Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall, Scope $scope): bool
+	{
+		if (!$funcCall instanceof Node\Expr\FuncCall || !$funcCall->name instanceof Node\Name) {
+			return false;
+		}
+
+		if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
+			return false;
+		}
+
+		$functionName = strtolower($this->reflectionProvider->getFunction($funcCall->name, $scope)->getName());
+
+		return in_array($functionName, FileExistenceChecker::FILE_EXISTENCE_FUNCTIONS, true);
+	}
+
+	/**
+	 * @return list<string>|null Base directories from the attribute's $basePath, or null when the parameter is not a file reference
+	 */
+	private function getFileReferenceBaseDirectories(ExtendedParameterReflection $parameter): ?array
+	{
+		$isFileReference = false;
+		$baseDirectories = [];
+		foreach ($parameter->getAttributes() as $attribute) {
+			if ($attribute->getName() !== self::FILE_REFERENCE_ATTRIBUTE) {
+				continue;
+			}
+			$isFileReference = true;
+
+			$basePathType = $attribute->getArgumentTypes()['basePath'] ?? null;
+			if ($basePathType === null) {
+				continue;
+			}
+			foreach ($basePathType->getConstantStrings() as $basePath) {
+				if ($basePath->getValue() === '') {
+					continue;
+				}
+				$baseDirectories[] = $basePath->getValue();
+			}
+		}
+
+		if (!$isFileReference) {
+			return null;
+		}
+
+		return $baseDirectories;
 	}
 
 	private function describeParameter(ParameterReflection $parameter, int|string|null $positionOrNamed): string

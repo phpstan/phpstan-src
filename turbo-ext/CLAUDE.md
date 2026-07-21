@@ -162,5 +162,5 @@ Follow README.md's "Updating php-parser" procedure. The agent-relevant traps:
 - No `match` expressions in `src/` (the PHP downgrade tooling cannot handle
   them) — use `switch` or if/else.
 - The PHP twin stays the reference implementation: fix behavior there first,
-  port second, and keep both sides structurally parallel so the side-by-side
-  view stays reviewable.
+  port second, and keep both sides structurally parallel so they stay
+  reviewable next to each other.

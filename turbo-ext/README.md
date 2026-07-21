@@ -133,9 +133,6 @@ three things:
   constant against `turbo-ext/src/` history (see above), so a native-side
   edit cannot ship without the explicit bump attesting the pair still
   matches.
-- **Side-by-side review** — `php bin/side-by-side.php` renders
-  `side-by-side.html` (gitignored), pairing each method's PHP and C++
-  implementations next to each other for maintenance review.
 
 Semantic equivalence is still proven by the differential smoke test and by
 running the full test suite with the extension loaded — the manifest checks

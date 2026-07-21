@@ -2,7 +2,6 @@
 /src/*.o
 /src/parser/*.o
 /phpstan_turbo.so
-/side-by-side.html
 /version.stamp
 
 # Generated and committed into the phpstan/turbo-ext subsplit by

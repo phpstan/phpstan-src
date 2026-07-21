@@ -1,20 +1,15 @@
 <?php declare(strict_types = 1);
 
 /**
- * Pairs the shadowed PHP classes with their native C++ implementations by
- * method name, driven by the ShadowedByTurboExtension attributes.
+ * Verifies the shadowed PHP classes and their native C++ implementations are
+ * in sync, pairing them by method name, driven by the
+ * ShadowedByTurboExtension attributes (used by CI): every shadowed pair's
+ * files exist, every public method of the PHP class has a PHP_METHOD
+ * counterpart in the C++ file, and every PHP_METHOD corresponds to a method
+ * of the PHP class. Vendored entries are skipped when vendor/ is not
+ * installed.
  *
- * Usage:
- *   php turbo-ext/bin/side-by-side.php --check
- *       Verify the two implementations are in sync (used by CI):
- *       every shadowed pair's files exist, every public method of the PHP
- *       class has a PHP_METHOD counterpart in the C++ file, and every
- *       PHP_METHOD corresponds to a method of the PHP class. Vendored
- *       entries are skipped when vendor/ is not installed.
- *
- *   php turbo-ext/bin/side-by-side.php [output.html]
- *       Render a side-by-side HTML view of each method pair
- *       (default output: turbo-ext/side-by-side.html).
+ * Usage: php turbo-ext/bin/side-by-side.php
  *
  * No dependencies — runs on any PHP >= 8.0 without vendor/.
  */
@@ -534,128 +529,27 @@ function checkWindowsSources(): array
 	return $problems;
 }
 
-$check = in_array('--check', $argv, true);
-
-if ($check) {
-	$failed = false;
-	foreach (array_merge(checkStructure($manifest), checkClassMap($referenced), checkSmokeCoverage($manifest), checkWindowsSources()) as $problem) {
-		printf("✗ %s\n", $problem);
-		$failed = true;
-	}
-	foreach ($manifest as $className => $entry) {
-		$result = analyzePair($className, $entry);
-		if ($result['skipped'] !== null) {
-			printf("~ %s: skipped, %s\n", $className, $result['skipped']);
-			continue;
-		}
-		if ($result['missingNative'] === [] && $result['orphanNative'] === []) {
-			printf("✓ %s: %d methods paired\n", $className, count($result['cppMethods']));
-			continue;
-		}
-		$failed = true;
-		foreach ($result['missingNative'] as $name) {
-			printf("✗ %s::%s() is public in %s but has no PHP_METHOD in %s\n", $className, $name, $entry['php'], $entry['cpp']);
-		}
-		foreach ($result['orphanNative'] as $name) {
-			printf("✗ PHP_METHOD %s in %s has no counterpart method in %s\n", $name, $entry['cpp'], $entry['php']);
-		}
-	}
-	exit($failed ? 1 : 0);
+$failed = false;
+foreach (array_merge(checkStructure($manifest), checkClassMap($referenced), checkSmokeCoverage($manifest), checkWindowsSources()) as $problem) {
+	printf("✗ %s\n", $problem);
+	$failed = true;
 }
-
-$output = $argv[1] ?? 'turbo-ext/side-by-side.html';
-
-function codePane(string $file, int $startLine, int $endLine): string
-{
-	$lines = array_slice(file($file), $startLine - 1, $endLine - $startLine + 1);
-	$html = '';
-	foreach ($lines as $i => $text) {
-		$html .= sprintf("<span class=\"ln\">%4d</span>%s\n", $startLine + $i, htmlspecialchars(rtrim($text, "\n"), ENT_QUOTES));
-	}
-
-	return sprintf('<pre>%s</pre>', $html);
-}
-
-$gitHead = trim((string) shell_exec('git log -1 --format=%h 2>/dev/null'));
-$body = '';
-$toc = '';
-
 foreach ($manifest as $className => $entry) {
 	$result = analyzePair($className, $entry);
-	$anchor = strtolower(str_replace('\\', '-', $className));
-	$toc .= sprintf('<li><a href="#%s">%s</a></li>', $anchor, htmlspecialchars($className));
-
-	$body .= sprintf(
-		'<section id="%s"><h2>%s</h2><p class="files"><span class="php-badge">PHP</span> %s &nbsp; <span class="cpp-badge">C++</span> %s%s</p>',
-		$anchor,
-		htmlspecialchars($className),
-		htmlspecialchars($entry['php']),
-		htmlspecialchars($entry['cpp']),
-		($entry['vendored'] ?? false) ? ' <em>(PHP side is vendored — pinned by composer.lock)</em>' : '',
-	);
-
 	if ($result['skipped'] !== null) {
-		$body .= sprintf('<p class="note">Skipped: %s</p></section>', htmlspecialchars($result['skipped']));
+		printf("~ %s: skipped, %s\n", $className, $result['skipped']);
 		continue;
 	}
-
-	foreach ($result['phpMethods'] as $name => $info) {
-		$native = $result['cppMethods'][$name] ?? null;
-		$label = sprintf(
-			'%s%s%s()',
-			$info['visibility'] === 'public' ? '' : $info['visibility'] . ' ',
-			$info['static'] ? 'static ' : '',
-			$name,
-		);
-		if ($native === null) {
-			if ($info['visibility'] === 'public') {
-				$body .= sprintf('<h3>%s <span class="warn">no native counterpart!</span></h3>', htmlspecialchars($label));
-				$body .= sprintf('<div class="pair"><div>%s</div><div class="note">missing</div></div>', codePane($entry['php'], $info['startLine'], $info['endLine']));
-			} else {
-				$body .= sprintf('<h3>%s <span class="phponly">PHP-only helper (native side inlines or reimplements it)</span></h3>', htmlspecialchars($label));
-			}
-			continue;
-		}
-		$body .= sprintf('<h3>%s</h3><div class="pair"><div>%s</div><div>%s</div></div>', htmlspecialchars($label), codePane($entry['php'], $info['startLine'], $info['endLine']), codePane($entry['cpp'], $native['startLine'], $native['endLine']));
+	if ($result['missingNative'] === [] && $result['orphanNative'] === []) {
+		printf("✓ %s: %d methods paired\n", $className, count($result['cppMethods']));
+		continue;
 	}
-
+	$failed = true;
+	foreach ($result['missingNative'] as $name) {
+		printf("✗ %s::%s() is public in %s but has no PHP_METHOD in %s\n", $className, $name, $entry['php'], $entry['cpp']);
+	}
 	foreach ($result['orphanNative'] as $name) {
-		$native = $result['cppMethods'][$name];
-		$body .= sprintf('<h3>%s() <span class="warn">native only — no PHP counterpart!</span></h3>', htmlspecialchars($name));
-		$body .= sprintf('<div class="pair"><div class="note">missing</div><div>%s</div></div>', codePane($entry['cpp'], $native['startLine'], $native['endLine']));
+		printf("✗ PHP_METHOD %s in %s has no counterpart method in %s\n", $name, $entry['cpp'], $entry['php']);
 	}
-
-	$body .= '</section>';
 }
-
-$html = <<<HTML
-<meta charset="utf-8">
-<title>phpstan_turbo — PHP ↔ C++ side by side</title>
-<style>
-:root { color-scheme: light dark; --border: #8884; --accent: #4a7dbd; }
-body { font-family: system-ui, sans-serif; margin: 1.5rem; max-width: 1800px; }
-h2 { border-bottom: 2px solid var(--accent); padding-bottom: .3rem; margin-top: 2.5rem; }
-h3 { font-family: ui-monospace, monospace; margin: 1.5rem 0 .4rem; }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; align-items: start; }
-pre { border: 1px solid var(--border); border-radius: 6px; padding: .6rem; overflow-x: auto; font-size: .78rem; line-height: 1.45; margin: 0; }
-.ln { display: inline-block; width: 3.2em; opacity: .45; user-select: none; }
-.php-badge, .cpp-badge { font-size: .7rem; font-weight: 700; padding: .1rem .4rem; border-radius: 4px; color: #fff; }
-.php-badge { background: #7377ad; } .cpp-badge { background: #649ad1; }
-.files { opacity: .8; }
-.warn { color: #c33; font-family: system-ui; font-size: .85rem; font-weight: 600; }
-.phponly { color: #888; font-family: system-ui; font-size: .85rem; font-weight: 400; }
-.note { opacity: .6; font-style: italic; padding: .6rem; }
-.toc li { margin: .15rem 0; }
-@media (max-width: 1000px) { .pair { grid-template-columns: 1fr; } }
-</style>
-<h1>phpstan_turbo — shadowed classes, PHP ↔ C++</h1>
-<p>Derived from the <code>ShadowedByTurboExtension</code> attributes at commit <code>{$gitHead}</code>
-by <code>php turbo-ext/bin/side-by-side.php</code>. Left: the PHP implementation
-(used when the extension is not loaded). Right: the native implementation the
-stub shadows it with.</p>
-<ul class="toc">{$toc}</ul>
-{$body}
-HTML;
-
-file_put_contents($output, $html);
-printf("wrote %s (%d classes)\n", $output, count($manifest));
+exit($failed ? 1 : 0);

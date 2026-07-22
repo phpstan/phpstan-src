@@ -233,4 +233,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12547.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14983(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14983-uninitialized.php'], []);
+	}
+
 }

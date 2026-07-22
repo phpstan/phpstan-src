@@ -154,4 +154,15 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13856-phpdoc.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14983(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14983-phpdoc.php'], [
+			[
+				'Class Bug14983PhpDoc\UninitializedFromTrait has an uninitialized @readonly property $property. Assign it in the constructor.',
+				9,
+			],
+		]);
+	}
+
 }

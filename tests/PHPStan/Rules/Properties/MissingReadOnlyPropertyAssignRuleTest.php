@@ -153,6 +153,17 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testBug14983(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14983.php'], [
+			[
+				'Class Bug14983\UninitializedFromTrait has an uninitialized readonly property $property. Assign it in the constructor.',
+				8,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7119(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7119.php'], []);

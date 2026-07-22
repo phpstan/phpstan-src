@@ -19,36 +19,28 @@ final class NullsafeShortCircuitingHelper
 
 	public static function getType(MutatingScope $scope, Expr $expr, Type $type): Type
 	{
-		if ($expr instanceof NullsafePropertyFetch || $expr instanceof NullsafeMethodCall) {
-			$varType = $scope->getType($expr->var);
-			if (TypeCombinator::containsNull($varType)) {
-				return TypeCombinator::addNull($type);
+		while (true) {
+			if ($expr instanceof NullsafePropertyFetch || $expr instanceof NullsafeMethodCall) {
+				$varType = $scope->getType($expr->var);
+				if (TypeCombinator::containsNull($varType)) {
+					return TypeCombinator::addNull($type);
+				}
+
+				return $type;
+			}
+
+			if ($expr instanceof ArrayDimFetch || $expr instanceof PropertyFetch || $expr instanceof MethodCall) {
+				$expr = $expr->var;
+				continue;
+			}
+
+			if (($expr instanceof StaticPropertyFetch || $expr instanceof StaticCall) && $expr->class instanceof Expr) {
+				$expr = $expr->class;
+				continue;
 			}
 
 			return $type;
 		}
-
-		if ($expr instanceof ArrayDimFetch) {
-			return self::getType($scope, $expr->var, $type);
-		}
-
-		if ($expr instanceof PropertyFetch) {
-			return self::getType($scope, $expr->var, $type);
-		}
-
-		if ($expr instanceof StaticPropertyFetch && $expr->class instanceof Expr) {
-			return self::getType($scope, $expr->class, $type);
-		}
-
-		if ($expr instanceof MethodCall) {
-			return self::getType($scope, $expr->var, $type);
-		}
-
-		if ($expr instanceof StaticCall && $expr->class instanceof Expr) {
-			return self::getType($scope, $expr->class, $type);
-		}
-
-		return $type;
 	}
 
 }

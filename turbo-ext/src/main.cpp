@@ -27,8 +27,8 @@
 #endif
 
 /* PHPStanTurbo\Runtime::configure() — cold-path configuration entry point.
- * TurboExtensionEnabler passes the generated class map (derived from the
- * ReferencedByTurboExtension attributes) that the native code resolves
+ * TurboExtensionEnabler passes a map of class names (::class constants, so
+ * they stay correct under the scoped phar) that the native code resolves
  * lazily at run time. ZEND_FASTCALL matches zif_handler's calling
  * convention — on MSVC x64 that is __vectorcall, and a named function
  * defaults to __cdecl (the reg.h lambdas convert implicitly). */
@@ -50,16 +50,6 @@ static void ZEND_FASTCALL runtimeConfigure(INTERNAL_FUNCTION_PARAMETERS)
 	} ZEND_HASH_FOREACH_END();
 }
 
-/* PHPStanTurbo\Runtime::classRefs() — the native class-reference table as
- * key => default FQCN (or null), so the smoke test can hold the generated
- * class map against the real compiled table instead of parsing source. */
-static void ZEND_FASTCALL runtimeClassRefs(INTERNAL_FUNCTION_PARAMETERS)
-{
-	ZEND_PARSE_PARAMETERS_NONE();
-
-	pt_class_refs_dump(return_value);
-}
-
 static PHP_MINIT_FUNCTION(phpstan_turbo)
 {
 #ifdef ZTS
@@ -68,7 +58,6 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 
 	reg::Class runtime("PHPStanTurbo\\Runtime");
 	runtime.method("configure", reg::PublicStatic, 1, { reg::arrayArg("classMap") }, runtimeConfigure);
-	runtime.method("classRefs", reg::PublicStatic, 0, {}, runtimeClassRefs);
 	runtime.register_();
 
 	pt_register_trinary_logic();

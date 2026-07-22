@@ -133,10 +133,9 @@ final class TurboExtensionEnabler
 
 		// Class names the extension needs at runtime, generated from the
 		// ReferencedByTurboExtension attributes so a renamed class updates the
-		// map on the next autoloader dump. Entries mapping to shadowed classes
-		// name what the extension instantiates — the stub subclasses loaded
-		// below, so that every created object satisfies the original type
-		// hints.
+		// map on the next autoloader dump. The *Impl entries name the classes
+		// the extension instantiates — these are the stub subclasses loaded
+		// below, so that every object satisfies the original type hints.
 		$classMapFile = dirname(__DIR__, 2) . '/vendor/turbo-class-map.php';
 		if (!is_file($classMapFile)) {
 			return;

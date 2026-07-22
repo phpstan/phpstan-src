@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 #[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionTypeHolder', implementation: __DIR__ . '/../../turbo-ext/src/ExpressionTypeHolder.cpp')]
-#[ReferencedByTurboExtension(key: 'expressionTypeHolder')]
+#[ReferencedByTurboExtension(key: 'expressionTypeHolderImpl')]
 final class ExpressionTypeHolder
 {
 

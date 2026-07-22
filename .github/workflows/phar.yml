@@ -171,12 +171,8 @@ jobs:
           coverage: "none"
           php-version: "8.5"
 
-      # side-by-side.php collects the attributes with reflection against the
-      # dumped autoloader and byte-compares the generated vendor/turbo-* files
-      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
-
       - name: "Check the shadowed PHP and C++ implementations are in sync (method parity)"
-        run: "php turbo-ext/bin/side-by-side.php"
+        run: "php turbo-ext/bin/side-by-side.php --check"
 
       - name: "Check the vendored php-parser matches the version the native parser engine was ported against"
         run: |

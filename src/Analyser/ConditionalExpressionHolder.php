@@ -11,7 +11,7 @@ use function implode;
 use function sprintf;
 
 #[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ConditionalExpressionHolder', implementation: __DIR__ . '/../../turbo-ext/src/ConditionalExpressionHolder.cpp')]
-#[ReferencedByTurboExtension(key: 'conditionalExpressionHolder')]
+#[ReferencedByTurboExtension(key: 'conditionalExpressionHolderImpl')]
 final class ConditionalExpressionHolder
 {
 

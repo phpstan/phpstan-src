@@ -6,11 +6,9 @@ use Attribute;
 
 /**
  * Marks a class the phpstan_turbo extension's native code references at run
- * time — for instanceof-style checks, static calls, throws, or instantiation
- * (a referenced class that is itself shadowed resolves to its stub subclass,
- * so natively created objects satisfy the original type hints) — under the
- * given key of the native class-reference table (pt_class_refs in
- * turbo-ext/src/support.cpp).
+ * time — for instanceof-style checks, static calls, throws, or (the `…Impl`
+ * keys) instantiation — under the given key of the native class-reference
+ * table (pt_class_refs in turbo-ext/src/support.cpp).
  *
  * On composer dump-autoload, build/generate-turbo-stubs.php collects these
  * attributes into vendor/turbo-class-map.php — the map TurboExtensionEnabler

@@ -81,12 +81,11 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
-	/* classes the extension instantiates (their PHP twins are themselves
-	 * shadowed, hence no default name): configured to the stub subclasses
+	/* classes the extension instantiates; configured to the stub subclasses
 	 * so created objects satisfy the original PHPStan type hints */
-	PT_CLASS_TRINARY,
-	PT_CLASS_ETH,
-	PT_CLASS_CEH,
+	PT_CLASS_TRINARY_IMPL,
+	PT_CLASS_ETH_IMPL,
+	PT_CLASS_CEH_IMPL,
 	PT_CLASS_COUNT
 };
 
@@ -99,11 +98,6 @@ zend_class_entry *pt_impl_class(int idx, zend_class_entry *native_fallback);
 
 /* Called by Runtime::configure() */
 void pt_class_map_configure(zend_string *key, zend_string *value);
-
-/* Fills return_value with key => default FQCN (or null) for every
- * pt_class_refs entry — Runtime::classRefs(), backing the smoke test's
- * structural checks against the generated class map. */
-void pt_class_refs_dump(zval *return_value);
 
 /* }}} */
 

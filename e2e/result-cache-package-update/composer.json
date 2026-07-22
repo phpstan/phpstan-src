@@ -1,0 +1,9 @@
+{
+	"name": "phpstan/result-cache-package-update-e2e",
+	"require": {
+		"psr/log": "^3.0"
+	},
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

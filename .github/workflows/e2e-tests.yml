@@ -392,6 +392,27 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              # Change the content hash again AND edit a single source file: the cache is still kept
+              # (no package changed), and only the one changed file is reanalysed.
+              printf '\n' >> src/Foo.php
+              jq '.["content-hash"]="1111111111111111111111111111111111111111"' composer.lock > composer.lock.new
+              mv composer.lock.new composer.lock
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-package-update
+              composer install
+              ../../bin/phpstan analyse
+              # Simulate a single Composer package being updated by changing its recorded reference in
+              # vendor/composer/installed.php. The cache must be invalidated only for files depending on
+              # that package (src/Foo.php uses psr/log), not for the whole project.
+              php -r '$f = "vendor/composer/installed.php"; $d = require $f; $d["versions"]["psr/log"]["reference"] = "0000000000000000000000000000000000000000"; file_put_contents($f, "<?php return " . var_export($d, true) . ";" . PHP_EOL);'
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test

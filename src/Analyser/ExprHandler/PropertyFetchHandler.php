@@ -59,14 +59,16 @@ final class PropertyFetchHandler implements ExprHandler
 		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 		$scope = $varResult->getScope();
 		if ($expr->name instanceof Identifier) {
-			$propertyName = $expr->name->toString();
-			$propertyHolderType = $scopeBeforeVar->getType($expr->var);
-			$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
-			if ($propertyReflection !== null && $this->phpVersion->supportsPropertyHooks()) {
-				$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
-				if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
-					$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
-					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
+			if ($this->phpVersion->supportsPropertyHooks()) {
+				$propertyName = $expr->name->toString();
+				$propertyHolderType = $scopeBeforeVar->getType($expr->var);
+				$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
+				if ($propertyReflection !== null) {
+					$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
+					if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
+						$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
+						$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
+					}
 				}
 			}
 		} else {

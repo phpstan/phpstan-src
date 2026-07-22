@@ -167,15 +167,12 @@ final class TurboAttributeCollector
 				continue;
 			}
 			$className = 'PHPStan\\' . strtr(substr($path, strlen($sourceDir) + 1, -strlen('.php')), '/', '\\');
-			try {
-				if (!class_exists($className) && !interface_exists($className)) {
-					continue; // the file declares no class of its own
-				}
-			} catch (Throwable $t) {
-				if (preg_match('/Class "(?!PHPStan).+" not found/', $t->getMessage())) {
-					// class which depends on external dependency
-					continue;
-				}
+			if (str_starts_with($className, 'PHPStan\Testing')) {
+				// testing classes might have dependencies
+				continue;
+			}
+			if (!class_exists($className) && !interface_exists($className)) {
+				continue; // the file declares no class of its own
 			}
 			$reflection = new ReflectionClass($className);
 

@@ -571,8 +571,11 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
+		// Functions that only open the buffer on success (e.g. ob_start()) are handled
+		// by ObStartFunctionTypeSpecifyingExtension, so their level change is applied to
+		// the truthy branch only - an unchecked call may have failed.
 		$outputBufferDelta = $functionReflection !== null ? OutputBufferHelper::getLevelDelta($functionReflection->getName()) : 0;
-		if ($outputBufferDelta !== 0) {
+		if ($outputBufferDelta !== 0 && !OutputBufferHelper::opensBufferOnSuccess($functionReflection->getName())) {
 			$scope = OutputBufferHelper::applyLevelDelta($scope, $outputBufferDelta);
 		}
 

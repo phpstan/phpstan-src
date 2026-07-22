@@ -13,17 +13,51 @@ function noBuffer(): void
 	assertType('int|false', ob_get_length());
 }
 
+function uncheckedObStart(): void
+{
+	// ob_start() may fail, so an unchecked call does not guarantee an active buffer
+	ob_start();
+	assertType('int<0, max>', ob_get_level());
+	assertType('string|false', ob_get_contents());
+	assertType('string|false', ob_get_clean());
+	assertType('int|false', ob_get_length());
+}
+
 function activeBuffer(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_contents());
 	assertType('int', ob_get_length());
 }
 
+function activeBufferInTruthyBranch(): void
+{
+	if (ob_start()) {
+		assertType('int<1, max>', ob_get_level());
+		assertType('string', ob_get_contents());
+	} else {
+		assertType('int<0, max>', ob_get_level());
+		assertType('string|false', ob_get_contents());
+	}
+}
+
+function activeBufferCheckedByIdentical(): void
+{
+	if (ob_start() === false) {
+		return;
+	}
+	assertType('int<1, max>', ob_get_level());
+	assertType('string', ob_get_contents());
+}
+
 function obCleanAndFlushKeepBuffer(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	ob_clean();
 	assertType('int<1, max>', ob_get_level());
@@ -35,7 +69,9 @@ function obCleanAndFlushKeepBuffer(): void
 
 function getCleanClosesBuffer(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
 	assertType('int<0, max>', ob_get_level());
@@ -44,7 +80,9 @@ function getCleanClosesBuffer(): void
 
 function getFlushClosesBuffer(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_flush());
 	assertType('int<0, max>', ob_get_level());
@@ -53,7 +91,9 @@ function getFlushClosesBuffer(): void
 
 function endCleanClosesBuffer(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_contents());
 	ob_end_clean();
@@ -63,7 +103,9 @@ function endCleanClosesBuffer(): void
 
 function endFlushClosesBuffer(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_contents());
 	ob_end_flush();
@@ -73,9 +115,13 @@ function endFlushClosesBuffer(): void
 
 function nested(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<2, max>', ob_get_level());
 	assertType('string', ob_get_contents());
 	ob_end_clean();
@@ -97,7 +143,9 @@ function conditional(bool $cond): void
 
 function fullyQualified(): void
 {
-	\ob_start();
+	if (!\ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', \ob_get_contents());
 	assertType('string', ob_get_contents());
@@ -132,7 +180,9 @@ function levelNarrowedToUnionInt(): void
 	if (ob_get_level() === 1 || ob_get_level() === 3) {
 		assertType('1|3', ob_get_level());
 		assertType('string', ob_get_contents());
-		ob_start();
+		if (!ob_start()) {
+			return;
+		}
 		assertType('2|4', ob_get_level());
 		assertType('string', ob_get_contents());
 	}
@@ -158,7 +208,9 @@ function levelNarrowedToBoundedIntRange(): void
 
 function impureCallableForgetsLevel(callable $cb): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	assertType('int<1, max>', ob_get_level());
 	$cb();
 	// the callable may have closed the buffer, so the level is forgotten
@@ -168,7 +220,9 @@ function impureCallableForgetsLevel(callable $cb): void
 
 function impureClosureForgetsLevel(\Closure $closure): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	$closure();
 	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
@@ -177,7 +231,9 @@ function impureClosureForgetsLevel(\Closure $closure): void
 /** @param pure-callable $cb */
 function pureCallableKeepsLevel(callable $cb): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	$cb();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -185,7 +241,9 @@ function pureCallableKeepsLevel(callable $cb): void
 
 function impureFunctionForgetsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	impureFunction();
 	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
@@ -203,7 +261,9 @@ function impureFunction(): void
 
 function pureFunctionKeepsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	$x=pureFunction();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -234,7 +294,9 @@ class Service
 
 function impureMethodForgetsLevel(Service $service): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	$service->impureMethod();
 	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
@@ -242,7 +304,9 @@ function impureMethodForgetsLevel(Service $service): void
 
 function pureMethodKeepsLevel(Service $service): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	$x=$service->pureMethod();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -250,7 +314,9 @@ function pureMethodKeepsLevel(Service $service): void
 
 function impureStaticMethodForgetsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	Service::impureStaticMethod();
 	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
@@ -258,7 +324,9 @@ function impureStaticMethodForgetsLevel(): void
 
 function invokableForgetsLevel(Service $service): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	$service();
 	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
@@ -266,7 +334,9 @@ function invokableForgetsLevel(Service $service): void
 
 function arrayMapPureCallbackKeepsLevel(array $a): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	array_map('strtoupper', $a);
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -274,7 +344,9 @@ function arrayMapPureCallbackKeepsLevel(array $a): void
 
 function laterInvokedCallableKeepsLevel(callable $cb): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	register_shutdown_function($cb);
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -282,7 +354,9 @@ function laterInvokedCallableKeepsLevel(callable $cb): void
 
 function builtinKeepsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	printf('hello');
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -314,7 +388,9 @@ class WithoutConstructor
 
 function impureConstructorForgetsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	// the constructor may have opened or closed a buffer
 	new WithImpureConstructor();
 	assertType('int<0, max>', ob_get_level());
@@ -323,7 +399,9 @@ function impureConstructorForgetsLevel(): void
 
 function pureConstructorKeepsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	new WithPureConstructor();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -331,7 +409,9 @@ function pureConstructorKeepsLevel(): void
 
 function noConstructorKeepsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	new WithoutConstructor();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -340,7 +420,9 @@ function noConstructorKeepsLevel(): void
 /** @param class-string $className */
 function unknownClassForgetsLevel(string $className): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	new $className();
 	assertType('int<0, max>', ob_get_level());
 	assertType('string|false', ob_get_clean());
@@ -348,7 +430,9 @@ function unknownClassForgetsLevel(string $className): void
 
 function builtinConstructorKeepsLevel(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	new \ArrayObject();
 	assertType('int<1, max>', ob_get_level());
 	assertType('string', ob_get_clean());
@@ -356,14 +440,18 @@ function builtinConstructorKeepsLevel(): void
 
 function withRequire(): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	require __DIR__ . '/does-not-matter.php';
 	assertType('int<0, max>', ob_get_level());
 }
 
 function withEval(string $function): void
 {
-	ob_start();
+	if (!ob_start()) {
+		return;
+	}
 	eval(sprintf('function %s() {}', $function));
 	assertType('int<0, max>', ob_get_level());
 }

@@ -30,6 +30,16 @@ final class OutputBufferHelper
 		return 0;
 	}
 
+	/**
+	 * Whether the function only opens the output buffer when it returns a truthy
+	 * value (e.g. `ob_start()`). The level increase must therefore be applied to
+	 * the truthy branch only, since an unchecked call may have failed.
+	 */
+	public static function opensBufferOnSuccess(string $functionName): bool
+	{
+		return in_array($functionName, self::LEVEL_INCREMENTING_FUNCTIONS, true);
+	}
+
 	public static function applyLevelDelta(MutatingScope $scope, int $delta): MutatingScope
 	{
 		foreach ([new Name('ob_get_level'), new Name\FullyQualified('ob_get_level')] as $name) {

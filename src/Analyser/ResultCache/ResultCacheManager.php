@@ -268,12 +268,13 @@ final class ResultCacheManager
 			// and analysis are unchanged except for code coming from packages whose version actually
 			// changed. Re-analyse just the files depending on a changed package instead of everything;
 			// the existing incremental loop below then propagates to their dependents on signature change.
-			// Any other meta difference, or an undetermined change set, falls back to a full re-analysis.
+			// Any other meta difference, or an undetermined change set (installed.php cannot be parsed),
+			// falls back to a full re-analysis.
 			$changedPackages = array_diff($diffs, ['composerLocks', 'composerInstalled']) === []
 				? $this->packageDependencyResolver->getChangedComposerPackages($data['meta'], $meta)
 				: null;
 
-			if ($changedPackages === null || $changedPackages === []) {
+			if ($changedPackages === null) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
 				}
@@ -296,18 +297,29 @@ final class ResultCacheManager
 				);
 			}
 
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted(sprintf(
-					'Composer packages changed (%s); re-analysing only the files depending on them.',
-					implode(', ', $changedPackages),
-				));
-			}
-			$changedPackagesLookup = array_fill_keys($changedPackages, true);
-			foreach ($packageDependencies as $packageDependentFile => $filePackages) {
-				foreach ($filePackages as $filePackage) {
-					if (isset($changedPackagesLookup[$filePackage])) {
-						$packageSeededFiles[] = $packageDependentFile;
-						break;
+			if ($changedPackages === []) {
+				// The Composer lock/installed metadata changed but no installed package's version or
+				// reference did (e.g. a composer.lock regenerated with different formatting or dist/time
+				// metadata, common in CI where composer.lock is not committed). Nothing analysis-relevant
+				// changed, so keep the restored cache and fall through to the normal incremental analysis
+				// instead of re-analysing everything.
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted('Composer metadata changed but no package versions changed; keeping the result cache.');
+				}
+			} else {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted(sprintf(
+						'Composer packages changed (%s); re-analysing only the files depending on them.',
+						implode(', ', $changedPackages),
+					));
+				}
+				$changedPackagesLookup = array_fill_keys($changedPackages, true);
+				foreach ($packageDependencies as $packageDependentFile => $filePackages) {
+					foreach ($filePackages as $filePackage) {
+						if (isset($changedPackagesLookup[$filePackage])) {
+							$packageSeededFiles[] = $packageDependentFile;
+							break;
+						}
 					}
 				}
 			}

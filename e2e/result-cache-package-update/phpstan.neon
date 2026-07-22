@@ -1,0 +1,5 @@
+parameters:
+	level: 5
+	tmpDir: tmp
+	paths:
+		- src

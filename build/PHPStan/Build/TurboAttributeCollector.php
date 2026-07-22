@@ -34,6 +34,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
+use Throwable;
 use function class_exists;
 use function count;
 use function file_get_contents;
@@ -165,7 +166,15 @@ final class TurboAttributeCollector
 				continue;
 			}
 			$className = 'PHPStan\\' . strtr(substr($path, strlen($sourceDir) + 1, -strlen('.php')), '/', '\\');
-			if (!class_exists($className) && !interface_exists($className)) {
+			try {
+				$isClassLike = class_exists($className) || interface_exists($className);
+			} catch (Throwable) {
+				// a class that cannot load cannot carry the attributes — e.g.
+				// src/Testing extends PHPUnit classes, which are missing when
+				// the autoloader was dumped without dev dependencies
+				continue;
+			}
+			if (!$isClassLike) {
 				continue; // the file declares no class of its own
 			}
 			$reflection = new ReflectionClass($className);

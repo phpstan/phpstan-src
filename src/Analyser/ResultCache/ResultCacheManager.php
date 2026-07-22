@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\ProjectConfigHelper;
+use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileFinder;
@@ -35,6 +36,7 @@ use function array_keys;
 use function array_merge;
 use function array_unique;
 use function array_values;
+use function class_exists;
 use function count;
 use function error_get_last;
 use function explode;
@@ -307,13 +309,43 @@ final class ResultCacheManager
 					$output->writeLineFormatted('Composer metadata changed but no package versions changed; keeping the result cache.');
 				}
 			} else {
+				$changedPackagesLookup = array_fill_keys($changedPackages, true);
+				if ($this->changedPackagesProvideContainerClass($projectConfigArray, $changedPackagesLookup)) {
+					// One of the changed packages registers a class in the PHPStan container (a rule,
+					// extension, and so on). Such code can affect the analysis of every file, not just the
+					// files that reference it, so the file-granular re-seed below is not enough - re-analyse
+					// everything.
+					if ($output->isVeryVerbose()) {
+						$output->writeLineFormatted(sprintf(
+							'Composer packages changed (%s) and register a class in the container; re-analysing everything.',
+							implode(', ', $changedPackages),
+						));
+					}
+					return new ResultCache(
+						filesToAnalyse: $allAnalysedFiles,
+						fullAnalysis: true,
+						lastFullAnalysisTime: time(),
+						meta: $meta,
+						errors: [],
+						locallyIgnoredErrors: [],
+						linesToIgnore: [],
+						unmatchedLineIgnores: [],
+						collectedData: [],
+						dependencies: [],
+						usedTraitDependencies: [],
+						packageDependencies: [],
+						exportedNodes: [],
+						projectExtensionFiles: [],
+						currentFileHashes: $currentFileHashes,
+					);
+				}
+
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted(sprintf(
 						'Composer packages changed (%s); re-analysing only the files depending on them.',
 						implode(', ', $changedPackages),
 					));
 				}
-				$changedPackagesLookup = array_fill_keys($changedPackages, true);
 				foreach ($packageDependencies as $packageDependentFile => $filePackages) {
 					foreach ($filePackages as $filePackage) {
 						if (isset($changedPackagesLookup[$filePackage])) {
@@ -1260,6 +1292,51 @@ return [
 		}
 
 		$this->writeToHandle($handle, $file, "\n)");
+	}
+
+	/**
+	 * Whether any of the changed Composer packages registers a class in the PHPStan container (a rule,
+	 * extension, and so on). Such code can affect the analysis of every file, so the file-granular
+	 * package re-seed is not enough and the whole cache must be invalidated.
+	 *
+	 * @param mixed[]|null $projectConfig
+	 * @param array<string, true> $changedPackagesLookup
+	 */
+	private function changedPackagesProvideContainerClass(?array $projectConfig, array $changedPackagesLookup): bool
+	{
+		// Extensions registered directly in the project config (services:/rules:) or via an included
+		// extension neon file: resolve each service class to the package that owns its file.
+		if ($projectConfig !== null) {
+			foreach (ProjectConfigHelper::getServiceClassNames($projectConfig) as $class) {
+				try {
+					// does not use static reflection to reduce file-parsing, like getProjectExtensionFiles()
+					$fileName = (new ReflectionClass($class))->getFileName(); /** @phpstan-ignore argument.type */
+				} catch (ReflectionException) {
+					continue;
+				}
+
+				if ($fileName === false || str_starts_with($fileName, 'phar://')) {
+					continue;
+				}
+
+				$package = $this->packageDependencyResolver->resolvePackage($fileName);
+				if ($package !== null && array_key_exists($package, $changedPackagesLookup)) {
+					return true;
+				}
+			}
+		}
+
+		// Extensions registered through phpstan/extension-installer are not part of the project config;
+		// its generated list is keyed by the extension's Composer package name.
+		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
+			foreach (array_keys(GeneratedConfig::EXTENSIONS) as $package) {
+				if (array_key_exists($package, $changedPackagesLookup)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -1,0 +1,21 @@
+--- a/rule-pkg/composer.json	2026-07-22 21:34:57
++++ b/rule-pkg/composer.json	2026-07-22 21:34:57
+@@ -1,6 +1,6 @@
+ {
+ 	"name": "test/installer-rule",
+-	"version": "1.0.0",
++	"version": "2.0.0",
+ 	"autoload": { "psr-4": { "Test\\InstallerRule\\": "src" } },
+ 	"extra": { "phpstan": { "includes": ["extension.neon"] } }
+ }
+--- a/rule-pkg/src/ClassNameRule.php	2026-07-22 21:34:57
++++ b/rule-pkg/src/ClassNameRule.php	2026-07-22 21:34:57
+@@ -21,7 +21,7 @@
+ 	public function processNode(Node $node, Scope $scope): array
+ 	{
+ 		return [
+-			RuleErrorBuilder::message('installer rule version 1')
++			RuleErrorBuilder::message('installer rule version 2')
+ 				->identifier('test.installerRule')
+ 				->build(),
+ 		];

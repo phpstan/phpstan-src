@@ -416,6 +416,33 @@ jobs:
               ../bashunit -a contains 'Composer packages changed (test/logger); re-analysing only the files depending on them.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-extension-update
+              composer install
+              # cold run populates the cache; the shipped rule reports an error, so ignore the exit code
+              ../../bin/phpstan analyse || true
+              # Update the package that registers the rule: bump its version and change the rule, then let
+              # Composer reinstall it. Because the package registers a class in the container, the whole
+              # cache must be invalidated, not just the files depending on the package.
+              patch -p1 < updatePackage.patch
+              composer update test/rule-ext --no-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
+              ../bashunit -a contains 'Subject.php:5:extension rule version 2' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-extension-installer
+              composer install
+              # cold run populates the cache; the shipped rule reports an error, so ignore the exit code
+              ../../bin/phpstan analyse || true
+              # Same as result-cache-extension-update, but the rule package registers its extension through
+              # phpstan/extension-installer (no includes: in the project config), which is the common case.
+              patch -p1 < updatePackage.patch
+              composer update test/installer-rule --no-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
+              ../bashunit -a contains 'Subject.php:5:installer rule version 2' "$OUTPUT"
+          - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test
               ../../bin/phpstan

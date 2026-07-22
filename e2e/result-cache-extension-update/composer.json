@@ -1,0 +1,5 @@
+{
+    "repositories": [ { "type": "path", "url": "./rule-ext", "options": { "symlink": false } } ],
+    "require": { "test/rule-ext": "*" },
+    "minimum-stability": "dev", "prefer-stable": true
+}

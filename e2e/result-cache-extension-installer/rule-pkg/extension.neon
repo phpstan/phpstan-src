@@ -1,0 +1,5 @@
+services:
+	-
+		class: Test\InstallerRule\ClassNameRule
+		tags:
+			- phpstan.rules.rule

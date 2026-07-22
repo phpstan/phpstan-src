@@ -1,0 +1,16 @@
+--- a/rule-ext/composer.json	2026-07-22 18:52:01
++++ b/rule-ext/composer.json	2026-07-22 18:52:01
+@@ -1 +1 @@
+-{ "name": "test/rule-ext", "version": "1.0.0", "autoload": { "psr-4": { "Test\\RuleExt\\": "src" } } }
++{ "name": "test/rule-ext", "version": "2.0.0", "autoload": { "psr-4": { "Test\\RuleExt\\": "src" } } }
+--- a/rule-ext/src/ClassNameRule.php	2026-07-22 18:52:01
++++ b/rule-ext/src/ClassNameRule.php	2026-07-22 18:52:01
+@@ -21,7 +21,7 @@
+ 	public function processNode(Node $node, Scope $scope): array
+ 	{
+ 		return [
+-			RuleErrorBuilder::message('extension rule version 1')
++			RuleErrorBuilder::message('extension rule version 2')
+ 				->identifier('test.ruleExt')
+ 				->build(),
+ 		];

@@ -1,0 +1,6 @@
+{
+	"name": "test/installer-rule",
+	"version": "1.0.0",
+	"autoload": { "psr-4": { "Test\\InstallerRule\\": "src" } },
+	"extra": { "phpstan": { "includes": ["extension.neon"] } }
+}

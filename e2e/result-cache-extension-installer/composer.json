@@ -1,0 +1,6 @@
+{
+    "repositories": [ { "type": "path", "url": "./rule-pkg", "options": { "symlink": false } } ],
+    "require": { "test/installer-rule": "*", "phpstan/extension-installer": "^1.4" },
+    "config": { "allow-plugins": { "phpstan/extension-installer": true } },
+    "minimum-stability": "dev", "prefer-stable": true
+}

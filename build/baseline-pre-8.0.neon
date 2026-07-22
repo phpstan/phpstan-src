@@ -19,6 +19,12 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
+			rawMessage: 'Call to an undefined method ReflectionClass<object>::getAttributes().'
+			identifier: method.notFound
+			count: 2
+			path: PHPStan/Build/TurboAttributeCollector.php
+
+		-
 			rawMessage: 'Call to an undefined method ReflectionClass::isReadOnly().'
 			identifier: method.notFound
 			count: 1

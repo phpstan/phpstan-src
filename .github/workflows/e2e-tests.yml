@@ -380,6 +380,19 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'ClassUsingDefine.php:13:Method ResultCacheE2EDefine\ClassUsingDefine::getMode() should return int<1, 3> but returns 5. [identifier=return.type]' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-composer-lock
+              composer install
+              ../../bin/phpstan analyse
+              # Change composer.lock without changing any installed package version/reference
+              # (vendor/composer/installed.php is left untouched), like a regenerated lock in CI
+              # when composer.lock is not committed. The result cache must be kept, not discarded.
+              jq '.["content-hash"]="0000000000000000000000000000000000000000"' composer.lock > composer.lock.new
+              mv composer.lock.new composer.lock
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test
               ../../bin/phpstan

@@ -1,0 +1,6 @@
+{
+	"name": "phpstan/result-cache-composer-lock-e2e",
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

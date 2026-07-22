@@ -39,5 +39,5 @@ class Child1 extends Parent1 {
 }
 
 class UninitializedFromTrait {
-	use TraitA;
+	use GrandTrait;
 }

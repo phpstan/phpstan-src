@@ -76,10 +76,11 @@ The version is the short SHA of the last commit that touched `turbo-ext/src/`.
 The binary's (actual) version is baked in at build time — the Makefile
 computes it from git over the same path
 — so only the expected side, `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`,
-is declared by hand. After changing the native side, verify the
-implementations still match and add a follow-up commit updating the constant
-to the short SHA of the changing commit (computed after it lands on the
-target branch — a pull request commit gets a new SHA when rebased); the
+is maintained (by `make bump-turbo`, which edits and commits it). After
+changing the native side, verify the implementations still match and run
+`make bump-turbo` (recomputed after the change lands on the target branch —
+a pull request commit gets a new SHA when rebased, and rerunning refreshes
+an unpushed bump commit in place); the
 phar.yml `turbo-version` job enforces the SHA and the compile job verifies
 the built binary reports what the enabler expects. A PHP-twin-only edit does
 not move the version — keeping the pair in sync there is on the review and

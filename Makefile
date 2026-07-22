@@ -217,3 +217,33 @@ download-coverage:
 	sed -i '' -e 's,/home/runner/work/phpstan-src/phpstan-src/,'"$$PWD"/',g' tmp/coverage-download/clover.xml
 	cp tmp/coverage-download/clover.xml tmp/coverage/clover.xml
 
+
+# The expected turbo version is the short SHA of the last commit touching
+# turbo-ext/src (enforced by the phar.yml turbo-version job), so the bump can
+# never be part of the commit it points at. Refreshes an unpushed bump commit
+# in place — after a rebase gives the watched commit a new SHA, rerunning
+# this amends instead of stacking a second bump commit.
+.PHONY: bump-turbo
+bump-turbo:
+	@if [ -n "$$(git status --porcelain -- turbo-ext/src)" ]; then \
+		echo "turbo-ext/src has uncommitted changes — commit them first, the expected version is the short SHA of the last commit touching turbo-ext/src"; \
+		exit 1; \
+	fi; \
+	if ! git diff --quiet HEAD -- src/Turbo/TurboExtensionEnabler.php; then \
+		echo "src/Turbo/TurboExtensionEnabler.php has uncommitted changes — commit or stash them first"; \
+		exit 1; \
+	fi; \
+	EXPECTED="$$(git log -1 --format=%H -- turbo-ext/src | cut -c1-7)"; \
+	CURRENT="$$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"; \
+	if [ "$$EXPECTED" = "$$CURRENT" ]; then \
+		echo "TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION is already $$EXPECTED"; \
+		exit 0; \
+	fi; \
+	sed -i '' -e "s/EXPECTED_EXTENSION_VERSION = '$$CURRENT'/EXPECTED_EXTENSION_VERSION = '$$EXPECTED'/" src/Turbo/TurboExtensionEnabler.php; \
+	if [ "$$(git log -1 --format=%s)" = "Bump expected turbo version" ] && [ -z "$$(git branch -r --contains HEAD)" ]; then \
+		git commit --amend --no-edit -- src/Turbo/TurboExtensionEnabler.php; \
+		echo "amended the unpushed bump commit: $$CURRENT -> $$EXPECTED"; \
+	else \
+		git commit -m "Bump expected turbo version" -- src/Turbo/TurboExtensionEnabler.php; \
+		echo "bumped: $$CURRENT -> $$EXPECTED"; \
+	fi

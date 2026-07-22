@@ -22,6 +22,18 @@ class ClassB extends ClassA {
 	use TraitB;
 }
 
+class BodyInitClassA {
+	use TraitA;
+
+	public function __construct(string $property) {
+		$this->property = $property;
+	}
+}
+
+class BodyInitClassB extends BodyInitClassA {
+	use TraitB;
+}
+
 trait GrandTrait {
 	use TraitA;
 }

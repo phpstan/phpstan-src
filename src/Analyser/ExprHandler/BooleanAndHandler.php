@@ -164,15 +164,16 @@ final class BooleanAndHandler implements ExprHandler
 
 	public static function getBooleanExpressionDepth(Expr $expr, int $depth = 0): int
 	{
+		$depth = 0;
 		while (
-			$expr instanceof BooleanOr
-			|| $expr instanceof LogicalOr
-			|| $expr instanceof BooleanAnd
-			|| $expr instanceof LogicalAnd
+			$expr instanceof BooleanOr ||
+			$expr instanceof LogicalOr ||
+			$expr instanceof BooleanAnd ||
+			$expr instanceof LogicalAnd
 		) {
-			return self::getBooleanExpressionDepth($expr->left, $depth + 1);
+			$depth++;
+			$expr = $expr->left;
 		}
-
 		return $depth;
 	}
 

@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isClassStringType()')]
 class ClassStringType extends StringType
 {
 

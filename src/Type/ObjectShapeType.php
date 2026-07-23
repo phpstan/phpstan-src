@@ -37,6 +37,7 @@ use function in_array;
 use function sprintf;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isObject() and Type::hasProperty()')]
 class ObjectShapeType implements Type
 {
 

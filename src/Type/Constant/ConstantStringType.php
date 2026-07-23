@@ -33,6 +33,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
@@ -62,6 +63,7 @@ use function substr;
 use function substr_count;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::getConstantStrings()')]
 class ConstantStringType extends StringType implements ConstantScalarType
 {
 

@@ -46,6 +46,7 @@ use PHPStan\Type\Generic\TemplateStrictMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -97,6 +98,7 @@ use const CASE_UPPER;
 /**
  * @api
  */
+#[InstanceofDeprecated(insteadUse: 'Type::getConstantArrays()')]
 class ConstantArrayType implements Type
 {
 

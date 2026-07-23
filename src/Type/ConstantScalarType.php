@@ -13,6 +13,7 @@ namespace PHPStan\Type;
  *
  * @api
  */
+#[InstanceofDeprecated(insteadUse: 'Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()')]
 interface ConstantScalarType extends Type
 {
 

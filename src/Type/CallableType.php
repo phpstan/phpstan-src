@@ -47,6 +47,7 @@ use function array_merge;
 use function count;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isCallable() and Type::getCallableParametersAcceptors()')]
 class CallableType implements CompoundType, CallableParametersAcceptor
 {
 

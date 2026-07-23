@@ -11,6 +11,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StaticTypeFactory;
@@ -21,6 +22,7 @@ use PHPStan\Type\VerbosityLevel;
 
 /** @api */
 #[ReferencedByTurboExtension(key: 'constantBooleanType')]
+#[InstanceofDeprecated(insteadUse: 'Type::isTrue() or Type::isFalse()')]
 class ConstantBooleanType extends BooleanType implements ConstantScalarType
 {
 

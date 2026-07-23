@@ -21,6 +21,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isNull()')]
 class NullType implements ConstantScalarType
 {
 

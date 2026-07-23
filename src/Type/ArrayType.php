@@ -48,6 +48,7 @@ use const CASE_LOWER;
 use const CASE_UPPER;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isArray() or Type::getArrays()')]
 class ArrayType implements Type
 {
 

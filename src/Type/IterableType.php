@@ -25,6 +25,7 @@ use function get_class;
 use function sprintf;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isIterable()')]
 class IterableType implements CompoundType
 {
 

@@ -69,6 +69,7 @@ use function substr;
 use function usort;
 
 /** @api */
+#[InstanceofDeprecated]
 class IntersectionType implements CompoundType
 {
 

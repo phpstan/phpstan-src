@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Api;
 
+use olvlvl\ComposerAttributeCollector\Attributes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PHPStan\Analyser\Scope;
@@ -10,42 +11,9 @@ use PHPStan\Parser\TypeTraverserInstanceofVisitor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\AccessoryLiteralStringType;
-use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
-use PHPStan\Type\Accessory\HasMethodType;
-use PHPStan\Type\Accessory\HasOffsetType;
-use PHPStan\Type\Accessory\HasPropertyType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\Accessory\OversizedArrayType;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
-use PHPStan\Type\CallableType;
-use PHPStan\Type\ClassStringType;
-use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\Enum\EnumCaseObjectType;
-use PHPStan\Type\FloatType;
-use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
-use PHPStan\Type\IterableType;
-use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectShapeType;
-use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StringType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\TypeTraverserCallable;
-use PHPStan\Type\TypeWithClassName;
-use PHPStan\Type\VoidType;
 use function array_key_exists;
 use function sprintf;
 use function strtolower;
@@ -57,56 +25,22 @@ use function strtolower;
 final class ApiInstanceofTypeRule implements Rule
 {
 
-	private const MAP = [
-		TypeWithClassName::class => 'Type::getObjectClassNames() or Type::getObjectClassReflections()',
-		EnumCaseObjectType::class => 'Type::getEnumCases()',
-		ConstantArrayType::class => 'Type::getConstantArrays()',
-		ArrayType::class => 'Type::isArray() or Type::getArrays()',
-		ConstantStringType::class => 'Type::getConstantStrings()',
-		StringType::class => 'Type::isString()',
-		ClassStringType::class => 'Type::isClassStringType()',
-		IntegerType::class => 'Type::isInteger()',
-		FloatType::class => 'Type::isFloat()',
-		NullType::class => 'Type::isNull()',
-		VoidType::class => 'Type::isVoid()',
-		BooleanType::class => 'Type::isBoolean()',
-		ConstantBooleanType::class => 'Type::isTrue() or Type::isFalse()',
-		CallableType::class => 'Type::isCallable() and Type::getCallableParametersAcceptors()',
-		IterableType::class => 'Type::isIterable()',
-		ObjectWithoutClassType::class => 'Type::isObject()',
-		ObjectType::class => 'Type::isObject() or Type::getObjectClassNames()',
-		GenericClassStringType::class => 'Type::isClassStringType() and Type::getClassStringObjectType()',
-		GenericObjectType::class => null,
-		IntersectionType::class => null,
-		ConstantScalarType::class => 'Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()',
-		ObjectShapeType::class => 'Type::isObject() and Type::hasProperty()',
-
-		// accessory types
-		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',
-		OversizedArrayType::class => 'Type::isOversizedArray()',
-		AccessoryArrayListType::class => 'Type::isList()',
-		AccessoryNumericStringType::class => 'Type::isNumericString()',
-		AccessoryLiteralStringType::class => 'Type::isLiteralString()',
-		AccessoryLowercaseStringType::class => 'Type::isLowercaseString()',
-		AccessoryUppercaseStringType::class => 'Type::isUppercaseString()',
-		AccessoryNonEmptyStringType::class => 'Type::isNonEmptyString()',
-		AccessoryNonFalsyStringType::class => 'Type::isNonFalsyString()',
-		HasMethodType::class => 'Type::hasMethod()',
-		HasPropertyType::class => 'Type::hasProperty()',
-		HasOffsetType::class => 'Type::hasOffsetValueType()',
-		AccessoryType::class => 'methods on PHPStan\\Type\\Type',
-	];
-
-	/** @var array<lowercase-string, string|null> */
+	/**
+	 * Compiled once from the #[InstanceofDeprecated] attributes.
+	 *
+	 * @var array<lowercase-string, string|null>
+	 */
 	private readonly array $lowerMap;
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
+		require_once __DIR__ . '/../../../vendor/attributes.php';
+
 		$lowerMap = [];
-		foreach (self::MAP as $className => $method) {
-			$lowerMap[strtolower($className)] = $method;
+		foreach (Attributes::findTargetClasses(InstanceofDeprecated::class) as $class) {
+			$lowerMap[strtolower($class->name)] = $class->attribute->insteadUse;
 		}
 		$this->lowerMap = $lowerMap;
 	}

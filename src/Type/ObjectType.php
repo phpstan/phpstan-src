@@ -65,6 +65,7 @@ use function sprintf;
 use function strtolower;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isObject() or Type::getObjectClassNames()')]
 class ObjectType implements TypeWithClassName, SubtractableType
 {
 

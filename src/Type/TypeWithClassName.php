@@ -21,6 +21,7 @@ use PHPStan\Reflection\ClassReflection;
  * @api
  * @api-do-not-implement
  */
+#[InstanceofDeprecated(insteadUse: 'Type::getObjectClassNames() or Type::getObjectClassReflections()')]
 interface TypeWithClassName extends Type
 {
 

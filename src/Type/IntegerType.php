@@ -21,6 +21,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isInteger()')]
 class IntegerType implements Type
 {
 

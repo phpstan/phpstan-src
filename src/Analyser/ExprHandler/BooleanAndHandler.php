@@ -162,7 +162,7 @@ final class BooleanAndHandler implements ExprHandler
 		return $types;
 	}
 
-	public static function getBooleanExpressionDepth(Expr $expr, int $depth = 0): int
+	public static function getBooleanExpressionDepth(Expr $expr): int
 	{
 		$depth = 0;
 		while (

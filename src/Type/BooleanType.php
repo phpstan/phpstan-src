@@ -24,6 +24,7 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
 #[ReferencedByTurboExtension(key: 'booleanType')]
+#[InstanceofDeprecated(insteadUse: 'Type::isBoolean()')]
 class BooleanType implements Type
 {
 

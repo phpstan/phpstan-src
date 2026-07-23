@@ -11,6 +11,7 @@ use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -27,6 +28,7 @@ use function count;
 use function sprintf;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isClassStringType() and Type::getClassStringObjectType()')]
 class GenericClassStringType extends ClassStringType
 {
 

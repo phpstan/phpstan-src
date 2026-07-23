@@ -13,6 +13,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
@@ -29,6 +30,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isList()')]
 class AccessoryArrayListType implements CompoundType, AccessoryType
 {
 

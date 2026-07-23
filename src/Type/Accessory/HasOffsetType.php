@@ -15,6 +15,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
@@ -41,6 +42,7 @@ use function strtoupper;
 use const CASE_LOWER;
 use const CASE_UPPER;
 
+#[InstanceofDeprecated(insteadUse: 'Type::hasOffsetValueType()')]
 class HasOffsetType implements CompoundType, AccessoryType
 {
 

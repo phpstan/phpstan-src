@@ -17,6 +17,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
@@ -36,6 +37,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+#[InstanceofDeprecated(insteadUse: 'Type::isNonFalsyString()')]
 class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 {
 

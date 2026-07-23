@@ -18,6 +18,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -42,6 +43,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 use function strtolower;
 
+#[InstanceofDeprecated(insteadUse: 'Type::hasMethod()')]
 class HasMethodType implements AccessoryType, CompoundType
 {
 

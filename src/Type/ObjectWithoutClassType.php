@@ -12,6 +12,7 @@ use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isObject()')]
 class ObjectWithoutClassType implements SubtractableType
 {
 

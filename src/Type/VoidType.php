@@ -18,6 +18,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isVoid()')]
 class VoidType implements Type
 {
 

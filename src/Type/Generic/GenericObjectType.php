@@ -16,6 +16,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
@@ -30,6 +31,7 @@ use function implode;
 use function sprintf;
 
 /** @api */
+#[InstanceofDeprecated]
 class GenericObjectType extends ObjectType
 {
 

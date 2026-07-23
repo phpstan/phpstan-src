@@ -26,6 +26,7 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function count;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isString()')]
 class StringType implements Type
 {
 

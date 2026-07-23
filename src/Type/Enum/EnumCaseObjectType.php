@@ -21,6 +21,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NeverType;
@@ -31,6 +32,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::getEnumCases()')]
 class EnumCaseObjectType extends ObjectType
 {
 

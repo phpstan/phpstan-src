@@ -23,6 +23,7 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function get_class;
 
 /** @api */
+#[InstanceofDeprecated(insteadUse: 'Type::isFloat()')]
 class FloatType implements Type
 {
 

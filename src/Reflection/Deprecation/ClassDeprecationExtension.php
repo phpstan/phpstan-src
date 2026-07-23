@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Deprecation;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -20,6 +21,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::CLASS_EXTENSION_TAG)]
 interface ClassDeprecationExtension
 {
 

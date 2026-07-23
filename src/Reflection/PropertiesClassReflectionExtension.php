@@ -2,6 +2,9 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
+
 /**
  * This is the interface custom properties class reflection extensions implement.
  *
@@ -19,6 +22,7 @@ namespace PHPStan\Reflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG)]
 interface PropertiesClassReflectionExtension
 {
 

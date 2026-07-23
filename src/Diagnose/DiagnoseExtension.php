@@ -3,6 +3,7 @@
 namespace PHPStan\Diagnose;
 
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * DiagnoseExtension can output any diagnostic information to stderr after analysis.
@@ -21,6 +22,7 @@ use PHPStan\Command\Output;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface DiagnoseExtension
 {
 

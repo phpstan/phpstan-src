@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RestrictedUsage;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\FunctionReflection;
 
 /**
@@ -25,6 +26,7 @@ use PHPStan\Reflection\FunctionReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::FUNCTION_EXTENSION_TAG)]
 interface RestrictedFunctionUsageExtension
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Deprecation;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -20,6 +21,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::ENUM_CASE_EXTENSION_TAG)]
 interface EnumCaseDeprecationExtension
 {
 

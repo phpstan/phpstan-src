@@ -6,6 +6,8 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\TypeSpecifierFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\MethodReflection;
 
 /**
@@ -25,6 +27,7 @@ use PHPStan\Reflection\MethodReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG)]
 interface StaticMethodTypeSpecifyingExtension
 {
 

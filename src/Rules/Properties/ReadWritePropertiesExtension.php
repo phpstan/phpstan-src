@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 
 /**
@@ -22,6 +23,7 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: ReadWritePropertiesExtensionProvider::EXTENSION_TAG)]
 interface ReadWritePropertiesExtension
 {
 

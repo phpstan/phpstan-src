@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\DependencyInjection\Type\LazyParameterOutTypeExtensionProvider;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 
@@ -22,6 +24,7 @@ use PHPStan\Reflection\ParameterReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: LazyParameterOutTypeExtensionProvider::FUNCTION_TAG)]
 interface FunctionParameterOutTypeExtension
 {
 

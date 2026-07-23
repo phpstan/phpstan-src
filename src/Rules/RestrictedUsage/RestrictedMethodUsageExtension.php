@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RestrictedUsage;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\ExtendedMethodReflection;
 
 /**
@@ -25,6 +26,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::METHOD_EXTENSION_TAG)]
 interface RestrictedMethodUsageExtension
 {
 

@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\MethodReflection;
 
 /**
@@ -23,6 +25,7 @@ use PHPStan\Reflection\MethodReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG)]
 interface DynamicStaticMethodReturnTypeExtension
 {
 

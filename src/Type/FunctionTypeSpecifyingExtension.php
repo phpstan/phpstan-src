@@ -6,6 +6,8 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\TypeSpecifierFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\FunctionReflection;
 
 /**
@@ -25,6 +27,7 @@ use PHPStan\Reflection\FunctionReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG)]
 interface FunctionTypeSpecifyingExtension
 {
 

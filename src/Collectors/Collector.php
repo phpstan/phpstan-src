@@ -4,6 +4,7 @@ namespace PHPStan\Collectors;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This is the interface custom collectors implement. To register it in the configuration file
@@ -23,6 +24,7 @@ use PHPStan\Analyser\Scope;
  * @template-covariant TNodeType of Node
  * @template-covariant TValue
  */
+#[ExtensionInterface(tag: RegistryFactory::COLLECTOR_TAG)]
 interface Collector
 {
 

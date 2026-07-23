@@ -1,0 +1,7 @@
+services:
+	-
+		class: PHPStan\File\FileHelper
+		arguments:
+			workingDirectory: /tmp
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

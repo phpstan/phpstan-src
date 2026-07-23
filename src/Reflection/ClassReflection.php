@@ -62,6 +62,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
+use function array_pop;
 use function array_shift;
 use function array_unique;
 use function array_values;
@@ -1123,10 +1124,16 @@ final class ClassReflection
 	private function collectInterfaces(ClassReflection $interface): array
 	{
 		$interfaces = [];
-		foreach ($interface->getImmediateInterfaces() as $immediateInterface) {
-			$interfaces[$immediateInterface->getName()] = $immediateInterface;
-			foreach ($this->collectInterfaces($immediateInterface) as $immediateInterfaceInterface) {
-				$interfaces[$immediateInterfaceInterface->getName()] = $immediateInterfaceInterface;
+		$queue = [$interface];
+		while ($queue !== []) {
+			$current = array_pop($queue);
+			foreach ($current->getImmediateInterfaces() as $immediateInterface) {
+				$name = $immediateInterface->getName();
+				if (array_key_exists($name, $interfaces)) {
+					continue;
+				}
+				$interfaces[$name] = $immediateInterface;
+				$queue[] = $immediateInterface;
 			}
 		}
 

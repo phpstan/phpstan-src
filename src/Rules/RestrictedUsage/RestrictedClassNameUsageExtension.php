@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RestrictedUsage;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\ClassNameUsageLocation;
 
@@ -28,6 +29,7 @@ use PHPStan\Rules\ClassNameUsageLocation;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::CLASS_NAME_EXTENSION_TAG)]
 interface RestrictedClassNameUsageExtension
 {
 

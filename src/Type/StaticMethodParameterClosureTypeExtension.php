@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\DependencyInjection\Type\LazyParameterClosureTypeExtensionProvider;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 
@@ -22,6 +24,7 @@ use PHPStan\Reflection\ParameterReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: LazyParameterClosureTypeExtensionProvider::STATIC_METHOD_TAG)]
 interface StaticMethodParameterClosureTypeExtension
 {
 

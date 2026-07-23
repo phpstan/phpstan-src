@@ -5,11 +5,13 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Type\Type;
 
 /**
  * @template T of Expr
  */
+#[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface ExprHandler
 {
 

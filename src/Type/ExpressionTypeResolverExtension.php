@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * To register it in the configuration file use the `phpstan.broker.expressionTypeResolverExtension` service tag:
@@ -20,6 +22,7 @@ use PHPStan\Analyser\Scope;
  *
  * @api
  */
+#[ExtensionInterface(tag: BrokerFactory::EXPRESSION_TYPE_RESOLVER_EXTENSION_TAG)]
 interface ExpressionTypeResolverExtension
 {
 

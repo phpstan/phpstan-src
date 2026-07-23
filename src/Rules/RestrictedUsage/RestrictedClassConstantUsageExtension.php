@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RestrictedUsage;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\ClassConstantReflection;
 
 /**
@@ -25,6 +26,7 @@ use PHPStan\Reflection\ClassConstantReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::CLASS_CONSTANT_EXTENSION_TAG)]
 interface RestrictedClassConstantUsageExtension
 {
 

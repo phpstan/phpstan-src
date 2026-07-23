@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\DependencyInjection\ExtensionInterface;
+
 /**
  * ResultCacheMetaExtension can be used for extending PHPStan's built-in mechanism that is used for
  * calculating metadata for result cache. Using this extension you may add additional metadata that will
@@ -21,6 +23,7 @@ namespace PHPStan\Analyser\ResultCache;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface ResultCacheMetaExtension
 {
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\ExtendedMethodReflection;
 
 /**
@@ -19,6 +20,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: AlwaysUsedMethodExtensionProvider::EXTENSION_TAG)]
 interface AlwaysUsedMethodExtension
 {
 

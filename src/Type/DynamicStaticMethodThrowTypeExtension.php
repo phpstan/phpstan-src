@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider;
 use PHPStan\Reflection\MethodReflection;
 
 /**
@@ -23,6 +25,7 @@ use PHPStan\Reflection\MethodReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: LazyDynamicThrowTypeExtensionProvider::STATIC_METHOD_TAG)]
 interface DynamicStaticMethodThrowTypeExtension
 {
 

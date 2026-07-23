@@ -22,7 +22,7 @@ final class ConditionalTagsExtension extends CompilerExtension
 	#[Override]
 	public function getConfigSchema(): Nette\Schema\Schema
 	{
-		$tags = array_values(ValidateServiceTagsExtension::INTERFACE_TAG_MAPPING);
+		$tags = array_values(ValidateServiceTagsExtension::getInterfaceTagMapping());
 
 		return Expect::arrayOf(Expect::structure(
 			array_fill_keys($tags, Expect::anyOf(

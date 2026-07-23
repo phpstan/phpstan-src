@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
+
 /**
  * This is the extension interface to implement if you want to describe
  * how unary operators like -, +, ~ should infer types
@@ -19,6 +22,7 @@ namespace PHPStan\Type;
  *
  * @api
  */
+#[ExtensionInterface(tag: BrokerFactory::UNARY_OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG)]
 interface UnaryOperatorTypeSpecifyingExtension
 {
 

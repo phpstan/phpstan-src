@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This is the interface custom rules implement. To register it in the configuration file
@@ -24,6 +25,7 @@ use PHPStan\Analyser\Scope;
  * @api
  * @template TNodeType of Node
  */
+#[ExtensionInterface(tag: LazyRegistry::RULE_TAG)]
 interface Rule
 {
 

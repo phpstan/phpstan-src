@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
+
 /**
  * This is the extension interface to implement if you want to describe
  * how arithmetic operators like +, -, *, ^, / should infer types
@@ -21,6 +24,7 @@ namespace PHPStan\Type;
  *
  * @api
  */
+#[ExtensionInterface(tag: BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG)]
 interface OperatorTypeSpecifyingExtension
 {
 

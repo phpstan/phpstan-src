@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Constants;
 
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\ClassConstantReflection;
 
 /**
@@ -22,6 +23,7 @@ use PHPStan\Reflection\ClassConstantReflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG)]
 interface AlwaysUsedClassConstantsExtension
 {
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Deprecation;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -19,6 +20,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::METHOD_EXTENSION_TAG)]
 interface MethodDeprecationExtension
 {
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Deprecation;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -19,6 +20,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::PROPERTY_EXTENSION_TAG)]
 interface PropertyDeprecationExtension
 {
 

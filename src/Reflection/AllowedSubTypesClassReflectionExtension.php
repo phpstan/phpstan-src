@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Type\Type;
 
 /**
@@ -23,6 +25,7 @@ use PHPStan\Type\Type;
  *
  * @api
  */
+#[ExtensionInterface(tag: BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG)]
 interface AllowedSubTypesClassReflectionExtension
 {
 

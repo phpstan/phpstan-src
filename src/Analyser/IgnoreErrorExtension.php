@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This is the extension interface to implement if you want to ignore errors
@@ -22,6 +23,7 @@ use PhpParser\Node;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface IgnoreErrorExtension
 {
 

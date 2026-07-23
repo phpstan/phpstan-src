@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -34,13 +36,18 @@ use function strtolower;
 /**
  * @implements Rule<InClassMethodNode>
  */
+// autoTag: false - not registered as a rule, checked as part of OverridingMethodRule
+#[AutowiredService(autoTag: false)]
 final class MethodSignatureRule implements Rule
 {
 
 	public function __construct(
 		private ParentMethodHelper $parentMethodHelper,
+		#[AutowiredParameter(ref: '%reportMaybesInMethodSignatures%')]
 		private bool $reportMaybes,
+		#[AutowiredParameter(ref: '%reportStaticMethodSignatures%')]
 		private bool $reportStatic,
+		#[AutowiredParameter(ref: '%featureToggles.reportMethodPurityOverride%')]
 		private bool $reportMethodPurityOverride,
 	)
 	{

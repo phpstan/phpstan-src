@@ -3,11 +3,14 @@
 namespace PHPStan\Reflection\RequireExtension;
 
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
 
+// autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
+#[AutowiredService(autoTag: false)]
 final class RequireExtendsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 

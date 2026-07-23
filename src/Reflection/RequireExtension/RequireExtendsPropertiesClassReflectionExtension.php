@@ -3,12 +3,14 @@
 namespace PHPStan\Reflection\RequireExtension;
 
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
+#[AutowiredService]
 final class RequireExtendsPropertiesClassReflectionExtension
 {
 

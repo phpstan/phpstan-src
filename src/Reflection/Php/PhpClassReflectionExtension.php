@@ -14,6 +14,8 @@ use PHPStan\Analyser\ScopeFactory;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -71,6 +73,7 @@ use function is_array;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class PhpClassReflectionExtension
 {
 
@@ -104,14 +107,17 @@ final class PhpClassReflectionExtension
 		private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
 		private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
 		private SignatureMapProvider $signatureMapProvider,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private FileTypeMapper $fileTypeMapper,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
+		#[AutowiredParameter]
 		private bool $inferPrivatePropertyTypeFromConstructor,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%cache.memberCacheKeysMax%')]
 		private int $memberCacheKeysMax,
 	)
 	{

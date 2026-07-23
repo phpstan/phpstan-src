@@ -10,9 +10,12 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\Util\ConstantNodeChecker;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ConstantNameHelper;
 use function strtolower;
 
+// autoTag: false - must not be tagged as a RichParser node visitor
+#[AutowiredService(autoTag: false)]
 final class CachingVisitor extends NodeVisitorAbstract
 {
 

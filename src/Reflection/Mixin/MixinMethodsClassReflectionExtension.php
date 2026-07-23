@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection\Mixin;
 
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
@@ -11,6 +13,8 @@ use PHPStan\Type\VerbosityLevel;
 use function array_intersect;
 use function count;
 
+// autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
+#[AutowiredService(autoTag: false)]
 final class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
@@ -20,7 +24,10 @@ final class MixinMethodsClassReflectionExtension implements MethodsClassReflecti
 	/**
 	 * @param string[] $mixinExcludeClasses
 	 */
-	public function __construct(private array $mixinExcludeClasses)
+	public function __construct(
+		#[AutowiredParameter]
+		private array $mixinExcludeClasses,
+	)
 	{
 	}
 

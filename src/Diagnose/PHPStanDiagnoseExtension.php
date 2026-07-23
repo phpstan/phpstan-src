@@ -4,6 +4,8 @@ namespace PHPStan\Diagnose;
 
 use Phar;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\NonAutowiredService;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
@@ -30,6 +32,7 @@ use function strlen;
 use function substr;
 use const PHP_VERSION_ID;
 
+#[NonAutowiredService(name: 'phpstanDiagnoseExtension')]
 final class PHPStanDiagnoseExtension
 {
 
@@ -40,11 +43,15 @@ final class PHPStanDiagnoseExtension
 	 */
 	public function __construct(
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%phpVersion%')]
 		private int|array|null $configPhpVersion,
 		private FileHelper $fileHelper,
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter]
 		private array $allConfigFiles,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
 		private RelativePathHelper $simpleRelativePathHelper,
 	)
 	{

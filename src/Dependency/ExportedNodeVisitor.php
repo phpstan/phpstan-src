@@ -6,8 +6,11 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 
+// autoTag: false - must not be tagged as a RichParser node visitor
+#[AutowiredService(autoTag: false)]
 final class ExportedNodeVisitor extends NodeVisitorAbstract
 {
 

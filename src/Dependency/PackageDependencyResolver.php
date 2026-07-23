@@ -2,6 +2,8 @@
 
 namespace PHPStan\Dependency;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use function array_key_exists;
@@ -23,6 +25,7 @@ use function uksort;
  * bundled dependencies are tied to the PHPStan version, not the project's composer.lock, so they are
  * deliberately not resolved here.
  */
+#[AutowiredService]
 final class PackageDependencyResolver
 {
 
@@ -34,6 +37,7 @@ final class PackageDependencyResolver
 
 	/** @param string[] $composerAutoloaderProjectPaths */
 	public function __construct(
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
 		private FileHelper $fileHelper,
 	)

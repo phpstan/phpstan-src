@@ -2,10 +2,13 @@
 
 namespace PHPStan\Reflection\Php\Soap;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 
+// autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
+#[AutowiredService(autoTag: false)]
 final class SoapClientMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 

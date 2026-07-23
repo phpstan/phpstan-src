@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
@@ -9,6 +10,8 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\NeverType;
 
+// autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
+#[AutowiredService(autoTag: false)]
 final class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 

@@ -66,6 +66,10 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 
+			if (!$attribute->autoTag) {
+				continue;
+			}
+
 			foreach (ValidateServiceTagsExtension::getInterfaceTagMapping() as $interface => $tag) {
 				if (!$reflection->implementsInterface($interface)) {
 					continue;

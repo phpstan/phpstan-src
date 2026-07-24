@@ -12,6 +12,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
+use function array_keys;
 use function array_map;
 use function sprintf;
 use function strtolower;
@@ -61,6 +62,13 @@ final class UsedTraitsRule implements Rule
 			$useTags = $resolvedPhpDoc->getUsesTags();
 		}
 
+		$classLevelUseTags = [];
+		$declaringReflection = $scope->isInTrait() ? $scope->getTraitReflection() : $scope->getClassReflection();
+		$classLevelResolvedPhpDoc = $declaringReflection->getResolvedPhpDoc();
+		if ($classLevelResolvedPhpDoc !== null) {
+			$classLevelUseTags = $classLevelResolvedPhpDoc->getUsesTags();
+		}
+
 		$typeDescription = strtolower($scope->getClassReflection()->getClassTypeDescription());
 		$description = sprintf('%s %s', $typeDescription, SprintfHelper::escapeFormatString($className));
 		if ($traitName !== null) {
@@ -87,6 +95,7 @@ final class UsedTraitsRule implements Rule
 			'PHPDoc tag @use has invalid type %s.',
 			sprintf('%s uses generic trait %%s but does not specify its types: %%s', $escapedUpperCaseDescription),
 			sprintf('in used type %%s of %s', $escapedDescription),
+			array_keys($classLevelUseTags),
 		);
 	}
 

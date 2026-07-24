@@ -21,6 +21,7 @@ use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
@@ -255,19 +256,24 @@ final class FileTypeMapper
 						null,
 						$traitDocComment,
 					)->getUsesTags();
-					$useType = null;
-					foreach ($useTags as $useTag) {
-						$useTagType = $useTag->getType();
-						if (!$useTagType instanceof GenericObjectType) {
-							continue;
+					$useType = self::findUseTagType($useTags, $traitReflection->getName());
+					if ($useType === null) {
+						// no statement-level @use tag matched the trait - fall back
+						// to @use tags in the PHPDoc of the class-like using the trait
+						$traitUseClassLikeName = $lookForTraitName ?? $traitClassName;
+						if ($reflectionProvider->hasClass($traitUseClassLikeName)) {
+							$traitUseClassLikeDocComment = $reflectionProvider->getClass($traitUseClassLikeName)->getNativeReflection()->getDocComment();
+							if ($traitUseClassLikeDocComment !== false) {
+								$classLevelUseTags = $this->getResolvedPhpDoc(
+									$traitFileName,
+									$traitClassName,
+									$lookForTraitName,
+									null,
+									$traitUseClassLikeDocComment,
+								)->getUsesTags();
+								$useType = self::findUseTagType($classLevelUseTags, $traitReflection->getName());
+							}
 						}
-
-						if ($useTagType->getClassName() !== $traitReflection->getName()) {
-							continue;
-						}
-
-						$useType = $useTagType;
-						break;
 					}
 					$traitTemplateTypeMap = $traitReflection->getTemplateTypeMap();
 					$namesToUnset = [];
@@ -781,6 +787,27 @@ final class FileTypeMapper
 		}
 
 		return $resolved;
+	}
+
+	/**
+	 * @param array<string, UsesTag> $useTags
+	 */
+	private static function findUseTagType(array $useTags, string $traitName): ?GenericObjectType
+	{
+		foreach ($useTags as $useTag) {
+			$useTagType = $useTag->getType();
+			if (!$useTagType instanceof GenericObjectType) {
+				continue;
+			}
+
+			if ($useTagType->getClassName() !== $traitName) {
+				continue;
+			}
+
+			return $useTagType;
+		}
+
+		return null;
 	}
 
 	/**

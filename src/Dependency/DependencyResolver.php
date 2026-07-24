@@ -448,6 +448,18 @@ final class DependencyResolver
 					}
 				}
 			}
+
+			if ($scope->isInClass()) {
+				$declaringReflection = $scope->isInTrait() ? $scope->getTraitReflection() : $scope->getClassReflection();
+				$resolvedPhpDoc = $declaringReflection->getResolvedPhpDoc();
+				if ($resolvedPhpDoc !== null) {
+					foreach ($resolvedPhpDoc->getUsesTags() as $usesTag) {
+						foreach ($usesTag->getType()->getReferencedClasses() as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+						}
+					}
+				}
+			}
 		} elseif ($node instanceof Node\Expr\Instanceof_) {
 			if ($node->class instanceof Name) {
 				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);

@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,6 +18,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -34,7 +34,7 @@ final class InvalidComparisonOperationRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
-		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
 		#[AutowiredParameter(ref: '%featureToggles.checkExtensionsForComparisonOperators%')]
 		private bool $checkExtensionsForComparisonOperators,
 	)
@@ -66,7 +66,7 @@ final class InvalidComparisonOperationRule implements Rule
 			return [];
 		}
 
-		$result = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->callOperatorTypeSpecifyingExtensions(
+		$result = $this->operatorTypeSpecifyingExtensionRegistry->callOperatorTypeSpecifyingExtensions(
 			$node,
 			$scope->getType($node->left),
 			$scope->getType($node->right),

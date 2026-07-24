@@ -33,7 +33,6 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -55,6 +54,7 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -97,7 +97,7 @@ final class FuncCallHandler implements ExprHandler
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredExtensions(interface: DynamicFunctionThrowTypeExtension::class)]
 		private ExtensionsCollection $functionThrowTypeExtensions,
-		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 		#[AutowiredParameter]
@@ -1008,7 +1008,7 @@ final class FuncCallHandler implements ExprHandler
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type
 	{
-		foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicFunctionReturnTypeExtensions($functionReflection) as $dynamicFunctionReturnTypeExtension) {
+		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions($functionReflection) as $dynamicFunctionReturnTypeExtension) {
 			$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
 				$functionReflection,
 				$normalizedNode,

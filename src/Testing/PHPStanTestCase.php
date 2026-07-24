@@ -10,9 +10,6 @@ use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\ComposerPhpVersionFactory;
@@ -26,7 +23,10 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Constant\OversizedArrayBuilder;
+use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
+use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\TypeAliasResolver;
+use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
@@ -102,8 +102,8 @@ abstract class PHPStanTestCase extends TestCase
 			$constantResolver,
 			$reflectionProviderProvider,
 			$container->getByType(PhpVersion::class),
-			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
-			$container->getByType(UnaryOperatorTypeSpecifyingExtensionRegistryProvider::class),
+			$container->getByType(OperatorTypeSpecifyingExtensionRegistry::class),
+			$container->getByType(UnaryOperatorTypeSpecifyingExtensionRegistry::class),
 			new OversizedArrayBuilder(),
 			$container->getParameter('usePathConstantsAsConstantString'),
 		);
@@ -113,7 +113,7 @@ abstract class PHPStanTestCase extends TestCase
 				$container,
 				$reflectionProvider,
 				$initializerExprTypeResolver,
-				$container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class),
+				$container->getByType(ExpressionTypeResolverExtensionRegistry::class),
 				$container->getByType(ExprPrinter::class),
 				$typeSpecifier,
 				new PropertyReflectionFinder(),

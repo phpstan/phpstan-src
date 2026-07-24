@@ -30,7 +30,6 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -43,6 +42,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -80,7 +80,7 @@ final class NewHandler implements ExprHandler
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredExtensions(interface: DynamicStaticMethodThrowTypeExtension::class)]
 		private ExtensionsCollection $staticMethodThrowTypeExtensions,
-		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
@@ -407,7 +407,7 @@ final class NewHandler implements ExprHandler
 		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 
 		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
 				if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
 					continue;
 				}

@@ -11,8 +11,6 @@ use Override;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileExcluder;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
@@ -125,21 +123,15 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 						}),
 						$constantResolver,
-						new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new class implements OperatorTypeSpecifyingExtensionRegistryProvider {
-
-							public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
-							{
-								return new OperatorTypeSpecifyingExtensionRegistry([]);
-							}
-
-						}, new class implements UnaryOperatorTypeSpecifyingExtensionRegistryProvider {
-
-							public function getRegistry(): UnaryOperatorTypeSpecifyingExtensionRegistry
-							{
-								return new UnaryOperatorTypeSpecifyingExtensionRegistry([]);
-							}
-
-						}, new OversizedArrayBuilder(), true),
+						new InitializerExprTypeResolver(
+							$constantResolver,
+							$reflectionProviderProvider,
+							new PhpVersion(PHP_VERSION_ID),
+							new OperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])),
+							new UnaryOperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])),
+							new OversizedArrayBuilder(),
+							true,
+						),
 						reportUnsafeArrayStringKeyCasting: null,
 					),
 				),

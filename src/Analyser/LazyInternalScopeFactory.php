@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\GenerateFactory;
-use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -84,7 +83,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
 		$this->initializerExprTypeResolver ??= $this->container->getByType(InitializerExprTypeResolver::class);
-		$this->expressionTypeResolverExtensionRegistry ??= $this->container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class)->getRegistry();
+		$this->expressionTypeResolverExtensionRegistry ??= $this->container->getByType(ExpressionTypeResolverExtensionRegistry::class);
 		$this->exprPrinter ??= $this->container->getByType(ExprPrinter::class);
 		$this->typeSpecifier ??= $this->container->getByType(TypeSpecifier::class);
 		$this->propertyReflectionFinder ??= $this->container->getByType(PropertyReflectionFinder::class);

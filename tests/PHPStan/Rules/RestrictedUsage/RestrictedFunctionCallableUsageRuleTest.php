@@ -15,7 +15,7 @@ class RestrictedFunctionCallableUsageRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RestrictedFunctionCallableUsageRule(
-			self::getContainer(),
+			self::getContainer()->getExtensionsCollection(RestrictedFunctionUsageExtension::class),
 			self::createReflectionProvider(),
 		);
 	}

@@ -9,7 +9,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\MissingServiceException;
 use PHPStan\Rules\FixableNodeRuleError;
-use PHPStan\Rules\LazyRegistry;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -63,7 +62,7 @@ final class PromoteParameterRule implements Rule
 		try {
 			/** @var Rule<TNodeType> $originalRule */
 			$originalRule = $this->container->getByType(get_class($this->rule));
-			$taggedRules = $this->container->getServicesByTag(LazyRegistry::RULE_TAG);
+			$taggedRules = $this->container->getExtensionsCollection(Rule::class)->getAll();
 			$found = false;
 			foreach ($taggedRules as $rule) {
 				if ($originalRule !== $rule) {

@@ -879,8 +879,7 @@ final class AnalyseCommand extends Command
 		// not using tag for this extension to make sure it's always first
 		$phpstanDiagnoseExtension->print($errorOutput, $processedFiles);
 
-		/** @var DiagnoseExtension $extension */
-		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {
+		foreach ($container->getExtensionsCollection(DiagnoseExtension::class)->getAll() as $extension) {
 			$extension->print($errorOutput);
 		}
 	}

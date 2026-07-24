@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
@@ -19,7 +20,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 	{
 		return new MissingReadOnlyByPhpDocPropertyAssignRule(
 			new ConstructorsHelper(
-				self::getContainer(),
+				self::getContainer()->getExtensionsCollection(AdditionalConstructorsExtension::class),
 				[
 					'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
 				],

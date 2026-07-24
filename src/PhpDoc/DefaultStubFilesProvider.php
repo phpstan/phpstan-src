@@ -2,9 +2,10 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use function array_filter;
@@ -25,11 +26,13 @@ final class DefaultStubFilesProvider implements StubFilesProvider
 	private ?array $cachedProjectFiles = null;
 
 	/**
+	 * @param ExtensionsCollection<StubFilesExtension> $stubFilesExtensions
 	 * @param string[] $stubFiles
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(of: StubFilesExtension::class)]
+		private ExtensionsCollection $stubFilesExtensions,
 		private FileHelper $fileHelper,
 		#[AutowiredParameter]
 		private array $stubFiles,
@@ -46,7 +49,7 @@ final class DefaultStubFilesProvider implements StubFilesProvider
 		}
 
 		$files = array_map(fn ($path) => $this->fileHelper->normalizePath($path), $this->stubFiles);
-		$extensions = $this->container->getServicesByTag(StubFilesExtension::EXTENSION_TAG);
+		$extensions = $this->stubFilesExtensions->getAll();
 		foreach ($extensions as $extension) {
 			foreach ($extension->getFiles() as $extensionFile) {
 				$files[] = $this->fileHelper->normalizePath($extensionFile);

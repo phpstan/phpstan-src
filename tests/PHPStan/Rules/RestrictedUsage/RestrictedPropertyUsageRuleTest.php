@@ -14,7 +14,7 @@ class RestrictedPropertyUsageRuleTest extends RuleTestCase
 	protected function getRule(): TRule
 	{
 		return new RestrictedPropertyUsageRule(
-			self::getContainer(),
+			self::getContainer()->getExtensionsCollection(RestrictedPropertyUsageExtension::class),
 			self::createReflectionProvider(),
 		);
 	}

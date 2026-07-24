@@ -5,8 +5,9 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,11 +19,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class RestrictedFunctionUsageRule implements Rule
 {
 
-	/** @var RestrictedFunctionUsageExtension[] $extensions */
-	private ?array $extensions = null;
-
+	/**
+	 * @param ExtensionsCollection<RestrictedFunctionUsageExtension> $extensions
+	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(of: RestrictedFunctionUsageExtension::class)]
+		private ExtensionsCollection $extensions,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -48,8 +50,7 @@ final class RestrictedFunctionUsageRule implements Rule
 
 		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
 
-		/** @var RestrictedFunctionUsageExtension[] $extensions */
-		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedFunctionUsageExtension::FUNCTION_EXTENSION_TAG);
+		$extensions = $this->extensions->getAll();
 		$errors = [];
 
 		foreach ($extensions as $extension) {

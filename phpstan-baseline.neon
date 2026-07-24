@@ -688,7 +688,7 @@ parameters:
 			path: src/Rules/LazyRegistry.php
 
 		-
-			rawMessage: 'Method PHPStan\Rules\LazyRegistry::getRulesFromContainer() return type with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
+			rawMessage: 'Method PHPStan\Rules\LazyRegistry::getRulesByNodeType() return type with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
 			identifier: missingType.generics
 			count: 1
 			path: src/Rules/LazyRegistry.php
@@ -700,7 +700,7 @@ parameters:
 			path: src/Rules/LazyRegistry.php
 
 		-
-			rawMessage: 'Property PHPStan\Rules\LazyRegistry::$rules with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
+			rawMessage: 'Property PHPStan\Rules\LazyRegistry::$rulesByNodeType with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
 			identifier: missingType.generics
 			count: 1
 			path: src/Rules/LazyRegistry.php

@@ -3,8 +3,9 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use function array_map;
 use function array_merge;
 use function sprintf;
@@ -25,7 +26,13 @@ final class ClassForbiddenNameCheck
 		'Box' => '_HumbugBox',
 	];
 
-	public function __construct(private Container $container)
+	/**
+	 * @param ExtensionsCollection<ForbiddenClassNameExtension> $extensions
+	 */
+	public function __construct(
+		#[AutowiredExtensions(of: ForbiddenClassNameExtension::class)]
+		private ExtensionsCollection $extensions,
+	)
 	{
 	}
 
@@ -35,7 +42,7 @@ final class ClassForbiddenNameCheck
 	 */
 	public function checkClassNames(array $pairs): array
 	{
-		$extensions = $this->container->getServicesByTag(ForbiddenClassNameExtension::EXTENSION_TAG);
+		$extensions = $this->extensions->getAll();
 
 		$classPrefixes = array_merge(
 			self::INTERNAL_CLASS_PREFIXES,

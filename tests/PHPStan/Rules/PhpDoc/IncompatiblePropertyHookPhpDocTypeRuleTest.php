@@ -2,11 +2,13 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Generics\TemplateTypeCheck;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -34,9 +36,9 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 						$reflectionProvider,
 						new ClassNameCheck(
 							new ClassCaseSensitivityCheck($reflectionProvider, true),
-							new ClassForbiddenNameCheck($container),
+							new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 							$reflectionProvider,
-							$container,
+							$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 						),
 						new GenericObjectTypeCheck(),
 						$typeAliasResolver,

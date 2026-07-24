@@ -3,3 +3,9 @@ services:
 		class: PHPStan\DependencyInjection\TestedReadWritePropertiesExtension
 		tags:
 			- phpstan.properties.readWriteExtension
+
+	# alias of a service whose class has #[AutowiredExtensions] parameters -
+	# the compiler pass must not wire constructor arguments into the alias
+	testAliasedRichParser:
+		factory: @currentPhpVersionRichParser
+		autowired: false

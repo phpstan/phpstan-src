@@ -7,8 +7,9 @@ use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassReflection;
@@ -47,11 +48,12 @@ use function strtolower;
 final class InstantiationRule implements Rule
 {
 
-	/** @var RestrictedMethodUsageExtension[] $extensions */
-	private ?array $extensions = null;
-
+	/**
+	 * @param ExtensionsCollection<RestrictedMethodUsageExtension> $extensions
+	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(of: RestrictedMethodUsageExtension::class)]
+		private ExtensionsCollection $extensions,
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $check,
 		private ClassNameCheck $classCheck,
@@ -268,8 +270,7 @@ final class InstantiationRule implements Rule
 				->build();
 		}
 
-		/** @var RestrictedMethodUsageExtension[] $extensions */
-		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
+		$extensions = $this->extensions->getAll();
 
 		foreach ($extensions as $extension) {
 			$restrictedUsage = $extension->isRestrictedMethodUsage($constructorReflection, $scope);

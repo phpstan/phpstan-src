@@ -3,8 +3,9 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use function class_implements;
 use function class_parents;
 
@@ -15,12 +16,18 @@ final class LazyRegistry implements Registry
 	public const RULE_TAG = 'phpstan.rules.rule';
 
 	/** @var Rule[][]|null */
-	private ?array $rules = null;
+	private ?array $rulesByNodeType = null;
 
 	/** @var Rule[][] */
 	private array $cache = [];
 
-	public function __construct(private Container $container)
+	/**
+	 * @param ExtensionsCollection<Rule<Node>> $rules
+	 */
+	public function __construct(
+		#[AutowiredExtensions(of: Rule::class)]
+		private ExtensionsCollection $rules,
+	)
 	{
 	}
 
@@ -35,7 +42,7 @@ final class LazyRegistry implements Registry
 			$parentNodeTypes = [$nodeType] + class_parents($nodeType) + class_implements($nodeType);
 
 			$rules = [];
-			$rulesFromContainer = $this->getRulesFromContainer();
+			$rulesFromContainer = $this->getRulesByNodeType();
 			foreach ($parentNodeTypes as $parentNodeType) {
 				foreach ($rulesFromContainer[$parentNodeType] ?? [] as $rule) {
 					$rules[] = $rule;
@@ -56,18 +63,18 @@ final class LazyRegistry implements Registry
 	/**
 	 * @return Rule[][]
 	 */
-	private function getRulesFromContainer(): array
+	private function getRulesByNodeType(): array
 	{
-		if ($this->rules !== null) {
-			return $this->rules;
+		if ($this->rulesByNodeType !== null) {
+			return $this->rulesByNodeType;
 		}
 
 		$rules = [];
-		foreach ($this->container->getServicesByTag(self::RULE_TAG) as $rule) {
+		foreach ($this->rules->getAll() as $rule) {
 			$rules[$rule->getNodeType()][] = $rule;
 		}
 
-		return $this->rules = $rules;
+		return $this->rulesByNodeType = $rules;
 	}
 
 }

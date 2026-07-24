@@ -6,8 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -22,11 +23,12 @@ use PHPStan\Type\Type;
 final class RestrictedClassConstantUsageRule implements Rule
 {
 
-	/** @var RestrictedClassConstantUsageExtension[] $extensions */
-	private ?array $extensions = null;
-
+	/**
+	 * @param ExtensionsCollection<RestrictedClassConstantUsageExtension> $extensions
+	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(of: RestrictedClassConstantUsageExtension::class)]
+		private ExtensionsCollection $extensions,
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 	)
@@ -47,8 +49,7 @@ final class RestrictedClassConstantUsageRule implements Rule
 			return [];
 		}
 
-		/** @var RestrictedClassConstantUsageExtension[] $extensions */
-		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassConstantUsageExtension::CLASS_CONSTANT_EXTENSION_TAG);
+		$extensions = $this->extensions->getAll();
 		if ($extensions === []) {
 			return [];
 		}

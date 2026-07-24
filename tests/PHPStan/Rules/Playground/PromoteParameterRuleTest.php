@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Playground;
 
 use PHPStan\Node\ClassPropertiesNode;
+use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Properties\UninitializedPropertyRule;
 use PHPStan\Rules\Rule;
@@ -19,7 +20,7 @@ class PromoteParameterRuleTest extends RuleTestCase
 		$container = self::getContainer();
 		return new PromoteParameterRule(
 			new UninitializedPropertyRule(new ConstructorsHelper(
-				$container,
+				$container->getExtensionsCollection(AdditionalConstructorsExtension::class),
 				[],
 			)),
 			$container,

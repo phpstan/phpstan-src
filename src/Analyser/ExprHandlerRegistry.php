@@ -42,7 +42,7 @@ final class ExprHandlerRegistry
 
 		$matchedHandler = null;
 		/** @var ExprHandler<Expr> $exprHandler */
-		foreach ($container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+		foreach ($container->getExtensionsCollection(ExprHandler::class)->getAll() as $exprHandler) {
 			if (!$exprHandler->supports($expr)) {
 				continue;
 			}

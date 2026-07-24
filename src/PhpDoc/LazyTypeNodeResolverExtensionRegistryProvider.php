@@ -19,7 +19,7 @@ final class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeRes
 	{
 		return $this->registry ??= new TypeNodeResolverExtensionAwareRegistry(
 			$this->container->getByType(TypeNodeResolver::class),
-			$this->container->getServicesByTag(TypeNodeResolverExtension::EXTENSION_TAG),
+			$this->container->getExtensionsCollection(TypeNodeResolverExtension::class)->getAll(),
 		);
 	}
 

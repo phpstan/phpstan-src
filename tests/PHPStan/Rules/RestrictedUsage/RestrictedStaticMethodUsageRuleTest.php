@@ -17,7 +17,7 @@ class RestrictedStaticMethodUsageRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		return new RestrictedStaticMethodUsageRule(
-			self::getContainer(),
+			self::getContainer()->getExtensionsCollection(RestrictedMethodUsageExtension::class),
 			$reflectionProvider,
 			new RuleLevelHelper(
 				$reflectionProvider,

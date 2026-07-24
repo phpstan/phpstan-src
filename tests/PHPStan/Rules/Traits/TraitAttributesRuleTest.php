@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Traits;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
+use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -56,9 +58,9 @@ class TraitAttributesRuleTest extends RuleTestCase
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: false),
-					new ClassForbiddenNameCheck($container),
+					new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
-					$container,
+					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
 				deprecationRulesInstalled: true,
 			),

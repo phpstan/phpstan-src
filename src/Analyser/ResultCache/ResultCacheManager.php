@@ -12,8 +12,9 @@ use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\ProjectConfigHelper;
 use PHPStan\File\CouldNotReadFileException;
@@ -84,9 +85,11 @@ final class ResultCacheManager
 	 * @param string[] $scanDirectories
 	 * @param list<string|non-empty-list<string>> $parametersNotInvalidatingCache
 	 * @param array<string, string> $fileReplacements
+	 * @param ExtensionsCollection<ResultCacheMetaExtension> $resultCacheMetaExtensions
 	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(of: ResultCacheMetaExtension::class)]
+		private ExtensionsCollection $resultCacheMetaExtensions,
 		private ExportedNodeFetcher $exportedNodeFetcher,
 		#[AutowiredParameter(ref: '@fileFinderScan')]
 		private FileFinder $scanFileFinder,
@@ -1540,7 +1543,7 @@ return [
 		$meta = [];
 
 		/** @var ResultCacheMetaExtension $extension */
-		foreach ($this->container->getServicesByTag(ResultCacheMetaExtension::EXTENSION_TAG) as $extension) {
+		foreach ($this->resultCacheMetaExtensions->getAll() as $extension) {
 			if (array_key_exists($extension->getKey(), $meta)) {
 				throw new ShouldNotHappenException(sprintf(
 					'Duplicate ResultCacheMetaExtension with key "%s" found.',

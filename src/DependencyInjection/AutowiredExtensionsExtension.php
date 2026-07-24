@@ -12,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 use ReflectionMethod;
 use ReflectionNamedType;
 use function array_key_exists;
+use function is_string;
 use function sprintf;
 use function str_replace;
 use function strcasecmp;
@@ -89,6 +90,14 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 			if ($className === null) {
 				continue;
 			}
+
+			// only wire arguments into definitions that actually invoke the constructor,
+			// not aliases of other services (factory: @otherService) or method factories
+			$creatorEntity = $definition->getCreator()->getEntity();
+			if ($creatorEntity !== null && (!is_string($creatorEntity) || strcasecmp($creatorEntity, $className) !== 0)) {
+				continue;
+			}
+
 			foreach ($parametersByClass[strtolower($className)] ?? [] as $parameter) {
 				$definition->setArgument($parameter->name, new Reference(self::getCollectionServiceName($parameter->attribute->of)));
 			}

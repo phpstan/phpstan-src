@@ -2,12 +2,14 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -31,9 +33,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck($container),
+					new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
-					$container,
+					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
 				new UnresolvableTypeHelper(),
 				new PhpVersion($this->phpVersionId),

@@ -14,7 +14,7 @@ class RestrictedUsageOfDeprecatedStringCastRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RestrictedUsageOfDeprecatedStringCastRule(
-			self::getContainer(),
+			self::getContainer()->getExtensionsCollection(RestrictedMethodUsageExtension::class),
 			self::createReflectionProvider(),
 		);
 	}

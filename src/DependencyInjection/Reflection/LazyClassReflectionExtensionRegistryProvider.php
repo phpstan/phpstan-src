@@ -2,17 +2,19 @@
 
 namespace PHPStan\DependencyInjection\Reflection;
 
-use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Reflection\AllowedSubTypesClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflectionExtensionRegistry;
+use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension;
 use PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
+use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
@@ -45,9 +47,9 @@ final class LazyClassReflectionExtensionRegistryProvider implements ClassReflect
 			$universalObjectCratesClassReflectionExtension = $container->getByType(UniversalObjectCratesClassReflectionExtension::class);
 
 			$this->registry = new ClassReflectionExtensionRegistry(
-				array_merge($container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension, $mixinPropertiesClassReflectionExtension, $universalObjectCratesClassReflectionExtension]),
-				array_merge($container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsMethodsClassReflectionExtension, $mixinMethodsClassReflectionExtension, $soapClientMethodsClassReflectionExtension]),
-				$container->getServicesByTag(BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG),
+				array_merge($container->getExtensionsCollection(PropertiesClassReflectionExtension::class)->getAll(), [$annotationsPropertiesClassReflectionExtension, $mixinPropertiesClassReflectionExtension, $universalObjectCratesClassReflectionExtension]),
+				array_merge($container->getExtensionsCollection(MethodsClassReflectionExtension::class)->getAll(), [$annotationsMethodsClassReflectionExtension, $mixinMethodsClassReflectionExtension, $soapClientMethodsClassReflectionExtension]),
+				$container->getExtensionsCollection(AllowedSubTypesClassReflectionExtension::class)->getAll(),
 				$container->getByType(RequireExtendsPropertiesClassReflectionExtension::class),
 				$container->getByType(RequireExtendsMethodsClassReflectionExtension::class),
 				$container->getByType(PhpClassReflectionExtension::class),

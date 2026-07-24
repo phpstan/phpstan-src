@@ -15,7 +15,7 @@ class RestrictedMethodCallableUsageRuleTest extends RuleTestCase
 	protected function getRule(): TRule
 	{
 		return new RestrictedMethodCallableUsageRule(
-			self::getContainer(),
+			self::getContainer()->getExtensionsCollection(RestrictedMethodUsageExtension::class),
 			self::createReflectionProvider(),
 		);
 	}

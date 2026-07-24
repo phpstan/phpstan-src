@@ -16,7 +16,7 @@ class RestrictedStaticPropertyUsageRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		return new RestrictedStaticPropertyUsageRule(
-			self::getContainer(),
+			self::getContainer()->getExtensionsCollection(RestrictedPropertyUsageExtension::class),
 			$reflectionProvider,
 			new RuleLevelHelper(
 				$reflectionProvider,

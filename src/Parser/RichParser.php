@@ -5,12 +5,14 @@ namespace PHPStan\Parser;
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Token;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Analyser\Ignore\IgnoreParseException;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\AutowiredExtensions;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
@@ -44,10 +46,14 @@ final class RichParser implements Parser
 
 	private const PHPDOC_DOCTRINE_TAG_REGEX = '(@[a-z_\\\\][a-z0-9_\:\\\\]*[a-z_][a-z0-9_]*)';
 
+	/**
+	 * @param ExtensionsCollection<NodeVisitor> $nodeVisitors
+	 */
 	public function __construct(
 		private \PhpParser\Parser $parser,
 		private NameResolver $nameResolver,
-		private Container $container,
+		#[AutowiredExtensions(of: NodeVisitor::class)]
+		private ExtensionsCollection $nodeVisitors,
 		private IgnoreLexer $ignoreLexer,
 	)
 	{
@@ -92,7 +98,7 @@ final class RichParser implements Parser
 		$traitCollectingVisitor = new TraitCollectingVisitor();
 		$nodeTraverser->addVisitor($traitCollectingVisitor);
 
-		foreach ($this->container->getServicesByTag(self::VISITOR_SERVICE_TAG) as $visitor) {
+		foreach ($this->nodeVisitors->getAll() as $visitor) {
 			$nodeTraverser->addVisitor($visitor);
 		}
 

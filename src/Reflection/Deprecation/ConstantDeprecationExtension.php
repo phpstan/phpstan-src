@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Deprecation;
 
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\DependencyInjection\ExtensionInterface;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -19,6 +20,7 @@ use PHPStan\BetterReflection\Reflection\ReflectionConstant;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::CONSTANT_EXTENSION_TAG)]
 interface ConstantDeprecationExtension
 {
 

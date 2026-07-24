@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Lexer;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
@@ -854,7 +855,7 @@ class AnalyserTest extends PHPStanTestCase
 			new RichParser(
 				new Php7($lexer),
 				new NameResolver(),
-				$container,
+				$container->getExtensionsCollection(NodeVisitor::class),
 				new IgnoreLexer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),

@@ -721,6 +721,33 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug6970(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6970.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				96,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				109,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				147,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				198,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				286,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.3.0')]
 	public function testPr5105(): void
 	{

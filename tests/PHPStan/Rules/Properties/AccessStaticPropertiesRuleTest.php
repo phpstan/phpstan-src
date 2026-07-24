@@ -9,6 +9,7 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -16,6 +17,8 @@ use const PHP_VERSION_ID;
  */
 class AccessStaticPropertiesRuleTest extends RuleTestCase
 {
+
+	private bool $checkUnionTypes = true;
 
 	protected function getRule(): Rule
 	{
@@ -27,7 +30,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 					$reflectionProvider,
 					checkNullables: true,
 					checkThisOnly: false,
-					checkUnionTypes: true,
+					checkUnionTypes: $this->checkUnionTypes,
 					checkExplicitMixed: false,
 					checkImplicitMixed: false,
 					checkBenevolentUnionTypes: false,
@@ -356,6 +359,57 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	public function testBug2861(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2861.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticPropertyAccessOnStringUnions(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-property-string-unions.php'], [
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				32,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz|StaticPropertyStringUnions\Foo::$create.',
+				38,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz|StaticPropertyStringUnions\Foo::$create.',
+				50,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz|StaticPropertyStringUnions\Foo::$create.',
+				58,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				66,
+			],
+			[
+				'Static access to instance property StaticPropertyStringUnions\Foo::$doBar.',
+				80,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticPropertyAccessOnStringUnionsWithoutCheckUnionTypes(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/static-property-string-unions.php'], [
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				32,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				66,
+			],
+			[
+				'Static access to instance property StaticPropertyStringUnions\Foo::$doBar.',
+				80,
+			],
+		]);
 	}
 
 }

@@ -29,10 +29,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -53,6 +54,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -88,9 +90,13 @@ use function str_starts_with;
 final class FuncCallHandler implements ExprHandler
 {
 
+	/**
+	 * @param ExtensionsCollection<DynamicFunctionThrowTypeExtension> $functionThrowTypeExtensions
+	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
+		#[AutowiredExtensions(interface: DynamicFunctionThrowTypeExtension::class)]
+		private ExtensionsCollection $functionThrowTypeExtensions,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
@@ -604,7 +610,7 @@ final class FuncCallHandler implements ExprHandler
 		ExpressionContext $context,
 	): ?InternalThrowPoint
 	{
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
+		foreach ($this->functionThrowTypeExtensions->getAll() as $extension) {
 			if (!$extension->isFunctionSupported($functionReflection)) {
 				continue;
 			}

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\TooWideTypehints;
 
-use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -21,7 +21,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new TooWidePropertyTypeRule(
-			new DirectReadWritePropertiesExtensionProvider([]),
+			new DirectExtensionsCollection([]),
 			new TooWideTypeCheck(new PropertyReflectionFinder(), $this->reportTooWideBool, $this->reportNestedTooWideType),
 		);
 	}

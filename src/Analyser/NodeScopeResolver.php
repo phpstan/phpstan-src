@@ -57,12 +57,11 @@ use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BreaklessWhileLoopNode;
@@ -139,15 +138,21 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -155,6 +160,9 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\ResourceType;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\ThisType;
@@ -209,6 +217,16 @@ class NodeScopeResolver
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
+	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
+	 * @param ExtensionsCollection<MethodParameterOutTypeExtension> $methodParameterOutTypeExtensions
+	 * @param ExtensionsCollection<StaticMethodParameterOutTypeExtension> $staticMethodParameterOutTypeExtensions
+	 * @param ExtensionsCollection<ReadWritePropertiesExtension> $readWritePropertiesExtensions
+	 * @param ExtensionsCollection<FunctionParameterClosureThisExtension> $functionParameterClosureThisExtensions
+	 * @param ExtensionsCollection<MethodParameterClosureThisExtension> $methodParameterClosureThisExtensions
+	 * @param ExtensionsCollection<StaticMethodParameterClosureThisExtension> $staticMethodParameterClosureThisExtensions
+	 * @param ExtensionsCollection<FunctionParameterClosureTypeExtension> $functionParameterClosureTypeExtensions
+	 * @param ExtensionsCollection<MethodParameterClosureTypeExtension> $methodParameterClosureTypeExtensions
+	 * @param ExtensionsCollection<StaticMethodParameterClosureTypeExtension> $staticMethodParameterClosureTypeExtensions
 	 */
 	public function __construct(
 		private readonly Container $container,
@@ -216,16 +234,32 @@ class NodeScopeResolver
 		private readonly InitializerExprTypeResolver $initializerExprTypeResolver,
 		private readonly Reflector $reflector,
 		private readonly ClassReflectionFactory $classReflectionFactory,
-		private readonly ParameterOutTypeExtensionProvider $parameterOutTypeExtensionProvider,
+		#[AutowiredExtensions(interface: FunctionParameterOutTypeExtension::class)]
+		private readonly ExtensionsCollection $functionParameterOutTypeExtensions,
+		#[AutowiredExtensions(interface: MethodParameterOutTypeExtension::class)]
+		private readonly ExtensionsCollection $methodParameterOutTypeExtensions,
+		#[AutowiredExtensions(interface: StaticMethodParameterOutTypeExtension::class)]
+		private readonly ExtensionsCollection $staticMethodParameterOutTypeExtensions,
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private readonly Parser $parser,
 		private readonly FileTypeMapper $fileTypeMapper,
 		private readonly PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private readonly FileHelper $fileHelper,
 		private readonly TypeSpecifier $typeSpecifier,
-		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
-		private readonly ParameterClosureThisExtensionProvider $parameterClosureThisExtensionProvider,
-		private readonly ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
+		#[AutowiredExtensions(interface: ReadWritePropertiesExtension::class)]
+		private readonly ExtensionsCollection $readWritePropertiesExtensions,
+		#[AutowiredExtensions(interface: FunctionParameterClosureThisExtension::class)]
+		private readonly ExtensionsCollection $functionParameterClosureThisExtensions,
+		#[AutowiredExtensions(interface: MethodParameterClosureThisExtension::class)]
+		private readonly ExtensionsCollection $methodParameterClosureThisExtensions,
+		#[AutowiredExtensions(interface: StaticMethodParameterClosureThisExtension::class)]
+		private readonly ExtensionsCollection $staticMethodParameterClosureThisExtensions,
+		#[AutowiredExtensions(interface: FunctionParameterClosureTypeExtension::class)]
+		private readonly ExtensionsCollection $functionParameterClosureTypeExtensions,
+		#[AutowiredExtensions(interface: MethodParameterClosureTypeExtension::class)]
+		private readonly ExtensionsCollection $methodParameterClosureTypeExtensions,
+		#[AutowiredExtensions(interface: StaticMethodParameterClosureTypeExtension::class)]
+		private readonly ExtensionsCollection $staticMethodParameterClosureTypeExtensions,
 		private readonly ScopeFactory $scopeFactory,
 		private readonly DeepNodeCloner $deepNodeCloner,
 		#[AutowiredParameter]
@@ -1241,7 +1275,7 @@ class NodeScopeResolver
 			});
 
 			$this->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, $context);
-			$this->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
+			$this->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensions, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
 			$this->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 			$this->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 			$classReflection->evictPrivateSymbols();
@@ -3479,7 +3513,7 @@ class NodeScopeResolver
 	): ?Type
 	{
 		if ($call instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->parameterClosureThisExtensionProvider->getFunctionParameterClosureThisExtensions() as $extension) {
+			foreach ($this->functionParameterClosureThisExtensions->getAll() as $extension) {
 				if (! $extension->isFunctionSupported($calleeReflection, $parameter)) {
 					continue;
 				}
@@ -3489,7 +3523,7 @@ class NodeScopeResolver
 				}
 			}
 		} elseif ($call instanceof StaticCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->parameterClosureThisExtensionProvider->getStaticMethodParameterClosureThisExtensions() as $extension) {
+			foreach ($this->staticMethodParameterClosureThisExtensions->getAll() as $extension) {
 				if (! $extension->isStaticMethodSupported($calleeReflection, $parameter)) {
 					continue;
 				}
@@ -3499,7 +3533,7 @@ class NodeScopeResolver
 				}
 			}
 		} elseif ($call instanceof MethodCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->parameterClosureThisExtensionProvider->getMethodParameterClosureThisExtensions() as $extension) {
+			foreach ($this->methodParameterClosureThisExtensions->getAll() as $extension) {
 				if (! $extension->isMethodSupported($calleeReflection, $parameter)) {
 					continue;
 				}
@@ -3937,14 +3971,14 @@ class NodeScopeResolver
 	private function getParameterTypeFromParameterClosureTypeExtension(CallLike $callLike, $calleeReflection, ParameterReflection $parameter, MutatingScope $scope): ?Type
 	{
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->parameterClosureTypeExtensionProvider->getFunctionParameterClosureTypeExtensions() as $functionParameterClosureTypeExtension) {
+			foreach ($this->functionParameterClosureTypeExtensions->getAll() as $functionParameterClosureTypeExtension) {
 				if ($functionParameterClosureTypeExtension->isFunctionSupported($calleeReflection, $parameter)) {
 					return $functionParameterClosureTypeExtension->getTypeFromFunctionCall($calleeReflection, $callLike, $parameter, $scope);
 				}
 			}
 		} elseif ($calleeReflection instanceof MethodReflection) {
 			if ($callLike instanceof StaticCall) {
-				foreach ($this->parameterClosureTypeExtensionProvider->getStaticMethodParameterClosureTypeExtensions() as $staticMethodParameterClosureTypeExtension) {
+				foreach ($this->staticMethodParameterClosureTypeExtensions->getAll() as $staticMethodParameterClosureTypeExtension) {
 					if ($staticMethodParameterClosureTypeExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
 						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $callLike, $parameter, $scope);
 					}
@@ -3955,13 +3989,13 @@ class NodeScopeResolver
 					new Identifier('__construct'),
 					$callLike->getArgs(),
 				);
-				foreach ($this->parameterClosureTypeExtensionProvider->getStaticMethodParameterClosureTypeExtensions() as $staticMethodParameterClosureTypeExtension) {
+				foreach ($this->staticMethodParameterClosureTypeExtensions->getAll() as $staticMethodParameterClosureTypeExtension) {
 					if ($staticMethodParameterClosureTypeExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
 						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $staticCall, $parameter, $scope);
 					}
 				}
 			} elseif ($callLike instanceof MethodCall) {
-				foreach ($this->parameterClosureTypeExtensionProvider->getMethodParameterClosureTypeExtensions() as $methodParameterClosureTypeExtension) {
+				foreach ($this->methodParameterClosureTypeExtensions->getAll() as $methodParameterClosureTypeExtension) {
 					if ($methodParameterClosureTypeExtension->isMethodSupported($calleeReflection, $parameter)) {
 						return $methodParameterClosureTypeExtension->getTypeFromMethodCall($calleeReflection, $callLike, $parameter, $scope);
 					}
@@ -3979,7 +4013,7 @@ class NodeScopeResolver
 	{
 		$paramOutTypes = [];
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->parameterOutTypeExtensionProvider->getFunctionParameterOutTypeExtensions() as $functionParameterOutTypeExtension) {
+			foreach ($this->functionParameterOutTypeExtensions->getAll() as $functionParameterOutTypeExtension) {
 				if (!$functionParameterOutTypeExtension->isFunctionSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
@@ -3991,7 +4025,7 @@ class NodeScopeResolver
 				$paramOutTypes[] = $resolvedType;
 			}
 		} elseif ($callLike instanceof MethodCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->parameterOutTypeExtensionProvider->getMethodParameterOutTypeExtensions() as $methodParameterOutTypeExtension) {
+			foreach ($this->methodParameterOutTypeExtensions->getAll() as $methodParameterOutTypeExtension) {
 				if (!$methodParameterOutTypeExtension->isMethodSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
@@ -4003,7 +4037,7 @@ class NodeScopeResolver
 				$paramOutTypes[] = $resolvedType;
 			}
 		} elseif ($callLike instanceof StaticCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->parameterOutTypeExtensionProvider->getStaticMethodParameterOutTypeExtensions() as $staticMethodParameterOutTypeExtension) {
+			foreach ($this->staticMethodParameterOutTypeExtensions->getAll() as $staticMethodParameterOutTypeExtension) {
 				if (!$staticMethodParameterOutTypeExtension->isStaticMethodSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}

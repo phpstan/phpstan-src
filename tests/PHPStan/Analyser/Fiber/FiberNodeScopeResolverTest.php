@@ -4,17 +4,24 @@ namespace PHPStan\Analyser\Fiber;
 
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
@@ -52,15 +59,21 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			$container->getByType(ClassReflectionFactory::class),
-			$container->getByType(ParameterOutTypeExtensionProvider::class),
+			new LazyExtensionsCollection($container, FunctionParameterOutTypeExtension::class),
+			new LazyExtensionsCollection($container, MethodParameterOutTypeExtension::class),
+			new LazyExtensionsCollection($container, StaticMethodParameterOutTypeExtension::class),
 			self::getParser(),
 			$container->getByType(FileTypeMapper::class),
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),
 			$typeSpecifier,
-			$container->getByType(ReadWritePropertiesExtensionProvider::class),
-			$container->getByType(ParameterClosureThisExtensionProvider::class),
-			$container->getByType(ParameterClosureTypeExtensionProvider::class),
+			new LazyExtensionsCollection($container, ReadWritePropertiesExtension::class),
+			new LazyExtensionsCollection($container, FunctionParameterClosureThisExtension::class),
+			new LazyExtensionsCollection($container, MethodParameterClosureThisExtension::class),
+			new LazyExtensionsCollection($container, StaticMethodParameterClosureThisExtension::class),
+			new LazyExtensionsCollection($container, FunctionParameterClosureTypeExtension::class),
+			new LazyExtensionsCollection($container, MethodParameterClosureTypeExtension::class),
+			new LazyExtensionsCollection($container, StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getByType(DeepNodeCloner::class),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),

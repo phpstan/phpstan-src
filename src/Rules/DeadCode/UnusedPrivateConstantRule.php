@@ -4,9 +4,11 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassConstantsNode;
-use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
+use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
@@ -19,7 +21,13 @@ use function sprintf;
 final class UnusedPrivateConstantRule implements Rule
 {
 
-	public function __construct(private AlwaysUsedClassConstantsExtensionProvider $extensionProvider)
+	/**
+	 * @param ExtensionsCollection<AlwaysUsedClassConstantsExtension> $extensions
+	 */
+	public function __construct(
+		#[AutowiredExtensions(interface: AlwaysUsedClassConstantsExtension::class)]
+		private ExtensionsCollection $extensions,
+	)
 	{
 	}
 
@@ -47,7 +55,7 @@ final class UnusedPrivateConstantRule implements Rule
 				$constantName = $const->name->toString();
 
 				$constantReflection = $classReflection->getConstant($constantName);
-				foreach ($this->extensionProvider->getExtensions() as $extension) {
+				foreach ($this->extensions->getAll() as $extension) {
 					if ($extension->isAlwaysUsed($constantReflection)) {
 						continue 2;
 					}

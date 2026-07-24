@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -27,7 +27,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UnusedPrivatePropertyRule(
-			new DirectReadWritePropertiesExtensionProvider([
+			new DirectExtensionsCollection([
 				new class() implements ReadWritePropertiesExtension {
 
 					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool

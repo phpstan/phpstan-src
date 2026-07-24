@@ -4,7 +4,7 @@ namespace App\ClassImplements;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -17,21 +17,11 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 
-class Foo implements DynamicThrowTypeExtensionProvider
+class Foo implements ReflectionProviderProvider
 {
-	public function getDynamicFunctionThrowTypeExtensions(): array
+	public function getReflectionProvider(): ReflectionProvider
 	{
-		// TODO: Implement getDynamicFunctionThrowTypeExtensions() method.
-	}
-
-	public function getDynamicMethodThrowTypeExtensions(): array
-	{
-		// TODO: Implement getDynamicMethodThrowTypeExtensions() method.
-	}
-
-	public function getDynamicStaticMethodThrowTypeExtensions(): array
-	{
-		// TODO: Implement getDynamicStaticMethodThrowTypeExtensions() method.
+		// TODO: Implement getReflectionProvider() method.
 	}
 
 }

@@ -2,6 +2,8 @@
 
 namespace PHPStan\DependencyInjection;
 
+use function array_values;
+
 /**
  * @api
  * @template-covariant T of object
@@ -10,11 +12,15 @@ namespace PHPStan\DependencyInjection;
 final class DirectExtensionsCollection implements ExtensionsCollection
 {
 
+	/** @var list<T> */
+	private array $extensions;
+
 	/**
-	 * @param list<T> $extensions
+	 * @param array<T> $extensions
 	 */
-	public function __construct(private array $extensions)
+	public function __construct(array $extensions)
 	{
+		$this->extensions = array_values($extensions);
 	}
 
 	public function getAll(): array

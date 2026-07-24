@@ -1,7 +1,16 @@
 {
 	"name": "phpstan/result-cache-package-update-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "./logger",
+			"options": {
+				"symlink": false
+			}
+		}
+	],
 	"require": {
-		"psr/log": "^3.0"
+		"test/logger": "*"
 	},
 	"autoload": {
 		"classmap": ["src"]

@@ -1,0 +1,5 @@
+--- a/logger/composer.json
++++ b/logger/composer.json
+@@ -1 +1 @@
+-{ "name": "test/logger", "version": "1.0.0", "autoload": { "classmap": ["src"] } }
++{ "name": "test/logger", "version": "2.0.0", "autoload": { "classmap": ["src"] } }

@@ -2,12 +2,12 @@
 
 namespace ResultCachePackageUpdateE2E;
 
-use Psr\Log\LoggerInterface;
+use Test\Logger\Logger;
 
 class Foo
 {
 
-	public function __construct(private LoggerInterface $logger)
+	public function __construct(private Logger $logger)
 	{
 	}
 

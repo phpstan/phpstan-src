@@ -47,6 +47,9 @@ final class OutputBufferingDynamicReturnTypeExtension implements DynamicFunction
 
 		$outputBufferLevelType = $scope->getType(new FuncCall(new Name('ob_get_level'), []));
 		if (IntegerRangeType::createAllGreaterThanOrEqualTo(1)->isSuperTypeOf($outputBufferLevelType)->yes()) {
+			// checking error state return values of ob_* functions is essentially useless
+			// as this usually means that your system is out of memory and your process is going to die anyway.
+			// that's why error states oftentimes are not checked.
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 

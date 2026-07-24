@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use Nette\DI\Container;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
@@ -13,7 +12,7 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
-use PHPStan\DependencyInjection\Nette\NetteContainer;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -771,7 +770,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRuleRegistry([]),
-			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
+			new DirectExtensionsCollection([]),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory(
 				self::createReflectionProvider(),
@@ -848,7 +847,7 @@ class AnalyserTest extends PHPStanTestCase
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new PackageDependencyResolver([], $fileHelper),
-			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
+			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 			false,

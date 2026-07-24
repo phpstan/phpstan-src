@@ -9,7 +9,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
-use PHPStan\Analyser\IgnoreErrorExtensionProvider;
+use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -19,6 +19,7 @@ use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -138,7 +139,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
 				self::getContainer()->getByType(PackageDependencyResolver::class),
-				new IgnoreErrorExtensionProvider(self::getContainer()),
+				new LazyExtensionsCollection(self::getContainer(), IgnoreErrorExtension::class),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
@@ -324,7 +325,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 		$finalizer = new AnalyserResultFinalizer(
 			$ruleRegistry,
-			new IgnoreErrorExtensionProvider(self::getContainer()),
+			new LazyExtensionsCollection(self::getContainer(), IgnoreErrorExtension::class),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory($reflectionProvider, self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),

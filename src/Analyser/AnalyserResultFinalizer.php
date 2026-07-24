@@ -6,8 +6,10 @@ use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
@@ -20,9 +22,13 @@ use function sprintf;
 final class AnalyserResultFinalizer
 {
 
+	/**
+	 * @param ExtensionsCollection<IgnoreErrorExtension> $ignoreErrorExtensions
+	 */
 	public function __construct(
 		private RuleRegistry $ruleRegistry,
-		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
+		#[AutowiredExtensions(interface: IgnoreErrorExtension::class)]
+		private ExtensionsCollection $ignoreErrorExtensions,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
@@ -96,7 +102,7 @@ final class AnalyserResultFinalizer
 				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $node);
 
 				if ($error->canBeIgnored()) {
-					foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
+					foreach ($this->ignoreErrorExtensions->getAll() as $ignoreErrorExtension) {
 						if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 							continue 2;
 						}

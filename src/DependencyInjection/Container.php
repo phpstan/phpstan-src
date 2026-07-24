@@ -37,6 +37,18 @@ interface Container
 	public function getServicesByTag(string $tagName): array;
 
 	/**
+	 * All extensions registered under the given extension interface,
+	 * i.e. all services tagged with the tag the interface declares
+	 * with the #[ExtensionInterface] attribute.
+	 *
+	 * @template T of object
+	 * @param class-string<T> $interfaceName
+	 * @return list<T>
+	 * @throws MissingServiceException
+	 */
+	public function getExtensions(string $interfaceName): array;
+
+	/**
 	 * @return mixed[]
 	 */
 	public function getParameters(): array;

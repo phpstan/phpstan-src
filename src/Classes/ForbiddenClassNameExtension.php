@@ -2,6 +2,8 @@
 
 namespace PHPStan\Classes;
 
+use PHPStan\DependencyInjection\ExtensionInterface;
+
 /**
  * This is the extension interface to implement if you want to dynamically
  * add forbidden class prefixes to the ClassForbiddenNameCheck rule.
@@ -21,6 +23,7 @@ namespace PHPStan\Classes;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface ForbiddenClassNameExtension
 {
 

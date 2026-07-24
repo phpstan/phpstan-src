@@ -4,6 +4,7 @@ namespace PHPStan\DependencyInjection\Nette;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionInterfaceTags;
 use PHPStan\DependencyInjection\MissingServiceException;
 use PHPStan\DependencyInjection\ParameterNotFoundException;
 use function array_key_exists;
@@ -22,6 +23,7 @@ final class NetteContainer implements Container
 
 	public function __construct(
 		private readonly \Nette\DI\Container $container,
+		private readonly ExtensionInterfaceTags $extensionInterfaceTags,
 	)
 	{
 	}
@@ -72,6 +74,17 @@ final class NetteContainer implements Container
 	public function getServicesByTag(string $tagName): array
 	{
 		return $this->tagsToServices($this->container->findByTag($tagName));
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $interfaceName
+	 * @return list<T>
+	 */
+	public function getExtensions(string $interfaceName): array
+	{
+		/** @var list<T> */
+		return $this->tagsToServices($this->container->findByTag($this->extensionInterfaceTags->getTag($interfaceName)));
 	}
 
 	/**

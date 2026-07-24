@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\DependencyInjection\ExtensionInterface;
+
 /**
  * This is the extension interface to implement if you want to dynamically
  * mark methods as constructor. As opposed to simply list them in the configuration file.
@@ -18,6 +20,7 @@ namespace PHPStan\Reflection;
  *
  * @api
  */
+#[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface AdditionalConstructorsExtension
 {
 

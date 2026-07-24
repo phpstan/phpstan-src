@@ -4,6 +4,7 @@ namespace PHPStan\DependencyInjection;
 
 use Nette\DI\CompilerExtension;
 use Nette\DI\ContainerBuilder;
+use Nette\DI\Definitions\FactoryDefinition;
 use Nette\DI\Definitions\Reference;
 use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
@@ -18,6 +19,8 @@ use PHPStan\Collectors\RegistryFactory;
 use PHPStan\Rules\LazyRegistry;
 use ReflectionClass;
 use stdClass;
+use function array_key_exists;
+use function count;
 use function explode;
 use function strcasecmp;
 use function strtolower;
@@ -39,6 +42,12 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	{
 		require_once __DIR__ . '/../../vendor/attributes.php';
 		$builder = $this->getContainerBuilder();
+
+		// Bakes the #[ExtensionInterface] mapping into the compiled container
+		// so that Container::getExtensions() does not need vendor/attributes.php at runtime.
+		$builder->addDefinition($this->prefix('extensionInterfaceTags'))
+			->setType(ExtensionInterfaceTags::class)
+			->setArguments([ValidateServiceTagsExtension::getInterfaceTagMapping()]);
 
 		$autowiredParameters = Attributes::findTargetMethodParameters(AutowiredParameter::class);
 		$constructorParameters = [];
@@ -139,6 +148,63 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 				->addTag(RegistryFactory::COLLECTOR_TAG);
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
+		}
+	}
+
+	/**
+	 * Wires #[AutowiredExtensions] constructor parameters.
+	 *
+	 * It has to happen in beforeCompile() and not in loadConfiguration(): services from the NEON
+	 * files are registered by Nette's own ServicesExtension after every other extension's
+	 * loadConfiguration(), so they are not in the builder yet at that point.
+	 *
+	 * @throws NotAnExtensionInterfaceException
+	 */
+	#[Override]
+	public function beforeCompile(): void
+	{
+		require_once __DIR__ . '/../../vendor/attributes.php';
+
+		/** @var array<lowercase-string, non-empty-list<TargetMethodParameter<AutowiredExtensions>>> $constructorParameters */
+		$constructorParameters = [];
+		foreach (Attributes::findTargetMethodParameters(AutowiredExtensions::class) as $parameter) {
+			if (strcasecmp($parameter->method, '__construct') !== 0) {
+				continue;
+			}
+			$constructorParameters[strtolower($parameter->class)][] = $parameter;
+		}
+
+		if (count($constructorParameters) === 0) {
+			return;
+		}
+
+		$mapping = ValidateServiceTagsExtension::getInterfaceTagMapping();
+		$builder = $this->getContainerBuilder();
+
+		foreach ($builder->getDefinitions() as $definition) {
+			if ($definition instanceof FactoryDefinition) {
+				$definition = $definition->getResultDefinition();
+			}
+			if (!$definition instanceof ServiceDefinition) {
+				continue;
+			}
+
+			$className = $definition->getType();
+			if ($className === null) {
+				continue;
+			}
+
+			foreach ($constructorParameters[strtolower($className)] ?? [] as $parameter) {
+				$interface = $parameter->attribute->interface;
+				if (!array_key_exists($interface, $mapping)) {
+					throw new NotAnExtensionInterfaceException($className, $parameter->name, $interface);
+				}
+
+				$definition->setArgument($parameter->name, new Statement(LazyExtensionsCollection::class, [
+					new Reference(Container::class),
+					$interface,
+				]));
+			}
 		}
 	}
 

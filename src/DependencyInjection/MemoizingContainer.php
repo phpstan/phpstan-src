@@ -15,6 +15,9 @@ final class MemoizingContainer implements Container
 	/** @var array<string, mixed> */
 	private array $servicesByTag = [];
 
+	/** @var array<class-string, list<object>> */
+	private array $extensionsByInterface = [];
+
 	public function __construct(
 		#[AutowiredParameter(ref: '@PHPStan\DependencyInjection\Nette\NetteContainer')]
 		private Container $originalContainer,
@@ -45,6 +48,17 @@ final class MemoizingContainer implements Container
 	public function getServicesByTag(string $tagName): array
 	{
 		return $this->servicesByTag[$tagName] ??= $this->originalContainer->getServicesByTag($tagName);
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $interfaceName
+	 * @return list<T>
+	 */
+	public function getExtensions(string $interfaceName): array
+	{
+		/** @var list<T> */
+		return $this->extensionsByInterface[$interfaceName] ??= $this->originalContainer->getExtensions($interfaceName);
 	}
 
 	public function getParameters(): array

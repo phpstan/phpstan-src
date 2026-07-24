@@ -13,6 +13,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function in_array;
 
 /**
@@ -48,7 +49,7 @@ final class OutputBufferingDynamicReturnTypeExtension implements DynamicFunction
 
 		$outputBufferLevelType = $scope->getType(new FuncCall(new Name('ob_get_level'), []));
 		if (IntegerRangeType::createAllGreaterThanOrEqualTo(1)->isSuperTypeOf($outputBufferLevelType)->yes()) {
-			return TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
+			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
 		return $defaultReturnType;

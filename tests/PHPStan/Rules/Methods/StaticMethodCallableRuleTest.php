@@ -105,6 +105,10 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				'Cannot call static method doFoo() on int.',
 				22,
 			],
+			[
+				'Call to an undefined static method StaticMethodCallable\Bar|StaticMethodCallable\Foo::doFoo().',
+				77,
+			],
 		]);
 	}
 

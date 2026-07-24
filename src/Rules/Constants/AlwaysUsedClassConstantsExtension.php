@@ -23,7 +23,7 @@ use PHPStan\Reflection\ClassConstantReflection;
  *
  * @api
  */
-#[ExtensionInterface(tag: AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG)]
+#[ExtensionInterface(tag: 'phpstan.constants.alwaysUsedClassConstantsExtension')]
 interface AlwaysUsedClassConstantsExtension
 {
 

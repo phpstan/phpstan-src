@@ -32,8 +32,6 @@ use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\Tag\TemplateTag;
@@ -86,6 +84,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
@@ -96,6 +95,7 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeResult;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
+use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\UnionType;
 use stdClass;
 use Throwable;
@@ -139,8 +139,8 @@ final class InitializerExprTypeResolver
 		private ConstantResolver $constantResolver,
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private PhpVersion $phpVersion,
-		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
-		private UnaryOperatorTypeSpecifyingExtensionRegistryProvider $unaryOperatorTypeSpecifyingExtensionRegistryProvider,
+		private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
+		private UnaryOperatorTypeSpecifyingExtensionRegistry $unaryOperatorTypeSpecifyingExtensionRegistry,
 		private OversizedArrayBuilder $oversizedArrayBuilder,
 		#[AutowiredParameter]
 		private bool $usePathConstantsAsConstantString,
@@ -1006,7 +1006,7 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\BitwiseAnd($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -1065,7 +1065,7 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\BitwiseOr($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -1114,7 +1114,7 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\BitwiseXor($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -1326,7 +1326,7 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Mod($left, $right), $leftType, $rightType);
 		if ($extensionSpecified !== null) {
 			return $extensionSpecified;
@@ -1770,7 +1770,7 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Pow($left, $right), $leftType, $rightType);
 		if ($extensionSpecified !== null) {
 			return $extensionSpecified;
@@ -1792,7 +1792,7 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\ShiftLeft($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -1857,7 +1857,7 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\ShiftRight($left, $right), $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -2072,7 +2072,7 @@ final class InitializerExprTypeResolver
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistry
 			->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -2581,7 +2581,7 @@ final class InitializerExprTypeResolver
 	{
 		$type = $getTypeCallback($expr);
 
-		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistry
 			->callUnaryOperatorTypeSpecifyingExtensions('+', $type);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -2597,7 +2597,7 @@ final class InitializerExprTypeResolver
 	{
 		$type = $getTypeCallback($expr);
 
-		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistry
 			->callUnaryOperatorTypeSpecifyingExtensions('-', $type);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
@@ -2646,7 +2646,7 @@ final class InitializerExprTypeResolver
 	{
 		$exprType = $getTypeCallback($expr);
 
-		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistry
 			->callUnaryOperatorTypeSpecifyingExtensions('~', $exprType);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;

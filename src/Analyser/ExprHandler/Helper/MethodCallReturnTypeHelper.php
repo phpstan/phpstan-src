@@ -7,8 +7,8 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -19,7 +19,7 @@ final class MethodCallReturnTypeHelper
 {
 
 	public function __construct(
-		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 	)
 	{
 	}
@@ -57,7 +57,7 @@ final class MethodCallReturnTypeHelper
 		$handledClassNames = [];
 		foreach ($allClassNames as $className) {
 			if ($normalizedMethodCall instanceof MethodCall) {
-				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
 						continue;
 					}
@@ -71,7 +71,7 @@ final class MethodCallReturnTypeHelper
 					$handledClassNames[] = $className;
 				}
 			} else {
-				foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
 					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
 						continue;
 					}

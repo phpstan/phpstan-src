@@ -12,6 +12,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Method\MethodCall;
 use PHPStan\Node\Property\PropertyAssign;
@@ -19,7 +20,7 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeUtils;
@@ -36,6 +37,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 
 	/**
+	 * @param ExtensionsCollection<ReadWritePropertiesExtension> $readWritePropertiesExtensions
 	 * @param ClassPropertyNode[] $properties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
@@ -44,7 +46,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 */
 	public function __construct(
 		private ClassLike $class,
-		private ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private ExtensionsCollection $readWritePropertiesExtensions,
 		private array $properties,
 		private array $propertyUsages,
 		private array $methodCalls,
@@ -115,7 +117,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$originalProperties = [];
 		$initialInitializedProperties = [];
 		$initializedProperties = [];
-		$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
+		$extensions = $this->readWritePropertiesExtensions->getAll();
 		$initializedViaExtension = [];
 		foreach ($this->getProperties() as $property) {
 			if ($property->isStatic()) {

@@ -20,7 +20,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
  *
  * @api
  */
-#[ExtensionInterface(tag: AlwaysUsedMethodExtensionProvider::EXTENSION_TAG)]
+#[ExtensionInterface(tag: 'phpstan.methods.alwaysUsedMethodExtension')]
 interface AlwaysUsedMethodExtension
 {
 

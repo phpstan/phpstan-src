@@ -7,11 +7,14 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Type\DynamicMethodThrowTypeExtension;
+use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use ReflectionFunction;
@@ -23,8 +26,15 @@ use function in_array;
 final class MethodThrowPointHelper
 {
 
+	/**
+	 * @param ExtensionsCollection<DynamicMethodThrowTypeExtension> $dynamicMethodThrowTypeExtensions
+	 * @param ExtensionsCollection<DynamicStaticMethodThrowTypeExtension> $dynamicStaticMethodThrowTypeExtensions
+	 */
 	public function __construct(
-		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
+		#[AutowiredExtensions(of: DynamicMethodThrowTypeExtension::class)]
+		private ExtensionsCollection $dynamicMethodThrowTypeExtensions,
+		#[AutowiredExtensions(of: DynamicStaticMethodThrowTypeExtension::class)]
+		private ExtensionsCollection $dynamicStaticMethodThrowTypeExtensions,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -40,7 +50,7 @@ final class MethodThrowPointHelper
 	): ?InternalThrowPoint
 	{
 		if ($normalizedMethodCall instanceof MethodCall) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
+			foreach ($this->dynamicMethodThrowTypeExtensions->getAll() as $extension) {
 				if (!$extension->isMethodSupported($methodReflection)) {
 					continue;
 				}
@@ -53,7 +63,7 @@ final class MethodThrowPointHelper
 				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, false);
 			}
 		} else {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+			foreach ($this->dynamicStaticMethodThrowTypeExtensions->getAll() as $extension) {
 				if (!$extension->isStaticMethodSupported($methodReflection)) {
 					continue;
 				}

@@ -12,9 +12,6 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
-use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
 use PHPStan\Node\DeepNodeCloner;
@@ -24,11 +21,20 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use Symfony\Component\Finder\Finder;
@@ -74,15 +80,21 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			$container->getByType(ClassReflectionFactory::class),
-			$container->getByType(ParameterOutTypeExtensionProvider::class),
+			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
+			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
+			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			self::getParser(),
 			$container->getByType(FileTypeMapper::class),
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),
 			$typeSpecifier,
-			$container->getByType(ReadWritePropertiesExtensionProvider::class),
-			$container->getByType(ParameterClosureThisExtensionProvider::class),
-			$container->getByType(ParameterClosureTypeExtensionProvider::class),
+			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
+			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
+			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
+			$container->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getByType(DeepNodeCloner::class),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),

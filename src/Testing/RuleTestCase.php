@@ -9,7 +9,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
-use PHPStan\Analyser\IgnoreErrorExtensionProvider;
+use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -19,9 +19,7 @@ use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
-use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
@@ -31,11 +29,18 @@ use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
-use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use function array_map;
 use function array_merge;
 use function count;
@@ -100,15 +105,21 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			self::getContainer()->getByType(ClassReflectionFactory::class),
-			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
+			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,
-			$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureThisExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
+			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
+			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
+			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			self::getContainer()->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getByType(DeepNodeCloner::class),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
@@ -138,7 +149,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
 				self::getContainer()->getByType(PackageDependencyResolver::class),
-				new IgnoreErrorExtensionProvider(self::getContainer()),
+				self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
@@ -324,7 +335,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 		$finalizer = new AnalyserResultFinalizer(
 			$ruleRegistry,
-			new IgnoreErrorExtensionProvider(self::getContainer()),
+			self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory($reflectionProvider, self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),

@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -15,6 +15,7 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\ExpressionTypeResolverExtension;
 
 final class DirectInternalScopeFactory implements InternalScopeFactory
 {
@@ -22,12 +23,13 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
+	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
 	 */
 	public function __construct(
 		private Container $container,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
+		private ExtensionsCollection $expressionTypeResolverExtensions,
 		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
@@ -71,7 +73,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
-			$this->expressionTypeResolverExtensionRegistryProvider->getRegistry(),
+			$this->expressionTypeResolverExtensions,
 			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
@@ -106,7 +108,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->container,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
-			$this->expressionTypeResolverExtensionRegistryProvider,
+			$this->expressionTypeResolverExtensions,
 			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
@@ -126,7 +128,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->container,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
-			$this->expressionTypeResolverExtensionRegistryProvider,
+			$this->expressionTypeResolverExtensions,
 			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,

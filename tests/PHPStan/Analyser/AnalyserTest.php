@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use Nette\DI\Container;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
@@ -13,10 +12,7 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
-use PHPStan\DependencyInjection\Nette\NetteContainer;
-use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
@@ -26,9 +22,18 @@ use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function array_merge;
@@ -771,7 +776,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRuleRegistry([]),
-			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
+			new DirectExtensionsCollection([]),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory(
 				self::createReflectionProvider(),
@@ -816,15 +821,21 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			$container->getByType(ClassReflectionFactory::class),
-			$container->getByType(ParameterOutTypeExtensionProvider::class),
+			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
+			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
+			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$this->getParser(),
 			$fileTypeMapper,
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
-			$container->getByType(ReadWritePropertiesExtensionProvider::class),
-			$container->getByType(ParameterClosureThisExtensionProvider::class),
-			$container->getByType(ParameterClosureTypeExtensionProvider::class),
+			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
+			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
+			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
+			$container->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getByType(DeepNodeCloner::class),
 			false,
@@ -848,7 +859,7 @@ class AnalyserTest extends PHPStanTestCase
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new PackageDependencyResolver([], $fileHelper),
-			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
+			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 			false,

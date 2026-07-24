@@ -26,10 +26,10 @@ use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
 use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -42,6 +42,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
+use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
@@ -71,10 +73,14 @@ use function sprintf;
 final class NewHandler implements ExprHandler
 {
 
+	/**
+	 * @param ExtensionsCollection<DynamicStaticMethodThrowTypeExtension> $dynamicStaticMethodThrowTypeExtensions
+	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
-		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		#[AutowiredExtensions(of: DynamicStaticMethodThrowTypeExtension::class)]
+		private ExtensionsCollection $dynamicStaticMethodThrowTypeExtensions,
+		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
@@ -303,7 +309,7 @@ final class NewHandler implements ExprHandler
 		$methodCall = new StaticCall($className, $constructorReflection->getName(), $args);
 		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+			foreach ($this->dynamicStaticMethodThrowTypeExtensions->getAll() as $extension) {
 				if (!$extension->isStaticMethodSupported($constructorReflection)) {
 					continue;
 				}
@@ -401,7 +407,7 @@ final class NewHandler implements ExprHandler
 		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 
 		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
 				if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
 					continue;
 				}

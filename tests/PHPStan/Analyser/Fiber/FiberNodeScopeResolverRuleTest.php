@@ -6,21 +6,27 @@ use PhpParser\Node;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\IdentifierRuleError;
-use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -119,15 +125,21 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			self::getContainer()->getByType(ClassReflectionFactory::class),
-			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
+			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,
-			$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureThisExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
+			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
+			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
+			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			self::getContainer()->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getByType(DeepNodeCloner::class),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),

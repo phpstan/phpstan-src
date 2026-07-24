@@ -4,10 +4,12 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use function sprintf;
 
@@ -18,8 +20,12 @@ use function sprintf;
 final class TooWidePropertyTypeRule implements Rule
 {
 
+	/**
+	 * @param ExtensionsCollection<ReadWritePropertiesExtension> $extensions
+	 */
 	public function __construct(
-		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
+		private ExtensionsCollection $extensions,
 		private TooWideTypeCheck $check,
 	)
 	{
@@ -52,7 +58,7 @@ final class TooWidePropertyTypeRule implements Rule
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyName);
 
-			foreach ($this->extensionProvider->getExtensions() as $extension) {
+			foreach ($this->extensions->getAll() as $extension) {
 				if ($extension->isAlwaysRead($propertyReflection, $propertyName)) {
 					continue 2;
 				}

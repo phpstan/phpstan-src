@@ -2,9 +2,9 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
-use PHPStan\Rules\Methods\DirectAlwaysUsedMethodExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -18,7 +18,7 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UnusedPrivateMethodRule(
-			new DirectAlwaysUsedMethodExtensionProvider([
+			new DirectExtensionsCollection([
 				new class() implements AlwaysUsedMethodExtension {
 
 					public function isAlwaysUsed(MethodReflection $methodReflection): bool

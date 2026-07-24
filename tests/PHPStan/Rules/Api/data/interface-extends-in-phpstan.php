@@ -2,10 +2,10 @@
 
 namespace PHPStan\InterfaceExtends;
 
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 
-interface Foo extends DynamicThrowTypeExtensionProvider
+interface Foo extends ReflectionProviderProvider
 {
 
 }

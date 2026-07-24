@@ -32,6 +32,18 @@ interface Container
 	public function findServiceNamesByType(string $className): array;
 
 	/**
+	 * Returns a lazy collection of all registered extensions implementing the given extension interface.
+	 *
+	 * The interface must be marked with the #[ExtensionInterface] attribute.
+	 *
+	 * @template T of object
+	 * @param class-string<T> $extensionInterfaceName
+	 * @return ExtensionsCollection<T>
+	 * @throws MissingServiceException
+	 */
+	public function getExtensionsCollection(string $extensionInterfaceName): ExtensionsCollection;
+
+	/**
 	 * @return mixed[]
 	 */
 	public function getServicesByTag(string $tagName): array;

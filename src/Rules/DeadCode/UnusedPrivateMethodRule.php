@@ -5,10 +5,12 @@ namespace PHPStan\Rules\DeadCode;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Rules\Methods\AlwaysUsedMethodExtensionProvider;
+use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -25,7 +27,13 @@ use function strtolower;
 final class UnusedPrivateMethodRule implements Rule
 {
 
-	public function __construct(private AlwaysUsedMethodExtensionProvider $extensionProvider)
+	/**
+	 * @param ExtensionsCollection<AlwaysUsedMethodExtension> $extensions
+	 */
+	public function __construct(
+		#[AutowiredExtensions(of: AlwaysUsedMethodExtension::class)]
+		private ExtensionsCollection $extensions,
+	)
 	{
 	}
 
@@ -63,7 +71,7 @@ final class UnusedPrivateMethodRule implements Rule
 			}
 
 			$methodReflection = $classReflection->getNativeMethod($methodName);
-			foreach ($this->extensionProvider->getExtensions() as $extension) {
+			foreach ($this->extensions->getAll() as $extension) {
 				if ($extension->isAlwaysUsed($methodReflection)) {
 					continue 2;
 				}

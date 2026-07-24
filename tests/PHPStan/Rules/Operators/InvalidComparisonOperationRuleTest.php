@@ -2,10 +2,10 @@
 
 namespace PHPStan\Rules\Operators;
 
-use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -29,7 +29,7 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 				checkBenevolentUnionTypes: false,
 				discoveringSymbolsTip: true,
 			),
-			$this->getContainer()->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
+			$this->getContainer()->getByType(OperatorTypeSpecifyingExtensionRegistry::class),
 			checkExtensionsForComparisonOperators: true,
 		);
 	}

@@ -3,18 +3,23 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr;
+use PHPStan\DependencyInjection\AutowiredExtensions;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use function array_filter;
 use function array_values;
 use function count;
 
+#[AutowiredService]
 final class OperatorTypeSpecifyingExtensionRegistry
 {
 
 	/**
-	 * @param OperatorTypeSpecifyingExtension[] $extensions
+	 * @param ExtensionsCollection<OperatorTypeSpecifyingExtension> $extensions
 	 */
 	public function __construct(
-		private array $extensions,
+		#[AutowiredExtensions(of: OperatorTypeSpecifyingExtension::class)]
+		private ExtensionsCollection $extensions,
 	)
 	{
 	}
@@ -24,7 +29,7 @@ final class OperatorTypeSpecifyingExtensionRegistry
 	 */
 	private function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
 	{
-		return array_values(array_filter($this->extensions, static fn (OperatorTypeSpecifyingExtension $extension): bool => $extension->isOperatorSupported($operator, $leftType, $rightType)));
+		return array_values(array_filter($this->extensions->getAll(), static fn (OperatorTypeSpecifyingExtension $extension): bool => $extension->isOperatorSupported($operator, $leftType, $rightType)));
 	}
 
 	public function callOperatorTypeSpecifyingExtensions(Expr\BinaryOp $expr, Type $leftType, Type $rightType): ?Type

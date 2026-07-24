@@ -23,7 +23,7 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
  *
  * @api
  */
-#[ExtensionInterface(tag: ReadWritePropertiesExtensionProvider::EXTENSION_TAG)]
+#[ExtensionInterface(tag: 'phpstan.properties.readWriteExtension')]
 interface ReadWritePropertiesExtension
 {
 

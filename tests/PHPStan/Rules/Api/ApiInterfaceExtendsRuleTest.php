@@ -31,7 +31,7 @@ class ApiInterfaceExtendsRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/interface-extends-out-of-phpstan.php'], [
 			[
-				'Extending PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
+				'Extending PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
 				10,
 				$tip,
 			],

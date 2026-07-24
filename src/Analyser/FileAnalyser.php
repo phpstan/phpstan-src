@@ -11,8 +11,10 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
@@ -51,6 +53,9 @@ final class FileAnalyser
 	/** @var array<string, Error> */
 	private array $filteredPhpErrors = [];
 
+	/**
+	 * @param ExtensionsCollection<IgnoreErrorExtension> $ignoreErrorExtensions
+	 */
 	public function __construct(
 		private ScopeFactory $scopeFactory,
 		#[AutowiredParameter(ref: '@' . NodeScopeResolver::class)]
@@ -59,7 +64,8 @@ final class FileAnalyser
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
 		private PackageDependencyResolver $packageDependencyResolver,
-		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
+		#[AutowiredExtensions(of: IgnoreErrorExtension::class)]
+		private ExtensionsCollection $ignoreErrorExtensions,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
@@ -111,7 +117,7 @@ final class FileAnalyser
 					$collectorRegistry,
 					$outerNodeCallback,
 					$parserNodes,
-					$this->ignoreErrorExtensionProvider->getExtensions(),
+					$this->ignoreErrorExtensions->getAll(),
 					$this->parser,
 					$this->dependencyResolver,
 					$this->packageDependencyResolver,

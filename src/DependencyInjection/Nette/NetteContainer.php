@@ -2,13 +2,16 @@
 
 namespace PHPStan\DependencyInjection\Nette;
 
+use PHPStan\DependencyInjection\AutowiredExtensionsExtension;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\MissingServiceException;
 use PHPStan\DependencyInjection\ParameterNotFoundException;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function sprintf;
 
 /**
  * @internal
@@ -64,6 +67,22 @@ final class NetteContainer implements Container
 	public function findServiceNamesByType(string $className): array
 	{
 		return $this->container->findByType($className);
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $extensionInterfaceName
+	 * @return ExtensionsCollection<T>
+	 */
+	public function getExtensionsCollection(string $extensionInterfaceName): ExtensionsCollection
+	{
+		$serviceName = AutowiredExtensionsExtension::getCollectionServiceName($extensionInterfaceName);
+		if (!$this->container->hasService($serviceName)) {
+			throw new MissingServiceException(sprintf('%s is not an extension interface marked with the #[ExtensionInterface] attribute.', $extensionInterfaceName));
+		}
+
+		/** @var ExtensionsCollection<T> */
+		return $this->getService($serviceName);
 	}
 
 	/**

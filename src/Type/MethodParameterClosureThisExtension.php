@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
-use PHPStan\DependencyInjection\Type\LazyParameterClosureThisExtensionProvider;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 
@@ -25,7 +24,7 @@ use PHPStan\Reflection\ParameterReflection;
  *
  * @api
  */
-#[ExtensionInterface(tag: LazyParameterClosureThisExtensionProvider::METHOD_TAG)]
+#[ExtensionInterface(tag: 'phpstan.methodParameterClosureThisExtension')]
 interface MethodParameterClosureThisExtension
 {
 

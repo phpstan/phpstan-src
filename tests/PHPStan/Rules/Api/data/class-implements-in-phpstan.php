@@ -4,15 +4,15 @@ namespace PHPStan\ClassImplements;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 
-class Foo implements DynamicThrowTypeExtensionProvider
+class Foo implements ReflectionProviderProvider
 {
-	public function getDynamicFunctionThrowTypeExtensions(): array
+	public function getReflectionProvider(): \PHPStan\Reflection\ReflectionProvider
 	{
-		// TODO: Implement getDynamicFunctionThrowTypeExtensions() method.
+		// TODO: Implement getReflectionProvider() method.
 	}
 
 	public function getDynamicMethodThrowTypeExtensions(): array

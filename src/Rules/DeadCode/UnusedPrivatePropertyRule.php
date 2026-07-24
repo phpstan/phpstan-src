@@ -4,14 +4,16 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -32,11 +34,13 @@ final class UnusedPrivatePropertyRule implements Rule
 {
 
 	/**
+	 * @param ExtensionsCollection<ReadWritePropertiesExtension> $extensions
 	 * @param string[] $alwaysWrittenTags
 	 * @param string[] $alwaysReadTags
 	 */
 	public function __construct(
-		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
+		private ExtensionsCollection $extensions,
 		#[AutowiredParameter(ref: '%propertyAlwaysWrittenTags%')]
 		private array $alwaysWrittenTags,
 		#[AutowiredParameter(ref: '%propertyAlwaysReadTags%')]
@@ -99,7 +103,7 @@ final class UnusedPrivatePropertyRule implements Rule
 
 				$propertyReflection = $classReflection->getNativeProperty($propertyName);
 
-				foreach ($this->extensionProvider->getExtensions() as $extension) {
+				foreach ($this->extensions->getAll() as $extension) {
 					if ($alwaysRead && $alwaysWritten) {
 						break;
 					}

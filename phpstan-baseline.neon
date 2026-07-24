@@ -133,7 +133,7 @@ parameters:
 			path: src/Collectors/Collector.php
 
 		-
-			rawMessage: 'Method PHPStan\Collectors\Registry::__construct() has parameter $collectors with generic interface PHPStan\Collectors\Collector but does not specify its types: TNodeType, TValue'
+			rawMessage: 'Method PHPStan\Collectors\Registry::getCollectorsByNodeType() return type with generic interface PHPStan\Collectors\Collector does not specify its types: TNodeType, TValue'
 			identifier: missingType.generics
 			count: 1
 			path: src/Collectors/Registry.php
@@ -145,7 +145,7 @@ parameters:
 			path: src/Collectors/Registry.php
 
 		-
-			rawMessage: 'Property PHPStan\Collectors\Registry::$collectors with generic interface PHPStan\Collectors\Collector does not specify its types: TNodeType, TValue'
+			rawMessage: 'Property PHPStan\Collectors\Registry::$collectorsByNodeType with generic interface PHPStan\Collectors\Collector does not specify its types: TNodeType, TValue'
 			identifier: missingType.generics
 			count: 1
 			path: src/Collectors/Registry.php
@@ -688,7 +688,7 @@ parameters:
 			path: src/Rules/LazyRegistry.php
 
 		-
-			rawMessage: 'Method PHPStan\Rules\LazyRegistry::getRulesFromContainer() return type with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
+			rawMessage: 'Method PHPStan\Rules\LazyRegistry::getRulesByNodeType() return type with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
 			identifier: missingType.generics
 			count: 1
 			path: src/Rules/LazyRegistry.php
@@ -700,7 +700,7 @@ parameters:
 			path: src/Rules/LazyRegistry.php
 
 		-
-			rawMessage: 'Property PHPStan\Rules\LazyRegistry::$rules with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
+			rawMessage: 'Property PHPStan\Rules\LazyRegistry::$rulesByNodeType with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
 			identifier: missingType.generics
 			count: 1
 			path: src/Rules/LazyRegistry.php

@@ -2,10 +2,13 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -35,9 +38,9 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck(new LazyExtensionsCollection(self::getContainer(), ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
-					self::getContainer(),
+					new LazyExtensionsCollection(self::getContainer(), RestrictedClassNameUsageExtension::class),
 				),
 				new PhpVersion(PHP_VERSION_ID),
 				discoveringSymbolsTip: true,

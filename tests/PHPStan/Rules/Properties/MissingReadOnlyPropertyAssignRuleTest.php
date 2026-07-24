@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
+use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
@@ -20,7 +22,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	{
 		return new MissingReadOnlyPropertyAssignRule(
 			new ConstructorsHelper(
-				self::getContainer(),
+				new LazyExtensionsCollection(self::getContainer(), AdditionalConstructorsExtension::class),
 				[
 					'MissingReadOnlyPropertyAssign\\TestCase::setUp',
 					'Bug10523\\Controller::init',

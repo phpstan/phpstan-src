@@ -2,9 +2,10 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use ReflectionException;
 use function array_key_exists;
 use function explode;
@@ -18,9 +19,11 @@ final class ConstructorsHelper
 
 	/**
 	 * @param list<string> $additionalConstructors
+	 * @param ExtensionsCollection<AdditionalConstructorsExtension> $extensions
 	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(interface: AdditionalConstructorsExtension::class)]
+		private ExtensionsCollection $extensions,
 		#[AutowiredParameter]
 		private array $additionalConstructors,
 	)
@@ -40,9 +43,7 @@ final class ConstructorsHelper
 			$constructors[] = $classReflection->getConstructor()->getName();
 		}
 
-		/** @var AdditionalConstructorsExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(AdditionalConstructorsExtension::EXTENSION_TAG);
-		foreach ($extensions as $extension) {
+		foreach ($this->extensions->getAll() as $extension) {
 			$extensionConstructors = $extension->getAdditionalConstructors($classReflection);
 			foreach ($extensionConstructors as $extensionConstructor) {
 				$constructors[] = $extensionConstructor;

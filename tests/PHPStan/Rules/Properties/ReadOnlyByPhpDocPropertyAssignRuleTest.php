@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
+use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -18,7 +20,7 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		return new ReadOnlyByPhpDocPropertyAssignRule(
 			new PropertyReflectionFinder(),
 			new ConstructorsHelper(
-				self::getContainer(),
+				new LazyExtensionsCollection(self::getContainer(), AdditionalConstructorsExtension::class),
 				[
 					'ReadonlyPropertyAssignPhpDoc\\TestCase::setUp',
 				],

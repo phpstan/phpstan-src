@@ -880,7 +880,7 @@ final class AnalyseCommand extends Command
 		$phpstanDiagnoseExtension->print($errorOutput, $processedFiles);
 
 		/** @var DiagnoseExtension $extension */
-		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {
+		foreach ($container->getExtensions(DiagnoseExtension::class) as $extension) {
 			$extension->print($errorOutput);
 		}
 	}

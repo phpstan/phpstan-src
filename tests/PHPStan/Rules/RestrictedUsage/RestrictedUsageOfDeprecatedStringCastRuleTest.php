@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\RestrictedUsage;
 
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,7 +15,7 @@ class RestrictedUsageOfDeprecatedStringCastRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RestrictedUsageOfDeprecatedStringCastRule(
-			self::getContainer(),
+			new LazyExtensionsCollection(self::getContainer(), RestrictedMethodUsageExtension::class),
 			self::createReflectionProvider(),
 		);
 	}

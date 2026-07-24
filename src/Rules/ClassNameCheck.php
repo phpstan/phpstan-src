@@ -3,8 +3,9 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 
@@ -12,14 +13,15 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 final class ClassNameCheck
 {
 
-	/** @var RestrictedClassNameUsageExtension[] $extensions */
-	private ?array $extensions = null;
-
+	/**
+	 * @param ExtensionsCollection<RestrictedClassNameUsageExtension> $extensions
+	 */
 	public function __construct(
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		private ClassForbiddenNameCheck $classForbiddenNameCheck,
 		private ReflectionProvider $reflectionProvider,
-		private Container $container,
+		#[AutowiredExtensions(interface: RestrictedClassNameUsageExtension::class)]
+		private ExtensionsCollection $extensions,
 	)
 	{
 	}
@@ -50,8 +52,7 @@ final class ClassNameCheck
 			return $errors;
 		}
 
-		/** @var RestrictedClassNameUsageExtension[] $extensions */
-		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
+		$extensions = $this->extensions->getAll();
 		if ($extensions === []) {
 			return $errors;
 		}

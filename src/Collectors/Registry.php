@@ -3,28 +3,32 @@
 namespace PHPStan\Collectors;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use function class_implements;
 use function class_parents;
 
-#[AutowiredService(factory: '@PHPStan\Collectors\RegistryFactory::create')]
+#[AutowiredService]
 final class Registry
 {
 
-	/** @var Collector[][] */
-	private array $collectors = [];
+	public const COLLECTOR_TAG = 'phpstan.collector';
+
+	/** @var Collector[][]|null */
+	private ?array $collectorsByNodeType = null;
 
 	/** @var Collector[][] */
 	private array $cache = [];
 
 	/**
-	 * @param Collector[] $collectors
+	 * @param ExtensionsCollection<Collector<Node, mixed>> $collectors
 	 */
-	public function __construct(array $collectors)
+	public function __construct(
+		#[AutowiredExtensions(interface: Collector::class)]
+		private ExtensionsCollection $collectors,
+	)
 	{
-		foreach ($collectors as $collector) {
-			$this->collectors[$collector->getNodeType()][] = $collector;
-		}
 	}
 
 	/**
@@ -38,8 +42,9 @@ final class Registry
 			$parentNodeTypes = [$nodeType] + class_parents($nodeType) + class_implements($nodeType);
 
 			$collectors = [];
+			$collectorsFromContainer = $this->getCollectorsByNodeType();
 			foreach ($parentNodeTypes as $parentNodeType) {
-				foreach ($this->collectors[$parentNodeType] ?? [] as $collector) {
+				foreach ($collectorsFromContainer[$parentNodeType] ?? [] as $collector) {
 					$collectors[] = $collector;
 				}
 			}
@@ -53,6 +58,23 @@ final class Registry
 		$selectedCollectors = $this->cache[$nodeType];
 
 		return $selectedCollectors;
+	}
+
+	/**
+	 * @return Collector[][]
+	 */
+	private function getCollectorsByNodeType(): array
+	{
+		if ($this->collectorsByNodeType !== null) {
+			return $this->collectorsByNodeType;
+		}
+
+		$collectors = [];
+		foreach ($this->collectors->getAll() as $collector) {
+			$collectors[$collector->getNodeType()][] = $collector;
+		}
+
+		return $this->collectorsByNodeType = $collectors;
 	}
 
 }

@@ -137,7 +137,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 	private function getAnalyser(DirectRuleRegistry $ruleRegistry): Analyser
 	{
 		if ($this->analyser === null) {
-			$collectorRegistry = new CollectorRegistry($this->getCollectors());
+			$collectorRegistry = new CollectorRegistry(new DirectExtensionsCollection($this->getCollectors()));
 
 			$nodeScopeResolver = $this->createNodeScopeResolver();
 

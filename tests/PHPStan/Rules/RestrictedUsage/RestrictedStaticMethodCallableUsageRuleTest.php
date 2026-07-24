@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\RestrictedUsage;
 
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -17,7 +18,7 @@ class RestrictedStaticMethodCallableUsageRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		return new RestrictedStaticMethodCallableUsageRule(
-			self::getContainer(),
+			new LazyExtensionsCollection(self::getContainer(), RestrictedMethodUsageExtension::class),
 			$reflectionProvider,
 			new RuleLevelHelper(
 				$reflectionProvider,

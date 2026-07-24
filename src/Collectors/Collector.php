@@ -24,7 +24,7 @@ use PHPStan\DependencyInjection\ExtensionInterface;
  * @template-covariant TNodeType of Node
  * @template-covariant TValue
  */
-#[ExtensionInterface(tag: RegistryFactory::COLLECTOR_TAG)]
+#[ExtensionInterface(tag: Registry::COLLECTOR_TAG)]
 interface Collector
 {
 

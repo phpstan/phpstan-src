@@ -4,6 +4,7 @@ namespace PHPStan\Collectors;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Testing\PHPStanTestCase;
 
 class RegistryTest extends PHPStanTestCase
@@ -13,9 +14,9 @@ class RegistryTest extends PHPStanTestCase
 	{
 		$collector = new DummyCollector();
 
-		$registry = new Registry([
+		$registry = new Registry(new DirectExtensionsCollection([
 			$collector,
-		]);
+		]));
 
 		$collectors = $registry->getCollectors(Node\Expr\FuncCall::class);
 		$this->assertCount(1, $collectors);
@@ -29,10 +30,10 @@ class RegistryTest extends PHPStanTestCase
 		$fooCollector = new UniversalCollector(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Foo error']);
 		$barCollector = new UniversalCollector(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Bar error']);
 
-		$registry = new Registry([
+		$registry = new Registry(new DirectExtensionsCollection([
 			$fooCollector,
 			$barCollector,
-		]);
+		]));
 
 		$collectors = $registry->getCollectors(Node\Expr\FuncCall::class);
 		$this->assertCount(2, $collectors);

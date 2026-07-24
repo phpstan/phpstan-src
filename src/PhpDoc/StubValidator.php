@@ -7,6 +7,7 @@ use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -59,7 +60,7 @@ final class StubValidator
 			$analysedFiles = array_fill_keys($stubFiles, true);
 
 			$ruleRegistry = new DirectRuleRegistry($container->getServicesByTag(self::SERVICE_RULE_TAG));
-			$collectorRegistry = new CollectorRegistry([]);
+			$collectorRegistry = new CollectorRegistry(new DirectExtensionsCollection([]));
 
 			$errors = [];
 			foreach ($stubFiles as $stubFile) {

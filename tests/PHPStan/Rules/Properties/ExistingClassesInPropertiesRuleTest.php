@@ -2,11 +2,14 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -28,9 +31,9 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 			$reflectionProvider,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck($container),
+				new ClassForbiddenNameCheck(new LazyExtensionsCollection($container, ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
-				$container,
+				new LazyExtensionsCollection($container, RestrictedClassNameUsageExtension::class),
 			),
 			new UnresolvableTypeHelper(),
 			new PhpVersion($this->phpVersion),

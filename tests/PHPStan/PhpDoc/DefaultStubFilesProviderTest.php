@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use Override;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use function dirname;
@@ -64,7 +65,7 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 	 */
 	private function createDefaultStubFilesProvider(array $stubFiles): DefaultStubFilesProvider
 	{
-		return new DefaultStubFilesProvider($this->getContainer(), new FileHelper(__DIR__), $stubFiles, [$this->currentWorkingDirectory]);
+		return new DefaultStubFilesProvider(new LazyExtensionsCollection($this->getContainer(), StubFilesExtension::class), new FileHelper(__DIR__), $stubFiles, [$this->currentWorkingDirectory]);
 	}
 
 }

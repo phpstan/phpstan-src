@@ -2,9 +2,12 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -22,9 +25,9 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 		return new ExistingClassesInInterfaceExtendsRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck($container),
+				new ClassForbiddenNameCheck(new LazyExtensionsCollection($container, ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
-				$container,
+				new LazyExtensionsCollection($container, RestrictedClassNameUsageExtension::class),
 			),
 			$reflectionProvider,
 			true,

@@ -102,7 +102,7 @@ final class DiagnoseCommand extends Command
 		$phpstanDiagnoseExtension->print($output, []);
 
 		/** @var DiagnoseExtension $extension */
-		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {
+		foreach ($container->getExtensions(DiagnoseExtension::class) as $extension) {
 			$extension->print($output);
 		}
 

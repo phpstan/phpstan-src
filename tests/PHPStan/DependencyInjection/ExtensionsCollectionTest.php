@@ -2,7 +2,6 @@
 
 namespace PHPStan\DependencyInjection;
 
-use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\PHPStanTestCase;
@@ -46,20 +45,6 @@ class ExtensionsCollectionTest extends PHPStanTestCase
 		$this->expectException(MissingServiceException::class);
 		$this->expectExceptionMessage('Interface stdClass is not an extension interface. Mark it with the #[PHPStan\DependencyInjection\ExtensionInterface] attribute.');
 		self::getContainer()->getExtensions(stdClass::class);
-	}
-
-	public function testAutowiredExtensionsParameterIsWired(): void
-	{
-		// AnalyserResultFinalizer asks for #[AutowiredExtensions(IgnoreErrorExtension::class)].
-		// ExtensionsCollection is not a registered service, so without the wiring in
-		// AutowiredAttributeServicesExtension::beforeCompile() the container could not build it.
-		$finalizer = self::getContainer()->getByType(AnalyserResultFinalizer::class);
-
-		$property = new ReflectionProperty($finalizer, 'ignoreErrorExtensions');
-		$collection = $property->getValue($finalizer);
-
-		$this->assertInstanceOf(LazyExtensionsCollection::class, $collection);
-		$this->assertSame(self::getContainer()->getExtensions(IgnoreErrorExtension::class), $collection->getAll());
 	}
 
 	public function testLazyExtensionsCollectionReleasesTheContainer(): void

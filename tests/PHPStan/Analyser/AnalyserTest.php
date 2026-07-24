@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Lexer;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
@@ -806,7 +807,7 @@ class AnalyserTest extends PHPStanTestCase
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
 		]);
-		$collectorRegistry = new CollectorRegistry([]);
+		$collectorRegistry = new CollectorRegistry(new DirectExtensionsCollection([]));
 
 		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
@@ -855,7 +856,7 @@ class AnalyserTest extends PHPStanTestCase
 			new RichParser(
 				new Php7($lexer),
 				new NameResolver(),
-				$container,
+				new LazyExtensionsCollection($container, NodeVisitor::class),
 				new IgnoreLexer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),

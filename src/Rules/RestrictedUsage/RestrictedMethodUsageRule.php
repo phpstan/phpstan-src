@@ -6,8 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,11 +20,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class RestrictedMethodUsageRule implements Rule
 {
 
-	/** @var RestrictedMethodUsageExtension[] $extensions */
-	private ?array $extensions = null;
-
+	/**
+	 * @param ExtensionsCollection<RestrictedMethodUsageExtension> $extensions
+	 */
 	public function __construct(
-		private Container $container,
+		#[AutowiredExtensions(interface: RestrictedMethodUsageExtension::class)]
+		private ExtensionsCollection $extensions,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -43,8 +45,7 @@ final class RestrictedMethodUsageRule implements Rule
 			return [];
 		}
 
-		/** @var RestrictedMethodUsageExtension[] $extensions */
-		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
+		$extensions = $this->extensions->getAll();
 		if ($extensions === []) {
 			return [];
 		}

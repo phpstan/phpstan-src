@@ -15,13 +15,14 @@ use Nette\Utils\Strings;
 use olvlvl\ComposerAttributeCollector\Attributes;
 use olvlvl\ComposerAttributeCollector\TargetMethodParameter;
 use Override;
-use PHPStan\Collectors\RegistryFactory;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Rules\LazyRegistry;
 use ReflectionClass;
 use stdClass;
 use function array_key_exists;
 use function count;
 use function explode;
+use function is_string;
 use function strcasecmp;
 use function strtolower;
 use function substr;
@@ -145,7 +146,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			$definition = $builder->addDefinition(null)
 				->setFactory($class->name)
 				->setAutowired($class->name)
-				->addTag(RegistryFactory::COLLECTOR_TAG);
+				->addTag(CollectorRegistry::COLLECTOR_TAG);
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
@@ -191,6 +192,14 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			$className = $definition->getType();
 			if ($className === null) {
+				continue;
+			}
+
+			// Only definitions that instantiate the class themselves take its constructor
+			// arguments. Aliases (factory: @otherService) and static factories delegate
+			// elsewhere and would turn the argument into an unknown named parameter.
+			$entity = $definition->getCreator()->getEntity();
+			if (!is_string($entity) || strcasecmp($entity, $className) !== 0) {
 				continue;
 			}
 

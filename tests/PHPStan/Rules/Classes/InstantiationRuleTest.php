@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -9,6 +11,8 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -37,7 +41,7 @@ class InstantiationRuleTest extends RuleTestCase
 			discoveringSymbolsTip: true,
 		);
 		return new InstantiationRule(
-			$container,
+			new LazyExtensionsCollection($container, RestrictedMethodUsageExtension::class),
 			$reflectionProvider,
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
@@ -52,9 +56,9 @@ class InstantiationRuleTest extends RuleTestCase
 			),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
-				new ClassForbiddenNameCheck($container),
+				new ClassForbiddenNameCheck(new LazyExtensionsCollection($container, ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
-				$container,
+				new LazyExtensionsCollection($container, RestrictedClassNameUsageExtension::class),
 			),
 			$ruleLevelHelper,
 			new ConsistentConstructorHelper(),

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\EnumCases;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -10,6 +12,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -50,9 +53,9 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: false),
-					new ClassForbiddenNameCheck($container),
+					new ClassForbiddenNameCheck(new LazyExtensionsCollection($container, ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
-					$container,
+					new LazyExtensionsCollection($container, RestrictedClassNameUsageExtension::class),
 				),
 				deprecationRulesInstalled: true,
 			),

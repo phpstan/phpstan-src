@@ -2,12 +2,15 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\LazyExtensionsCollection;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -27,9 +30,9 @@ class PropertyTagTraitRuleTest extends RuleTestCase
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck($container),
+					new ClassForbiddenNameCheck(new LazyExtensionsCollection($container, ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
-					$container,
+					new LazyExtensionsCollection($container, RestrictedClassNameUsageExtension::class),
 				),
 				new GenericObjectTypeCheck(),
 				new MissingTypehintCheck(true, [], true),

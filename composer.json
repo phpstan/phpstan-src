@@ -133,7 +133,6 @@
 				"patches/Stream.patch"
 			],
 			"jetbrains/phpstorm-stubs": [
-				"patches/PDO.patch",
 				"patches/ReflectionProperty.patch",
 				"patches/SessionHandler.patch",
 				"patches/xmlreader.patch",

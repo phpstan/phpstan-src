@@ -3,6 +3,7 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\CompilerExtension;
+use Nette\PhpGenerator\ClassType;
 use olvlvl\ComposerAttributeCollector\Attributes;
 use Override;
 use PhpParser\NodeVisitor;
@@ -50,10 +51,17 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 	}
 
 	/**
+	 * Deliberately runs in afterCompile() rather than beforeCompile(): tags are added by other
+	 * extensions' beforeCompile() - ConditionalTagsExtension, and any extension registered from a
+	 * project config file, which the compiler always processes after PHPStan's own ones - and
+	 * beforeCompile() hooks run in registration order, so validating there would only cover the
+	 * extensions that happen to be registered earlier. Tags added after this point no longer reach
+	 * the generated container, making this the first moment the tag list is complete.
+	 *
 	 * @throws MissingImplementedInterfaceInServiceWithTagException
 	 */
 	#[Override]
-	public function beforeCompile(): void
+	public function afterCompile(ClassType $class): void
 	{
 		$builder = $this->getContainerBuilder();
 		$mapping = self::getInterfaceTagMapping();
@@ -70,12 +78,13 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 			if ($className === null) {
 				continue;
 			}
-			$reflection = new ReflectionClass($className);
+			$reflection = null;
 			foreach (array_keys($definition->getTags()) as $tag) {
 				if (!array_key_exists($tag, $flippedMapping)) {
 					continue;
 				}
 
+				$reflection ??= new ReflectionClass($className);
 				if ($reflection->implementsInterface($flippedMapping[$tag])) {
 					continue;
 				}

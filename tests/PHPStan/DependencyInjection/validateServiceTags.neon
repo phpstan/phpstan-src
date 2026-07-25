@@ -1,6 +1,9 @@
 services:
 	-
+		# not autowired: FileHelper is already a service, and a second autowired one would make
+		# ContainerBuilder::complete() fail with an ambiguity before the tag is ever validated
 		class: PHPStan\File\FileHelper
+		autowired: false
 		arguments:
 			workingDirectory: /tmp
 		tags:

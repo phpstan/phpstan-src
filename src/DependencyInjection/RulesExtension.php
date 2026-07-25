@@ -8,6 +8,7 @@ use Nette\Schema\Schema;
 use Override;
 use PHPStan\Rules\LazyRegistry;
 
+#[ContainerExtension(name: 'rules')]
 final class RulesExtension extends CompilerExtension
 {
 

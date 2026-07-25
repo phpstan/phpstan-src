@@ -13,6 +13,7 @@ use function is_dir;
 use function is_file;
 use function sprintf;
 
+#[ContainerExtension(name: 'validateExcludePaths')]
 final class ValidateExcludePathsExtension extends CompilerExtension
 {
 

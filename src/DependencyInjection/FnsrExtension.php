@@ -9,6 +9,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use function getenv;
 use const PHP_VERSION_ID;
 
+#[ContainerExtension(name: 'fnsr')]
 final class FnsrExtension extends CompilerExtension
 {
 

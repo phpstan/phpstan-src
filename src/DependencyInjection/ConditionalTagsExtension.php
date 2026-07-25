@@ -16,6 +16,7 @@ use function count;
 use function is_array;
 use function sprintf;
 
+#[ContainerExtension(name: 'conditionalTags')]
 final class ConditionalTagsExtension extends CompilerExtension
 {
 

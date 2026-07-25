@@ -1472,7 +1472,7 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$unrolledEndScope = null;
 			$unrolledTotalKeys = null;
-			if ($context->isTopLevel()) {
+			if ($context->shouldRunLoopConvergence()) {
 				$storage = $originalStorage->duplicate();
 
 				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
@@ -1713,7 +1713,7 @@ class NodeScopeResolver
 			}
 			$bodyScope = $condResult->getTruthyScope();
 
-			if ($context->isTopLevel()) {
+			if ($context->shouldRunLoopConvergence()) {
 				$count = 0;
 				do {
 					$prevScope = $bodyScope;
@@ -1806,7 +1806,7 @@ class NodeScopeResolver
 			$impurePoints = [];
 			$originalStorage = $storage;
 
-			if ($context->isTopLevel()) {
+			if ($context->shouldRunLoopConvergence()) {
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($scope);
@@ -1926,7 +1926,7 @@ class NodeScopeResolver
 				}
 			}
 
-			if ($context->isTopLevel()) {
+			if ($context->shouldRunLoopConvergence()) {
 				$count = 0;
 				do {
 					$prevScope = $bodyScope;

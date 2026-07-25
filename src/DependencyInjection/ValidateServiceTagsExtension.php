@@ -16,6 +16,7 @@ use function array_keys;
 use function count;
 use function sprintf;
 
+#[ContainerExtension(name: 'validateServiceTags')]
 final class ValidateServiceTagsExtension extends CompilerExtension
 {
 

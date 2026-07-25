@@ -34,6 +34,7 @@ use function strtolower;
 use function substr;
 use const PREG_SPLIT_DELIM_CAPTURE;
 
+#[ContainerExtension(name: 'autowiredAttributeServices')]
 final class AutowiredAttributeServicesExtension extends CompilerExtension
 {
 

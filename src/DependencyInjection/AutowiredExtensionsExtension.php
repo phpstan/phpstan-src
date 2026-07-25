@@ -25,6 +25,7 @@ use function strtolower;
  *
  * Container::getExtensionsCollection() looks up the same services by name at runtime.
  */
+#[ContainerExtension(name: 'autowiredExtensions')]
 final class AutowiredExtensionsExtension extends CompilerExtension
 {
 

@@ -8,6 +8,7 @@ use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use Override;
 
+#[ContainerExtension(name: 'parametersSchema')]
 final class ParametersSchemaExtension extends CompilerExtension
 {
 

@@ -250,18 +250,6 @@ parameters:
 		- [parameters, pro]
 		- parametersSchema
 
-extensions:
-	rules: PHPStan\DependencyInjection\RulesExtension
-	expandRelativePaths: PHPStan\DependencyInjection\ExpandRelativePathExtension
-	conditionalTags: PHPStan\DependencyInjection\ConditionalTagsExtension
-	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
-	validateIgnoredErrors: PHPStan\DependencyInjection\ValidateIgnoredErrorsExtension
-	validateExcludePaths: PHPStan\DependencyInjection\ValidateExcludePathsExtension
-	autowiredAttributeServices: PHPStan\DependencyInjection\AutowiredAttributeServicesExtension
-	autowiredExtensions: PHPStan\DependencyInjection\AutowiredExtensionsExtension
-	validateServiceTags: PHPStan\DependencyInjection\ValidateServiceTagsExtension
-	fnsr: PHPStan\DependencyInjection\FnsrExtension
-
 autowiredAttributeServices:
 	level: null
 

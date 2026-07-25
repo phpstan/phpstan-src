@@ -48,6 +48,7 @@ use function is_string;
 use function sprintf;
 use const PHP_VERSION_ID;
 
+#[ContainerExtension(name: 'validateIgnoredErrors')]
 final class ValidateIgnoredErrorsExtension extends CompilerExtension
 {
 

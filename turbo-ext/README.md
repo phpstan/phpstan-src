@@ -1,6 +1,6 @@
 # phpstan_turbo — native acceleration extension for PHPStan
 
-**Experimental.** A native extension that reimplements PHPStan's hottest
+Native PHP extension that reimplements PHPStan's hottest
 code paths in C++. It is entirely optional: PHPStan behaves identically
 without it, just slower. With the extension loaded, analysis output is
 bit-for-bit identical — only faster (~25% on PHPStan's own single-threaded

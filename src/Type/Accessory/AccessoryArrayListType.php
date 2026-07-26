@@ -79,11 +79,9 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		$isArray = $type->isArray();
 		$isList = $type->isList();
-		$isListArray = $isArray->and($isList);
 
-		if ($isListArray->yes()) {
+		if ($isList->yes()) {
 			return AcceptsResult::createYes();
 		}
 
@@ -91,7 +89,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($isListArray, []);
+		return new AcceptsResult($isList, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
@@ -104,7 +102,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->isArray()->and($type->isList()), []);
+		return new IsSuperTypeOfResult($type->isList(), []);
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -113,8 +111,15 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($otherType instanceof self) {
+			return new IsSuperTypeOfResult(
+				TrinaryLogic::createYes(),
+				[],
+			);
+		}
+
 		return new IsSuperTypeOfResult(
-			$otherType->isArray()->and($otherType->isList())->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
+			$otherType->isList()->and(TrinaryLogic::createMaybe()),
 			[],
 		);
 	}

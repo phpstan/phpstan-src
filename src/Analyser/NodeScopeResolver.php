@@ -1506,10 +1506,11 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$unrolledEndScope = null;
 			$unrolledTotalKeys = null;
+			$iterateeScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
 			if ($context->isTopLevel()) {
 				$storage = $originalStorage->duplicate();
 
-				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
+				$originalScope = $iterateeScope;
 				$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($stmt, $originalScope, $originalStorage, $context);
 				if ($unrolledResult !== null) {
 					$bodyScope = $unrolledResult['bodyScope'];
@@ -1520,7 +1521,7 @@ class NodeScopeResolver
 					$count = 0;
 					do {
 						$prevScope = $bodyScope;
-						$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
+						$bodyScope = $bodyScope->mergeWith($iterateeScope);
 						$storage = $originalStorage->duplicate();
 						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
 						$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
@@ -1540,7 +1541,7 @@ class NodeScopeResolver
 				}
 			}
 
-			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
+			$bodyScope = $bodyScope->mergeWith($iterateeScope);
 			$storage = $originalStorage;
 			$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;

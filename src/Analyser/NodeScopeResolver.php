@@ -144,6 +144,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
@@ -263,6 +264,8 @@ class NodeScopeResolver
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
+		#[AutowiredParameter(ref: '%featureToggles.narrowForeachBodyNonEmpty%')]
+		private readonly bool $narrowForeachBodyNonEmpty,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithBlock,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
@@ -1511,7 +1514,13 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$unrolledEndScope = null;
 			$unrolledTotalKeys = null;
-			$iterateeScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
+			// The loop body is only entered when the iteratee is non-empty. Under
+			// narrowForeachBodyNonEmpty we narrow it there (list to non-empty-list,
+			// array to non-empty-array) even with polluteScopeWithAlwaysIterableForeach
+			// off; with the toggle off the body scope is unchanged.
+			$iterateeScope = $this->narrowForeachBodyNonEmpty || $this->polluteScopeWithAlwaysIterableForeach
+				? $scope->filterByTruthyValue($arrayComparisonExpr)
+				: $scope;
 			if ($context->isTopLevel()) {
 				$storage = $originalStorage->duplicate();
 
@@ -1699,6 +1708,33 @@ class NodeScopeResolver
 			}
 
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
+
+			$iterateeCertainty = $finalScope->hasExpressionType($stmt->expr);
+			if (
+				$this->narrowForeachBodyNonEmpty
+				&& !$this->polluteScopeWithAlwaysIterableForeach
+				&& !$iterateeCertainty->no()
+				&& !$isIterableAtLeastOnce->yes()
+			) {
+				// With the flag off the after-loop scope must not assume the loop ran, so
+				// undo the body narrowing: restore the iteratee's possibly-empty-ness
+				// (keeping element types the body refined). Only the non-emptiness the
+				// narrowing added is stripped; an iteratee already non-empty before the
+				// loop keeps it, and a literal like `foreach ([1, 2] as $v)` is skipped.
+				$finalIterateeType = $finalScope->getType($stmt->expr);
+				if ($finalIterateeType->isArray()->yes()) {
+					$finalIterateeNativeType = $finalScope->getNativeType($stmt->expr);
+					$finalScope = $finalScope->specifyExpressionType(
+						$stmt->expr,
+						TypeCombinator::union($finalIterateeType, new ConstantArrayType([], [])),
+						$finalIterateeNativeType->isArray()->yes()
+							? TypeCombinator::union($finalIterateeNativeType, new ConstantArrayType([], []))
+							: $finalIterateeNativeType,
+						$iterateeCertainty,
+					);
+				}
+			}
+
 			if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
 					new BinaryOp\Identical(

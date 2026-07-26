@@ -1,0 +1,4 @@
+parameters:
+	polluteScopeWithAlwaysIterableForeach: false
+	featureToggles:
+		narrowForeachBodyNonEmpty: true

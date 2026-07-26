@@ -305,10 +305,10 @@ final class BooleanOrHandler implements ExprHandler
 				}
 
 				$leftTruthyScope ??= $scope->filterByTruthyValue($expr->left);
-				$rightTruthyScope ??= $rightScope->filterByTruthyValue($expr->right);
 				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}
+				$rightTruthyScope ??= $rightScope->filterByTruthyValue($expr->right);
 				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}

@@ -280,8 +280,8 @@ final class BooleanOrHandler implements ExprHandler
 	 */
 	private function augmentBooleanOrTruthyWithConditionalHolders(TypeSpecifier $typeSpecifier, MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
 	{
-		$leftTruthyScope = $scope->filterByTruthyValue($expr->left);
-		$rightTruthyScope = $rightScope->filterByTruthyValue($expr->right);
+		$leftTruthyScope = null;
+		$rightTruthyScope = null;
 
 		$seen = [];
 		foreach ([$scope, $rightScope] as $sourceScope) {
@@ -303,21 +303,27 @@ final class BooleanOrHandler implements ExprHandler
 				if (!$scope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}
+
+				$leftTruthyScope ??= $scope->filterByTruthyValue($expr->left);
 				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}
+				$rightTruthyScope ??= $rightScope->filterByTruthyValue($expr->right);
 				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}
 
 				$origType = $scope->getType($targetExpr);
+
 				$leftType = $leftTruthyScope->getType($targetExpr);
-				$rightType = $rightTruthyScope->getType($targetExpr);
-
 				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
-				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
+				if (!$leftNarrowed) {
+					continue;
+				}
 
-				if (!$leftNarrowed || !$rightNarrowed) {
+				$rightType = $rightTruthyScope->getType($targetExpr);
+				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
+				if (!$rightNarrowed) {
 					continue;
 				}
 

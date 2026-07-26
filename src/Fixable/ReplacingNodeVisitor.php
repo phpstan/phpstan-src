@@ -20,9 +20,18 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 	{
 	}
 
+	/**
+	 * The replacement happens in leaveNode() so that the callable receives a node
+	 * whose children have already been cloned by CloningVisitor. That makes it
+	 * possible to run both visitors in a single traversal.
+	 */
 	#[Override]
-	public function enterNode(Node $node): ?Node
+	public function leaveNode(Node $node): ?Node
 	{
+		if ($this->found) {
+			return null;
+		}
+
 		$origNode = $node->getAttribute('origNode');
 		if ($origNode !== $this->originalNode) {
 			return null;

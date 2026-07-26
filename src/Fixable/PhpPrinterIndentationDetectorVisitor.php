@@ -5,7 +5,6 @@ namespace PHPStan\Fixable;
 use Override;
 use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
-use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use function count;
 use function in_array;
@@ -23,13 +22,23 @@ final class PhpPrinterIndentationDetectorVisitor extends NodeVisitorAbstract
 
 	public int $indentSize = 4;
 
+	public bool $found = false;
+
 	public function __construct(private TokenStream $origTokens)
 	{
 	}
 
+	/**
+	 * Does not stop the traversal once the indentation is detected so that this visitor
+	 * can share a single traversal with other visitors. Subsequent nodes are skipped instead.
+	 */
 	#[Override]
 	public function enterNode(Node $node): ?int
 	{
+		if ($this->found) {
+			return null;
+		}
+
 		if ($node instanceof Node\Stmt\Namespace_ || $node instanceof Node\Stmt\Declare_) {
 			return null;
 		}
@@ -74,8 +83,7 @@ final class PhpPrinterIndentationDetectorVisitor extends NodeVisitorAbstract
 
 			$this->indentCharacter = $char;
 			$this->indentSize = $size;
-
-			return NodeVisitor::STOP_TRAVERSAL;
+			$this->found = true;
 		}
 
 		return null;

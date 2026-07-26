@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\Type\TypeCombinator;
+use function array_reverse;
 
 final class NullsafeOperatorHelper
 {

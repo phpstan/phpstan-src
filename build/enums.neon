@@ -17,8 +17,3 @@ parameters:
 			message: '#^Class CustomDeprecations\\MyDeprecatedEnum not found\.$#'
 			paths:
 				- ../tests/PHPStan/Reflection/Deprecation/DeprecationProviderTest.php
-
-		-
-			rawMessage: "Value 'ReflectionFiber' in the haystack passed to in_array() can never be identical to the needle type class-string."
-			paths:
-				- ../src/Rules/Api/RuntimeReflectionInstantiationRule.php

@@ -10,13 +10,20 @@ final class NullsafeOperatorHelper
 
 	public static function getNullsafeShortcircuitedExprRespectingScope(Scope $scope, Expr $expr): Expr
 	{
+		$shortcircuitedExpr = self::getNullsafeShortcircuitedExpr($expr);
+		if ($shortcircuitedExpr === $expr) {
+			// No nullsafe operator anywhere in the expression - the result is $expr
+			// either way, so skip asking the scope for the expression's type.
+			return $expr;
+		}
+
 		if (!TypeCombinator::containsNull($scope->getType($expr))) {
 			// We're in most likely in context of a null-safe operator ($scope->moreSpecificType is defined for $expr)
 			// Modifying the expression would not bring any value or worse ruin the context information
 			return $expr;
 		}
 
-		return self::getNullsafeShortcircuitedExpr($expr);
+		return $shortcircuitedExpr;
 	}
 
 	/**

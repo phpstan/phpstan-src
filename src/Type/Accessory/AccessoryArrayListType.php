@@ -113,8 +113,15 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($otherType instanceof self) {
+			return new IsSuperTypeOfResult(
+				TrinaryLogic::createYes(),
+				[],
+			);
+		}
+
 		return new IsSuperTypeOfResult(
-			$otherType->isArray()->and($otherType->isList())->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
+			$otherType->isList()->and(TrinaryLogic::createMaybe()),
 			[],
 		);
 	}

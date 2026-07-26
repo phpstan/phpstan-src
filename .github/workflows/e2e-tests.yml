@@ -172,6 +172,11 @@ jobs:
               ACTUAL=$(../../bin/phpstan dump-parameters -c phpstan.neon --json -l 9 | jq --raw-output '.resultCachePath')
               [[ "$ACTUAL" == "/some/path" ]];
           - script: |
+              cd e2e/statement-parameter
+              PARAMETERS=$(../../bin/phpstan dump-parameters -c phpstan.neon --json -l 9)
+              ../bashunit -a equals 'PHPSTAN' "$(echo "$PARAMETERS" | jq --raw-output '.statementParameter')"
+              ../bashunit -a equals 'PHPSTAN/suffix' "$(echo "$PARAMETERS" | jq --raw-output '.concatenatedStatementParameter')"
+          - script: |
               cd e2e/result-cache-8
               composer install
               ../../bin/phpstan

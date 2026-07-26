@@ -10,6 +10,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
@@ -82,7 +83,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 			? ($this->treatPhpDocTypesAsCertain ? $scope->getType($args[2]->value) : $scope->getNativeType($args[2]->value))->isTrue()
 			: TrinaryLogic::createNo();
 
-		/** @var array<string, array{Type, list<string>}> $deadValueTypes */
+		/** @var array<string, array{Type, list<string>, bool}> $deadValueTypes */
 		$deadValueTypes = [];
 		$anyPossibleMatch = false;
 		foreach ($constantArrays as $constantArray) {
@@ -97,7 +98,11 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 					continue;
 				}
 
-				$deadValueTypes[$valueType->describe(VerbosityLevel::precise())] = [$valueType, $canNeverMatchReasons];
+				$deadValueTypes[$valueType->describe(VerbosityLevel::precise())] = [
+					$valueType,
+					$canNeverMatchReasons,
+					$this->isAnotherValueOfNeedleType($needleType, $valueType),
+				];
 			}
 		}
 
@@ -111,11 +116,28 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 		$verb = $isStrict->no() ? 'equal to' : 'identical to';
 
 		$errors = [];
-		foreach ($deadValueTypes as [$valueType, $reasons]) {
+		foreach ($deadValueTypes as [$valueType, $reasons, $anotherValueOfNeedleType]) {
+			if ($anyPossibleMatch && $anotherValueOfNeedleType) {
+				continue;
+			}
+
 			$errors[] = $this->buildError($valueType, $needleType, $functionName, $verb, $reasons);
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * A haystack value that is merely a different value of the needle's own type - another
+	 * case of the same enum, another string of a string set - is what set-membership checks
+	 * against a constant list are made of, so it is only worth reporting when nothing in the
+	 * haystack matches at all. Values of a kind the needle can never have (a foreign enum
+	 * case, a string among ints, a null under a not-null needle) point at a genuine mistake
+	 * even when another entry does match.
+	 */
+	private function isAnotherValueOfNeedleType(Type $needleType, Type $valueType): bool
+	{
+		return $valueType->generalize(GeneralizePrecision::lessSpecific())->isSuperTypeOf($needleType)->yes();
 	}
 
 	/**

@@ -280,8 +280,8 @@ final class BooleanOrHandler implements ExprHandler
 	 */
 	private function augmentBooleanOrTruthyWithConditionalHolders(TypeSpecifier $typeSpecifier, MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
 	{
-		$leftTruthyScope = $scope->filterByTruthyValue($expr->left);
-		$rightTruthyScope = $rightScope->filterByTruthyValue($expr->right);
+		$leftTruthyScope = null;
+		$rightTruthyScope = null;
 
 		$seen = [];
 		foreach ([$scope, $rightScope] as $sourceScope) {
@@ -303,6 +303,9 @@ final class BooleanOrHandler implements ExprHandler
 				if (!$scope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}
+
+				$leftTruthyScope ??= $scope->filterByTruthyValue($expr->left);
+				$rightTruthyScope ??= $rightScope->filterByTruthyValue($expr->right);
 				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
 					continue;
 				}

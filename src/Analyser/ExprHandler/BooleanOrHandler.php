@@ -311,13 +311,16 @@ final class BooleanOrHandler implements ExprHandler
 				}
 
 				$origType = $scope->getType($targetExpr);
+
 				$leftType = $leftTruthyScope->getType($targetExpr);
-				$rightType = $rightTruthyScope->getType($targetExpr);
-
 				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
-				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
+				if (!$leftNarrowed) {
+					continue;
+				}
 
-				if (!$leftNarrowed || !$rightNarrowed) {
+				$rightType = $rightTruthyScope->getType($targetExpr);
+				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
+				if (!$rightNarrowed) {
 					continue;
 				}
 

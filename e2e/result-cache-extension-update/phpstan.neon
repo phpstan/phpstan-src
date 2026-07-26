@@ -1,0 +1,8 @@
+includes:
+	- vendor/test/rule-ext/extension.neon
+
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- src

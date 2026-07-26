@@ -1,0 +1,5 @@
+services:
+	-
+		class: Test\RuleExt\ClassNameRule
+		tags:
+			- phpstan.rules.rule

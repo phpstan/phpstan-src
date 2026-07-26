@@ -1,0 +1,10 @@
+parameters:
+	# compiled into a lazy Container::getDynamicParameter() branch rather than a static value,
+	# so both of these are missing from Container::getParameters() unless PreloadParametersExtension
+	# widens the preloaded list - which makes the parametersSchema check below fail as well
+	statementParameter: ::strtoupper('phpstan')
+	concatenatedStatementParameter: %statementParameter%/suffix
+
+parametersSchema:
+	statementParameter: string()
+	concatenatedStatementParameter: string()

@@ -39,6 +39,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -212,25 +213,59 @@ final class IssetHandler implements ExprHandler
 						if ($typesToRemove !== []) {
 							$typeToRemove = TypeCombinator::union(...$typesToRemove);
 
-							$result = $typeSpecifier->create(
-								$issetExpr->var,
-								$typeToRemove,
-								TypeSpecifierContext::createFalse(),
-								$scope,
-							)->setRootExpr($expr);
+							// isset() can also be false because $issetExpr->var itself does not exist.
+							// Narrowing its type is only sound when it's known to exist, or when its
+							// certainty can be degraded to "maybe" alongside the narrowing.
+							if (
+								$issetExpr->var instanceof Expr\Variable
+								|| $this->isAlwaysSet($scope, $issetExpr->var)
+							) {
+								$result = $typeSpecifier->create(
+									$issetExpr->var,
+									$typeToRemove,
+									TypeSpecifierContext::createFalse(),
+									$scope,
+								)->setRootExpr($expr);
 
-							if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
-								$result = $result->unionWith(
-									$typeSpecifier->create(
-										new IssetExpr($issetExpr->var),
-										new NullType(),
-										TypeSpecifierContext::createTruthy(),
-										$scope,
-									)->setRootExpr($expr),
-								);
+								if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
+									$result = $result->unionWith(
+										$typeSpecifier->create(
+											new IssetExpr($issetExpr->var),
+											new NullType(),
+											TypeSpecifierContext::createTruthy(),
+											$scope,
+										)->setRootExpr($expr),
+									);
+								}
+
+								return $result;
 							}
 
-							return $result;
+							// Every possible value of $issetExpr->var has the offset set,
+							// so the only way for isset() to be false is $issetExpr->var not existing.
+							if (
+								TypeCombinator::remove($varType, $typeToRemove) instanceof NeverType
+								&& $issetExpr->var instanceof ArrayDimFetch
+								&& $issetExpr->var->dim !== null
+								&& $this->isAlwaysSet($scope, $issetExpr->var->var)
+							) {
+								$varDimTypes = $scope->getType($issetExpr->var->dim)->toArrayKey()->getConstantScalarTypes();
+								if (count($varDimTypes) === 1) {
+									$varVarType = $scope->getType($issetExpr->var->var);
+									$withoutOffset = $varVarType->unsetOffset($varDimTypes[0]);
+
+									// A list type cannot express "offset 0 is missing", the intersection
+									// would collapse to never and wrongly kill the whole branch.
+									if (!TypeCombinator::intersect($withoutOffset, $varVarType) instanceof NeverType) {
+										return $typeSpecifier->create(
+											$issetExpr->var->var,
+											$withoutOffset,
+											TypeSpecifierContext::createTruthy(),
+											$scope,
+										)->setRootExpr($expr);
+									}
+								}
+							}
 						}
 					}
 				}
@@ -340,6 +375,31 @@ final class IssetHandler implements ExprHandler
 		}
 
 		return $types;
+	}
+
+	/**
+	 * Whether the expression is guaranteed to exist, so that narrowing it does not
+	 * leak the existence of an intermediate offset into the enclosing array type.
+	 */
+	private function isAlwaysSet(Scope $scope, Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Variable) {
+			return is_string($expr->name) && $scope->hasVariableType($expr->name)->yes();
+		}
+
+		if ($expr instanceof ArrayDimFetch) {
+			if ($expr->dim === null) {
+				return false;
+			}
+
+			if (!$scope->getType($expr->var)->hasOffsetValueType($scope->getType($expr->dim))->yes()) {
+				return false;
+			}
+
+			return $this->isAlwaysSet($scope, $expr->var);
+		}
+
+		return true;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

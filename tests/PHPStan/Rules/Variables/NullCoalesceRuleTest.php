@@ -560,4 +560,9 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15005(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15005.php'], []);
+	}
+
 }

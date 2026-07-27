@@ -1059,4 +1059,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/class-exists-on-static-call.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15002(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-15002.php'], []);
+	}
+
 }

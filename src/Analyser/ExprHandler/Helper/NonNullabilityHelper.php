@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\EnsuredNonNullabilityResult;
 use PHPStan\Analyser\EnsuredNonNullabilityResultExpression;
 use PHPStan\Analyser\MutatingScope;
@@ -58,9 +59,12 @@ final class NonNullabilityHelper
 			);
 		}
 
-		// keep certainty
+		// Keep the "might not be defined" certainty of variables so that rules
+		// reporting possibly undefined variables still see it. For any other
+		// expression a Maybe certainty would make the narrowed type invisible to
+		// Scope::getType(), throwing the narrowing away.
 		$certainty = TrinaryLogic::createYes();
-		if (!$hasExpressionType->no()) {
+		if ($hasExpressionType->maybe() && $exprToSpecify instanceof Variable) {
 			$certainty = $hasExpressionType;
 		}
 

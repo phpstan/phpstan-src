@@ -2,6 +2,7 @@
 
 namespace ClassLevelUseTag;
 
+use ClassLevelUseTag\GenericTrait as AliasedGenericTrait;
 use function PHPStan\Testing\assertType;
 
 /** @template T */
@@ -48,6 +49,16 @@ class PrefixedClassLevelUse
 {
 
 	use GenericTrait;
+
+}
+
+/**
+ * @use AliasedGenericTrait<float>
+ */
+class AliasedClassLevelUse
+{
+
+	use AliasedGenericTrait;
 
 }
 
@@ -129,6 +140,7 @@ enum SomeEnum
 function test(
 	ClassLevelUse $a,
 	PrefixedClassLevelUse $b,
+	AliasedClassLevelUse $aliased,
 	NoUseTag $c,
 	StatementLevelWins $d,
 	MultipleTraits $e,
@@ -138,6 +150,7 @@ function test(
 ): void {
 	assertType('int', $a->get());
 	assertType('string', $b->get());
+	assertType('float', $aliased->get());
 	assertType('mixed', $c->get());
 	assertType('string', $d->get());
 	assertType('int', $e->get());

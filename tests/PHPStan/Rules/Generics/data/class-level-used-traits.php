@@ -91,3 +91,15 @@ interface SomeInterface
 {
 
 }
+
+namespace ClassLevelUsedTraitsAlias;
+
+use ClassLevelUsedTraits\GenericTrait as AliasedGenericTrait;
+
+/** @use AliasedGenericTrait<int> */
+class InvalidBound
+{
+
+	use AliasedGenericTrait;
+
+}

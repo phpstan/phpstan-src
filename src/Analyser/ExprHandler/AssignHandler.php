@@ -56,6 +56,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -1461,11 +1462,16 @@ final class AssignHandler implements ExprHandler
 		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
-			if (
-				!$offsetValueType instanceof MixedType
-				&& !$offsetValueType->isArray()->yes()
-			) {
-				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
+			if (!$offsetValueType->isArray()->yes()) {
+				if ($offsetValueType instanceof MixedType) {
+					// A container the write goes through has to be offset-accessible for the
+					// write to succeed, so an unknown one is assumed to be an array, the same
+					// way a nonexistent offset auto-vivifies one. The outermost container is
+					// left as mixed because that's what the whole assignment writes into.
+					if ($i !== count($offsetTypes) - 1 && !$offsetValueType instanceof ErrorType) {
+						$offsetValueType = new ArrayType(new MixedType(), new MixedType());
+					}
+				} elseif ($offsetType !== null && $offsetType->isInteger()->yes()) {
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::intOffsetAccessibleType());
 				} else {
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::generalOffsetAccessibleType());

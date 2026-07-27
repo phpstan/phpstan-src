@@ -20,9 +20,9 @@ function doFoo() {
 // in core.extension so this will come before it's base theme.
 	$extensions['theme']['test_subtheme'] = 0;
 	$extensions['theme']['test_subsubtheme'] = 0;
-	assertType("non-empty-array&hasOffsetValue('theme', mixed)", $extensions);
+	assertType("non-empty-array&hasOffsetValue('theme', non-empty-array&hasOffsetValue('test_basetheme', 0)&hasOffsetValue('test_subsubtheme', 0)&hasOffsetValue('test_subtheme', 0))", $extensions);
 	unset($extensions['theme']['test_basetheme']);
 	unset($extensions['theme']['test_subsubtheme']);
 	unset($extensions['theme']['test_subtheme']);
-	assertType("non-empty-array&hasOffsetValue('theme', mixed)", $extensions);
+	assertType("non-empty-array&hasOffsetValue('theme', array<mixed~('test_basetheme'|'test_subsubtheme'|'test_subtheme'), mixed>)", $extensions);
 }

@@ -114,13 +114,15 @@ final class NullsafeOperatorHelper
 				$result = new Expr\StaticPropertyFetch($result, $node->name);
 			}
 
-			if ($result === $node) {
-				// This level shortcircuits to itself — the nullsafe operator is
-				// above it, not inside it. Only that answer is remembered: a
-				// rebuilt expression stays freshly built, because callers compare
-				// the result with === to tell whether anything was rewritten.
-				$node->setAttribute(self::SHORTCIRCUITED_ATTRIBUTE, true);
+			if ($result !== $node) {
+				continue;
 			}
+
+			// This level shortcircuits to itself — the nullsafe operator is
+			// above it, not inside it. Only that answer is remembered: a
+			// rebuilt expression stays freshly built, because callers compare
+			// the result with === to tell whether anything was rewritten.
+			$node->setAttribute(self::SHORTCIRCUITED_ATTRIBUTE, true);
 		}
 
 		return $result;

@@ -877,13 +877,16 @@ void pt_register_node_traverser()
 		}
 	});
 
+	static const reg::Arg voidReturn = { "", MAY_BE_VOID, nullptr };
+	static const reg::Arg arrayReturn = reg::arrayArg("");
+
 	cls.method("addVisitor", reg::Public, 1, { reg::obj("visitor", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(visitor)
 		ZEND_PARSE_PARAMETERS_END();
 		NodeTraverser(Z_OBJ_P(ZEND_THIS)).addVisitor(zv::Ref(visitor));
-	});
+	}, &voidReturn);
 
 	cls.method("removeVisitor", reg::Public, 1, { reg::obj("visitor", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
@@ -891,7 +894,7 @@ void pt_register_node_traverser()
 			Z_PARAM_OBJECT(visitor)
 		ZEND_PARSE_PARAMETERS_END();
 		NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor));
-	});
+	}, &voidReturn);
 
 	cls.method("traverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
@@ -904,7 +907,7 @@ void pt_register_node_traverser()
 			RETURN_THROWS();
 		}
 		result.intoReturnValue(return_value);
-	});
+	}, &arrayReturn);
 
 	pt_ce_node_traverser = cls.register_();
 }

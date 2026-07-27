@@ -56,6 +56,12 @@ Every shadowed piece of PHP code follows the same three steps:
    per class, `final class Foo extends \PHPStanTurbo\Foo {}` (shadowed
    classes living in vendor/ cannot carry the attribute and are hardcoded in
    `build/TurboAttributeCollector.php`; currently `PhpParser\NodeTraverser`).
+   The shell repeats the class's own `implements` clause, because it inherits
+   from the native class alone — an interface left off it silently stops
+   matching `instanceof` and DI type lookups — and `require`s the interface
+   sources, which the autoloader cannot yet provide at that point. A parent
+   class cannot survive the same way (PHP is single-inheritance), so the
+   collector rejects a shadowed class that has one.
    When the extension
    is enabled, `PHPStan\Turbo\TurboExtensionEnabler` `require`s that file
    *before* the Composer autoloader registers. All PHP code keeps calling
@@ -336,9 +342,13 @@ Measured in the July 2026 benchmarks (callback-free absorptions gained
    call is exactly the per-element boundary cost these rules forbid. (The
    extension originally hosted its lifecycle in PHP-CPP; it is a plain Zend
    module since the Windows port.)
-6. **Never shadow a DI-service class.** Nette's `getByType()` normalizes
-   requested types through reflection to the real class name and breaks
-   containers cached in the other mode.
+6. **A shadowed DI-service class has to stay autowirable.** Nette reflects
+   `__construct` while it compiles the container, so the native arginfo must
+   declare the real parameter class names — erasing them fails container
+   compilation for every shadowed service at once. (Aliasing a service class
+   is what genuinely cannot work: `getByType()` normalizes the requested type
+   through reflection to the real class name. The stub shells are subclasses
+   carrying the original name, so that does not apply to them.)
 7. **Every port must prove itself**: interleaved A/B benchmark on a long run
    (user CPU, result cache cleared) plus a byte-identical output diff. Ports
    measuring ≤0.5% get reverted — the failure mode is silent no-gain, and

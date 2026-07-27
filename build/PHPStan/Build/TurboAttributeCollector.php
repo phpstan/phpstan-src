@@ -35,6 +35,7 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
+use function array_keys;
 use function class_exists;
 use function count;
 use function file_get_contents;
@@ -143,7 +144,7 @@ final class TurboAttributeCollector
 	 * the path) and merges the hardcoded vendored entries.
 	 *
 	 * @return array{
-	 *     pairs: array<string, array{string, bool, string}>,
+	 *     pairs: array<string, array{string, bool, string, list<class-string>}>,
 	 *     manifest: array<string, array{php: string, cpp: string, vendored?: bool}>,
 	 *     classMap: array<string, string>,
 	 *     referenced: array<string, string>,
@@ -195,6 +196,28 @@ final class TurboAttributeCollector
 			}
 		}
 
+		foreach (array_keys($pairs) as $className) {
+			$reflection = new ReflectionClass($className);
+
+			// The stub shell extends the native class, and PHP is
+			// single-inheritance, so a parent of the shadowed class would
+			// silently disappear together with everything it declares.
+			$parent = $reflection->getParentClass();
+			if ($parent !== false) {
+				throw new RuntimeException(sprintf(
+					'%s cannot be shadowed by the turbo extension because it extends %s — the stub shell already extends the native class.',
+					$className,
+					$parent->getName(),
+				));
+			}
+
+			// Interfaces do survive, but only because they are re-declared on
+			// the stub: it inherits from the native class alone, so an
+			// interface left out here silently stops matching instanceof and
+			// DI type lookups.
+			$pairs[$className][3] = $reflection->getInterfaceNames();
+		}
+
 		ksort($pairs);
 		ksort($classMap);
 		ksort($referenced);
@@ -219,24 +242,74 @@ final class TurboAttributeCollector
 		return ['pairs' => $pairs, 'manifest' => $manifest, 'classMap' => $classMap, 'referenced' => $referenced];
 	}
 
-	/** @param array<string, array{string, bool, string}> $pairs */
+	/**
+	 * Parent interfaces first, deduplicated, keyed by name to keep the order
+	 * stable across calls.
+	 *
+	 * @param class-string $interface
+	 * @param array<string, string> $files
+	 */
+	private static function collectInterfaceFiles(string $interface, array &$files): void
+	{
+		if (isset($files[$interface])) {
+			return;
+		}
+
+		$reflection = new ReflectionClass($interface);
+		foreach ($reflection->getInterfaceNames() as $parent) {
+			self::collectInterfaceFiles($parent, $files);
+		}
+
+		$fileName = $reflection->getFileName();
+		if ($fileName === false) {
+			return; // an engine interface, always declared
+		}
+
+		$files[$interface] = $fileName;
+	}
+
+	/** @param array<string, array{string, bool, string, list<class-string>}> $pairs */
 	public function renderStubs(array $pairs): string
 	{
 		$namespaces = [];
-		foreach ($pairs as $className => [$turboClass, $final]) {
+		foreach ($pairs as $className => [$turboClass, $final, $cppFile, $interfaces]) {
 			$pos = strrpos($className, '\\');
 			if ($pos === false) {
 				throw new RuntimeException(sprintf('%s is not a namespaced class name', $className));
 			}
+			$implements = '';
+			if (count($interfaces) > 0) {
+				$implements = ' implements \\' . implode(', \\', $interfaces);
+			}
 			$namespaces[substr($className, 0, $pos)][] = sprintf(
-				"\t%sclass %s extends \\%s {}",
+				"\t%sclass %s extends \\%s%s {}",
 				$final ? 'final ' : '',
 				substr($className, $pos + 1),
 				$turboClass,
+				$implements,
 			);
 		}
 
 		$blocks = [];
+
+		// The stubs are declared before the Composer autoloader registers, so
+		// the interfaces they re-declare have to be required here — parents
+		// first, since an interface extending another needs it at declaration
+		// time. Interfaces without a file are the engine's own.
+		$interfaceFiles = [];
+		foreach ($pairs as $pair) {
+			foreach ($pair[3] as $interface) {
+				self::collectInterfaceFiles($interface, $interfaceFiles);
+			}
+		}
+		if (count($interfaceFiles) > 0) {
+			$requires = [];
+			foreach ($interfaceFiles as $file) {
+				$requires[] = sprintf("\trequire_once __DIR__ . '/../%s';", $this->relativize($file));
+			}
+			$blocks[] = sprintf("namespace {\n\n%s\n\n}", implode("\n", $requires));
+		}
+
 		foreach ($namespaces as $namespace => $declarations) {
 			$blocks[] = sprintf("namespace %s {\n\n%s\n\n}", $namespace, implode("\n", $declarations));
 		}
@@ -250,7 +323,8 @@ final class TurboAttributeCollector
 // ShadowedByTurboExtension attribute (plus the hardcoded vendored
 // PhpParser\NodeTraverser) with the phpstan_turbo extension's native
 // implementation. Required by PHPStan\Turbo\TurboExtensionEnabler before
-// the Composer autoloader registers.
+// the Composer autoloader registers — hence the interface sources required
+// below, which the autoloader cannot resolve yet.
 
 %s
 

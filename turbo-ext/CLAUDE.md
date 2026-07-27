@@ -21,9 +21,12 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `grep "\$this->foo"` in double quotes sends `\$` to grep and silently
    matches nothing — use single quotes). Run the full test suite now, before
    any native work.
-2. **Check it is not a DI service** (rule 6 in README — this is fatal and
-   was measured at 617 broken tests). Value classes and manually-instantiated
-   classes are safe.
+2. **Check it has no parent class** — the stub shell extends the native
+   class and PHP is single-inheritance, so the collector rejects it. If it is
+   a DI service, its native `__construct` arginfo must declare the real
+   parameter class names (rule 6 in README): Nette autowires by reflecting
+   the constructor, and erased types fail container compilation for every
+   shadowed service at once.
 3. **Implement natively**: one class per `.cpp` in `src/`, namespace
    `PHPStanTurbo`, class **non-final**, `instanceof`-style checks instead of
    exact class-entry comparisons. Hot classes are registered with the raw

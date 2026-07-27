@@ -7,7 +7,8 @@
  *
  * - vendor/turbo-stubs.php: one empty stub shell per shadowed class,
  *   extending the phpstan_turbo extension's native counterpart the attribute
- *   names. TurboExtensionEnabler requires the file before the Composer
+ *   names and repeating the class's own implements clause.
+ *   TurboExtensionEnabler requires the file before the Composer
  *   autoloader registers, so with the extension active every reference to
  *   the original class name transparently resolves to the native
  *   implementation.

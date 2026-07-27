@@ -116,14 +116,16 @@ public:
 	 * requiredArgs is ZEND_BEGIN_ARG_INFO_EX's required_num_args; args carry
 	 * name/type/by-ref/variadic exactly as the ZEND_ARG_* macros would.
 	 */
-	Class &method(const char *methodName, uint32_t flags, uint32_t requiredArgs, std::initializer_list<Arg> args, zif_handler handler)
+	Class &method(const char *methodName, uint32_t flags, uint32_t requiredArgs, std::initializer_list<Arg> args, zif_handler handler, const Arg *returns = NULL)
 	{
 		/* arginfo array: slot 0 is the return-info slot carrying the
-		 * required-args count, exactly as ZEND_BEGIN_ARG_INFO_EX emits */
+		 * required-args count, exactly as ZEND_BEGIN_ARG_INFO_EX emits.
+		 * A declared return type goes in the same slot's type — needed only
+		 * where the engine enforces it (implementing a userland interface). */
 		auto *argInfo = (zend_internal_arg_info *) pemalloc(sizeof(zend_internal_arg_info) * (args.size() + 1), 1);
 		argInfo[0].name = (const char *) (uintptr_t) requiredArgs;
-		argInfo[0].type.ptr = NULL;
-		argInfo[0].type.type_mask = 0;
+		argInfo[0].type.ptr = returns != NULL ? (void *) returns->className : NULL;
+		argInfo[0].type.type_mask = returns != NULL ? returns->typeMask : 0;
 		argInfo[0].default_value = NULL;
 		size_t i = 1;
 		for (const Arg &arg : args) {

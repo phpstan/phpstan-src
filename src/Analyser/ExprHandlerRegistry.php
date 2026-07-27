@@ -13,7 +13,6 @@ use function spl_object_id;
  * Expr class so dispatch does not re-scan every tagged handler (a linear
  * supports() sweep) on each call.
  */
-#[AutowiredService]
 final class ExprHandlerRegistry
 {
 

@@ -12,6 +12,10 @@ class Acme {
 	public ?Acme $prop = null;
 
 	public static ?Acme $stat = null;
+
+	public static function create(): ?Acme {
+		return new Acme();
+	}
 }
 
 function getAcme(bool $enabled = true): ?Acme {
@@ -31,6 +35,24 @@ function staticProperty(): void
 {
 	$a = Acme::$stat?->foo();
 	$b = Acme::$stat?->foo();
+}
+
+function staticMethodCall(): void
+{
+	$a = Acme::create()?->foo();
+	$b = Acme::create()?->foo();
+}
+
+function staticMethodCallChained(): void
+{
+	$a = Acme::create()?->prop?->foo();
+	$b = Acme::create()?->prop?->foo();
+}
+
+function staticPropertyChained(): void
+{
+	$a = Acme::$stat?->prop?->foo();
+	$b = Acme::$stat?->prop?->foo();
 }
 
 function maybeCertaintyFromMerge(bool $c): void

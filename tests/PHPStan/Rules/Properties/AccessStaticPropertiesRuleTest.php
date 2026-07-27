@@ -11,6 +11,7 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -358,6 +359,12 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	public function testBug2861(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2861.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15002(): void
+	{
+		$this->analyse([__DIR__ . '/../Methods/data/bug-15002.php'], []);
 	}
 
 }

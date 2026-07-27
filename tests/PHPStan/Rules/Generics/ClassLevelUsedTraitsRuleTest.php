@@ -65,6 +65,10 @@ class ClassLevelUsedTraitsRuleTest extends RuleTestCase
 				'Interface ClassLevelUsedTraits\SomeInterface has @use tag, but does not use any trait.',
 				90,
 			],
+			[
+				'Type int in generic type ClassLevelUsedTraits\GenericTrait<int> in PHPDoc tag @use is not subtype of template type T of object of trait ClassLevelUsedTraits\GenericTrait.',
+				100,
+			],
 		]);
 	}
 

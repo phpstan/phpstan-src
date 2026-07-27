@@ -6,6 +6,9 @@ without it, just slower. With the extension loaded, analysis output is
 bit-for-bit identical — only faster (~25% on PHPStan's own single-threaded
 self-analysis).
 
+<img width="512" height="512" alt="PHPStan Turbo" src="https://github.com/user-attachments/assets/3538e70b-4a44-4ac4-95ba-e0b4eb24f13e" />
+
+
 ## Installation
 
 **Most users do not need to install anything.** The

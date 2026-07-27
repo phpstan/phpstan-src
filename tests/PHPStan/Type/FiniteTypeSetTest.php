@@ -17,6 +17,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function count;
 use function sprintf;
@@ -27,6 +28,7 @@ use function sprintf;
  * real answer against a reference implementation that spells out the member-by-member loop
  * UnionType used before the map existed.
  */
+#[RequiresPhp('^8.1')]
 class FiniteTypeSetTest extends PHPStanTestCase
 {
 

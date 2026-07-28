@@ -3327,6 +3327,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
+			if (
+				!$typeSpecification['sure']
+				&& $expr instanceof Variable && is_string($expr->name)
+				&& $scope->hasVariableType($expr->name)->no()
+			) {
+				// removing type from a certainly-undefined variable cannot make
+				// it defined; a sure specification (e.g. is_string($a)) still can -
+				// the condition can only hold for a defined variable
+				continue;
+			}
+
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
 					$scope = $scope->assignExpression($expr, $type, $type);

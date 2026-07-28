@@ -1701,4 +1701,26 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2032(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-2032.php'], [
+			[
+				'Undefined variable: $undefined',
+				6,
+			],
+			[
+				'Undefined variable: $undefined',
+				9,
+			],
+			[
+				'Undefined variable: $undefined',
+				15,
+			],
+		]);
+	}
+
 }

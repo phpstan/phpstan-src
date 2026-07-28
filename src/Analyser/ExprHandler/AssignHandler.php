@@ -619,9 +619,6 @@ final class AssignHandler implements ExprHandler
 					));
 
 				} else {
-					$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
-					$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
-
 					if ($enterExpressionAssign) {
 						$scope->enterExpressionAssign($dimExpr);
 					}
@@ -635,6 +632,8 @@ final class AssignHandler implements ExprHandler
 						impurePoints: [],
 					));
 					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
+					$offsetTypes[] = [$result->getType(), $dimFetch];
+					$offsetNativeTypes[] = [$result->getNativeType(), $dimFetch];
 					$hasYield = $hasYield || $result->hasYield();
 					$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 					$scope = $result->getScope();

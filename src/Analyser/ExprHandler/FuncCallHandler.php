@@ -124,7 +124,10 @@ final class FuncCallHandler implements ExprHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		if ($expr->name instanceof Expr) {
-			$nameType = $scope->getType($expr->name);
+			// process the dynamic callee name first, then consume its type rather
+			// than reading it before processExprNode() stores its result
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameType = $nameResult->getType();
 			if (!$nameType->isCallable()->no()) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$scope,
@@ -134,7 +137,6 @@ final class FuncCallHandler implements ExprHandler
 				);
 			}
 
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $nameResult->getScope();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();

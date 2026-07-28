@@ -3530,7 +3530,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$ourExpressionTypes = $this->expressionTypes;
 		$theirExpressionTypes = $otherScope->expressionTypes;
 
-		$mergedExpressionTypes = ScopeOps::mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
+		$differingExpressionKeys = [];
+		$mergedExpressionTypes = ScopeOps::mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes, $differingExpressionKeys);
 		$conditionalExpressions = ScopeOps::intersectConditionalExpressions($this->conditionalExpressions, $otherScope->conditionalExpressions);
 		if ($preserveVacuousConditionals) {
 			$conditionalExpressions = $this->preserveVacuousConditionalExpressions(
@@ -3549,12 +3550,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$ourExpressionTypes,
 			$theirExpressionTypes,
 			$mergedExpressionTypes,
+			$differingExpressionKeys,
 		);
 		$conditionalExpressions = ScopeOps::createConditionalExpressions(
 			$conditionalExpressions,
 			$theirExpressionTypes,
 			$ourExpressionTypes,
 			$mergedExpressionTypes,
+			$differingExpressionKeys,
 		);
 
 		[$mergedExpressionTypes, $mergedNativeTypes] = ScopeOps::finishMerge(

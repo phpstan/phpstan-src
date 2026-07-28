@@ -26,6 +26,7 @@ use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
+use function array_keys;
 use function array_slice;
 use function count;
 use function get_class;
@@ -195,9 +196,10 @@ final class ScopeOps
 	 *
 	 * @param array<string, ExpressionTypeHolder> $ourVariableTypeHolders
 	 * @param array<string, ExpressionTypeHolder> $theirVariableTypeHolders
+	 * @param array<string, true> $differingKeys
 	 * @return array<string, ExpressionTypeHolder>
 	 */
-	public static function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
+	public static function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders, array &$differingKeys = []): array
 	{
 		$intersectedVariableTypeHolders = [];
 		$globalVariableCallback = static fn (Node $node) => $node instanceof Variable && is_string($node->name) && in_array($node->name, Scope::SUPERGLOBAL_VARIABLES, true);
@@ -209,8 +211,10 @@ final class ScopeOps
 					continue;
 				}
 
+				$differingKeys[$exprString] = true;
 				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
+				$differingKeys[$exprString] = true;
 				$expr = $variableTypeHolder->getExpr();
 
 				$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
@@ -231,6 +235,7 @@ final class ScopeOps
 				continue;
 			}
 
+			$differingKeys[$exprString] = true;
 			$expr = $variableTypeHolder->getExpr();
 
 			$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
@@ -358,6 +363,7 @@ final class ScopeOps
 	 * @param array<string, ExpressionTypeHolder> $ourExpressionTypes
 	 * @param array<string, ExpressionTypeHolder> $theirExpressionTypes
 	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
+	 * @param array<string, true> $differingKeys
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	public static function createConditionalExpressions(
@@ -365,6 +371,7 @@ final class ScopeOps
 		array $ourExpressionTypes,
 		array $theirExpressionTypes,
 		array $mergedExpressionTypes,
+		array $differingKeys,
 	): array
 	{
 		$newVariableTypes = $ourExpressionTypes;
@@ -375,7 +382,11 @@ final class ScopeOps
 		// branch — but it remains a valid conditional *target*, so only exclude
 		// it from guard selection instead of dropping it entirely.
 		$guardsToExclude = [];
-		foreach ($theirExpressionTypes as $exprString => $holder) {
+		foreach (array_keys($differingKeys) as $exprString) {
+			if (!array_key_exists($exprString, $theirExpressionTypes)) {
+				continue;
+			}
+			$holder = $theirExpressionTypes[$exprString];
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
@@ -396,7 +407,11 @@ final class ScopeOps
 		}
 
 		$typeGuards = [];
-		foreach ($newVariableTypes as $exprString => $holder) {
+		foreach (array_keys($differingKeys) as $exprString) {
+			if (!array_key_exists($exprString, $newVariableTypes)) {
+				continue;
+			}
+			$holder = $newVariableTypes[$exprString];
 			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
 			}
@@ -436,7 +451,11 @@ final class ScopeOps
 		$guardIsSuperTypeOfTheirExprCache = [];
 		$theirExprIsSuperTypeOfGuardCache = [];
 
-		foreach ($newVariableTypes as $exprString => $holder) {
+		foreach (array_keys($differingKeys) as $exprString) {
+			if (!array_key_exists($exprString, $newVariableTypes)) {
+				continue;
+			}
+			$holder = $newVariableTypes[$exprString];
 			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
 			}
@@ -497,7 +516,11 @@ final class ScopeOps
 			}
 		}
 
-		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
+		foreach (array_keys($differingKeys) as $exprString) {
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+				continue;
+			}
+			$mergedExprTypeHolder = $mergedExpressionTypes[$exprString];
 			if (array_key_exists($exprString, $ourExpressionTypes)) {
 				continue;
 			}

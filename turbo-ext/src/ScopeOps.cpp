@@ -311,11 +311,15 @@ public:
 		return zv::Val::adopt(out);
 	}
 
-	/* Mirrors ScopeOps::mergeVariableHolders(). */
-	static zv::Val mergeVariableHolders(zv::TableRef ours, zv::TableRef theirs)
+	/*
+	 * Mirrors ScopeOps::mergeVariableHolders(). differing (nullable) receives
+	 * a true marker for every key that is not one shared holder on both sides
+	 * — the twin's &$differingKeys out-parameter.
+	 */
+	static zv::Val mergeVariableHolders(zv::TableRef ours, zv::TableRef theirs, HashTable *differing)
 	{
 		zv::Arr merged = zv::Arr::create(ours.size());
-		if (UNEXPECTED(!mergeVariableHoldersInto(merged, ours, theirs))) {
+		if (UNEXPECTED(!mergeVariableHoldersInto(merged, ours, theirs, differing))) {
 			return zv::Val();
 		}
 		return zv::Val(std::move(merged));
@@ -394,7 +398,7 @@ public:
 
 		/* mergedNative += filter(mergeVariableHolders(oursRemaining, theirsRemaining)) */
 		{
-			zv::Val remainingMerged = mergeVariableHolders(zv::TableRef(oursNativeRemaining.table()), zv::TableRef(theirsNativeRemaining.table()));
+			zv::Val remainingMerged = mergeVariableHolders(zv::TableRef(oursNativeRemaining.table()), zv::TableRef(theirsNativeRemaining.table()), NULL);
 			if (UNEXPECTED(remainingMerged.isUndef())) {
 				return zv::Val();
 			}
@@ -461,7 +465,7 @@ public:
 	 * per-guard caches; the input array is only duplicated once the first
 	 * conditional is actually appended.
 	 */
-	static zv::Val createConditionalExpressions(zv::TableRef conditional, zv::TableRef ours, zv::TableRef theirs, zv::TableRef merged)
+	static zv::Val createConditionalExpressions(zv::TableRef conditional, zv::TableRef ours, zv::TableRef theirs, zv::TableRef merged, zv::TableRef differingKeys)
 	{
 		zend_class_entry *virtualNodeCe = pt_class(PT_CLASS_VIRTUAL_NODE);
 		if (UNEXPECTED(virtualNodeCe == NULL)) {
@@ -472,16 +476,22 @@ public:
 		zv::ScratchTable typeGuards(8);
 
 		/* guardsToExclude: subtype-absorbed their-branch variables are poor
-		 * guards but stay valid conditional targets */
-		for (auto entry : theirs) {
-			zend_string *key = entry.stringKeyOrNull();
-			zend_ulong idx = entry.indexKey();
+		 * guards but stay valid conditional targets. Only the merge's differing
+		 * keys can qualify — iterate those (in their insertion order, like the
+		 * twin) instead of the whole holder maps. */
+		for (auto diffEntry : differingKeys) {
+			zend_string *key = diffEntry.stringKeyOrNull();
+			zend_ulong idx = diffEntry.indexKey();
 
+			zval *theirSlot = pt_ht_find(theirs.table(), key, idx);
+			if (theirSlot == NULL) {
+				continue;
+			}
 			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
 			if (mergedSlot == NULL) {
 				continue;
 			}
-			zv::Ref holder = entry.value().deref();
+			zv::Ref holder = zv::Ref(theirSlot).deref();
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
 				return zv::Val();
 			}
@@ -522,11 +532,15 @@ public:
 		}
 
 		/* typeGuards */
-		for (auto entry : ours) {
-			zend_string *key = entry.stringKeyOrNull();
-			zend_ulong idx = entry.indexKey();
-			zv::Ref holder = entry.value().deref();
+		for (auto diffEntry : differingKeys) {
+			zend_string *key = diffEntry.stringKeyOrNull();
+			zend_ulong idx = diffEntry.indexKey();
 
+			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
+			if (ourSlot == NULL) {
+				continue;
+			}
+			zv::Ref holder = zv::Ref(ourSlot).deref();
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
 				return zv::Val();
 			}
@@ -585,10 +599,15 @@ public:
 		zv::Arr result; /* stays UNDEF until the first append duplicates the input */
 
 		/* main loop: pair non-merged expressions with guards */
-		for (auto entry : ours) {
-			zend_string *key = entry.stringKeyOrNull();
-			zend_ulong idx = entry.indexKey();
-			zv::Ref holder = entry.value().deref();
+		for (auto diffEntry : differingKeys) {
+			zend_string *key = diffEntry.stringKeyOrNull();
+			zend_ulong idx = diffEntry.indexKey();
+
+			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
+			if (ourSlot == NULL) {
+				continue;
+			}
+			zv::Ref holder = zv::Ref(ourSlot).deref();
 
 			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) {
 				continue;
@@ -711,14 +730,18 @@ public:
 		}
 
 		/* their-only expressions: record certainty-No conditionals per guard */
-		for (auto entry : merged) {
-			zend_string *key = entry.stringKeyOrNull();
-			zend_ulong idx = entry.indexKey();
+		for (auto diffEntry : differingKeys) {
+			zend_string *key = diffEntry.stringKeyOrNull();
+			zend_ulong idx = diffEntry.indexKey();
 
+			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
+			if (mergedSlot == NULL) {
+				continue;
+			}
 			if (pt_ht_exists(ours.table(), key, idx)) {
 				continue;
 			}
-			zv::Ref mergedHolder = entry.value().deref();
+			zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
 				return zv::Val();
 			}
@@ -1381,8 +1404,19 @@ private:
 		return zv::Val::adopt(created);
 	}
 
+	/* $differing[$key] = true (marker insert, overwrites) */
+	static void markDiffering(HashTable *differing, zend_string *skey, zend_ulong idx)
+	{
+		if (differing == NULL) {
+			return;
+		}
+		zval trueZv;
+		ZVAL_TRUE(&trueZv);
+		pt_ht_update(differing, skey, idx, &trueZv);
+	}
+
 	/* The two loops of mergeVariableHolders(), filling a caller-owned table. */
-	static bool mergeVariableHoldersInto(zv::Arr &merged, zv::TableRef ours, zv::TableRef theirs)
+	static bool mergeVariableHoldersInto(zv::Arr &merged, zv::TableRef ours, zv::TableRef theirs, HashTable *differing)
 	{
 		for (auto entry : ours) {
 			zend_string *key = entry.stringKeyOrNull();
@@ -1402,6 +1436,7 @@ private:
 				if (holder.asObject() == theirHolder.asObject()) {
 					tableAddNewCopy(merged.table(), key, idx, holder);
 				} else {
+					markDiffering(differing, key, idx);
 					zval andHolder;
 					if (UNEXPECTED(!pt_holder_and(holder.raw(), theirHolder.raw(), &andHolder))) {
 						return false;
@@ -1409,6 +1444,7 @@ private:
 					tableAddNew(merged.table(), key, idx, zv::Val::adopt(andHolder));
 				}
 			} else {
+				markDiffering(differing, key, idx);
 				bool containsSuperGlobal = pt_expr_contains_superglobal(holderExpr(holder));
 				if (UNEXPECTED(EG(exception))) {
 					return false;
@@ -1427,6 +1463,7 @@ private:
 			if (pt_ht_exists(merged.table(), key, idx)) {
 				continue;
 			}
+			markDiffering(differing, key, idx);
 			zv::Ref holder = entry.value().deref();
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
 				return false;
@@ -2060,13 +2097,27 @@ void pt_register_scope_ops()
 {
 	reg::Class cls("PHPStanTurbo\\ScopeOps");
 
-	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders"), reg::any("differingKeys", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		zval *differing_zv = NULL;
+		ZEND_PARSE_PARAMETERS_START(2, 3)
 			Z_PARAM_ARRAY_HT(ours)
 			Z_PARAM_ARRAY_HT(theirs)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_ZVAL(differing_zv)
 		ZEND_PARSE_PARAMETERS_END();
-		zv::Val result = ScopeOps::mergeVariableHolders(zv::TableRef(ours), zv::TableRef(theirs));
+		HashTable *differing = NULL;
+		if (differing_zv != NULL && Z_ISREF_P(differing_zv)) {
+			/* the twin declares `array &$differingKeys = []`; vivify like PHP
+			 * would and write through the reference */
+			zval *inner = Z_REFVAL_P(differing_zv);
+			if (Z_TYPE_P(inner) != IS_ARRAY) {
+				convert_to_array(inner);
+			}
+			SEPARATE_ARRAY(inner);
+			differing = Z_ARRVAL_P(inner);
+		}
+		zv::Val result = ScopeOps::mergeVariableHolders(zv::TableRef(ours), zv::TableRef(theirs), differing);
 		if (UNEXPECTED(result.isUndef())) {
 			RETURN_THROWS();
 		}
@@ -2184,15 +2235,16 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createConditionalExpressions", reg::PublicStatic, 4, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("mergedExpressionTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		HashTable *conditional, *ours, *theirs, *merged;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+	cls.method("createConditionalExpressions", reg::PublicStatic, 5, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("differingKeys") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+		HashTable *conditional, *ours, *theirs, *merged, *differing_keys;
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_ARRAY_HT(conditional)
 			Z_PARAM_ARRAY_HT(ours)
 			Z_PARAM_ARRAY_HT(theirs)
 			Z_PARAM_ARRAY_HT(merged)
+			Z_PARAM_ARRAY_HT(differing_keys)
 		ZEND_PARSE_PARAMETERS_END();
-		zv::Val result = ScopeOps::createConditionalExpressions(zv::TableRef(conditional), zv::TableRef(ours), zv::TableRef(theirs), zv::TableRef(merged));
+		zv::Val result = ScopeOps::createConditionalExpressions(zv::TableRef(conditional), zv::TableRef(ours), zv::TableRef(theirs), zv::TableRef(merged), zv::TableRef(differing_keys));
 		if (UNEXPECTED(result.isUndef())) {
 			RETURN_THROWS();
 		}

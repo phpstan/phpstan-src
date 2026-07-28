@@ -337,6 +337,22 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	check($storage->pendingFibers === [], "ERS $label: fiber array entries can be unset");
 }
 
+// ---- ScopeOps::mergeVariableHolders differingKeys ----
+$sharedP = $pH($expr1, $int, $pYes);
+$sharedN = $nH($expr1, $int, $nYes);
+$mergePOurs = ['$shared' => $sharedP, '$a' => $pH($expr1, $int, $pYes), '$b' => $pH($expr2, $string, $pYes)];
+$mergePTheirs = ['$shared' => $sharedP, '$b' => $pH($expr2, $string, $pMaybe), '$c' => $pH($expr2, $int, $pYes)];
+$mergeNOurs = ['$shared' => $sharedN, '$a' => $nH($expr1, $int, $nYes), '$b' => $nH($expr2, $string, $nYes)];
+$mergeNTheirs = ['$shared' => $sharedN, '$b' => $nH($expr2, $string, $nMaybe), '$c' => $nH($expr2, $int, $nYes)];
+$pDiffering = [];
+$pMerged = \PHPStan\Analyser\ScopeOps::mergeVariableHolders($mergePOurs, $mergePTheirs, $pDiffering);
+$nDiffering = [];
+$nMerged = \PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs, $nDiffering);
+check($pDiffering === $nDiffering, 'ScopeOps mergeVariableHolders differingKeys parity: ' . json_encode($pDiffering) . ' vs ' . json_encode($nDiffering));
+check(array_keys($pMerged) === array_keys($nMerged), 'ScopeOps mergeVariableHolders merged keys parity');
+check(array_keys(\PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs)) === array_keys($nMerged), 'ScopeOps mergeVariableHolders without differingKeys');
+
+
 // ---- NodeScanner ----
 $covered[\PHPStan\Node\NodeScanner::class] = true;
 $smokeParserFactory = new \PhpParser\ParserFactory();

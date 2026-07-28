@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -130,8 +131,7 @@ final class NewHandler implements ExprHandler
 
 				if ($constructorReflection->getDeclaringClass()->getName() === $classReflection->getName()) {
 					$constructorResult = null;
-					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
-						$nodeCallback($node, $scope);
+					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($classReflection, &$constructorResult): void {
 						if (!$node instanceof MethodReturnStatementsNode) {
 							return;
 						}
@@ -149,7 +149,7 @@ final class NewHandler implements ExprHandler
 							return;
 						}
 						$constructorResult = $node;
-					}, StatementContext::createTopLevel());
+					}, $nodeCallback), StatementContext::createTopLevel());
 					if ($constructorResult !== null) {
 						$throwPoints = array_map(static fn (ThrowPoint $point): InternalThrowPoint => InternalThrowPoint::createFromPublic($point, $scope), $constructorResult->getStatementResult()->getThrowPoints());
 						$impurePoints = $constructorResult->getImpurePoints();

@@ -3,11 +3,16 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_key_exists;
 use function array_keys;
 use function count;
+use function get_class;
 use function is_bool;
 use function is_int;
 use function is_string;
@@ -69,15 +74,14 @@ final class FiniteTypeSet
 		$membersByKind = [];
 		$others = [];
 		foreach ($types as $type) {
-			$keyAndKind = self::keyAndKind($type);
-			if ($keyAndKind === null || array_key_exists($keyAndKind[0], $members)) {
+			$key = self::key($type);
+			if ($key === null || array_key_exists($key, $members)) {
 				$others[] = $type;
 				continue;
 			}
 
-			[$key, $kind] = $keyAndKind;
 			$members[$key] = $type;
-			$membersByKind[$kind] ??= $type;
+			$membersByKind[self::kind($type)] ??= $type;
 		}
 
 		if ($members === []) {
@@ -100,20 +104,27 @@ final class FiniteTypeSet
 	 */
 	public static function key(Type $type): ?string
 	{
-		return self::keyAndKind($type)[0] ?? null;
-	}
+		// A union of finite values is made of these five classes, and every comparison against
+		// such a union derives at least one key - so the general path below, three virtual
+		// calls and an array allocation, is worth skipping for them. Matching the class
+		// exactly is what makes that safe: for these, getConstantScalarTypes() is [$this] and
+		// equals() is value identity, which is precisely what the general path checks.
+		// Subclasses - template constant types among them - do not match and fall through.
+		switch (get_class($type)) {
+			case ConstantStringType::class:
+				return self::STRING_KEY_PREFIX . $type->getValue();
+			case ConstantIntegerType::class:
+				return self::INTEGER_KEY_PREFIX . $type->getValue();
+			case ConstantBooleanType::class:
+				return self::BOOLEAN_KEY_PREFIX . ($type->getValue() ? '1' : '0');
+			case NullType::class:
+				return self::NULL_KEY;
+			case ConstantFloatType::class:
+				// Excluded on purpose, see above - said here too so that a union of constant
+				// floats pays one get_class() per member instead of walking the general path.
+				return null;
+		}
 
-	/**
-	 * The identity key together with the kind of value it is.
-	 *
-	 * Members of one kind are the same type class - and, for enum cases, of the same enum -
-	 * so they answer accepts() identically for every value none of them holds. The kind is
-	 * what makes one member stand in for all its siblings there.
-	 *
-	 * @return array{string, string}|null
-	 */
-	private static function keyAndKind(Type $type): ?array
-	{
 		if ($type instanceof TemplateType) {
 			return null;
 		}
@@ -127,9 +138,7 @@ final class FiniteTypeSet
 		// Key by class + case name, the identity equals() compares (describe() would also
 		// fold in a subtracted type, which equals() ignores).
 		if ($type instanceof EnumCaseObjectType) { // @phpstan-ignore phpstanApi.instanceofType
-			$kind = self::ENUM_CASE_KEY_PREFIX . $type->getClassName();
-
-			return [$kind . '::' . $type->getEnumCaseName(), $kind];
+			return self::kind($type) . '::' . $type->getEnumCaseName();
 		}
 
 		if (!$type->isConstantScalarValue()->yes()) {
@@ -143,19 +152,39 @@ final class FiniteTypeSet
 
 		$value = $scalarTypes[0]->getValue();
 		if ($value === null) {
-			return [self::NULL_KEY, self::NULL_KEY];
+			return self::NULL_KEY;
 		}
 		if (is_int($value)) {
-			return [self::INTEGER_KEY_PREFIX . $value, self::INTEGER_KEY_PREFIX];
+			return self::INTEGER_KEY_PREFIX . $value;
 		}
 		if (is_bool($value)) {
-			return [self::BOOLEAN_KEY_PREFIX . ($value ? '1' : '0'), self::BOOLEAN_KEY_PREFIX];
+			return self::BOOLEAN_KEY_PREFIX . ($value ? '1' : '0');
 		}
 		if (is_string($value)) {
-			return [self::STRING_KEY_PREFIX . $value, self::STRING_KEY_PREFIX];
+			return self::STRING_KEY_PREFIX . $value;
 		}
 
 		return null;
+	}
+
+	/**
+	 * The kind of value a type stands for.
+	 *
+	 * Members of one kind answer accepts() identically for every value none of them holds,
+	 * which is what lets one of them stand in for all its siblings there. Being of the same
+	 * class is enough for that - accepts() on a constant scalar only asks whether the other
+	 * type equals it - except for enum cases, where the enum is part of the answer.
+	 *
+	 * Only meaningful for a type that key() keys; anything else gets a kind of its own,
+	 * which merely costs it a representative.
+	 */
+	private static function kind(Type $type): string
+	{
+		if ($type instanceof EnumCaseObjectType) { // @phpstan-ignore phpstanApi.instanceofType
+			return self::ENUM_CASE_KEY_PREFIX . $type->getClassName();
+		}
+
+		return get_class($type);
 	}
 
 	/**
@@ -169,7 +198,7 @@ final class FiniteTypeSet
 	 */
 	public function getRepresentativesOfOtherKinds(Type $type): array
 	{
-		$kind = self::keyAndKind($type)[1] ?? null;
+		$kind = self::kind($type);
 		$representatives = [];
 		foreach ($this->membersByKind as $memberKind => $member) {
 			if ($memberKind === $kind) {

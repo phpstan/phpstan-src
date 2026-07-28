@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use Iterator;
+use PHPStan\Fixture\AnotherTestEnum;
 use PHPStan\Fixture\ManyCasesTestEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
@@ -42,6 +43,7 @@ class FiniteTypeSetTest extends PHPStanTestCase
 			'strings superset' => new UnionType([new ConstantStringType('a'), new ConstantStringType('b'), new ConstantStringType('c'), new ConstantStringType('d')]),
 			'strings reordered' => new UnionType([new ConstantStringType('c'), new ConstantStringType('b'), new ConstantStringType('a')]),
 			'strings disjoint' => new UnionType([new ConstantStringType('x'), new ConstantStringType('y')]),
+			'strings differing only in case' => new UnionType([new ConstantStringType('a'), new ConstantStringType('A')]),
 			'strings and null' => new UnionType([new ConstantStringType('a'), new ConstantStringType('b'), new NullType()]),
 			'integers' => new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new ConstantIntegerType(3)]),
 			'booleans' => new UnionType([new ConstantBooleanType(true), new ConstantBooleanType(false)]),
@@ -78,6 +80,7 @@ class FiniteTypeSetTest extends PHPStanTestCase
 	{
 		return [
 			'string a' => new ConstantStringType('a'),
+			'string A' => new ConstantStringType('A'),
 			'string d' => new ConstantStringType('d'),
 			'string z' => new ConstantStringType('z'),
 			'class-string' => new ConstantStringType('DateTimeImmutable', true),
@@ -231,7 +234,14 @@ class FiniteTypeSetTest extends PHPStanTestCase
 	{
 		yield [new ConstantStringType('a'), 's:a'];
 		yield [new ConstantStringType('a', true), 's:a'];
+		// the value goes into the key verbatim - two strings that differ in any way at all
+		// stand for two different values
+		yield [new ConstantStringType('A'), 's:A'];
+		yield [new ConstantStringType(''), 's:'];
+		yield [new ConstantStringType('0'), 's:0'];
 		yield [new ConstantIntegerType(1), 'i:1'];
+		yield [new ConstantIntegerType(-1), 'i:-1'];
+		yield [new ConstantIntegerType(0), 'i:0'];
 		yield [new ConstantBooleanType(true), 'b:1'];
 		yield [new ConstantBooleanType(false), 'b:0'];
 		yield [new NullType(), 'null'];
@@ -264,6 +274,56 @@ class FiniteTypeSetTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @return Iterator<array-key, array{Type}>
+	 */
+	public static function dataShortcutClass(): Iterator
+	{
+		yield [new ConstantStringType('a')];
+		yield [new ConstantStringType('A')];
+		yield [new ConstantStringType('DateTimeImmutable', true)];
+		yield [new ConstantStringType('')];
+		yield [new ConstantIntegerType(1)];
+		yield [new ConstantIntegerType(-1)];
+		yield [new ConstantIntegerType(0)];
+		yield [new ConstantBooleanType(true)];
+		yield [new ConstantBooleanType(false)];
+		yield [new NullType()];
+	}
+
+	/**
+	 * key() answers for these classes straight from get_class() instead of asking the type,
+	 * which is only sound while the checks it skips would have passed. Assert them here so
+	 * that a change to any of these classes fails loudly rather than silently keying a type
+	 * that no longer stands for exactly one value.
+	 */
+	#[DataProvider('dataShortcutClass')]
+	public function testShortcutClassesSatisfyTheGeneralPath(Type $type): void
+	{
+		$this->assertTrue($type->isConstantScalarValue()->yes());
+		$this->assertSame([$type], $type->getConstantScalarTypes());
+		$this->assertTrue($type->equals($type));
+		$this->assertNotNull(FiniteTypeSet::key($type));
+	}
+
+	/**
+	 * The shortcut matches the class exactly, so a subclass has to reach the general path -
+	 * and land on the very same key, or a union holding both would count them as two values.
+	 */
+	public function testSubclassOfAShortcutClassIsKeyedTheSameWay(): void
+	{
+		$subclass = new class ('a') extends ConstantStringType {
+
+		};
+
+		$this->assertSame(FiniteTypeSet::key(new ConstantStringType('a')), FiniteTypeSet::key($subclass));
+
+		$set = (new UnionType([new ConstantStringType('a'), $subclass]))->getFiniteTypeSet();
+		$this->assertNotNull($set);
+		$this->assertCount(1, $set->getMembers());
+		$this->assertCount(1, $set->getOthers());
+	}
+
+	/**
 	 * Types sharing a key must be interchangeable, so they have to be equal - and equal
 	 * types must never end up under different keys.
 	 */
@@ -288,6 +348,45 @@ class FiniteTypeSetTest extends PHPStanTestCase
 			$sameKey,
 			sprintf('%s <-> %s', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
+	}
+
+	/**
+	 * Members of one kind stand in for each other when the set is asked about a value it does
+	 * not hold, so a kind must never span two classes - nor two enums, which answer for their
+	 * own cases only.
+	 */
+	public function testEachKindIsRepresentedOnce(): void
+	{
+		$set = (new UnionType([
+			new ConstantStringType('a'),
+			new ConstantStringType('b'),
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+			new ConstantBooleanType(true),
+			new NullType(),
+			new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
+			new EnumCaseObjectType(ManyCasesTestEnum::class, 'B'),
+			new EnumCaseObjectType(AnotherTestEnum::class, 'ONE'),
+		]))->getFiniteTypeSet();
+
+		$this->assertNotNull($set);
+
+		$describe = static fn (Type $type): string => $type->describe(VerbosityLevel::precise());
+
+		// the first member of every kind but the queried one, in the union's order
+		$this->assertSame(
+			['1', 'true', 'null', 'PHPStan\Fixture\ManyCasesTestEnum::A', 'PHPStan\Fixture\AnotherTestEnum::ONE'],
+			array_map($describe, $set->getRepresentativesOfOtherKinds(new ConstantStringType('zzz'))),
+		);
+
+		// one enum does not answer for another's cases, so both are represented
+		$this->assertSame(
+			["'a'", '1', 'true', 'null', 'PHPStan\Fixture\AnotherTestEnum::ONE'],
+			array_map($describe, $set->getRepresentativesOfOtherKinds(new EnumCaseObjectType(ManyCasesTestEnum::class, 'C'))),
+		);
+
+		// a type of no keyed kind is answered by every one of the six kinds
+		$this->assertCount(6, $set->getRepresentativesOfOtherKinds(new ObjectType('DateTimeImmutable')));
 	}
 
 	public function testUnkeyableMembersDoNotDefeatTheSet(): void

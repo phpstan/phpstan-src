@@ -145,5 +145,12 @@ jobs:
         with:
           php-version: "${{ matrix.php-version }}"
 
+      # PHPBench does not fail when the baseline file is missing, it just runs
+      # with an empty baseline and every assertion passes
+      - name: "Check that the baseline exists"
+        run: |
+          test -f tests/bench/storage/baseline-${{ matrix.php-version }}.xml \
+            || (echo "Missing tests/bench/storage/baseline-${{ matrix.php-version }}.xml, download it from the phpbench-baseline-${{ matrix.php-version }} artifact of the Baseline job and commit it." && exit 1)
+
       - name: "Run phpbench test"
         run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline-${{ matrix.php-version }}.xml --report=${{ matrix.report }} --ansi"

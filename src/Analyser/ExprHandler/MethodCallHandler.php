@@ -100,7 +100,7 @@ final class MethodCallHandler implements ExprHandler
 		}
 		$parametersAcceptor = null;
 		$methodReflection = null;
-		$calledOnType = $scope->getType($expr->var);
+		$calledOnType = $varResult->getType();
 		if ($expr->name instanceof Identifier) {
 			$methodName = $expr->name->name;
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);

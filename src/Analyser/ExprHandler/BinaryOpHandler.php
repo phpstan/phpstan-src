@@ -92,7 +92,7 @@ final class BinaryOpHandler implements ExprHandler
 		$impurePoints = array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints());
 		if (
 			($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
-			!$leftResult->getScope()->getType($expr->right)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
+			!$rightResult->getType()->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
 		) {
 			$throwPoints[] = InternalThrowPoint::createExplicit($leftResult->getScope(), new ObjectType(DivisionByZeroError::class), $expr, false);
 		}

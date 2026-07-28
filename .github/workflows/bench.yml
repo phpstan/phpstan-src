@@ -80,6 +80,10 @@ jobs:
       - name: "Run phpbench baseline"
         run: "tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline-${{ matrix.php-version }}.xml --ansi"
 
+      # Before committing an artifact as the new baseline, compare the <baseline-machine>
+      # values (md5, file_rw) in it with the ones in the currently committed baseline.
+      # GitHub runners differ in speed by up to 2x, and a baseline recorded on a fast
+      # runner makes every later run look like a regression.
       - name: "Upload baseline artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

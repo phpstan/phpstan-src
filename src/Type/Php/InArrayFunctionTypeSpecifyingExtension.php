@@ -91,7 +91,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				}
 
 				$combinedMultipleItems = true;
-				$types = $context->true() ? $types->normalize($scope)->intersectWith($itemTypes->normalize($scope)) : $types->unionWith($itemTypes);
+				$types = $context->true() ? $types->intersectWith($itemTypes) : $types->unionWith($itemTypes);
 			}
 
 			if ($types !== null) {

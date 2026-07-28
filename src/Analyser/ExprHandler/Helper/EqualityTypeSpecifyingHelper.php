@@ -246,7 +246,7 @@ final class EqualityTypeSpecifyingHelper
 
 		return $context->true()
 			? $leftTypes->unionWith($rightTypes)
-			: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+			: $leftTypes->intersectWith($rightTypes);
 	}
 
 	public function specifyTypesForIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
@@ -750,8 +750,8 @@ final class EqualityTypeSpecifyingHelper
 			}
 			return $leftTypes->unionWith($rightTypes);
 		} elseif ($context->false()) {
-			return $this->typeSpecifier->create($leftExpr, $leftType, $context, $scope)->setRootExpr($expr)->normalize($scope)
-				->intersectWith($this->typeSpecifier->create($rightExpr, $rightType, $context, $scope)->setRootExpr($expr)->normalize($scope));
+			return $this->typeSpecifier->create($leftExpr, $leftType, $context, $scope)->setRootExpr($expr)
+				->intersectWith($this->typeSpecifier->create($rightExpr, $rightType, $context, $scope)->setRootExpr($expr));
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);

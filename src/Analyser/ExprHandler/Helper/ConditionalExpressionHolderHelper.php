@@ -56,10 +56,13 @@ final class ConditionalExpressionHolderHelper
 		}
 
 		$existingSureTypes = $types->getSureTypes();
+		$existingAlternativeTypes = $types->getAlternativeTypes();
 
 		$viableCandidates = [];
 		foreach ($candidateExprs as $exprString => $targetExpr) {
-			if (isset($existingSureTypes[$exprString])) {
+			if (isset($existingSureTypes[$exprString]) || isset($existingAlternativeTypes[$exprString])) {
+				// an alternative-form entry already encodes the either-branch
+				// union for this expression, deferred to the application point
 				continue;
 			}
 			if (!$scope->hasExpressionType($targetExpr)->yes()) {
@@ -296,6 +299,35 @@ final class ConditionalExpressionHolderHelper
 		return $expr instanceof Expr\PropertyFetch
 			|| $expr instanceof Expr\ArrayDimFetch
 			|| $expr instanceof Expr\StaticPropertyFetch;
+	}
+
+	/**
+	 * The eager form of the old SpecifiedTypes::normalize(): folds sure-not
+	 * entries into sure entries by subtracting from the expression's type on
+	 * the given scope. Only for consumers that need concrete sure types at
+	 * composition time (conditional-holder building, decided operands) -
+	 * merge paths use SpecifiedTypes::intersectWith() and evaluate at the
+	 * application point instead.
+	 */
+	public function toSureTypes(SpecifiedTypes $types, Scope $scope): SpecifiedTypes
+	{
+		$sureTypes = $types->getSureTypes();
+
+		foreach ($types->getSureNotTypes() as $exprString => [$exprNode, $sureNotType]) {
+			if (!isset($sureTypes[$exprString])) {
+				$sureTypes[$exprString] = [$exprNode, TypeCombinator::remove($scope->getType($exprNode), $sureNotType)];
+				continue;
+			}
+
+			$sureTypes[$exprString][1] = TypeCombinator::remove($sureTypes[$exprString][1], $sureNotType);
+		}
+
+		$result = new SpecifiedTypes($sureTypes, []);
+		if ($types->shouldOverwrite()) {
+			$result = $result->setAlwaysOverwriteTypes();
+		}
+
+		return $result->setRootExpr($types->getRootExpr());
 	}
 
 }

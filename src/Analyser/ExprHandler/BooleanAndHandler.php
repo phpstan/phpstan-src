@@ -105,9 +105,9 @@ final class BooleanAndHandler implements ExprHandler
 		if ($context->true()) {
 			$types = $leftTypes->unionWith($rightTypes);
 		} else {
-			$leftNormalized = $leftTypes->normalize($scope);
-			$rightNormalized = $rightTypes->normalize($rightScope);
-			$types = $leftNormalized->intersectWith($rightNormalized);
+			$leftNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($leftTypes, $scope);
+			$rightNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($rightTypes, $rightScope);
+			$types = $leftTypes->intersectWith($rightTypes);
 			$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
 		}
 		if ($context->false()) {
@@ -146,10 +146,10 @@ final class BooleanAndHandler implements ExprHandler
 					$rightCondTypes = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
 				}
 			}
-			$result = new SpecifiedTypes(
+			$result = (new SpecifiedTypes(
 				$types->getSureTypes(),
 				$types->getSureNotTypes(),
-			);
+			))->withAlternativeTypesOf($types);
 			if ($types->shouldOverwrite()) {
 				$result = $result->setAlwaysOverwriteTypes();
 			}

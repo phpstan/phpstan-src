@@ -69,7 +69,7 @@ parameters:
 		-
 			rawMessage: Casting to string something that's already string.
 			identifier: cast.useless
-			count: 1
+			count: 2
 			path: src/Analyser/MutatingScope.php
 
 		-

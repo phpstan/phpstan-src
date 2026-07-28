@@ -51,6 +51,23 @@ final class NativeParameterReflection implements ParameterReflection
 		return $this->defaultValue;
 	}
 
+	/** Used when merging signatures where only some of them declare this parameter. */
+	public function toOptional(): self
+	{
+		if ($this->optional) {
+			return $this;
+		}
+
+		return new self(
+			$this->name,
+			true,
+			$this->type,
+			$this->passedByReference,
+			$this->variadic,
+			$this->defaultValue,
+		);
+	}
+
 	public function union(self $other): self
 	{
 		return new self(

@@ -9,8 +9,8 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
+use function array_diff_key;
 use function array_key_exists;
-use function array_keys;
 use function count;
 use function get_class;
 use function is_bool;
@@ -246,20 +246,18 @@ final class FiniteTypeSet
 	 */
 	public function containedIn(self $other): TrinaryLogic
 	{
-		$contained = 0;
-		foreach (array_keys($this->members) as $key) {
-			if (!$other->has($key)) {
-				continue;
-			}
+		// One array_diff_key() rather than a lookup per member: the keys are what both sets
+		// are indexed by, so the whole comparison is a single C-level hash join. Asking for
+		// what is missing rather than for what is shared makes the yes answer the cheap one -
+		// it is the one that costs nothing to collect, and the one all three callers are
+		// after (isAcceptedBy() and equals() want nothing else).
+		$missing = count(array_diff_key($this->members, $other->members));
 
-			$contained++;
-		}
-
-		if ($contained === count($this->members)) {
+		if ($missing === 0) {
 			return TrinaryLogic::createYes();
 		}
 
-		if ($contained === 0) {
+		if ($missing === count($this->members)) {
 			return TrinaryLogic::createNo();
 		}
 

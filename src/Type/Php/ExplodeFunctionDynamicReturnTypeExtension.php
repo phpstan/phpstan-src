@@ -29,7 +29,9 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
+use function explode;
 use function max;
+use const PHP_INT_MAX;
 
 #[AutowiredService]
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -44,6 +46,12 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		'str_starts_with',
 		'str_ends_with',
 	];
+
+	/**
+	 * How many delimiter/string/limit combinations may be evaluated when
+	 * constant-folding the call before giving up on the exact result.
+	 */
+	private const CONSTANT_COMBINATION_LIMIT = 16;
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
@@ -90,6 +98,12 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
+
+		$constantType = $this->createConstantSplitType($delimiterType, $stringType, $limitType);
+		if ($constantType !== null) {
+			return $constantType;
+		}
+
 		$delimiterGuaranteedPresent = $this->isDelimiterGuaranteedPresent($args, $scope);
 
 		if ($this->isSingleElementLimit($limitType)) {
@@ -142,6 +156,75 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return false;
+	}
+
+	/**
+	 * The exact result of the split when the delimiter, the string and the limit
+	 * are all known constants, or null when it cannot be computed.
+	 */
+	private function createConstantSplitType(Type $delimiterType, Type $stringType, ?Type $limitType): ?Type
+	{
+		$delimiters = [];
+		foreach ($delimiterType->getConstantStrings() as $delimiterString) {
+			$delimiterValue = $delimiterString->getValue();
+			if ($delimiterValue === '') {
+				// explode() does not split on an empty separator, it errors out
+				return null;
+			}
+
+			$delimiters[] = $delimiterValue;
+		}
+
+		if (count($delimiters) === 0) {
+			return null;
+		}
+
+		$strings = $stringType->getConstantStrings();
+		if (count($strings) === 0) {
+			return null;
+		}
+
+		if ($limitType === null) {
+			$limits = [PHP_INT_MAX];
+		} else {
+			$limits = [];
+			foreach ($limitType->getFiniteTypes() as $finiteType) {
+				if (!$finiteType instanceof ConstantIntegerType) {
+					return null;
+				}
+
+				$limits[] = $finiteType->getValue();
+			}
+
+			if (count($limits) === 0) {
+				return null;
+			}
+		}
+
+		if (count($delimiters) * count($strings) * count($limits) > self::CONSTANT_COMBINATION_LIMIT) {
+			return null;
+		}
+
+		$results = [];
+		foreach ($delimiters as $delimiter) {
+			foreach ($strings as $string) {
+				foreach ($limits as $limit) {
+					$items = explode($delimiter, $string->getValue(), $limit);
+					if (count($items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						return null;
+					}
+
+					$builder = ConstantArrayTypeBuilder::createEmpty();
+					foreach ($items as $i => $item) {
+						$builder->setOffsetValueType(new ConstantIntegerType($i), new ConstantStringType($item));
+					}
+
+					$results[] = $builder->getArray();
+				}
+			}
+		}
+
+		return TypeCombinator::union(...$results);
 	}
 
 	/**

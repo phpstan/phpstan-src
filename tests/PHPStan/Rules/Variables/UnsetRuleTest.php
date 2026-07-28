@@ -56,6 +56,29 @@ class UnsetRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testVariableVariables(): void
+	{
+		$errors = [
+			[
+				'Call to function unset() contains undefined variable $undefinedVariable.',
+				27,
+			],
+			[
+				'Cannot unset readonly UnsetVariableVariables\Foo::$readOnly property.',
+				40,
+			],
+		];
+		if (PHP_VERSION_ID >= 80400) {
+			$errors[] = [
+				'Cannot unset property UnsetVariableVariables\Foo::$regular because it might have hooks in a subclass.',
+				43,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/unset-variable-variables.php'], $errors);
+	}
+
 	public function testBug2752(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2752.php'], []);

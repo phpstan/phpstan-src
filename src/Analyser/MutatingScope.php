@@ -1085,19 +1085,29 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
 	{
 		// mirrored in PHPStan\Rules\IssetCheck
-		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-			$hasVariable = $this->hasVariableType($expr->name);
+		if ($expr instanceof Node\Expr\Variable) {
+			$variableScopes = VariableNameResolver::resolveNamesWithScopes($this, $expr);
+			if ($variableScopes === null) {
+				return null;
+			}
+
+			$hasVariable = TrinaryLogic::lazyExtremeIdentity(
+				$variableScopes,
+				static fn (array $variableScope): TrinaryLogic => $variableScope[1]->hasVariableType($variableScope[0]),
+			);
 			if ($hasVariable->maybe()) {
 				return null;
 			}
 
 			if ($result === null) {
 				if ($hasVariable->yes()) {
-					if ($expr->name === '_SESSION') {
-						return null;
+					foreach ($variableScopes as [$variableName]) {
+						if ($variableName === '_SESSION') {
+							return null;
+						}
 					}
 
-					return $typeCallback($this->getVariableType($expr->name));
+					return $typeCallback($this->getType($expr));
 				}
 
 				return false;
@@ -1209,8 +1219,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private function issetCheckUndefined(Expr $expr): ?bool
 	{
-		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-			$hasVariable = $this->hasVariableType($expr->name);
+		if ($expr instanceof Node\Expr\Variable) {
+			$variableScopes = VariableNameResolver::resolveNamesWithScopes($this, $expr);
+			if ($variableScopes === null) {
+				return null;
+			}
+
+			$hasVariable = TrinaryLogic::lazyExtremeIdentity(
+				$variableScopes,
+				static fn (array $variableScope): TrinaryLogic => $variableScope[1]->hasVariableType($variableScope[0]),
+			);
 			if (!$hasVariable->no()) {
 				return null;
 			}

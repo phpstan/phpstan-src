@@ -72,6 +72,21 @@ class EmptyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testVariableVariables(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/empty-variable-variables.php'], [
+			[
+				'Variable $undefinedVariable in empty() is never defined.',
+				13,
+			],
+			[
+				'Variable $nonFalsy in empty() always exists and is not falsy.',
+				20,
+			],
+		]);
+	}
+
 	public function testBug970(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

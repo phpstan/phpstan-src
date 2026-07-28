@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -17,7 +17,7 @@ final class PropertyDescriptor
 	/**
 	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
-	public function describeProperty(PropertyReflection $property, Scope $scope, $propertyFetch): string
+	public function describeProperty(ExtendedPropertyReflection $property, Scope $scope, $propertyFetch): string
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			$fetchedOnType = $scope->getType($propertyFetch->var);
@@ -31,13 +31,13 @@ final class PropertyDescriptor
 			$classDescription = $property->getDeclaringClass()->getDisplayName();
 		}
 
-		/** @var Node\Identifier $name */
-		$name = $propertyFetch->name;
+		// the fetch name node is not usable for dynamic accesses like $foo->{$name}
+		$name = $property->getName();
 		if (!$property->isStatic()) {
-			return sprintf('Property %s::$%s', $classDescription, $name->name);
+			return sprintf('Property %s::$%s', $classDescription, $name);
 		}
 
-		return sprintf('Static property %s::$%s', $classDescription, $name->name);
+		return sprintf('Static property %s::$%s', $classDescription, $name);
 	}
 
 }

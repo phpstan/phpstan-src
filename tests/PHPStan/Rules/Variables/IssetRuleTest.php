@@ -198,6 +198,29 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testVariableVariables(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/isset-variable-variables.php'], [
+			[
+				'Variable $undefinedVariable in isset() is never defined.',
+				26,
+			],
+			[
+				'Variable $notNullable in isset() always exists and is not nullable.',
+				33,
+			],
+			[
+				'Property IssetVariableVariables\Foo::$notNullable (int) in isset() is not nullable.',
+				48,
+			],
+			[
+				'Static property IssetVariableVariables\Foo::$staticNotNullable (int) in isset() is not nullable.',
+				57,
+			],
+		]);
+	}
+
 	public function testNativePropertyTypes(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

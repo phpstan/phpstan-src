@@ -460,6 +460,49 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15014(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15014.php'], []);
+	}
+
+	public function testVariableVariables(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-variable-variables.php'], [
+			[
+				'Variable $undefinedVariable on left side of ?? is never defined.',
+				27,
+			],
+			[
+				'Variable $undefinedVariable on left side of ?? is never defined.',
+				33,
+			],
+			[
+				'Variable $notNullable on left side of ?? always exists and is not nullable.',
+				40,
+			],
+			[
+				'Variable $notNullable on left side of ?? always exists and is not nullable.',
+				48,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				63,
+			],
+			[
+				'Property NullCoalesceVariableVariables\Foo::$notNullable (int) on left side of ?? is not nullable.',
+				69,
+			],
+			[
+				'Static property NullCoalesceVariableVariables\Foo::$staticNotNullable (int) on left side of ?? is not nullable.',
+				78,
+			],
+			[
+				'Variable $undefinedArray on left side of ?? is never defined.',
+				87,
+			],
+		]);
+	}
+
 	public function testBug4337(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4337.php'], [

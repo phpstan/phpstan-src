@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\VariableNameResolver;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IdentifierRuleError;
@@ -11,7 +12,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function is_string;
 use function sprintf;
 
 /**
@@ -39,10 +39,7 @@ final class UnsetRule implements Rule
 		$errors = [];
 
 		foreach ($functionArguments as $argument) {
-			if (
-				$argument instanceof Node\Expr\PropertyFetch
-				&& $argument->name instanceof Node\Identifier
-			) {
+			if ($argument instanceof Node\Expr\PropertyFetch) {
 				$foundPropertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($argument, $scope);
 				if ($foundPropertyReflection === null) {
 					continue;
@@ -113,11 +110,19 @@ final class UnsetRule implements Rule
 
 	private function canBeUnset(Node $node, Scope $scope): ?IdentifierRuleError
 	{
-		if ($node instanceof Node\Expr\Variable && is_string($node->name)) {
-			$hasVariable = $scope->hasVariableType($node->name);
-			if ($hasVariable->no()) {
+		if ($node instanceof Node\Expr\Variable) {
+			$namesWithScopes = VariableNameResolver::resolveNamesWithScopes($scope, $node);
+			if ($namesWithScopes === null) {
+				return null;
+			}
+
+			foreach ($namesWithScopes as [$name, $variableScope]) {
+				if (!$variableScope->hasVariableType($name)->no()) {
+					continue;
+				}
+
 				return RuleErrorBuilder::message(
-					sprintf('Call to function unset() contains undefined variable $%s.', $node->name),
+					sprintf('Call to function unset() contains undefined variable $%s.', $name),
 				)
 					->line($node->getStartLine())
 					->identifier('unset.variable')

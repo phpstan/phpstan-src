@@ -103,17 +103,22 @@ final class PropertyReflectionFinder
 			return null;
 		}
 
-		if (!$propertyFetch->name instanceof Node\Identifier) {
-			return null;
-		}
-
 		if ($propertyFetch->class instanceof Node\Name) {
 			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);
 		}
 
-		return $this->findStaticPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+		if ($propertyFetch->name instanceof Node\Identifier) {
+			return $this->findStaticPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+		}
+
+		$nameTypeConstantStrings = $scope->getType($propertyFetch->name)->getConstantStrings();
+		if (count($nameTypeConstantStrings) === 1) {
+			return $this->findStaticPropertyReflection($propertyHolderType, $nameTypeConstantStrings[0]->getValue(), $scope);
+		}
+
+		return null;
 	}
 
 	private function findInstancePropertyReflection(Type $propertyHolderType, string $propertyName, Scope $scope): ?FoundPropertyReflection

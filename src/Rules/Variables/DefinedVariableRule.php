@@ -3,10 +3,9 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\VariableNameResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IdentifierRuleError;
@@ -14,7 +13,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_merge;
 use function in_array;
-use function is_string;
 use function sprintf;
 
 /**
@@ -40,23 +38,17 @@ final class DefinedVariableRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$errors = [];
-		if (is_string($node->name)) {
-			$variableNameScopes = [$node->name => $scope];
-		} else {
-			$nameType = $scope->getType($node->name);
-			$variableNameScopes = [];
-			foreach ($nameType->getConstantStrings() as $constantString) {
-				$name = $constantString->getValue();
-				$variableNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
-			}
+		$namesWithScopes = VariableNameResolver::resolveNamesWithScopes($scope, $node);
+		if ($namesWithScopes === null) {
+			return [];
 		}
 
-		foreach ($variableNameScopes as $name => $variableScope) {
+		$errors = [];
+		foreach ($namesWithScopes as [$name, $variableScope]) {
 			$errors = array_merge($errors, $this->processSingleVariable(
 				$variableScope,
 				$node,
-				(string) $name, // @phpstan-ignore cast.useless
+				$name,
 			));
 		}
 

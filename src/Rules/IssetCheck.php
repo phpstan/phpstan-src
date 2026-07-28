@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\VariableNameResolver;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -13,7 +14,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use function is_string;
 use function sprintf;
 use function str_starts_with;
 
@@ -42,36 +42,23 @@ final class IssetCheck
 	public function check(Expr $expr, Scope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?IdentifierRuleError $error = null): ?IdentifierRuleError
 	{
 		// mirrored in PHPStan\Analyser\MutatingScope::issetCheck()
-		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-			$hasVariable = $scope->hasVariableType($expr->name);
-			if ($hasVariable->maybe()) {
+		if ($expr instanceof Node\Expr\Variable) {
+			$variableScopes = VariableNameResolver::resolveNamesWithScopes($scope, $expr);
+			if ($variableScopes === null) {
 				return null;
 			}
 
-			if ($error === null) {
-				if ($hasVariable->yes()) {
-					if ($expr->name === '_SESSION') {
-						return null;
-					}
-
-					$type = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr) : $scope->getScopeNativeType($expr);
-					if (!$type instanceof NeverType) {
-						return $this->generateError(
-							$type,
-							sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
-							$typeMessageCallback,
-							$identifier,
-							'variable',
-						);
-					}
+			$variableErrors = [];
+			foreach ($variableScopes as [$variableName, $variableScope]) {
+				$variableError = $this->checkVariable($expr, $variableName, $variableScope, $operatorDescription, $identifier, $typeMessageCallback, $error);
+				if ($variableError === null) {
+					return null;
 				}
 
-				return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $expr->name, $operatorDescription))
-					->identifier(sprintf('%s.variable', $identifier))
-					->build();
+				$variableErrors[] = $variableError;
 			}
 
-			return $error;
+			return $variableErrors[0];
 		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
 			$type = $this->treatPhpDocTypesAsCertain
 				? $scope->getScopeType($expr->var)
@@ -275,18 +262,72 @@ final class IssetCheck
 
 	/**
 	 * @param ErrorIdentifier $identifier
+	 * @param callable(Type): ?string $typeMessageCallback
+	 */
+	private function checkVariable(
+		Expr\Variable $expr,
+		string $variableName,
+		Scope $scope,
+		string $operatorDescription,
+		string $identifier,
+		callable $typeMessageCallback,
+		?IdentifierRuleError $error,
+	): ?IdentifierRuleError
+	{
+		$hasVariable = $scope->hasVariableType($variableName);
+		if ($hasVariable->maybe()) {
+			return null;
+		}
+
+		if ($error === null) {
+			if ($hasVariable->yes()) {
+				if ($variableName === '_SESSION') {
+					return null;
+				}
+
+				$type = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr) : $scope->getScopeNativeType($expr);
+				if (!$type instanceof NeverType) {
+					return $this->generateError(
+						$type,
+						sprintf('Variable $%s %s always exists and', $variableName, $operatorDescription),
+						$typeMessageCallback,
+						$identifier,
+						'variable',
+					);
+				}
+			}
+
+			return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $variableName, $operatorDescription))
+				->identifier(sprintf('%s.variable', $identifier))
+				->build();
+		}
+
+		return $error;
+	}
+
+	/**
+	 * @param ErrorIdentifier $identifier
 	 */
 	private function checkUndefined(Expr $expr, Scope $scope, string $operatorDescription, string $identifier): ?IdentifierRuleError
 	{
-		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-			$hasVariable = $scope->hasVariableType($expr->name);
-			if (!$hasVariable->no()) {
+		if ($expr instanceof Node\Expr\Variable) {
+			$variableScopes = VariableNameResolver::resolveNamesWithScopes($scope, $expr);
+			if ($variableScopes === null) {
 				return null;
 			}
 
-			return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $expr->name, $operatorDescription))
-				->identifier(sprintf('%s.variable', $identifier))
-				->build();
+			$variableErrors = [];
+			foreach ($variableScopes as [$variableName, $variableScope]) {
+				if (!$variableScope->hasVariableType($variableName)->no()) {
+					return null;
+				}
+
+				$variableErrors[] = RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $variableName, $operatorDescription))
+					->identifier(sprintf('%s.variable', $identifier))
+					->build();
+			}
+
+			return $variableErrors[0];
 		}
 
 		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {

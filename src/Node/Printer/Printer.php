@@ -4,6 +4,7 @@ namespace PHPStan\Node\Printer;
 
 use Override;
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -36,6 +37,7 @@ use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
 use function preg_match;
 use function sprintf;
+use function str_contains;
 
 /**
  * @api
@@ -43,6 +45,48 @@ use function sprintf;
 #[AutowiredService(as: Printer::class)]
 final class Printer extends Standard
 {
+
+	/**
+	 * Every construct the printer descends into comes back through here, and
+	 * each level of a chain is printed again in turn for its own expression
+	 * key, so a chain of depth N costs O(N^2). Remembering each expression's
+	 * printed form on its node makes the levels below it O(1) — and it is the
+	 * very same cache ExprPrinter fills, so a key printed once is never
+	 * rebuilt, wherever it was first reached from.
+	 *
+	 * Only the standalone form is remembered: at a lower precedence the
+	 * printer may parenthesise, and a form containing a newline was indented
+	 * for the level it was printed at, while expression keys are printed at
+	 * the top level.
+	 */
+	#[Override]
+	protected function p(
+		Node $node,
+		int $precedence = self::MAX_PRECEDENCE,
+		int $lhsPrecedence = self::MAX_PRECEDENCE,
+		bool $parentFormatPreserved = false,
+	): string
+	{
+		if (
+			!$node instanceof Expr
+			|| $precedence !== self::MAX_PRECEDENCE
+			|| $lhsPrecedence !== self::MAX_PRECEDENCE
+		) {
+			return parent::p($node, $precedence, $lhsPrecedence, $parentFormatPreserved);
+		}
+
+		$printed = $node->getAttribute(ExprPrinter::ATTRIBUTE_CACHE_KEY);
+		if ($printed !== null) {
+			return $printed;
+		}
+
+		$printed = parent::p($node, parentFormatPreserved: $parentFormatPreserved);
+		if (!str_contains($printed, "\n")) {
+			$node->setAttribute(ExprPrinter::ATTRIBUTE_CACHE_KEY, $printed);
+		}
+
+		return $printed;
+	}
 
 	/**
 	 * Normalize curly-brace member access with a constant string name to the

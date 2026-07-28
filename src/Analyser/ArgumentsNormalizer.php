@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node as PhpParserNode;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\FuncCall;
@@ -12,6 +13,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -91,7 +93,7 @@ final class ArgumentsNormalizer
 		return [$parametersAcceptor, new FuncCall(
 			$callbackArg->value,
 			$passThruArgs,
-			$callUserFuncCall->getAttributes(),
+			self::attributesWithoutPrintedForm($callUserFuncCall),
 		), $acceptsNamedArguments];
 	}
 
@@ -161,7 +163,7 @@ final class ArgumentsNormalizer
 				$item->value,
 				$item->byRef,
 				$item->unpack,
-				$item->getAttributes(),
+				self::attributesWithoutPrintedForm($item),
 				is_string($key) ? new Identifier($key) : null,
 			);
 		}
@@ -187,7 +189,7 @@ final class ArgumentsNormalizer
 		return [$parametersAcceptor, new FuncCall(
 			$callbackArg->value,
 			$passThruArgs,
-			$callUserFuncArrayCall->getAttributes(),
+			self::attributesWithoutPrintedForm($callUserFuncArrayCall),
 		), $acceptsNamedArguments];
 	}
 
@@ -211,7 +213,7 @@ final class ArgumentsNormalizer
 		return new FuncCall(
 			$functionCall->name,
 			$reorderedArgs,
-			$functionCall->getAttributes(),
+			self::attributesWithoutPrintedForm($functionCall),
 		);
 	}
 
@@ -236,7 +238,7 @@ final class ArgumentsNormalizer
 			$methodCall->var,
 			$methodCall->name,
 			$reorderedArgs,
-			$methodCall->getAttributes(),
+			self::attributesWithoutPrintedForm($methodCall),
 		);
 	}
 
@@ -261,7 +263,7 @@ final class ArgumentsNormalizer
 			$staticCall->class,
 			$staticCall->name,
 			$reorderedArgs,
-			$staticCall->getAttributes(),
+			self::attributesWithoutPrintedForm($staticCall),
 		);
 	}
 
@@ -285,7 +287,7 @@ final class ArgumentsNormalizer
 		return new New_(
 			$new->class,
 			$reorderedArgs,
-			$new->getAttributes(),
+			self::attributesWithoutPrintedForm($new),
 		);
 	}
 
@@ -437,6 +439,22 @@ final class ArgumentsNormalizer
 		}
 
 		return $reorderedArgs;
+	}
+
+	/**
+	 * The printed form of an expression is derived from its own arguments, so
+	 * it must not travel to a node whose arguments were just reordered — the
+	 * normalized call would report the original's expression key, named
+	 * arguments and all.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private static function attributesWithoutPrintedForm(PhpParserNode $node): array
+	{
+		$attributes = $node->getAttributes();
+		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+
+		return $attributes;
 	}
 
 }

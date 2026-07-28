@@ -142,6 +142,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
@@ -1182,11 +1183,19 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, new NoopExpressionNode($stmt->expr, $hasAssign), $scope, $storage);
 			}
 			$scope = $result->getScope();
-			$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
+			$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
 				$scope,
 				$stmt->expr,
 				TypeSpecifierContext::createNull(),
-			));
+			);
+			$scope = $scope->filterBySpecifiedTypes($specifiedTypes);
+			if ($specifiedTypes->isEquality()) {
+				// Statement counterpart of the equality handling in filterByTruthyValue():
+				// store the call's true result so a duplicate void assertion statement is
+				// reported as always-true. We assign directly because void calls have no
+				// return value to protect, and intersecting true with void would produce never.
+				$scope = $scope->assignExpression($stmt->expr, new ConstantBooleanType(true), new ConstantBooleanType(true));
+			}
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();

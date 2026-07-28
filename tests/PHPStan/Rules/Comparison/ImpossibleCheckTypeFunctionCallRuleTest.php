@@ -530,6 +530,30 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/non-empty-string-impossible-type.php'], []);
 	}
 
+	public function testBug14705(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14705.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug14705Php8(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-14705-php8.php'], [
+			[
+				'Call to function str_ends_with() with non-empty-string and non-empty-string will always evaluate to true.',
+				50,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Call to function str_contains() with non-empty-string and non-empty-string will always evaluate to true.',
+				62,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 	public function testBug2755(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

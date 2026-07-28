@@ -4323,6 +4323,7 @@ final class NodeScopeResolver
 				$statementResult,
 				$executionEnds,
 				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
+				$passedToType,
 			), $closureScope);
 
 			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
@@ -4369,6 +4370,7 @@ final class NodeScopeResolver
 			$statementResult,
 			$executionEnds,
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
+			$passedToType,
 		), $closureScope);
 
 		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);

@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
+use PHPStan\Type\Type;
 use function count;
 
 /**
@@ -33,6 +34,7 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 		private StatementResult $statementResult,
 		private array $executionEnds,
 		private array $impurePoints,
+		private ?Type $passedToType,
 	)
 	{
 		parent::__construct($closureExpr->getAttributes());
@@ -82,6 +84,11 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	public function returnsByRef(): bool
 	{
 		return $this->closureExpr->byRef;
+	}
+
+	public function getPassedToType(): ?Type
+	{
+		return $this->passedToType;
 	}
 
 	public function getType(): string

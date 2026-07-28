@@ -46,14 +46,25 @@ class BenevolentUnionType extends UnionType
 
 	protected function unionTypes(callable $getType): Type
 	{
+		$changed = false;
+
 		$resultTypes = [];
 		foreach ($this->getTypes() as $type) {
 			$result = $getType($type);
 			if ($result instanceof ErrorType) {
+				$changed = true;
 				continue;
 			}
 
+			if ($result !== $type) {
+				$changed = true;
+			}
+
 			$resultTypes[] = $result;
+		}
+
+		if (!$changed) {
+			return $this;
 		}
 
 		if (count($resultTypes) === 0) {

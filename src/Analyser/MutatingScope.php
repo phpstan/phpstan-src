@@ -3308,11 +3308,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		$typeSpecifications = ScopeOps::buildTypeSpecifications($specifiedTypes->getSureTypes(), $specifiedTypes->getSureNotTypes());
 
+		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$alternativeExpr, $terms]) {
+			if (
+				$alternativeExpr instanceof Node\Scalar
+				|| $alternativeExpr instanceof Expr\Array_
+				|| ($alternativeExpr instanceof Expr\UnaryMinus && $alternativeExpr->expr instanceof Node\Scalar)
+			) {
+				continue;
+			}
+			$typeSpecifications[] = [
+				'sure' => true,
+				'exprString' => (string) $exprString,
+				'expr' => $alternativeExpr,
+				'terms' => $terms,
+			];
+		}
+
 		$scope = $this;
 		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
-			$type = $typeSpecification['type'];
 
 			if ($expr instanceof IssetExpr) {
 				$issetExpr = $expr;
@@ -3341,6 +3356,36 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
+			if (isset($typeSpecification['terms'])) {
+				// an alternative-form entry: the union over its terms of
+				// `(sure ?? current) minus subtract`, evaluated here at the
+				// application point - the deferred descendant of the old
+				// SpecifiedTypes::normalize()
+				$evaluate = static function (Type $current) use ($typeSpecification): Type {
+					$parts = [];
+					foreach ($typeSpecification['terms'] as [$sure, $subtract]) {
+						$base = $sure ?? $current;
+						$parts[] = $subtract !== null ? TypeCombinator::remove($base, $subtract) : $base;
+					}
+
+					return TypeCombinator::union(...$parts);
+				};
+				$originalExprType = $scope->getType($expr);
+				if (!$scope->isComplexUnionType($originalExprType)) {
+					$nativeType = $scope->getNativeType($expr);
+					$scope = $scope->specifyExpressionType(
+						$expr,
+						TypeCombinator::intersect($evaluate($originalExprType), $originalExprType),
+						TypeCombinator::intersect($evaluate($nativeType), $nativeType),
+						TrinaryLogic::createYes(),
+					);
+					$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
+				}
+
+				continue;
+			}
+
+			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
 					$scope = $scope->assignExpression($expr, $type, $type);

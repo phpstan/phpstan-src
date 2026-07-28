@@ -34,6 +34,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -377,7 +378,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					self::createFunctionCall('random'),
 				),
 				[],
-				['$foo' => 'mixed'],
+				[],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -409,7 +410,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 					self::createFunctionCall('random'),
 				),
-				['$foo' => 'mixed'],
+				[],
 				[],
 			],
 
@@ -1195,7 +1196,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => 'mixed~non-empty-string & ~null'],
+				['$a' => '~null & mixed~non-empty-string'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -1209,7 +1210,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => 'mixed~non-empty-string & ~null'],
+				['$a' => '~non-empty-string|null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -1223,7 +1224,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-array<mixed, mixed>|null'],
-				['$a' => 'mixed~non-empty-array<mixed, mixed> & ~null'],
+				['$a' => '~non-empty-array<mixed, mixed>|null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -1339,6 +1340,18 @@ class TypeSpecifierTest extends PHPStanTestCase
 
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$exprNode, $exprType]) {
 			$typesDescription[$exprString][] = '~' . $exprType->describe(VerbosityLevel::precise());
+		}
+
+		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$exprNode, $terms]) {
+			// evaluate the alternative-form entry against the test scope, the
+			// same way filterBySpecifiedTypes() evaluates it at the application
+			// point - the readable result matches the old eager normalize form
+			$parts = [];
+			foreach ($terms as [$sure, $subtract]) {
+				$base = $sure ?? $this->scope->getType($exprNode);
+				$parts[] = $subtract !== null ? TypeCombinator::remove($base, $subtract) : $base;
+			}
+			$typesDescription[$exprString][] = TypeCombinator::union(...$parts)->describe(VerbosityLevel::precise());
 		}
 
 		$descriptions = [];

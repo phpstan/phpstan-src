@@ -148,16 +148,16 @@ final class BooleanOrHandler implements ExprHandler
 			if (
 				$scope->getType($expr->left)->toBoolean()->isFalse()->yes()
 			) {
-				$types = $rightTypes->normalize($rightScope);
+				$types = $this->conditionalExpressionHolderHelper->toSureTypes($rightTypes, $rightScope);
 			} elseif (
 				$scope->getType($expr->left)->toBoolean()->isTrue()->yes()
 				|| $scope->getType($expr->right)->toBoolean()->isFalse()->yes()
 			) {
-				$types = $leftTypes->normalize($scope);
+				$types = $this->conditionalExpressionHolderHelper->toSureTypes($leftTypes, $scope);
 			} else {
-				$leftNormalized = $leftTypes->normalize($scope);
-				$rightNormalized = $rightTypes->normalize($rightScope);
-				$types = $leftNormalized->intersectWith($rightNormalized);
+				$leftNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($leftTypes, $scope);
+				$rightNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($rightTypes, $rightScope);
+				$types = $leftTypes->intersectWith($rightTypes);
 				$types = $this->augmentBooleanOrTruthyWithConditionalHolders($typeSpecifier, $scope, $rightScope, $expr, $types);
 				$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, true, $types);
 			}
@@ -166,10 +166,10 @@ final class BooleanOrHandler implements ExprHandler
 		}
 
 		if ($context->true()) {
-			$result = new SpecifiedTypes(
+			$result = (new SpecifiedTypes(
 				$types->getSureTypes(),
 				$types->getSureNotTypes(),
-			);
+			))->withAlternativeTypesOf($types);
 			if ($types->shouldOverwrite()) {
 				$result = $result->setAlwaysOverwriteTypes();
 			}
@@ -243,7 +243,7 @@ final class BooleanOrHandler implements ExprHandler
 		$armSpecifiedTypes = [];
 		foreach ($arms as $arm) {
 			$armTypes = $typeSpecifier->specifyTypesInCondition($scope, $arm, $context);
-			$armSpecifiedTypes[] = $armTypes->normalize($scope);
+			$armSpecifiedTypes[] = $armTypes;
 		}
 
 		$types = $armSpecifiedTypes[0];
@@ -251,10 +251,10 @@ final class BooleanOrHandler implements ExprHandler
 			$types = $types->intersectWith($armSpecifiedTypes[$i]);
 		}
 
-		$result = new SpecifiedTypes(
+		$result = (new SpecifiedTypes(
 			$types->getSureTypes(),
 			$types->getSureNotTypes(),
-		);
+		))->withAlternativeTypesOf($types);
 		if ($types->shouldOverwrite()) {
 			$result = $result->setAlwaysOverwriteTypes();
 		}

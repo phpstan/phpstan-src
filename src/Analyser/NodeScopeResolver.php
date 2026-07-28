@@ -1629,7 +1629,7 @@ class NodeScopeResolver
 							}
 						}
 						$keyLoopTypes[] = $scopeWithIterableValueType->getType($keyVarExpr);
-						$keyLoopNativeTypes[] = $scopeWithIterableValueType->getType($keyVarExpr);
+						$keyLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($keyVarExpr);
 					} else {
 						// No key variable: the narrowed value var is the array element type directly.
 						$dimFetchType = $scopeWithIterableValueType->getVariableType($stmt->valueVar->name);
@@ -1944,7 +1944,6 @@ class NodeScopeResolver
 				foreach ($stmt->cond as $condExpr) {
 					$condResult = $this->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
 					$initScope = $condResult->getScope();
-					$condResultScope = $condResult->getScope();
 
 					// only the last condition expression is relevant whether the loop continues
 					// see https://www.php.net/manual/en/control-structures.for.php

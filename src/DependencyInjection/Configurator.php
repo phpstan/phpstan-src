@@ -11,7 +11,6 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
-use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_keys;
 use function count;
 use function error_reporting;
@@ -30,7 +29,6 @@ use function substr;
 use function time;
 use function trim;
 use function unlink;
-use function var_export;
 use const E_USER_DEPRECATED;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
@@ -105,12 +103,6 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
 			NeonAdapter::CACHE_KEY,
 			$this->getAllConfigFilesHashes(),
-			// the stubs, not the extension: a shadowed service class is
-			// reflected while the container compiles, so a container built
-			// against the stub shells must not be reused by a run that loaded
-			// the extension but left it inactive (version mismatch,
-			// PHPSTAN_TURBO=0) and reflects the PHP implementations instead
-			var_export(TurboExtensionEnabler::isActive(), true),
 		];
 
 		$className = $loader->load(

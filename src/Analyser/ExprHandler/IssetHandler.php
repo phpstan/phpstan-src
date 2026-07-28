@@ -29,6 +29,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
+use PHPStan\Node\IssetExpressionNode;
 use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -352,10 +353,12 @@ final class IssetHandler implements ExprHandler
 		$impurePoints = [];
 		$nonNullabilityResults = [];
 		$isAlwaysTerminating = false;
+		$varResults = [];
 		foreach ($expr->vars as $var) {
 			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$varResults[] = $varResult;
 			$scope = $varResult->getScope();
 			$hasYield = $hasYield || $varResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
@@ -387,6 +390,8 @@ final class IssetHandler implements ExprHandler
 		foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
 			$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 		}
+
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new IssetExpressionNode($expr, $varResults), $beforeScope, $storage, $context);
 
 		return $this->expressionResultFactory->create(
 			$scope,

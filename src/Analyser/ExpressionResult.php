@@ -35,6 +35,7 @@ final class ExpressionResult
 		private array $throwPoints,
 		private array $impurePoints,
 		private bool $containsNullsafe = false,
+		private ?IssetabilityDescriptor $issetabilityDescriptor = null,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
 	)
@@ -67,6 +68,32 @@ final class ExpressionResult
 	public function containsNullsafe(): bool
 	{
 		return $this->containsNullsafe;
+	}
+
+	/**
+	 * The isset/empty/?? view of this expression evaluated at the given
+	 * scope: folds the chain descriptor, or builds a leaf resolution from the
+	 * expression's own type when it is not a chain link (e.g. a method-call-rooted
+	 * base like $this->getFoo()['x']). $useNativeTypes selects native vs phpdoc.
+	 */
+	public function getIssetabilityResolution(MutatingScope $scope, bool $useNativeTypes): IssetabilityResolution
+	{
+		if ($this->issetabilityDescriptor !== null) {
+			return $this->issetabilityDescriptor->resolve($scope, $useNativeTypes, $this->expr);
+		}
+
+		$type = $this->getTypeOnScope($scope, $useNativeTypes);
+
+		return new IssetabilityResolution(
+			IssetabilityLinkInfo::leaf($type, $this->expr, $this->expr instanceof Expr\NullsafePropertyFetch),
+			null,
+		);
+	}
+
+	/** Prices this result's expression on the given scope in the requested flavour. */
+	public function getTypeOnScope(MutatingScope $scope, bool $useNativeTypes): Type
+	{
+		return $useNativeTypes ? $scope->getNativeType($this->expr) : $scope->getType($this->expr);
 	}
 
 	/**

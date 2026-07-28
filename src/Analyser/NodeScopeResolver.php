@@ -1616,7 +1616,10 @@ class NodeScopeResolver
 						// the narrowed value-var type in place of the broader dim fetch type so
 						// the loop's final array rewrite below picks up the sharper element type.
 						if ($originalValueExpr !== null && $scopeWithIterableValueType->hasExpressionType($originalValueExpr)->yes()) {
-							$valueVarType = $scopeWithIterableValueType->getType($stmt->valueVar);
+							// read the loop value variable's narrowed type directly by name -
+							// it is an assigned (not processExprNode-processed) variable
+							// ($originalValueExpr !== null implies a string-named Variable)
+							$valueVarType = $scopeWithIterableValueType->getVariableType($stmt->valueVar->name);
 							if ($dimFetchType->isSuperTypeOf($valueVarType)->yes()) {
 								$dimFetchType = $valueVarType;
 							}
@@ -1629,7 +1632,7 @@ class NodeScopeResolver
 						$keyLoopNativeTypes[] = $scopeWithIterableValueType->getType($keyVarExpr);
 					} else {
 						// No key variable: the narrowed value var is the array element type directly.
-						$dimFetchType = $scopeWithIterableValueType->getType($stmt->valueVar);
+						$dimFetchType = $scopeWithIterableValueType->getVariableType($stmt->valueVar->name);
 						$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
 					}
 					$arrayDimFetchLoopTypes[] = $dimFetchType;
@@ -1946,7 +1949,7 @@ class NodeScopeResolver
 					// only the last condition expression is relevant whether the loop continues
 					// see https://www.php.net/manual/en/control-structures.for.php
 					if ($condExpr === $lastCondExpr) {
-						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
+						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
 					}
 
@@ -2504,7 +2507,7 @@ class NodeScopeResolver
 				} else {
 					$constantName = new Name\FullyQualified($const->name->toString());
 				}
-				$scope = $scope->assignExpression(new ConstFetch($constantName), $scope->getType($const->value), $scope->getNativeType($const->value));
+				$scope = $scope->assignExpression(new ConstFetch($constantName), $constResult->getType(), $constResult->getNativeType());
 			}
 		} elseif ($stmt instanceof Node\Stmt\ClassConst) {
 			$hasYield = false;
@@ -2520,8 +2523,8 @@ class NodeScopeResolver
 				}
 				$scope = $scope->assignExpression(
 					new Expr\ClassConstFetch(new Name\FullyQualified($scope->getClassReflection()->getName()), $const->name),
-					$scope->getType($const->value),
-					$scope->getNativeType($const->value),
+					$constResult->getType(),
+					$constResult->getNativeType(),
 				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\EnumCase) {

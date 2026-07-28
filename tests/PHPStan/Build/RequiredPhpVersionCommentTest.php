@@ -32,6 +32,7 @@ final class RequiredPhpVersionCommentTest extends TestCase
 			__DIR__ . '/../Analyser/data',
 			__DIR__ . '/../Analyser/nsrt',
 			__DIR__ . '/../Analyser/Fiber/data',
+			__DIR__ . '/../../bench/data',
 		];
 
 		$dataFinder = new Finder();

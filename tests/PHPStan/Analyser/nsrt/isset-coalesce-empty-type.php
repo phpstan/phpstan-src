@@ -246,7 +246,7 @@ class FooNativeProp
 	public int $canBeUninitialized;
 
 	function doFoo(FooNativeProp $foo): void {
-		assertType('bool', isset($foo->hasDefaultValue));
+		assertType('true', isset($foo->hasDefaultValue));
 
 		$foo->isAssignedBefore = 5;
 		assertType('true', isset($foo->isAssignedBefore));

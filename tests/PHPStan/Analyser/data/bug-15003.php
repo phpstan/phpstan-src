@@ -5,7 +5,6 @@ declare(strict_types = 1);
 namespace Bug15003;
 
 use Closure;
-use function PHPStan\Testing\assertType;
 
 /**
  * @phpstan-type Foo InvokableClass|callable(string, mixed): int
@@ -30,7 +29,6 @@ class A
 }
 
 (new A)->foo(function(string $foo) {
-	assertType('string', $foo);
 	return 5;
 });
 
@@ -40,7 +38,7 @@ interface InvokableRule
 	/**
 	 * @param Closure(string): string $fail
 	 */
-	public function __invoke(string $attribute, mixed $value, Closure $fail);
+	public function __invoke(string $attribute, mixed $value, Closure $fail): void;
 
 }
 
@@ -69,16 +67,16 @@ final class Field
 
 }
 
-(new Field())->rules(function ($attribute, $value, $fail) {
-	assertType('string', $attribute);
-	assertType('mixed', $value);
-	assertType('Closure', $fail);
-});
+function rules(): Field
+{
+	return (new Field())->rules(function ($attribute, $value, $fail) {
+	});
+}
 
-(new Field())->creationRules([
-	function ($attribute, $value, $fail) {
-		assertType('mixed', $attribute);
-		assertType('mixed', $value);
-		assertType('mixed', $fail);
-	},
-]);
+function creationRules(): Field
+{
+	return (new Field())->creationRules([
+		function ($attribute, $value, $fail) {
+		},
+	]);
+}

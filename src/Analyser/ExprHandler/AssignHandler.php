@@ -998,10 +998,16 @@ final class AssignHandler implements ExprHandler
 				$var = $var->getVar();
 			}
 
+			// the chain is usually a clone of AST nodes already processed elsewhere
+			// (see Unset_ handling) - process it with a noop callback so that
+			// results for its nodes are stored without invoking rules twice
+			$nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+
 			$offsetTypes = [];
 			$offsetNativeTypes = [];
 			foreach (array_reverse($dimFetchStack) as $dimFetch) {
 				$dimExpr = $dimFetch->getDim();
+				$nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 				$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
 				$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
 			}

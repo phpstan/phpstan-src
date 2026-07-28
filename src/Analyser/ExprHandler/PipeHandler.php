@@ -69,22 +69,41 @@ final class PipeHandler implements ExprHandler
 		unset($rightAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 		$argAttributes = $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, []);
 
+		$isRightFirstClassCallable = false;
 		if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {
 			$callExpr = new FuncCall($expr->right->name, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
+			$isRightFirstClassCallable = true;
 		} elseif ($expr->right instanceof MethodCall && $expr->right->isFirstClassCallable()) {
 			$callExpr = new MethodCall($expr->right->var, $expr->right->name, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
+			$isRightFirstClassCallable = true;
 		} elseif ($expr->right instanceof StaticCall && $expr->right->isFirstClassCallable()) {
 			$callExpr = new StaticCall($expr->right->class, $expr->right->name, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
+			$isRightFirstClassCallable = true;
 		} else {
 			$callExpr = new FuncCall($expr->right, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
+		}
+
+		if ($isRightFirstClassCallable) {
+			// the original first-class callable node is not processed through
+			// processExprNode - store its result so that node callbacks asking
+			// about its type can be resumed
+			$nodeScopeResolver->storeExpressionResult($storage, $expr->right, $this->expressionResultFactory->create(
+				$scope,
+				beforeScope: $scope,
+				expr: $expr->right,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+			));
 		}
 
 		$callResult = $nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);

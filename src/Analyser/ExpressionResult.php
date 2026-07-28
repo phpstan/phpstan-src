@@ -47,6 +47,11 @@ final class ExpressionResult
 		return $this->scope;
 	}
 
+	public function getBeforeScope(): MutatingScope
+	{
+		return $this->beforeScope;
+	}
+
 	public function hasYield(): bool
 	{
 		return $this->hasYield;

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\Fiber;
 use Fiber;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -49,26 +50,31 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		$this->runFiberForNodeCallback($storage, $fiber, $request);
 	}
 
-	public function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
+	public function storeExpressionResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
 	{
-		$storage->storeBeforeScope($expr, $beforeScope);
-		$this->processPendingFibersForRequestedExpr($storage, $expr, $beforeScope);
+		// The storage only ever answers type questions from FiberScope, which
+		// resolves them from the before-scope. Storing just the before-scope
+		// keeps the storage from pinning throw points, impure points, scope
+		// callbacks and the after-scope of every expression until the end of
+		// the file; a full result is wrapped on demand when a fiber asks.
+		$storage->storeBeforeScope($expr, $expressionResult->getBeforeScope());
+		$this->processPendingFibersForRequestedExpr($storage, $expr, $expressionResult);
 	}
 
 	/**
-	 * @param Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest> $fiber
+	 * @param Fiber<mixed, ExpressionResult|array{callable(Node $node, Scope $scope): void, Node, MutatingScope}, null, ExpressionResultRequest|ParkFiberRequest> $fiber
 	 */
 	private function runFiberForNodeCallback(
 		ExpressionResultStorage $storage,
 		Fiber $fiber,
-		BeforeScopeForExprRequest|ParkFiberRequest|null $request,
+		ExpressionResultRequest|ParkFiberRequest|null $request,
 	): void
 	{
 		while (!$fiber->isTerminated()) {
-			if ($request instanceof BeforeScopeForExprRequest) {
+			if ($request instanceof ExpressionResultRequest) {
 				$beforeScope = $storage->findBeforeScope($request->expr);
 				if ($beforeScope !== null) {
-					$request = $fiber->resume($beforeScope);
+					$request = $fiber->resume($this->createBeforeScopeResult($beforeScope->toMutatingScope(), $request->expr));
 					continue;
 				}
 
@@ -111,7 +117,12 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 				}
 
 				$fiber = $pending['fiber'];
-				$request = $fiber->resume($request->scope);
+
+				// The synthetic node was never processed in the walk, so there is
+				// no stored before-scope to answer with. Resume with a result
+				// anchored to the asker's own scope - its consumers resolve the
+				// type on demand from the before-scope.
+				$request = $fiber->resume($this->createBeforeScopeResult($request->scope->toMutatingScope(), $request->expr));
 				$this->runFiberForNodeCallback($storage, $fiber, $request);
 			}
 
@@ -121,7 +132,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		}
 	}
 
-	private function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
+	private function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
 	{
 		$exprId = spl_object_id($expr);
 		while (isset($storage->pendingFibers[$exprId])) {
@@ -130,10 +141,23 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 
 			foreach ($pendingList as $pending) {
 				$fiber = $pending['fiber'];
-				$request = $fiber->resume($result);
+				$request = $fiber->resume($expressionResult);
 				$this->runFiberForNodeCallback($storage, $fiber, $request);
 			}
 		}
+	}
+
+	private function createBeforeScopeResult(MutatingScope $beforeScope, Expr $expr): ExpressionResult
+	{
+		return $this->expressionResultFactory->create(
+			$beforeScope,
+			beforeScope: $beforeScope,
+			expr: $expr,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+		);
 	}
 
 }

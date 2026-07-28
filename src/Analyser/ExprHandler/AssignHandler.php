@@ -330,7 +330,6 @@ final class AssignHandler implements ExprHandler
 					);
 				}
 
-				$nodeScopeResolver->storeBeforeScope($storage, $expr, $scope);
 				$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
@@ -413,6 +412,15 @@ final class AssignHandler implements ExprHandler
 	): ExpressionResult
 	{
 		$beforeScope = $scope;
+		$nodeScopeResolver->storeExpressionResult($storage, $var, $this->expressionResultFactory->create(
+			$scope,
+			beforeScope: $scope,
+			expr: $var,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+		));
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope, $storage);
 		$hasYield = false;
 		$throwPoints = [];
@@ -420,7 +428,6 @@ final class AssignHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable) {
-			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -600,7 +607,15 @@ final class AssignHandler implements ExprHandler
 				if ($dimExpr === null) {
 					$offsetTypes[] = [null, $dimFetch];
 					$offsetNativeTypes[] = [null, $dimFetch];
-					$nodeScopeResolver->storeBeforeScope($storage, $dimFetch, $scope);
+					$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $this->expressionResultFactory->create(
+						$scope,
+						beforeScope: $scope,
+						expr: $dimFetch,
+						hasYield: false,
+						isAlwaysTerminating: false,
+						throwPoints: [],
+						impurePoints: [],
+					));
 
 				} else {
 					$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
@@ -609,7 +624,15 @@ final class AssignHandler implements ExprHandler
 					if ($enterExpressionAssign) {
 						$scope->enterExpressionAssign($dimExpr);
 					}
-					$nodeScopeResolver->storeBeforeScope($storage, $dimFetch, $scope);
+					$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $this->expressionResultFactory->create(
+						$scope,
+						beforeScope: $scope,
+						expr: $dimFetch,
+						hasYield: false,
+						isAlwaysTerminating: false,
+						throwPoints: [],
+						impurePoints: [],
+					));
 					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
 					$hasYield = $hasYield || $result->hasYield();
 					$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -731,7 +754,6 @@ final class AssignHandler implements ExprHandler
 				)->getThrowPoints());
 			}
 		} elseif ($var instanceof PropertyFetch) {
-			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
 			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
 			$hasYield = $objectResult->hasYield();
 			$throwPoints = $objectResult->getThrowPoints();
@@ -844,7 +866,6 @@ final class AssignHandler implements ExprHandler
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
-			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
 			if ($var->class instanceof Node\Name) {
 				$propertyHolderType = $scope->resolveTypeByName($var->class);
 			} else {
@@ -910,7 +931,6 @@ final class AssignHandler implements ExprHandler
 				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 			}
 		} elseif ($var instanceof List_) {
-			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());

@@ -83,7 +83,6 @@ final class AssignOpHandler implements ExprHandler
 
 				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
-					$nodeScopeResolver->storeBeforeScope($storage, $expr, $originalScope);
 					$isAlwaysTerminating = $exprResult->isAlwaysTerminating() && $originalScope->getType($expr->var)->isNull()->yes();
 					return $this->expressionResultFactory->create(
 						$exprResult->getScope()->mergeWith($originalScope),
@@ -100,9 +99,6 @@ final class AssignOpHandler implements ExprHandler
 			},
 			$expr instanceof Expr\AssignOp\Coalesce,
 		);
-		if (!$expr instanceof Expr\AssignOp\Coalesce) {
-			$nodeScopeResolver->storeBeforeScope($storage, $expr, $scope);
-		}
 		$scope = $assignResult->getScope();
 		$throwPoints = $assignResult->getThrowPoints();
 		$impurePoints = $assignResult->getImpurePoints();

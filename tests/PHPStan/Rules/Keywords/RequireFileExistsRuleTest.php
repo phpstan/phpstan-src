@@ -158,6 +158,19 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRelativePathInTrait(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/include-relative-in-trait/trait-dir/IncludeRelativeTrait.php',
+			__DIR__ . '/data/include-relative-in-trait/class-dir/IncludeRelativeClass.php',
+		], [
+			[
+				'Path in include() "only-in-class-dir.php" is not a file or it does not exist.',
+				15,
+			],
+		]);
+	}
+
 	public function testInFileExists(): void
 	{
 		$this->analyse([__DIR__ . '/data/include-in-file-exists.php'], []);

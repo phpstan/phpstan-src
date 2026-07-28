@@ -100,6 +100,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\NoopExpressionNode;
+use PHPStan\Node\NullsafeMethodCallOnFirstClassCallableNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
@@ -2813,6 +2814,11 @@ class NodeScopeResolver
 				$newExpr = new FunctionCallableNode($expr->name, $expr);
 			} elseif ($expr instanceof MethodCall) {
 				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr);
+			} elseif ($expr instanceof Expr\NullsafeMethodCall) {
+				// $foo?->bar(...) is a fatal error in PHP ("Cannot combine nullsafe
+				// operator with Closure creation"), but it must not crash the analyser.
+				// The error is reported by NullsafeFirstClassCallableRule.
+				$newExpr = new NullsafeMethodCallOnFirstClassCallableNode($expr->var, $expr->name, $expr);
 			} elseif ($expr instanceof StaticCall) {
 				$newExpr = new StaticMethodCallableNode($expr->class, $expr->name, $expr);
 			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {

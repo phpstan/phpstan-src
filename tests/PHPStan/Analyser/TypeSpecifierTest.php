@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use Override;
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Equal;
@@ -1323,6 +1324,52 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'(int) $float' => 'int',
 				],
 				[],
+			],
+			[
+				new Expr\NullsafeMethodCall(new Variable('fooOrNull'), new Identifier('doFoo')),
+				['$fooOrNull' => '~null'],
+				[],
+			],
+			[
+				new FuncCall(new Name('in_array'), [
+					new Arg(new Variable('string')),
+					new Arg(new Expr\Array_([
+						new Node\ArrayItem(new String_('foo')),
+						new Node\ArrayItem(new String_('bar')),
+					])),
+					new Arg(new ConstFetch(new Name('true'))),
+				]),
+				['$string' => '\'bar\'|\'foo\''],
+				['$string' => '~\'bar\'|\'foo\''],
+			],
+			[
+				new NotIdentical(
+					new Expr\NullsafeMethodCall(new Variable('fooOrNull'), new Identifier('doFoo')),
+					new ConstFetch(new Name('true')),
+				),
+				['$fooOrNull?->doFoo()' => '~true'],
+				['$fooOrNull' => '~null'],
+			],
+			[
+				new NotIdentical(
+					new FuncCall(new Name('in_array'), [
+						new Arg(new Variable('string')),
+						new Arg(new Expr\Array_([
+							new Node\ArrayItem(new String_('foo')),
+							new Node\ArrayItem(new String_('bar')),
+						])),
+						new Arg(new ConstFetch(new Name('true'))),
+					]),
+					new ConstFetch(new Name('true')),
+				),
+				[
+					'in_array($string, [\'foo\', \'bar\'], true)' => '~true',
+					'$string' => '~\'bar\'|\'foo\'',
+				],
+				[
+					'in_array($string, [\'foo\', \'bar\'], true)' => 'true',
+					'$string' => '\'bar\'|\'foo\'',
+				],
 			],
 		];
 	}

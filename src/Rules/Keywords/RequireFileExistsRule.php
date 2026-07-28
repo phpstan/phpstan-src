@@ -117,10 +117,10 @@ final class RequireFileExistsRule implements Rule
 	}
 
 	/**
-	 * The "calling script's own directory" fallback of a relative include is resolved
-	 * at compile time, so inside a trait it is the directory of the file the trait is
-	 * declared in - not the file of the class that uses it, which is what
-	 * Scope::getFile() returns in a trait context.
+	 * Both `__DIR__` and the "calling script's own directory" fallback of a relative
+	 * include are resolved at compile time, so inside a trait they point at the file
+	 * the trait is declared in - not at the file of the class that uses it, which is
+	 * what Scope::getFile() returns in a trait context.
 	 */
 	private function getScopeFile(Scope $scope): string
 	{
@@ -198,7 +198,7 @@ final class RequireFileExistsRule implements Rule
 
 			$paths = [];
 			foreach ($scope->getType($expr->right)->getConstantStrings() as $constantString) {
-				$paths[] = new ConstantStringType(dirname($scope->getFile()) . $constantString->getValue());
+				$paths[] = new ConstantStringType(dirname($this->getScopeFile($scope)) . $constantString->getValue());
 			}
 			return $paths;
 		}

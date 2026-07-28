@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php // lint >= 8.0
+declare(strict_types=1);
 
 namespace ConditionalExpressionInfiniteLoop;
 class test

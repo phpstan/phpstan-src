@@ -15,7 +15,6 @@ lint:
 	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors \
 		--exclude tests/PHPStan/Analyser/data \
 		--exclude tests/bench/data \
-		--exclude tests/bench/RegressionBench.php \
 		--exclude tests/PHPStan/Analyser/nsrt \
 		--exclude tests/PHPStan/Rules/Methods/data \
 		--exclude tests/PHPStan/Rules/Functions/data \

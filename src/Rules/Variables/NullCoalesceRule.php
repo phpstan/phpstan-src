@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Node\CoalesceExpressionNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
@@ -14,7 +15,7 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements Rule<CoalesceExpressionNode>
  */
 #[RegisteredRule(level: 1)]
 final class NullCoalesceRule implements Rule
@@ -30,42 +31,35 @@ final class NullCoalesceRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr::class;
+		return CoalesceExpressionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$typeMessageCallback = static function (Type $type): ?string {
-			$isNull = $type->isNull();
-			if ($isNull->maybe()) {
-				return null;
-			}
+		$error = $this->issetCheck->check(
+			$node->getSubjectResult(),
+			$scope,
+			$node->getOperatorDescription(),
+			'nullCoalesce',
+			static function (Type $type): ?string {
+				$isNull = $type->isNull();
+				if ($isNull->maybe()) {
+					return null;
+				}
 
-			if ($isNull->yes()) {
-				return 'is always null';
-			}
+				if ($isNull->yes()) {
+					return 'is always null';
+				}
 
-			return 'is not nullable';
-		};
+				return 'is not nullable';
+			},
+		);
 
-		if ($node instanceof Node\Expr\BinaryOp\Coalesce) {
-			$left = $node->left;
-			$right = $node->right;
-			$operator = '??';
-		} elseif ($node instanceof Node\Expr\AssignOp\Coalesce) {
-			$left = $node->var;
-			$right = $node->expr;
-			$operator = '??=';
-		} else {
-			return [];
-		}
-
-		$error = $this->issetCheck->check($left, $scope, sprintf('on left side of %s', $operator), 'nullCoalesce', $typeMessageCallback);
 		if ($error !== null) {
 			return [$error];
 		}
 
-		$unnecessaryError = $this->checkUnnecessaryNullCoalesce($left, $right, $operator, $scope);
+		$unnecessaryError = $this->checkUnnecessaryNullCoalesce($node, $scope);
 		if ($unnecessaryError !== null) {
 			return [$unnecessaryError];
 		}
@@ -73,9 +67,20 @@ final class NullCoalesceRule implements Rule
 		return [];
 	}
 
-	private function checkUnnecessaryNullCoalesce(Node\Expr $left, Node\Expr $right, string $operator, Scope $scope): ?IdentifierRuleError
+	private function checkUnnecessaryNullCoalesce(CoalesceExpressionNode $node, Scope $scope): ?IdentifierRuleError
 	{
 		if (!$this->unnecessaryNullCoalesce) {
+			return null;
+		}
+
+		$originalExpr = $node->getOriginalExpr();
+		if ($originalExpr instanceof Node\Expr\BinaryOp\Coalesce) {
+			$right = $originalExpr->right;
+			$operator = '??';
+		} elseif ($originalExpr instanceof Node\Expr\AssignOp\Coalesce) {
+			$right = $originalExpr->expr;
+			$operator = '??=';
+		} else {
 			return null;
 		}
 
@@ -86,7 +91,8 @@ final class NullCoalesceRule implements Rule
 		// The coalesce only changes the result when the left side is undefined.
 		// If the left side is always set, `?? null` (or `??= null`) never changes
 		// anything, so the whole coalesce is redundant.
-		if ($scope->toMutatingScope()->issetCheck($left, static fn (): bool => true) !== true) {
+		$resolution = $node->getSubjectResult()->getIssetabilityResolution($scope->toMutatingScope(), false);
+		if ($resolution->isSet(static fn (): bool => true) !== true) {
 			return null;
 		}
 

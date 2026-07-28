@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
-use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -22,7 +21,6 @@ class EmptyRuleTest extends RuleTestCase
 	{
 		return new EmptyRule(new IssetCheck(
 			new PropertyDescriptor(),
-			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
 		));

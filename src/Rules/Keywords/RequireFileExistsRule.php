@@ -104,7 +104,7 @@ final class RequireFileExistsRule implements Rule
 		$directories = array_merge(
 			[$this->currentWorkingDirectory],
 			explode(PATH_SEPARATOR, get_include_path()),
-			[dirname($scope->getFile())],
+			[dirname($this->getScopeFile($scope))],
 		);
 
 		foreach ($directories as $directory) {
@@ -114,6 +114,24 @@ final class RequireFileExistsRule implements Rule
 		}
 
 		return false;
+	}
+
+	/**
+	 * The "calling script's own directory" fallback of a relative include is resolved
+	 * at compile time, so inside a trait it is the directory of the file the trait is
+	 * declared in - not the file of the class that uses it, which is what
+	 * Scope::getFile() returns in a trait context.
+	 */
+	private function getScopeFile(Scope $scope): string
+	{
+		if ($scope->isInTrait()) {
+			$traitFileName = $scope->getTraitReflection()->getFileName();
+			if ($traitFileName !== null) {
+				return $this->fileHelper->normalizePath($traitFileName);
+			}
+		}
+
+		return $scope->getFile();
 	}
 
 	private function doesFileExistForDirectory(string $path, string $workingDirectory): bool

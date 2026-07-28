@@ -22,6 +22,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransformer;
+use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -253,36 +254,39 @@ final class FuncCallHandler implements ExprHandler
 				$arrayWalkOriginalArrayType = $scope->getType($arrayWalkArrayArg);
 				$arrayWalkOriginalArrayNativeType = $scope->getNativeType($arrayWalkArrayArg);
 
-				$nodeCallbackForArgs = static function (Node $node, Scope $scope) use ($nodeCallback, $callbackArg, $firstParamName, &$arrayWalkValueTypes): void {
-					if ($node instanceof ClosureReturnStatementsNode && $node->getClosureExpr() === $callbackArg) {
-						$types = [];
-						$nativeTypes = [];
-						$stmtResult = $node->getStatementResult();
-						foreach ($stmtResult->getExitPoints() as $exitPoint) {
-							$exitScope = $exitPoint->getScope();
-							if (!$exitScope->hasVariableType($firstParamName)->yes()) {
-								continue;
-							}
+				$nodeCallbackForArgs = new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($callbackArg, $firstParamName, &$arrayWalkValueTypes): void {
+					if (!($node instanceof ClosureReturnStatementsNode) || $node->getClosureExpr() !== $callbackArg) {
+						return;
+					}
 
-							$types[] = $exitScope->getVariableType($firstParamName);
-							$nativeTypes[] = $exitScope->getNativeType(new Variable($firstParamName));
+					$types = [];
+					$nativeTypes = [];
+					$stmtResult = $node->getStatementResult();
+					foreach ($stmtResult->getExitPoints() as $exitPoint) {
+						$exitScope = $exitPoint->getScope();
+						if (!$exitScope->hasVariableType($firstParamName)->yes()) {
+							continue;
 						}
-						if (!$stmtResult->isAlwaysTerminating()) {
-							$stmtScope = $stmtResult->getScope();
-							if ($stmtScope->hasVariableType($firstParamName)->yes()) {
-								$types[] = $stmtScope->getVariableType($firstParamName);
-								$nativeTypes[] = $stmtScope->getNativeType(new Variable($firstParamName));
-							}
-						}
-						if (count($types) > 0) {
-							$arrayWalkValueTypes = [
-								TypeCombinator::union(...$types),
-								TypeCombinator::union(...$nativeTypes),
-							];
+
+						$types[] = $exitScope->getVariableType($firstParamName);
+						$nativeTypes[] = $exitScope->getNativeType(new Variable($firstParamName));
+					}
+					if (!$stmtResult->isAlwaysTerminating()) {
+						$stmtScope = $stmtResult->getScope();
+						if ($stmtScope->hasVariableType($firstParamName)->yes()) {
+							$types[] = $stmtScope->getVariableType($firstParamName);
+							$nativeTypes[] = $stmtScope->getNativeType(new Variable($firstParamName));
 						}
 					}
-					$nodeCallback($node, $scope);
-				};
+					if (count($types) <= 0) {
+						return;
+					}
+
+					$arrayWalkValueTypes = [
+						TypeCombinator::union(...$types),
+						TypeCombinator::union(...$nativeTypes),
+					];
+				}, $nodeCallback);
 			}
 		}
 

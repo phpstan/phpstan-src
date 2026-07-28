@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -31,6 +32,15 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		ExpressionResultStorage $storage,
 	): void
 	{
+		// Engine-feeding gatherers must observe the node at the emission
+		// position - their arrays are read as soon as the enclosing body walk
+		// returns. Only the rule-facing remainder may be deferred to a fiber;
+		// a rule parking on an unsettled expression must not delay gathering.
+		while ($nodeCallback instanceof GatheringNodeCallback) {
+			($nodeCallback->getGatherer())($node, $scope);
+			$nodeCallback = $nodeCallback->getInner();
+		}
+
 		if (Fiber::getCurrent() !== null) {
 			$nodeCallback($node, $scope->toFiberScope());
 			return;

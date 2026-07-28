@@ -2,26 +2,30 @@
 
 namespace PHPStan\Benchmark;
 
-use PhpBench\Attributes as Bench;
 use Symfony\Component\Finder\Finder;
 
-#[Bench\Revs(revs: 1)]
-#[Bench\Iterations(iterations: 5)]
-#[Bench\Warmup(revs: 1)]
-#[Bench\RetryThreshold(retryThreshold: 10.0)]
-#[Bench\Assert(expression: '
-    (mode(baseline.time.avg) < 100 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 50%)
-    or (mode(baseline.time.avg) >= 100 milliseconds and mode(baseline.time.avg) < 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 25%)
-    or (mode(baseline.time.avg) >= 500 milliseconds and mode(baseline.time.avg) < 2000 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 20%)
-    or (mode(baseline.time.avg) >= 2000 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%)
-')]
+/**
+ * PHPBench annotations are used instead of attributes so that the benchmark
+ * also runs on PHP 7.4 with the downgraded source code, where attributes
+ * are just comments.
+ *
+ * The @Assert expression has to stay on a single line - an annotation value
+ * cannot span multiple lines.
+ *
+ * @Revs(1)
+ * @Iterations(5)
+ * @Warmup(1)
+ * @RetryThreshold(10.0)
+ * @Assert("(mode(baseline.time.avg) < 100 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 50%) or (mode(baseline.time.avg) >= 100 milliseconds and mode(baseline.time.avg) < 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 25%) or (mode(baseline.time.avg) >= 500 milliseconds and mode(baseline.time.avg) < 2000 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 20%) or (mode(baseline.time.avg) >= 2000 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%)")
+ */
 class RegressionBench extends BenchCase
 {
 
 	/**
+	 * @ParamProviders({"provideFiles"})
+	 *
 	 * @param array{string} $params
 	 */
-	#[Bench\ParamProviders(['provideFiles'])]
 	public function benchRunAnalyse(array $params): void
 	{
 		$this->runAnalyse($params[0]);
@@ -42,6 +46,10 @@ class RegressionBench extends BenchCase
 		$finder->sortByName(true);
 		$files = [];
 		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
+			if (self::isFileLintSkipped($fileInfo->getPathname())) {
+				continue;
+			}
+
 			$files[$fileInfo->getBasename()] = [$fileInfo->getPathname()];
 		}
 

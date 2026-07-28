@@ -23,9 +23,16 @@ permissions:
 
 jobs:
   baseline:
-    name: "Baseline"
+    name: "Baseline (PHP ${{ matrix.php-version }})"
     runs-on: ubuntu-latest
     timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.4"
+          - "8.5"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -40,30 +47,55 @@ jobs:
         uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
-          php-version: "8.5"
+          php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
           ini-values: memory_limit=-1
 
+      - name: "Downgrade PHPUnit"
+        if: matrix.php-version == '7.4'
+        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
+
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Downgrade PHPBench"
+        if: matrix.php-version == '7.4'
+        run: "composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 symfony/console:^5.4 symfony/process:^5.4 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs --working-dir=tests"
+
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        if: matrix.php-version != '7.4'
         with:
           working-directory: "tests/"
 
+      - uses: ./.github/actions/downgrade-code
+        with:
+          php-version: "${{ matrix.php-version }}"
+
       - name: "Run phpbench baseline"
-        run: "tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline.xml --ansi"
+        run: "tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline-${{ matrix.php-version }}.xml --ansi"
 
       - name: "Upload baseline artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: phpbench-baseline
-          path: tests/bench/storage/baseline.xml
+          name: phpbench-baseline-${{ matrix.php-version }}
+          path: tests/bench/storage/baseline-${{ matrix.php-version }}.xml
 
   test:
-    name: "Test"
+    name: "Test (PHP ${{ matrix.php-version }})"
     runs-on: ubuntu-latest
     timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # phpbench 1.2.14 is the last version supporting PHP 7.4
+          # and it does not have the aggregate-preview report 'my-report' extends
+          - php-version: "7.4"
+            report: "aggregate"
+          - php-version: "8.5"
+            report: "my-report"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -78,16 +110,30 @@ jobs:
         uses: "shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc" # v2.37.1
         with:
           coverage: "none"
-          php-version: "8.5"
+          php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
           ini-values: memory_limit=-1
 
+      - name: "Downgrade PHPUnit"
+        if: matrix.php-version == '7.4'
+        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
+
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Downgrade PHPBench"
+        if: matrix.php-version == '7.4'
+        run: "composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 symfony/console:^5.4 symfony/process:^5.4 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs --working-dir=tests"
+
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        if: matrix.php-version != '7.4'
         with:
           working-directory: "tests/"
 
+      - uses: ./.github/actions/downgrade-code
+        with:
+          php-version: "${{ matrix.php-version }}"
+
       - name: "Run phpbench test"
-        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --report=my-report --ansi"
+        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline-${{ matrix.php-version }}.xml --report=${{ matrix.report }} --ansi"

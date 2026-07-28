@@ -186,6 +186,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function max;
 use function sprintf;
 use function strtolower;
 use function trim;
@@ -3301,33 +3302,34 @@ class NodeScopeResolver
 
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
 			foreach ($acceptors as $acceptor) {
+				$acceptorParameters = array_map(static fn (ParameterReflection $callableParameter) => new NativeParameterReflection(
+					$callableParameter->getName(),
+					$callableParameter->isOptional(),
+					$callableParameter->getType(),
+					$callableParameter->passedByReference(),
+					$callableParameter->isVariadic(),
+					$callableParameter->getDefaultValue(),
+				), $acceptor->getParameters());
+
 				if ($callableParameters === null) {
-					$callableParameters = array_map(static fn (ParameterReflection $callableParameter) => new NativeParameterReflection(
-						$callableParameter->getName(),
-						$callableParameter->isOptional(),
-						$callableParameter->getType(),
-						$callableParameter->passedByReference(),
-						$callableParameter->isVariadic(),
-						$callableParameter->getDefaultValue(),
-					), $acceptor->getParameters());
+					$callableParameters = $acceptorParameters;
 					continue;
 				}
 
 				$newParameters = [];
-				foreach ($acceptor->getParameters() as $i => $callableParameter) {
-					if (!array_key_exists($i, $callableParameters)) {
-						$newParameters[] = $callableParameter;
+				$parameterCount = max(count($callableParameters), count($acceptorParameters));
+				for ($i = 0; $i < $parameterCount; $i++) {
+					if (!array_key_exists($i, $acceptorParameters)) {
+						$newParameters[] = $callableParameters[$i]->toOptional();
 						continue;
 					}
 
-					$newParameters[] = $callableParameters[$i]->union(new NativeParameterReflection(
-						$callableParameter->getName(),
-						$callableParameter->isOptional(),
-						$callableParameter->getType(),
-						$callableParameter->passedByReference(),
-						$callableParameter->isVariadic(),
-						$callableParameter->getDefaultValue(),
-					));
+					if (!array_key_exists($i, $callableParameters)) {
+						$newParameters[] = $acceptorParameters[$i]->toOptional();
+						continue;
+					}
+
+					$newParameters[] = $callableParameters[$i]->union($acceptorParameters[$i]);
 				}
 
 				$callableParameters = $newParameters;

@@ -9,8 +9,9 @@ use Symfony\Component\Finder\Finder;
  * also runs on PHP 7.4 with the downgraded source code, where attributes
  * are just comments.
  *
- * The @Assert expression has to stay on a single line - an annotation value
- * cannot span multiple lines.
+ * The assertion expression has to stay on a single line - an annotation value
+ * cannot span multiple lines. Annotation names must not be mentioned anywhere
+ * else in this docblock either, the annotation reader tries to parse them.
  *
  * @Revs(1)
  * @Iterations(5)

@@ -38,4 +38,11 @@ class PathConstantsTest extends TypeInferenceTestCase
 		];
 	}
 
+	protected static function getAdditionalAnalysedFiles(): array
+	{
+		return [
+			__DIR__ . '/data/path-constants-trait/PathConstantsTrait.php',
+		];
+	}
+
 }

@@ -42,8 +42,19 @@ final class InitializerExprContext implements NamespaceAnswerer
 	{
 		$function = $scope->getFunction();
 
+		// __FILE__ and __DIR__ are resolved at compile time, so in a trait context they
+		// point at the file the trait is declared in, while Scope::getFile() returns the
+		// file of the class that uses the trait.
+		$file = $scope->getFile();
+		if ($scope->isInTrait()) {
+			$traitFileName = $scope->getTraitReflection()->getFileName();
+			if ($traitFileName !== null) {
+				$file = $traitFileName;
+			}
+		}
+
 		return new self(
-			$scope->getFile(),
+			$file,
 			$scope->getNamespace(),
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,

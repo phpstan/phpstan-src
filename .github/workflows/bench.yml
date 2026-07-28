@@ -59,9 +59,14 @@ jobs:
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
+      # tests/composer.json pins the Composer platform to PHP 8.2, which would make
+      # Composer resolve PHPBench's Symfony dependencies to versions that cannot
+      # even be parsed on PHP 7.4. Unsetting it resolves against the real PHP version.
       - name: "Downgrade PHPBench"
         if: matrix.php-version == '7.4'
-        run: "composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 symfony/console:^5.4 symfony/process:^5.4 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs --working-dir=tests"
+        run: |
+          composer config --unset platform.php --working-dir=tests
+          composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 --update-with-all-dependencies --working-dir=tests
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: matrix.php-version != '7.4'
@@ -122,9 +127,14 @@ jobs:
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
+      # tests/composer.json pins the Composer platform to PHP 8.2, which would make
+      # Composer resolve PHPBench's Symfony dependencies to versions that cannot
+      # even be parsed on PHP 7.4. Unsetting it resolves against the real PHP version.
       - name: "Downgrade PHPBench"
         if: matrix.php-version == '7.4'
-        run: "composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 symfony/console:^5.4 symfony/process:^5.4 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs --working-dir=tests"
+        run: |
+          composer config --unset platform.php --working-dir=tests
+          composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 --update-with-all-dependencies --working-dir=tests
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: matrix.php-version != '7.4'

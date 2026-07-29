@@ -558,4 +558,39 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15021(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15021.php'], []);
+	}
+
+	public function testNullCoalesceAssignRightSideScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], [
+			[
+				'Property NullCoalesceAssignRightSideScope\Foo::$nonNullable (string) on left side of ??= is not nullable.',
+				19,
+			],
+			[
+				'Property NullCoalesceAssignRightSideScope\Foo::$nonNullable (string) on left side of ?? is not nullable.',
+				19,
+			],
+			[
+				'Static property NullCoalesceAssignRightSideScope\Foo::$staticNonNullable (string) on left side of ??= is not nullable.',
+				24,
+			],
+			[
+				'Static property NullCoalesceAssignRightSideScope\Foo::$staticNonNullable (string) on left side of ?? is not nullable.',
+				24,
+			],
+			[
+				'Variable $undefined on left side of ??= is never defined.',
+				46,
+			],
+			[
+				'Variable $undefined on left side of ?? is never defined.',
+				46,
+			],
+		]);
+	}
+
 }

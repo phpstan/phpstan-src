@@ -154,12 +154,22 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		$this->assertAccepts($type, $otherType);
 	}
 
-	private function assertAccepts(UnionType $type, Type $otherType): void
+	/**
+	 * Whether the map alone settles a comparison of $type against $otherType - the whole
+	 * union is keyed, and $otherType is one value to look up in it.
+	 */
+	private static function answersFromTheMap(UnionType $type, Type $otherType): bool
 	{
 		$finiteTypeSet = $type->getFiniteTypeSet();
-		$answersPerKind = FiniteTypeSet::key($otherType) !== null
+
+		return FiniteTypeSet::key($otherType) !== null
 			&& $finiteTypeSet !== null
 			&& $finiteTypeSet->isComplete();
+	}
+
+	private function assertAccepts(UnionType $type, Type $otherType): void
+	{
+		$answersPerKind = self::answersFromTheMap($type, $otherType);
 
 		foreach ([true, false] as $strictTypes) {
 			$this->assertSame(
@@ -198,17 +208,35 @@ class FiniteTypeSetTest extends PHPStanTestCase
 	}
 
 	#[DataProvider('dataUnionPairs')]
-	public function testIsSubTypeOf(UnionType $type, UnionType $otherType): void
+	#[DataProvider('dataUnionAndOtherType')]
+	public function testIsSubTypeOf(UnionType $type, Type $otherType): void
 	{
 		$this->assertSame(
 			self::referenceIsSubTypeOf($type, $otherType)->describe(),
 			$type->isSubTypeOf($otherType)->result->describe(),
 			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
+
+		if (!self::answersFromTheMap($type, $otherType)) {
+			return;
+		}
+
+		// One key lookup stands in for asking every member, which is only invisible as long
+		// as none of them attaches a reason to its answer - reasons are per member.
+		foreach ($type->getTypes() as $innerType) {
+			$result = $otherType->isSuperTypeOf($innerType);
+			$this->assertSame(
+				[],
+				$result->reasons,
+				sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $innerType->describe(VerbosityLevel::precise())),
+			);
+			$this->assertSame([], $result->lazyReasons);
+		}
 	}
 
 	#[DataProvider('dataUnionPairs')]
-	public function testIsAcceptedBy(UnionType $type, UnionType $otherType): void
+	#[DataProvider('dataUnionAndOtherType')]
+	public function testIsAcceptedBy(UnionType $type, Type $otherType): void
 	{
 		foreach ([true, false] as $strictTypes) {
 			$this->assertSame(
@@ -482,6 +510,67 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		$this->assertNotNull($otherSet);
 
 		$this->assertSame($expected->describe(), $set->containedIn($otherSet)->describe());
+	}
+
+	/**
+	 * @return Iterator<string, array{list<Type>, Type, TrinaryLogic}>
+	 */
+	public static function dataContainedInKey(): Iterator
+	{
+		// the only way a set is wholly under one value is by being that one value
+		yield 'the only member' => [[new ConstantStringType('a')], new ConstantStringType('a'), TrinaryLogic::createYes()];
+		yield 'one of two members' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			new ConstantStringType('a'),
+			TrinaryLogic::createMaybe(),
+		];
+		yield 'the last of many members' => [
+			[new ConstantStringType('a'), new ConstantStringType('b'), new ConstantStringType('c')],
+			new ConstantStringType('c'),
+			TrinaryLogic::createMaybe(),
+		];
+		yield 'not held' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			new ConstantStringType('z'),
+			TrinaryLogic::createNo(),
+		];
+		yield 'not held by a single-member set' => [
+			[new ConstantStringType('a')],
+			new ConstantStringType('z'),
+			TrinaryLogic::createNo(),
+		];
+		// the key carries the kind, so the same value of another kind is not held either
+		yield 'the same value of another kind' => [
+			[new ConstantIntegerType(1)],
+			new ConstantStringType('1'),
+			TrinaryLogic::createNo(),
+		];
+		yield 'one of two kinds' => [
+			[new ConstantStringType('a'), new NullType()],
+			new NullType(),
+			TrinaryLogic::createMaybe(),
+		];
+	}
+
+	/**
+	 * @param list<Type> $types
+	 */
+	#[DataProvider('dataContainedInKey')]
+	public function testContainedInKey(array $types, Type $value, TrinaryLogic $expected): void
+	{
+		$set = FiniteTypeSet::create($types);
+		$this->assertNotNull($set);
+
+		$key = FiniteTypeSet::key($value);
+		$this->assertNotNull($key);
+
+		$this->assertSame($expected->describe(), $set->containedInKey($key)->describe());
+
+		// the same answer containedIn() gives against the set of just that one value, which
+		// is what a single value is being compared as
+		$singleMemberSet = FiniteTypeSet::create([$value]);
+		$this->assertNotNull($singleMemberSet);
+		$this->assertSame($expected->describe(), $set->containedIn($singleMemberSet)->describe());
 	}
 
 	public function testUnkeyableMembersDoNotDefeatTheSet(): void

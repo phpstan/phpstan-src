@@ -394,21 +394,46 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * Whether the other union holds every member of this one, or null when the question
-	 * cannot be settled from the identity maps alone.
+	 * Whether $otherType holds every member of this one, or null when the question cannot
+	 * be settled from the identity maps alone.
+	 *
+	 * $otherType is compared as a set of values: a union through its own map, a single
+	 * finite value as the one-member set holding it.
 	 *
 	 * $yesOnly skips the completeness requirement on the other union: a member missing from
 	 * its map only rules out the yes answer, which is all the caller is after.
 	 */
 	private function finiteTypeSetContainedIn(Type $otherType, bool $yesOnly): ?TrinaryLogic
 	{
-		if (!$otherType instanceof self || $otherType instanceof TemplateType) {
-			return null;
-		}
-
 		$finiteTypeSet = $this->getFiniteTypeSet();
 		if ($finiteTypeSet === null || !$finiteTypeSet->isComplete()) {
 			return null;
+		}
+
+		if (!$otherType instanceof self || $otherType instanceof TemplateType) {
+			// A single value covers a member iff they are the same value, and no member
+			// stands for a value it is not keyed by - so one lookup answers for every member
+			// at once. This is the shape TypeCombinator::remove() takes to ask whether
+			// removing a value empties a union of values, and the only way a non-union other
+			// type reaches this helper at all.
+			$key = FiniteTypeSet::key($otherType);
+			if ($key === null) {
+				return null;
+			}
+
+			$containment = $finiteTypeSet->containedInKey($key);
+
+			// No constant value accepts another one - not even a numeric string an int, in
+			// either direction - so today accepts() agrees with isSuperTypeOf() here and this
+			// guard never changes an answer. It is kept because that is a fact about the
+			// current value types rather than something the identity map guarantees: a value
+			// the map does not hold being accepted anyway is exactly what accepts() is
+			// allowed to do, and all isAcceptedBy() wants from the map is the yes.
+			if (!$containment->yes() && $yesOnly) {
+				return null;
+			}
+
+			return $containment;
 		}
 
 		$otherFiniteTypeSet = $otherType->getFiniteTypeSet();

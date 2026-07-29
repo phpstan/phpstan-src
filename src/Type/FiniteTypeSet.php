@@ -265,6 +265,29 @@ final class FiniteTypeSet
 	}
 
 	/**
+	 * containedIn() against the one-member set holding just $key.
+	 *
+	 * Yes only when this set holds nothing besides that value, no when it does not hold it
+	 * at all, maybe in between - the same three answers as containedIn(), which is what a
+	 * single value is being compared as here.
+	 *
+	 * Only keyed members are compared - call isComplete() first when the answer has to
+	 * hold for the whole union.
+	 */
+	public function containedInKey(string $key): TrinaryLogic
+	{
+		if (!$this->has($key)) {
+			return TrinaryLogic::createNo();
+		}
+
+		if (count($this->members) === 1) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	/**
 	 * Whether a constant string member might also be a class-string.
 	 *
 	 * The class-string flag is part of a constant string's representation but not of its

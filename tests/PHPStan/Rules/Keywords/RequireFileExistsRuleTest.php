@@ -171,6 +171,19 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15015(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/bug-15015/trait-dir/Bug15015Trait.php',
+			__DIR__ . '/data/bug-15015/class-dir/Bug15015Class.php',
+		], [
+			[
+				"Path in include() __DIR__ . '/only-in-class-dir.php' is not a file or it does not exist.",
+				15,
+			],
+		]);
+	}
+
 	public function testInFileExists(): void
 	{
 		$this->analyse([__DIR__ . '/data/include-in-file-exists.php'], []);

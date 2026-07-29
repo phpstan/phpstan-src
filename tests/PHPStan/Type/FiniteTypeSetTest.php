@@ -3,8 +3,6 @@
 namespace PHPStan\Type;
 
 use Iterator;
-use PHPStan\Fixture\AnotherTestEnum;
-use PHPStan\Fixture\ManyCasesTestEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -28,6 +26,10 @@ use function sprintf;
  * disagrees with comparing a union member by member. Every test here therefore compares the
  * real answer against a reference implementation that spells out the member-by-member loop
  * UnionType used before the map existed.
+ *
+ * The enum fixtures are named by string rather than by ::class, as UnionTypeTest does:
+ * self-analysis excludes those files below PHP 8.1, and a ::class would have PHPStan report
+ * them as unknown classes there.
  */
 #[RequiresPhp('^8.1')]
 class FiniteTypeSetTest extends PHPStanTestCase
@@ -48,20 +50,20 @@ class FiniteTypeSetTest extends PHPStanTestCase
 			'integers' => new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new ConstantIntegerType(3)]),
 			'booleans' => new UnionType([new ConstantBooleanType(true), new ConstantBooleanType(false)]),
 			'enum cases' => new UnionType([
-				new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
-				new EnumCaseObjectType(ManyCasesTestEnum::class, 'B'),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
 			]),
 			'enum cases superset' => new UnionType([
-				new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
-				new EnumCaseObjectType(ManyCasesTestEnum::class, 'B'),
-				new EnumCaseObjectType(ManyCasesTestEnum::class, 'C'),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'),
 			]),
 			'mixed kinds' => new UnionType([
 				new ConstantStringType('a'),
 				new ConstantIntegerType(1),
 				new ConstantBooleanType(true),
 				new NullType(),
-				new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
 			]),
 			'strings and object' => new UnionType([new ConstantStringType('a'), new ConstantStringType('b'), new ObjectType('DateTimeImmutable')]),
 			'strings and float' => new UnionType([new ConstantStringType('a'), new ConstantFloatType(1.0)]),
@@ -90,9 +92,9 @@ class FiniteTypeSetTest extends PHPStanTestCase
 			'true' => new ConstantBooleanType(true),
 			'float' => new ConstantFloatType(1.0),
 			'null' => new NullType(),
-			'enum case A' => new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
-			'enum case F' => new EnumCaseObjectType(ManyCasesTestEnum::class, 'F'),
-			'whole enum' => new ObjectType(ManyCasesTestEnum::class),
+			'enum case A' => new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+			'enum case F' => new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'F'),
+			'whole enum' => new ObjectType('PHPStan\Fixture\ManyCasesTestEnum'),
 			'string' => new StringType(),
 			'integer' => new IntegerType(),
 			'object' => new ObjectType('DateTimeImmutable'),
@@ -245,14 +247,14 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		yield [new ConstantBooleanType(true), 'b:1'];
 		yield [new ConstantBooleanType(false), 'b:0'];
 		yield [new NullType(), 'null'];
-		yield [new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'), 'enum:PHPStan\Fixture\ManyCasesTestEnum::A'];
+		yield [new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'), 'enum:PHPStan\Fixture\ManyCasesTestEnum::A'];
 
 		// floats do not have value identity: -0.0 === 0.0 and NAN !== NAN
 		yield [new ConstantFloatType(1.0), null];
 		yield [new StringType(), null];
 		yield [new IntegerType(), null];
 		yield [new MixedType(), null];
-		yield [new ObjectType(ManyCasesTestEnum::class), null];
+		yield [new ObjectType('PHPStan\Fixture\ManyCasesTestEnum'), null];
 		// a type that merely contains a value is not the value
 		yield [new IntersectionType([new ConstantStringType('a'), new AccessoryNonEmptyStringType()]), null];
 		yield [new UnionType([new ConstantStringType('a'), new ConstantStringType('b')]), null];
@@ -364,9 +366,9 @@ class FiniteTypeSetTest extends PHPStanTestCase
 			new ConstantIntegerType(2),
 			new ConstantBooleanType(true),
 			new NullType(),
-			new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
-			new EnumCaseObjectType(ManyCasesTestEnum::class, 'B'),
-			new EnumCaseObjectType(AnotherTestEnum::class, 'ONE'),
+			new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+			new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+			new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
 		]))->getFiniteTypeSet();
 
 		$this->assertNotNull($set);
@@ -382,7 +384,7 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		// one enum does not answer for another's cases, so both are represented
 		$this->assertSame(
 			["'a'", '1', 'true', 'null', 'PHPStan\Fixture\AnotherTestEnum::ONE'],
-			array_map($describe, $set->getRepresentativesOfOtherKinds(new EnumCaseObjectType(ManyCasesTestEnum::class, 'C'))),
+			array_map($describe, $set->getRepresentativesOfOtherKinds(new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'))),
 		);
 
 		// a type of no keyed kind is answered by every one of the six kinds

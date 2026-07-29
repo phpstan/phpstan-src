@@ -391,6 +391,99 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		$this->assertCount(6, $set->getRepresentativesOfOtherKinds(new ObjectType('DateTimeImmutable')));
 	}
 
+	/**
+	 * A union of one kind has nobody to speak for a value it does not hold, so accepts()
+	 * has nothing left to consult and the plain no stands.
+	 */
+	public function testTheOnlyKindRepresentsNoOtherKind(): void
+	{
+		$set = FiniteTypeSet::create([new ConstantStringType('a'), new ConstantStringType('b')]);
+
+		$this->assertNotNull($set);
+		$this->assertSame([], $set->getRepresentativesOfOtherKinds(new ConstantStringType('zzz')));
+	}
+
+	/**
+	 * @return Iterator<string, array{list<Type>, list<Type>, TrinaryLogic}>
+	 */
+	public static function dataContainedIn(): Iterator
+	{
+		yield 'same members' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			TrinaryLogic::createYes(),
+		];
+		yield 'same members, reordered' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			[new ConstantStringType('b'), new ConstantStringType('a')],
+			TrinaryLogic::createYes(),
+		];
+		yield 'proper subset' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			[new ConstantStringType('a'), new ConstantStringType('b'), new ConstantStringType('c')],
+			TrinaryLogic::createYes(),
+		];
+		yield 'single member, held' => [
+			[new ConstantStringType('a')],
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			TrinaryLogic::createYes(),
+		];
+		// the other way round: containment is not symmetric, one member is missing
+		yield 'proper superset' => [
+			[new ConstantStringType('a'), new ConstantStringType('b'), new ConstantStringType('c')],
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			TrinaryLogic::createMaybe(),
+		];
+		yield 'one of two held' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			[new ConstantStringType('b'), new ConstantStringType('c')],
+			TrinaryLogic::createMaybe(),
+		];
+		yield 'none held' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			[new ConstantStringType('x'), new ConstantStringType('y')],
+			TrinaryLogic::createNo(),
+		];
+		// none held, and the other set is the smaller one - what counts is how many of *this*
+		// set's members are missing, not how many the other set has
+		yield 'none held, smaller other set' => [
+			[new ConstantStringType('a'), new ConstantStringType('b')],
+			[new ConstantStringType('x')],
+			TrinaryLogic::createNo(),
+		];
+		yield 'single member, not held' => [
+			[new ConstantStringType('a')],
+			[new ConstantStringType('b')],
+			TrinaryLogic::createNo(),
+		];
+		// the keys carry the kind, so a value is never held by a member of another kind
+		yield 'same values of another kind' => [
+			[new ConstantIntegerType(1), new ConstantIntegerType(0)],
+			[new ConstantStringType('1'), new ConstantBooleanType(false)],
+			TrinaryLogic::createNo(),
+		];
+		yield 'across kinds' => [
+			[new ConstantStringType('a'), new ConstantIntegerType(1), new NullType()],
+			[new NullType(), new ConstantStringType('a'), new ConstantIntegerType(1)],
+			TrinaryLogic::createYes(),
+		];
+	}
+
+	/**
+	 * @param list<Type> $types
+	 * @param list<Type> $otherTypes
+	 */
+	#[DataProvider('dataContainedIn')]
+	public function testContainedIn(array $types, array $otherTypes, TrinaryLogic $expected): void
+	{
+		$set = FiniteTypeSet::create($types);
+		$otherSet = FiniteTypeSet::create($otherTypes);
+		$this->assertNotNull($set);
+		$this->assertNotNull($otherSet);
+
+		$this->assertSame($expected->describe(), $set->containedIn($otherSet)->describe());
+	}
+
 	public function testUnkeyableMembersDoNotDefeatTheSet(): void
 	{
 		$set = (new UnionType([
@@ -404,6 +497,78 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		$this->assertTrue($set->has('s:a'));
 		$this->assertTrue($set->has('s:b'));
 		$this->assertCount(1, $set->getOthers());
+	}
+
+	/**
+	 * An incomplete set speaks for its keyed members only, so a miss is not the union's
+	 * answer - the members it could not key still have to be asked, and here each of them
+	 * answers differently than the map would have.
+	 */
+	public function testMissInAnIncompleteSetStillConsultsTheOtherMembers(): void
+	{
+		$union = new UnionType([new ConstantStringType('a'), new ConstantStringType('b'), new StringType()]);
+		$set = $union->getFiniteTypeSet();
+		$this->assertNotNull($set);
+		$this->assertFalse($set->isComplete());
+		$this->assertFalse($set->has('s:z'));
+
+		// 'z' is not in the map, but the general string member holds it
+		$this->assertSame('Yes', $union->isSuperTypeOf(new ConstantStringType('z'))->result->describe());
+		$this->assertSame('Yes', $union->accepts(new ConstantStringType('z'), true)->result->describe());
+
+		// removing 'a' must not drop the member the map does not know about
+		$removed = $union->tryRemove(new ConstantStringType('a'));
+		$this->assertNotNull($removed);
+		$this->assertSame("'b'|string", $removed->describe(VerbosityLevel::precise()));
+	}
+
+	/**
+	 * Union-against-union answers need both sets to speak for their whole union: here the
+	 * maps are identical while the unions are not, so reading the answer off them alone
+	 * would call two different types the same.
+	 */
+	public function testUnionComparisonsRequireBothSetsToBeComplete(): void
+	{
+		$union = new UnionType([new ConstantStringType('a'), new ObjectType('DateTime')]);
+		$otherUnion = new UnionType([new ConstantStringType('a'), new ObjectType('DateTimeImmutable')]);
+
+		$set = $union->getFiniteTypeSet();
+		$otherSet = $otherUnion->getFiniteTypeSet();
+		$this->assertNotNull($set);
+		$this->assertNotNull($otherSet);
+		$this->assertFalse($set->isComplete());
+		$this->assertFalse($otherSet->isComplete());
+		$this->assertSame('Yes', $set->containedIn($otherSet)->describe());
+
+		$this->assertFalse($union->equals($otherUnion));
+		$this->assertSame('Maybe', $union->isSubTypeOf($otherUnion)->result->describe());
+		$this->assertSame('Maybe', $union->isAcceptedBy($otherUnion, true)->result->describe());
+	}
+
+	/**
+	 * @return Iterator<string, array{list<Type>, bool}>
+	 */
+	public static function dataHasClassStringMember(): Iterator
+	{
+		yield 'plain strings' => [[new ConstantStringType('a'), new ConstantStringType('b')], false];
+		yield 'a value that names a class' => [[new ConstantStringType('a'), new ConstantStringType('DateTimeImmutable')], true];
+		yield 'the class-string flag' => [[new ConstantStringType('a'), new ConstantStringType('Zzz', true)], true];
+		// only string members can carry the flag, so no other kind is worth asking
+		yield 'no strings at all' => [[new ConstantIntegerType(1), new NullType()], false];
+	}
+
+	/**
+	 * @param list<Type> $types
+	 */
+	#[DataProvider('dataHasClassStringMember')]
+	public function testHasClassStringMember(array $types, bool $expected): void
+	{
+		$set = FiniteTypeSet::create($types);
+		$this->assertNotNull($set);
+
+		$this->assertSame($expected, $set->hasClassStringMember());
+		// answered from the cache the second time round, with the same answer
+		$this->assertSame($expected, $set->hasClassStringMember());
 	}
 
 	public function testUnionWithoutFiniteMembersHasNoSet(): void

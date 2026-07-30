@@ -8,13 +8,14 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Node\FunctionCallExpressionNode;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr\FuncCall>
+ * @implements Rule<FunctionCallExpressionNode>
  */
 #[RegisteredRule(level: 4)]
 final class ImpossibleCheckTypeFunctionCallRule implements Rule
@@ -37,72 +38,73 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\FuncCall::class;
+		return FunctionCallExpressionNode::class;
 	}
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
-		if (!$node->name instanceof Node\Name) {
+		$funcCall = $node->getOriginalNode();
+		if (!$funcCall->name instanceof Node\Name) {
 			return [];
 		}
 
-		$functionName = (string) $node->name;
+		$functionName = (string) $funcCall->name;
 		$reasons = [];
-		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node, $reasons);
+		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $funcCall, $reasons);
 		if ($isAlways === null) {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $funcCall);
 			return [];
 		}
 
-		$this->functionCallConstantConditionHelper->emitImpossibleCheckReported($scope, $node);
+		$this->functionCallConstantConditionHelper->emitImpossibleCheckReported($scope, $funcCall);
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $funcCall, $reasons): RuleErrorBuilder {
 			if ($reasons !== []) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder->acceptsReasonsTip($reasons));
+				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder->acceptsReasonsTip($reasons));
 			}
 
 			if (!$this->treatPhpDocTypesAsCertain) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder);
 			}
 
-			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $funcCall, $reasons);
 			if ($isAlways !== null) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder);
 			}
 			if (!$this->treatPhpDocTypesAsCertainTip) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder);
 			}
 
 			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 
-			return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+			return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder);
 		};
 
 		if (!$isAlways) {
 			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Call to function %s()%s will always evaluate to false.',
 				$functionName,
-				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $funcCall->getArgs()),
 			)));
 			$ruleError = $errorBuilder->identifier('function.impossibleType')->build();
 			if ($scope->isInTrait()) {
-				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $funcCall, false, $ruleError);
 				return [];
 			}
 
 			return [$ruleError];
 		}
 
-		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+		$isLast = $funcCall->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
 		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $funcCall);
 			return [];
 		}
 
 		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 			'Call to function %s()%s will always evaluate to true.',
 			$functionName,
-			$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+			$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $funcCall->getArgs()),
 		)));
 		if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 			$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
@@ -112,7 +114,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 		$ruleError = $errorBuilder->build();
 		if ($scope->isInTrait()) {
-			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $ruleError);
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $funcCall, true, $ruleError);
 			return [];
 		}
 

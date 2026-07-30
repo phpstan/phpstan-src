@@ -23,6 +23,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\NullsafePropertyFetchExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -87,6 +88,8 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
+		$calledOnType = $scope->getScopeType($expr->var);
+		$calledOnNativeType = $scope->getScopeNativeType($expr->var);
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureShallowNonNullability($scope, $scope, $expr->var);
 		$attributes = array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true]);
 		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
@@ -96,6 +99,10 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			$attributes,
 		), $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
 		$scope = $this->nonNullabilityHelper->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
+
+		// the nullsafe operation is processed; emit a virtual node carrying the
+		// receiver's entry-scope type so its rule does not re-ask the scope
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new NullsafePropertyFetchExpressionNode($expr, $calledOnType, $calledOnNativeType), $beforeScope, $storage, $context);
 
 		return $this->expressionResultFactory->create(
 			$scope,

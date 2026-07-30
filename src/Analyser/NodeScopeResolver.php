@@ -83,6 +83,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
+use PHPStan\Node\FunctionCallExpressionNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
@@ -95,6 +96,7 @@ use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\MethodCallableNode;
+use PHPStan\Node\MethodCallExpressionNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
@@ -102,6 +104,7 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
+use PHPStan\Node\StaticMethodCallExpressionNode;
 use PHPStan\Node\SwitchConditionArm;
 use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Node\UnreachableStatementNode;
@@ -2804,6 +2807,16 @@ class NodeScopeResolver
 		if ($exprHandler !== null) {
 			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
+			// the call is now processed and stored; emit a virtual node so
+			// impossible-check rules run on the fully processed call instead of
+			// asking the scope before the call node itself is processed
+			if ($expr instanceof FuncCall) {
+				$this->callNodeCallbackWithExpression($nodeCallback, new FunctionCallExpressionNode($expr), $scope, $storage, $context);
+			} elseif ($expr instanceof MethodCall) {
+				$this->callNodeCallbackWithExpression($nodeCallback, new MethodCallExpressionNode($expr), $scope, $storage, $context);
+			} elseif ($expr instanceof StaticCall) {
+				$this->callNodeCallbackWithExpression($nodeCallback, new StaticMethodCallExpressionNode($expr), $scope, $storage, $context);
+			}
 			return $expressionResult;
 		}
 

@@ -23,6 +23,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\NullsafeMethodCallExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -87,6 +88,8 @@ final class NullsafeMethodCallHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
+		$calledOnType = $scope->getScopeType($expr->var);
+		$calledOnNativeType = $scope->getScopeNativeType($expr->var);
 		$scopeBeforeNullsafe = $scope;
 		$varType = $scope->getType($expr->var);
 
@@ -117,6 +120,10 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			// Merge with the original scope so variables assigned in arguments become "maybe defined".
 			$scope = $scope->mergeWith($scopeBeforeNullsafe);
 		}
+
+		// the nullsafe operation is processed; emit a virtual node carrying the
+		// receiver's entry-scope type so its rule does not re-ask the scope
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new NullsafeMethodCallExpressionNode($expr, $calledOnType, $calledOnNativeType), $beforeScope, $storage, $context);
 
 		return $this->expressionResultFactory->create(
 			$scope,

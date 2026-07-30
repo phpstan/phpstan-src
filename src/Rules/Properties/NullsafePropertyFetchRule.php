@@ -6,13 +6,14 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Node\NullsafePropertyFetchExpressionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr\NullsafePropertyFetch>
+ * @implements Rule<NullsafePropertyFetchExpressionNode>
  */
 #[RegisteredRule(level: 4)]
 final class NullsafePropertyFetchRule implements Rule
@@ -29,26 +30,27 @@ final class NullsafePropertyFetchRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\NullsafePropertyFetch::class;
+		return NullsafePropertyFetchExpressionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$calledOnType = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($node->var) : $scope->getScopeNativeType($node->var);
+		$originalNode = $node->getOriginalNode();
+		$calledOnType = $this->treatPhpDocTypesAsCertain ? $node->getCalledOnType() : $node->getCalledOnNativeType();
 		if (!$calledOnType->isNull()->no()) {
 			return [];
 		}
 
-		if ($scope->isUndefinedExpressionAllowed($node)) {
+		if ($scope->isUndefinedExpressionAllowed($originalNode)) {
 			return [];
 		}
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain || !$this->treatPhpDocTypesAsCertainTip) {
 				return $ruleErrorBuilder;
 			}
 
-			$calledOnNativeType = $scope->getScopeNativeType($node->var);
+			$calledOnNativeType = $node->getCalledOnNativeType();
 			if ($calledOnNativeType->isNull()->no()) {
 				return $ruleErrorBuilder;
 			}
@@ -62,7 +64,7 @@ final class NullsafePropertyFetchRule implements Rule
 				$calledOnType->describe(VerbosityLevel::typeOnly()),
 			)),
 		)
-			->line($node->name->getStartLine())
+			->line($originalNode->name->getStartLine())
 			->identifier('nullsafe.neverNull');
 
 		return [$ruleErrorBuilder->build()];

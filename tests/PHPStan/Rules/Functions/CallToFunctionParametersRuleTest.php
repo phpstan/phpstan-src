@@ -744,19 +744,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/preg_replace_callback.php'], [
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(string): string given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{non-falsy-string}): string, Closure(string): string given.',
 				6,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(string): string given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{non-falsy-string}): string, Closure(string): string given.',
 				13,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(array): void given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{non-falsy-string}): string, Closure(array): void given.',
 				20,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(): void given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{non-falsy-string}): string, Closure(): void given.',
 				25,
 			],
 		]);
@@ -2936,11 +2936,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				110,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(mixed): array{non-falsy-string, int<-1, max>} given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{array{non-falsy-string, int<-1, max>}}): string, Closure(mixed): array{non-falsy-string, int<-1, max>} given.',
 				113,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(mixed): array{non-falsy-string|null, int<-1, max>} given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{array{non-falsy-string|null, int<-1, max>}}): string, Closure(mixed): array{non-falsy-string|null, int<-1, max>} given.',
 				116,
 			],
 			[

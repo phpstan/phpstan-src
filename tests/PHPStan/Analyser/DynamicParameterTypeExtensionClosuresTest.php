@@ -6,7 +6,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
-#[RequiresPhp('>= 8.0')]
+#[RequiresPhp('>= 8.0.0')]
 class DynamicParameterTypeExtensionClosuresTest extends TypeInferenceTestCase
 {
 

@@ -77,7 +77,7 @@ final class AssignOpHandler implements ExprHandler
 		$valueContext = $context;
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			$valueScope = $valueScope->filterByFalseyValue(
-				new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+				new Expr\Isset_([$expr->var]),
 			);
 
 			if ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {

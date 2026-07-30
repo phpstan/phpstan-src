@@ -6,8 +6,6 @@ use DivisionByZeroError;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ExpressionContext;
@@ -77,7 +75,7 @@ final class AssignOpHandler implements ExprHandler
 		$valueContext = $context;
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			$valueScope = $valueScope->filterByFalseyValue(
-				new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+				new Expr\Isset_([$expr->var]),
 			);
 
 			if ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {

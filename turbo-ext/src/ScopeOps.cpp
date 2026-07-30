@@ -795,7 +795,7 @@ public:
 		 * containing the invalidated one, so the much more expensive
 		 * per-expression check can be skipped without being called. */
 		const bool canUseKeyPrefilter = !query.isThis
-			&& !strContains(exprStringToInvalidate, "__phpstan", sizeof("__phpstan") - 1)
+			&& !keyMayHideSubExpressions(exprStringToInvalidate)
 			&& !strContains(exprStringToInvalidate, "/*", 2);
 
 		bool invalidated = false;
@@ -1006,7 +1006,7 @@ public:
 		 * method call's key embeds its receiver's key verbatim, so when the
 		 * invalidated key does not occur in the entry's key, the receiver cannot
 		 * match and the entry can be kept without re-printing the receiver. */
-		const bool canUseKeyPrefilter = !strContains(exprStringToInvalidate, "__phpstan", sizeof("__phpstan") - 1)
+		const bool canUseKeyPrefilter = !keyMayHideSubExpressions(exprStringToInvalidate)
 			&& !strContains(exprStringToInvalidate, "/*", 2);
 
 		for (auto entry : expressionTypes) {
@@ -1657,8 +1657,15 @@ private:
 	 */
 	static bool keyMayHideSubExpressions(zend_string *key)
 	{
+		/* Mirror of ScopeOps::COMPOSITIONAL_VIRTUAL_KEY_PREFIXES - a prefix may
+		 * be listed only when the printer emits every getSubNodeNames() sub-node
+		 * verbatim (or the node walks no sub-nodes at all); the foreach/parameter
+		 * original-value markers hide a synthesized Variable child on purpose. */
 		static const struct { const char *prefix; size_t len; } compositionalPrefixes[] = {
+			{ "__phpstanForeachValueByRef(", sizeof("__phpstanForeachValueByRef(") - 1 },
+			{ "__phpstanIntertwinedVariableByReference(", sizeof("__phpstanIntertwinedVariableByReference(") - 1 },
 			{ "__phpstanPossiblyImpure(", sizeof("__phpstanPossiblyImpure(") - 1 },
+			{ "__phpstanPropertyInitialization(", sizeof("__phpstanPropertyInitialization(") - 1 },
 			{ "__phpstanRemembered(", sizeof("__phpstanRemembered(") - 1 },
 		};
 
@@ -1901,7 +1908,7 @@ private:
 
 		/* Compositional-key substring gate */
 		if (!query.isThis
-			&& !strContains(query.exprStringToInvalidate, "__phpstan", sizeof("__phpstan") - 1)
+			&& !keyMayHideSubExpressions(query.exprStringToInvalidate)
 			&& !strContains(query.exprStringToInvalidate, "/*", 2)
 			&& !strContainsStr(exprString, query.exprStringToInvalidate)
 			&& !keyMayHideSubExpressions(exprString)) {

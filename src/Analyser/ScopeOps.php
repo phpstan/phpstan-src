@@ -49,7 +49,12 @@ final class ScopeOps
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
 
 	/** Virtual-node key prefixes whose printers include all children verbatim. */
-	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanPossiblyImpure(', '__phpstanRemembered('];
+	// A prefix may be listed only when the printer emits every getSubNodeNames()
+	// sub-node verbatim (or the node walks no sub-nodes at all). The foreach/
+	// parameter original-value markers (__phpstanOriginalForeachKey etc.) hide a
+	// synthesized Variable child on purpose - reassigning the variable must
+	// invalidate them through containment - so they can never be listed here.
+	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanPossiblyImpure(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
 
 	/**
 	 * Mirrors MutatingScope::getNodeKey().
@@ -611,7 +616,7 @@ final class ScopeOps
 		// a substring cannot belong to an expression containing the invalidated one, so
 		// the much more expensive per-expression check can be skipped without being called.
 		$canUseKeyPrefilter = $exprStringToInvalidate !== '$this'
-			&& !str_contains($exprStringToInvalidate, '__phpstan')
+			&& !self::keyMayHideSubExpressions($exprStringToInvalidate)
 			&& !str_contains($exprStringToInvalidate, '/*');
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
@@ -735,7 +740,7 @@ final class ScopeOps
 		// call's key embeds its receiver's key verbatim, so when the invalidated key
 		// does not occur in the entry's key, the receiver cannot match and the entry
 		// can be kept without re-printing the receiver.
-		$canUseKeyPrefilter = !str_contains($exprStringToInvalidate, '__phpstan')
+		$canUseKeyPrefilter = !self::keyMayHideSubExpressions($exprStringToInvalidate)
 			&& !str_contains($exprStringToInvalidate, '/*');
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
@@ -844,7 +849,7 @@ final class ScopeOps
 		// - keys carrying a getNodeKey() suffix ('/*…*/') are not plain substrings.
 		if (
 			$exprStringToInvalidate !== '$this'
-			&& !str_contains($exprStringToInvalidate, '__phpstan')
+			&& !self::keyMayHideSubExpressions($exprStringToInvalidate)
 			&& !str_contains($exprStringToInvalidate, '/*')
 			&& !str_contains($exprString, $exprStringToInvalidate)
 			&& !self::keyMayHideSubExpressions($exprString)

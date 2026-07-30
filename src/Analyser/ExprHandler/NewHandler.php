@@ -37,6 +37,7 @@ use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -122,12 +123,10 @@ final class NewHandler implements ExprHandler
 			$classReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
 			if ($classReflection->hasConstructor()) {
 				$constructorReflection = $classReflection->getConstructor();
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$expr->getArgs(),
-					$constructorReflection->getVariants(),
-					$constructorReflection->getNamedArgumentsVariants(),
-				);
+				// A structural acceptor (names/positions/variadic) drives argument
+				// normalization and the throw point - generics are resolved
+				// type-driven by processArgs() into the resolved acceptor.
+				$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants());
 
 				if ($constructorReflection->getDeclaringClass()->getName() === $classReflection->getName()) {
 					$constructorResult = null;
@@ -208,7 +207,9 @@ final class NewHandler implements ExprHandler
 			}
 		}
 
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$variants = $constructorReflection !== null ? $constructorReflection->getVariants() : [];
+		$namedArgumentsVariants = $constructorReflection !== null ? $constructorReflection->getNamedArgumentsVariants() : null;
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		$scope = $argsResult->getScope();
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
@@ -245,7 +246,7 @@ final class NewHandler implements ExprHandler
 	}
 
 	/**
-	 * @return array{?MethodReflection, ?ClassReflection, ?ParametersAcceptor, ImpurePoint[]}
+	 * @return array{?ExtendedMethodReflection, ?ClassReflection, ?ParametersAcceptor, ImpurePoint[]}
 	 */
 	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope, bool $isDynamic): array
 	{
@@ -258,12 +259,10 @@ final class NewHandler implements ExprHandler
 			$classReflection = $this->reflectionProvider->getClass($className);
 			if ($classReflection->hasConstructor()) {
 				$constructorReflection = $classReflection->getConstructor();
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$expr->getArgs(),
-					$constructorReflection->getVariants(),
-					$constructorReflection->getNamedArgumentsVariants(),
-				);
+				// A structural acceptor (names/positions/variadic) drives argument
+				// normalization and the throw point - generics are resolved
+				// type-driven by processArgs() into the resolved acceptor.
+				$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants());
 			}
 		}
 

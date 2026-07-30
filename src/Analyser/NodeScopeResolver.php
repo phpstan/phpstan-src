@@ -3345,15 +3345,14 @@ class NodeScopeResolver
 					$classReflection = $this->reflectionProvider->getClass($className);
 					if ($classReflection->hasConstructor()) {
 						$constructorReflection = $classReflection->getConstructor();
-						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-							$scope,
+						$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization(
 							$attr->args,
 							$constructorReflection->getVariants(),
 							$constructorReflection->getNamedArgumentsVariants(),
 						);
 						$expr = new New_($attr->name, $attr->args);
 						$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
-						$this->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+						$this->processArgs($stmt, $constructorReflection, null, $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants(), $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 						$this->callNodeCallback($nodeCallback, $attr, $scope, $storage);
 						continue;
 					}
@@ -3540,27 +3539,69 @@ class NodeScopeResolver
 
 	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param (callable(MutatingScope): MutatingScope)|null $closureBindScopeFactory
 	 */
 	public function processArgs(
 		Node\Stmt $stmt,
 		$calleeReflection,
 		?ExtendedMethodReflection $nakedMethodReflection,
-		?ParametersAcceptor $parametersAcceptor,
+		array $parametersAcceptors,
+		?array $namedArgumentsVariants,
 		CallLike $callLike,
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		?MutatingScope $closureBindScope = null,
-	): ExpressionResult
+		?callable $closureBindScopeFactory = null,
+	): ArgsResult
 	{
 		$args = $callLike->getArgs();
 
-		$parameters = null;
-		if ($parametersAcceptor !== null) {
-			$parameters = $parametersAcceptor->getParameters();
-		}
+		// Evolving-scope arg types: gathered as each argument is processed on the
+		// scope that evolves arg-to-arg. They select the FINAL resolved acceptor
+		// (the call's return type, by-ref OUT types), which type-resolves generics
+		// from the actual argument types.
+		$gatheredTypes = [];
+		$gatheredUnpack = false;
+		$gatheredHasName = false;
+		$gatheredArgTypeByIndex = [];
+
+		// The intrinsic argument overrides (array_map/filter/walk/find, curl_setopt,
+		// implode, Closure::bind) rewrite a callback parameter's type from its
+		// sibling arguments. Apply them up front on the entry scope - the parameter
+		// pushed on the in-function-call stack while each argument is processed (and
+		// priced, e.g. a closure's inferred return type) must be the overridden one,
+		// exactly as when the caller pre-selected via selectFromArgs().
+		$parametersAcceptors = ParametersAcceptorSelector::applyIntrinsicArgOverrides(
+			$args,
+			$parametersAcceptors,
+			$namedArgumentsVariants,
+			$scope,
+			static fn (Expr $e): Type => $scope->getType($e),
+			static fn (Expr $e): Type => $scope->getNativeType($e),
+			static fn (Type $t): Type => $scope->getIterableValueType($t),
+			static fn (Type $t): Type => $scope->getIterableKeyType($t),
+		);
+
+		// Metadata acceptor base - NO forward read. The per-argument resolution below picks the
+		// count-correct variant (the by-ref/variadic STRUCTURE is variant-stable except where it is
+		// keyed off the argument count, e.g. sscanf - and the count is known structurally) and
+		// resolves generic parameter types from the args gathered so far; the call's return type
+		// comes from the post-loop resolved acceptor.
+		$metadataAcceptor = $parametersAcceptors[0] ?? null;
+
+		// Whether selecting an acceptor is type-driven at all: multiple variants to
+		// choose between, templates or conditionals to resolve from the arg types,
+		// or named-argument variants. When it is not, the gathered arg types can
+		// never influence the selected acceptor, so the faithful-return gather walk
+		// of a closure/arrow argument (gatherClosureArgType()) would be pure waste -
+		// a plain mixed keeps the count/name bookkeeping correct.
+		$typeDrivenAcceptorSelection = count($parametersAcceptors) > 1
+			|| $namedArgumentsVariants !== null
+			|| ($metadataAcceptor !== null && ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($metadataAcceptor));
 
 		$hasYield = false;
 		$throwPoints = [];
@@ -3572,33 +3613,94 @@ class NodeScopeResolver
 		$deferredByRefClosureResults = [];
 
 		$processingOrder = array_keys($args);
-		$hasReorderedArgs = false;
-		foreach ($args as $arg) {
-			if ($arg->hasAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE)) {
-				$hasReorderedArgs = true;
-				break;
+		usort($processingOrder, static function (int $a, int $b) use ($args): int {
+			$aOriginalArg = $args[$a]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			$bOriginalArg = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			$aValue = $aOriginalArg !== null ? $aOriginalArg->value : $args[$a]->value;
+			$bValue = $bOriginalArg !== null ? $bOriginalArg->value : $args[$b]->value;
+			$aIsClosure = $aValue instanceof Expr\Closure || $aValue instanceof Expr\ArrowFunction;
+			$bIsClosure = $bValue instanceof Expr\Closure || $bValue instanceof Expr\ArrowFunction;
+			if ($aIsClosure !== $bIsClosure) {
+				// closures sort after non-closures so every sibling feeding an
+				// intrinsic override / generic callable(T) is in scope first
+				return $aIsClosure ? 1 : -1;
 			}
-		}
-		if ($hasReorderedArgs) {
-			usort($processingOrder, static function (int $a, int $b) use ($args): int {
-				$aOriginal = $args[$a]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
-				$bOriginal = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
-				if ($aOriginal === null && $bOriginal === null) {
-					return $a <=> $b;
-				}
-				if ($aOriginal === null) {
-					return 1;
-				}
-				if ($bOriginal === null) {
-					return -1;
-				}
 
-				return $aOriginal->getStartTokenPos() <=> $bOriginal->getStartTokenPos();
-			});
-		}
+			$aOriginal = $args[$a]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			$bOriginal = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			if ($aOriginal === null && $bOriginal === null) {
+				return $a <=> $b;
+			}
+			if ($aOriginal === null) {
+				return 1;
+			}
+			if ($bOriginal === null) {
+				return -1;
+			}
 
+			return $aOriginal->getStartTokenPos() <=> $bOriginal->getStartTokenPos();
+		});
+
+		$countStableMetadataAcceptor = null;
 		foreach ($processingOrder as $i) {
 			$arg = $args[$i];
+
+			if ($arg->value instanceof Expr\Closure || $arg->value instanceof Expr\ArrowFunction) {
+				// Gather the closure/arrow type for the FINAL resolved acceptor on
+				// the evolving scope, BEFORE the body is processed with a possibly
+				// generic-resolved parameter injected, so the inferred return type
+				// stays faithful to the closure's own declaration and its own
+				// contribution (a TValue from its return) participates in the final
+				// resolution (see gatherClosureArgType()).
+				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
+				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
+					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
+					: new MixedType();
+				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
+			}
+
+			$argMetadataAcceptor = $metadataAcceptor;
+			if (
+				$metadataAcceptor !== null
+				&& (count($parametersAcceptors) > 1 || ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor))
+			) {
+				if ($this->argConsumesResolvedParameterType($arg->value)) {
+					// Resolve the acceptor for this argument from the args gathered SO FAR, padded to the
+					// full argument count with mixed. Closures sort last and by-ref out-params follow the
+					// args that pin them, so determining siblings are already processed; the mixed pad keeps
+					// the argument COUNT correct so the by-ref/variadic variant stays stable (e.g. sscanf),
+					// while processed siblings resolve a generic callable(T) parameter. No forward read.
+					$paddedTypes = [];
+					$paddedUnpack = false;
+					$paddedHasName = false;
+					foreach ($args as $j => $paddedArg) {
+						$paddedOriginalArg = $paddedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $paddedArg;
+						$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, $gatheredArgTypeByIndex[$j] ?? new MixedType());
+					}
+					$argMetadataAcceptor = $this->selectArgsMetadataAcceptor($args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope);
+				} else {
+					// Only a closure/arrow function consumes the generic-RESOLVED
+					// parameter type: its body is inferred from the resolved
+					// callable(T) - directly, or through the in-function-call stack
+					// when nested anywhere inside the argument. Every other argument
+					// reads variant-stable facts off its parameter (by-ref flag,
+					// callable bookkeeping), so one all-mixed count-stable selection
+					// serves them all instead of a full template inference per argument.
+					if ($countStableMetadataAcceptor === null) {
+						$paddedTypes = [];
+						$paddedUnpack = false;
+						$paddedHasName = false;
+						foreach ($args as $j => $paddedArg) {
+							$paddedOriginalArg = $paddedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $paddedArg;
+							$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, new MixedType());
+						}
+						$countStableMetadataAcceptor = $this->selectArgsMetadataAcceptor($args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope);
+					}
+					$argMetadataAcceptor = $countStableMetadataAcceptor;
+				}
+			}
+			$parameters = $argMetadataAcceptor !== null ? $argMetadataAcceptor->getParameters() : null;
+
 			$assignByReference = false;
 			$parameter = null;
 			$parameterType = null;
@@ -3624,7 +3726,7 @@ class NodeScopeResolver
 						$parameterNativeType = $matchedParameter->getNativeType();
 					}
 					$parameter = $matchedParameter;
-				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
+				} elseif (count($parameters) > 0 && $argMetadataAcceptor->isVariadic()) {
 					$lastParameter = array_last($parameters);
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
@@ -3663,14 +3765,15 @@ class NodeScopeResolver
 
 			$originalScope = $scope;
 			$scopeToPass = $scope;
-			if ($i === 0 && $closureBindScope !== null && ($arg->value instanceof Expr\Closure || $arg->value instanceof Expr\ArrowFunction)) {
-				$scopeToPass = $closureBindScope;
+			if ($i === 0 && $closureBindScopeFactory !== null && ($arg->value instanceof Expr\Closure || $arg->value instanceof Expr\ArrowFunction)) {
+				$scopeToPass = $closureBindScopeFactory($scope);
 			}
 
 			if ($arg->value instanceof Expr\Closure) {
+
 				$restoreThisScope = null;
 				if (
-					$closureBindScope === null
+					$closureBindScopeFactory === null
 					&& $parameter instanceof ExtendedParameterReflection
 					&& !$arg->value->static
 				) {
@@ -3753,8 +3856,9 @@ class NodeScopeResolver
 					$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
 				}
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
+
 				if (
-					$closureBindScope === null
+					$closureBindScopeFactory === null
 					&& $parameter instanceof ExtendedParameterReflection
 					&& !$arg->value->static
 				) {
@@ -3826,6 +3930,9 @@ class NodeScopeResolver
 						}
 					}
 				}
+
+				$gatheredArgTypeByIndex[$i] = $exprType;
+				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArg, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
 			if ($assignByReference && $lookForUnset) {
@@ -3836,7 +3943,7 @@ class NodeScopeResolver
 				$scope = $scope->popInFunctionCall();
 			}
 
-			if ($i !== 0 || $closureBindScope === null) {
+			if ($i !== 0 || $closureBindScopeFactory === null) {
 				continue;
 			}
 
@@ -3851,14 +3958,36 @@ class NodeScopeResolver
 			$scope = $deferredClosureResult->applyByRefUseScope($scope);
 		}
 
-		if ($parameters !== null) {
+		// Type-driven resolved acceptor: the arg types gathered on the evolving
+		// scope select (and generic-resolve) the acceptor that drives the call's
+		// return type. Intrinsic overrides are applied on the final scope,
+		// mirroring the original selectFromArgs().
+		$resolvedAcceptor = null;
+		if ($parametersAcceptors !== []) {
+			$resolvedAcceptor = $this->selectArgsMetadataAcceptor($args, $gatheredTypes, $parametersAcceptors, $namedArgumentsVariants, $gatheredHasName, $gatheredUnpack, $scope);
+		}
+
+		// The by-ref OUT writeback reads the metadata acceptor: it is selected from
+		// the full argument count (stable variant). When that single acceptor still
+		// carries templates (fast path), its OUT types need generic-resolving from the
+		// now-complete gathered arg types - the post-loop $resolvedAcceptor is exactly
+		// that (same variant, resolved); otherwise the metadata acceptor is already resolved.
+		$writebackAcceptor = $metadataAcceptor;
+		if (
+			$metadataAcceptor !== null
+			&& (count($parametersAcceptors) > 1 || ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor))
+		) {
+			$writebackAcceptor = $resolvedAcceptor;
+		}
+		$writebackParameters = $writebackAcceptor !== null ? $writebackAcceptor->getParameters() : null;
+		if ($writebackParameters !== null) {
 			foreach ($args as $i => $arg) {
 				$assignByReference = false;
 				$currentParameter = null;
-				if (isset($parameters[$i])) {
-					$currentParameter = $parameters[$i];
-				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
-					$currentParameter = array_last($parameters);
+				if (isset($writebackParameters[$i])) {
+					$currentParameter = $writebackParameters[$i];
+				} elseif (count($writebackParameters) > 0 && $writebackAcceptor->isVariadic()) {
+					$currentParameter = array_last($writebackParameters);
 				}
 
 				if ($currentParameter !== null) {
@@ -3909,11 +4038,12 @@ class NodeScopeResolver
 					if (!$argType->isObject()->no()) {
 						$nakedReturnType = null;
 						if ($nakedMethodReflection !== null) {
-							$nakedParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-								$scope,
-								$args,
+							$nakedParametersAcceptor = $this->selectArgsAcceptor(
+								$gatheredTypes,
 								$nakedMethodReflection->getVariants(),
 								$nakedMethodReflection->getNamedArgumentsVariants(),
+								$gatheredHasName,
+								$gatheredUnpack,
 							);
 							$nakedReturnType = $nakedParametersAcceptor->getReturnType();
 						}
@@ -3934,7 +4064,154 @@ class NodeScopeResolver
 		}
 
 		// not storing this, it's scope after processing all args
-		return $this->expressionResultFactory->create($scope, $scope, $callLike, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		return new ArgsResult(
+			$this->expressionResultFactory->create($scope, $scope, $callLike, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints),
+			$resolvedAcceptor,
+		);
+	}
+
+	/**
+	 * Applies the intrinsic argument overrides (array_map/filter/walk/find,
+	 * curl_setopt, implode, Closure::bind) on the arg-to-arg evolved scope,
+	 * then type-selects the metadata acceptor over
+	 * the arg types gathered so far. The overrides read sibling arg types - which
+	 * closures-last ordering keeps in scope/$gatheredTypes before any closure.
+	 *
+	 * @param Node\Arg[] $args
+	 * @param array<int|string, Type> $gatheredTypes
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 */
+	private function selectArgsMetadataAcceptor(array $args, array $gatheredTypes, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack, MutatingScope $scope): ParametersAcceptor
+	{
+		$overridden = ParametersAcceptorSelector::applyIntrinsicArgOverrides(
+			$args,
+			$parametersAcceptors,
+			$namedArgumentsVariants,
+			$scope,
+			static fn (Expr $e): Type => $scope->getType($e),
+			static fn (Expr $e): Type => $scope->getNativeType($e),
+			static fn (Type $t): Type => $scope->getIterableValueType($t),
+			static fn (Type $t): Type => $scope->getIterableKeyType($t),
+		);
+
+		return $this->selectArgsAcceptor($gatheredTypes, $overridden, $namedArgumentsVariants, $hasName, $unpack);
+	}
+
+	/**
+	 * @param array<int|string, Type> $types
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 */
+	private function selectArgsAcceptor(array $types, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack): ParametersAcceptor
+	{
+		return $hasName && $namedArgumentsVariants !== null
+			? ParametersAcceptorSelector::selectFromTypes($types, $namedArgumentsVariants, $unpack)
+			: ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack);
+	}
+
+	/**
+	 * Ports the gather-keying of ParametersAcceptorSelector::selectFromArgs():
+	 * indexes the gathered arg type by name (sets $hasName) vs position, and
+	 * expands unpacked constant arrays / falls back to the iterable value type
+	 * (sets $unpack), so selectFromTypes() picks the matching variant.
+	 *
+	 * @param array<int|string, Type> $types
+	 */
+	private function addGatheredArgType(array &$types, bool &$unpack, bool &$hasName, Node\Arg $originalArg, int $i, Type $type): void
+	{
+		if ($originalArg->name !== null) {
+			$index = $originalArg->name->toString();
+			$hasName = true;
+		} else {
+			$index = $i;
+		}
+
+		if ($originalArg->unpack) {
+			$unpack = true;
+			$constantArrays = $type->getConstantArrays();
+			if (count($constantArrays) > 0) {
+				foreach ($constantArrays as $constantArray) {
+					$values = $constantArray->getValueTypes();
+					foreach ($constantArray->getKeyTypes() as $j => $keyType) {
+						$valueType = $values[$j];
+						$valueIndex = $keyType->getValue();
+						if (is_string($valueIndex)) {
+							$hasName = true;
+						} else {
+							$valueIndex = $i + $j;
+						}
+
+						$types[$valueIndex] = isset($types[$valueIndex])
+							? TypeCombinator::union($types[$valueIndex], $valueType)
+							: $valueType;
+					}
+				}
+			} else {
+				$types[$index] = $type->getIterableValueType();
+			}
+		} else {
+			$types[$index] = $type;
+		}
+	}
+
+	/**
+	 * Resolves the type of a closure/arrow function argument for the generic
+	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
+	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
+	 * onto the in-function-call stack, so its body sees the template parameter
+	 * (effectively mixed for an untyped param) rather than a parameter already
+	 * resolved from sibling args. That keeps the inferred return type (the U in
+	 * callable(T): U) faithful to the closure's own declaration.
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 */
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
+	{
+		$rawParameter = null;
+		if (count($parametersAcceptors) === 1) {
+			$rawParameters = $parametersAcceptors[0]->getParameters();
+			if (isset($rawParameters[$i])) {
+				$rawParameter = $rawParameters[$i];
+			} elseif (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
+				$rawParameter = array_last($rawParameters);
+			}
+		}
+
+		if ($rawParameter !== null) {
+			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
+		}
+
+		return $scope->getType($closureExpr);
+	}
+
+	/**
+	 * Whether processing this argument consumes the generic-RESOLVED parameter
+	 * type: a closure/arrow function does - its parameters and body scope are
+	 * typed from the resolved callable(T) - whether it IS the argument or is
+	 * nested anywhere inside it (the enclosing parameter is pushed on the
+	 * in-function-call stack and the nested closure types itself from there).
+	 * Every other argument only reads variant-stable facts off its parameter.
+	 */
+	private function argConsumesResolvedParameterType(Expr $value): bool
+	{
+		if ($value instanceof Expr\Closure || $value instanceof Expr\ArrowFunction) {
+			return true;
+		}
+
+		// cached on the node - args are re-processed across convergence passes
+		$cached = $value->getAttribute('phpstanArgContainsClosure');
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$contains = (new NodeFinder())->findFirst(
+			[$value],
+			static fn (Node $node): bool => $node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction,
+		) !== null;
+		$value->setAttribute('phpstanArgContainsClosure', $contains);
+
+		return $contains;
 	}
 
 	/**

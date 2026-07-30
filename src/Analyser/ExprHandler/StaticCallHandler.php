@@ -101,62 +101,69 @@ final class StaticCallHandler implements ExprHandler
 		}
 
 		$parametersAcceptor = null;
+		$variants = [];
+		$namedArgumentsVariants = null;
 		$methodReflection = null;
-		$closureBindScope = null;
+		$closureBindScopeFactory = null;
 		if ($expr->name instanceof Identifier) {
 			if ($expr->class instanceof Name) {
 				$classType = $scope->resolveTypeByName($expr->class);
 				$methodName = $expr->name->name;
 				if ($classType->hasMethod($methodName)->yes()) {
 					$methodReflection = $classType->getMethod($methodName, $scope);
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$methodReflection->getVariants(),
-						$methodReflection->getNamedArgumentsVariants(),
-					);
+					$variants = $methodReflection->getVariants();
+					$namedArgumentsVariants = $methodReflection->getNamedArgumentsVariants();
+					// A structural acceptor (names/positions/variadic) drives argument
+					// normalization, the impure point and the throw point - generics are
+					// resolved type-driven by processArgs() into $resolvedParametersAcceptor.
+					$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $variants, $namedArgumentsVariants);
 
 					$declaringClass = $methodReflection->getDeclaringClass();
 					if (
 						$declaringClass->getName() === 'Closure'
 						&& strtolower($methodName) === 'bind'
 					) {
-						$thisType = null;
-						$nativeThisType = null;
-						if (isset($expr->getArgs()[1])) {
-							$argType = $scope->getType($expr->getArgs()[1]->value);
-							if ($argType->isNull()->yes()) {
-								$thisType = null;
-							} else {
-								$thisType = $argType;
-							}
-
-							$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
-							if ($nativeArgType->isNull()->yes()) {
-								$nativeThisType = null;
-							} else {
-								$nativeThisType = $nativeArgType;
-							}
-						}
-						$scopeClasses = ['static'];
-						if (isset($expr->getArgs()[2])) {
-							$argValue = $expr->getArgs()[2]->value;
-							$argValueType = $scope->getType($argValue);
-
-							$directClassNames = $argValueType->getObjectClassNames();
-							if (count($directClassNames) > 0) {
-								$scopeClasses = $directClassNames;
-								$thisTypes = [];
-								foreach ($directClassNames as $directClassName) {
-									$thisTypes[] = new ObjectType($directClassName);
+						// deferred until the closure argument is processed: with
+						// closures processed last, the bound $this/scope arguments
+						// are already evaluated on the scope the factory receives
+						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr): MutatingScope {
+							$thisType = null;
+							$nativeThisType = null;
+							if (isset($expr->getArgs()[1])) {
+								$argType = $boundScope->getType($expr->getArgs()[1]->value);
+								if ($argType->isNull()->yes()) {
+									$thisType = null;
+								} else {
+									$thisType = $argType;
 								}
-								$thisType = TypeCombinator::union(...$thisTypes);
-							} else {
-								$thisType = $argValueType->getClassStringObjectType();
-								$scopeClasses = $thisType->getObjectClassNames();
+
+								$nativeArgType = $boundScope->getNativeType($expr->getArgs()[1]->value);
+								if ($nativeArgType->isNull()->yes()) {
+									$nativeThisType = null;
+								} else {
+									$nativeThisType = $nativeArgType;
+								}
 							}
-						}
-						$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
+							$scopeClasses = ['static'];
+							if (isset($expr->getArgs()[2])) {
+								$argValue = $expr->getArgs()[2]->value;
+								$argValueType = $boundScope->getType($argValue);
+
+								$directClassNames = $argValueType->getObjectClassNames();
+								if (count($directClassNames) > 0) {
+									$scopeClasses = $directClassNames;
+									$thisTypes = [];
+									foreach ($directClassNames as $directClassName) {
+										$thisTypes[] = new ObjectType($directClassName);
+									}
+									$thisType = TypeCombinator::union(...$thisTypes);
+								} else {
+									$thisType = $argValueType->getClassStringObjectType();
+									$scopeClasses = $thisType->getObjectClassNames();
+								}
+							}
+							return $boundScope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
+						};
 					}
 				} else {
 					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
@@ -166,12 +173,9 @@ final class StaticCallHandler implements ExprHandler
 				$methodName = $expr->name->name;
 				$methodReflection = $scope->getMethodReflection($classType, $methodName);
 				if ($methodReflection !== null) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$methodReflection->getVariants(),
-						$methodReflection->getNamedArgumentsVariants(),
-					);
+					$variants = $methodReflection->getVariants();
+					$namedArgumentsVariants = $methodReflection->getNamedArgumentsVariants();
+					$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $variants, $namedArgumentsVariants);
 				}
 			}
 		} else {
@@ -219,11 +223,20 @@ final class StaticCallHandler implements ExprHandler
 			$returnType = $parametersAcceptor->getReturnType();
 			$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
 		}
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope);
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScopeFactory);
+		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
 		$scopeFunction = $scope->getFunction();
 
 		if ($methodReflection !== null) {
+			// The early structural check above only sees the unresolved acceptor
+			// return type; a conditional-return never (e.g. `($x is Foo ? never :
+			// string)`) only resolves to never once the actual argument types are
+			// folded in by the type-driven resolved acceptor.
+			if ($resolvedParametersAcceptor !== null) {
+				$resolvedReturnType = $resolvedParametersAcceptor->getReturnType();
+				$isAlwaysTerminating = $isAlwaysTerminating || ($resolvedReturnType instanceof NeverType && $resolvedReturnType->isExplicit());
+			}
 			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
@@ -253,9 +266,13 @@ final class StaticCallHandler implements ExprHandler
 			&& $methodReflection->hasSideEffects()->maybe()
 			&& !$methodReflection->getDeclaringClass()->isBuiltin()
 		) {
+			// the remembered call value is generic-sensitive: resolve it from the
+			// type-driven acceptor processArgs() selected (generics resolved against
+			// the actual arg types), falling back to the structural acceptor.
+			$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 			$scope = $scope->assignExpression(
 				new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-				$parametersAcceptor->getReturnType(),
+				$acceptorForGenerics->getReturnType(),
 				new MixedType(),
 			);
 		}

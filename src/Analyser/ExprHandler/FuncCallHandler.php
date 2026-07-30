@@ -120,6 +120,8 @@ final class FuncCallHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 		$parametersAcceptor = null;
+		$variants = [];
+		$namedArgumentsVariants = null;
 		$functionReflection = null;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -130,12 +132,11 @@ final class FuncCallHandler implements ExprHandler
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$nameType = $nameResult->getType();
 			if (!$nameType->isCallable()->no()) {
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$expr->getArgs(),
-					$nameType->getCallableParametersAcceptors($scope),
-					null,
-				);
+				$variants = $nameType->getCallableParametersAcceptors($scope);
+				// A structural acceptor (names/positions/variadic) drives the per-arg
+				// metadata and the throw/impure points - generics are resolved
+				// type-driven by processArgs() into $resolvedParametersAcceptor.
+				$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $variants, null);
 			}
 
 			$scope = $nameResult->getScope();
@@ -160,16 +161,12 @@ final class FuncCallHandler implements ExprHandler
 			}
 		} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$expr->getArgs(),
-				$functionReflection->getVariants(),
-				$functionReflection->getNamedArgumentsVariants(),
-			);
-			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs());
-			if ($impurePoint !== null) {
-				$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
-			}
+			$variants = $functionReflection->getVariants();
+			$namedArgumentsVariants = $functionReflection->getNamedArgumentsVariants();
+			// A structural acceptor (names/positions/variadic) drives argument
+			// normalization, the impure point and the throw points - generics are
+			// resolved type-driven by processArgs() into $resolvedParametersAcceptor.
+			$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $variants, $namedArgumentsVariants);
 		} else {
 			$impurePoints[] = new ImpurePoint(
 				$scope,
@@ -291,12 +288,23 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		$scopeBeforeArgs = $scope;
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallbackForArgs, $context);
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallbackForArgs, $context);
+		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
 		$hasYield = $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
+
+		if ($functionReflection !== null) {
+			// created after the args were processed - the side-effect flip
+			// parameters (print_r's $return, ...) read an argument's type, which
+			// is only available once the argument was processed
+			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs());
+			if ($impurePoint !== null) {
+				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
+			}
+		}
 
 		if ($arrayWalkValueTypes !== null && $arrayWalkArrayArg !== null) {
 			$arrayWalkValueType = $arrayWalkValueTypes[0];
@@ -336,6 +344,13 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($functionReflection !== null) {
+			// A conditional-return never (e.g. `($x is Foo ? never : string)`) only
+			// resolves to never once the actual argument types are folded in by the
+			// type-driven resolved acceptor.
+			if ($resolvedParametersAcceptor !== null) {
+				$resolvedReturnType = $resolvedParametersAcceptor->getReturnType();
+				$isAlwaysTerminating = $isAlwaysTerminating || ($resolvedReturnType instanceof NeverType && $resolvedReturnType->isExplicit());
+			}
 			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
 			if ($functionThrowPoint !== null) {
 				$throwPoints[] = $functionThrowPoint;

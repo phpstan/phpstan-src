@@ -6,8 +6,6 @@ use DivisionByZeroError;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ExpressionContext;

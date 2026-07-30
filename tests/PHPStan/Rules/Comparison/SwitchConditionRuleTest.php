@@ -26,11 +26,6 @@ class SwitchConditionRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new SwitchConditionRule(
 				new ConstantConditionRuleHelper(
-					new ImpossibleCheckTypeHelper(
-						self::createReflectionProvider(),
-						$this->getTypeSpecifier(),
-						$this->treatPhpDocTypesAsCertain,
-					),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),

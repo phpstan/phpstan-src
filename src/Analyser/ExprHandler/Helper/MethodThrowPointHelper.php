@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\ConditionalThrowTypeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -86,6 +87,9 @@ final class MethodThrowPointHelper
 		}
 
 		$throwType = $methodReflection->getThrowType();
+		if ($throwType !== null) {
+			$throwType = ConditionalThrowTypeResolver::resolveForCall($throwType, $parametersAcceptor, $normalizedMethodCall->getArgs(), $scope);
+		}
 		if ($throwType === null) {
 			$returnType = $scope->getType($normalizedMethodCall);
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {

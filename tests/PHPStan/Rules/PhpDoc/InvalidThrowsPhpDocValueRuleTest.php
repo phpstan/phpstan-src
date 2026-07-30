@@ -58,6 +58,18 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 				'PHPDoc tag @throws with type stdClass is not subtype of Throwable',
 				118,
 			],
+			[
+				'PHPDoc tag @throws with type ($x is int ? stdClass : void) is not subtype of Throwable',
+				141,
+			],
+			[
+				'PHPDoc tag @throws with type (TKey of int|string is int ? void : stdClass) is not subtype of Throwable',
+				159,
+			],
+			[
+				'PHPDoc tag @throws with type ($x is int ? Exception : ($y is int ? stdClass : void)) is not subtype of Throwable',
+				177,
+			],
 		]);
 	}
 

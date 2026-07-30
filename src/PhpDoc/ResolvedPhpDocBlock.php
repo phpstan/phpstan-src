@@ -283,7 +283,7 @@ final class ResolvedPhpDocBlock
 		$result->paramsPureUnlessCallableIsImpure = self::mergeParamsPureUnlessCallableIsImpure($this->getParamsPureUnlessCallableIsImpure(), $parent, $parameterMapping);
 		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parent, $parameterMapping, $parentClass);
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $declaringClass, $parent, $parameterMapping, $parentClass);
-		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parent);
+		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parent, $parameterMapping);
 		$result->mixinTags = $this->getMixinTags();
 		$result->requireExtendsTags = $this->getRequireExtendsTags();
 		$result->requireImplementsTags = $this->getRequireImplementsTags();
@@ -1033,13 +1033,20 @@ final class ResolvedPhpDocBlock
 		return $result;
 	}
 
-	private static function mergeThrowsTags(?ThrowsTag $throwsTag, self $parent): ?ThrowsTag
+	private static function mergeThrowsTags(?ThrowsTag $throwsTag, self $parent, InheritedPhpDocParameterMapping $parameterMapping): ?ThrowsTag
 	{
 		if ($throwsTag !== null) {
 			return $throwsTag;
 		}
 
-		return $parent->getThrowsTag();
+		$parentThrowsTag = $parent->getThrowsTag();
+		if ($parentThrowsTag === null) {
+			return null;
+		}
+
+		// Conditional @throws types like ($x is 0 ? Exception : void) reference parameter
+		// names that may differ in the overriding method, so remap them just like @return.
+		return new ThrowsTag($parameterMapping->transformConditionalReturnTypeWithParameterNameMapping($parentThrowsTag->getType()));
 	}
 
 	/**

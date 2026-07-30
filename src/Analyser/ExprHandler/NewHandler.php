@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\ConditionalThrowTypeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -329,7 +330,7 @@ final class NewHandler implements ExprHandler
 		}
 
 		if ($constructorReflection->getThrowType() !== null) {
-			$throwType = $constructorReflection->getThrowType();
+			$throwType = ConditionalThrowTypeResolver::resolveForCall($constructorReflection->getThrowType(), $parametersAcceptor, $args, $scope);
 			if (!$throwType->isVoid()->yes()) {
 				return InternalThrowPoint::createExplicit($scope, $throwType, $new, true);
 			}

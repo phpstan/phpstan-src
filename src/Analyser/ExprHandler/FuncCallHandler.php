@@ -14,6 +14,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\ConditionalThrowTypeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -635,6 +636,9 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		$throwType = $functionReflection->getThrowType();
+		if ($throwType !== null && $parametersAcceptor !== null) {
+			$throwType = ConditionalThrowTypeResolver::resolveForCall($throwType, $parametersAcceptor, $normalizedFuncCall->getArgs(), $scope);
+		}
 		if ($throwType === null) {
 			$returnType = $scope->getType($normalizedFuncCall);
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {

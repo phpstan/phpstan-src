@@ -4065,17 +4065,28 @@ class NodeScopeResolver
 	 */
 	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback): ExpressionResult
 	{
-		return $this->container->getByType(AssignHandler::class)->processAssignVar(
+		$assignHandler = $this->container->getByType(AssignHandler::class);
+		$virtualAssignNodeCallback = new VirtualAssignNodeCallback($nodeCallback);
+		$target = $assignHandler->prepareTarget(
 			$this,
 			$scope,
 			$storage,
 			$stmt,
 			$var,
 			$assignedExpr,
-			new VirtualAssignNodeCallback($nodeCallback),
+			$virtualAssignNodeCallback,
 			ExpressionContext::createDeep(),
-			fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $assignedExpr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
-			false,
+			AssignTargetWalkMode::virtualAssign(),
+		);
+
+		return $assignHandler->applyWrite(
+			$this,
+			$target,
+			$this->expressionResultFactory->create($target->getScope(), beforeScope: $target->getScope(), expr: $assignedExpr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+			$stmt,
+			$storage,
+			$virtualAssignNodeCallback,
+			ExpressionContext::createDeep(),
 		);
 	}
 

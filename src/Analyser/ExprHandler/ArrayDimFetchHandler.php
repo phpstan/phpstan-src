@@ -85,8 +85,27 @@ final class ArrayDimFetchHandler implements ExprHandler
 		$beforeScope = $scope;
 		if ($expr->dim === null) {
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $varResult->getScope();
 
+			return $this->composeResult($nodeScopeResolver, $stmt, $expr, null, $varResult, $storage, $context, $beforeScope);
+		}
+
+		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
+
+		return $this->composeResult($nodeScopeResolver, $stmt, $expr, $dimResult, $varResult, $storage, $context, $beforeScope);
+	}
+
+	/**
+	 * Builds the offset read's ExpressionResult from the already-walked
+	 * dimension and receiver results - the chain is not re-walked (only the
+	 * ArrayAccess offsetGet simulation runs, over synthetic nodes).
+	 * processExpr() routes through this; AssignHandler::prepareTarget() calls it
+	 * to price a read-modify-write target from the write walk's child results.
+	 */
+	public function composeResult(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, ArrayDimFetch $expr, ?ExpressionResult $dimResult, ExpressionResult $varResult, ExpressionResultStorage $storage, ExpressionContext $context, MutatingScope $beforeScope): ExpressionResult
+	{
+		$scope = $varResult->getScope();
+		if ($expr->dim === null || $dimResult === null) {
 			return $this->expressionResultFactory->create(
 				$scope,
 				beforeScope: $beforeScope,
@@ -99,11 +118,8 @@ final class ArrayDimFetchHandler implements ExprHandler
 			);
 		}
 
-		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
 		$throwPoints = array_merge($dimResult->getThrowPoints(), $varResult->getThrowPoints());
 		$impurePoints = array_merge($dimResult->getImpurePoints(), $varResult->getImpurePoints());
-		$scope = $varResult->getScope();
 
 		$varType = $varResult->getType();
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {

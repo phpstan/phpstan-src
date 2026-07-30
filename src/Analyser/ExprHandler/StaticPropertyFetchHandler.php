@@ -56,6 +56,29 @@ final class StaticPropertyFetchHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
+		$classResult = null;
+		if ($expr->class instanceof Expr) {
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $classResult->getScope();
+		}
+		$nameResult = null;
+		if (!$expr->name instanceof VarLikeIdentifier) {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+		}
+
+		return $this->composeResult($expr, $classResult, $nameResult, $beforeScope);
+	}
+
+	/**
+	 * Builds the static property read's ExpressionResult from the
+	 * already-walked class and name results - the fetch is not re-walked.
+	 * processExpr() routes through this; AssignHandler::prepareTarget() calls
+	 * it to price a read-modify-write target from the write walk's child
+	 * results.
+	 */
+	public function composeResult(StaticPropertyFetch $expr, ?ExpressionResult $classResult, ?ExpressionResult $nameResult, MutatingScope $beforeScope): ExpressionResult
+	{
+		$scope = $beforeScope;
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [
@@ -69,9 +92,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		];
 		$isAlwaysTerminating = false;
 		$containsNullsafe = false;
-		$classResult = null;
-		if ($expr->class instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+		if ($classResult !== null) {
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();
 			$impurePoints = $classResult->getImpurePoints();
@@ -79,8 +100,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$scope = $classResult->getScope();
 			$containsNullsafe = $classResult->containsNullsafe();
 		}
-		if (!$expr->name instanceof VarLikeIdentifier) {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+		if ($nameResult !== null) {
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());

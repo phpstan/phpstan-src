@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use ArrayAccess;
-use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -22,6 +21,7 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -29,11 +29,13 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\PreparedAssignTarget;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -98,6 +100,11 @@ final class AssignHandler implements ExprHandler
 		private MatchHandler $matchHandler,
 		private ExpressionResultFactory $expressionResultFactory,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private NonNullabilityHelper $nonNullabilityHelper,
+		private VariableHandler $variableHandler,
+		private ArrayDimFetchHandler $arrayDimFetchHandler,
+		private PropertyFetchHandler $propertyFetchHandler,
+		private StaticPropertyFetchHandler $staticPropertyFetchHandler,
 	)
 	{
 	}
@@ -293,7 +300,7 @@ final class AssignHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
-		$result = $this->processAssignVar(
+		$target = $this->prepareTarget(
 			$nodeScopeResolver,
 			$scope,
 			$storage,
@@ -302,49 +309,55 @@ final class AssignHandler implements ExprHandler
 			$expr->expr,
 			$nodeCallback,
 			$context,
-			function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
-				$beforeScope = $scope;
-				$impurePoints = [];
-				if ($expr instanceof AssignRef) {
-					$referencedExpr = $expr->expr;
-					while ($referencedExpr instanceof ArrayDimFetch) {
-						$referencedExpr = $referencedExpr->var;
-					}
+			AssignTargetWalkMode::assign(),
+		);
 
-					if ($referencedExpr instanceof PropertyFetch || $referencedExpr instanceof StaticPropertyFetch) {
-						$impurePoints[] = new ImpurePoint(
-							$scope,
-							$expr,
-							'propertyAssignByRef',
-							'property assignment by reference',
-							false,
-						);
-					}
+		$valueBeforeScope = $target->getScope();
+		$valueScope = $valueBeforeScope;
+		$valueImpurePoints = [];
+		if ($expr instanceof AssignRef) {
+			$referencedExpr = $expr->expr;
+			while ($referencedExpr instanceof ArrayDimFetch) {
+				$referencedExpr = $referencedExpr->var;
+			}
 
-					$scope = $scope->enterExpressionAssign($expr->expr);
-				}
+			if ($referencedExpr instanceof PropertyFetch || $referencedExpr instanceof StaticPropertyFetch) {
+				$valueImpurePoints[] = new ImpurePoint(
+					$valueScope,
+					$expr,
+					'propertyAssignByRef',
+					'property assignment by reference',
+					false,
+				);
+			}
 
-				if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-					$context = $context->enterRightSideAssign(
-						$expr->var->name,
-						$expr->expr,
-					);
-				}
+			$valueScope = $valueScope->enterExpressionAssign($expr->expr);
+		}
 
-				$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-				$scope = $result->getScope();
+		$valueContext = $context;
+		if ($expr->var instanceof Variable && is_string($expr->var->name)) {
+			$valueContext = $valueContext->enterRightSideAssign(
+				$expr->var->name,
+				$expr->expr,
+			);
+		}
 
-				if ($expr instanceof AssignRef) {
-					$scope = $scope->exitExpressionAssign($expr->expr);
-				}
+		$assignedExprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		$valueImpurePoints = array_merge($valueImpurePoints, $assignedExprResult->getImpurePoints());
+		$valueScope = $assignedExprResult->getScope();
 
-				return $this->expressionResultFactory->create($scope, $beforeScope, $expr->expr, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
-			},
-			true,
+		if ($expr instanceof AssignRef) {
+			$valueScope = $valueScope->exitExpressionAssign($expr->expr);
+		}
+
+		$result = $this->applyWrite(
+			$nodeScopeResolver,
+			$target,
+			$this->expressionResultFactory->create($valueScope, $valueBeforeScope, $expr->expr, $assignedExprResult->hasYield(), $assignedExprResult->isAlwaysTerminating(), $assignedExprResult->getThrowPoints(), $valueImpurePoints),
+			$stmt,
+			$storage,
+			$nodeCallback,
+			$context,
 		);
 		$scope = $result->getScope();
 
@@ -396,10 +409,15 @@ final class AssignHandler implements ExprHandler
 	}
 
 	/**
+	 * The pre-value half of an assignment: walks the target's sub-expressions
+	 * (root, dimensions, receiver, dynamic name) in PHP's evaluation order and
+	 * captures everything applyWrite() needs into a PreparedAssignTarget. The
+	 * caller processes the assigned value on PreparedAssignTarget::getScope()
+	 * between the two calls.
+	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 * @param Closure(MutatingScope $scope): ExpressionResult $processExprCallback
 	 */
-	public function processAssignVar(
+	public function prepareTarget(
 		NodeScopeResolver $nodeScopeResolver,
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
@@ -408,10 +426,11 @@ final class AssignHandler implements ExprHandler
 		Expr $assignedExpr,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		Closure $processExprCallback,
-		bool $enterExpressionAssign,
-	): ExpressionResult
+		AssignTargetWalkMode $mode,
+	): PreparedAssignTarget
 	{
+		$enterExpressionAssign = $mode->enterExpressionAssign();
+		$targetReadResult = null;
 		$beforeScope = $scope;
 		$nodeScopeResolver->storeExpressionResult($storage, $var, $this->expressionResultFactory->create(
 			$scope,
@@ -429,7 +448,408 @@ final class AssignHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable) {
-			$result = $processExprCallback($scope);
+			if ($mode->producesTargetReadResult()) {
+				// `$lvalue OP= ...` reads the old value of `$lvalue`; the write walk
+				// processes a Variable target only as an assignment target, never as
+				// a read. The read is composed here without a walk - for ??= with
+				// isset() semantics (mirroring CoalesceHandler's left-side
+				// processing, with the isset descriptor - bug-13623).
+				$readScope = $scope;
+				if ($mode->issetSemanticsForRead()) {
+					$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
+					$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
+				}
+				if (is_string($var->name)) {
+					$targetReadResult = $this->variableHandler->composeResult($var, null, $readScope);
+				} else {
+					// a dynamic-name target: the name expression is only walked later
+					// by the write flow, so the read prices it here first
+					$targetReadResult = $nodeScopeResolver->processExprNode($stmt, $var, $readScope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				}
+			}
+
+			return new PreparedAssignTarget(
+				PreparedAssignTarget::KIND_VARIABLE,
+				$var,
+				$assignedExpr,
+				$beforeScope,
+				$scope,
+				$enterExpressionAssign,
+				$isAssignOp,
+				$hasYield,
+				$throwPoints,
+				$impurePoints,
+				$isAlwaysTerminating,
+				targetReadResult: $targetReadResult,
+			);
+		}
+
+		if ($var instanceof ArrayDimFetch) {
+			$dimFetchStack = [];
+			$originalVar = $var;
+			$assignedPropertyExpr = $assignedExpr;
+			while ($var instanceof ArrayDimFetch) {
+				$varForSetOffsetValue = $var->var;
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new TypeExpr($this->getOriginalPropertyType($varForSetOffsetValue, $scope));
+				}
+
+				if (
+					$var === $originalVar
+					&& $var->dim !== null
+					&& $scope->hasExpressionType($var)->yes()
+				) {
+					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$var->dim,
+						$assignedPropertyExpr,
+					);
+				} else {
+					$assignedPropertyExpr = new SetOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$var->dim,
+						$assignedPropertyExpr,
+					);
+				}
+				$dimFetchStack[] = $var;
+				$var = $var->var;
+			}
+
+			// 1. eval root expr
+			// The root is read to obtain the container that receives the offset write, so a
+			// property root must resolve to its readable type (not its writable one) even
+			// though it sits on the left-hand side of the assignment.
+			if ($enterExpressionAssign) {
+				$scope = $scope->enterExpressionAssign($var, false);
+			}
+			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$rootReadResult = $result;
+			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
+			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+			if ($enterExpressionAssign) {
+				$scope = $scope->exitExpressionAssign($var);
+			}
+
+			// 2. eval dimensions
+			$offsetTypes = [];
+			$offsetNativeTypes = [];
+			$dimResults = [];
+			$dimFetchStack = array_reverse($dimFetchStack);
+			$lastDimKey = array_key_last($dimFetchStack);
+			foreach ($dimFetchStack as $key => $dimFetch) {
+				$dimExpr = $dimFetch->dim;
+
+				// Callback was already called for last dim at the beginning of the method.
+				if ($key !== $lastDimKey) {
+					$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $scope->enterExpressionAssign($dimFetch) : $scope, $storage);
+				}
+
+				if ($dimExpr === null) {
+					$dimResults[$key] = null;
+					$offsetTypes[] = [null, $dimFetch];
+					$offsetNativeTypes[] = [null, $dimFetch];
+					$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $this->expressionResultFactory->create(
+						$scope,
+						beforeScope: $scope,
+						expr: $dimFetch,
+						hasYield: false,
+						isAlwaysTerminating: false,
+						throwPoints: [],
+						impurePoints: [],
+					));
+
+				} else {
+					if ($enterExpressionAssign) {
+						$scope->enterExpressionAssign($dimExpr);
+					}
+					$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $this->expressionResultFactory->create(
+						$scope,
+						beforeScope: $scope,
+						expr: $dimFetch,
+						hasYield: false,
+						isAlwaysTerminating: false,
+						throwPoints: [],
+						impurePoints: [],
+					));
+					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
+					$dimResults[$key] = $result;
+					$offsetTypes[] = [$result->getType(), $dimFetch];
+					$offsetNativeTypes[] = [$result->getNativeType(), $dimFetch];
+					$hasYield = $hasYield || $result->hasYield();
+					$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+					$scope = $result->getScope();
+
+					if ($enterExpressionAssign) {
+						$scope = $scope->exitExpressionAssign($dimExpr);
+					}
+				}
+			}
+
+			if ($mode->issetSemanticsForRead()) {
+				// `$lvalue ??= ...` reads the chain with isset() semantics. The root
+				// and dimensions were just walked, so each chain link's read is
+				// composed from their results - no re-walk - and carries the isset
+				// descriptor (bug-13623).
+				$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $originalVar);
+				$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $originalVar);
+				$levelReadResult = $rootReadResult;
+				foreach ($dimFetchStack as $key => $dimFetch) {
+					$levelReadResult = $this->arrayDimFetchHandler->composeResult($nodeScopeResolver, $stmt, $dimFetch, $dimResults[$key], $levelReadResult, $storage, $context, $readScope);
+				}
+				$targetReadResult = $levelReadResult;
+			}
+
+			return new PreparedAssignTarget(
+				PreparedAssignTarget::KIND_ARRAY_DIM_FETCH,
+				$originalVar,
+				$assignedExpr,
+				$beforeScope,
+				$scope,
+				$enterExpressionAssign,
+				$isAssignOp,
+				$hasYield,
+				$throwPoints,
+				$impurePoints,
+				$isAlwaysTerminating,
+				rootVar: $var,
+				dimFetchStack: $dimFetchStack,
+				assignedPropertyExpr: $assignedPropertyExpr,
+				offsetTypes: $offsetTypes,
+				offsetNativeTypes: $offsetNativeTypes,
+				targetReadResult: $targetReadResult,
+			);
+		}
+
+		if ($var instanceof PropertyFetch) {
+			$scopeBeforeVar = $scope;
+			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
+			$hasYield = $objectResult->hasYield();
+			$throwPoints = $objectResult->getThrowPoints();
+			$impurePoints = $objectResult->getImpurePoints();
+			$isAlwaysTerminating = $objectResult->isAlwaysTerminating();
+			$scope = $objectResult->getScope();
+
+			$propertyName = null;
+			$propertyNameResult = null;
+			if ($var->name instanceof Node\Identifier) {
+				$propertyName = $var->name->name;
+			} else {
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$hasYield = $hasYield || $propertyNameResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $propertyNameResult->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $propertyNameResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $propertyNameResult->isAlwaysTerminating();
+				$scope = $propertyNameResult->getScope();
+			}
+
+			if ($mode->issetSemanticsForRead()) {
+				// `$lvalue ??= ...` reads the property with isset() semantics: the
+				// read is composed from the just-walked receiver and name results -
+				// no re-walk - and carries the isset descriptor (bug-13623).
+				$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
+				$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
+				$targetReadResult = $this->propertyFetchHandler->composeResult($nodeScopeResolver, $var, $objectResult, $propertyNameResult, $scopeBeforeVar, $readScope);
+			}
+
+			return new PreparedAssignTarget(
+				PreparedAssignTarget::KIND_PROPERTY_FETCH,
+				$var,
+				$assignedExpr,
+				$beforeScope,
+				$scope,
+				$enterExpressionAssign,
+				$isAssignOp,
+				$hasYield,
+				$throwPoints,
+				$impurePoints,
+				$isAlwaysTerminating,
+				propertyName: $propertyName,
+				targetReadResult: $targetReadResult,
+			);
+		}
+
+		if ($var instanceof Expr\StaticPropertyFetch) {
+			$classResult = null;
+			if ($var->class instanceof Node\Name) {
+				$propertyHolderType = $scope->resolveTypeByName($var->class);
+			} else {
+				$classResult = $nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context);
+				$propertyHolderType = $scope->getType($var->class);
+			}
+
+			$propertyName = null;
+			$propertyNameResult = null;
+			if ($var->name instanceof Node\Identifier) {
+				$propertyName = $var->name->name;
+			} else {
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$hasYield = $propertyNameResult->hasYield();
+				$throwPoints = $propertyNameResult->getThrowPoints();
+				$impurePoints = $propertyNameResult->getImpurePoints();
+				$isAlwaysTerminating = $propertyNameResult->isAlwaysTerminating();
+				$scope = $propertyNameResult->getScope();
+			}
+
+			if ($mode->issetSemanticsForRead()) {
+				// Same as the PropertyFetch branch above: the ??= read is composed
+				// from the just-walked class/name results on the isset-semantics
+				// scope - no re-walk.
+				$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
+				$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
+				$targetReadResult = $this->staticPropertyFetchHandler->composeResult($var, $classResult, $propertyNameResult, $readScope);
+			}
+
+			return new PreparedAssignTarget(
+				PreparedAssignTarget::KIND_STATIC_PROPERTY_FETCH,
+				$var,
+				$assignedExpr,
+				$beforeScope,
+				$scope,
+				$enterExpressionAssign,
+				$isAssignOp,
+				$hasYield,
+				$throwPoints,
+				$impurePoints,
+				$isAlwaysTerminating,
+				propertyName: $propertyName,
+				propertyHolderType: $propertyHolderType,
+				targetReadResult: $targetReadResult,
+			);
+		}
+
+		if ($var instanceof List_) {
+			return new PreparedAssignTarget(
+				PreparedAssignTarget::KIND_LIST,
+				$var,
+				$assignedExpr,
+				$beforeScope,
+				$scope,
+				$enterExpressionAssign,
+				$isAssignOp,
+				$hasYield,
+				$throwPoints,
+				$impurePoints,
+				$isAlwaysTerminating,
+			);
+		}
+
+		if ($var instanceof ExistingArrayDimFetch) {
+			$originalVar = $var;
+			$dimFetchStack = [];
+			$assignedPropertyExpr = $assignedExpr;
+			while ($var instanceof ExistingArrayDimFetch) {
+				$varForSetOffsetValue = $var->getVar();
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new TypeExpr($this->getOriginalPropertyType($varForSetOffsetValue, $scope));
+				}
+				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+					$varForSetOffsetValue,
+					$var->getDim(),
+					$assignedPropertyExpr,
+				);
+				$dimFetchStack[] = $var;
+				$var = $var->getVar();
+			}
+
+			// the chain is usually a clone of AST nodes already processed elsewhere
+			// (see Unset_ handling) - process it with a noop callback so that
+			// results for its nodes are stored without invoking rules twice
+			$nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+
+			$offsetTypes = [];
+			$offsetNativeTypes = [];
+			foreach (array_reverse($dimFetchStack) as $dimFetch) {
+				$dimExpr = $dimFetch->getDim();
+				$nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
+				$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
+			}
+
+			return new PreparedAssignTarget(
+				PreparedAssignTarget::KIND_EXISTING_ARRAY_DIM_FETCH,
+				$originalVar,
+				$assignedExpr,
+				$beforeScope,
+				$scope,
+				$enterExpressionAssign,
+				$isAssignOp,
+				$hasYield,
+				$throwPoints,
+				$impurePoints,
+				$isAlwaysTerminating,
+				rootVar: $var,
+				assignedPropertyExpr: $assignedPropertyExpr,
+				existingOffsetTypes: $offsetTypes,
+				existingOffsetNativeTypes: $offsetNativeTypes,
+			);
+		}
+
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context);
+			$hasYield = $varResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
+			$isAlwaysTerminating = $varResult->isAlwaysTerminating();
+			$scope = $varResult->getScope();
+
+		if ($mode->producesTargetReadResult()) {
+			// a synthetic op=/??= target: the walk above already priced the target
+			// as a read - its result is the read
+			$targetReadResult = $varResult;
+		}
+
+		return new PreparedAssignTarget(
+			PreparedAssignTarget::KIND_FALLBACK,
+			$var,
+			$assignedExpr,
+			$beforeScope,
+			$scope,
+			$enterExpressionAssign,
+			$isAssignOp,
+			$hasYield,
+			$throwPoints,
+			$impurePoints,
+			$isAlwaysTerminating,
+			targetReadResult: $targetReadResult,
+		);
+	}
+
+	/**
+	 * The post-value half of an assignment: performs the write and its
+	 * bookkeeping (narrowing, conditional expressions, node callbacks) for a
+	 * target walked by prepareTarget(), consuming the caller-processed value
+	 * result.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function applyWrite(
+		NodeScopeResolver $nodeScopeResolver,
+		PreparedAssignTarget $target,
+		ExpressionResult $valueResult,
+		Node\Stmt $stmt,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		ExpressionContext $context,
+	): ExpressionResult
+	{
+		$kind = $target->getKind();
+		$var = $target->getVar();
+		$assignedExpr = $target->getAssignedExpr();
+		$beforeScope = $target->getBeforeScope();
+		$scope = $target->getScope();
+		$enterExpressionAssign = $target->enterExpressionAssign();
+		$isAssignOp = $target->isAssignOp();
+		$hasYield = $target->hasYield();
+		$throwPoints = $target->getThrowPoints();
+		$impurePoints = $target->getImpurePoints();
+		$isAlwaysTerminating = $target->isAlwaysTerminating();
+		if ($kind === PreparedAssignTarget::KIND_VARIABLE) {
+			if (!$var instanceof Variable) {
+				throw new ShouldNotHappenException();
+			}
+			$result = $valueResult;
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
@@ -544,112 +964,22 @@ final class AssignHandler implements ExprHandler
 				$isAlwaysTerminating = $isAlwaysTerminating || $nameExprResult->isAlwaysTerminating();
 				$scope = $nameExprResult->getScope();
 			}
-		} elseif ($var instanceof ArrayDimFetch) {
-			$dimFetchStack = [];
+		} elseif ($kind === PreparedAssignTarget::KIND_ARRAY_DIM_FETCH) {
+			if (!$var instanceof ArrayDimFetch) {
+				throw new ShouldNotHappenException();
+			}
 			$originalVar = $var;
-			$assignedPropertyExpr = $assignedExpr;
-			while ($var instanceof ArrayDimFetch) {
-				$varForSetOffsetValue = $var->var;
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new TypeExpr($this->getOriginalPropertyType($varForSetOffsetValue, $scope));
-				}
-
-				if (
-					$var === $originalVar
-					&& $var->dim !== null
-					&& $scope->hasExpressionType($var)->yes()
-				) {
-					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
-						$varForSetOffsetValue,
-						$var->dim,
-						$assignedPropertyExpr,
-					);
-				} else {
-					$assignedPropertyExpr = new SetOffsetValueTypeExpr(
-						$varForSetOffsetValue,
-						$var->dim,
-						$assignedPropertyExpr,
-					);
-				}
-				$dimFetchStack[] = $var;
-				$var = $var->var;
-			}
-
-			// 1. eval root expr
-			// The root is read to obtain the container that receives the offset write, so a
-			// property root must resolve to its readable type (not its writable one) even
-			// though it sits on the left-hand side of the assignment.
-			if ($enterExpressionAssign) {
-				$scope = $scope->enterExpressionAssign($var, false);
-			}
-			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
-			if ($enterExpressionAssign) {
-				$scope = $scope->exitExpressionAssign($var);
-			}
-
-			// 2. eval dimensions
-			$offsetTypes = [];
-			$offsetNativeTypes = [];
-			$dimFetchStack = array_reverse($dimFetchStack);
-			$lastDimKey = array_key_last($dimFetchStack);
-			foreach ($dimFetchStack as $key => $dimFetch) {
-				$dimExpr = $dimFetch->dim;
-
-				// Callback was already called for last dim at the beginning of the method.
-				if ($key !== $lastDimKey) {
-					$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $scope->enterExpressionAssign($dimFetch) : $scope, $storage);
-				}
-
-				if ($dimExpr === null) {
-					$offsetTypes[] = [null, $dimFetch];
-					$offsetNativeTypes[] = [null, $dimFetch];
-					$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $this->expressionResultFactory->create(
-						$scope,
-						beforeScope: $scope,
-						expr: $dimFetch,
-						hasYield: false,
-						isAlwaysTerminating: false,
-						throwPoints: [],
-						impurePoints: [],
-					));
-
-				} else {
-					if ($enterExpressionAssign) {
-						$scope->enterExpressionAssign($dimExpr);
-					}
-					$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $this->expressionResultFactory->create(
-						$scope,
-						beforeScope: $scope,
-						expr: $dimFetch,
-						hasYield: false,
-						isAlwaysTerminating: false,
-						throwPoints: [],
-						impurePoints: [],
-					));
-					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
-					$offsetTypes[] = [$result->getType(), $dimFetch];
-					$offsetNativeTypes[] = [$result->getNativeType(), $dimFetch];
-					$hasYield = $hasYield || $result->hasYield();
-					$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-					$scope = $result->getScope();
-
-					if ($enterExpressionAssign) {
-						$scope = $scope->exitExpressionAssign($dimExpr);
-					}
-				}
-			}
-
+			$var = $target->getRootVar();
+			$dimFetchStack = $target->getDimFetchStack();
+			$assignedPropertyExpr = $target->getAssignedPropertyExpr();
+			$offsetTypes = $target->getOffsetTypes();
+			$offsetNativeTypes = $target->getOffsetNativeTypes();
 			$valueToWrite = $scope->getType($assignedExpr);
 			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
 			$scopeBeforeAssignEval = $scope;
 
 			// 3. eval assigned expr
-			$result = $processExprCallback($scope);
+			$result = $valueResult;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -753,28 +1083,13 @@ final class AssignHandler implements ExprHandler
 					$context,
 				)->getThrowPoints());
 			}
-		} elseif ($var instanceof PropertyFetch) {
-			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
-			$hasYield = $objectResult->hasYield();
-			$throwPoints = $objectResult->getThrowPoints();
-			$impurePoints = $objectResult->getImpurePoints();
-			$isAlwaysTerminating = $objectResult->isAlwaysTerminating();
-			$scope = $objectResult->getScope();
-
-			$propertyName = null;
-			if ($var->name instanceof Node\Identifier) {
-				$propertyName = $var->name->name;
-			} else {
-				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
-				$hasYield = $hasYield || $propertyNameResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $propertyNameResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $propertyNameResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $propertyNameResult->isAlwaysTerminating();
-				$scope = $propertyNameResult->getScope();
+		} elseif ($kind === PreparedAssignTarget::KIND_PROPERTY_FETCH) {
+			if (!$var instanceof PropertyFetch) {
+				throw new ShouldNotHappenException();
 			}
-
+			$propertyName = $target->getPropertyName();
 			$scopeBeforeAssignEval = $scope;
-			$result = $processExprCallback($scope);
+			$result = $valueResult;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -865,28 +1180,14 @@ final class AssignHandler implements ExprHandler
 				}
 			}
 
-		} elseif ($var instanceof Expr\StaticPropertyFetch) {
-			if ($var->class instanceof Node\Name) {
-				$propertyHolderType = $scope->resolveTypeByName($var->class);
-			} else {
-				$nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context);
-				$propertyHolderType = $scope->getType($var->class);
+		} elseif ($kind === PreparedAssignTarget::KIND_STATIC_PROPERTY_FETCH) {
+			if (!$var instanceof Expr\StaticPropertyFetch) {
+				throw new ShouldNotHappenException();
 			}
-
-			$propertyName = null;
-			if ($var->name instanceof Node\Identifier) {
-				$propertyName = $var->name->name;
-			} else {
-				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
-				$hasYield = $propertyNameResult->hasYield();
-				$throwPoints = $propertyNameResult->getThrowPoints();
-				$impurePoints = $propertyNameResult->getImpurePoints();
-				$isAlwaysTerminating = $propertyNameResult->isAlwaysTerminating();
-				$scope = $propertyNameResult->getScope();
-			}
-
+			$propertyHolderType = $target->getPropertyHolderType();
+			$propertyName = $target->getPropertyName();
 			$scopeBeforeAssignEval = $scope;
-			$result = $processExprCallback($scope);
+			$result = $valueResult;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -930,8 +1231,11 @@ final class AssignHandler implements ExprHandler
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 			}
-		} elseif ($var instanceof List_) {
-			$result = $processExprCallback($scope);
+		} elseif ($kind === PreparedAssignTarget::KIND_LIST) {
+			if (!$var instanceof List_) {
+				throw new ShouldNotHappenException();
+			}
+			$result = $valueResult;
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -963,7 +1267,7 @@ final class AssignHandler implements ExprHandler
 					$dimExpr = $arrayItem->key;
 				}
 				$getOffsetValueTypeExpr = new TypeExpr($scope->getType($assignedExpr)->getOffsetValueType($scope->getType($dimExpr)));
-				$result = $this->processAssignVar(
+				$itemTarget = $this->prepareTarget(
 					$nodeScopeResolver,
 					$scope,
 					$storage,
@@ -972,8 +1276,16 @@ final class AssignHandler implements ExprHandler
 					$getOffsetValueTypeExpr,
 					$nodeCallback,
 					$context,
-					fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $getOffsetValueTypeExpr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
-					$enterExpressionAssign,
+					$enterExpressionAssign ? AssignTargetWalkMode::assign() : AssignTargetWalkMode::virtualAssign(),
+				);
+				$result = $this->applyWrite(
+					$nodeScopeResolver,
+					$itemTarget,
+					$this->expressionResultFactory->create($itemTarget->getScope(), beforeScope: $itemTarget->getScope(), expr: $getOffsetValueTypeExpr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+					$stmt,
+					$storage,
+					$nodeCallback,
+					$context,
 				);
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
@@ -981,37 +1293,11 @@ final class AssignHandler implements ExprHandler
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			}
-		} elseif ($var instanceof ExistingArrayDimFetch) {
-			$dimFetchStack = [];
-			$assignedPropertyExpr = $assignedExpr;
-			while ($var instanceof ExistingArrayDimFetch) {
-				$varForSetOffsetValue = $var->getVar();
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new TypeExpr($this->getOriginalPropertyType($varForSetOffsetValue, $scope));
-				}
-				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
-					$varForSetOffsetValue,
-					$var->getDim(),
-					$assignedPropertyExpr,
-				);
-				$dimFetchStack[] = $var;
-				$var = $var->getVar();
-			}
-
-			// the chain is usually a clone of AST nodes already processed elsewhere
-			// (see Unset_ handling) - process it with a noop callback so that
-			// results for its nodes are stored without invoking rules twice
-			$nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-
-			$offsetTypes = [];
-			$offsetNativeTypes = [];
-			foreach (array_reverse($dimFetchStack) as $dimFetch) {
-				$dimExpr = $dimFetch->getDim();
-				$nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-				$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
-				$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
-			}
-
+		} elseif ($kind === PreparedAssignTarget::KIND_EXISTING_ARRAY_DIM_FETCH) {
+			$var = $target->getRootVar();
+			$assignedPropertyExpr = $target->getAssignedPropertyExpr();
+			$offsetTypes = $target->getExistingOffsetTypes();
+			$offsetNativeTypes = $target->getExistingOffsetNativeTypes();
 			$valueToWrite = $scope->getType($assignedExpr);
 			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
 			$varType = $scope->getType($var);
@@ -1055,13 +1341,7 @@ final class AssignHandler implements ExprHandler
 				);
 			}
 		} else {
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context);
-			$hasYield = $varResult->hasYield();
-			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
-			$isAlwaysTerminating = $varResult->isAlwaysTerminating();
-			$scope = $varResult->getScope();
-			$result = $processExprCallback($scope);
+			$result = $valueResult;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());

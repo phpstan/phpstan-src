@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use ArrayAccess;
 use Closure;
 use IteratorAggregate;
-use Override;
 use PhpParser\Comment\Doc;
 use PhpParser\Modifiers;
 use PhpParser\Node;
@@ -49,7 +48,6 @@ use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
@@ -73,7 +71,6 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
-use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
@@ -259,7 +256,6 @@ class NodeScopeResolver
 		#[AutowiredExtensions(of: StaticMethodParameterClosureTypeExtension::class)]
 		private readonly ExtensionsCollection $staticMethodParameterClosureTypeExtensions,
 		private readonly ScopeFactory $scopeFactory,
-		private readonly DeepNodeCloner $deepNodeCloner,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		#[AutowiredParameter]
@@ -2412,25 +2408,21 @@ class NodeScopeResolver
 						));
 					}
 
-					$clonedVar = $this->deepNodeCloner->cloneNode($var->var);
-					$traverser = new NodeTraverser();
-					$traverser->addVisitor(new class () extends NodeVisitorAbstract {
-
-						#[Override]
-						public function leaveNode(Node $node): ?ExistingArrayDimFetch
-						{
-							if (!$node instanceof ArrayDimFetch || $node->dim === null) {
-								return null;
-							}
-
-							return new ExistingArrayDimFetch($node->var, $node->dim);
+					// wrap the already-processed chain in ExistingArrayDimFetch nodes
+					// referencing the original sub-expressions - the unset statement's
+					// own walk already processed them, and the assign target
+					// preparation prices the chain without re-walking it
+					$buildExistingChain = static function (Expr $node) use (&$buildExistingChain): Expr {
+						if (!$node instanceof ArrayDimFetch || $node->dim === null) {
+							return $node;
 						}
 
-					});
-
-					/** @var Expr $clonedVar */
-					[$clonedVar] = $traverser->traverse([$clonedVar]);
-					$scope = $this->processVirtualAssign($scope, $storage, $stmt, $clonedVar, new UnsetOffsetExpr($var->var, $var->dim), $nodeCallback)->getScope();
+						return new ExistingArrayDimFetch(
+							$buildExistingChain($node->var),
+							$node->dim,
+						);
+					};
+					$scope = $this->processVirtualAssign($scope, $storage, $stmt, $buildExistingChain($var->var), new UnsetOffsetExpr($var->var, $var->dim), $nodeCallback)->getScope();
 				} elseif ($var instanceof PropertyFetch) {
 					$scope = $scope->invalidateExpression($var);
 					$impurePoints[] = new ImpurePoint(

@@ -9,7 +9,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileHelper;
-use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -142,7 +141,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
-			self::getContainer()->getByType(DeepNodeCloner::class),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 			self::getContainer()->getParameter('polluteScopeWithBlock'),

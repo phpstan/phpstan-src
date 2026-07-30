@@ -18,10 +18,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -62,6 +62,7 @@ final class IssetHandler implements ExprHandler
 	public function __construct(
 		private NonNullabilityHelper $nonNullabilityHelper,
 		private ExpressionResultFactory $expressionResultFactory,
+		private MethodThrowPointHelper $methodThrowPointHelper,
 	)
 	{
 	}
@@ -375,14 +376,12 @@ final class IssetHandler implements ExprHandler
 				continue;
 			}
 
-			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
-				$stmt,
-				new MethodCall(new TypeExpr($varType), 'offsetExists'),
+			$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
 				$scope,
-				$storage,
-				new NoopNodeCallback(),
 				$context,
-			)->getThrowPoints());
+				$varType,
+				new MethodCall(new TypeExpr($varType), 'offsetExists'),
+			));
 		}
 		foreach (array_reverse($expr->vars) as $var) {
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);

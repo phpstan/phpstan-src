@@ -52,6 +52,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -2397,14 +2398,12 @@ class NodeScopeResolver
 				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
 					$varType = $scope->getType($var->var);
 					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
-						$throwPoints = array_merge($throwPoints, $this->processExprNode(
-							$stmt,
-							new MethodCall(new TypeExpr($varType), 'offsetUnset'),
+						$throwPoints = array_merge($throwPoints, $this->container->getByType(MethodThrowPointHelper::class)->getThrowPointsForCallOnType(
 							$scope,
-							$storage,
-							new NoopNodeCallback(),
 							ExpressionContext::createDeep(),
-						)->getThrowPoints());
+							$varType,
+							new MethodCall(new TypeExpr($varType), 'offsetUnset'),
+						));
 					}
 
 					$clonedVar = $this->deepNodeCloner->cloneNode($var->var);

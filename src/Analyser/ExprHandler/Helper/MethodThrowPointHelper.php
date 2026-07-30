@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Identifier;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -13,10 +14,13 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
@@ -105,6 +109,33 @@ final class MethodThrowPointHelper
 		}
 
 		return null;
+	}
+
+	/**
+	 * The throw points of invoking a method on an already-priced receiver
+	 * type - what walking a synthetic MethodCall used to produce, without the
+	 * walk. The method call node is only the throw-point anchor and the
+	 * payload dynamic throw-type extensions receive; nothing processes it.
+	 *
+	 * @return list<InternalThrowPoint>
+	 */
+	public function getThrowPointsForCallOnType(MutatingScope $scope, ExpressionContext $context, Type $calledOnType, MethodCall $methodCall): array
+	{
+		if (!$methodCall->name instanceof Identifier) {
+			throw new ShouldNotHappenException();
+		}
+
+		$methodReflection = $scope->getMethodReflection($calledOnType, $methodCall->name->toString());
+		if ($methodReflection === null) {
+			return [InternalThrowPoint::createImplicit($scope, $methodCall)];
+		}
+
+		$throwPoint = $this->getThrowPoint($methodReflection, ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants()), $methodCall, $scope, $context);
+		if ($throwPoint === null) {
+			return [];
+		}
+
+		return [$throwPoint];
 	}
 
 }

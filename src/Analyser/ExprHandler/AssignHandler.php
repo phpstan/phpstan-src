@@ -29,6 +29,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -105,6 +106,7 @@ final class AssignHandler implements ExprHandler
 		private ArrayDimFetchHandler $arrayDimFetchHandler,
 		private PropertyFetchHandler $propertyFetchHandler,
 		private StaticPropertyFetchHandler $staticPropertyFetchHandler,
+		private MethodThrowPointHelper $methodThrowPointHelper,
 	)
 	{
 	}
@@ -1080,14 +1082,12 @@ final class AssignHandler implements ExprHandler
 				&& !$setVarType->isArray()->yes()
 				&& !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()
 			) {
-				$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
-					$stmt,
-					new MethodCall(new TypeExpr($setVarType), 'offsetSet'),
+				$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
 					$scope,
-					$storage,
-					new NoopNodeCallback(),
 					$context,
-				)->getThrowPoints());
+					$setVarType,
+					new MethodCall(new TypeExpr($setVarType), 'offsetSet'),
+				));
 			}
 		} elseif ($kind === PreparedAssignTarget::KIND_PROPERTY_FETCH) {
 			if (!$var instanceof PropertyFetch) {
@@ -1173,16 +1173,15 @@ final class AssignHandler implements ExprHandler
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
-				// simulate dynamic property assign by __set to get throw points
+				// simulate dynamic property assign by __set to get throw points;
+				// the receiver's own throw points were already collected by its walk
 				if (!$propertyHolderType->hasMethod('__set')->no()) {
-					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
-						$stmt,
-						new MethodCall($var->var, '__set'),
+					$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
 						$scope,
-						$storage,
-						new NoopNodeCallback(),
 						$context,
-					)->getThrowPoints());
+						$propertyHolderType,
+						new MethodCall($var->var, '__set'),
+					));
 				}
 			}
 

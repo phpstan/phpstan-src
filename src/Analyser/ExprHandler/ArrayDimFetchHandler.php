@@ -14,11 +14,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\IssetabilityDescriptor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -37,7 +37,10 @@ use function array_merge;
 final class ArrayDimFetchHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private MethodThrowPointHelper $methodThrowPointHelper,
+	)
 	{
 	}
 
@@ -123,14 +126,12 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 		$varType = $varResult->getType();
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
-			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
-				$stmt,
-				new MethodCall(new TypeExpr($varType), 'offsetGet'),
+			$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
 				$scope,
-				$storage,
-				new NoopNodeCallback(),
 				$context,
-			)->getThrowPoints());
+				$varType,
+				new MethodCall(new TypeExpr($varType), 'offsetGet'),
+			));
 		}
 
 		return $this->expressionResultFactory->create(

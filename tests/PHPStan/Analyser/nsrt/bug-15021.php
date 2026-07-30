@@ -109,3 +109,77 @@ function arrayObjectOffsetCoalesce(\ArrayObject $data): void
 {
 	$x = $data['foo'] ?? assertType('string|null', $data['foo']);
 }
+
+/** @param array{foo?: string, bar?: string} $data */
+function issetOnRightSide(array $data): void
+{
+	$data['foo'] ??= isset($data['bar']) ? assertType('string', $data['bar']) : 'fallback';
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function emptyOnRightSide(array $data): void
+{
+	$data['foo'] ??= empty($data['bar']) ? 'fallback' : assertType('non-falsy-string', $data['bar']);
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function unsetTargetBeforeAssignOp(array $data): void
+{
+	unset($data['foo']);
+	$data['foo'] ??= assertType('array{bar?: string}', $data);
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function emptyTargetBeforeAssignOp(array $data): void
+{
+	if (empty($data['foo'])) {
+		$data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data);
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpInsideEmpty(array $data): void
+{
+	if (empty($data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data))) {
+		echo 'empty';
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpInsideIsset(array $data): void
+{
+	if (isset($data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data))) {
+		echo 'isset';
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpInsideUnsetOffset(array $data): void
+{
+	$other = ['x' => 1, 'fallback' => 2];
+	unset($other[$data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data)]);
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpResultInsideEmpty(array $data): void
+{
+	if (empty($data['foo'] ??= $data['bar'] ?? 'fallback')) {
+		assertType("array{foo: ''|'0', bar?: string}", $data);
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpResultInsideIsset(array $data): void
+{
+	if (isset($data['foo'] ??= $data['bar'] ?? null)) {
+		assertType('array{foo: string, bar?: string}', $data);
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function unsetAssignOpResultOffset(array $data): void
+{
+	$other = ['x' => 1, 'fallback' => 2];
+	unset($other[$data['foo'] ??= $data['bar'] ?? 'fallback']);
+	assertType('array{x?: 1, fallback?: 2}', $other);
+}

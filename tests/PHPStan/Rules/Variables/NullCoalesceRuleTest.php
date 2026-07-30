@@ -590,6 +590,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 				'Variable $undefined on left side of ?? is never defined.',
 				46,
 			],
+			[
+				'Offset \'foo\' on array{bar?: string} on left side of ??= does not exist.',
+				89,
+			],
 		]);
 	}
 

@@ -69,3 +69,45 @@ function arrayObjectOffset(\ArrayObject $data): void
 {
 	$data['foo'] ??= $data['foo'] ?? null;
 }
+
+/** @param array{foo?: string, bar?: string} $data */
+function issetOnRightSide(array $data): void
+{
+	$data['foo'] ??= isset($data['bar']) ? $data['bar'] : 'fallback';
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function emptyOnRightSide(array $data): void
+{
+	$data['foo'] ??= empty($data['bar']) ? 'fallback' : $data['bar'];
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function unsetTargetBeforeAssignOp(array $data): void
+{
+	unset($data['foo']);
+	$data['foo'] ??= $data['bar'] ?? null;
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function emptyTargetBeforeAssignOp(array $data): void
+{
+	if (empty($data['foo'])) {
+		$data['foo'] ??= $data['bar'] ?? null;
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpInsideEmpty(array $data): void
+{
+	if (empty($data['foo'] ??= $data['bar'] ?? null)) {
+		echo 'empty';
+	}
+}
+
+/** @param array{foo?: string, bar?: string} $data */
+function assignOpInsideUnsetOffset(array $data): void
+{
+	$other = ['x' => 1, 'fallback' => 2];
+	unset($other[$data['foo'] ??= $data['bar'] ?? 'fallback']);
+}

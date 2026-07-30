@@ -610,4 +610,11 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14610.php'], []);
 	}
 
+	public function testNullCoalesceAssignRightSideScope(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);
+	}
+
 }

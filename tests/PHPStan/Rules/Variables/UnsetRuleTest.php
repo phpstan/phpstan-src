@@ -224,4 +224,9 @@ class UnsetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNullCoalesceAssignRightSideScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);
+	}
+
 }

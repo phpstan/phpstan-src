@@ -58,6 +58,22 @@ final class PropertyFetchHandler implements ExprHandler
 		$beforeScope = $scope;
 		$scopeBeforeVar = $scope;
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$nameResult = null;
+		if (!$expr->name instanceof Identifier) {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $varResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
+		}
+
+		return $this->composeResult($nodeScopeResolver, $expr, $varResult, $nameResult, $scopeBeforeVar, $beforeScope);
+	}
+
+	/**
+	 * Builds the property read's ExpressionResult from the already-walked
+	 * receiver and name results - the fetch is not re-walked. processExpr()
+	 * routes through this; AssignHandler::prepareTarget() calls it to price a
+	 * read-modify-write target from the write walk's child results.
+	 */
+	public function composeResult(NodeScopeResolver $nodeScopeResolver, PropertyFetch $expr, ExpressionResult $varResult, ?ExpressionResult $nameResult, MutatingScope $scopeBeforeVar, MutatingScope $beforeScope): ExpressionResult
+	{
 		$hasYield = $varResult->hasYield();
 		$throwPoints = $varResult->getThrowPoints();
 		$impurePoints = $varResult->getImpurePoints();
@@ -76,8 +92,7 @@ final class PropertyFetchHandler implements ExprHandler
 					}
 				}
 			}
-		} else {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+		} elseif ($nameResult !== null) {
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());

@@ -80,6 +80,23 @@ final class VariableHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
+		$nameResult = null;
+		if (!is_string($expr->name)) {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+		}
+
+		return $this->composeResult($expr, $nameResult, $beforeScope);
+	}
+
+	/**
+	 * Builds the variable read's ExpressionResult from an already-walked state -
+	 * no node processing happens here. processExpr() routes through this after
+	 * walking a dynamic name; AssignHandler::prepareTarget() calls it to price a
+	 * read-modify-write target without re-walking it.
+	 */
+	public function composeResult(Variable $expr, ?ExpressionResult $nameResult, MutatingScope $beforeScope): ExpressionResult
+	{
+		$scope = $beforeScope;
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -88,8 +105,7 @@ final class VariableHandler implements ExprHandler
 			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
 			}
-		} else {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+		} elseif ($nameResult !== null) {
 			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();

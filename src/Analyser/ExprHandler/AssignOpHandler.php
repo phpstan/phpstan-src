@@ -9,17 +9,16 @@ use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
-use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -48,7 +47,6 @@ final class AssignOpHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExpressionResultFactory $expressionResultFactory,
-		private NonNullabilityHelper $nonNullabilityHelper,
 	)
 	{
 	}
@@ -61,18 +59,7 @@ final class AssignOpHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
-		$condResult = null;
-		if ($expr instanceof Expr\AssignOp\Coalesce) {
-			// `$lvalue ??= ...` is `$lvalue = $lvalue ?? ...`: price the left side
-			// once as a read (mirroring CoalesceHandler's left-side processing) so
-			// its result carries the isset descriptor for NullCoalesceRule. The
-			// NoopNodeCallback avoids duplicate reports and the read's scope is
-			// discarded: processAssignVar() walks the target itself.
-			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->var);
-			$condScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->var);
-			$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $condScope, $storage, new NoopNodeCallback(), $context->enterDeep());
-		}
-		$assignResult = $this->assignHandler->processAssignVar(
+		$target = $this->assignHandler->prepareTarget(
 			$nodeScopeResolver,
 			$scope,
 			$storage,
@@ -81,38 +68,48 @@ final class AssignOpHandler implements ExprHandler
 			$expr,
 			$nodeCallback,
 			$context,
-			function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
-				$originalScope = $scope;
-				if ($expr instanceof Expr\AssignOp\Coalesce) {
-					$scope = $scope->filterByFalseyValue(
-						new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
-					);
+			$expr instanceof Expr\AssignOp\Coalesce ? AssignTargetWalkMode::coalesceReadModifyWrite() : AssignTargetWalkMode::readModifyWrite(),
+		);
+		$condResult = $expr instanceof Expr\AssignOp\Coalesce ? $target->getTargetReadResult() : null;
 
-					if ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
-						$context = $context->enterRightSideAssign(
-							$expr->var->name,
-							$expr->expr,
-						);
-					}
-				}
+		$valueBeforeScope = $target->getScope();
+		$valueScope = $valueBeforeScope;
+		$valueContext = $context;
+		if ($expr instanceof Expr\AssignOp\Coalesce) {
+			$valueScope = $valueScope->filterByFalseyValue(
+				new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+			);
 
-				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-				if ($expr instanceof Expr\AssignOp\Coalesce) {
-					$isAlwaysTerminating = $exprResult->isAlwaysTerminating() && $originalScope->getType($expr->var)->isNull()->yes();
-					return $this->expressionResultFactory->create(
-						$exprResult->getScope()->mergeWith($originalScope),
-						$originalScope,
-						$expr->expr,
-						$exprResult->hasYield(),
-						$isAlwaysTerminating,
-						$exprResult->getThrowPoints(),
-						$exprResult->getImpurePoints(),
-					);
-				}
+			if ($expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
+				$valueContext = $valueContext->enterRightSideAssign(
+					$expr->var->name,
+					$expr->expr,
+				);
+			}
+		}
 
-				return $exprResult;
-			},
-			$expr instanceof Expr\AssignOp\Coalesce,
+		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		if ($expr instanceof Expr\AssignOp\Coalesce) {
+			$isAlwaysTerminatingCoalesce = $valueResult->isAlwaysTerminating() && $valueBeforeScope->getType($expr->var)->isNull()->yes();
+			$valueResult = $this->expressionResultFactory->create(
+				$valueResult->getScope()->mergeWith($valueBeforeScope),
+				$valueBeforeScope,
+				$expr->expr,
+				$valueResult->hasYield(),
+				$isAlwaysTerminatingCoalesce,
+				$valueResult->getThrowPoints(),
+				$valueResult->getImpurePoints(),
+			);
+		}
+
+		$assignResult = $this->assignHandler->applyWrite(
+			$nodeScopeResolver,
+			$target,
+			$valueResult,
+			$stmt,
+			$storage,
+			$nodeCallback,
+			$context,
 		);
 		$scope = $assignResult->getScope();
 		$throwPoints = $assignResult->getThrowPoints();
@@ -129,7 +126,7 @@ final class AssignOpHandler implements ExprHandler
 			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 		}
 
-		if ($expr instanceof Expr\AssignOp\Coalesce) {
+		if ($condResult !== null) {
 			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??='), $beforeScope, $storage, $context);
 		}
 

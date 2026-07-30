@@ -208,11 +208,9 @@ final class TemplateTypeHelper
 
 		// arrays refine the bound with their shape, so they're compared key type to key type
 		// and value type to value type instead. Object types are excluded to not lose the class.
+		// An empty array has never key and value types, which say more than any bound does,
+		// so array{} is never widened - the class author may well have written Foo<array{}>.
 		if ($type->isArray()->yes() && $superType->isIterable()->yes() && $superType->getObjectClassNames() === []) {
-			if ($type->isIterableAtLeastOnce()->no()) {
-				return true;
-			}
-
 			return self::onlyRefinesType($superType->getIterableKeyType(), $type->getIterableKeyType())
 				&& self::onlyRefinesType($superType->getIterableValueType(), $type->getIterableValueType());
 		}

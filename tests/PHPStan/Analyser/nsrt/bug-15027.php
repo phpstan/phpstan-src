@@ -54,6 +54,17 @@ final class BoundToArray
 }
 
 /**
+ * @template TData of array = array<array-key, mixed>
+ */
+final class DefaultedArgument
+{
+	/** @param TData $data */
+	public function __construct(public array $data = [], public ?string $alias = null)
+	{
+	}
+}
+
+/**
  * @template T of array<string, mixed>
  */
 final class BoundToMixedMap
@@ -175,7 +186,6 @@ function test(
 	assertType('Bug15027\LanguageProperty<list<string>>', new LanguageProperty(['abc']));
 	assertType('Bug15027\LanguageProperty<list<string>>', new LanguageProperty([$s]));
 	assertType('Bug15027\LanguageProperty<list<string>>', new LanguageProperty($nonEmptyList));
-	assertType('Bug15027\LanguageProperty<list<string>>', new LanguageProperty([]));
 	assertType('Bug15027\LanguageProperty<string>', new LanguageProperty('abc'));
 	assertType('Bug15027\LanguageProperty<string>', new LanguageProperty('abc' . doFoo()));
 	assertType('Bug15027\LanguageProperty<string>', new LanguageProperty($numericString));
@@ -199,6 +209,14 @@ function test(
 	assertType('Bug15027\Unbounded<string>', new Unbounded('abc'));
 	assertType('Bug15027\BoundToArray<array{string}>', new BoundToArray(['abc']));
 	assertType('Bug15027\BoundToMixedMap<array{foo: string, bar: int}>', new BoundToMixedMap(['foo' => 'abc', 'bar' => 1]));
+
+	// an empty array says more than any array bound does, so it is not widened either -
+	// both when written explicitly and when it comes from an optional parameter's default value
+	assertType('Bug15027\LanguageProperty<array{}>', new LanguageProperty([]));
+	assertType('Bug15027\BoundToList<array{}>', new BoundToList([]));
+	assertType('Bug15027\DefaultedArgument<array{}>', new DefaultedArgument());
+	assertType('Bug15027\DefaultedArgument<array{}>', new DefaultedArgument([]));
+	assertType('Bug15027\DefaultedArgument<array{a: int}>', new DefaultedArgument(['a' => 1]));
 
 	// class precision is not lost
 	assertType('Bug15027\BoundToObjectOrString<DateTimeImmutable>', new BoundToObjectOrString($date));

@@ -393,8 +393,8 @@ class Foo
 			assertType('bool', $a > $b);
 			assertType('bool', $a >= $b);
 			assertType('*NEVER*', $a <=> $b);
-			assertType('bool', $a == $b);
-			assertType('bool', $a != $b);
+			assertType('false', $a == $b);
+			assertType('true', $a != $b);
 			assertType('*NEVER*', $a & $b);
 			assertType('*NEVER*', $a ^ $b);
 			assertType('*NEVER*', $a | $b);

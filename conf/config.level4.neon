@@ -16,6 +16,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.unusedLabel%
 	PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule:
 		phpstan.rules.rule: %featureToggles.finiteTypesInHaystack%
+	PHPStan\Rules\Comparison\SwitchConditionRule:
+		phpstan.rules.rule: %featureToggles.switchConditionAlwaysFalse%
 
 parameters:
 	checkAdvancedIsset: true
@@ -40,5 +42,10 @@ services:
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\Comparison\SwitchConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%

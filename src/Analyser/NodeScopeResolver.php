@@ -104,6 +104,8 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
+use PHPStan\Node\SwitchConditionArm;
+use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
@@ -2075,7 +2077,16 @@ class NodeScopeResolver
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
 			$fullCondExpr = null;
-			foreach ($stmt->cases as $caseNode) {
+			$switchConditionArms = [];
+			$lastNonDefaultCaseKey = null;
+			foreach ($stmt->cases as $caseKey => $caseNode) {
+				if ($caseNode->cond === null) {
+					continue;
+				}
+
+				$lastNonDefaultCaseKey = $caseKey;
+			}
+			foreach ($stmt->cases as $caseKey => $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
 					$fullCondExpr = $fullCondExpr === null ? $condExpr : new BooleanOr($fullCondExpr, $condExpr);
@@ -2084,6 +2095,12 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $caseResult->getImpurePoints());
+					$switchConditionArms[] = new SwitchConditionArm(
+						$caseNode->cond,
+						$scopeForBranches,
+						$caseNode->cond->getStartLine(),
+						$caseKey === $lastNonDefaultCaseKey,
+					);
 					$branchScope = $caseResult->getScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
@@ -2119,6 +2136,10 @@ class NodeScopeResolver
 				} else {
 					$prevScope = $branchScope;
 				}
+			}
+
+			if ($switchConditionArms !== []) {
+				$this->callNodeCallback($nodeCallback, new SwitchConditionNode($stmt->cond, $switchConditionArms, $stmt), $scope, $storage);
 			}
 
 			$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;

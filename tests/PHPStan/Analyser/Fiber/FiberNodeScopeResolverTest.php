@@ -6,7 +6,6 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\File\FileHelper;
-use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -75,7 +74,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
-			$container->getByType(DeepNodeCloner::class),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
 			$container->getParameter('polluteScopeWithBlock'),

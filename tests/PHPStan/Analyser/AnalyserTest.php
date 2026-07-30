@@ -14,7 +14,6 @@ use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
-use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
@@ -838,7 +837,6 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
-			$container->getByType(DeepNodeCloner::class),
 			false,
 			true,
 			true,

@@ -61,6 +61,7 @@ final class PreparedAssignTarget
 		private ?string $propertyName = null,
 		private ?Type $propertyHolderType = null,
 		private ?ExpressionResult $targetReadResult = null,
+		private ?ExpressionResult $variableNameResult = null,
 	)
 	{
 	}
@@ -234,6 +235,15 @@ final class PreparedAssignTarget
 		}
 
 		return $this->targetReadResult;
+	}
+
+	/**
+	 * A dynamic variable name (`$$name`) already walked by prepareTarget() -
+	 * read-modify-write targets evaluate the name before reading the old value.
+	 */
+	public function getVariableNameResult(): ?ExpressionResult
+	{
+		return $this->variableNameResult;
 	}
 
 }

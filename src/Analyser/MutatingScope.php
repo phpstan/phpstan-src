@@ -3893,7 +3893,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
-				if (!ScopeOps::shouldInvalidateExpression($this, $this->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
+				if (!ScopeOps::shouldInvalidateExpression($this, $this->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder, $variableExprString)) {
 					continue;
 				}
 

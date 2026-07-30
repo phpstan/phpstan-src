@@ -173,6 +173,7 @@ void pt_arena_mshutdown();
 #define PT_ETH_PROP_EXPR 0
 #define PT_ETH_PROP_TYPE 1
 #define PT_ETH_PROP_CERTAINTY 2
+#define PT_ETH_PROP_CONTAINED_NODE_KEYS 3
 #define PT_CEH_PROP_CONDS 0
 #define PT_CEH_PROP_TYPEHOLDER 1
 
@@ -300,6 +301,11 @@ typedef struct _pt_find_ctx {
 typedef bool (*pt_node_matcher)(zend_object *node, void *ctx);
 
 zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher, void *ctx);
+
+/* The holder's contained-node-keys index built with the native node-key
+ * builder, cached in the holder's containedNodeKeys slot. Borrowed table;
+ * NULL on failure (exception thrown). */
+HashTable *pt_holder_contained_node_keys(zend_object *holder, zval *expr_printer);
 
 bool pt_is_superglobal_name(zend_string *name);
 /* CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME-cached superglobal scan */

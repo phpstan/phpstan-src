@@ -2,17 +2,32 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_pop;
+use function get_class;
+use function is_array;
 
 #[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionTypeHolder', implementation: __DIR__ . '/../../turbo-ext/src/ExpressionTypeHolder.cpp')]
 #[ReferencedByTurboExtension(key: 'expressionTypeHolder')]
 final class ExpressionTypeHolder
 {
+
+	/**
+	 * The node key of every sub-expression, keyed to the classes it appears
+	 * as - what MutatingScope::shouldInvalidateExpression()'s AST scan
+	 * established per invalidation. Holders are shared across scope copies,
+	 * so the one-time subtree scan amortizes over the many invalidation
+	 * checks against the same holder.
+	 *
+	 * @var array<string, array<class-string<Expr>, true>>|null
+	 */
+	private ?array $containedNodeKeys = null;
 
 	public function __construct(
 		private readonly Expr $expr,
@@ -20,6 +35,42 @@ final class ExpressionTypeHolder
 		private readonly TrinaryLogic $certainty,
 	)
 	{
+	}
+
+	/**
+	 * @param callable(Expr): string $keyBuilder
+	 * @return array<string, array<class-string<Expr>, true>>
+	 */
+	public function getContainedNodeKeys(callable $keyBuilder): array
+	{
+		if ($this->containedNodeKeys !== null) {
+			return $this->containedNodeKeys;
+		}
+
+		$keys = [];
+		$stack = [$this->expr];
+		while ($stack !== []) {
+			$node = array_pop($stack);
+			if ($node instanceof Expr) {
+				$keys[$keyBuilder($node)][get_class($node)] = true;
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $subNodeItem) {
+						if (!($subNodeItem instanceof Node)) {
+							continue;
+						}
+
+						$stack[] = $subNodeItem;
+					}
+				}
+			}
+		}
+
+		return $this->containedNodeKeys = $keys;
 	}
 
 	public static function createYes(Expr $expr, Type $type): self

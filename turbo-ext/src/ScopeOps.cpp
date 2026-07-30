@@ -816,10 +816,9 @@ public:
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
 				return zv::Val();
 			}
-			zend_object *expr = holderExpr(holder);
 			zend_string *entryKey = key != NULL ? key : zend_long_to_str((zend_long) idx);
 			bool failed = false;
-			bool should = shouldInvalidate(query, entryKey, expr, requireMoreCharacters, &failed);
+			bool should = shouldInvalidate(query, entryKey, holder.asObject(), requireMoreCharacters, &failed);
 			if (key == NULL) {
 				zend_string_release(entryKey);
 			}
@@ -866,10 +865,13 @@ public:
 					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
 					return zv::Val();
 				}
-				zend_object *firstExpr = holderExpr(zv::ObjRef(firstHolder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER));
+				zv::Ref firstTypeHolder = zv::ObjRef(firstHolder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER).deref();
+				if (UNEXPECTED(!pt_check_holder(firstTypeHolder.raw()))) {
+					return zv::Val();
+				}
 				zend_string *entryKey = key != NULL ? key : zend_long_to_str((zend_long) idx);
 				bool failed = false;
-				bool drop = shouldInvalidate(query, entryKey, firstExpr, requireMoreCharacters, &failed);
+				bool drop = shouldInvalidate(query, entryKey, firstTypeHolder.asObject(), requireMoreCharacters, &failed);
 				if (key == NULL) {
 					zend_string_release(entryKey);
 				}
@@ -918,11 +920,10 @@ public:
 						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()))) {
 							return zv::Val();
 						}
-						zend_object *conditionExpr = holderExpr(conditionHolder);
 						zend_string *conditionKey = conditionEntry.stringKeyOrNull();
 						zend_string *conditionKeyStr = conditionKey != NULL ? conditionKey : zend_long_to_str((zend_long) conditionEntry.indexKey());
 						bool failed = false;
-						bool should = shouldInvalidate(query, conditionKeyStr, conditionExpr, false, &failed);
+						bool should = shouldInvalidate(query, conditionKeyStr, conditionHolder.asObject(), false, &failed);
 						if (conditionKey == NULL) {
 							zend_string_release(conditionKeyStr);
 						}
@@ -1060,7 +1061,7 @@ public:
 	}
 
 	/* Mirrors ScopeOps::shouldInvalidateExpression(). */
-	static bool shouldInvalidateExpression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool *failed)
+	static bool shouldInvalidateExpression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *exprTypeHolder, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool *failed)
 	{
 		InvalidationQuery query = {
 			scope,
@@ -1070,7 +1071,7 @@ public:
 			invalidatingClass,
 			zend_string_equals_literal(exprStringToInvalidate, "$this"),
 		};
-		return shouldInvalidate(query, exprString, expr, requireMoreCharacters, failed);
+		return shouldInvalidate(query, exprString, exprTypeHolder, requireMoreCharacters, failed);
 	}
 
 	/* Mirrors ScopeOps::getIntertwinedRefRootVariableName(). */
@@ -1825,8 +1826,13 @@ private:
 	 * per-call (the conditional-holder scan passes false). Returns false and
 	 * sets *failed on exception.
 	 */
-	static bool shouldInvalidate(const InvalidationQuery &query, zend_string *exprString, zend_object *expr, bool requireMoreCharacters, bool *failed)
+	static bool shouldInvalidate(const InvalidationQuery &query, zend_string *exprString, zend_object *holderObj, bool requireMoreCharacters, bool *failed)
 	{
+		zend_object *expr;
+		{
+			zv::Ref exprRef = zv::ObjRef(holderObj).propAt(PT_ETH_PROP_EXPR).deref();
+			expr = exprRef.asObject();
+		}
 		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		zend_class_entry *intertwinedCe = pt_class(PT_CLASS_INTERTWINED_VAR);
 
@@ -1908,8 +1914,10 @@ private:
 			return false;
 		}
 
-		/* AST walk */
-		{
+		if (query.isThis) {
+			/* '$this' also matches self/static/parent and the current class
+			 * name - name resolution depends on the asking scope, so the
+			 * holder-cached key index below cannot answer it */
 			pt_find_ctx ctx;
 			memset(&ctx, 0, sizeof(ctx));
 			ctx.target_ce = Z_OBJCE_P(query.expressionToInvalidate);
@@ -1930,6 +1938,22 @@ private:
 				return false;
 			}
 			if (found == NULL) {
+				return false;
+			}
+		} else {
+			/* one isset() on the holder's contained-node-keys index instead
+			 * of the subtree scan */
+			HashTable *contained = pt_holder_contained_node_keys(holderObj, query.exprPrinter);
+			if (UNEXPECTED(contained == NULL)) {
+				*failed = true;
+				return false;
+			}
+			zval *inner = zend_symtable_find(contained, query.exprStringToInvalidate);
+			if (inner == NULL) {
+				return false;
+			}
+			ZVAL_DEREF(inner);
+			if (Z_TYPE_P(inner) != IS_ARRAY || zend_hash_find(Z_ARRVAL_P(inner), Z_OBJCE_P(query.expressionToInvalidate)->name) == NULL) {
 				return false;
 			}
 		}
@@ -2173,8 +2197,8 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("shouldInvalidateExpression", reg::PublicStatic, 6, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("exprToInvalidate"), reg::objectArg("expr"), reg::stringArg("exprString"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *expr_printer, *expr_to_invalidate, *expr, *invalidating_class = NULL;
+	cls.method("shouldInvalidateExpression", reg::PublicStatic, 6, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("exprToInvalidate"), reg::objectArg("exprTypeHolder"), reg::stringArg("exprString"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *expr_printer, *expr_to_invalidate, *expr_type_holder, *invalidating_class = NULL;
 		zend_string *invalidate_str, *expr_string;
 		bool require_more_characters = false;
 		ZEND_PARSE_PARAMETERS_START(6, 8)
@@ -2182,15 +2206,18 @@ void pt_register_scope_ops()
 			Z_PARAM_OBJECT(expr_printer)
 			Z_PARAM_STR(invalidate_str)
 			Z_PARAM_OBJECT(expr_to_invalidate)
-			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT(expr_type_holder)
 			Z_PARAM_STR(expr_string)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(require_more_characters)
 			Z_PARAM_OBJECT_OR_NULL(invalidating_class)
 		ZEND_PARSE_PARAMETERS_END();
 		pt_init_strs();
+		if (UNEXPECTED(!pt_check_holder(expr_type_holder))) {
+			RETURN_THROWS();
+		}
 		bool failed = false;
-		bool result = ScopeOps::shouldInvalidateExpression(scope, expr_printer, invalidate_str, expr_to_invalidate, Z_OBJ_P(expr), expr_string, require_more_characters, invalidating_class, &failed);
+		bool result = ScopeOps::shouldInvalidateExpression(scope, expr_printer, invalidate_str, expr_to_invalidate, Z_OBJ_P(expr_type_holder), expr_string, require_more_characters, invalidating_class, &failed);
 		if (UNEXPECTED(failed)) {
 			RETURN_THROWS();
 		}

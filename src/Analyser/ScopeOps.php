@@ -623,8 +623,7 @@ final class ScopeOps
 			) {
 				continue;
 			}
-			$exprExpr = $exprTypeHolder->getExpr();
-			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
+			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprTypeHolder, $exprString, $requireMoreCharacters, $invalidatingClass)) {
 				continue;
 			}
 
@@ -647,8 +646,8 @@ final class ScopeOps
 				|| str_contains($conditionalExprString, $exprStringToInvalidate)
 				|| self::keyMayHideSubExpressions($conditionalExprString)
 			) {
-				$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $conditionalExprString, $requireMoreCharacters, $invalidatingClass)) {
+				$firstHolder = $holders[array_key_first($holders)]->getTypeHolder();
+				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstHolder, $conditionalExprString, $requireMoreCharacters, $invalidatingClass)) {
 					$invalidated = true;
 					continue;
 				}
@@ -678,7 +677,7 @@ final class ScopeOps
 				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), (string) $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass)) {
+					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder, (string) $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass)) {
 						$invalidated = true;
 						$shouldKeep = false;
 						break;
@@ -797,10 +796,14 @@ final class ScopeOps
 	}
 
 	/**
-	 * Mirrors the former MutatingScope::shouldInvalidateExpression().
+	 * Answers one (stored holder, invalidated expression) containment check
+	 * from the holder's contained-node-keys index; '$this' invalidations keep
+	 * the finder because they also match self/static/parent and the current
+	 * class name, whose resolution depends on the asking scope.
 	 */
-	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
+	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, ExpressionTypeHolder $exprTypeHolder, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
 	{
+		$expr = $exprTypeHolder->getExpr();
 		if (
 			$expr instanceof IntertwinedVariableByReferenceWithExpr
 			&& $exprToInvalidate instanceof Variable
@@ -852,7 +855,14 @@ final class ScopeOps
 			return false;
 		}
 
-		if (!self::containsExpressionToInvalidate($scope, $exprPrinter, $expr, get_class($exprToInvalidate), $exprStringToInvalidate)) {
+		if ($exprStringToInvalidate === '$this') {
+			// '$this' also matches self/static/parent and the current class name -
+			// name resolution depends on this scope, so the holder-cached key
+			// index below cannot answer it
+			if (!self::containsExpressionToInvalidate($scope, $exprPrinter, $expr, get_class($exprToInvalidate), $exprStringToInvalidate)) {
+				return false;
+			}
+		} elseif (!isset($exprTypeHolder->getContainedNodeKeys(static fn (Expr $node): string => self::nodeKey($node, $exprPrinter))[$exprStringToInvalidate][get_class($exprToInvalidate)])) {
 			return false;
 		}
 

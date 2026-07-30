@@ -337,6 +337,29 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	check($storage->pendingFibers === [], "ERS $label: fiber array entries can be unset");
 }
 
+// getContainedNodeKeys: identical index (including key insertion order) over the same tree
+$tree = new \PhpParser\Node\Expr\BinaryOp\Plus(
+	new \PhpParser\Node\Expr\Variable('a'),
+	new \PhpParser\Node\Expr\ArrayDimFetch(
+		new \PhpParser\Node\Expr\Variable('b'),
+		new \PhpParser\Node\Scalar\String_('k'),
+	),
+);
+$keyBuilder = static fn (\PhpParser\Node\Expr $e): string => $e instanceof \PhpParser\Node\Expr\Variable && is_string($e->name)
+	? '$' . $e->name
+	: get_class($e) . '#' . spl_object_id($e);
+$pContained = $pH($tree, $int, $pYes)->getContainedNodeKeys($keyBuilder);
+$nContainedHolder = $nH($tree, $int, $nYes);
+$nContained = $nContainedHolder->getContainedNodeKeys($keyBuilder);
+check($pContained === $nContained, 'ETH getContainedNodeKeys parity: ' . json_encode($pContained) . ' vs ' . json_encode($nContained));
+$counter = 0;
+$countingBuilder = static function (\PhpParser\Node\Expr $e) use (&$counter, $keyBuilder): string {
+	$counter++;
+	return $keyBuilder($e);
+};
+$nContainedHolder->getContainedNodeKeys($countingBuilder);
+check($counter === 0, 'ETH getContainedNodeKeys memoizes (keyBuilder not re-invoked)');
+
 // ---- ScopeOps::mergeVariableHolders differingKeys ----
 $sharedP = $pH($expr1, $int, $pYes);
 $sharedN = $nH($expr1, $int, $nYes);

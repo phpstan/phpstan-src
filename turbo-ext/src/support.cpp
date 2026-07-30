@@ -919,3 +919,91 @@ zend_string *pt_ceh_key_build(HashTable *conds, zval *type_holder)
 }
 
 /* }}} */
+
+HashTable *pt_holder_contained_node_keys(zend_object *holder, zval *expr_printer)
+{
+	zval *slot = OBJ_PROP_NUM(holder, PT_ETH_PROP_CONTAINED_NODE_KEYS);
+	if (Z_TYPE_P(slot) == IS_ARRAY) {
+		return Z_ARRVAL_P(slot);
+	}
+
+	zend_class_entry *expr_ce = pt_class(PT_CLASS_EXPR);
+	zend_class_entry *node_ce = pt_class(PT_CLASS_NODE);
+	if (UNEXPECTED(expr_ce == NULL || node_ce == NULL)) {
+		return NULL;
+	}
+
+	zval keys;
+	array_init(&keys);
+
+	/* the twin's explicit stack (LIFO pop order) so the cached array is
+	 * key-order identical to ExpressionTypeHolder::getContainedNodeKeys() */
+	uint32_t cap = 32, top = 0;
+	zend_object **stack = (zend_object **) emalloc(sizeof(*stack) * cap);
+	{
+		zval *expr_slot = OBJ_PROP_NUM(holder, PT_ETH_PROP_EXPR);
+		ZVAL_DEREF(expr_slot);
+		stack[top++] = Z_OBJ_P(expr_slot);
+	}
+
+	while (top > 0) {
+		zend_object *node = stack[--top];
+
+		if (instanceof_function(node->ce, expr_ce)) {
+			zend_string *key = pt_node_key(node, expr_printer);
+			if (UNEXPECTED(key == NULL)) {
+				efree(stack);
+				zval_ptr_dtor(&keys);
+				return NULL;
+			}
+			zval *inner = zend_symtable_find(Z_ARRVAL(keys), key);
+			if (inner == NULL) {
+				zval inner_zv;
+				array_init(&inner_zv);
+				inner = zend_symtable_update(Z_ARRVAL(keys), key, &inner_zv);
+			}
+			zval true_zv;
+			ZVAL_TRUE(&true_zv);
+			zend_hash_update(Z_ARRVAL_P(inner), node->ce->name, &true_zv);
+			zend_string_release(key);
+		}
+
+		pt_node_class_info *info = pt_node_class_info_for_object(node);
+		if (info == NULL || !PT_HAS_SUBNODES(info)) {
+			continue;
+		}
+		for (uint32_t i = 0; i < info->subnode_count; i++) {
+			zval *val = OBJ_PROP(node, info->subnode_offsets[i]);
+			ZVAL_DEREF(val);
+			if (Z_TYPE_P(val) == IS_OBJECT) {
+				if (instanceof_function(Z_OBJCE_P(val), node_ce)) {
+					if (UNEXPECTED(top == cap)) {
+						cap *= 2;
+						stack = (zend_object **) erealloc(stack, sizeof(*stack) * cap);
+					}
+					stack[top++] = Z_OBJ_P(val);
+				}
+			} else if (Z_TYPE_P(val) == IS_ARRAY) {
+				zval *el;
+				ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(val), el) {
+					zval *el_deref = el;
+					ZVAL_DEREF(el_deref);
+					if (Z_TYPE_P(el_deref) == IS_OBJECT && instanceof_function(Z_OBJCE_P(el_deref), node_ce)) {
+						if (UNEXPECTED(top == cap)) {
+							cap *= 2;
+							stack = (zend_object **) erealloc(stack, sizeof(*stack) * cap);
+						}
+						stack[top++] = Z_OBJ_P(el_deref);
+					}
+				} ZEND_HASH_FOREACH_END();
+			}
+		}
+	}
+	efree(stack);
+
+	/* cache in the holder's slot (transfers ownership) and hand out the table */
+	zval_ptr_dtor(slot);
+	ZVAL_COPY_VALUE(slot, &keys);
+	return Z_ARRVAL_P(slot);
+}
+

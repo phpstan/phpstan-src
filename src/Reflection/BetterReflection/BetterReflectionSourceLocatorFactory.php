@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
@@ -57,6 +58,7 @@ final class BetterReflectionSourceLocatorFactory
 		private Parser $php8Parser,
 		private Cache $cache,
 		private PhpVersion $phpVersion,
+		private FileHelper $fileHelper,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
@@ -182,6 +184,7 @@ final class BetterReflectionSourceLocatorFactory
 				new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber),
 				$this->cache,
 				$this->phpVersion,
+				$this->fileHelper,
 			));
 
 			$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);

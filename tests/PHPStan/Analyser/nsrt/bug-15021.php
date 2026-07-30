@@ -67,3 +67,45 @@ function propertyOffset(Foo $foo): void
 {
 	$foo->data['foo'] ??= assertType('array{foo?: string, bar?: string}', $foo->data);
 }
+
+/** @param \ArrayAccess<string, string> $a */
+function nonNullableOffsetAccess(\ArrayAccess $a): void
+{
+	$a['foo'] ??= assertType('string|null', $a['foo']);
+}
+
+/** @param \ArrayAccess<string, string> $a */
+function nonNullableOffsetAccessCoalesce(\ArrayAccess $a): void
+{
+	$x = $a['foo'] ?? assertType('string|null', $a['foo']);
+}
+
+/** @param \ArrayAccess<string, string> $a */
+function nonNullableOffsetAccessDifferentOffset(\ArrayAccess $a): void
+{
+	$a['foo'] ??= assertType('string|null', $a['bar']);
+}
+
+/** @param \ArrayAccess<string, string|null> $a */
+function nullableOffsetAccess(\ArrayAccess $a): void
+{
+	$a['foo'] ??= assertType('string|null', $a['foo']);
+}
+
+/** @param \ArrayAccess<string, string|null> $a */
+function nullableOffsetAccessCoalesce(\ArrayAccess $a): void
+{
+	$x = $a['foo'] ?? assertType('string|null', $a['foo']);
+}
+
+/** @param \ArrayObject<string, string> $data */
+function arrayObjectOffset(\ArrayObject $data): void
+{
+	$data['foo'] ??= assertType('string|null', $data['foo']);
+}
+
+/** @param \ArrayObject<string, string> $data */
+function arrayObjectOffsetCoalesce(\ArrayObject $data): void
+{
+	$x = $data['foo'] ?? assertType('string|null', $data['foo']);
+}

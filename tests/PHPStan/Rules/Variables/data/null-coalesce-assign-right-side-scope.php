@@ -45,3 +45,27 @@ function undefinedVariable(): void
 {
 	$undefined ??= $undefined ?? 1;
 }
+
+/** @param \ArrayAccess<string, string> $a */
+function nonNullableOffsetAccess(\ArrayAccess $a): void
+{
+	$a['foo'] ??= $a['foo'] ?? null;
+}
+
+/** @param \ArrayAccess<string, string> $a */
+function nonNullableOffsetAccessDifferentOffset(\ArrayAccess $a): void
+{
+	$a['foo'] ??= $a['bar'] ?? null;
+}
+
+/** @param \ArrayAccess<string, string|null> $a */
+function nullableOffsetAccess(\ArrayAccess $a): void
+{
+	$a['foo'] ??= $a['foo'] ?? null;
+}
+
+/** @param \ArrayObject<string, string> $data */
+function arrayObjectOffset(\ArrayObject $data): void
+{
+	$data['foo'] ??= $data['foo'] ?? null;
+}

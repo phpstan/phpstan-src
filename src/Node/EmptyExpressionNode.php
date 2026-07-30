@@ -3,8 +3,8 @@
 namespace PHPStan\Node;
 
 use Override;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Empty_;
+use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
 
 /**
@@ -14,7 +14,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
-final class EmptyExpressionNode extends Expr implements VirtualNode
+final class EmptyExpressionNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(Empty_ $originalNode, private ExpressionResult $exprResult)

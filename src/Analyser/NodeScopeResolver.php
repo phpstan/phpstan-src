@@ -2912,7 +2912,7 @@ class NodeScopeResolver
 	 */
 	public function callNodeCallbackWithExpression(
 		callable $nodeCallback,
-		Expr $expr,
+		Node $expr,
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		ExpressionContext $context,

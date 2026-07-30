@@ -448,24 +448,29 @@ final class AssignHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable) {
+			$variableNameResult = null;
 			if ($mode->producesTargetReadResult()) {
 				// `$lvalue OP= ...` reads the old value of `$lvalue`; the write walk
 				// processes a Variable target only as an assignment target, never as
 				// a read. The read is composed here without a walk - for ??= with
 				// isset() semantics (mirroring CoalesceHandler's left-side
 				// processing, with the isset descriptor - bug-13623).
+				if (!is_string($var->name)) {
+					// `$$name OP= ...` evaluates the name before reading the old
+					// value: walk it once here, the write flow consumes the result
+					$variableNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+					$hasYield = $variableNameResult->hasYield();
+					$throwPoints = $variableNameResult->getThrowPoints();
+					$impurePoints = $variableNameResult->getImpurePoints();
+					$isAlwaysTerminating = $variableNameResult->isAlwaysTerminating();
+					$scope = $variableNameResult->getScope();
+				}
 				$readScope = $scope;
 				if ($mode->issetSemanticsForRead()) {
 					$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 					$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 				}
-				if (is_string($var->name)) {
-					$targetReadResult = $this->variableHandler->composeResult($var, null, $readScope);
-				} else {
-					// a dynamic-name target: the name expression is only walked later
-					// by the write flow, so the read prices it here first
-					$targetReadResult = $nodeScopeResolver->processExprNode($stmt, $var, $readScope, $storage, new NoopNodeCallback(), $context->enterDeep());
-				}
+				$targetReadResult = $this->variableHandler->composeResult($var, $variableNameResult, $readScope);
 			}
 
 			return new PreparedAssignTarget(
@@ -481,6 +486,7 @@ final class AssignHandler implements ExprHandler
 				$impurePoints,
 				$isAlwaysTerminating,
 				targetReadResult: $targetReadResult,
+				variableNameResult: $variableNameResult,
 			);
 		}
 
@@ -754,16 +760,13 @@ final class AssignHandler implements ExprHandler
 				$var = $var->getVar();
 			}
 
-			// the chain is usually a clone of AST nodes already processed elsewhere
-			// (see Unset_ handling) - process it with a noop callback so that
-			// results for its nodes are stored without invoking rules twice
-			$nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-
+			// the chain is a clone of AST nodes already processed elsewhere (see
+			// Unset_ handling) - the types below price the clones directly, no
+			// walk is needed
 			$offsetTypes = [];
 			$offsetNativeTypes = [];
 			foreach (array_reverse($dimFetchStack) as $dimFetch) {
 				$dimExpr = $dimFetch->getDim();
-				$nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 				$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
 				$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
 			}
@@ -956,7 +959,10 @@ final class AssignHandler implements ExprHandler
 				if ($assignedExpr instanceof Expr\Array_) {
 					$scope = $this->processArrayByRefItems($scope, $var->name, $assignedExpr, new Variable($var->name));
 				}
-			} else {
+			} elseif ($target->getVariableNameResult() === null) {
+				// a plain assignment does not read the target, so the dynamic name
+				// is walked here; read-modify-write targets walked it in
+				// prepareTarget() and already carry its state
 				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
 				$hasYield = $hasYield || $nameExprResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());

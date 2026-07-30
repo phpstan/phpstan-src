@@ -3593,6 +3593,12 @@ class NodeScopeResolver
 		// comes from the post-loop resolved acceptor.
 		$metadataAcceptor = $parametersAcceptors[0] ?? null;
 
+		// Both predicates are hoisted out of the per-argument loop - they traverse
+		// the acceptor's parameter/return types.
+		$hasTemplateParameterType = $metadataAcceptor !== null
+			&& ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor);
+		$argMetadataIsTypeDriven = count($parametersAcceptors) > 1 || $hasTemplateParameterType;
+
 		// Whether selecting an acceptor is type-driven at all: multiple variants to
 		// choose between, templates or conditionals to resolve from the arg types,
 		// or named-argument variants. When it is not, the gathered arg types can
@@ -3601,7 +3607,8 @@ class NodeScopeResolver
 		// a plain mixed keeps the count/name bookkeeping correct.
 		$typeDrivenAcceptorSelection = count($parametersAcceptors) > 1
 			|| $namedArgumentsVariants !== null
-			|| ($metadataAcceptor !== null && ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($metadataAcceptor));
+			|| $hasTemplateParameterType
+			|| ($metadataAcceptor !== null && $metadataAcceptor->getReturnType()->hasTemplateOrLateResolvableType());
 
 		$hasYield = false;
 		$throwPoints = [];
@@ -3660,10 +3667,7 @@ class NodeScopeResolver
 			}
 
 			$argMetadataAcceptor = $metadataAcceptor;
-			if (
-				$metadataAcceptor !== null
-				&& (count($parametersAcceptors) > 1 || ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor))
-			) {
+			if ($metadataAcceptor !== null && $argMetadataIsTypeDriven) {
 				if ($this->argConsumesResolvedParameterType($arg->value)) {
 					// Resolve the acceptor for this argument from the args gathered SO FAR, padded to the
 					// full argument count with mixed. Closures sort last and by-ref out-params follow the
@@ -3961,10 +3965,14 @@ class NodeScopeResolver
 		// Type-driven resolved acceptor: the arg types gathered on the evolving
 		// scope select (and generic-resolve) the acceptor that drives the call's
 		// return type. Intrinsic overrides are applied on the final scope,
-		// mirroring the original selectFromArgs().
+		// mirroring the original selectFromArgs(). When the selection is not
+		// type-driven, the single (already-overridden) acceptor IS the resolved
+		// acceptor - the fast path selectFromArgs() used to take.
 		$resolvedAcceptor = null;
 		if ($parametersAcceptors !== []) {
-			$resolvedAcceptor = $this->selectArgsMetadataAcceptor($args, $gatheredTypes, $parametersAcceptors, $namedArgumentsVariants, $gatheredHasName, $gatheredUnpack, $scope);
+			$resolvedAcceptor = $typeDrivenAcceptorSelection
+				? $this->selectArgsMetadataAcceptor($args, $gatheredTypes, $parametersAcceptors, $namedArgumentsVariants, $gatheredHasName, $gatheredUnpack, $scope)
+				: $metadataAcceptor;
 		}
 
 		// The by-ref OUT writeback reads the metadata acceptor: it is selected from
@@ -3973,10 +3981,7 @@ class NodeScopeResolver
 		// now-complete gathered arg types - the post-loop $resolvedAcceptor is exactly
 		// that (same variant, resolved); otherwise the metadata acceptor is already resolved.
 		$writebackAcceptor = $metadataAcceptor;
-		if (
-			$metadataAcceptor !== null
-			&& (count($parametersAcceptors) > 1 || ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor))
-		) {
+		if ($metadataAcceptor !== null && $argMetadataIsTypeDriven) {
 			$writebackAcceptor = $resolvedAcceptor;
 		}
 		$writebackParameters = $writebackAcceptor !== null ? $writebackAcceptor->getParameters() : null;

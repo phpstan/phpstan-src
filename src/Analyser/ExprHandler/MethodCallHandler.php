@@ -99,19 +99,20 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
 		}
 		$parametersAcceptor = null;
+		$variants = [];
+		$namedArgumentsVariants = null;
 		$methodReflection = null;
 		$calledOnType = $varResult->getType();
 		if ($expr->name instanceof Identifier) {
 			$methodName = $expr->name->name;
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 			if ($methodReflection !== null) {
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$expr->getArgs(),
-					$methodReflection->getVariants(),
-					$methodReflection->getNamedArgumentsVariants(),
-				);
-
+				$variants = $methodReflection->getVariants();
+				$namedArgumentsVariants = $methodReflection->getNamedArgumentsVariants();
+				// A structural acceptor (names/positions/variadic) drives argument
+				// normalization, the impure point and the throw point - generics are
+				// resolved type-driven by processArgs() into $resolvedParametersAcceptor.
+				$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $variants, $namedArgumentsVariants);
 			}
 		} else {
 			$methodNameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
@@ -145,16 +146,26 @@ final class MethodCallHandler implements ExprHandler
 			$stmt,
 			$methodReflection,
 			$methodReflection !== null ? $scope->getNakedMethod($calledOnType, $methodReflection->getName()) : null,
-			$parametersAcceptor,
+			$variants,
+			$namedArgumentsVariants,
 			$normalizedExpr,
 			$scope,
 			$storage,
 			$nodeCallback,
 			$context,
 		);
+		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
 
 		if ($methodReflection !== null) {
+			// The early structural check above only sees the unresolved acceptor
+			// return type; a conditional-return never (e.g. `($x is Foo ? never :
+			// string)`) only resolves to never once the actual argument types are
+			// folded in by the type-driven resolved acceptor.
+			if ($resolvedParametersAcceptor !== null) {
+				$resolvedReturnType = $resolvedParametersAcceptor->getReturnType();
+				$isAlwaysTerminating = $isAlwaysTerminating || ($resolvedReturnType instanceof NeverType && $resolvedReturnType->isExplicit());
+			}
 			$methodThrowPoint = $this->methodThrowPointHelper->getThrowPoint($methodReflection, $parametersAcceptor, $normalizedExpr, $scope, $context);
 			if ($methodThrowPoint !== null) {
 				$throwPoints[] = $methodThrowPoint;
@@ -164,21 +175,27 @@ final class MethodCallHandler implements ExprHandler
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
 			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin()) {
+				// the remembered call value and the @phpstan-self-out type are
+				// generic-sensitive: resolve them from the type-driven acceptor
+				// processArgs() selected (generics resolved against the actual arg
+				// types), falling back to the structural acceptor for dynamic callees.
+				$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 				$scope = $scope->assignExpression(
 					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-					$parametersAcceptor->getReturnType(),
+					$acceptorForGenerics->getReturnType(),
 					new MixedType(),
 				);
 			}
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
 				if ($selfOutType !== null) {
+					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 					$scope = $scope->assignExpression(
 						$normalizedExpr->var,
 						TemplateTypeHelper::resolveTemplateTypes(
 							$selfOutType,
-							$parametersAcceptor->getResolvedTemplateTypeMap(),
-							$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+							$acceptorForGenerics->getResolvedTemplateTypeMap(),
+							$acceptorForGenerics instanceof ExtendedParametersAcceptor ? $acceptorForGenerics->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 							TemplateTypeVariance::createCovariant(),
 						),
 						$scope->getNativeType($normalizedExpr->var),

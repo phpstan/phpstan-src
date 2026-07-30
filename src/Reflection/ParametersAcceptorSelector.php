@@ -580,12 +580,23 @@ final class ParametersAcceptorSelector
 		return $parametersAcceptors;
 	}
 
-	private static function hasAcceptorTemplateOrLateResolvableType(ParametersAcceptor $acceptor): bool
+	/**
+	 * @internal
+	 */
+	public static function hasAcceptorTemplateOrLateResolvableType(ParametersAcceptor $acceptor): bool
 	{
 		if ($acceptor->getReturnType()->hasTemplateOrLateResolvableType()) {
 			return true;
 		}
 
+		return self::hasAcceptorTemplateOrLateResolvableParameterType($acceptor);
+	}
+
+	/**
+	 * @internal
+	 */
+	public static function hasAcceptorTemplateOrLateResolvableParameterType(ParametersAcceptor $acceptor): bool
+	{
 		foreach ($acceptor->getParameters() as $parameter) {
 			if (
 				$parameter instanceof ExtendedParameterReflection
@@ -720,6 +731,34 @@ final class ParametersAcceptorSelector
 		}
 
 		return GenericParametersAcceptorResolver::resolve($types, self::combineAcceptors($winningAcceptors));
+	}
+
+	/**
+	 * Picks the structural ParametersAcceptor (parameter names/positions/variadic
+	 * only) that drives argument normalization / reordering. Unlike selectFromArgs()
+	 * it never reads argument types from a Scope, so it is safe to call before the
+	 * arguments have been processed - generics are resolved separately, type-driven.
+	 *
+	 * @internal
+	 * @param Node\Arg[] $args
+	 * @param ParametersAcceptor[] $variants
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 */
+	public static function combineVariantsForNormalization(array $args, array $variants, ?array $namedArgumentsVariants): ParametersAcceptor
+	{
+		$hasName = false;
+		foreach ($args as $arg) {
+			if ($arg->name !== null) {
+				$hasName = true;
+				break;
+			}
+		}
+
+		$selectedVariants = $hasName && $namedArgumentsVariants !== null ? $namedArgumentsVariants : $variants;
+
+		return count($selectedVariants) === 1
+			? $selectedVariants[0]
+			: self::combineAcceptors($selectedVariants);
 	}
 
 	/**

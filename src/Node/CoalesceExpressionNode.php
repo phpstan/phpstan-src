@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use Override;
 use PhpParser\Node\Expr;
+use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
 
 /**
@@ -14,7 +15,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
-final class CoalesceExpressionNode extends Expr implements VirtualNode
+final class CoalesceExpressionNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(

@@ -3,8 +3,8 @@
 namespace PHPStan\Node;
 
 use Override;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Isset_;
+use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
 
 /**
@@ -14,7 +14,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
-final class IssetExpressionNode extends Expr implements VirtualNode
+final class IssetExpressionNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

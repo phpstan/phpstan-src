@@ -3691,6 +3691,14 @@ class NodeScopeResolver
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
+
+						// resolve the native flavour through the same extension on the
+						// natively-promoted scope, so the closure parameters keep
+						// their native precision too
+						$overwritingParameterNativeType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass->doNotTreatPhpDocTypesAsCertain());
+						if ($overwritingParameterNativeType !== null) {
+							$parameterNativeType = $overwritingParameterNativeType;
+						}
 					}
 				}
 
@@ -3766,6 +3774,14 @@ class NodeScopeResolver
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
+
+						// resolve the native flavour through the same extension on the
+						// natively-promoted scope, so the closure parameters keep
+						// their native precision too
+						$overwritingParameterNativeType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass->doNotTreatPhpDocTypesAsCertain());
+						if ($overwritingParameterNativeType !== null) {
+							$parameterNativeType = $overwritingParameterNativeType;
+						}
 					}
 				}
 

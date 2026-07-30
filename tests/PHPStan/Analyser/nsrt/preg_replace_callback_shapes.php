@@ -63,7 +63,7 @@ function bug14904(string $string): void {
 		'/a|(?<b>b)/',
 		function (array $match): string {
 			assertType("array{0: non-empty-string, b: 'b'|null, 1: 'b'|null}", $match);
-			assertNativeType('array<int|string, string|null>', $match);
+			assertNativeType("array{0: non-empty-string, b: 'b'|null, 1: 'b'|null}", $match);
 			return '';
 		},
 		$string,

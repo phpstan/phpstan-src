@@ -1143,7 +1143,6 @@ class NodeScopeResolver
 			if ($stmt->expr instanceof Expr\Throw_) {
 				$scope = $stmtScope;
 			}
-			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$hasAssign = false;
 			$currentScope = $scope;
 			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
@@ -1179,7 +1178,14 @@ class NodeScopeResolver
 			$impurePoints = $result->getImpurePoints();
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
 
-			if ($earlyTerminationExpr !== null) {
+			// The expression statement is an exit point when its value type is an
+			// explicit never: exit/die/throw, a never-returning call, or a call
+			// configured as early-terminating (the call handlers give those never).
+			// Asked on the pre-statement scope: a conditional return type must
+			// resolve against the argument types the call was made with, not
+			// against state the statement itself just changed (bug-11565).
+			$statementType = $currentScope->getType($stmt->expr);
+			if ($statementType instanceof NeverType && $statementType->isExplicit()) {
 				return new InternalStatementResult($scope, $hasYield, true, [
 					new InternalStatementExitPoint($stmt, $scope),
 				], $overridingThrowPoints ?? $throwPoints, $impurePoints);
@@ -2759,20 +2765,6 @@ class NodeScopeResolver
 		}
 
 		return $scope;
-	}
-
-	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
-	{
-		if ($expr instanceof Expr\Exit_ || $expr instanceof Expr\Throw_) {
-			return $expr;
-		}
-
-		$exprType = $scope->getType($expr);
-		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
-			return $expr;
-		}
-
-		return null;
 	}
 
 	/**

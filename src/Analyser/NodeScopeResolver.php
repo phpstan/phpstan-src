@@ -3038,10 +3038,12 @@ class NodeScopeResolver
 
 		$executionEnds = [];
 		$gatheredReturnStatements = [];
+		$gatheredReturnStatementsWithScope = [];
 		$gatheredYieldStatements = [];
+		$gatheredYieldStatementsWithScope = [];
 		$closureImpurePoints = [];
 		$invalidateExpressions = [];
-		$closureStmtsCallback = new GatheringNodeCallback(static function (Node $node, Scope $scope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
+		$closureStmtsCallback = new GatheringNodeCallback(static function (Node $node, Scope $scope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 				return;
 			}
@@ -3066,12 +3068,14 @@ class NodeScopeResolver
 			}
 			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
 				$gatheredYieldStatements[] = $node;
+				$gatheredYieldStatementsWithScope[] = [$node, $scope];
 			}
 			if (!$node instanceof Return_) {
 				return;
 			}
 
 			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+			$gatheredReturnStatementsWithScope[] = [$node, $scope];
 		}, $nodeCallback);
 
 		if (count($byRefUses) === 0) {
@@ -3086,7 +3090,16 @@ class NodeScopeResolver
 				array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope, $storage);
 
-			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+			return new ProcessClosureResult(
+				$scope,
+				$statementResult->getThrowPoints(),
+				$statementResult->getImpurePoints(),
+				$invalidateExpressions,
+				$gatheredReturnStatementsWithScope,
+				$gatheredYieldStatementsWithScope,
+				$executionEnds,
+				array_merge($closureImpurePoints, $statementResult->getImpurePoints()),
+			);
 		}
 
 		$originalStorage = $storage;
@@ -3136,7 +3149,18 @@ class NodeScopeResolver
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope, $storage);
 
-		return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $closureResultScope, $byRefUses);
+		return new ProcessClosureResult(
+			$scope,
+			$statementResult->getThrowPoints(),
+			$statementResult->getImpurePoints(),
+			$invalidateExpressions,
+			$gatheredReturnStatementsWithScope,
+			$gatheredYieldStatementsWithScope,
+			$executionEnds,
+			array_merge($closureImpurePoints, $statementResult->getImpurePoints()),
+			$closureResultScope,
+			$byRefUses,
+		);
 	}
 
 	/**

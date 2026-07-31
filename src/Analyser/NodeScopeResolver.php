@@ -49,6 +49,7 @@ use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
@@ -3875,6 +3876,10 @@ class NodeScopeResolver
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
+				// the preferred ClosureType read below now answers from this seed
+				// instead of walking the body again (unless a parked fiber may
+				// still complete the gathered data - then it keeps re-walking)
+				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult, $storage);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -3958,7 +3963,12 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType)->getExpressionResult();
+				$processArrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
+				// the invalidation read below now answers from this seed instead
+				// of walking the body again (unless a parked fiber may still
+				// complete the gathered data - then it keeps re-walking)
+				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult, $storage);
+				$arrowFunctionResult = $processArrowFunctionResult->getExpressionResult();
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());

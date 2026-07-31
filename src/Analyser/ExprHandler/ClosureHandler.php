@@ -42,6 +42,7 @@ final class ClosureHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
+		$this->closureTypeResolver->seedCacheFromClosureWalk($scope, $expr, $processClosureResult);
 
 		return $this->expressionResultFactory->create(
 			$processClosureResult->applyByRefUseScope($processClosureResult->getScope()),

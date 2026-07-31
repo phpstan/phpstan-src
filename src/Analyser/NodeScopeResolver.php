@@ -1482,25 +1482,27 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, new InForeachNode($stmt), $scope, $storage);
 			$originalScope = $scope;
 			$bodyScope = $scope;
+			$foreachIterateeType = $originalScope->getType($stmt->expr);
+			$foreachNativeIterateeType = $originalScope->getNativeType($stmt->expr);
 
 			if ($stmt->keyVar instanceof Variable) {
 				$keyTypeExpr = new NativeTypeExpr(
-					$originalScope->getIterableKeyType($originalScope->getType($stmt->expr)),
-					$originalScope->getIterableKeyType($originalScope->getNativeType($stmt->expr)),
+					$originalScope->getIterableKeyType($foreachIterateeType),
+					$originalScope->getIterableKeyType($foreachNativeIterateeType),
 				);
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->keyVar, $keyTypeExpr), $originalScope, $storage);
 			}
 
 			if ($stmt->valueVar instanceof Variable) {
 				$valueTypeExpr = new NativeTypeExpr(
-					$originalScope->getIterableValueType($originalScope->getType($stmt->expr)),
-					$originalScope->getIterableValueType($originalScope->getNativeType($stmt->expr)),
+					$originalScope->getIterableValueType($foreachIterateeType),
+					$originalScope->getIterableValueType($foreachNativeIterateeType),
 				);
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($stmt->valueVar, $valueTypeExpr), $originalScope, $storage);
 			} elseif ($stmt->valueVar instanceof List_) {
 				$virtualAssign = new Assign($stmt->valueVar, new NativeTypeExpr(
-					$originalScope->getIterableValueType($originalScope->getType($stmt->expr)),
-					$originalScope->getIterableValueType($originalScope->getNativeType($stmt->expr)),
+					$originalScope->getIterableValueType($foreachIterateeType),
+					$originalScope->getIterableValueType($foreachNativeIterateeType),
 				));
 				$virtualAssign->setAttributes($stmt->valueVar->getAttributes());
 				$this->callNodeCallback($nodeCallback, $virtualAssign, $scope, $storage);
@@ -1514,19 +1516,21 @@ class NodeScopeResolver
 				$storage = $originalStorage->duplicate();
 
 				$originalScope = $iterateeScope;
-				$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($stmt, $originalScope, $originalStorage, $context);
+				$foreachIterateeType = $originalScope->getType($stmt->expr);
+				$foreachNativeIterateeType = $originalScope->getNativeType($stmt->expr);
+				$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($stmt, $originalScope, $originalStorage, $context, $foreachIterateeType, $foreachNativeIterateeType);
 				if ($unrolledResult !== null) {
 					$bodyScope = $unrolledResult['bodyScope'];
 					$unrolledEndScope = $unrolledResult['endScope'];
 					$unrolledTotalKeys = $unrolledResult['totalKeys'];
 				} else {
-					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $nodeCallback);
+					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 					$count = 0;
 					do {
 						$prevScope = $bodyScope;
 						$bodyScope = $bodyScope->mergeWith($iterateeScope);
 						$storage = $originalStorage->duplicate();
-						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
+						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 						$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
 						$bodyScope = $bodyScopeResult->getScope();
 						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -1546,7 +1550,7 @@ class NodeScopeResolver
 
 			$bodyScope = $bodyScope->mergeWith($iterateeScope);
 			$storage = $originalStorage;
-			$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
+			$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
@@ -4520,6 +4524,8 @@ class NodeScopeResolver
 		MutatingScope $originalScope,
 		ExpressionResultStorage $originalStorage,
 		StatementContext $context,
+		Type $iterateeType,
+		Type $nativeIterateeType,
 	): ?array
 	{
 		if ($stmt->byRef) {
@@ -4532,7 +4538,6 @@ class NodeScopeResolver
 			return null;
 		}
 
-		$iterateeType = $originalScope->getType($stmt->expr);
 		if (!$iterateeType->isConstantArray()->yes()) {
 			return null;
 		}
@@ -4558,7 +4563,6 @@ class NodeScopeResolver
 			return null;
 		}
 
-		$nativeIterateeType = $originalScope->getNativeType($stmt->expr);
 		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
 		$matchedNativeArrays = count($nativeConstantArrays) === count($constantArrays) ? $nativeConstantArrays : null;
 
@@ -4694,7 +4698,7 @@ class NodeScopeResolver
 				$prevLoopScope = $loopScope;
 				$iterStorage = $originalStorage->duplicate();
 				$iterBodyScope = $loopScope->mergeWith($endScope);
-				$iterBodyScope = $this->enterForeach($iterBodyScope, $iterStorage, $originalScope, $stmt, new NoopNodeCallback());
+				$iterBodyScope = $this->enterForeach($iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
 				$iterBodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
 				$loopScope = $iterBodyScopeResult->getScope();
 				foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -4753,13 +4757,12 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function enterForeach(MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Foreach_ $stmt, callable $nodeCallback): MutatingScope
+	private function enterForeach(MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Foreach_ $stmt, Type $iterateeType, Type $nativeIterateeType, callable $nodeCallback): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 			$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
 
-		$iterateeType = $originalScope->getType($stmt->expr);
 		if (
 			($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))
 			&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
@@ -4768,6 +4771,8 @@ class NodeScopeResolver
 			$scope = $scope->enterForeach(
 				$originalScope,
 				$stmt->expr,
+				$iterateeType,
+				$nativeIterateeType,
 				$stmt->valueVar->name,
 				$keyVarName,
 				$stmt->byRef,
@@ -4784,7 +4789,7 @@ class NodeScopeResolver
 				$stmt->valueVar,
 				new NativeTypeExpr(
 					$originalScope->getIterableValueType($iterateeType),
-					$originalScope->getIterableValueType($originalScope->getNativeType($stmt->expr)),
+					$originalScope->getIterableValueType($nativeIterateeType),
 				),
 				$nodeCallback,
 			)->getScope();
@@ -4792,7 +4797,7 @@ class NodeScopeResolver
 			if (
 				$stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 			) {
-				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $stmt->keyVar->name);
+				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $iterateeType, $nativeIterateeType, $stmt->keyVar->name);
 				$vars[] = $stmt->keyVar->name;
 			} elseif ($stmt->keyVar !== null) {
 				$scope = $this->processVirtualAssign(
@@ -4802,7 +4807,7 @@ class NodeScopeResolver
 					$stmt->keyVar,
 					new NativeTypeExpr(
 						$originalScope->getIterableKeyType($iterateeType),
-						$originalScope->getIterableKeyType($originalScope->getNativeType($stmt->expr)),
+						$originalScope->getIterableKeyType($nativeIterateeType),
 					),
 					$nodeCallback,
 				)->getScope();

@@ -117,7 +117,7 @@ final class FiniteTypeSet
 		// fold in a subtracted type, which equals() ignores).
 		$enumCaseObject = $type->getEnumCaseObject();
 		if ($enumCaseObject !== null && $enumCaseObject->equals($type)) {
-			return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName(). '::' . $enumCaseObject->getEnumCaseName();
+			return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName() . '::' . $enumCaseObject->getEnumCaseName();
 		}
 
 		$scalarTypes = $type->getConstantScalarTypes();

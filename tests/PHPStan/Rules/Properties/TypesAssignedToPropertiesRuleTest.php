@@ -1067,4 +1067,25 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10749.php'], []);
 	}
 
+	public function testBug13114(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13114.php'], [
+			[
+				'Property Bug13114Property\\Holder::$implicit (non-empty-list&callable(): mixed) does not accept array{Bug13114Property\\C, \'h\'}.',
+				20,
+			],
+			[
+				'Property Bug13114Property\\Holder::$explicit (non-empty-list<mixed>&callable(): mixed) does not accept array{Bug13114Property\\C, \'h\'}.',
+				21,
+			],
+			[
+				'Property Bug13114Property\\Holder::$implicit (non-empty-list&callable(): mixed) does not accept 42.',
+				22,
+				"\u{2022} 42 is not a list.\n\u{2022} 42 is empty.",
+			],
+		]);
+	}
+
 }

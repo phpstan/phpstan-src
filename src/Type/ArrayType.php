@@ -808,7 +808,18 @@ class ArrayType implements Type
 
 	public function isCallable(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe()->and($this->itemType->isString());
+		if (!$this->itemType->isString()->no()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		// StrictMixedType denies isString() even though it is a supertype of
+		// string, so a value of that item type can still be the method name
+		// of a callable array.
+		if ((new StringType())->isSuperTypeOf($this->itemType)->maybe()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createNo();
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

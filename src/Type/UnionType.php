@@ -144,7 +144,6 @@ class UnionType implements CompoundType
 		return $this->normalized;
 	}
 
-	/** @internal */
 	public function getFiniteTypeSet(): ?FiniteTypeSet
 	{
 		$finiteTypeSet = $this->finiteTypeSet ??= FiniteTypeSet::create($this->types) ?? false;

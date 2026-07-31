@@ -28,7 +28,6 @@ use function is_string;
  * still have to consult those few members the slow way.
  *
  * @see UnionType::getFiniteTypeSet()
- * @internal
  */
 final class FiniteTypeSet
 {

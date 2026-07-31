@@ -3,6 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\ClosureUse;
+use PhpParser\Node\Expr\Yield_;
+use PhpParser\Node\Expr\YieldFrom;
+use PhpParser\Node\Stmt\Return_;
+use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
 
 final class ProcessClosureResult
@@ -12,6 +16,10 @@ final class ProcessClosureResult
 	 * @param InternalThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions
+	 * @param list<array{Return_, Scope}> $gatheredReturnStatements
+	 * @param list<array{Yield_|YieldFrom, Scope}> $gatheredYieldStatements
+	 * @param list<ExecutionEndNode> $executionEnds
+	 * @param ImpurePoint[] $closureTypeImpurePoints already merged in getClosureType() order (property-assign impure points first, then statement result impure points)
 	 * @param ClosureUse[] $byRefUses
 	 */
 	public function __construct(
@@ -19,6 +27,10 @@ final class ProcessClosureResult
 		private array $throwPoints,
 		private array $impurePoints,
 		private array $invalidateExpressions,
+		private array $gatheredReturnStatements,
+		private array $gatheredYieldStatements,
+		private array $executionEnds,
+		private array $closureTypeImpurePoints,
 		private ?MutatingScope $byRefClosureResultScope = null,
 		private array $byRefUses = [],
 	)
@@ -61,6 +73,42 @@ final class ProcessClosureResult
 	public function getInvalidateExpressions(): array
 	{
 		return $this->invalidateExpressions;
+	}
+
+	/**
+	 * @return list<array{Return_, Scope}>
+	 */
+	public function getGatheredReturnStatements(): array
+	{
+		return $this->gatheredReturnStatements;
+	}
+
+	/**
+	 * @return list<array{Yield_|YieldFrom, Scope}>
+	 */
+	public function getGatheredYieldStatements(): array
+	{
+		return $this->gatheredYieldStatements;
+	}
+
+	/**
+	 * @return list<ExecutionEndNode>
+	 */
+	public function getExecutionEnds(): array
+	{
+		return $this->executionEnds;
+	}
+
+	/**
+	 * The closure body's impure points already merged in getClosureType() order
+	 * (property-assign impure points first, then statement result impure points),
+	 * ready to feed ClosureTypeResolver::buildClosureTypeForClosure().
+	 *
+	 * @return ImpurePoint[]
+	 */
+	public function getClosureTypeImpurePoints(): array
+	{
+		return $this->closureTypeImpurePoints;
 	}
 
 }

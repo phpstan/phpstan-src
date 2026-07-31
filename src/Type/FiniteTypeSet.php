@@ -291,6 +291,10 @@ final class FiniteTypeSet
 	 * values - cannot treat two same-valued constant strings as interchangeable. Answering
 	 * this costs a reflection lookup per string member, so it is computed on demand: only
 	 * combining operations ask.
+	 *
+	 * Every member is asked, no matter its kind: a keyed member is an instance of one of the
+	 * five classes key() accepts, and every one of them but ConstantStringType answers
+	 * isClassString() no outright - which is also the only one whose answer costs anything.
 	 */
 	public function hasClassStringMember(): bool
 	{
@@ -300,9 +304,6 @@ final class FiniteTypeSet
 
 		$this->hasClassStringMember = false;
 		foreach ($this->members as $member) {
-			if (!$member->isString()->yes()) {
-				continue;
-			}
 			if ($member->isClassString()->no()) {
 				continue;
 			}

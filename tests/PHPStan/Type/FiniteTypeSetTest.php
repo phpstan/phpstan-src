@@ -642,8 +642,17 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		yield 'plain strings' => [[new ConstantStringType('a'), new ConstantStringType('b')], false];
 		yield 'a value that names a class' => [[new ConstantStringType('a'), new ConstantStringType('DateTimeImmutable')], true];
 		yield 'the class-string flag' => [[new ConstantStringType('a'), new ConstantStringType('Zzz', true)], true];
-		// only string members can carry the flag, so no other kind is worth asking
-		yield 'no strings at all' => [[new ConstantIntegerType(1), new NullType()], false];
+		// every member is asked, but only a string one can answer anything but no - not even
+		// an enum case, whose class name does name a class
+		yield 'no strings at all' => [
+			[
+				new ConstantIntegerType(1),
+				new ConstantBooleanType(true),
+				new NullType(),
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+			],
+			false,
+		];
 	}
 
 	/**

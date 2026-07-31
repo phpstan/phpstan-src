@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\DisjunctionHolderProjectionAugment;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -27,10 +28,12 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_key_first;
+use function array_filter;
 use function array_key_last;
+use function array_keys;
 use function array_merge;
 use function array_reverse;
+use function array_values;
 use function count;
 
 /**
@@ -148,37 +151,49 @@ final class BooleanOrHandler implements ExprHandler
 			if (
 				$scope->getType($expr->left)->toBoolean()->isFalse()->yes()
 			) {
-				$types = $this->conditionalExpressionHolderHelper->toSureTypes($rightTypes, $rightScope);
+				$types = $rightTypes;
 			} elseif (
 				$scope->getType($expr->left)->toBoolean()->isTrue()->yes()
 				|| $scope->getType($expr->right)->toBoolean()->isFalse()->yes()
 			) {
-				$types = $this->conditionalExpressionHolderHelper->toSureTypes($leftTypes, $scope);
+				$types = $leftTypes;
 			} else {
-				$leftNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($leftTypes, $scope);
-				$rightNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($rightTypes, $rightScope);
 				$types = $leftTypes->intersectWith($rightTypes);
-				$types = $this->augmentBooleanOrTruthyWithConditionalHolders($typeSpecifier, $scope, $rightScope, $expr, $types);
-				$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, true, $types);
+				$alternativeKeys = [];
+				foreach (array_keys($types->getAlternativeTypes()) as $alternativeExprString) {
+					$alternativeKeys[$alternativeExprString] = true;
+				}
+				$types = $types->withDeferredAugment(new DisjunctionHolderProjectionAugment(
+					$typeSpecifier,
+					static fn (): MutatingScope => $scope->filterByTruthyValue($expr->left),
+					$rightScope,
+					static fn (): MutatingScope => $rightScope->filterByTruthyValue($expr->right),
+					$alternativeKeys,
+				));
+				$branchUnionAugment = $this->conditionalExpressionHolderHelper->buildBranchUnionAugment(
+					$leftTypes,
+					$rightTypes,
+					static fn (): MutatingScope => $scope->filterByTruthyValue($expr->left),
+					static fn (): MutatingScope => $rightScope->filterByTruthyValue($expr->right),
+					$types,
+				);
+				if ($branchUnionAugment !== null) {
+					$types = $types->withDeferredAugment($branchUnionAugment);
+				}
 			}
 		} else {
 			$types = $leftTypes->unionWith($rightTypes);
 		}
 
 		if ($context->true()) {
-			$result = (new SpecifiedTypes(
-				$types->getSureTypes(),
-				$types->getSureNotTypes(),
-			))->withAlternativeTypesOf($types);
-			if ($types->shouldOverwrite()) {
-				$result = $result->setAlwaysOverwriteTypes();
-			}
-			return $result->setNewConditionalExpressionHolders($this->conditionalExpressionHolderHelper->mergeConditionalHolders([
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, false, false, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, false, false, $scope, $expr->left),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes, true, false, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes, true, false, $scope, $expr->left),
-			]))->setRootExpr($expr);
+			$result = $types->withoutConditionalExpressionHolders();
+			$recipes = [
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftTypes, $rightTypes, false, false, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightTypes, $leftTypes, false, false, null, $expr->left),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftTypes, $rightTypes, true, false, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightTypes, $leftTypes, true, false, null, $expr->left),
+			];
+			return $result->setConditionalExpressionHolderRecipes(array_values(array_filter($recipes)))->setRootExpr($expr);
 		}
 
 		return $types;
@@ -260,87 +275,6 @@ final class BooleanOrHandler implements ExprHandler
 		}
 
 		return $result->setRootExpr($expr);
-	}
-
-	/**
-	 * For `if ($a || $b)` truthy, expressions narrowed by stored conditional
-	 * holders (e.g. `$a = $obj instanceof ClassA;` records "when `$a` is
-	 * truthy, `$obj` is `ClassA`") need to be projected into the OR-truthy
-	 * scope as the union of the per-arm narrowings. specifyTypesInCondition
-	 * for each arm only looks at the boolean variable itself, so the held
-	 * narrowing of `$obj` would otherwise be invisible until a later check
-	 * pins one of the booleans down.
-	 *
-	 * For each conditional-holder target $T:
-	 * - resolve $T's type in the left-truthy and right-truthy filtered scopes
-	 * - if both narrow $T strictly below the original, add `$T : leftT|rightT`
-	 *   as a sure type to the OR-truthy result
-	 *
-	 * The asymmetric case (one arm narrows, the other doesn't) is intentionally
-	 * skipped: in the OR-truthy scope the arm that didn't narrow could still be
-	 * the truthy one, so the sound result is the original (unnarrowed) type.
-	 */
-	private function augmentBooleanOrTruthyWithConditionalHolders(TypeSpecifier $typeSpecifier, MutatingScope $scope, MutatingScope $rightScope, BooleanOr|LogicalOr $expr, SpecifiedTypes $types): SpecifiedTypes
-	{
-		$leftTruthyScope = null;
-		$rightTruthyScope = null;
-
-		$seen = [];
-		foreach ([$scope, $rightScope] as $sourceScope) {
-			foreach ($sourceScope->getConditionalExpressions() as $exprString => $holders) {
-				if (isset($seen[$exprString])) {
-					continue;
-				}
-				if ($holders === []) {
-					continue;
-				}
-				$seen[$exprString] = true;
-				$targetExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-
-				// Only project when the target stays Yes-defined in the original
-				// scope and in both filtered branches. A sure type implicitly
-				// raises certainty to Yes, which would wrongly upgrade Maybe-defined
-				// variables — `if (empty($a['bar']))` for instance leaves `$a`
-				// Maybe-defined because `empty()` tolerates undefined offsets.
-				if (!$scope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-
-				$leftTruthyScope ??= $scope->filterByTruthyValue($expr->left);
-				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-				$rightTruthyScope ??= $rightScope->filterByTruthyValue($expr->right);
-				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-
-				$origType = $scope->getType($targetExpr);
-
-				$leftType = $leftTruthyScope->getType($targetExpr);
-				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
-				if (!$leftNarrowed) {
-					continue;
-				}
-
-				$rightType = $rightTruthyScope->getType($targetExpr);
-				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
-				if (!$rightNarrowed) {
-					continue;
-				}
-
-				$unionType = TypeCombinator::union($leftType, $rightType);
-				if ($unionType->equals($origType)) {
-					continue;
-				}
-
-				$types = $types->unionWith(
-					$typeSpecifier->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope),
-				);
-			}
-		}
-
-		return $types;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

@@ -64,7 +64,8 @@ function maybeEmpty(): void
 	if (!empty($foo)) {
 		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 	} else {
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+		// $foo is 1 when defined, so empty($foo) can only be true when it is undefined
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 	}
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 }
@@ -81,9 +82,10 @@ function maybeEmptyUnset(): void
 		unset($foo);
 		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 	} else {
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+		// $foo is 1 when defined, so empty($foo) can only be true when it is undefined
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 	}
-	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 }
 
 

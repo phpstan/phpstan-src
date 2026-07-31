@@ -3,10 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_diff_key;
@@ -108,27 +104,6 @@ final class FiniteTypeSet
 	 */
 	public static function key(Type $type): ?string
 	{
-		// A union of finite values is made of these five classes, and every comparison against
-		// such a union derives at least one key - so the general path below, three virtual
-		// calls and an array allocation, is worth skipping for them. Matching the class
-		// exactly is what makes that safe: for these, getConstantScalarTypes() is [$this] and
-		// equals() is value identity, which is precisely what the general path checks.
-		// Subclasses - template constant types among them - do not match and fall through.
-		switch (get_class($type)) {
-			case ConstantStringType::class:
-				return self::STRING_KEY_PREFIX . $type->getValue();
-			case ConstantIntegerType::class:
-				return self::INTEGER_KEY_PREFIX . $type->getValue();
-			case ConstantBooleanType::class:
-				return self::BOOLEAN_KEY_PREFIX . ($type->getValue() ? '1' : '0');
-			case NullType::class:
-				return self::NULL_KEY;
-			case ConstantFloatType::class:
-				// Excluded on purpose, see above - said here too so that a union of constant
-				// floats pays one get_class() per member instead of walking the general path.
-				return null;
-		}
-
 		if ($type instanceof TemplateType) {
 			return null;
 		}

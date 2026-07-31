@@ -277,17 +277,23 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 
 	public function isGenerator(): bool
 	{
-		return $this->nodeIsOrContainsYield($this->functionLike);
+		// the yield scan walks the whole body; reflections for the same node are
+		// recreated per ask, so the answer is memoized on the AST node itself
+		// and lives and dies with the parser-cached AST
+		$cached = $this->functionLike->getAttribute('phpstanIsGenerator');
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$isGenerator = NodeScanner::nodeIsOrContainsYield($this->functionLike);
+		$this->functionLike->setAttribute('phpstanIsGenerator', $isGenerator);
+
+		return $isGenerator;
 	}
 
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->acceptsNamedArguments);
-	}
-
-	private function nodeIsOrContainsYield(Node $node): bool
-	{
-		return NodeScanner::nodeIsOrContainsYield($node);
 	}
 
 	public function getAsserts(): Assertions

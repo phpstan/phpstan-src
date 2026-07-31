@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_diff_key;
 use function array_key_exists;
@@ -116,8 +115,9 @@ final class FiniteTypeSet
 		// derivable from the type alone, on every comparison, without reflection.
 		// Key by class + case name, the identity equals() compares (describe() would also
 		// fold in a subtracted type, which equals() ignores).
-		if ($type instanceof EnumCaseObjectType) {
-			return self::kind($type) . '::' . $type->getEnumCaseName();
+		$enumCaseObject = $type->getEnumCaseObject();
+		if ($enumCaseObject !== null && $enumCaseObject->equals($type)) {
+			return self::kind($type) . '::' . $enumCaseObject->getEnumCaseName();
 		}
 
 		$scalarTypes = $type->getConstantScalarTypes();
@@ -155,8 +155,9 @@ final class FiniteTypeSet
 	 */
 	private static function kind(Type $type): string
 	{
-		if ($type instanceof EnumCaseObjectType) {
-			return self::ENUM_CASE_KEY_PREFIX . $type->getClassName();
+		$enumCaseObject = $type->getEnumCaseObject();
+		if ($enumCaseObject !== null && $enumCaseObject->equals($type)) {
+			return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName();
 		}
 
 		return get_class($type);

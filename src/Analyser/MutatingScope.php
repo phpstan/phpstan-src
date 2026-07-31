@@ -2842,8 +2842,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				}
 			}
 
-			$assignedType = $scope->getType($assignedExpr);
-			$assignedNativeType = $scope->getNativeType($assignedExpr);
+			// Resolve the byref slot's new value directly from the just-assigned
+			// root variable's type, instead of re-evaluating the (stale) $assignedExpr
+			// node via Scope::getType(): the stored ArrayDimFetch result captured the
+			// array variable before it existed, so re-reading it would only resolve
+			// through the asking scope. We already hold the authoritative value here.
+			$assignedType = $this->resolveIntertwinedAssignedType($scope, $type, $assignedExpr, $variableName, false);
+			$assignedNativeType = $this->resolveIntertwinedAssignedType($scope, $nativeType, $assignedExpr, $variableName, true);
 
 			$has = $scope->hasExpressionType($expressionType->getExpr()->getExpr());
 			if (
@@ -2857,14 +2862,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				}
 				if ($unionWithOld) {
 					$targetVarNode = new Variable($targetVarName);
+					$rootVarNode = new Variable($variableName);
 					$assignedType = TypeCombinator::union(
 						$assignedType,
-						$this->getType($assignedExpr),
+						$this->resolveIntertwinedAssignedType($this, $this->getType($rootVarNode), $assignedExpr, $variableName, false),
 						$scope->getType($targetVarNode),
 					);
 					$assignedNativeType = TypeCombinator::union(
 						$assignedNativeType,
-						$this->getNativeType($assignedExpr),
+						$this->resolveIntertwinedAssignedType($this, $this->getNativeType($rootVarNode), $assignedExpr, $variableName, true),
 						$scope->getNativeType($targetVarNode),
 					);
 				}
@@ -2889,6 +2895,37 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * Resolves the type of a byref slot expression (rooted at $rootVariableName)
+	 * from $rootType - the type just assigned to that root variable - by walking
+	 * the offsets, without re-evaluating the stored $assignedExpr node via
+	 * Scope::getType().
+	 */
+	private function resolveIntertwinedAssignedType(self $scope, Type $rootType, Expr $assignedExpr, string $rootVariableName, bool $native): Type
+	{
+		if ($assignedExpr instanceof Variable && is_string($assignedExpr->name) && $assignedExpr->name === $rootVariableName) {
+			return $rootType;
+		}
+
+		if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->dim !== null) {
+			return $this->resolveIntertwinedAssignedType($scope, $rootType, $assignedExpr->var, $rootVariableName, $native)
+				->getOffsetValueType($scope->getType($assignedExpr->dim));
+		}
+
+		if ($assignedExpr instanceof SetExistingOffsetValueTypeExpr) {
+			// foreach-byref slot: the iteratee with its key offset set to the value
+			// variable's new type ($rootType is exactly that value - the expr's
+			// getValue()).
+			$iterateeType = $native
+				? $scope->getNativeType($assignedExpr->getVar())
+				: $scope->getType($assignedExpr->getVar());
+
+			return $iterateeType->setExistingOffsetValueType($scope->getType($assignedExpr->getDim()), $rootType);
+		}
+
+		throw new ShouldNotHappenException();
 	}
 
 	private function isDimFetchPathReachable(self $scope, Expr\ArrayDimFetch $dimFetch): bool

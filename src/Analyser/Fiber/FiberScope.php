@@ -136,6 +136,7 @@ final class FiberScope extends MutatingScope
 		/** @var self $scope */
 		$scope = parent::filterByTruthyValue($expr);
 		$scope->truthyValueExprs = $this->truthyValueExprs;
+		$scope->falseyValueExprs = $this->falseyValueExprs;
 		$scope->truthyValueExprs[] = $expr;
 
 		return $scope;
@@ -144,7 +145,8 @@ final class FiberScope extends MutatingScope
 	public function filterByFalseyValue(Expr $expr): self
 	{
 		/** @var self $scope */
-		$scope = parent::filterByTruthyValue($expr);
+		$scope = parent::filterByFalseyValue($expr);
+		$scope->truthyValueExprs = $this->truthyValueExprs;
 		$scope->falseyValueExprs = $this->falseyValueExprs;
 		$scope->falseyValueExprs[] = $expr;
 

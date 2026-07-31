@@ -69,15 +69,10 @@ final class DisjunctionHolderProjectionAugment implements DeferredSpecifiedTypes
 				}
 				$leftTruthyScope ??= ($this->leftTruthyScope)();
 				$rightTruthyScope ??= ($this->rightTruthyScope)();
-				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
-				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
-					continue;
-				}
 
-				// the guards above pin the target as tracked on all three scopes -
-				// scope state answers without a walk
+				// the guard above pins the target as tracked on the applying
+				// scope; the branch scopes are its own filtered views, so their
+				// reads answer from state (or price the same tracked state)
 				$origType = $scope->getType($targetExpr);
 
 				$leftType = $leftTruthyScope->getType($targetExpr);

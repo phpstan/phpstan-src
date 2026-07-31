@@ -1088,47 +1088,6 @@ public:
 	}
 
 	/*
-	 * Mirrors ScopeOps::buildTypeSpecifications(); the usort becomes a qsort
-	 * over a flat working set, kept stable via a sequence number.
-	 */
-	static zv::Val buildTypeSpecifications(zv::TableRef sureTypes, zv::TableRef sureNotTypes)
-	{
-		uint32_t capacity = sureTypes.size() + sureNotTypes.size();
-		TypeSpec *specs = capacity > 0 ? (TypeSpec *) emalloc(capacity * sizeof(TypeSpec)) : NULL;
-		uint32_t count = 0;
-
-		if (UNEXPECTED(!collectTypeSpecifications(sureTypes, true, specs, &count))
-			|| UNEXPECTED(!collectTypeSpecifications(sureNotTypes, false, specs, &count))) {
-			for (uint32_t i = 0; i < count; i++) {
-				zend_string_release(specs[i].exprString);
-			}
-			if (specs != NULL) {
-				efree(specs);
-			}
-			return zv::Val();
-		}
-
-		if (count > 1) {
-			qsort(specs, count, sizeof(TypeSpec), compareTypeSpecifications);
-		}
-
-		zv::Arr result = zv::Arr::create(count);
-		for (uint32_t i = 0; i < count; i++) {
-			zv::Arr item = zv::Arr::create(4);
-			item.set("sure", zv::Val::boolean(specs[i].sure));
-			item.set("exprString", zv::Val::adoptString(specs[i].exprString));
-			item.set("expr", zv::Val::copyOf(zv::Ref(&specs[i].expr)));
-			item.set("type", zv::Val::copyOf(zv::Ref(&specs[i].type)));
-			result.push(std::move(item));
-		}
-
-		if (specs != NULL) {
-			efree(specs);
-		}
-		return zv::Val(std::move(result));
-	}
-
-	/*
 	 * Mirrors ScopeOps::matchConditionalExpressions(): the fixed-point loop
 	 * with an exact-match pass and a supertype-match pass per expression.
 	 * Returns [conditions, specifiedExpressions].
@@ -1279,16 +1238,6 @@ private:
 		zval *expressionToInvalidate;
 		zval *invalidatingClass; /* may be NULL */
 		bool isThis;
-	};
-
-	/* One row of buildTypeSpecifications()' sortable working set. */
-	struct TypeSpec
-	{
-		zend_string *exprString; /* owned */
-		zval expr;               /* borrowed */
-		zval type;               /* borrowed */
-		bool sure;
-		uint32_t seq;
 	};
 
 	static zv::Val trinarySingleton(zend_long value)
@@ -1980,80 +1929,6 @@ private:
 		return true;
 	}
 
-	/* Collects one sureTypes/sureNotTypes table into the sortable working set. */
-	static bool collectTypeSpecifications(zv::TableRef input, bool sure, TypeSpec *specs, uint32_t *count)
-	{
-		zend_class_entry *scalarCe = pt_class(PT_CLASS_SCALAR);
-		zend_class_entry *arrayExprCe = pt_class(PT_CLASS_ARRAY_EXPR);
-		zend_class_entry *unaryMinusCe = pt_class(PT_CLASS_UNARY_MINUS);
-
-		if (UNEXPECTED(scalarCe == NULL || arrayExprCe == NULL || unaryMinusCe == NULL)) {
-			return false;
-		}
-
-		for (auto entry : input) {
-			zv::Ref pair = entry.value().deref();
-			if (UNEXPECTED(!pair.isArray())) {
-				zend_throw_error(NULL, "phpstan_turbo: sure type entry is not an array");
-				return false;
-			}
-			zval *exprSlot = zend_hash_index_find(pair.asArrayTable(), 0);
-			zval *typeSlot = zend_hash_index_find(pair.asArrayTable(), 1);
-			if (UNEXPECTED(exprSlot == NULL || typeSlot == NULL)) {
-				zend_throw_error(NULL, "phpstan_turbo: malformed sure type entry");
-				return false;
-			}
-			zv::Ref expr = zv::Ref(exprSlot).deref();
-			zv::Ref type = zv::Ref(typeSlot).deref();
-			if (UNEXPECTED(!expr.isObject() || !type.isObject())) {
-				zend_throw_error(NULL, "phpstan_turbo: malformed sure type entry");
-				return false;
-			}
-
-			zend_class_entry *exprCe = expr.asObject()->ce;
-			if (instanceof_function(exprCe, scalarCe) || instanceof_function(exprCe, arrayExprCe)) {
-				continue;
-			}
-			if (instanceof_function(exprCe, unaryMinusCe)) {
-				int32_t subOffset = pt_instance_prop_offset(exprCe, "expr", sizeof("expr") - 1);
-				if (subOffset >= 0) {
-					zv::Ref sub = zv::ObjRef(expr.asObject()).propAtOffset((uint32_t) subOffset).deref();
-					if (sub.instanceOf(scalarCe)) {
-						continue;
-					}
-				}
-			}
-
-			TypeSpec *spec = &specs[*count];
-			zend_string *key = entry.stringKeyOrNull();
-			spec->exprString = key != NULL ? zend_string_copy(key) : zend_long_to_str((zend_long) entry.indexKey());
-			ZVAL_COPY_VALUE(&spec->expr, expr.raw());
-			ZVAL_COPY_VALUE(&spec->type, type.raw());
-			spec->sure = sure;
-			spec->seq = *count;
-			(*count)++;
-		}
-
-		return true;
-	}
-
-	/* buildTypeSpecifications()'s usort comparator (stable via seq) */
-	static int compareTypeSpecifications(const void *a, const void *b)
-	{
-		const TypeSpec *specA = (const TypeSpec *) a;
-		const TypeSpec *specB = (const TypeSpec *) b;
-		size_t lengthA = ZSTR_LEN(specA->exprString);
-		size_t lengthB = ZSTR_LEN(specB->exprString);
-
-		if (lengthA != lengthB) {
-			return lengthA < lengthB ? -1 : 1;
-		}
-		if (specA->sure != specB->sure) {
-			return specB->sure - specA->sure; /* sure=true first */
-		}
-		return specA->seq < specB->seq ? -1 : (specA->seq > specB->seq ? 1 : 0);
-	}
-
 	/*
 	 * matchConditionalExpressions()' shared tail of both passes:
 	 * $conditions[$exprString][] = $conditionalExpression and
@@ -2210,19 +2085,6 @@ void pt_register_scope_ops()
 			Z_PARAM_OBJECT(expr)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::getIntertwinedRefRootVariableName(Z_OBJ_P(expr));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
-		result.intoReturnValue(return_value);
-	});
-
-	cls.method("buildTypeSpecifications", reg::PublicStatic, 2, { reg::arrayArg("sureTypes"), reg::arrayArg("sureNotTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		HashTable *sure_types, *sure_not_types;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_ARRAY_HT(sure_types)
-			Z_PARAM_ARRAY_HT(sure_not_types)
-		ZEND_PARSE_PARAMETERS_END();
-		zv::Val result = ScopeOps::buildTypeSpecifications(zv::TableRef(sure_types), zv::TableRef(sure_not_types));
 		if (UNEXPECTED(result.isUndef())) {
 			RETURN_THROWS();
 		}

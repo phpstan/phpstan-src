@@ -565,36 +565,6 @@ foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
 }
 check($mergeResults['php'] === $mergeResults['native'], 'ScopeOps mergeVariableHolders: merged keys, certainties and types');
 
-// buildTypeSpecifications — pure, so both sides can share the inputs; the
-// scalar/array/unary-minus entries must be dropped and the result ordered by
-// expression-string length with sure-before-not tie-breaking
-$specInt = new \PHPStan\Type\IntegerType();
-$specString = new \PHPStan\Type\StringType();
-$specSure = [
-	'$bb' => [new \PhpParser\Node\Expr\Variable('bb'), $specInt],
-	'$a' => [new \PhpParser\Node\Expr\Variable('a'), $specInt],
-	"'lit'" => [new \PhpParser\Node\Scalar\String_('lit'), $specString],
-	'-5' => [new \PhpParser\Node\Expr\UnaryMinus(new \PhpParser\Node\Scalar\Int_(5)), $specInt],
-	'[]' => [new \PhpParser\Node\Expr\Array_([]), $specInt],
-];
-$specSureNot = [
-	'$a' => [new \PhpParser\Node\Expr\Variable('a'), $specString],
-	'$o->p' => [new \PhpParser\Node\Expr\PropertyFetch(new \PhpParser\Node\Expr\Variable('o'), 'p'), $specString],
-];
-$specResults = [];
-foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
-	$specResults[$side] = array_map(
-		static fn (array $specification): array => [
-			$specification['sure'],
-			$specification['exprString'],
-			spl_object_id($specification['expr']),
-			$specification['type']->describe(\PHPStan\Type\VerbosityLevel::precise()),
-		],
-		$scopeOpsClass::buildTypeSpecifications($specSure, $specSureNot),
-	);
-}
-check($specResults['php'] === $specResults['native'], 'ScopeOps buildTypeSpecifications: filtering, ordering and tie-breaking');
-
 // matchConditionalExpressions — a holder whose conditions are all among the
 // specified expressions must resolve, transitively (fixed point); '$c'
 // resolves only after '$b' did, '$unmatched' never does

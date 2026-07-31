@@ -130,6 +130,7 @@ use function strlen;
 use function strtolower;
 use function substr;
 use function uksort;
+use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 use const PHP_VERSION_ID;
@@ -3392,23 +3393,49 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$specifiedTypes = $specifiedTypes->unionWith($augmentTypes);
 		}
 
-		$typeSpecifications = ScopeOps::buildTypeSpecifications($specifiedTypes->getSureTypes(), $specifiedTypes->getSureNotTypes());
-
-		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$alternativeExpr, $terms]) {
-			if (
-				$alternativeExpr instanceof Node\Scalar
-				|| $alternativeExpr instanceof Expr\Array_
-				|| ($alternativeExpr instanceof Expr\UnaryMinus && $alternativeExpr->expr instanceof Node\Scalar)
-			) {
+		$typeSpecifications = [];
+		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Expr\Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
 				continue;
 			}
 			$typeSpecifications[] = [
 				'sure' => true,
-				'exprString' => (string) $exprString,
-				'expr' => $alternativeExpr,
+				'exprString' => $exprString,
+				'expr' => $expr,
+				'type' => $type,
+			];
+		}
+		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Expr\Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
+			$typeSpecifications[] = [
+				'sure' => false,
+				'exprString' => $exprString,
+				'expr' => $expr,
+				'type' => $type,
+			];
+		}
+		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$expr, $terms]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Expr\Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
+			$typeSpecifications[] = [
+				'sure' => true,
+				'exprString' => $exprString,
+				'expr' => $expr,
 				'terms' => $terms,
 			];
 		}
+
+		usort($typeSpecifications, static function (array $a, array $b): int {
+			$length = strlen($a['exprString']) - strlen($b['exprString']);
+			if ($length !== 0) {
+				return $length;
+			}
+
+			return $b['sure'] - $a['sure']; // @phpstan-ignore minus.leftNonNumeric, minus.rightNonNumeric
+		});
 
 		$scope = $this;
 		// one unpublished working copy takes all in-place specifications of the

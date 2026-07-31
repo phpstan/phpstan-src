@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -37,7 +36,6 @@ use function str_contains;
 use function strlen;
 use function strpos;
 use function substr_compare;
-use function usort;
 
 /**
  * Hot scope-table operations extracted from MutatingScope.
@@ -889,51 +887,6 @@ final class ScopeOps
 			return self::getIntertwinedRefRootVariableName($expr->var);
 		}
 		return null;
-	}
-
-	/**
-	 * The sorted type-specification list of MutatingScope::filterBySpecifiedTypes().
-	 *
-	 * @param array<string|int, array{Expr, Type}> $sureTypes
-	 * @param array<string|int, array{Expr, Type}> $sureNotTypes
-	 * @return list<array{sure: bool, exprString: string, expr: Expr, type: Type}>
-	 */
-	public static function buildTypeSpecifications(array $sureTypes, array $sureNotTypes): array
-	{
-		$typeSpecifications = [];
-		foreach ($sureTypes as $exprString => [$expr, $type]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
-				continue;
-			}
-			$typeSpecifications[] = [
-				'sure' => true,
-				'exprString' => (string) $exprString,
-				'expr' => $expr,
-				'type' => $type,
-			];
-		}
-		foreach ($sureNotTypes as $exprString => [$expr, $type]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
-				continue;
-			}
-			$typeSpecifications[] = [
-				'sure' => false,
-				'exprString' => (string) $exprString,
-				'expr' => $expr,
-				'type' => $type,
-			];
-		}
-
-		usort($typeSpecifications, static function (array $a, array $b): int {
-			$length = strlen($a['exprString']) - strlen($b['exprString']);
-			if ($length !== 0) {
-				return $length;
-			}
-
-			return $b['sure'] - $a['sure']; // @phpstan-ignore minus.leftNonNumeric, minus.rightNonNumeric
-		});
-
-		return $typeSpecifications;
 	}
 
 	/**

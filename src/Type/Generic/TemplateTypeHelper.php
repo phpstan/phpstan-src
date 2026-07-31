@@ -8,6 +8,7 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 final class TemplateTypeHelper
@@ -146,16 +147,75 @@ final class TemplateTypeHelper
 
 	public static function generalizeInferredTemplateType(TemplateType $templateType, Type $type): Type
 	{
-		if (!$templateType->getVariance()->covariant()) {
-			$isArrayKey = $templateType->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
-			if ($type->isScalar()->yes() && $isArrayKey) {
-				$type = $type->generalize(GeneralizePrecision::templateArgument());
-			} elseif ($type->isConstantValue()->yes() && (!$templateType->getBound()->isScalar()->yes() || $isArrayKey)) {
-				$type = $type->generalize(GeneralizePrecision::templateArgument());
-			}
+		if ($templateType->getVariance()->covariant()) {
+			return $type;
 		}
 
-		return $type;
+		$bound = $templateType->getBound();
+		$isArrayKey = $bound->describe(VerbosityLevel::precise()) === '(int|string)';
+		if ($bound->isScalar()->yes() && !$isArrayKey) {
+			return $type;
+		}
+
+		if ($type->isScalar()->yes() && $isArrayKey) {
+			$type = $type->generalize(GeneralizePrecision::templateArgument());
+		} elseif ($type->isConstantValue()->yes()) {
+			$type = $type->generalize(GeneralizePrecision::templateArgument());
+		}
+
+		return self::widenToBoundType($bound, $type);
+	}
+
+	/**
+	 * An invariant template type argument that merely refines one of the bound's
+	 * alternatives is unusable - Foo<array{string}> is not accepted by Foo<list<string>>.
+	 * Such a type is widened to the bound alternative it refines.
+	 */
+	private static function widenToBoundType(Type $bound, Type $type): Type
+	{
+		$boundTypes = $bound instanceof UnionType ? $bound->getTypes() : [$bound];
+
+		$widenedType = null;
+		foreach ($boundTypes as $boundType) {
+			if (!self::onlyRefinesType($boundType, $type)) {
+				continue;
+			}
+
+			if ($type->isSuperTypeOf($boundType)->yes()) {
+				// the type is already as general as the bound alternative
+				return $type;
+			}
+
+			if ($widenedType !== null) {
+				return $type;
+			}
+
+			$widenedType = $boundType;
+		}
+
+		return $widenedType ?? $type;
+	}
+
+	/**
+	 * Does $type say the same thing as $superType, only with more precision
+	 * (accessory types, array shapes, literal values)?
+	 */
+	private static function onlyRefinesType(Type $superType, Type $type): bool
+	{
+		if (!$superType->isSuperTypeOf($type)->yes()) {
+			return false;
+		}
+
+		// arrays refine the bound with their shape, so they're compared key type to key type
+		// and value type to value type instead. Object types are excluded to not lose the class.
+		// An empty array has never key and value types, which say more than any bound does,
+		// so array{} is never widened - the class author may well have written Foo<array{}>.
+		if ($type->isArray()->yes() && $superType->isIterable()->yes() && $superType->getObjectClassNames() === []) {
+			return self::onlyRefinesType($superType->getIterableKeyType(), $type->getIterableKeyType())
+				&& self::onlyRefinesType($superType->getIterableValueType(), $type->getIterableValueType());
+		}
+
+		return $type->generalize(GeneralizePrecision::lessSpecific())->isSuperTypeOf($superType)->yes();
 	}
 
 }

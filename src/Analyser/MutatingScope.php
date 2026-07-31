@@ -2542,10 +2542,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
-	public function enterForeach(self $originalScope, Expr $iteratee, string $valueName, ?string $keyName, bool $valueByRef): self
+	public function enterForeach(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef): self
 	{
-		$iterateeType = $originalScope->getType($iteratee);
-		$nativeIterateeType = $originalScope->getNativeType($iteratee);
 		$valueType = $originalScope->getIterableValueType($iterateeType);
 		$nativeValueType = $originalScope->getIterableValueType($nativeIterateeType);
 		$scope = $this->assignVariable(
@@ -2574,7 +2572,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			);
 		}
 		if ($keyName !== null) {
-			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
+			$scope = $scope->enterForeachKey($originalScope, $iteratee, $iterateeType, $nativeIterateeType, $keyName);
 
 			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 				$scope = $scope->assignExpression(
@@ -2588,11 +2586,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $scope;
 	}
 
-	public function enterForeachKey(self $originalScope, Expr $iteratee, string $keyName): self
+	public function enterForeachKey(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $keyName): self
 	{
-		$iterateeType = $originalScope->getType($iteratee);
-		$nativeIterateeType = $originalScope->getNativeType($iteratee);
-
 		$keyType = $originalScope->getIterableKeyType($iterateeType);
 		$nativeKeyType = $originalScope->getIterableKeyType($nativeIterateeType);
 

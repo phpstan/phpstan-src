@@ -570,4 +570,23 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMatchArmComparisonNotSuppressedByImpossibleCheck(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/match-arm-type-check-call.php'], [
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				8,
+			],
+			[
+				'Match arm comparison between int and true is always false.',
+				8,
+			],
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				16,
+			],
+		]);
+	}
+
 }

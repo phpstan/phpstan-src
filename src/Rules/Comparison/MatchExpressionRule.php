@@ -70,7 +70,13 @@ final class MatchExpressionRule implements Rule
 			foreach ($armConditions as $armCondition) {
 				$armConditionScope = $armCondition->getScope();
 				$rawCondition = $armCondition->getCondition();
-				$isTypeCheckCandidate = $this->functionCallConstantConditionHelper->isTypeCheckCandidate($rawCondition);
+				// Only for a match(true)-style subject is the arm comparison the
+				// same fact as the call's own constant truthiness - the site the
+				// ImpossibleCheckType* rules own. For any other subject the
+				// comparison ("int is never true") is an independent finding and
+				// must not be deduplicated away against their markers.
+				$isTypeCheckCandidate = ($matchConditionType->isTrue()->yes() || $matchConditionType->isFalse()->yes())
+					&& $this->functionCallConstantConditionHelper->isTypeCheckCandidate($rawCondition);
 				$armConditionExpr = new Node\Expr\BinaryOp\Identical(
 					$matchCondition,
 					$rawCondition,

@@ -76,6 +76,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private ?Type $arrayKeyType = null;
 
+	/** @var array<int, string> */
+	private array $cachedDescriptions = [];
+
 	/** @api */
 	public function __construct(private string $value, private bool $isClassString = false)
 	{
@@ -119,9 +122,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function describe(VerbosityLevel $level): string
 	{
+		$levelValue = $level->getLevelValue();
+
+		if (isset($this->cachedDescriptions[$levelValue])) {
+			return $this->cachedDescriptions[$levelValue];
+		}
+
 		return $level->handle(
 			static fn (): string => 'string',
-			function (): string {
+			function () use ($levelValue): string {
 				$value = $this->value;
 
 				if (!$this->isClassString) {
@@ -132,9 +141,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 					}
 				}
 
-				return self::export($value);
+				return $this->cachedDescriptions[$levelValue] = self::export($value);
 			},
-			fn (): string => self::export($this->value),
+			fn (): string => $this->cachedDescriptions[$levelValue] = self::export($this->value),
 		);
 	}
 

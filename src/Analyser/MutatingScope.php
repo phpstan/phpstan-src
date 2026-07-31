@@ -3411,6 +3411,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$scope = $this;
+		// one unpublished working copy takes all in-place specifications of the
+		// batch; operations that go through other scope derivations publish it
+		// and a fresh copy opens on the next specification
+		$scopeIsWorkingCopy = false;
 		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
@@ -3427,6 +3431,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				} else {
 					$scope = $scope->unsetExpression($expr);
 				}
+				$scopeIsWorkingCopy = false;
 
 				continue;
 			}
@@ -3459,12 +3464,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$originalExprType = $scope->getType($expr);
 				if (!$scope->isComplexUnionType($originalExprType)) {
 					$nativeType = $scope->getNativeType($expr);
-					$scope = $scope->specifyExpressionType(
-						$expr,
-						TypeCombinator::intersect($evaluate($originalExprType), $originalExprType),
-						TypeCombinator::intersect($evaluate($nativeType), $nativeType),
-						TrinaryLogic::createYes(),
-					);
+					$newType = TypeCombinator::intersect($evaluate($originalExprType), $originalExprType);
+					$newNativeType = TypeCombinator::intersect($evaluate($nativeType), $nativeType);
+					if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
+						if (!$scopeIsWorkingCopy) {
+							$scope = $scope->openSpecificationScope();
+							$scopeIsWorkingCopy = true;
+						}
+						$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+					}
 					$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
 				}
 
@@ -3475,47 +3483,42 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
 					$scope = $scope->assignExpression($expr, $type, $type);
+					$scopeIsWorkingCopy = false;
 				} else {
-					$scope = $scope->addTypeToExpression($expr, $type);
+					// addTypeToExpression(), writing into the working copy
+					$originalExprType = $scope->getType($expr);
+					if (!$scope->isComplexUnionType($originalExprType)) {
+						$nativeType = $scope->getNativeType($expr);
+						$newType = TypeCombinator::intersect($type, $originalExprType);
+						$newNativeType = $originalExprType->equals($nativeType) ? $newType : TypeCombinator::intersect($type, $nativeType);
+						if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
+							if (!$scopeIsWorkingCopy) {
+								$scope = $scope->openSpecificationScope();
+								$scopeIsWorkingCopy = true;
+							}
+							$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+						}
+					}
 				}
-			} else {
-				$scope = $scope->removeTypeFromExpression($expr, $type);
+			} elseif (!$type instanceof NeverType) {
+				// removeTypeFromExpression(), writing into the working copy
+				$exprType = $scope->getType($expr);
+				if (!$exprType instanceof NeverType && !$scope->isComplexUnionType($exprType)) {
+					$newType = TypeCombinator::remove($exprType, $type);
+					$newNativeType = TypeCombinator::remove($scope->getNativeType($expr), $type);
+					if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
+						if (!$scopeIsWorkingCopy) {
+							$scope = $scope->openSpecificationScope();
+							$scopeIsWorkingCopy = true;
+						}
+						$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+					}
+				}
 			}
 			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
 		}
 
-		[$conditions] = ScopeOps::matchConditionalExpressions($scope->conditionalExpressions, $specifiedExpressions);
-
-		return $this->applyFilteredConditions($scope, $conditions, $specifiedTypes);
-	}
-
-	/**
-	 * @param array<string, ConditionalExpressionHolder[]> $conditions
-	 * @return static
-	 */
-	private function applyFilteredConditions(self $scope, array $conditions, SpecifiedTypes $specifiedTypes): self
-	{
-		foreach ($conditions as $conditionalExprString => $expressions) {
-			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
-			if ($certainty->no()) {
-				unset($scope->expressionTypes[$conditionalExprString]);
-			} else {
-				if (array_key_exists($conditionalExprString, $scope->expressionTypes)) {
-					$type = $expressions[0]->getTypeHolder()->getType();
-					for ($i = 1, $count = count($expressions); $i < $count; $i++) {
-						$type = TypeCombinator::intersect($type, $expressions[$i]->getTypeHolder()->getType());
-					}
-
-					$scope->expressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
-						$scope->expressionTypes[$conditionalExprString]->getExpr(),
-						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
-						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
-					);
-				} else {
-					$scope->expressionTypes[$conditionalExprString] = $expressions[0]->getTypeHolder();
-				}
-			}
-		}
+		$scope = $scope->processConditionalExpressionsAfterSpecifying($specifiedExpressions);
 
 		$newConditionalExpressionHolders = $specifiedTypes->getNewConditionalExpressionHolders();
 		foreach ($specifiedTypes->getConditionalExpressionHolderRecipes() as $recipe) {
@@ -3540,6 +3543,45 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope->inFirstLevelStatement,
 			$scope->afterExtractCall,
 		);
+	}
+
+	/**
+	 * Matches already-registered conditional expressions against the just-specified
+	 * expression type holders and applies the matching consequences.
+	 *
+	 * Mutates and returns $this - only to be called on an intermediate scope
+	 * that is about to be rebuilt through the scope factory.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $specifiedExpressions
+	 */
+	private function processConditionalExpressionsAfterSpecifying(array $specifiedExpressions): self
+	{
+		$scope = $this;
+		[$conditions] = ScopeOps::matchConditionalExpressions($scope->conditionalExpressions, $specifiedExpressions);
+
+		foreach ($conditions as $conditionalExprString => $expressions) {
+			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
+			if ($certainty->no()) {
+				unset($scope->expressionTypes[$conditionalExprString]);
+			} else {
+				if (array_key_exists($conditionalExprString, $scope->expressionTypes)) {
+					$type = $expressions[0]->getTypeHolder()->getType();
+					for ($i = 1, $count = count($expressions); $i < $count; $i++) {
+						$type = TypeCombinator::intersect($type, $expressions[$i]->getTypeHolder()->getType());
+					}
+
+					$scope->expressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
+						$scope->expressionTypes[$conditionalExprString]->getExpr(),
+						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
+						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
+					);
+				} else {
+					$scope->expressionTypes[$conditionalExprString] = $expressions[0]->getTypeHolder();
+				}
+			}
+		}
+
+		return $scope;
 	}
 
 	/**

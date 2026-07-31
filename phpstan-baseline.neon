@@ -1078,7 +1078,7 @@ parameters:
 			path: src/Type/Constant/OversizedArrayBuilder.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCases() instead.'
+			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCaseObject() or Type::getEnumCases() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/Enum/EnumCaseObjectType.php
@@ -1432,7 +1432,7 @@ parameters:
 			path: src/Type/IntersectionType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCases() instead.'
+			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCaseObject() or Type::getEnumCases() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/IntersectionType.php
@@ -1762,7 +1762,7 @@ parameters:
 			path: src/Type/UnionTypeHelper.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCases() instead.'
+			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCaseObject() or Type::getEnumCases() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/UnionTypeHelper.php

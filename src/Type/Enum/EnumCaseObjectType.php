@@ -32,7 +32,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /** @api */
-#[InstanceofDeprecated(insteadUse: 'Type::getEnumCases()')]
+#[InstanceofDeprecated(insteadUse: 'Type::getEnumCaseObject() or Type::getEnumCases()')]
 class EnumCaseObjectType extends ObjectType
 {
 

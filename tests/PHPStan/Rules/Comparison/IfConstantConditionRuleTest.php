@@ -408,6 +408,18 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15034(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15034.php'], []);
+	}
+
+	public function testClosureByRefUseReentry(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/closure-by-ref-use-reentry.php'], []);
+	}
+
 	public function testMarkerFromAnotherFileDoesNotSuppress(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

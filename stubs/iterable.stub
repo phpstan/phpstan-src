@@ -464,7 +464,6 @@ class RegexIterator extends FilterIterator {
  * @template-extends FilterIterator<TKey, TValue, TIterator>
  * @template-implements RecursiveIterator<TKey, TValue>
  */
-#[\PHPStan\PhpDoc\RequireGenericsInBleedingEdgeOnly]
 abstract class RecursiveFilterIterator extends FilterIterator implements RecursiveIterator {
     /**
      * @param TIterator $iterator
@@ -489,7 +488,6 @@ abstract class RecursiveFilterIterator extends FilterIterator implements Recursi
  *
  * @template-extends RecursiveFilterIterator<TKey, TValue, TIterator>
  */
-#[\PHPStan\PhpDoc\RequireGenericsInBleedingEdgeOnly]
 class ParentIterator extends RecursiveFilterIterator {
 }
 
@@ -501,7 +499,6 @@ class ParentIterator extends RecursiveFilterIterator {
  * @template-extends CachingIterator<TKey, TValue, TIterator>
  * @template-implements RecursiveIterator<TKey, TValue>
  */
-#[\PHPStan\PhpDoc\RequireGenericsInBleedingEdgeOnly]
 class RecursiveCachingIterator extends CachingIterator implements RecursiveIterator {
     /**
      * @param TIterator $iterator
@@ -528,7 +525,6 @@ class RecursiveCachingIterator extends CachingIterator implements RecursiveItera
  * @template-extends RegexIterator<TKey, TValue, TIterator>
  * @template-implements RecursiveIterator<TKey, TValue>
  */
-#[\PHPStan\PhpDoc\RequireGenericsInBleedingEdgeOnly]
 class RecursiveRegexIterator extends RegexIterator implements RecursiveIterator {
     /**
      * @param TIterator $iterator

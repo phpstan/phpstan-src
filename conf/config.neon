@@ -28,7 +28,13 @@ parameters:
 		bleedingEdge: false
 		checkNonStringableDynamicAccess: false
 		checkParameterCastableToNumberFunctions: false
-		skipCheckGenericClasses: []
+		skipCheckGenericClasses:
+			- DOMNamedNodeMap
+			- ParentIterator
+			- RecursiveCachingIterator
+			- RecursiveFilterIterator
+			- RecursiveRegexIterator
+			- ReflectionObject
 		stricterFunctionMap: false
 		reportPreciseLineForUnusedFunctionParameter: false
 		checkPrintfParameterTypes: false

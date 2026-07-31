@@ -14,6 +14,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\ProcessArrowFunctionResult;
 use PHPStan\Analyser\ProcessClosureResult;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
@@ -87,7 +88,7 @@ final class ClosureTypeResolver
 
 		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
-		if (!$expr instanceof ArrowFunction && array_key_exists($cacheKey, $cachedTypes)) {
+		if (array_key_exists($cacheKey, $cachedTypes)) {
 			return $this->createClosureTypeFromCache($expr, $parameters, $isVariadic, $cachedTypes[$cacheKey]);
 		}
 		if (self::$resolveClosureTypeDepth >= 2) {
@@ -322,8 +323,18 @@ final class ClosureTypeResolver
 	 * slot is seeded with the same build, keyed exactly as the
 	 * promoted-scope ask computes its key.
 	 */
-	public function seedCacheFromClosureWalk(MutatingScope $scope, Node\Expr\Closure $expr, ProcessClosureResult $processClosureResult): void
+	public function seedCacheFromClosureWalk(MutatingScope $scope, Node\Expr\Closure $expr, ProcessClosureResult $processClosureResult, ExpressionResultStorage $storage): void
 	{
+		// a parked fiber may still append to the walk's gathered data - the
+		// invalidate expressions of a write like $this->prop[] = ... arrive
+		// only when the fiber flushes (see the invalidate-expressions note in
+		// NodeScopeResolver::processArgs()). Seed only when nothing is parked,
+		// so a seeded entry is never incomplete; otherwise the lazy ask keeps
+		// re-walking with the fibers flushed, as before.
+		if ($storage->pendingFibers !== []) {
+			return;
+		}
+
 		// for array_map() callbacks and immediately invoked closures this
 		// delegates to a getClosureType() walk with the call-site parameter
 		// types; either way the phpdoc build lands in the cache under the
@@ -350,6 +361,39 @@ final class ClosureTypeResolver
 		[$promotedParameters, , $promotedCallableParameters] = $this->buildParametersAndAcceptors($promotedScope, $expr);
 		$cachedTypes[$this->closureContextCacheKey($promotedScope, $expr, $promotedCallableParameters, $promotedParameters)] = $cachedTypes[$phpdocKey];
 		$expr->setAttribute('phpstanCachedTypes', $cachedTypes);
+	}
+
+	/**
+	 * Arrow-function counterpart of seedCacheFromClosureWalk() (see
+	 * ArrowFunctionHandler::processExpr()). Unlike a closure, an arrow
+	 * function's native return type genuinely differs from its phpdoc one,
+	 * so the native-flavour slot is seeded with its own build reading the
+	 * walked body's native types.
+	 */
+	public function seedCacheFromArrowFunctionWalk(MutatingScope $scope, ArrowFunction $expr, ProcessArrowFunctionResult $arrowFunctionResult, ExpressionResultStorage $storage): void
+	{
+		// see the parked-fiber note in seedCacheFromClosureWalk()
+		if ($storage->pendingFibers !== []) {
+			return;
+		}
+
+		$this->buildClosureTypeForArrowFunction(
+			$scope,
+			$expr,
+			$arrowFunctionResult->getArrowFunctionScope(),
+			$arrowFunctionResult->getClosureTypeThrowPoints(),
+			$arrowFunctionResult->getClosureTypeImpurePoints(),
+			$arrowFunctionResult->getInvalidateExpressions(),
+		);
+		$this->buildClosureTypeForArrowFunction(
+			$scope,
+			$expr,
+			$arrowFunctionResult->getArrowFunctionScope(),
+			$arrowFunctionResult->getClosureTypeThrowPoints(),
+			$arrowFunctionResult->getClosureTypeImpurePoints(),
+			$arrowFunctionResult->getInvalidateExpressions(),
+			true,
+		);
 	}
 
 	/**

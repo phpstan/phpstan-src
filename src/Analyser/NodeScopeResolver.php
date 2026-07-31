@@ -3198,7 +3198,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		?Type $passedToType,
 		?Type $nativePassedToType = null,
-	): ExpressionResult
+	): ProcessArrowFunctionResult
 	{
 		foreach ($expr->params as $param) {
 			$this->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
@@ -3216,9 +3216,49 @@ class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope, $storage);
-		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
 
-		return $this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints());
+		// Gather the property-assign impure points and invalidate expressions the
+		// arrow function type needs (mirroring ClosureTypeResolver::getClosureType()),
+		// on top of the regular rule node callback, so the single body walk here
+		// feeds ClosureTypeResolver::buildClosureTypeForArrowFunction().
+		$arrowFunctionImpurePoints = [];
+		$invalidateExpressions = [];
+		$arrowFunctionStmtsCallback = new GatheringNodeCallback(static function (Node $node, Scope $innerScope) use ($arrowFunctionScope, &$arrowFunctionImpurePoints, &$invalidateExpressions): void {
+			if ($innerScope->getAnonymousFunctionReflection() !== $arrowFunctionScope->getAnonymousFunctionReflection()) {
+				return;
+			}
+
+			if ($node instanceof InvalidateExprNode) {
+				$invalidateExpressions[] = $node;
+				return;
+			}
+
+			if (!$node instanceof PropertyAssignNode) {
+				return;
+			}
+
+			$arrowFunctionImpurePoints[] = new ImpurePoint(
+				$innerScope,
+				$node,
+				'propertyAssign',
+				'property assignment',
+				true,
+			);
+			$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
+		}, $nodeCallback);
+
+		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $arrowFunctionStmtsCallback, ExpressionContext::createTopLevel());
+
+		$closureTypeThrowPoints = array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->toPublic(), $exprResult->getThrowPoints());
+		$closureTypeImpurePoints = array_merge($arrowFunctionImpurePoints, $exprResult->getImpurePoints());
+
+		return new ProcessArrowFunctionResult(
+			$this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints()),
+			$arrowFunctionScope,
+			$closureTypeThrowPoints,
+			$closureTypeImpurePoints,
+			$invalidateExpressions,
+		);
 	}
 
 	/**
@@ -3918,7 +3958,7 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
+				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType)->getExpressionResult();
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());

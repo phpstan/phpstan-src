@@ -86,7 +86,7 @@ final class YieldTypeRule implements Rule
 				->identifier('generator.valueType')
 				->build();
 		}
-		if (!$scope->isInFirstLevelStatement() && $scope->getType($node)->isVoid()->yes()) {
+		if (!$scope->isInFirstLevelStatement() && $scope->getKeepVoidType($node)->isVoid()->yes()) {
 			$messages[] = RuleErrorBuilder::message('Result of yield (void) is used.')
 				->identifier('generator.void')
 				->build();

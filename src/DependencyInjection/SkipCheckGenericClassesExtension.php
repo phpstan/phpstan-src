@@ -27,11 +27,18 @@ use function str_contains;
  * generic does not start requiring type arguments before the next major version.
  *
  * The classes are not collected by composer-attribute-collector like the rest of PHPStan's
- * attributes are: the classes live in .stub files, which are neither part of the class map nor
- * loadable, and the collector reads the attributes of a class through runtime reflection - which
- * for an internal class such as ReflectionObject reports the attributes of the real PHP class,
- * never the ones written in a stub. The stub files are read here instead; parsing is limited to
- * the files that mention the attribute at all.
+ * attributes are, because the classes live in .stub files. Two things are missing there:
+ *
+ * 1) the collector scans the included paths for .php and .inc files only, so a .stub file never
+ *    enters the class map,
+ * 2) on PHP >= 8 it reads the attributes of a class through runtime reflection, which for an
+ *    internal class such as ReflectionObject reports the attributes of the real PHP class, never
+ *    the ones written in a stub. Its AST-based collector, used on PHP 7.4, reports them correctly.
+ *
+ * Until a release of the collector supporting both, the stub files are read here instead; parsing
+ * is limited to the files that mention the attribute at all. Once it does support them, this class
+ * becomes a call to Attributes::findTargetClasses() - the container cache key already accounts for
+ * vendor/attributes.php, which is what addDependencies() below achieves for the stub files.
  */
 #[ContainerExtension(name: 'skipCheckGenericClasses')]
 final class SkipCheckGenericClassesExtension extends CompilerExtension

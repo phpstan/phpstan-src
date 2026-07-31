@@ -2989,14 +2989,43 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
-		if ($expr instanceof Scalar) {
+		if ($this->isSpecifyExpressionTypeNoop($expr, $type)) {
 			return $this;
+		}
+
+		$scope = $this->openSpecificationScope();
+		$scope->specifyExpressionTypeInPlace($expr, $type, $nativeType, $certainty);
+
+		return $scope;
+	}
+
+	/** An unpublished copy of this scope that in-place specification may mutate. */
+	private function openSpecificationScope(): self
+	{
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->inFirstLevelStatement,
+			$this->afterExtractCall,
+		);
+	}
+
+	private function isSpecifyExpressionTypeNoop(Expr $expr, Type $type): bool
+	{
+		if ($expr instanceof Scalar) {
+			return true;
 		}
 
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
 			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
-				return $this;
+				return true;
 			}
 		}
 
@@ -3007,11 +3036,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				'is_file',
 				'file_exists',
 			], true)) {
-				return $this;
+				return true;
 			}
 		}
 
-		$scope = $this;
+		return false;
+	}
+
+	/**
+	 * The body of specifyExpressionType() writing straight into this scope's
+	 * holder maps - only to be called on an unpublished scope (see
+	 * openSpecificationScope()). Batching callers avoid one whole-map copy and
+	 * scope construction per specification (and per array-dim level).
+	 */
+	private function specifyExpressionTypeInPlace(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): void
+	{
+		if ($this->isSpecifyExpressionTypeNoop($expr, $type)) {
+			return;
+		}
+
 		if (
 			$expr instanceof Expr\ArrayDimFetch
 			&& $expr->dim !== null
@@ -3020,9 +3063,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& !$expr->dim instanceof Expr\PostDec
 			&& !$expr->dim instanceof Expr\PostInc
 		) {
-			$dimType = $scope->getType($expr->dim)->toArrayKey();
+			$dimType = $this->getType($expr->dim)->toArrayKey();
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
-				$exprVarType = $scope->getType($expr->var);
+				$exprVarType = $this->getType($expr->var);
 				$isArray = $exprVarType->isArray();
 				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
 					$varType = $exprVarType;
@@ -3043,10 +3086,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 						}
 					}
 
-					$scope = $scope->specifyExpressionType(
+					$this->specifyExpressionTypeInPlace(
 						$expr->var,
 						$varType,
-						$scope->getNativeType($expr->var),
+						$this->getNativeType($expr->var),
 						$certainty,
 					);
 				}
@@ -3058,29 +3101,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$exprString = $this->getNodeKey($expr);
-		$expressionTypes = $scope->expressionTypes;
-		$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
-		$nativeTypes = $scope->nativeExpressionTypes;
-		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
+		$this->expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
+		$this->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
+		// the writes invalidate every lazily-derived view of this scope; reset
+		// them to their fresh-constructor defaults, exactly as deriving a new
+		// scope per specification did
+		$this->resolvedTypes = [];
+		$this->truthyScopes = [];
+		$this->falseyScopes = [];
+		$this->fiberScope = null;
+		$this->scopeOutOfFirstLevelStatement = null;
+		$this->scopeWithPromotedNativeTypes = null;
 
-		/** @var static $scope */
-		$scope = ScopeOps::scopeWith(
-			$this,
-			$expressionTypes,
-			$nativeTypes,
-			$this->conditionalExpressions,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->inFunctionCallsStack,
-			$this->inFirstLevelStatement,
-			$this->afterExtractCall,
-		);
-
-		if ($expr instanceof AlwaysRememberedExpr) {
-			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);
+		if (!($expr instanceof AlwaysRememberedExpr)) {
+			return;
 		}
 
-		return $scope;
+		$this->specifyExpressionTypeInPlace($expr->expr, $type, $nativeType, $certainty);
 	}
 
 	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self

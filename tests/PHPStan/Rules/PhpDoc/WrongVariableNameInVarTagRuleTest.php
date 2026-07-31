@@ -627,4 +627,15 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/new-is-always-final-var-tag-type.php'], []);
 	}
 
+	public function testDestructuringChecksAgainstNativeOffsetType(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->analyse([__DIR__ . '/data/var-tag-destructuring-native.php'], [
+			[
+				'PHPDoc tag @var with type string is not subtype of type int.',
+				17,
+			],
+		]);
+	}
+
 }

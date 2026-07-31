@@ -457,6 +457,93 @@ class RegexIterator extends FilterIterator {
 }
 
 /**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as RecursiveIterator<TKey, TValue>
+ *
+ * @template-extends FilterIterator<TKey, TValue, TIterator>
+ * @template-implements RecursiveIterator<TKey, TValue>
+ */
+abstract class RecursiveFilterIterator extends FilterIterator implements RecursiveIterator {
+    /**
+     * @param TIterator $iterator
+     */
+    public function __construct(RecursiveIterator $iterator) {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return static
+     */
+    public function getChildren() {}
+}
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as RecursiveIterator<TKey, TValue>
+ *
+ * @template-extends RecursiveFilterIterator<TKey, TValue, TIterator>
+ */
+class ParentIterator extends RecursiveFilterIterator {
+}
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator as Iterator<TKey, TValue>
+ *
+ * @template-extends CachingIterator<TKey, TValue, TIterator>
+ * @template-implements RecursiveIterator<TKey, TValue>
+ */
+class RecursiveCachingIterator extends CachingIterator implements RecursiveIterator {
+    /**
+     * @param TIterator $iterator
+     * @param int-mask-of<CachingIterator::*> $flags
+     */
+    public function __construct(Iterator $iterator, int $flags = CachingIterator::CALL_TOSTRING) {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return static
+     */
+    public function getChildren() {}
+}
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator of RecursiveIterator<TKey, TValue>
+ *
+ * @template-extends RegexIterator<TKey, TValue, TIterator>
+ * @template-implements RecursiveIterator<TKey, TValue>
+ */
+class RecursiveRegexIterator extends RegexIterator implements RecursiveIterator {
+    /**
+     * @param TIterator $iterator
+     * @param RegexIterator::MATCH|RegexIterator::GET_MATCH|RegexIterator::ALL_MATCHES|RegexIterator::SPLIT|RegexIterator::REPLACE $mode
+     */
+    public function __construct(RecursiveIterator $iterator, string $pattern, int $mode = RegexIterator::MATCH, int $flags = 0, int $preg_flags = 0) {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return static
+     */
+    public function getChildren() {}
+}
+
+/**
  * @template-implements Iterator<never, never>
  */
 class EmptyIterator implements Iterator {

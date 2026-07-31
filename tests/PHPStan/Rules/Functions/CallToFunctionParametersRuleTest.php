@@ -3018,6 +3018,56 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11894.php'], []);
 	}
 
+	public static function dataNonEmptyMixedParameter(): iterable
+	{
+		yield [false];
+		yield [true];
+	}
+
+	#[DataProvider('dataNonEmptyMixedParameter')]
+	public function testNonEmptyMixedParameter(bool $checkExplicitMixed): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->checkImplicitMixed = $checkExplicitMixed;
+		$this->analyse([__DIR__ . '/data/non-empty-mixed-parameter.php'], [
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), \'\' given.',
+				17,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), \'0\' given.',
+				18,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), 0 given.',
+				19,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), 0.0 given.',
+				20,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), array{} given.',
+				21,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), false given.',
+				22,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), null given.',
+				23,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+		]);
+	}
+
 	public function testBug11494(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11494.php'], [

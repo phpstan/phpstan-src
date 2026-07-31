@@ -128,6 +128,30 @@ final class VerbosityLevel
 	 */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
+		// A subtracted mixed only makes sense in an error message when the subtraction
+		// is spelled out. Template bounds are skipped - the subtraction there belongs
+		// to the bound, not to the type being described.
+		$hasSubtractedMixed = false;
+		TypeTraverser::map($acceptingType, static function (Type $type, callable $traverse) use (&$hasSubtractedMixed): Type {
+			if ($hasSubtractedMixed || $type instanceof TemplateType) {
+				return $type;
+			}
+
+			if (
+				($type instanceof MixedType || $type instanceof StrictMixedType)
+				&& $type->getSubtractedType() !== null
+			) {
+				$hasSubtractedMixed = true;
+				return $type;
+			}
+
+			return $traverse($type);
+		});
+
+		if ($hasSubtractedMixed) {
+			return self::precise();
+		}
+
 		$moreVerbose = false;
 		$veryVerbose = false;
 		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {

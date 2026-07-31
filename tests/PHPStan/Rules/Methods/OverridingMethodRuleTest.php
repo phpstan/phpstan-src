@@ -673,7 +673,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-9615.php'], [
 			[
-				'Return type mixed of method Bug9615\ExpectComplaintsHere::accept() is not covariant with tentative return type bool of method FilterIterator<mixed,mixed,Traversable<mixed, mixed>>::accept().',
+				'Return type mixed of method Bug9615\ExpectComplaintsHere::accept() is not covariant with tentative return type bool of method FilterIterator<mixed,mixed,RecursiveIterator<mixed, mixed>>::accept().',
 				19,
 				$tipText,
 			],

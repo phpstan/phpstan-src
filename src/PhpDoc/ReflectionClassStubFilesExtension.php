@@ -18,11 +18,13 @@ final class ReflectionClassStubFilesExtension implements StubFilesExtension
 		if (!$this->phpVersion->supportsLazyObjects()) {
 			return [
 				__DIR__ . '/../../stubs/ReflectionClass.stub',
+				__DIR__ . '/../../stubs/ReflectionObject.stub',
 			];
 		}
 
 		return [
 			__DIR__ . '/../../stubs/ReflectionClassWithLazyObjects.stub',
+			__DIR__ . '/../../stubs/ReflectionObjectWithLazyObjects.stub',
 		];
 	}
 

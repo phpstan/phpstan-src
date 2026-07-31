@@ -14,6 +14,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\ProcessClosureResult;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\ThrowPoint;
@@ -85,7 +86,7 @@ final class ClosureTypeResolver
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr);
 
 		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
-		$cacheKey = $scope->getClosureScopeCacheKey();
+		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
 		if (!$expr instanceof ArrowFunction && array_key_exists($cacheKey, $cachedTypes)) {
 			return $this->createClosureTypeFromCache($expr, $parameters, $isVariadic, $cachedTypes[$cacheKey]);
 		}
@@ -309,6 +310,46 @@ final class ClosureTypeResolver
 			$native ? $nativeCallableParameters : $callableParameters,
 			$parameters,
 		));
+	}
+
+	/**
+	 * Seeds the per-node closure type cache from the single body walk the
+	 * engine just performed (see ClosureHandler::processExpr()), so later
+	 * getClosureType() asks answer from the walk instead of walking the
+	 * body again.
+	 *
+	 * A closure's native type equals its phpdoc type - the native-flavour
+	 * slot is seeded with the same build, keyed exactly as the
+	 * promoted-scope ask computes its key.
+	 */
+	public function seedCacheFromClosureWalk(MutatingScope $scope, Node\Expr\Closure $expr, ProcessClosureResult $processClosureResult): void
+	{
+		// for array_map() callbacks and immediately invoked closures this
+		// delegates to a getClosureType() walk with the call-site parameter
+		// types; either way the phpdoc build lands in the cache under the
+		// key the plain ask computes
+		$this->buildClosureTypeForClosure(
+			$scope,
+			$expr,
+			$processClosureResult->getGatheredReturnStatements(),
+			$processClosureResult->getGatheredYieldStatements(),
+			$processClosureResult->getExecutionEnds(),
+			$processClosureResult->getThrowPoints(),
+			$processClosureResult->getClosureTypeImpurePoints(),
+			$processClosureResult->getInvalidateExpressions(),
+		);
+
+		[$parameters, , $callableParameters] = $this->buildParametersAndAcceptors($scope, $expr);
+		$phpdocKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
+		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
+		if (!array_key_exists($phpdocKey, $cachedTypes)) {
+			return;
+		}
+
+		$promotedScope = $scope->doNotTreatPhpDocTypesAsCertain();
+		[$promotedParameters, , $promotedCallableParameters] = $this->buildParametersAndAcceptors($promotedScope, $expr);
+		$cachedTypes[$this->closureContextCacheKey($promotedScope, $expr, $promotedCallableParameters, $promotedParameters)] = $cachedTypes[$phpdocKey];
+		$expr->setAttribute('phpstanCachedTypes', $cachedTypes);
 	}
 
 	/**
@@ -730,7 +771,7 @@ final class ClosureTypeResolver
 		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 
 		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
-		$cacheKey ??= $scope->getClosureScopeCacheKey();
+		$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
 		$cachedTypes[$cacheKey] = [
 			'returnType' => $returnType,
 			'throwPoints' => $throwPointsForClosureType,

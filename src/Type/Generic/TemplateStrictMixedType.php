@@ -29,6 +29,8 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 		?Type $default,
 	)
 	{
+		parent::__construct();
+
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;

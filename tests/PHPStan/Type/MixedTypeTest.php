@@ -171,6 +171,84 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public static function dataAccepts(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new NullType(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new MixedType(true),
+				new ConstantStringType(''),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new ConstantStringType(''),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new NullType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new ConstantBooleanType(false),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new ConstantStringType('x'),
+				TrinaryLogic::createYes(),
+			],
+			[
+				// a general string may be '' or '0', but mixed acceptance stays loose on partial overlap
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new StringType(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new MixedType(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new MixedType(true, StaticTypeFactory::falsey()),
+				new NeverType(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new MixedType(subtractedType: new NullType()),
+				new NullType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(subtractedType: new NullType()),
+				new ConstantStringType(''),
+				TrinaryLogic::createYes(),
+			],
+		];
+	}
+
+	#[DataProvider('dataAccepts')]
+	public function testAccepts(MixedType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $type->accepts($otherType, true)->result;
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
+	}
+
 	public static function dataSubstractedIsArray(): array
 	{
 		return [

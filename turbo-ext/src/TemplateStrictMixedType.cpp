@@ -7,7 +7,7 @@
  * TemplateType interface. The twin composes TemplateTypeTrait
  * — the shared registrars in TypeTraits.cpp supply those methods and the
  * trait's six slots (after the parent's); the constructor runs
- * no parent constructor (StrictMixedType declares none) and then the trait's slot writes.
+ * parent::__construct() and then the trait's slot writes.
  */
 
 #include "TypeTraits.h"
@@ -29,7 +29,8 @@ public:
 	/* __construct($scope, $templateTypeStrategy, $templateTypeVariance, $name, $bound, $default); every argument borrowed ($defaultType NULL or IS_NULL for null); false = pending exception */
 	[[nodiscard]] bool construct(zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType) const
 	{
-		/* the twin calls no parent constructor (StrictMixedType declares none) */
+		/* parent::__construct() — StrictMixedType's constructor body */
+		pt_strict_mixed_type_construct(self, NULL);
 		pt_template_type_init(self, pt_ce_template_strict_mixed_type, scope, strategy, variance, name, bound, defaultType);
 		return true;
 	}

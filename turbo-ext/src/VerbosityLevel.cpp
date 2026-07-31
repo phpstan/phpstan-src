@@ -260,6 +260,50 @@ static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval 
 	(void) pt_type_traverser_traverse(return_value, traverse, type);
 }
 
+/* whether a type is a MixedType or a StrictMixedType with a subtracted
+ * type; false = pending exception */
+[[nodiscard]] static bool isSubtractedMixed(zend_object *object, bool &out)
+{
+	out = false;
+	if (!instanceof_function(object->ce, pt_ce_mixed_type) && !instanceof_function(object->ce, pt_ce_strict_mixed_type)) return true;
+	zv::Val subtracted = pt_type_op(object, PT_OP_GET_SUBTRACTED_TYPE, 0, NULL);
+	if (UNEXPECTED(subtracted.isUndef())) return false;
+	out = !subtracted.isNull();
+	return true;
+}
+
+/* the `static function (Type $type, callable $traverse) use
+ * (&$hasSubtractedMixed)` closure of getRecommendedLevelByType(): state0 =
+ * $hasSubtractedMixed; template types are not looked into */
+static void subtractedMixedCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc != 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_throw_error(NULL, "phpstan_turbo: the VerbosityLevel traversal callback expects (Type, callable)");
+		return;
+	}
+	zval *type = &argv[0];
+	zval *traverse = &argv[1];
+
+	if (Z_TYPE_P(state0) == IS_TRUE) {
+		RETURN_COPY(type);
+	}
+	bool isTemplate;
+	if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return;
+	if (isTemplate) {
+		RETURN_COPY(type);
+	}
+
+	bool subtractedMixed;
+	if (UNEXPECTED(!isSubtractedMixed(Z_OBJ_P(type), subtractedMixed))) return;
+	if (subtractedMixed) {
+		ZVAL_TRUE(state0);
+		RETURN_COPY(type);
+	}
+
+	(void) pt_type_traverser_traverse(return_value, traverse, type);
+}
+
 /* the `static function (Type $type, callable $traverse) use
  * (&$containsInvariantTemplateType)` closure: state0 = the flag */
 static void invariantTemplateCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
@@ -336,6 +380,17 @@ zv::Val VerbosityLevel::getRecommendedLevelByType(zval *acceptingType, zval *acc
 {
 	zval falseZv;
 	ZVAL_FALSE(&falseZv);
+
+	/* a subtracted mixed only makes sense in an error message when the
+	 * subtraction is spelled out */
+	zv::Val subtractedCallback = pt_type_native_callback(phpstanturbo::subtractedMixedCallback, &falseZv, NULL);
+	if (UNEXPECTED(subtractedCallback.isUndef())) return zv::Val();
+	if (UNEXPECTED(!traverseFor(acceptingType, subtractedCallback.raw()))) return zv::Val();
+	if (flagIsTrue(subtractedCallback.raw(), 0)) {
+		zval *level = precise();
+		return level == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(level));
+	}
+
 	zv::Val moreVerboseCallback = pt_type_native_callback(phpstanturbo::moreVerboseCallback, &falseZv, &falseZv);
 	if (UNEXPECTED(moreVerboseCallback.isUndef())) return zv::Val();
 

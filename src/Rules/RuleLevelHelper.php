@@ -111,7 +111,7 @@ final class RuleLevelHelper
 				|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
 			)
 		) {
-			return new StrictMixedType();
+			return new StrictMixedType($type->getSubtractedType());
 		}
 
 		return null;

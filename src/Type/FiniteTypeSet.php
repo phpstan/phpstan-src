@@ -64,7 +64,11 @@ final class FiniteTypeSet
 	 * then, and the caller would only pay for building an empty map.
 	 *
 	 * Two types standing for the same value are not merged: the second one goes to $others
-	 * so that the set never claims a union has fewer members than it does.
+	 * so that the set never claims a union has fewer members than it does. TypeCombinator
+	 * never builds such a union, but the UnionType constructor is @api and does not dedupe,
+	 * and a union holding one value twice is not the union holding it once - merging them
+	 * would let equals() call 'a'|'a' and 'a'|'b' the same type, and leave tryRemove() with
+	 * no member to build a union from.
 	 *
 	 * @param list<Type> $types
 	 */

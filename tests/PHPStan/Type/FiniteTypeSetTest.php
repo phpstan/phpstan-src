@@ -354,6 +354,38 @@ class FiniteTypeSetTest extends PHPStanTestCase
 	}
 
 	/**
+	 * A union that holds one value twice is not the union that holds it once, so the second
+	 * member cannot be dropped on the floor for sharing a key. TypeCombinator never builds
+	 * such a union, but the UnionType constructor is @api and does not dedupe.
+	 */
+	public function testUnionRepeatingOneValueIsNotAnsweredFromTheMap(): void
+	{
+		// the same value in two representations: the class-string flag is not part of the
+		// value, so these are equals() and must therefore share a key
+		$plain = new ConstantStringType('a');
+		$classString = new ConstantStringType('a', true);
+		$this->assertTrue($plain->equals($classString));
+
+		$union = new UnionType([$plain, $classString]);
+
+		// both unions have two members and both maps would hold just 'a', so keeping only
+		// the first member under the shared key would call two different types the same
+		$this->assertFalse($union->equals(new UnionType([$plain, new ConstantStringType('b')])));
+
+		// and would leave the map with no member to build a union from
+		$removed = $union->tryRemove($plain);
+		$this->assertNotNull($removed);
+		$this->assertSame('*NEVER*', $removed->describe(VerbosityLevel::precise()));
+
+		// the repeated member goes to $others instead, which takes the union off the fast path
+		$set = $union->getFiniteTypeSet();
+		$this->assertNotNull($set);
+		$this->assertCount(1, $set->getMembers());
+		$this->assertCount(1, $set->getOthers());
+		$this->assertFalse($set->isComplete());
+	}
+
+	/**
 	 * Types sharing a key must be interchangeable, so they have to be equal - and equal
 	 * types must never end up under different keys.
 	 */

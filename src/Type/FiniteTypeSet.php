@@ -7,6 +7,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_diff_key;
 use function array_key_exists;
@@ -140,7 +141,7 @@ final class FiniteTypeSet
 		// derivable from the type alone, on every comparison, without reflection.
 		// Key by class + case name, the identity equals() compares (describe() would also
 		// fold in a subtracted type, which equals() ignores).
-		if ($type->getEnumCaseObject() !== null) {
+		if ($type instanceof EnumCaseObjectType) {
 			return self::kind($type) . '::' . $type->getEnumCaseName();
 		}
 
@@ -179,7 +180,7 @@ final class FiniteTypeSet
 	 */
 	private static function kind(Type $type): string
 	{
-		if ($type->getEnumCaseObject() !== null) {
+		if ($type instanceof EnumCaseObjectType) {
 			return self::ENUM_CASE_KEY_PREFIX . $type->getClassName();
 		}
 

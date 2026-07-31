@@ -481,4 +481,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13114(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13114-return.php'], [
+			[
+				'Function Bug13114Return\\returnsCallableArray() should return non-empty-list<mixed>&callable(): mixed but returns array{Bug13114Return\\C, \'h\'}.',
+				14,
+			],
+		]);
+	}
+
 }

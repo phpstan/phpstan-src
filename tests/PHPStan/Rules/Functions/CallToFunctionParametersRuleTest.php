@@ -3029,4 +3029,67 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public static function dataBug13114(): array
+	{
+		return [
+			[false, false],
+			[true, false],
+			[true, true],
+		];
+	}
+
+	#[DataProvider('dataBug13114')]
+	public function testBug13114(bool $checkExplicitMixed, bool $checkImplicitMixed): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->checkImplicitMixed = $checkImplicitMixed;
+		$this->analyse([__DIR__ . '/data/bug-13114.php'], [
+			[
+				'Parameter #1 $arg of function Bug13114\\foo expects list{class-string|object, string}&callable(): mixed, array{Bug13114\\C, \'h\'} given.',
+				37,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\bar expects non-empty-list<mixed>&callable(): mixed, array{Bug13114\\C, \'h\'} given.',
+				42,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\baz expects non-empty-list&callable(): mixed, array{Bug13114\\C, \'h\'} given.',
+				47,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\baz expects non-empty-list&callable(): mixed, array{1, 2} given.',
+				48,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\baz expects non-empty-list&callable(): mixed, 42 given.',
+				49,
+				"\u{2022} 42 is not a list.\n\u{2022} 42 is empty.",
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\callableString expects callable-string, \'nonexistentFunction\' given.',
+				52,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\callableString expects callable-string, 42 given.',
+				53,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\callableObject expects callable-object, Bug13114\\C given.',
+				55,
+			],
+			[
+				'Parameter #1 $arg of function Bug13114\\callableObject expects callable-object, 42 given.',
+				57,
+			],
+			[
+				'Parameter #1 $i of function Bug13114\\takesInt expects int, callable&list<mixed> given.',
+				67,
+			],
+			[
+				'Parameter #1 $i of function Bug13114\\takesInt expects int, callable&list<mixed> given.',
+				77,
+			],
+		]);
+	}
+
 }

@@ -5760,6 +5760,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			"1|'0'",
 		];
+
+		yield [
+			[
+				new ArrayType(new MixedType(), new StrictMixedType()),
+				new CallableType(),
+			],
+			IntersectionType::class,
+			'non-empty-list<mixed>&callable(): mixed',
+		];
+
+		yield [
+			[
+				new ArrayType(new MixedType(), new IntegerType()),
+				new CallableType(),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
 	}
 
 	/**

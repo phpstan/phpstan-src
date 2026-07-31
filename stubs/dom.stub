@@ -126,6 +126,7 @@ class DOMProcessingInstruction
  *
  * @property-read int $length
  */
+#[\PHPStan\PhpDoc\RequireGenericsInBleedingEdgeOnly]
 class DOMNamedNodeMap implements IteratorAggregate, Countable
 {
 	/**

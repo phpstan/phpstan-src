@@ -28,8 +28,7 @@ parameters:
 		bleedingEdge: false
 		checkNonStringableDynamicAccess: false
 		checkParameterCastableToNumberFunctions: false
-		skipCheckGenericClasses:
-			- DOMNamedNodeMap
+		skipCheckGenericClasses: []
 		stricterFunctionMap: false
 		reportPreciseLineForUnusedFunctionParameter: false
 		checkPrintfParameterTypes: false

@@ -12,6 +12,11 @@ class SkipCheckGenericClassesExtensionTest extends PHPStanTestCase
 		$featureToggles = self::getContainer()->getParameter('featureToggles');
 		$this->assertSame([
 			'DOMNamedNodeMap',
+			'ParentIterator',
+			'RecursiveCachingIterator',
+			'RecursiveFilterIterator',
+			'RecursiveRegexIterator',
+			'ReflectionObject',
 		], $featureToggles['skipCheckGenericClasses']);
 	}
 

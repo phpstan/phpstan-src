@@ -29,8 +29,10 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
 use function array_merge;
 use function array_reverse;
+use function array_values;
 use function is_string;
 
 /**
@@ -105,10 +107,17 @@ final class BooleanAndHandler implements ExprHandler
 		if ($context->true()) {
 			$types = $leftTypes->unionWith($rightTypes);
 		} else {
-			$leftNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($leftTypes, $scope);
-			$rightNormalized = $this->conditionalExpressionHolderHelper->toSureTypes($rightTypes, $rightScope);
 			$types = $leftTypes->intersectWith($rightTypes);
-			$types = $this->conditionalExpressionHolderHelper->augmentDisjunctionTypes($scope, $rightScope, $leftNormalized, $rightNormalized, $expr->left, $expr->right, false, $types);
+			$branchUnionAugment = $this->conditionalExpressionHolderHelper->buildBranchUnionAugment(
+				$leftTypes,
+				$rightTypes,
+				static fn (): MutatingScope => $scope->filterByFalseyValue($expr->left),
+				static fn (): MutatingScope => $rightScope->filterByFalseyValue($expr->right),
+				$types,
+			);
+			if ($branchUnionAugment !== null) {
+				$types = $types->withDeferredAugment($branchUnionAugment);
+			}
 		}
 		if ($context->false()) {
 			// Consequent (holder) narrowings projected by each holder: these must be
@@ -128,7 +137,7 @@ final class BooleanAndHandler implements ExprHandler
 			// Condition (antecedent) narrowings: when an arm has no falsey narrowing
 			// (e.g. isset() on an array dim fetch), derive the condition from the truthy
 			// narrowing by swapping sure/sureNot types. This swap is only sound for the
-			// antecedent — processBooleanConditionalTypes inverts it back to the truthy
+			// antecedent — the holder-recipe evaluation inverts it back to the truthy
 			// narrowing. It must NOT feed the consequent: inverting a comparison's truthy
 			// narrowing (e.g. `$a === $b` narrowing `$a` to `$b`'s broad type) would
 			// over-narrow the consequent (see regression for `$x === $nonConstantString`).
@@ -146,19 +155,14 @@ final class BooleanAndHandler implements ExprHandler
 					$rightCondTypes = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
 				}
 			}
-			$result = (new SpecifiedTypes(
-				$types->getSureTypes(),
-				$types->getSureNotTypes(),
-			))->withAlternativeTypesOf($types);
-			if ($types->shouldOverwrite()) {
-				$result = $result->setAlwaysOverwriteTypes();
-			}
-			return $result->setNewConditionalExpressionHolders($this->conditionalExpressionHolderHelper->mergeConditionalHolders([
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, false, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, false, true, $scope, $expr->left),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $leftCondTypes, $rightHolderTypes, true, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->processBooleanConditionalTypes($scope, $rightCondTypes, $leftHolderTypes, true, true, $scope, $expr->left),
-			]))->setRootExpr($expr);
+			$result = $types->withoutConditionalExpressionHolders();
+			$recipes = [
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftCondTypes, $rightHolderTypes, false, true, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightCondTypes, $leftHolderTypes, false, true, null, $expr->left),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftCondTypes, $rightHolderTypes, true, true, $rightScope, $expr->right),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightCondTypes, $leftHolderTypes, true, true, null, $expr->left),
+			];
+			return $result->setConditionalExpressionHolderRecipes(array_values(array_filter($recipes)))->setRootExpr($expr);
 		}
 
 		return $types;

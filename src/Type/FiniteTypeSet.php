@@ -117,26 +117,24 @@ final class FiniteTypeSet
 		// fold in a subtracted type, which equals() ignores).
 		$enumCaseObject = $type->getEnumCaseObject();
 		if ($enumCaseObject !== null && $enumCaseObject->equals($type)) {
-			return self::kind($type) . '::' . $enumCaseObject->getEnumCaseName();
+			return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName(). '::' . $enumCaseObject->getEnumCaseName();
 		}
 
 		$scalarTypes = $type->getConstantScalarTypes();
-		if (count($scalarTypes) !== 1 || !$scalarTypes[0]->equals($type)) {
-			return null;
-		}
-
-		$value = $scalarTypes[0]->getValue();
-		if ($value === null) {
-			return self::NULL_KEY;
-		}
-		if (is_int($value)) {
-			return self::INTEGER_KEY_PREFIX . $value;
-		}
-		if (is_bool($value)) {
-			return self::BOOLEAN_KEY_PREFIX . ($value ? '1' : '0');
-		}
-		if (is_string($value)) {
-			return self::STRING_KEY_PREFIX . $value;
+		if (count($scalarTypes) === 1 && $scalarTypes[0]->equals($type)) {
+			$value = $scalarTypes[0]->getValue();
+			if ($value === null) {
+				return self::NULL_KEY;
+			}
+			if (is_int($value)) {
+				return self::INTEGER_KEY_PREFIX . $value;
+			}
+			if (is_bool($value)) {
+				return self::BOOLEAN_KEY_PREFIX . ($value ? '1' : '0');
+			}
+			if (is_string($value)) {
+				return self::STRING_KEY_PREFIX . $value;
+			}
 		}
 
 		return null;

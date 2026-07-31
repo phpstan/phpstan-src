@@ -34,7 +34,7 @@ final class ConditionalExpressionHolderHelper
 	 * Captures the either-branch union recovery as a deferred augment: the
 	 * branch types are read from the operand-walk filtered scopes here at
 	 * compose time, while the does-it-actually-narrow gates run against the
-	 * applying scope when MutatingScope::filterBySpecifiedTypes() evaluates it.
+	 * applying scope when MutatingScope::applySpecifiedTypes() evaluates it.
 	 *
 	 * The filtered scopes are thunks resolved only when there are candidate
 	 * expressions - deriving them per level of a deep boolean chain is
@@ -111,7 +111,7 @@ final class ConditionalExpressionHolderHelper
 	/**
 	 * Captures the raw entries of a boolean-decomposition holder pair as a
 	 * recipe; the state-dependent complement/target math runs against the
-	 * applying scope when MutatingScope::filterBySpecifiedTypes() evaluates it.
+	 * applying scope when MutatingScope::applySpecifiedTypes() evaluates it.
 	 *
 	 * The condition side asserts that its sub-expression evaluates truthy.
 	 * When that sub-expression is itself a compound boolean (e.g. `$a && $b`),

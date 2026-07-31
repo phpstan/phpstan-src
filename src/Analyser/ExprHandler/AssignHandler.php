@@ -877,8 +877,8 @@ final class AssignHandler implements ExprHandler
 					$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
 					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
-					$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
-					$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
+					$truthyScope = $condScope->applySpecifiedTypes($truthySpecifiedTypes);
+					$falsyScope = $condScope->applySpecifiedTypes($falseySpecifiedTypes);
 					$truthyType = $truthyScope->getType($if);
 					$falseyType = $falsyScope->getType($assignedExpr->else);
 

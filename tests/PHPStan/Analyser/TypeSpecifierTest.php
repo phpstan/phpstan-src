@@ -1391,7 +1391,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 
 		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$exprNode, $terms]) {
 			// evaluate the alternative-form entry against the test scope, the
-			// same way filterBySpecifiedTypes() evaluates it at the application
+			// same way applySpecifiedTypes() evaluates it at the application
 			// point - the readable result matches the old eager normalize form
 			$parts = [];
 			foreach ($terms as [$sure, $subtract]) {

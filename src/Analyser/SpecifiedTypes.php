@@ -26,7 +26,7 @@ final class SpecifiedTypes
 
 	/**
 	 * Deferred boolean-decomposition holders, evaluated against the applying
-	 * scope by MutatingScope::filterBySpecifiedTypes().
+	 * scope by MutatingScope::applySpecifiedTypes().
 	 *
 	 * @var list<ConditionalExpressionHolderRecipe>
 	 */
@@ -34,7 +34,7 @@ final class SpecifiedTypes
 
 	/**
 	 * State-dependent augmentations evaluated against the applying scope by
-	 * MutatingScope::filterBySpecifiedTypes(); their entries join the applied
+	 * MutatingScope::applySpecifiedTypes(); their entries join the applied
 	 * batch.
 	 *
 	 * @var list<DeferredSpecifiedTypesAugment>

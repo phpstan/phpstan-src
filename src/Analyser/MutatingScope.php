@@ -3349,7 +3349,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
-		$scope = $this->filterBySpecifiedTypes($specifiedTypes);
+		$scope = $this->applySpecifiedTypes($specifiedTypes);
 		$this->truthyScopes[$exprString] = $scope;
 
 		return $scope;
@@ -3366,16 +3366,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
-		$scope = $this->filterBySpecifiedTypes($specifiedTypes);
+		$scope = $this->applySpecifiedTypes($specifiedTypes);
 		$this->falseyScopes[$exprString] = $scope;
 
 		return $scope;
 	}
 
 	/**
+	 * Applies computed narrowing to this scope.
+	 *
 	 * @return static
 	 */
-	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
+	public function applySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
 	{
 		// deferred augments see this scope's pre-application state - the
 		// application point of the narrowing; their entries join this batch

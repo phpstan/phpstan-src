@@ -1167,7 +1167,7 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, new NoopExpressionNode($stmt->expr, $hasAssign), $scope, $storage);
 			}
 			$scope = $result->getScope();
-			$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
+			$scope = $scope->applySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
 				$scope,
 				$stmt->expr,
 				TypeSpecifierContext::createNull(),

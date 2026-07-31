@@ -891,7 +891,7 @@ final class ScopeOps
 
 	/**
 	 * The conditional-expressions fixed-point matching of
-	 * MutatingScope::filterBySpecifiedTypes().
+	 * MutatingScope::applySpecifiedTypes().
 	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, ExpressionTypeHolder> $specifiedExpressions

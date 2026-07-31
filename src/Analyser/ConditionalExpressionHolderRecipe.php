@@ -15,7 +15,7 @@ use function array_key_exists;
  * composed. The state-dependent math - the condition complements against the
  * current type, the holder target types, the vacuity checks - runs in
  * evaluate() against the scope the narrowing is applied to
- * (MutatingScope::filterBySpecifiedTypes()), never the scope the composition ran
+ * (MutatingScope::applySpecifiedTypes()), never the scope the composition ran
  * on.
  */
 final class ConditionalExpressionHolderRecipe

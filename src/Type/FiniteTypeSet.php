@@ -141,10 +141,6 @@ final class FiniteTypeSet
 			return self::kind($type) . '::' . $type->getEnumCaseName();
 		}
 
-		if (!$type->isConstantScalarValue()->yes()) {
-			return null;
-		}
-
 		$scalarTypes = $type->getConstantScalarTypes();
 		if (count($scalarTypes) !== 1 || !$scalarTypes[0]->equals($type)) {
 			return null;

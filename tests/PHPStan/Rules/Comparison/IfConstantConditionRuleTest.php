@@ -388,4 +388,42 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDeferredErrorsAreNotCollapsedAcrossFiles(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([
+			__DIR__ . '/data/call-condition-cross-file-a.php',
+			__DIR__ . '/data/call-condition-cross-file-b.php',
+		], [
+			[
+				'If condition is always true.',
+				18,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'If condition is always true.',
+				18,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
+	public function testMarkerFromAnotherFileDoesNotSuppress(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([
+			__DIR__ . '/data/call-condition-cross-file-marker-a.php',
+			__DIR__ . '/data/call-condition-cross-file-marker-b.php',
+		], [
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				7,
+			],
+			[
+				'If condition is always true.',
+				7,
+			],
+		]);
+	}
+
 }

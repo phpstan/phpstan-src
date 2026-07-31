@@ -37,19 +37,26 @@ final class FunctionCallConstantConditionRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$reportedMarkers = [];
-		foreach ($node->get(ImpossibleCheckTypeReportedCollector::class) as $fileData) {
+		$reportedMarkersByFile = [];
+		foreach ($node->get(ImpossibleCheckTypeReportedCollector::class) as $filePath => $fileData) {
 			foreach ($fileData as $data) {
 				$reportedMarkers[$data[0]] = true;
+				$reportedMarkersByFile[$filePath . "\0" . $data[0]] = true;
 			}
 		}
 
 		$errorsByRuleTraitExprValue = [];
-		foreach ($node->get(FunctionCallConstantConditionCollector::class) as $fileData) {
+		foreach ($node->get(FunctionCallConstantConditionCollector::class) as $filePath => $fileData) {
 			foreach ($fileData as $data) {
 				$ruleName = $data[0];
 				$traitName = $data[1];
 				$traitKey = $traitName ?? self::NULL_TRAIT_KEY;
-				$exprString = $data[2];
+				// A non-trait call site is per-file: the same printed condition at
+				// the same line in two different files must neither merge its
+				// deferred errors nor be suppressed by the other file's marker.
+				// Trait call sites keep merging across the analysed contexts -
+				// trait names are unique project-wide.
+				$exprString = $traitName === null ? $filePath . "\0" . $data[2] : $data[2];
 				$value = $data[3];
 				$valueKey = var_export($value, true);
 				if ($data[3] === null) {
@@ -68,7 +75,10 @@ final class FunctionCallConstantConditionRule implements Rule
 			foreach ($ruleData as $traitKey => $traitData) {
 				$isTrait = $traitKey !== self::NULL_TRAIT_KEY;
 				foreach ($traitData as $exprString => $valueData) {
-					if (array_key_exists($exprString, $reportedMarkers)) {
+					// non-trait keys carry their file, so only the same file's
+					// marker suppresses; trait entries match markers from any
+					// analysed context
+					if (array_key_exists($exprString, $isTrait ? $reportedMarkers : $reportedMarkersByFile)) {
 						// the ImpossibleCheckType* rule owns this call site
 						continue;
 					}

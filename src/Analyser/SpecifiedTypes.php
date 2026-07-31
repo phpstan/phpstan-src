@@ -17,6 +17,23 @@ final class SpecifiedTypes
 	/** @var array<string, ConditionalExpressionHolder[]> */
 	private array $newConditionalExpressionHolders = [];
 
+	/**
+	 * Deferred boolean-decomposition holders, evaluated against the applying
+	 * scope by MutatingScope::filterBySpecifiedTypes().
+	 *
+	 * @var list<ConditionalExpressionHolderRecipe>
+	 */
+	private array $conditionalExpressionHolderRecipes = [];
+
+	/**
+	 * State-dependent augmentations evaluated against the applying scope by
+	 * MutatingScope::filterBySpecifiedTypes(); their entries join the applied
+	 * batch.
+	 *
+	 * @var list<DeferredSpecifiedTypesAugment>
+	 */
+	private array $deferredAugments = [];
+
 	private ?Expr $rootExpr = null;
 
 	/**
@@ -63,11 +80,8 @@ final class SpecifiedTypes
 	 */
 	public function setAlwaysOverwriteTypes(): self
 	{
-		$self = new self($this->sureTypes, $this->sureNotTypes);
-		$self->alternativeTypes = $this->alternativeTypes;
+		$self = clone $this;
 		$self->overwrite = true;
-		$self->newConditionalExpressionHolders = $this->newConditionalExpressionHolders;
-		$self->rootExpr = $this->rootExpr;
 
 		return $self;
 	}
@@ -77,10 +91,7 @@ final class SpecifiedTypes
 	 */
 	public function setRootExpr(?Expr $rootExpr): self
 	{
-		$self = new self($this->sureTypes, $this->sureNotTypes);
-		$self->alternativeTypes = $this->alternativeTypes;
-		$self->overwrite = $this->overwrite;
-		$self->newConditionalExpressionHolders = $this->newConditionalExpressionHolders;
+		$self = clone $this;
 		$self->rootExpr = $rootExpr;
 
 		return $self;
@@ -91,13 +102,45 @@ final class SpecifiedTypes
 	 */
 	public function setNewConditionalExpressionHolders(array $newConditionalExpressionHolders): self
 	{
-		$self = new self($this->sureTypes, $this->sureNotTypes);
-		$self->alternativeTypes = $this->alternativeTypes;
-		$self->overwrite = $this->overwrite;
+		$self = clone $this;
 		$self->newConditionalExpressionHolders = $newConditionalExpressionHolders;
-		$self->rootExpr = $this->rootExpr;
 
 		return $self;
+	}
+
+	/**
+	 * @param list<ConditionalExpressionHolderRecipe> $recipes
+	 */
+	public function setConditionalExpressionHolderRecipes(array $recipes): self
+	{
+		$self = clone $this;
+		$self->conditionalExpressionHolderRecipes = $recipes;
+
+		return $self;
+	}
+
+	/**
+	 * @return list<ConditionalExpressionHolderRecipe>
+	 */
+	public function getConditionalExpressionHolderRecipes(): array
+	{
+		return $this->conditionalExpressionHolderRecipes;
+	}
+
+	public function withDeferredAugment(DeferredSpecifiedTypesAugment $augment): self
+	{
+		$self = clone $this;
+		$self->deferredAugments = [...$this->deferredAugments, $augment];
+
+		return $self;
+	}
+
+	/**
+	 * @return list<DeferredSpecifiedTypesAugment>
+	 */
+	public function getDeferredAugments(): array
+	{
+		return $this->deferredAugments;
 	}
 
 	/**
@@ -124,6 +167,21 @@ final class SpecifiedTypes
 	public function getAlternativeTypes(): array
 	{
 		return $this->alternativeTypes;
+	}
+
+	/**
+	 * A copy without conditional-expression holders and holder recipes - for
+	 * the boolean-decomposition tails that replace them with freshly built
+	 * recipes while keeping everything else (entries, alternatives, augments)
+	 * intact.
+	 */
+	public function withoutConditionalExpressionHolders(): self
+	{
+		$self = clone $this;
+		$self->newConditionalExpressionHolders = [];
+		$self->conditionalExpressionHolderRecipes = [];
+
+		return $self;
 	}
 
 	/**
@@ -162,18 +220,10 @@ final class SpecifiedTypes
 
 	public function removeExpr(string $exprString): self
 	{
-		$sureTypes = $this->sureTypes;
-		$sureNotTypes = $this->sureNotTypes;
-		$alternativeTypes = $this->alternativeTypes;
-		unset($sureTypes[$exprString]);
-		unset($sureNotTypes[$exprString]);
-		unset($alternativeTypes[$exprString]);
-
-		$self = new self($sureTypes, $sureNotTypes);
-		$self->alternativeTypes = $alternativeTypes;
-		$self->overwrite = $this->overwrite;
-		$self->newConditionalExpressionHolders = $this->newConditionalExpressionHolders;
-		$self->rootExpr = $this->rootExpr;
+		$self = clone $this;
+		unset($self->sureTypes[$exprString]);
+		unset($self->sureNotTypes[$exprString]);
+		unset($self->alternativeTypes[$exprString]);
 
 		return $self;
 	}
@@ -344,6 +394,8 @@ final class SpecifiedTypes
 			}
 		}
 		$result->newConditionalExpressionHolders = $conditionalExpressionHolders;
+		$result->conditionalExpressionHolderRecipes = array_merge($this->conditionalExpressionHolderRecipes, $other->conditionalExpressionHolderRecipes);
+		$result->deferredAugments = array_merge($this->deferredAugments, $other->deferredAugments);
 
 		return $result->setRootExpr($rootExpr);
 	}

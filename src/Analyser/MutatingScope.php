@@ -111,6 +111,7 @@ use function array_last;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_shift;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -3338,6 +3339,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
 	{
+		// deferred augments see this scope's pre-application state - the
+		// application point of the narrowing; their entries join this batch
+		$pendingAugments = $specifiedTypes->getDeferredAugments();
+		while ($pendingAugments !== []) {
+			$augment = array_shift($pendingAugments);
+			$augmentTypes = $augment->evaluate($this);
+			if ($augmentTypes === null) {
+				continue;
+			}
+
+			foreach ($augmentTypes->getDeferredAugments() as $nestedAugment) {
+				$pendingAugments[] = $nestedAugment;
+			}
+			$specifiedTypes = $specifiedTypes->unionWith($augmentTypes);
+		}
+
 		$typeSpecifications = ScopeOps::buildTypeSpecifications($specifiedTypes->getSureTypes(), $specifiedTypes->getSureNotTypes());
 
 		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$alternativeExpr, $terms]) {
@@ -3463,12 +3480,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 		}
 
+		$newConditionalExpressionHolders = $specifiedTypes->getNewConditionalExpressionHolders();
+		foreach ($specifiedTypes->getConditionalExpressionHolderRecipes() as $recipe) {
+			// the recipes' state-dependent math runs here, against this scope's
+			// pre-application state - the application point of the narrowing
+			foreach ($recipe->evaluate($this) as $recipeExprString => $recipeHolders) {
+				foreach ($recipeHolders as $key => $holder) {
+					$newConditionalExpressionHolders[$recipeExprString][$key] = $holder;
+				}
+			}
+		}
+
 		/** @var static */
 		return ScopeOps::scopeWith(
 			$scope,
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
-			$this->mergeConditionalExpressions($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
+			$this->mergeConditionalExpressions($newConditionalExpressionHolders, $scope->conditionalExpressions),
 			$scope->currentlyAssignedExpressions,
 			$scope->currentlyAllowedUndefinedExpressions,
 			$scope->inFunctionCallsStack,

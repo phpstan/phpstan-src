@@ -592,9 +592,6 @@ final class ParametersAcceptorSelector
 		return self::hasAcceptorTemplateOrLateResolvableParameterType($acceptor);
 	}
 
-	/**
-	 * @internal
-	 */
 	public static function hasAcceptorTemplateOrLateResolvableParameterType(ParametersAcceptor $acceptor): bool
 	{
 		foreach ($acceptor->getParameters() as $parameter) {

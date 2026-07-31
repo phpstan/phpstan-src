@@ -141,15 +141,24 @@ final class BooleanAndHandler implements ExprHandler
 			// narrowing. It must NOT feed the consequent: inverting a comparison's truthy
 			// narrowing (e.g. `$a === $b` narrowing `$a` to `$b`'s broad type) would
 			// over-narrow the consequent (see regression for `$x === $nonConstantString`).
+			//
+			// The inverted narrowing stands in for "this side is TRUE", so the
+			// side's truthy narrowing must be EQUIVALENT to its truth, not just
+			// implied by it. isset() qualifies: it is exactly the offset's
+			// non-nullness. A call like non-strict in_array($x, $a) does not -
+			// its truthy narrowing ($a non-empty) can hold while the call is
+			// false, and a holder conditioned on it would unsoundly narrow the
+			// other side (e.g. $x !== null && in_array($x, $a) pinning $x to
+			// null in a sibling branch where only $a !== [] is known).
 			$leftCondTypes = $leftHolderTypes;
 			$rightCondTypes = $rightHolderTypes;
-			if ($leftCondTypes->getSureTypes() === [] && $leftCondTypes->getSureNotTypes() === []) {
+			if ($leftCondTypes->getSureTypes() === [] && $leftCondTypes->getSureNotTypes() === [] && $this->truthinessImpliedByTruthyNarrowing($expr->left)) {
 				$truthyLeftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
 				if ($this->allExpressionsTrackable($truthyLeftTypes)) {
 					$leftCondTypes = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
 				}
 			}
-			if ($rightCondTypes->getSureTypes() === [] && $rightCondTypes->getSureNotTypes() === []) {
+			if ($rightCondTypes->getSureTypes() === [] && $rightCondTypes->getSureNotTypes() === [] && $this->truthinessImpliedByTruthyNarrowing($expr->right)) {
 				$truthyRightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
 				if ($this->allExpressionsTrackable($truthyRightTypes)) {
 					$rightCondTypes = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
@@ -235,6 +244,19 @@ final class BooleanAndHandler implements ExprHandler
 		}
 
 		return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($expr);
+	}
+
+	/**
+	 * Whether the side's truthy narrowing is EQUIVALENT to the side being
+	 * true - the requirement for using its inversion as a holder antecedent.
+	 * isset() qualifies: it is exactly the offset's non-nullness. Anything
+	 * else reaching the antecedent-swap fallback (e.g. a non-strict
+	 * in_array() call, whose truthy narrowing only implies a non-empty
+	 * haystack) must not stand in for its own truth.
+	 */
+	private function truthinessImpliedByTruthyNarrowing(Expr $side): bool
+	{
+		return $side instanceof Expr\Isset_;
 	}
 
 	private function allExpressionsTrackable(SpecifiedTypes $types): bool

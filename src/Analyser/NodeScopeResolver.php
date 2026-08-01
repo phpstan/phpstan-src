@@ -144,7 +144,6 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
@@ -1708,33 +1707,6 @@ class NodeScopeResolver
 			}
 
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
-
-			$iterateeCertainty = $finalScope->hasExpressionType($stmt->expr);
-			if (
-				$this->narrowForeachBodyNonEmpty
-				&& !$this->polluteScopeWithAlwaysIterableForeach
-				&& !$iterateeCertainty->no()
-				&& !$isIterableAtLeastOnce->yes()
-			) {
-				// With the flag off the after-loop scope must not assume the loop ran, so
-				// undo the body narrowing: restore the iteratee's possibly-empty-ness
-				// (keeping element types the body refined). Only the non-emptiness the
-				// narrowing added is stripped; an iteratee already non-empty before the
-				// loop keeps it, and a literal like `foreach ([1, 2] as $v)` is skipped.
-				$finalIterateeType = $finalScope->getType($stmt->expr);
-				if ($finalIterateeType->isArray()->yes()) {
-					$finalIterateeNativeType = $finalScope->getNativeType($stmt->expr);
-					$finalScope = $finalScope->specifyExpressionType(
-						$stmt->expr,
-						TypeCombinator::union($finalIterateeType, new ConstantArrayType([], [])),
-						$finalIterateeNativeType->isArray()->yes()
-							? TypeCombinator::union($finalIterateeNativeType, new ConstantArrayType([], []))
-							: $finalIterateeNativeType,
-						$iterateeCertainty,
-					);
-				}
-			}
-
 			if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
 					new BinaryOp\Identical(

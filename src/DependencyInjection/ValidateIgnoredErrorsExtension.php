@@ -35,7 +35,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
 use function array_keys;
 use function array_map;
@@ -212,13 +211,6 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 				PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
 			}
 			ObjectType::resetCaches();
-			// The validation above resolved the types named in the ignoreErrors
-			// patterns while the process-wide accessors pointed at the throwaway
-			// instances registered before the try. Both restores drop the memoized
-			// type operations on their own, but there is nothing to restore when
-			// this is the first container of the process - the entries computed
-			// against the DummyReflectionProvider would then outlive it.
-			TypeCombinator::clearCache();
 		}
 	}
 

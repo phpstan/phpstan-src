@@ -211,6 +211,17 @@ final class ContainerFactory
 		// under. Clearing must be the LAST step: building the typeSpecifier service runs
 		// extension constructors that can already perform type operations, and entries
 		// memoized before the toggles are set would encode the previous container's state.
+		//
+		// This is also the only invalidation the process needs, because it is the last step
+		// of create(): compiling the container runs ValidateIgnoredErrorsExtension, which
+		// swaps in a DummyReflectionProvider and a runtime PhpVersion to resolve the types
+		// named in the ignoreErrors patterns. Whatever that memoizes against the throwaway
+		// state (a DummyReflectionProvider knows no class hierarchy, so e.g.
+		// union(Exception, RuntimeException) does not collapse under it) is dropped here,
+		// before the container reaches anything that analyses code. Keep it that way — do
+		// not clear the memo from the mutators of that state instead: registerInstance() on
+		// either accessor runs above, before the toggles are set, so a clear there would run
+		// too early to be the guard while looking like one.
 		TypeCombinator::clearCache();
 	}
 

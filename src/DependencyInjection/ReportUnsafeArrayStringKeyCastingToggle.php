@@ -2,6 +2,8 @@
 
 namespace PHPStan\DependencyInjection;
 
+use PHPStan\Type\TypeCombinator;
+
 /**
  * @phpstan-type Level = self::DETECT|self::PREVENT|null
  */
@@ -29,6 +31,10 @@ final class ReportUnsafeArrayStringKeyCastingToggle
 	public static function setLevel(?string $level): void
 	{
 		self::$level = $level;
+
+		// Type operations read this toggle, so a memoized result is only valid
+		// for the level it was computed under.
+		TypeCombinator::clearCache();
 	}
 
 }

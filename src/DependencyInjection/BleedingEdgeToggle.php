@@ -4,6 +4,7 @@ namespace PHPStan\DependencyInjection;
 
 use Generator;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\TypeCombinator;
 
 final class BleedingEdgeToggle
 {
@@ -18,6 +19,10 @@ final class BleedingEdgeToggle
 	public static function setBleedingEdge(bool $bleedingEdge): void
 	{
 		self::$bleedingEdge = $bleedingEdge;
+
+		// Type operations read this toggle, so a memoized result is only valid
+		// for the value it was computed under.
+		TypeCombinator::clearCache();
 	}
 
 	/**
@@ -34,7 +39,7 @@ final class BleedingEdgeToggle
 	public static function withBleedingEdge(bool $bleedingEdge, callable $callback)
 	{
 		$backup = self::$bleedingEdge;
-		self::$bleedingEdge = $bleedingEdge;
+		self::setBleedingEdge($bleedingEdge);
 		try {
 			$result = $callback();
 
@@ -44,7 +49,7 @@ final class BleedingEdgeToggle
 
 			return $result;
 		} finally {
-			self::$bleedingEdge = $backup;
+			self::setBleedingEdge($backup);
 		}
 	}
 

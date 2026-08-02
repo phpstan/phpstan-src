@@ -303,8 +303,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param array<string, ExpressionTypeHolder> $currentExpressionTypes
 	 * @return array<string, ExpressionTypeHolder>
 	 */
-	private function rememberConstructorExpressions(array $currentExpressionTypes): array
+	private function rememberConstructorExpressions(array $currentExpressionTypes, bool $classReadonlyPropertiesCanBeReinitializedByCloneWith): array
 	{
+		// Since PHP 8.5, "clone with" can reinitialize a readonly property, so the value
+		// assigned in the constructor is no longer guaranteed to hold in other methods
+		// (where $this might be a clone-modified instance). $classReadonlyPropertiesCanBeReinitializedByCloneWith
+		// tells us whether this concerns the current class - it stays false for classes
+		// that provably cannot be affected by "clone with" (e.g. enums, or final classes
+		// without any "clone with" expression), so they keep their narrowed readonly types.
+		$cloneWithAvailable = !$this->getPhpVersion()->supportsCloneWith()->no();
+		$cloneWithCanReinitializeReadonly = $cloneWithAvailable && $classReadonlyPropertiesCanBeReinitializedByCloneWith;
+
 		$expressionTypes = [];
 		foreach ($currentExpressionTypes as $exprString => $expressionTypeHolder) {
 			$expr = $expressionTypeHolder->getExpr();
@@ -317,7 +326,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					continue;
 				}
 			} elseif ($expr instanceof PropertyFetch) {
-				if (!$this->isReadonlyPropertyFetch($expr, true)) {
+				if ($cloneWithCanReinitializeReadonly || !$this->isReadonlyPropertyFetch($expr, true)) {
+					continue;
+				}
+				// On PHP 8.5, even a class whose own readonly properties are safe from "clone with"
+				// may inherit readonly properties from a parent class that does use it (the parent's
+				// body is not scanned here), so only remember readonly properties declared in the
+				// current class.
+				if ($cloneWithAvailable && !$this->isReadonlyPropertyFetchDeclaredInCurrentClass($expr)) {
 					continue;
 				}
 			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {
@@ -334,15 +350,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $expressionTypes;
 	}
 
-	public function rememberConstructorScope(): self
+	public function rememberConstructorScope(bool $classReadonlyPropertiesCanBeReinitializedByCloneWith): self
 	{
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			$this->rememberConstructorExpressions($this->expressionTypes),
-			$this->rememberConstructorExpressions($this->nativeExpressionTypes),
+			$this->rememberConstructorExpressions($this->expressionTypes, $classReadonlyPropertiesCanBeReinitializedByCloneWith),
+			$this->rememberConstructorExpressions($this->nativeExpressionTypes, $classReadonlyPropertiesCanBeReinitializedByCloneWith),
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
@@ -393,6 +409,30 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return true;
+	}
+
+	private function isReadonlyPropertyFetchDeclaredInCurrentClass(PropertyFetch $expr): bool
+	{
+		if (
+			!$expr->var instanceof Variable
+			|| !is_string($expr->var->name)
+			|| $expr->var->name !== 'this'
+			|| !$expr->name instanceof Node\Identifier
+		) {
+			return false;
+		}
+
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return false;
+		}
+
+		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+		if ($propertyReflection === null) {
+			return false;
+		}
+
+		return $propertyReflection->getDeclaringClass()->getName() === $classReflection->getName();
 	}
 
 	/** @api */

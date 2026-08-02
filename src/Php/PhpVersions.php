@@ -61,4 +61,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsCloneWith(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

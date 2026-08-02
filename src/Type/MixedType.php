@@ -1208,11 +1208,14 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
-			return $this->subtract($typeToRemove);
+		// mixed is the top type, so removal is exactly the subtraction - also
+		// when an earlier subtraction already lowered isSuperTypeOf() from yes
+		// to maybe, which used to give up and remove nothing at all
+		if ($this->isSuperTypeOf($typeToRemove)->no()) {
+			return null;
 		}
 
-		return null;
+		return $this->subtract($typeToRemove);
 	}
 
 	public function exponentiate(Type $exponent): Type

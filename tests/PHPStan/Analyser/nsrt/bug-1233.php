@@ -21,7 +21,7 @@ class HelloWorld
 			return iterator_to_array($value);
 		}
 
-		assertType('mixed~array<mixed, mixed>', $value);
+		assertType('mixed~iterable', $value);
 
 		throw new \LogicException();
 	}

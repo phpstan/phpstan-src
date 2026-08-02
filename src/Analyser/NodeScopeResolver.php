@@ -4364,7 +4364,7 @@ class NodeScopeResolver
 	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback): ExpressionResult
 	{
 		$assignHandler = $this->container->getByType(AssignHandler::class);
-		$virtualAssignNodeCallback = new VirtualAssignNodeCallback($nodeCallback);
+		$virtualAssignNodeCallback = VirtualAssignNodeCallback::create($nodeCallback);
 		$target = $assignHandler->prepareTarget(
 			$this,
 			$scope,

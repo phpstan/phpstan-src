@@ -11,6 +11,10 @@ tests-integration: install-paratest
 tests-golden-reflection:
 	php vendor/bin/phpunit tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
 
+.PHONY: lint-diff
+lint-diff:
+	php build/lint-diff.php
+
 lint:
 	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors \
 		--exclude tests/PHPStan/Analyser/data \

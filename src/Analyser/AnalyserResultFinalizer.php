@@ -13,11 +13,15 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
+use function array_key_exists;
 use function array_merge;
 use function count;
 use function get_class;
 use function sprintf;
 
+/**
+ * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ */
 #[AutowiredService]
 final class AnalyserResultFinalizer
 {
@@ -120,7 +124,7 @@ final class AnalyserResultFinalizer
 		$collectorErrors = [];
 		$locallyIgnoredCollectorErrors = [];
 		foreach ($tempCollectorErrors as $tempCollectorError) {
-			$file = $tempCollectorError->getTraitFilePath() ?? $tempCollectorError->getFilePath();
+			$file = $this->resolveAnalysedFileWithLineIgnores($tempCollectorError, $allLinesToIgnore);
 			$linesToIgnore = $allLinesToIgnore[$file] ?? [];
 			$unmatchedLineIgnores = $allUnmatchedLineIgnores[$file] ?? [];
 			$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(
@@ -157,6 +161,32 @@ final class AnalyserResultFinalizer
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 		), $collectorErrors, $locallyIgnoredCollectorErrors);
+	}
+
+	/**
+	 * Line ignores are keyed by the file whose analysis discovered them. For an error
+	 * reported in a trait that's the file using the trait when the error keeps its trait
+	 * context, and the trait file itself when the context was removed (Error::removeTraitContext())
+	 * or when the trait was analysed on its own.
+	 *
+	 * @param array<string, LinesToIgnore> $allLinesToIgnore
+	 */
+	private function resolveAnalysedFileWithLineIgnores(Error $error, array $allLinesToIgnore): string
+	{
+		$traitFilePath = $error->getTraitFilePath();
+		if ($traitFilePath === null) {
+			return $error->getFilePath();
+		}
+
+		foreach ([$error->getFilePath(), $traitFilePath] as $analysedFile) {
+			if (!array_key_exists($error->getFile(), $allLinesToIgnore[$analysedFile] ?? [])) {
+				continue;
+			}
+
+			return $analysedFile;
+		}
+
+		return $traitFilePath;
 	}
 
 	private function mergeFilteredPhpErrors(AnalyserResult $analyserResult): AnalyserResult

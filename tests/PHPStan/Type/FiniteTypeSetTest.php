@@ -31,7 +31,7 @@ use function sprintf;
  * self-analysis excludes those files below PHP 8.1, and a ::class would have PHPStan report
  * them as unknown classes there.
  */
-#[RequiresPhp('^8.1')]
+#[RequiresPhp('>= 8.1.0')]
 class FiniteTypeSetTest extends PHPStanTestCase
 {
 

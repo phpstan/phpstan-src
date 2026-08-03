@@ -196,6 +196,10 @@ final class IssetHandler implements ExprHandler
 			if (
 				$issetExpr instanceof ArrayDimFetch
 				&& $issetExpr->dim !== null
+				// When the var is itself an offset access (a nested isset like
+				// $r['K']['Port']), narrowing it in the falsey branch leaks the
+				// intermediate offset's existence into the enclosing scope.
+				&& !($issetExpr->var instanceof ArrayDimFetch)
 			) {
 				$varType = $scope->getType($issetExpr->var);
 				if (!$varType instanceof MixedType) {

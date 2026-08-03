@@ -208,7 +208,7 @@ final class RuleLevelHelper
 			return new FoundTypeResult(
 				$type instanceof TemplateMixedType
 					? $type->toStrictMixedType()
-					: new StrictMixedType(),
+					: new StrictMixedType($type->getSubtractedType()),
 				[],
 				[],
 				null,

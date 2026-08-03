@@ -75,6 +75,12 @@ class UnionType implements CompoundType
 	private array $cachedDescriptions = [];
 
 	/**
+	 * Identity-keyed view of $types, built on first use. False once it is known that the
+	 * members cannot be keyed at all, so a union of objects pays for the attempt only once.
+	 */
+	private FiniteTypeSet|false|null $finiteTypeSet = null;
+
+	/**
 	 * @api
 	 * @param list<Type> $types
 	 */
@@ -136,6 +142,16 @@ class UnionType implements CompoundType
 	public function isNormalized(): bool
 	{
 		return $this->normalized;
+	}
+
+	public function getFiniteTypeSet(): ?FiniteTypeSet
+	{
+		$finiteTypeSet = $this->finiteTypeSet ??= FiniteTypeSet::create($this->types) ?? false;
+		if ($finiteTypeSet === false) {
+			return null;
+		}
+
+		return $finiteTypeSet;
 	}
 
 	/**
@@ -200,6 +216,41 @@ class UnionType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		$finiteTypeSet = $this->getFiniteTypeSet();
+		if ($finiteTypeSet !== null) {
+			$key = FiniteTypeSet::key($type);
+			if ($key !== null && $finiteTypeSet->has($key)) {
+				return AcceptsResult::createYes();
+			}
+
+			if ($finiteTypeSet->isComplete()) {
+				if ($key !== null) {
+					// A value the union does not hold can still be accepted through scalar
+					// coercion, so unlike isSuperTypeOf() the answer is not simply no - but it
+					// is the same for every member of a kind, so one member of each is enough.
+					// None of the branches below apply to a value: it is not iterable, not
+					// compound, and an enum case already is the union of its own cases.
+					$result = AcceptsResult::createNo();
+					foreach ($finiteTypeSet->getRepresentativesOfOtherKinds($type) as $representative) {
+						$result = $result->or($representative->accepts($type, $strictTypes));
+					}
+
+					return $result;
+				}
+
+				if ($type instanceof self && !$type instanceof TemplateType) {
+					$otherFiniteTypeSet = $type->getFiniteTypeSet();
+					if ($otherFiniteTypeSet !== null && $otherFiniteTypeSet->isComplete()) {
+						// A member standing for a single value never accepts more than one of
+						// the other union's values, and the other union has at least two of
+						// them - so the member-by-member or() below cannot come out yes, and
+						// its result is discarded in favour of the compound answer anyway.
+						return $type->isAcceptedBy($this, $strictTypes);
+					}
+				}
+			}
+		}
+
 		if ($type instanceof IterableType) {
 			return $this->accepts($type->toArrayOrTraversable(), $strictTypes);
 		}
@@ -276,8 +327,27 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOf($this);
 		}
 
+		$types = $this->types;
+		$finiteTypeSet = $this->getFiniteTypeSet();
+		if ($finiteTypeSet !== null) {
+			$key = FiniteTypeSet::key($otherType);
+			if ($key !== null) {
+				if ($finiteTypeSet->has($key)) {
+					return IsSuperTypeOfResult::createYes();
+				}
+
+				// Every keyed member stands for a different value than $otherType, so all of
+				// them answer no - only the members that could not be keyed are left to ask.
+				if ($finiteTypeSet->isComplete()) {
+					return IsSuperTypeOfResult::createNo();
+				}
+
+				$types = $finiteTypeSet->getOthers();
+			}
+		}
+
 		$results = [];
-		foreach ($this->types as $innerType) {
+		foreach ($types as $innerType) {
 			$result = $innerType->isSuperTypeOf($otherType);
 			if ($result->yes()) {
 				return $result;
@@ -298,12 +368,84 @@ class UnionType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
+		$containment = $this->finiteTypeSetContainedIn($otherType, false);
+		if ($containment !== null) {
+			if ($containment->maybe()) {
+				return IsSuperTypeOfResult::createMaybe();
+			}
+
+			return IsSuperTypeOfResult::createFromBoolean($containment->yes());
+		}
+
 		return IsSuperTypeOfResult::extremeIdentity(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
+		// Unlike isSubTypeOf() only the positive answer holds: a member $acceptingType does
+		// not hold can still be accepted through scalar coercion.
+		$containment = $this->finiteTypeSetContainedIn($acceptingType, true);
+		if ($containment !== null && $containment->yes()) {
+			return AcceptsResult::createYes();
+		}
+
 		return AcceptsResult::extremeIdentity(...array_map(static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes), $this->types));
+	}
+
+	/**
+	 * Whether $otherType holds every member of this one, or null when the question cannot
+	 * be settled from the identity maps alone.
+	 *
+	 * $otherType is compared as a set of values: a union through its own map, a single
+	 * finite value as the one-member set holding it.
+	 *
+	 * $yesOnly skips the completeness requirement on the other union: a member missing from
+	 * its map only rules out the yes answer, which is all the caller is after.
+	 */
+	private function finiteTypeSetContainedIn(Type $otherType, bool $yesOnly): ?TrinaryLogic
+	{
+		$finiteTypeSet = $this->getFiniteTypeSet();
+		if ($finiteTypeSet === null || !$finiteTypeSet->isComplete()) {
+			return null;
+		}
+
+		if (!$otherType instanceof self || $otherType instanceof TemplateType) {
+			// A single value covers a member iff they are the same value, and no member
+			// stands for a value it is not keyed by - so one lookup answers for every member
+			// at once. This is the shape TypeCombinator::remove() takes to ask whether
+			// removing a value empties a union of values, and the only way a non-union other
+			// type reaches this helper at all.
+			$key = FiniteTypeSet::key($otherType);
+			if ($key === null) {
+				return null;
+			}
+
+			$containment = $finiteTypeSet->containedInKey($key);
+
+			// No constant value accepts another one - not even a numeric string an int, in
+			// either direction - so today accepts() agrees with isSuperTypeOf() here and this
+			// guard never changes an answer. It is kept because that is a fact about the
+			// current value types rather than something the identity map guarantees: a value
+			// the map does not hold being accepted anyway is exactly what accepts() is
+			// allowed to do, and all isAcceptedBy() wants from the map is the yes.
+			if (!$containment->yes() && $yesOnly) {
+				return null;
+			}
+
+			return $containment;
+		}
+
+		$otherFiniteTypeSet = $otherType->getFiniteTypeSet();
+		if ($otherFiniteTypeSet === null) {
+			return null;
+		}
+
+		$containment = $finiteTypeSet->containedIn($otherFiniteTypeSet);
+		if (!$containment->yes() && ($yesOnly || !$otherFiniteTypeSet->isComplete())) {
+			return null;
+		}
+
+		return $containment;
 	}
 
 	public function equals(Type $type): bool
@@ -314,6 +456,14 @@ class UnionType implements CompoundType
 
 		if (count($this->types) !== count($type->types)) {
 			return false;
+		}
+
+		$finiteTypeSet = $this->getFiniteTypeSet();
+		if ($finiteTypeSet !== null && $finiteTypeSet->isComplete()) {
+			$otherFiniteTypeSet = $type->getFiniteTypeSet();
+			if ($otherFiniteTypeSet !== null && $otherFiniteTypeSet->isComplete()) {
+				return $finiteTypeSet->containedIn($otherFiniteTypeSet)->yes();
+			}
 		}
 
 		$otherTypes = $type->types;
@@ -1336,6 +1486,31 @@ class UnionType implements CompoundType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
+		$finiteTypeSet = $this->getFiniteTypeSet();
+		if ($finiteTypeSet !== null && $finiteTypeSet->isComplete()) {
+			$key = FiniteTypeSet::key($typeToRemove);
+			if ($key !== null) {
+				if (!$finiteTypeSet->has($key)) {
+					return null;
+				}
+
+				$remainingTypes = [];
+				foreach ($finiteTypeSet->getMembers() as $memberKey => $member) {
+					if ($memberKey === $key) {
+						continue;
+					}
+
+					$remainingTypes[] = $member;
+				}
+
+				if (count($remainingTypes) === 1) {
+					return $remainingTypes[0];
+				}
+
+				return new UnionType($remainingTypes);
+			}
+		}
+
 		$innerTypes = [];
 		$changed = false;
 		foreach ($this->types as $innerType) {

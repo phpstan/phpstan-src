@@ -43,9 +43,7 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
-use function is_bool;
 use function is_int;
-use function is_string;
 use function sprintf;
 use function usort;
 use const PHP_INT_MAX;
@@ -1581,60 +1579,27 @@ final class TypeCombinator
 	}
 
 	/**
-	 * Keys a union's members by identity for the finite-union fast path in intersect().
+	 * The union's members keyed by identity, or null when the fast path does not apply.
 	 *
-	 * Handles constant scalars and enum cases: each stands for one concrete value, so two
-	 * members are interchangeable iff they share a key and are otherwise disjoint. Returns
-	 * null if any member is not such a value. Class-string constant strings are excluded
-	 * (the class-string flag is not captured by the value) and floats are excluded (-0.0 /
-	 * NAN comparison quirks). Enum cases are keyed by class + case name, the identity
-	 * EnumCaseObjectType::equals() compares.
+	 * FiniteTypeSet does the keying and the union caches it; on top of that, intersect()
+	 * hands one of the two members back instead of only comparing them, so a constant string
+	 * that is also a class-string is not interchangeable with a same-valued one that is not -
+	 * the class-string flag would be lost. Such unions go the slow way.
 	 *
 	 * @return array<string, Type>|null
 	 */
 	private static function finiteUnionMembers(UnionType $union): ?array
 	{
-		$members = [];
-		foreach ($union->getTypes() as $member) {
-			$enumCase = $member->getEnumCaseObject();
-			if ($member->isNull()->yes()) {
-				$key = 'null';
-			} elseif ($enumCase !== null) {
-				// getEnumCaseObject() also returns the case for a refined member - an
-				// intersection like $this & Enum::C, a whole single-case enum, or an enum
-				// subtracted to one case - none of which are a bare EnumCaseObjectType.
-				// Only a bare case is safe to key by class + case name; for the rest,
-				// EnumCaseObjectType::equals() is false (it requires an EnumCaseObjectType),
-				// so bail to the slow path rather than collapse the refinement.
-				if (!$enumCase->equals($member)) {
-					return null;
-				}
-
-				// Key by class + case name, the identity EnumCaseObjectType::equals() compares
-				// (describe() would also fold in a subtracted type, which equals() ignores).
-				$key = 'enum:' . $enumCase->getClassName() . '::' . $enumCase->getEnumCaseName();
-			} else {
-				$values = $member->getConstantScalarValues();
-				if (count($values) !== 1) {
-					return null;
-				}
-
-				$value = $values[0];
-				if (is_int($value)) {
-					$key = 'i:' . $value;
-				} elseif (is_bool($value)) {
-					$key = $value ? 'b:1' : 'b:0';
-				} elseif (is_string($value) && $member->isClassString()->no()) {
-					$key = 's:' . $value;
-				} else {
-					return null;
-				}
-			}
-
-			$members[$key] = $member;
+		$finiteTypeSet = $union->getFiniteTypeSet();
+		if ($finiteTypeSet === null || !$finiteTypeSet->isComplete()) {
+			return null;
 		}
 
-		return $members;
+		if ($finiteTypeSet->hasClassStringMember()) {
+			return null;
+		}
+
+		return $finiteTypeSet->getMembers();
 	}
 
 	public static function intersect(Type ...$types): Type

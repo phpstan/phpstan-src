@@ -7,6 +7,7 @@ use Nette\Utils\JsonException;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use function basename;
+use function dirname;
 use function getenv;
 use function is_file;
 use function is_string;
@@ -94,6 +95,11 @@ final class ComposerHelper
 	private static function getInstalled(): array
 	{
 		return self::$installed ??= require __DIR__ . '/../../vendor/composer/installed.php';
+	}
+
+	public static function getPhpStormStubsDir(): string
+	{
+		return dirname(__DIR__, 2) . '/vendor/jetbrains/phpstorm-stubs';
 	}
 
 	public static function getPhpStanVersion(): string

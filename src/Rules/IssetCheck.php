@@ -240,6 +240,9 @@ final class IssetCheck
 		return null;
 	}
 
+	/**
+	 * @param ErrorIdentifier $identifier
+	 */
 	private function checkUndefinedInner(?IssetabilityResolution $resolution, MutatingScope $scope, string $operatorDescription, string $identifier): ?IdentifierRuleError
 	{
 		if ($resolution === null) {

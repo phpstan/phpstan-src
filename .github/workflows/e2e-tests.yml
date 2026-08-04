@@ -480,6 +480,18 @@ jobs:
               ../bashunit -a contains 'test.php:10:Variable $yetAnotherUndefined might not be defined.' "$OUTPUT"
               ../bashunit -a contains 'test.php:12:Ignoring all errors on a line is not allowed.' "$OUTPUT"
               ../bashunit -a contains 'test.php:12:Variable $yetYetAnotherUndefined might not be defined.' "$OUTPUT"
+          - script: |
+              # The reflection cache for PHP built-in symbols stores absolute paths to the
+              # PhpStorm stub files, but its cache key contains only package versions. The
+              # cache in sys_get_temp_dir() survives moving the PHPStan installation (for
+              # example when the project with PHPStan in vendor/ is moved or the CI
+              # workspace path changes), so the next run must not crash importing
+              # reflections that point to the previous installation path.
+              cp -R . /tmp/phpstan-install-1
+              cd e2e/moved-phpstan-installation
+              /tmp/phpstan-install-1/bin/phpstan analyse -l 8 -vvv test.php
+              mv /tmp/phpstan-install-1 /tmp/phpstan-install-2
+              /tmp/phpstan-install-2/bin/phpstan analyse -l 8 -vvv test.php
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

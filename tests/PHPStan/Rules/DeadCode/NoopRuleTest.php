@@ -2,10 +2,15 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Collectors\Collector;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -17,6 +22,30 @@ class NoopRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new NoopRule(new ExprPrinter(new Printer()));
+	}
+
+	protected function getCollectors(): array
+	{
+		// Asks for the type of a not-yet-walked expression, the same way
+		// TypesAssignedToPropertiesRule does, so FiberNodeScopeResolver parks
+		// the node callback on PropertyAssignNode. The hasAssign gatherer
+		// feeding NoopExpressionNode must not be delayed by that
+		// (https://github.com/phpstan/phpstan/issues/15038).
+		return [
+			new /** @implements Collector<PropertyAssignNode, string> */ class implements Collector {
+
+				public function getNodeType(): string
+				{
+					return PropertyAssignNode::class;
+				}
+
+				public function processNode(Node $node, Scope $scope): string
+				{
+					return $scope->getType($node->getAssignedExpr())->describe(VerbosityLevel::typeOnly());
+				}
+
+			},
+		];
 	}
 
 	public function testRule(): void
@@ -171,6 +200,12 @@ class NoopRuleTest extends RuleTestCase
 				50,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15038(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15038.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.5.0')]

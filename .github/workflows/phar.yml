@@ -595,6 +595,108 @@ jobs:
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
+  turbo-token-numbering:
+    name: "Turbo Token-Numbering Portability"
+    needs:
+      - turbo-compile
+      - turbo-compile-musl-arm64
+    # The userland T_* ids are assigned by the bison that generated the
+    # interpreter's zend_language_parser.c, and the official php.net tarballs
+    # ship the numbering of whichever bison the release manager ran: the
+    # 8.3.21 tarball carries the Bison 3.8.2 numbering (T_COMMENT=387), the
+    # 8.3.22 one the Bison 3.0.4 numbering (T_COMMENT=392). The
+    # docker-library php images build those tarballs without regenerating the
+    # parser and inherit the split, while the .so artifacts above are
+    # compiled against distro or setup-php builds that DO regenerate with a
+    # modern bison — so a T_* id baked into the binary at compile time is
+    # silently wrong on the other numbering's builds
+    # (https://github.com/phpstan/phpstan/issues/15037: the parse stays
+    # valid, but every comment — and with it every PHPDoc — vanishes). Each
+    # leg here loads the freshly built extension into docker-library images
+    # of both numberings and requires byte-identical native parses on each.
+    # Only 8.3 has official releases of both numberings today, so only 8.3
+    # legs can discriminate; if a future 8.4/8.5 release ships the old-bison
+    # numbering, add its tag here. No macOS/Windows legs: those runners
+    # cannot run Linux containers, and no alternative-numbered official
+    # build is distributed for either platform today.
+    runs-on: ${{ matrix.runs-on }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: "linux-gnu-x86_64"
+            runs-on: "ubuntu-latest"
+            suffix: ""
+            image-bison382: "php:8.3.21-cli-bookworm"
+            image-bison304: "php:8.3.22-cli-bookworm"
+          - target: "linux-gnu-arm64"
+            runs-on: "ubuntu-24.04-arm"
+            suffix: ""
+            image-bison382: "php:8.3.21-cli-bookworm"
+            image-bison304: "php:8.3.22-cli-bookworm"
+          - target: "linux-musl-x86_64"
+            runs-on: "ubuntu-latest"
+            suffix: ""
+            image-bison382: "php:8.3.21-cli-alpine"
+            image-bison304: "php:8.3.22-cli-alpine"
+          - target: "linux-musl-arm64"
+            runs-on: "ubuntu-24.04-arm"
+            suffix: ""
+            image-bison382: "php:8.3.21-cli-alpine"
+            image-bison304: "php:8.3.22-cli-alpine"
+          - target: "linux-gnu-x86_64"
+            runs-on: "ubuntu-latest"
+            suffix: "-zts"
+            image-bison382: "php:8.3.21-zts-bookworm"
+            image-bison304: "php:8.3.22-zts-bookworm"
+          - target: "linux-gnu-arm64"
+            runs-on: "ubuntu-24.04-arm"
+            suffix: "-zts"
+            image-bison382: "php:8.3.21-zts-bookworm"
+            image-bison304: "php:8.3.22-zts-bookworm"
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      # vendor/ is installed on the runner host (the probes only read it from
+      # the mounted workspace): the docker-library images carry neither a
+      # composer nor an unzip.
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.3"
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Download extension artifact"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "phpstan_turbo-${{ matrix.target }}-php8.3${{ matrix.suffix }}"
+          path: "turbo-ext"
+
+      - name: "Probe on the Bison 3.8.2 numbering (${{ matrix.image-bison382 }})"
+        run: docker run --rm -v "$PWD:/work" -w /work "${{ matrix.image-bison382 }}" php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/token-id-probe.php
+
+      - name: "Probe on the Bison 3.0.4 numbering (${{ matrix.image-bison304 }})"
+        run: docker run --rm -v "$PWD:/work" -w /work "${{ matrix.image-bison304 }}" php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/token-id-probe.php
+
+      - name: "Parser corpus on the Bison 3.8.2 numbering (${{ matrix.image-bison382 }})"
+        run: docker run --rm -v "$PWD:/work" -w /work "${{ matrix.image-bison382 }}" php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Parser corpus on the Bison 3.0.4 numbering (${{ matrix.image-bison304 }})"
+        run: docker run --rm -v "$PWD:/work" -w /work "${{ matrix.image-bison304 }}" php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
   turbo-macos-universal:
     name: "Turbo macOS Universal Binary"
     needs: "turbo-compile"

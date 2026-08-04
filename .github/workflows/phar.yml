@@ -14,6 +14,11 @@ concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true
 
+# Read-only GITHUB_TOKEN everywhere; jobs needing more declare their own
+# block. The commit job pushes with a PAT, not the workflow token.
+permissions:
+  contents: read
+
 env:
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
@@ -32,6 +37,10 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
 
+    permissions:
+      contents: read # actions/checkout of this repository
+      pull-requests: read # dorny/paths-filter lists the PR's changed files through the API
+
     outputs:
       checksum: ${{ steps.checksum.outputs.md5 }}
       compiler_changed: ${{ steps.changes.outputs.compiler }}
@@ -45,6 +54,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: "Install PHP"
@@ -174,6 +184,8 @@ jobs:
       # side-by-side.php collects the attributes with reflection against the
       # dumped autoloader and byte-compares the generated vendor/turbo-* files
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
 
       - name: "Check the shadowed PHP and C++ implementations are in sync (method parity)"
         run: "php turbo-ext/bin/side-by-side.php"
@@ -268,6 +280,8 @@ jobs:
           [ "$REPORTED" = "$EXPECTED" ]
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
 
       - name: "Smoke test (differential: native vs PHP implementations)"
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/smoke.php
@@ -443,6 +457,8 @@ jobs:
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: matrix.target.family == 'macos'
+        with:
+          ignore-cache: true
 
       - name: "Install Composer dependencies (pinned composer)"
         if: matrix.target.family != 'macos'
@@ -824,6 +840,9 @@ jobs:
 
       - name: "Compute the extension version and download the build tools"
         shell: bash
+        env:
+          MATRIX_TS: ${{ matrix.ts }}
+          MATRIX_VS: ${{ matrix.vs }}
         run: |
           SHA=$(git log -1 --format=%H -- turbo-ext/src | cut -c1-7)
           echo "extension version: $SHA"
@@ -831,8 +850,8 @@ jobs:
 
           FULL=$(php -r 'echo PHP_VERSION;')
           # thread-safe devel packs carry no infix, NTS ones carry -nts
-          INFIX=$([ "${{ matrix.ts }}" = "zts" ] && echo "" || echo "-nts")
-          PACK="php-devel-pack-$FULL$INFIX-Win32-${{ matrix.vs }}-x64.zip"
+          INFIX=$([ "$MATRIX_TS" = "zts" ] && echo "" || echo "-nts")
+          PACK="php-devel-pack-$FULL$INFIX-Win32-$MATRIX_VS-x64.zip"
           echo "devel pack: $PACK"
           curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/$PACK" \
             || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK"
@@ -862,6 +881,8 @@ jobs:
 
       - name: "Verify the built extension reports the expected version"
         shell: bash
+        env:
+          MATRIX_TS: ${{ matrix.ts }}
         run: |
           DLL=$(find turbo-ext -name "php_phpstan_turbo.dll" | head -1)
           [ -n "$DLL" ]
@@ -875,10 +896,12 @@ jobs:
           # the loader rejects a ts-mismatched DLL, so php loading it above
           # proves the DLL matches the interpreter; assert the interpreter
           # itself so both sides cannot silently be NTS on the zts leg
-          WANT_ZTS=$([ "${{ matrix.ts }}" = "zts" ] && echo 1 || echo 0)
+          WANT_ZTS=$([ "$MATRIX_TS" = "zts" ] && echo 1 || echo 0)
           [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$WANT_ZTS" ]
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
 
       - name: "Smoke test (differential: native vs PHP implementations)"
         shell: bash
@@ -1031,6 +1054,8 @@ jobs:
           php -m | grep phpstan_turbo
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
 
       - name: "Verify the extension is active"
         run: |
@@ -1047,11 +1072,13 @@ jobs:
       - name: "Run"
         # The Windows runner image ships GNU make only inside its MSYS2
         # install, which is not on PATH.
+        env:
+          SCRIPT: ${{ matrix.script }}
         run: |
           if ! command -v make > /dev/null && [ -e /c/msys64/usr/bin/make.exe ]; then
             export PATH="$PATH:/c/msys64/usr/bin"
           fi
-          ${{ matrix.script }}
+          eval "$SCRIPT"
 
   integration-tests:
     if: github.event_name == 'pull_request'
@@ -1088,6 +1115,9 @@ jobs:
     needs: compiler-tests
     if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.compiler_changed == 'true'
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: read # actions/checkout of this repository
+      actions: read # find-artifact.js lists runs/artifacts; the by-ID cross-run download authenticates with the workflow token
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -1095,15 +1125,20 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Get base commit SHA
         id: base
-        run: echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 20
+          package-manager-cache: false
 
       - name: Install dependencies
         working-directory: .github/scripts
@@ -1165,10 +1200,11 @@ jobs:
         run: echo "md5=$(md5sum phpstan.phar | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: "Assert checksum"
+        env:
+          OLD_CHECKSUM: ${{ steps.old_checksum.outputs.md5 }}
+          NEW_CHECKSUM: ${{ needs.compiler-tests.outputs.checksum }}
         run: |
-          old_checksum=${{ steps.old_checksum.outputs.md5 }}
-          new_checksum=${{needs.compiler-tests.outputs.checksum}}
-          [[ "$old_checksum" == "$new_checksum" ]];
+          [[ "$OLD_CHECKSUM" == "$NEW_CHECKSUM" ]];
 
   phar-prefix-diff:
     name: "PHAR Prefix Diff"
@@ -1181,6 +1217,8 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       # saved to phar-file-checksum/phpstan.phar
       - name: "Download phpstan.phar"
@@ -1203,11 +1241,14 @@ jobs:
           php-version: "8.2"
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
 
       - name: "Install Box dependencies"
         uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           working-directory: "compiler/box"
+          ignore-cache: true
 
       - name: "Extract old phpstan.phar"
         run: "php compiler/box/vendor/bin/box extract phar-file-checksum-base/phpstan.phar phar-old"
@@ -1216,16 +1257,16 @@ jobs:
         run: "php compiler/box/vendor/bin/box extract phar-file-checksum/phpstan.phar phar-new"
 
       - name: "List prefix locations in old PHAR"
-        run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-old > phar-old.txt"
+        run: 'php .github/scripts/listPrefix.php "$GITHUB_WORKSPACE/phar-old" > phar-old.txt'
 
       - name: "List prefix locations in new PHAR"
-        run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-new > phar-new.txt"
+        run: 'php .github/scripts/listPrefix.php "$GITHUB_WORKSPACE/phar-new" > phar-new.txt'
 
       - name: "Diff locations"
         run: "diff -u phar-old.txt phar-new.txt > diff.txt || true"
 
       - name: "Diff files where prefix changed"
-        run: "php .github/scripts/diffPrefixes.php ${{ github.workspace }}/diff.txt ${{ github.workspace }}/phar-old ${{ github.workspace }}/phar-new"
+        run: 'php .github/scripts/diffPrefixes.php "$GITHUB_WORKSPACE/diff.txt" "$GITHUB_WORKSPACE/phar-old" "$GITHUB_WORKSPACE/phar-new"'
 
   commit:
     name: "Commit PHAR"
@@ -1263,6 +1304,9 @@ jobs:
           path: phpstan-dist
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           ref: 2.2.x
+          # deliberately persisted: the push steps below authenticate with
+          # this bot token
+          persist-credentials: true
 
       - name: "Get previous pushed dist commit"
         id: previous-commit
@@ -1272,15 +1316,19 @@ jobs:
       - name: "Checkout phpstan-src"
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
+          persist-credentials: false
           fetch-depth: 0
           path: phpstan-src
 
       - name: "Get Git log"
         id: git-log
         working-directory: phpstan-src
+        env:
+          PREVIOUS_SHA: ${{ steps.previous-commit.outputs.sha }}
+          AFTER_SHA: ${{ github.event.after }}
         run: |
           echo "log<<MESSAGE" >> "$GITHUB_OUTPUT"
-          git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='https://github.com/phpstan/phpstan-src/commit/%H %s' >> "$GITHUB_OUTPUT"
+          git log "$PREVIOUS_SHA".."$AFTER_SHA" --reverse --pretty='https://github.com/phpstan/phpstan-src/commit/%H %s' >> "$GITHUB_OUTPUT"
           echo 'MESSAGE' >> "$GITHUB_OUTPUT"
 
       - name: "Get short phpstan-src SHA"
@@ -1291,8 +1339,10 @@ jobs:
       - name: "Check PHAR checksum"
         id: checksum-difference
         working-directory: phpstan-dist
+        env:
+          CHECKSUM: ${{ needs.compiler-tests.outputs.checksum }}
         run: |
-          checksum="${{needs.compiler-tests.outputs.checksum}}"
+          checksum="$CHECKSUM"
           if [[ $(head -n 1 .phar-checksum) != "$checksum" ]]; then
             echo "result=different" >> "$GITHUB_OUTPUT"
           else
@@ -1359,9 +1409,12 @@ jobs:
 
       - name: "Update checksum"
         if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
+        env:
+          CHECKSUM: ${{ needs.compiler-tests.outputs.checksum }}
+          HEAD_COMMIT_ID: ${{ github.event.head_commit.id }}
         run: |
-          echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
-          echo ${{ github.event.head_commit.id }} >> phpstan-dist/.phar-checksum
+          echo "$CHECKSUM" > phpstan-dist/.phar-checksum
+          echo "$HEAD_COMMIT_ID" >> phpstan-dist/.phar-checksum
 
       - name: "Sign PHAR"
         if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
@@ -1406,12 +1459,14 @@ jobs:
         working-directory: phpstan-dist
         env:
           INPUT_LOG: ${{ steps.git-log.outputs.log }}
+          AFTER_SHA: ${{ github.event.after }}
+          SHORT_SRC_SHA: ${{ steps.short-src-sha.outputs.sha }}
         run: |
           git config --global user.name "phpstan-bot"
           git config --global user.email "ondrej+phpstanbot@mirtes.cz"
           git add .
-          git commit --gpg-sign -m "Updated PHPStan to commit ${{ github.event.after }}" -m "$INPUT_LOG" --author "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
-          lucky_commit ${{ steps.short-src-sha.outputs.sha }}
+          git commit --gpg-sign -m "Updated PHPStan to commit $AFTER_SHA" -m "$INPUT_LOG" --author "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
+          lucky_commit "$SHORT_SRC_SHA"
           git push
 
       - name: "Commit PHAR - tag"

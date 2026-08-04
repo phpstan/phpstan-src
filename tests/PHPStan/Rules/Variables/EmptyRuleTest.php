@@ -2,15 +2,18 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<EmptyRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class EmptyRuleTest extends RuleTestCase
 {
@@ -19,11 +22,18 @@ class EmptyRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new EmptyRule(new IssetCheck(
-			new PropertyDescriptor(),
-			true,
-			$this->treatPhpDocTypesAsCertain,
-		));
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new EmptyRule(
+				new IssetCheck(
+					new PropertyDescriptor(),
+					true,
+					$this->treatPhpDocTypesAsCertain,
+				),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -270,6 +280,26 @@ class EmptyRuleTest extends RuleTestCase
 			[
 				'Property PropertyInitializationCustomSerialization\OnlyWakeup::$true in empty() is not falsy nor uninitialized.',
 				44,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-in-trait.php'], [
+			[
+				'Property IssetInTrait\FirstNonNullableProperty::$k (int<1, max>) in empty() is not falsy.',
+				84,
+			],
+			[
+				'Property IssetInTrait\SecondNonNullableProperty::$k (int<1, max>) in empty() is not falsy.',
+				84,
+			],
+			[
+				'Variable $s in empty() always exists and is not falsy.',
+				121,
 			],
 		]);
 	}

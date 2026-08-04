@@ -54,6 +54,11 @@ final class ExpressionResult
 		return $this->beforeScope;
 	}
 
+	public function getExpr(): Expr
+	{
+		return $this->expr;
+	}
+
 	public function hasYield(): bool
 	{
 		return $this->hasYield;

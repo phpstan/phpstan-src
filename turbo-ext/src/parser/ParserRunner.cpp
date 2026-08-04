@@ -19,8 +19,11 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 extern "C" {
 #include <ext/spl/spl_exceptions.h>
-#include <zend_language_parser.h> /* T_COMMENT / T_DOC_COMMENT / T_WHITESPACE ids */
 }
+/* zend_language_parser.h is deliberately NOT included: its T_* macros carry
+ * the token numbering of whichever bison generated the build machine's PHP,
+ * which differs between official builds of the same PHP version — use the
+ * runtime-resolved tokenId*() accessors from ParserEngine.h instead. */
 #pragma GCC diagnostic pop
 
 namespace phpstanturbo {
@@ -810,9 +813,8 @@ zv::Val ParserEngine::doParse()
 					/* negative ids are php-parser compat tokens (the
 					 * emulative lexer polyfills newer-PHP tokens on an
 					 * older host) — never dropped; bound by dropTokensSize,
-					 * not phpTokenToSymbolSize: T_BAD_CHARACTER (id 411 on
-					 * 8.5) sits above the grammar's symbol map and must
-					 * still be dropped */
+					 * not phpTokenToSymbolSize: T_BAD_CHARACTER sits above
+					 * the grammar's symbol map and must still be dropped */
 				} while (tokenId >= 0 && tokenId < t->dropTokensSize && t->dropTokens[tokenId]);
 
 				tokenText = tokens[tokenPos].text;
@@ -1012,7 +1014,7 @@ static int countNewlines(zend_string *s)
 
 zv::Val ParserEngine::makeComment(const Token *tok, int tokenPos)
 {
-	bool isDoc = tok->id == T_DOC_COMMENT;
+	bool isDoc = (zend_long) tok->id == tokenIdDocComment();
 	NodeClassInfo *cls = resolveNodeClass(isDoc ? "Comment\\Doc" : "Comment", true);
 	zval comment;
 	object_init_ex(&comment, cls->ce);
@@ -1053,19 +1055,22 @@ bool ParserEngine::commentEnterNode(CommentState &st, zend_object *node)
 	int oldPos = st.pos;
 	st.pos = pos;
 	if (nextCommentPos > oldPos && nextCommentPos < pos) {
+		zend_long tComment = tokenIdComment();
+		zend_long tDocComment = tokenIdDocComment();
+		zend_long tWhitespace = tokenIdWhitespace();
 		zval comments;
 		array_init(&comments);
 		int scanPos = pos;
 		int collected = 0;
 		while (--scanPos >= oldPos) {
 			const Token *tok = &tokens[scanPos];
-			if (tok->id == T_DOC_COMMENT || tok->id == T_COMMENT) {
+			if ((zend_long) tok->id == tDocComment || (zend_long) tok->id == tComment) {
 				zval comment = makeComment(tok, scanPos).take();
 				zend_hash_next_index_insert(Z_ARRVAL(comments), &comment);
 				collected++;
 				continue;
 			}
-			if (tok->id != T_WHITESPACE) {
+			if ((zend_long) tok->id != tWhitespace) {
 				break;
 			}
 		}
@@ -1147,9 +1152,11 @@ void ParserEngine::commentWalkArray(CommentState &st, HashTable *ht)
 
 void ParserEngine::annotateComments(zv::Ref stmts)
 {
+	zend_long tComment = tokenIdComment();
+	zend_long tDocComment = tokenIdDocComment();
 	int numComments = 0;
 	for (int i = 0; i < numTokens; i++) {
-		if (tokens[i].id == T_COMMENT || tokens[i].id == T_DOC_COMMENT) {
+		if ((zend_long) tokens[i].id == tComment || (zend_long) tokens[i].id == tDocComment) {
 			numComments++;
 		}
 	}
@@ -1159,7 +1166,7 @@ void ParserEngine::annotateComments(zv::Ref stmts)
 	int *positions = (int *) emalloc(sizeof(int) * (size_t) numComments);
 	int n = 0;
 	for (int i = 0; i < numTokens; i++) {
-		if (tokens[i].id == T_COMMENT || tokens[i].id == T_DOC_COMMENT) {
+		if ((zend_long) tokens[i].id == tComment || (zend_long) tokens[i].id == tDocComment) {
 			positions[n++] = i;
 		}
 	}

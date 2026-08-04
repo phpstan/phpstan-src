@@ -48,6 +48,20 @@ struct Token
 	int pos; /* start file offset */
 };
 
+/* Userland T_* token ids, resolved from the runtime constants and cached per
+ * process. The compile-time macros from zend_language_parser.h must never be
+ * used here: the ids are assigned by the bison that generated the
+ * interpreter's parser, so two official builds of the same PHP version can
+ * number the tokens differently (the php.net 8.3.21 tarball ships the Bison
+ * 3.8.2 numbering, 8.3.22 the Bison 3.0.4 one), and a prebuilt binary's
+ * baked-in ids then silently match nothing —
+ * https://github.com/phpstan/phpstan/issues/15037. Resolves to -2 when the
+ * constant does not exist, which matches no token id. */
+zend_long tokenIdComment();
+zend_long tokenIdDocComment();
+zend_long tokenIdWhitespace();
+zend_long tokenIdInlineHtml();
+
 /* Resolved-once-per-process data for one parser CE (the LALR tables). */
 struct Tables
 {

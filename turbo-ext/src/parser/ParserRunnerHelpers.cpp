@@ -95,13 +95,14 @@ static bool isSpecialClassName(zend_string *name)
 	return iequals(name, "self", 4) || iequals(name, "parent", 6) || iequals(name, "static", 6);
 }
 
-/* ===== runtime token id constants (userland T_* values, cached per process) ===== */
+/* ===== runtime token id constants (see the ParserEngine.h declarations) ===== */
 
 #define PNH_TOK_UNRESOLVED (-3)
 #define PNH_TOK_MISSING (-2)
 
 static zend_long g_tCommentId = PNH_TOK_UNRESOLVED;
 static zend_long g_tDocCommentId = PNH_TOK_UNRESOLVED;
+static zend_long g_tWhitespaceId = PNH_TOK_UNRESOLVED;
 static zend_long g_tInlineHtmlId = PNH_TOK_UNRESOLVED;
 
 static zend_long tokenConstant(const char *name, size_t len, zend_long *cache)
@@ -111,6 +112,26 @@ static zend_long tokenConstant(const char *name, size_t len, zend_long *cache)
 		*cache = (c != NULL && Z_TYPE_P(c) == IS_LONG) ? Z_LVAL_P(c) : PNH_TOK_MISSING;
 	}
 	return *cache;
+}
+
+zend_long tokenIdComment()
+{
+	return tokenConstant("T_COMMENT", sizeof("T_COMMENT") - 1, &g_tCommentId);
+}
+
+zend_long tokenIdDocComment()
+{
+	return tokenConstant("T_DOC_COMMENT", sizeof("T_DOC_COMMENT") - 1, &g_tDocCommentId);
+}
+
+zend_long tokenIdWhitespace()
+{
+	return tokenConstant("T_WHITESPACE", sizeof("T_WHITESPACE") - 1, &g_tWhitespaceId);
+}
+
+zend_long tokenIdInlineHtml()
+{
+	return tokenConstant("T_INLINE_HTML", sizeof("T_INLINE_HTML") - 1, &g_tInlineHtmlId);
 }
 
 /* isset($this->dropTokens[$token->id]) — bound by dropTokensSize:
@@ -1111,8 +1132,8 @@ zv::Val ParserEngine::parseDocString(zv::Ref startTokenRef, zv::Ref contents, zv
  */
 int ParserEngine::getCommentBeforeToken(int tokenPos)
 {
-	zend_long tComment = tokenConstant("T_COMMENT", sizeof("T_COMMENT") - 1, &g_tCommentId);
-	zend_long tDocComment = tokenConstant("T_DOC_COMMENT", sizeof("T_DOC_COMMENT") - 1, &g_tDocCommentId);
+	zend_long tComment = tokenIdComment();
+	zend_long tDocComment = tokenIdDocComment();
 	while (--tokenPos >= 0) {
 		const Token *t = &tokens[tokenPos];
 		if (!isDropToken(tables, t->id)) {
@@ -1176,7 +1197,7 @@ zv::Val ParserEngine::handleHaltCompiler()
 	int next = tokenPos + 1;
 	if (next >= 0 && next < numTokens) {
 		const Token *t = &tokens[next];
-		zend_long tInlineHtml = tokenConstant("T_INLINE_HTML", sizeof("T_INLINE_HTML") - 1, &g_tInlineHtmlId);
+		zend_long tInlineHtml = tokenIdInlineHtml();
 		if ((zend_long) t->id == tInlineHtml) {
 			text = t->text;
 		}

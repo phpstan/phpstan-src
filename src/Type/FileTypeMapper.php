@@ -347,7 +347,11 @@ final class FileTypeMapper
 		}
 
 		$cacheKey = sprintf('ftm-%s', $fileName);
-		$variableCacheKey = sprintf('v5-%s', ComposerHelper::getPhpDocParserVersion());
+		// v6: v5 entries may be poisoned by the turbo comment-loss bug
+		// (https://github.com/phpstan/phpstan/issues/15037) - a parse that
+		// silently dropped every comment cached PHPDoc-less name-scope maps,
+		// and the content hashes cannot tell them apart from real ones.
+		$variableCacheKey = sprintf('v6-%s', ComposerHelper::getPhpDocParserVersion());
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);

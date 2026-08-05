@@ -175,10 +175,10 @@ private:
 	zend_object *self;
 };
 
-/* the `static function (Type $type, callable $traverse) use (&$moreVerbose,
- * &$veryVerbose)` closure of getRecommendedLevelByType(): state0 =
- * $moreVerbose, state1 = $veryVerbose */
-static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+/* the `$flagsCallback = static function (Type $type, callable $traverse)
+ * use (&$moreVerbose, &$veryVerbose)` closure of getRecommendedLevelByType():
+ * state0 = $moreVerbose, state1 = $veryVerbose */
+static void flagsCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 {
 	if (UNEXPECTED(argc != 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
 		zend_throw_error(NULL, "phpstan_turbo: the VerbosityLevel traversal callback expects (Type, callable)");
@@ -272,36 +272,49 @@ static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval 
 	return true;
 }
 
-/* the `static function (Type $type, callable $traverse) use
- * (&$hasSubtractedMixed)` closure of getRecommendedLevelByType(): state0 =
- * $hasSubtractedMixed; template types are not looked into */
-static void subtractedMixedCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+/* the `$moreVerboseCallback = static function (Type $type, callable
+ * $traverse) use (&$veryVerbose, $flagsCallback)` closure of
+ * getRecommendedLevelByType(), wrapping $flagsCallback: state0 =
+ * $moreVerbose (only handed on to $flagsCallback), state1 = $veryVerbose */
+static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 {
-	(void) state1;
 	if (UNEXPECTED(argc != 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
 		zend_throw_error(NULL, "phpstan_turbo: the VerbosityLevel traversal callback expects (Type, callable)");
 		return;
 	}
 	zval *type = &argv[0];
-	zval *traverse = &argv[1];
 
-	if (Z_TYPE_P(state0) == IS_TRUE) {
+	/* stop deep traversal to not waste resources */
+	if (Z_TYPE_P(state1) == IS_TRUE) {
 		RETURN_COPY(type);
 	}
+
+	/* a subtracted mixed only makes sense in an error message when the
+	 * subtraction is spelled out; template subtrees switch to the plain
+	 * flags callback - the subtraction there belongs to the bound, not to
+	 * the type being described: TypeTraverser::map($type, $flagsCallback),
+	 * the shared flags handed in and back out */
 	bool isTemplate;
 	if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return;
 	if (isTemplate) {
+		zv::Val flags = pt_type_native_callback(flagsCallback, state0, state1);
+		if (UNEXPECTED(flags.isUndef())) return;
+		zval mapped;
+		if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, flags.raw()))) return;
+		zval_ptr_dtor(&mapped);
+		ZVAL_BOOL(state0, Z_TYPE_P(pt_type_native_callback_state(flags.raw(), 0)) == IS_TRUE);
+		ZVAL_BOOL(state1, Z_TYPE_P(pt_type_native_callback_state(flags.raw(), 1)) == IS_TRUE);
 		RETURN_COPY(type);
 	}
 
 	bool subtractedMixed;
 	if (UNEXPECTED(!isSubtractedMixed(Z_OBJ_P(type), subtractedMixed))) return;
 	if (subtractedMixed) {
-		ZVAL_TRUE(state0);
+		ZVAL_TRUE(state1);
 		RETURN_COPY(type);
 	}
 
-	(void) pt_type_traverser_traverse(return_value, traverse, type);
+	flagsCallback(state0, state1, argc, argv, return_value);
 }
 
 /* the `static function (Type $type, callable $traverse) use
@@ -381,15 +394,6 @@ zv::Val VerbosityLevel::getRecommendedLevelByType(zval *acceptingType, zval *acc
 	zval falseZv;
 	ZVAL_FALSE(&falseZv);
 
-	/* a subtracted mixed only makes sense in an error message when the
-	 * subtraction is spelled out */
-	zv::Val subtractedCallback = pt_type_native_callback(phpstanturbo::subtractedMixedCallback, &falseZv, NULL);
-	if (UNEXPECTED(subtractedCallback.isUndef())) return zv::Val();
-	if (UNEXPECTED(!traverseFor(acceptingType, subtractedCallback.raw()))) return zv::Val();
-	if (flagIsTrue(subtractedCallback.raw(), 0)) {
-		zval *level = precise();
-		return level == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(level));
-	}
 
 	zv::Val moreVerboseCallback = pt_type_native_callback(phpstanturbo::moreVerboseCallback, &falseZv, &falseZv);
 	if (UNEXPECTED(moreVerboseCallback.isUndef())) return zv::Val();

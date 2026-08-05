@@ -125,7 +125,7 @@ final class IssetabilityDescriptor
 		$propertyReflection = $reflectionResolver($scope);
 		if ($propertyReflection === null) {
 			return new IssetabilityResolution(
-				IssetabilityLinkInfo::property(null, $propertyFetch, false, false, TrinaryLogic::createNo(), new NeverType(), new NeverType(), false, false, false, false, false, false, false, false),
+				IssetabilityLinkInfo::property(null, $propertyFetch, false, false, TrinaryLogic::createNo(), new NeverType(), new NeverType(), false, false, false, false, false, false, false),
 				$inner,
 			);
 		}
@@ -148,7 +148,6 @@ final class IssetabilityDescriptor
 				$propertyReflection->getWritableType(),
 				$hasNativeType ? $propertyReflection->getNativeType() : new NeverType(),
 				$scope->hasExpressionType($propertyFetch)->yes(),
-				isset($scope->getConditionalExpressions()[$scope->getNodeKey($propertyFetch)]),
 				$initializedThisProperty,
 				$nativeReflection !== null,
 				$nativeReflection !== null && $nativeReflection->isPromoted(),

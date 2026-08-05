@@ -597,4 +597,18 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15046(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15046.php'], [
+			[
+				'Property Bug15046\\BothBranches::$answer on left side of ?? is not nullable nor uninitialized.',
+				140,
+			],
+			[
+				'Property Bug15046\\ConditionMetAgain::$answer (int) on left side of ?? is not nullable.',
+				157,
+			],
+		]);
+	}
+
 }

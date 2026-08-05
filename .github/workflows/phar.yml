@@ -611,32 +611,37 @@ jobs:
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
-  turbo-token-numbering:
-    name: "Turbo Token-Numbering Portability"
-    needs:
-      - turbo-compile
-      - turbo-compile-musl-arm64
-    # The userland T_* ids are assigned by the bison that generated the
-    # interpreter's zend_language_parser.c, and the official php.net tarballs
-    # ship the numbering of whichever bison the release manager ran: the
-    # 8.3.21 tarball carries the Bison 3.8.2 numbering (T_COMMENT=387), the
-    # 8.3.22 one the Bison 3.0.4 numbering (T_COMMENT=392). The
-    # docker-library php images build those tarballs without regenerating the
-    # parser and inherit the split, while the .so artifacts above are
-    # compiled against distro or setup-php builds that DO regenerate with a
-    # modern bison — so a T_* id baked into the binary at compile time is
-    # silently wrong on the other numbering's builds
-    # (https://github.com/phpstan/phpstan/issues/15037: the parse stays
-    # valid, but every comment — and with it every PHPDoc — vanishes). Each
-    # leg here loads the freshly built extension into docker-library images
-    # of both numberings and requires byte-identical native parses on each.
-    # Only 8.3 has official releases of both numberings today, so only 8.3
-    # legs can discriminate; if a future 8.4/8.5 release ships the old-bison
-    # numbering, add its tag here. No macOS/Windows legs: those runners
-    # cannot run Linux containers, and no alternative-numbered official
-    # build is distributed for either platform today.
-    runs-on: ${{ matrix.runs-on }}
-    timeout-minutes: 30
+  turbo-docker-run:
+    name: "Run with Turbo Extension (Docker PHP builds)"
+    needs: "turbo-compile"
+    # The docker-library php images build the official php.net tarballs
+    # without regenerating the parser, so their runtime can differ from the
+    # distro/setup-php builds the .so artifacts are compiled against and
+    # that turbo-run exercises. The canonical incident is the T_* token
+    # numbering (https://github.com/phpstan/phpstan/issues/15037): the
+    # userland token ids are assigned by the bison that generated the
+    # tarball's zend_language_parser.c — the 8.3.21 tarball ships the
+    # Bison 3.8.2 numbering, the 8.3.22 one the Bison 3.0.4 numbering —
+    # and with ids baked in at compile time the extension silently dropped
+    # every comment, and with them every PHPDoc, on the other numbering's
+    # builds. The next incompatibility of that kind will not announce
+    # itself in a probe written for the last one, so this job loads the
+    # freshly built extension into docker-library images and runs the same
+    # make tests + make phpstan as turbo-run: any turbo-vs-environment
+    # mismatch fails ordinary tests (verified against the pre-fix
+    # token-numbering bug: 2462 of 21065 tests fail and self-analysis
+    # crashes on the Bison 3.0.4 image, both green on the matched one).
+    # The 8.3 images are pinned to one release of each known numbering;
+    # 8.4/8.5 float on the minor tag on purpose so that a future patch
+    # release with a surprising build is picked up on the next run without
+    # a workflow change. Legs run on linux-gnu-x86_64 only: the token
+    # numbering comes from the bison that generated the tarball's parser,
+    # not from arch or libc, and per-arch coverage stays with turbo-run
+    # and the compile jobs. No macOS/Windows legs: those runners cannot
+    # run Linux containers, and no alternative-numbered official build is
+    # distributed for either platform today.
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
 
     permissions:
       contents: read
@@ -644,37 +649,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        image:
+          - "php:8.3.21-cli-bookworm"
+          - "php:8.3.22-cli-bookworm"
+          - "php:8.4-cli-bookworm"
+          - "php:8.5-cli-bookworm"
+        check: ["tests", "phpstan"]
         include:
-          - target: "linux-gnu-x86_64"
-            runs-on: "ubuntu-latest"
-            suffix: ""
-            image-bison382: "php:8.3.21-cli-bookworm"
-            image-bison304: "php:8.3.22-cli-bookworm"
-          - target: "linux-gnu-arm64"
-            runs-on: "ubuntu-24.04-arm"
-            suffix: ""
-            image-bison382: "php:8.3.21-cli-bookworm"
-            image-bison304: "php:8.3.22-cli-bookworm"
-          - target: "linux-musl-x86_64"
-            runs-on: "ubuntu-latest"
-            suffix: ""
-            image-bison382: "php:8.3.21-cli-alpine"
-            image-bison304: "php:8.3.22-cli-alpine"
-          - target: "linux-musl-arm64"
-            runs-on: "ubuntu-24.04-arm"
-            suffix: ""
-            image-bison382: "php:8.3.21-cli-alpine"
-            image-bison304: "php:8.3.22-cli-alpine"
-          - target: "linux-gnu-x86_64"
-            runs-on: "ubuntu-latest"
-            suffix: "-zts"
-            image-bison382: "php:8.3.21-zts-bookworm"
-            image-bison304: "php:8.3.22-zts-bookworm"
-          - target: "linux-gnu-arm64"
-            runs-on: "ubuntu-24.04-arm"
-            suffix: "-zts"
-            image-bison382: "php:8.3.21-zts-bookworm"
-            image-bison304: "php:8.3.22-zts-bookworm"
+          - image: "php:8.3.21-cli-bookworm"
+            php-version: "8.3"
+          - image: "php:8.3.22-cli-bookworm"
+            php-version: "8.3"
+          - image: "php:8.4-cli-bookworm"
+            php-version: "8.4"
+          - image: "php:8.5-cli-bookworm"
+            php-version: "8.5"
+          # The tests legs invoke paratest directly instead of a literal
+          # `make tests`: its install-paratest step needs a composer, which
+          # the images do not carry — tests/vendor is installed on the
+          # runner host below, the same way tests.yml runs the suite.
+          - check: "tests"
+            script: "php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage"
+          - check: "phpstan"
+            script: "make phpstan"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -687,44 +684,64 @@ jobs:
         with:
           persist-credentials: false
 
-      # vendor/ is installed on the runner host (the probes only read it from
-      # the mounted workspace): the docker-library images carry neither a
-      # composer nor an unzip.
+      # vendor/ (and tests/vendor for the tests legs) is installed on the
+      # runner host and only read from the mounted workspace: the
+      # docker-library images carry neither a composer nor an unzip.
       - name: "Install PHP"
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
         with:
           coverage: "none"
-          php-version: "8.3"
+          php-version: "${{ matrix.php-version }}"
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         with:
           ignore-cache: true
 
+      - name: "Install paratest"
+        if: matrix.check == 'tests'
+        run: composer install --working-dir tests
+
       - name: "Download extension artifact"
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: "phpstan_turbo-${{ matrix.target }}-php8.3${{ matrix.suffix }}"
+          name: "phpstan_turbo-linux-gnu-x86_64-php${{ matrix.php-version }}"
           path: "turbo-ext"
 
-      - name: "Probe on the Bison 3.8.2 numbering (${{ matrix.image-bison382 }})"
+      # Fast fail with a one-line diagnosis: a token-numbering mismatch
+      # would otherwise surface as thousands of unrelated-looking failures
+      # in the suite run below.
+      - name: "Token-id probe in ${{ matrix.image }}"
         env:
-          IMAGE: ${{ matrix.image-bison382 }}
+          IMAGE: ${{ matrix.image }}
         run: docker run --rm -v "$PWD:/work" -w /work "$IMAGE" php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/token-id-probe.php
 
-      - name: "Probe on the Bison 3.0.4 numbering (${{ matrix.image-bison304 }})"
-        env:
-          IMAGE: ${{ matrix.image-bison304 }}
-        run: docker run --rm -v "$PWD:/work" -w /work "$IMAGE" php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/token-id-probe.php
+      # Bind-mounted into conf.d of every docker run below. The images
+      # ship no php.ini, so memory_limit would default to 128M, which the
+      # test bootstrap (DI container compilation) already exceeds.
+      - name: "Prepare the extension ini"
+        run: printf 'extension=/work/turbo-ext/phpstan_turbo.so\nmemory_limit=-1\n' > "$RUNNER_TEMP/turbo-docker.ini"
 
-      - name: "Parser corpus on the Bison 3.8.2 numbering (${{ matrix.image-bison382 }})"
+      - name: "Verify the extension is active in ${{ matrix.image }}"
         env:
-          IMAGE: ${{ matrix.image-bison382 }}
-        run: docker run --rm -v "$PWD:/work" -w /work "$IMAGE" php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+          IMAGE: ${{ matrix.image }}
+        run: |
+          docker run --rm -v "$PWD:/work" -v "$RUNNER_TEMP/turbo-docker.ini:/usr/local/etc/php/conf.d/zz-turbo.ini" -w /work "$IMAGE" php -r '
+            require "src/Turbo/TurboExtensionEnabler.php";
+            PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
+            require "vendor/autoload.php";
+            if (!(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass() || !(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass()->isInternal()) {
+              fwrite(STDERR, "turbo extension is not shadowing ScopeOps" . PHP_EOL);
+              exit(1);
+            }
+          '
 
-      - name: "Parser corpus on the Bison 3.0.4 numbering (${{ matrix.image-bison304 }})"
+      - name: "Run ${{ matrix.check }} in ${{ matrix.image }}"
+        # --shm-size: the arena allocates cross-worker shared memory, and
+        # docker's default 64M /dev/shm makes parallel analysis SIGBUS.
         env:
-          IMAGE: ${{ matrix.image-bison304 }}
-        run: docker run --rm -v "$PWD:/work" -w /work "$IMAGE" php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+          IMAGE: ${{ matrix.image }}
+          SCRIPT: ${{ matrix.script }}
+        run: docker run --rm --shm-size=1g -v "$PWD:/work" -v "$RUNNER_TEMP/turbo-docker.ini:/usr/local/etc/php/conf.d/zz-turbo.ini" -w /work "$IMAGE" bash -c "$SCRIPT"
 
   turbo-macos-universal:
     name: "Turbo macOS Universal Binary"

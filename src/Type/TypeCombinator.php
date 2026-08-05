@@ -1735,11 +1735,16 @@ final class TypeCombinator
 		$hasOffsetValueTypeCount = 0;
 		$typesCount = count($types);
 		$typesNeedSorting = false;
+		$hasPropertyType = false;
 		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
 
 			if ($type instanceof SubtractableType || $type instanceof ConstantArrayType) {
 				$typesNeedSorting = true;
+			}
+
+			if ($type instanceof HasPropertyType) {
+				$hasPropertyType = true;
 			}
 
 			if ($type instanceof IntersectionType && !$type instanceof TemplateType) {
@@ -1778,6 +1783,41 @@ final class TypeCombinator
 
 				return 0;
 			});
+		}
+
+		// Resolve object-shape optional keys that a HasPropertyType asserts are present before the
+		// reduction loop below. In that loop the generic supertype dedup can drop a HasPropertyType
+		// as redundant against a dynamic-property class such as stdClass (which reports every
+		// property as present) before it is ever paired with the object shape. Which of the two
+		// fires first depends on the member order, so the collapse runs here, where order does not
+		// change the result of what is meant to be an order-independent value. Gated on the presence
+		// of a HasPropertyType so the common intersection pays only the flag check set above.
+		if ($hasPropertyType) {
+			for ($i = 0; $i < $typesCount; $i++) {
+				for ($j = $i + 1; $j < $typesCount; $j++) {
+					if (
+						$types[$i] instanceof ObjectShapeType
+						&& $types[$j] instanceof HasPropertyType
+						&& !$types[$i]->hasInstanceProperty($types[$j]->getPropertyName())->no()
+					) {
+						$types[$i] = $types[$i]->makePropertyRequired($types[$j]->getPropertyName());
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+
+					if (
+						$types[$j] instanceof ObjectShapeType
+						&& $types[$i] instanceof HasPropertyType
+						&& !$types[$j]->hasInstanceProperty($types[$i]->getPropertyName())->no()
+					) {
+						$types[$j] = $types[$j]->makePropertyRequired($types[$i]->getPropertyName());
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+				}
+			}
 		}
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
@@ -1939,20 +1979,6 @@ final class TypeCombinator
 					}
 
 					if ($types[$j] instanceof OversizedArrayType && $types[$i] instanceof HasOffsetValueType) {
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if ($types[$i] instanceof ObjectShapeType && $types[$j] instanceof HasPropertyType) {
-						$types[$i] = $types[$i]->makePropertyRequired($types[$j]->getPropertyName());
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if ($types[$j] instanceof ObjectShapeType && $types[$i] instanceof HasPropertyType) {
-						$types[$j] = $types[$j]->makePropertyRequired($types[$i]->getPropertyName());
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

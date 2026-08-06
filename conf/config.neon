@@ -56,7 +56,6 @@ parameters:
 		unnecessaryNullCoalesce: false
 		finiteTypesInHaystack: false
 		switchConditionAlwaysFalse: false
-		relativePathResultCache: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

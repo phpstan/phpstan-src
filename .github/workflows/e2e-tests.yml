@@ -420,8 +420,8 @@ jobs:
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-relative-path
-              # Cold run with the relativePathResultCache toggle on: paths are stored relative to the
-              # phpstan install (the anchor), so the cache no longer embeds the absolute checkout path.
+              # Cold run: paths are stored relative to the phpstan install (the anchor), so the cache
+              # no longer embeds the absolute checkout path.
               ../../bin/phpstan analyse
               ../bashunit -a contains "'e2e/result-cache-relative-path/src/HelloWorld.php'" "$(cat tmp/resultCache.php)"
               # the analysed file must NOT be stored under its absolute checkout path

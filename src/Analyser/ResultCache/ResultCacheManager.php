@@ -127,8 +127,6 @@ final class ResultCacheManager
 		private int $skipResultCacheIfOlderThanDays,
 		#[AutowiredParameter(ref: '%rootDir%')]
 		private string $anchorDirectory,
-		#[AutowiredParameter(ref: '%featureToggles.relativePathResultCache%')]
-		private bool $relativePathResultCache,
 	)
 	{
 	}
@@ -274,32 +272,32 @@ final class ResultCacheManager
 			);
 		}
 
-		if (($data['meta']['relativePaths'] ?? false) === true) {
-			// The cache was written with paths relative to the anchor directory. Re-absolutize them
-			// against the current anchor before anything reads them, so a moved project (a fresh CI
-			// checkout dir, a git worktree) resolves to its new location. projectConfig stays a relative
-			// Neon string here; isMetaDifferent()/getMetaKeyDifferences() relativize the current side to
-			// compare. Gated on the cached flag, not the current toggle, so an old cache is left untouched.
-			$transformer = $this->getPathTransformer();
-			$data['meta'] = $transformer->absolutizeMeta($data['meta']);
-			$data['projectExtensionFiles'] = $transformer->absolutizeFileKeyed($data['projectExtensionFiles']);
-			$data['linesToIgnore'] = $transformer->absolutizeCompoundKeyed($data['linesToIgnore']);
-			$data['unmatchedLineIgnores'] = $transformer->absolutizeCompoundKeyed($data['unmatchedLineIgnores']);
-			$data['dependencies'] = $transformer->absolutizeDependencies($data['dependencies']);
-			$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
+		// The cache stores paths relative to the anchor directory. Re-absolutize them against the current
+		// anchor before anything reads them, so a moved project (a fresh CI checkout dir, a git worktree)
+		// resolves to its new location. projectConfig stays a relative Neon string here;
+		// isMetaDifferent()/getMetaKeyDifferences() relativize the current side to compare. Absolutizing an
+		// already-absolute path is a no-op, so a cache from an older format is left untouched (and then
+		// discarded by the cacheVersion check below).
+		$transformer = $this->getPathTransformer();
+		$data['meta'] = $transformer->absolutizeMeta($data['meta']);
+		$data['projectExtensionFiles'] = $transformer->absolutizeFileKeyed($data['projectExtensionFiles']);
+		$data['linesToIgnore'] = $transformer->absolutizeCompoundKeyed($data['linesToIgnore']);
+		$data['unmatchedLineIgnores'] = $transformer->absolutizeCompoundKeyed($data['unmatchedLineIgnores']);
+		$data['dependencies'] = $transformer->absolutizeDependencies($data['dependencies']);
+		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
 
-			$errorsCallback = $data['errorsCallback'];
-			$data['errorsCallback'] = static fn (): array => $transformer->absolutizeErrors($errorsCallback());
-			$locallyIgnoredErrorsCallback = $data['locallyIgnoredErrorsCallback'];
-			$data['locallyIgnoredErrorsCallback'] = static fn (): array => $transformer->absolutizeErrors($locallyIgnoredErrorsCallback());
-			$collectedDataCallback = $data['collectedDataCallback'];
-			$data['collectedDataCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($collectedDataCallback());
-			$exportedNodesCallback = $data['exportedNodesCallback'];
-			$data['exportedNodesCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($exportedNodesCallback());
-		}
+		$errorsCallback = $data['errorsCallback'];
+		$data['errorsCallback'] = static fn (): array => $transformer->absolutizeErrors($errorsCallback());
+		$locallyIgnoredErrorsCallback = $data['locallyIgnoredErrorsCallback'];
+		$data['locallyIgnoredErrorsCallback'] = static fn (): array => $transformer->absolutizeErrors($locallyIgnoredErrorsCallback());
+		$collectedDataCallback = $data['collectedDataCallback'];
+		$data['collectedDataCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($collectedDataCallback());
+		$exportedNodesCallback = $data['exportedNodesCallback'];
+		$data['exportedNodesCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($exportedNodesCallback());
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
-		$packageDependencies = $data['packageDependencies'] ?? [];
+		// absolutized above, so it is always present here
+		$packageDependencies = $data['packageDependencies'];
 		$packageSeededFiles = [];
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
@@ -671,10 +669,7 @@ final class ResultCacheManager
 		if ($projectConfig !== null) {
 			ksort($currentMeta['projectConfig']);
 
-			if ($this->relativePathResultCache) {
-				$currentMeta['projectConfig'] = $this->getPathTransformer()->relativizeProjectConfig($currentMeta['projectConfig']);
-			}
-
+			$currentMeta['projectConfig'] = $this->getPathTransformer()->relativizeProjectConfig($currentMeta['projectConfig']);
 			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
 		}
 
@@ -696,10 +691,7 @@ final class ResultCacheManager
 		if ($projectConfig !== null) {
 			ksort($currentMeta['projectConfig']);
 
-			if ($this->relativePathResultCache) {
-				$currentMeta['projectConfig'] = $this->getPathTransformer()->relativizeProjectConfig($currentMeta['projectConfig']);
-			}
-
+			$currentMeta['projectConfig'] = $this->getPathTransformer()->relativizeProjectConfig($currentMeta['projectConfig']);
 			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
 		}
 
@@ -783,9 +775,7 @@ final class ResultCacheManager
 		$meta = $resultCache->getMeta();
 		$projectConfigArray = $meta['projectConfig'];
 		if ($projectConfigArray !== null) {
-			if ($this->relativePathResultCache) {
-				$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
-			}
+			$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
 		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $packageDependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
@@ -1256,21 +1246,21 @@ final class ResultCacheManager
 
 		ksort($exportedNodes);
 
-		if ($this->relativePathResultCache) {
-			$transformer = $this->getPathTransformer();
-			// projectConfig inside $meta is already a Neon-encoded string here (encoded in process()),
-			// so it is relativized at the array level before that encode; only the other meta paths remain.
-			$meta = $transformer->relativizeMeta($meta);
-			$errors = $transformer->relativizeErrors($errors);
-			$locallyIgnoredErrors = $transformer->relativizeErrors($locallyIgnoredErrors);
-			$linesToIgnore = $transformer->relativizeCompoundKeyed($linesToIgnore);
-			$unmatchedLineIgnores = $transformer->relativizeCompoundKeyed($unmatchedLineIgnores);
-			$collectedData = $transformer->relativizeFileKeyed($collectedData);
-			$invertedDependencies = $transformer->relativizeDependencies($invertedDependencies);
-			$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
-			$exportedNodes = $transformer->relativizeFileKeyed($exportedNodes);
-			$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
-		}
+		// Store paths relative to the anchor so the cache survives a change of the project's absolute
+		// path prefix (a fresh CI checkout dir, a git worktree). projectConfig inside $meta is already a
+		// Neon-encoded string here (encoded in process()), so it is relativized at the array level before
+		// that encode; only the other meta paths remain.
+		$transformer = $this->getPathTransformer();
+		$meta = $transformer->relativizeMeta($meta);
+		$errors = $transformer->relativizeErrors($errors);
+		$locallyIgnoredErrors = $transformer->relativizeErrors($locallyIgnoredErrors);
+		$linesToIgnore = $transformer->relativizeCompoundKeyed($linesToIgnore);
+		$unmatchedLineIgnores = $transformer->relativizeCompoundKeyed($unmatchedLineIgnores);
+		$collectedData = $transformer->relativizeFileKeyed($collectedData);
+		$invertedDependencies = $transformer->relativizeDependencies($invertedDependencies);
+		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
+		$exportedNodes = $transformer->relativizeFileKeyed($exportedNodes);
+		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 
 		$file = $this->cacheFilePath;
 
@@ -1519,7 +1509,6 @@ return [
 
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
-			'relativePaths' => $this->relativePathResultCache,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'fnsr' => $fnsr,
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),

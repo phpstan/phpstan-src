@@ -1507,6 +1507,9 @@ class ConstantArrayType implements Type
 
 		$isListOnlyIfKeysAreOptional = false;
 		foreach ($newKeyTypes as $k2 => $newKeyType2) {
+			// An integer-like string key such as '1' is the integer key it becomes at
+			// runtime, so normalize before deciding whether it continues the list.
+			$newKeyType2 = $newKeyType2->toArrayKey();
 			if (!$newKeyType2 instanceof ConstantIntegerType || $newKeyType2->getValue() !== $k2) {
 				// We found a non-optional key that implies that the array is never a list.
 				if (!in_array($k2, $newOptionalKeys, true)) {

@@ -1665,6 +1665,29 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		}
 	}
 
+	/**
+	 * The same normalization is needed when re-deriving list-ness after an unset:
+	 * unsetting the optional tail of list{'0': string, 1?: int} leaves a list, so
+	 * the `preserveListCertainty` path must not conclude the shape became impossible.
+	 */
+	public function testUnsetOffsetJudgesListnessFromNormalizedKeys(): void
+	{
+		$type = new ConstantArrayType(
+			[new ConstantStringType('0'), new ConstantIntegerType(1)],
+			[new StringType(), new IntegerType()],
+			[2],
+			[1],
+			TrinaryLogic::createYes(),
+		);
+
+		$unset = $type->unsetOffset(new ConstantIntegerType(1), true);
+		$this->assertInstanceOf(ConstantArrayType::class, $unset);
+		$this->assertSame(TrinaryLogic::createYes()->describe(), $unset->isList()->describe());
+
+		$unsetWithoutCertainty = $type->unsetOffset(new ConstantIntegerType(1));
+		$this->assertSame(TrinaryLogic::createMaybe()->describe(), $unsetWithoutCertainty->isList()->describe());
+	}
+
 	public function testSealedness(): void
 	{
 		BleedingEdgeToggle::withBleedingEdge(false, function () {

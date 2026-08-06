@@ -1,0 +1,12 @@
+parameters:
+	level: 0
+	paths:
+		- src
+	bootstrapFiles:
+		- custom-autoloader.php
+	ignoreErrors:
+		# The probe deliberately references a name that is a function, not a class. The point of
+		# this fixture is that analysis completes instead of fatally re-including the function file.
+		-
+			message: '#^Class Redeclare\\Builder\\thing not found\.$#'
+			path: src/probe.php

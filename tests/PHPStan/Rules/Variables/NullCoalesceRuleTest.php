@@ -625,17 +625,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
-	public function testPropertyInitializationUnset(): void
-	{
-		$this->analyse([__DIR__ . '/data/property-initialization-unset.php'], [
-			[
-				'Property PropertyInitializationUnset\NoUnset::$string on left side of ?? is not nullable nor uninitialized.',
-				18,
-			],
-		]);
-	}
-
 	public function testBug15046(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15046.php'], [

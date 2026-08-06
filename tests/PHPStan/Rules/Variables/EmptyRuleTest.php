@@ -274,17 +274,4 @@ class EmptyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
-	public function testPropertyInitializationUnset(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-
-		$this->analyse([__DIR__ . '/data/property-initialization-unset.php'], [
-			[
-				'Property PropertyInitializationUnset\NoUnset::$true in empty() is not falsy nor uninitialized.',
-				21,
-			],
-		]);
-	}
-
 }

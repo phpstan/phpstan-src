@@ -306,10 +306,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	/**
 	 * @param array<string, ExpressionTypeHolder> $currentExpressionTypes
-	 * @param array<string, true> $propertyNamesToForget
 	 * @return array<string, ExpressionTypeHolder>
 	 */
-	private function rememberConstructorExpressions(array $currentExpressionTypes, array $propertyNamesToForget): array
+	private function rememberConstructorExpressions(array $currentExpressionTypes): array
 	{
 		$rememberPropertyState = !$this->classHasCustomSerialization();
 		$expressionTypes = [];
@@ -327,15 +326,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				if (!$rememberPropertyState || !$this->isReadonlyPropertyFetch($expr, true)) {
 					continue;
 				}
-
-				if (
-					$expr->name instanceof Identifier
-					&& array_key_exists($expr->name->toString(), $propertyNamesToForget)
-				) {
-					continue;
-				}
 			} elseif ($expr instanceof PropertyInitializationExpr) {
-				if (!$rememberPropertyState || array_key_exists($expr->getPropertyName(), $propertyNamesToForget)) {
+				if (!$rememberPropertyState) {
 					continue;
 				}
 			} elseif (!$expr instanceof ConstFetch) {
@@ -375,18 +367,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& $classReflection->hasNativeMethod('unserialize');
 	}
 
-	/**
-	 * @param array<string, true> $propertyNamesToForget
-	 */
-	public function rememberConstructorScope(array $propertyNamesToForget = []): self
+	public function rememberConstructorScope(): self
 	{
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			$this->rememberConstructorExpressions($this->expressionTypes, $propertyNamesToForget),
-			$this->rememberConstructorExpressions($this->nativeExpressionTypes, $propertyNamesToForget),
+			$this->rememberConstructorExpressions($this->expressionTypes),
+			$this->rememberConstructorExpressions($this->nativeExpressionTypes),
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
@@ -3213,20 +3202,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $scope;
-	}
-
-	/** unset() makes a typed property uninitialized again, undoing what assignInitializedProperty() recorded. */
-	public function unsetInitializedProperty(Type $fetchedOnType, string $propertyName): self
-	{
-		if (!$this->isInClass()) {
-			return $this;
-		}
-
-		if (TypeUtils::findThisType($fetchedOnType) === null) {
-			return $this;
-		}
-
-		return $this->invalidateExpression(new PropertyInitializationExpr($propertyName));
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self

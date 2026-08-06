@@ -54,7 +54,6 @@ parametersSchema:
 		unnecessaryNullCoalesce: bool()
 		finiteTypesInHaystack: bool()
 		switchConditionAlwaysFalse: bool()
-		relativePathResultCache: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -25,4 +25,3 @@ parameters:
 		unnecessaryNullCoalesce: true
 		finiteTypesInHaystack: true
 		switchConditionAlwaysFalse: true
-		relativePathResultCache: true

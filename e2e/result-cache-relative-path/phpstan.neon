@@ -3,5 +3,3 @@ parameters:
     tmpDir: tmp
     paths:
         - src
-    featureToggles:
-        relativePathResultCache: true

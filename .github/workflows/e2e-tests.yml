@@ -446,7 +446,8 @@ jobs:
               # Running in the worktree (a different absolute prefix) must re-absolutize the relative cache
               # against the worktree and reuse it, with 0 files reanalysed.
               cd "$WORKTREE/e2e/result-cache-relative-path"
-              OUTPUT=$(../../bin/phpstan analyse -vv)
+              # -vv progress (incl. "Result cache restored") goes to stderr, so capture both streams
+              OUTPUT=$(../../bin/phpstan analyse -vv 2>&1)
               echo "$OUTPUT"
               echo "$OUTPUT" | grep -q 'Result cache restored. 0 files will be reanalysed.' || { echo 'result cache was not reused in the git worktree'; exit 1; }
           - script: |

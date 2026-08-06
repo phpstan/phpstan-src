@@ -431,6 +431,25 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-relative-path
+              # Warm the cache in this checkout; with the toggle on, paths are stored relative to the
+              # phpstan install, so the cache is portable to another checkout with the same layout.
+              ../../bin/phpstan analyse
+              # A git worktree is a second checkout of the same repo at a different absolute path. Give it
+              # its own phpstan install (vendor) so %rootDir% points at the worktree, and carry the warm
+              # cache across (a real setup would CoW-clone the checkout or share the tmpDir).
+              WORKTREE="$(mktemp -d)/phpstan"
+              git -C ../.. worktree add --detach "$WORKTREE" HEAD
+              cp -al ../../vendor "$WORKTREE/vendor"
+              cp -R tmp "$WORKTREE/e2e/result-cache-relative-path/tmp"
+              rm -rf "$WORKTREE/e2e/result-cache-relative-path/tmp/cache"
+              # Running in the worktree (a different absolute prefix) must re-absolutize the relative cache
+              # against the worktree and reuse it, with 0 files reanalysed.
+              cd "$WORKTREE/e2e/result-cache-relative-path"
+              OUTPUT=$(../../bin/phpstan analyse -vv)
+              echo "$OUTPUT"
+              echo "$OUTPUT" | grep -q 'Result cache restored. 0 files will be reanalysed.' || { echo 'result cache was not reused in the git worktree'; exit 1; }
+          - script: |
               cd e2e/result-cache-package-update
               composer install
               ../../bin/phpstan analyse

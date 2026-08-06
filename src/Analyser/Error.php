@@ -7,6 +7,8 @@ use JsonSerializable;
 use Nette\Utils\Strings;
 use Override;
 use PhpParser\Node;
+use PHPStan\File\FileHelper;
+use PHPStan\File\RelativePathHelper;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use Throwable;
@@ -131,6 +133,50 @@ final class Error implements JsonSerializable
 	public function getTraitFilePath(): ?string
 	{
 		return $this->traitFilePath;
+	}
+
+	/**
+	 * Rewrites the absolute paths this error carries to paths relative to the helper's base,
+	 * for portable storage in the result cache. Inverse of absolutizePaths().
+	 */
+	public function relativizePaths(RelativePathHelper $relativePathHelper): self
+	{
+		return new self(
+			$this->message,
+			$relativePathHelper->getRelativePath($this->file),
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath === null ? null : $relativePathHelper->getRelativePath($this->filePath),
+			$this->traitFilePath === null ? null : $relativePathHelper->getRelativePath($this->traitFilePath),
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+		);
+	}
+
+	/**
+	 * Rewrites the relative paths stored by relativizePaths() back to absolute paths against
+	 * the helper's base. Inverse of relativizePaths().
+	 */
+	public function absolutizePaths(FileHelper $fileHelper): self
+	{
+		return new self(
+			$this->message,
+			$fileHelper->normalizePath($fileHelper->absolutizePath($this->file)),
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath === null ? null : $fileHelper->normalizePath($fileHelper->absolutizePath($this->filePath)),
+			$this->traitFilePath === null ? null : $fileHelper->normalizePath($fileHelper->absolutizePath($this->traitFilePath)),
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+		);
 	}
 
 	public function getLine(): ?int

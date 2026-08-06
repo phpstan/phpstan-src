@@ -419,6 +419,18 @@ jobs:
               ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-relative-path
+              # Cold run with the relativePathResultCache toggle on: paths are stored relative to the
+              # phpstan install (the anchor), so the cache no longer embeds the absolute checkout path.
+              ../../bin/phpstan analyse
+              ../bashunit -a contains "'e2e/result-cache-relative-path/src/HelloWorld.php'" "$(cat tmp/resultCache.php)"
+              # the analysed file must NOT be stored under its absolute checkout path
+              if grep -q "'$(pwd)/src/HelloWorld.php'" tmp/resultCache.php; then echo 'cache still holds an absolute analysed path'; exit 1; fi
+              # Warm run: the relative cache re-absolutizes against the current anchor and is fully reused.
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-package-update
               composer install
               ../../bin/phpstan analyse

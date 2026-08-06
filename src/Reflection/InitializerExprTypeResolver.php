@@ -43,6 +43,7 @@ use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -66,6 +67,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\DecimalIntegerStringHelper;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -595,6 +597,10 @@ final class InitializerExprTypeResolver
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 
+		if ($this->isConcatNonDecimalIntegerString($leftStringType, $rightStringType)) {
+			$accessoryTypes[] = new AccessoryDecimalIntegerStringType(inverse: true);
+		}
+
 		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));
 		if ($leftNumericStringNonEmpty->isNumericString()->yes()) {
 			$validationCallback = $left->isInteger()->yes()
@@ -631,6 +637,47 @@ final class InitializerExprTypeResolver
 		}
 
 		return new StringType();
+	}
+
+	/**
+	 * A decimal-int-string is made of digits with an optional leading `-` (and without
+	 * redundant leading zeros). So when one of the operands is a known constant string
+	 * that cannot occur at its side of such a string, the concatenation can never be one.
+	 *
+	 * This is only sound for constant operands: `non-decimal-int-string . int` is not
+	 * a non-decimal-int-string, because `'-' . 1` is `'-1'`.
+	 */
+	private function isConcatNonDecimalIntegerString(Type $leftStringType, Type $rightStringType): bool
+	{
+		$leftConstantStrings = $leftStringType->getConstantStrings();
+		if (count($leftConstantStrings) > 0) {
+			$rightCanBeEmpty = !$rightStringType->isNonEmptyString()->yes();
+			$allDisqualify = true;
+			foreach ($leftConstantStrings as $leftConstantString) {
+				if (DecimalIntegerStringHelper::canStart($leftConstantString->getValue(), $rightCanBeEmpty)) {
+					$allDisqualify = false;
+					break;
+				}
+			}
+
+			if ($allDisqualify) {
+				return true;
+			}
+		}
+
+		$rightConstantStrings = $rightStringType->getConstantStrings();
+		if (count($rightConstantStrings) === 0) {
+			return false;
+		}
+
+		$leftCanBeEmpty = !$leftStringType->isNonEmptyString()->yes();
+		foreach ($rightConstantStrings as $rightConstantString) {
+			if (DecimalIntegerStringHelper::canEnd($rightConstantString->getValue(), $leftCanBeEmpty)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

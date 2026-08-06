@@ -18,10 +18,10 @@ class Foo
 		assertType('literal-string', '' . $literalString);
 		assertType('literal-string&non-empty-string', $literalString . '0');
 		assertType('literal-string&non-empty-string', '0' . $literalString);
-		assertType('literal-string&non-falsy-string', $literalString . 'foo');
-		assertType('literal-string&non-falsy-string', 'foo' . $literalString);
-		assertType('literal-string&non-falsy-string', "foo ${literalString}");
-		assertType('literal-string&non-falsy-string', "${literalString} foo");
+		assertType('literal-string&non-decimal-int-string&non-falsy-string', $literalString . 'foo');
+		assertType('literal-string&non-decimal-int-string&non-falsy-string', 'foo' . $literalString);
+		assertType('literal-string&non-decimal-int-string&non-falsy-string', "foo ${literalString}");
+		assertType('literal-string&non-decimal-int-string&non-falsy-string', "${literalString} foo");
 		assertType('string', $string . '');
 		assertType('string', '' . $string);
 		assertType('string', $literalString . $string);

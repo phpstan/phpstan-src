@@ -30,7 +30,7 @@ class Foo {
 		assertType("'Hello|World'", ucwords('hello|world', "|"));
 		assertType("'ČESKÁ REPUBLIKA'", mb_convert_case('Česká republika', MB_CASE_UPPER));
 		assertType("'česká republika'", mb_convert_case('Česká republika', MB_CASE_LOWER));
-		assertType("non-falsy-string", mb_convert_case('Česká republika', $mixed));
+		assertType("non-decimal-int-string&non-falsy-string", mb_convert_case('Česká republika', $mixed));
 		assertType("'ČESKÁ REPUBLIKA'|'Česká Republika'|'česká republika'", mb_convert_case('Česká republika', $caseMode));
 		assertType("'Ａｂｃ１２３アイウガギグばびぶ漢字'", mb_convert_kana('Ａｂｃ１２３ｱｲｳｶﾞｷﾞｸﾞばびぶ漢字'));
 		assertType("'Abc123アイウガギグばびぶ漢字'", mb_convert_kana('Ａｂｃ１２３ｱｲｳｶﾞｷﾞｸﾞばびぶ漢字', 'aKV'));
@@ -96,7 +96,7 @@ class Foo {
 
 	public function foo() {
 		// invalid char conversions still lead to non-falsy-string
-		assertType("lowercase-string&non-falsy-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
+		assertType("lowercase-string&non-decimal-int-string&non-falsy-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
 		// valid char sequence, but not support non ASCII / UTF-8 encodings
 		assertType("non-falsy-string", mb_convert_kana("\x95\x5c\x8c\xbb", 'SJIS-win'));
 		// invalid UTF-8 sequence

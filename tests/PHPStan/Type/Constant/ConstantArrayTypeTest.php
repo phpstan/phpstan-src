@@ -1612,6 +1612,59 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		}
 	}
 
+	/**
+	 * The `@api` constructor takes key types verbatim, so a caller can hand over an
+	 * integer-like string key such as `'0'` that the builder would have normalized.
+	 * Since such a key *is* the integer key at runtime, the merged shape's list-ness
+	 * must be judged from the normalized key, not from `ConstantStringType`-ness.
+	 */
+	public function testMergeWithJudgesListnessFromNormalizedKeys(): void
+	{
+		foreach ([false, true] as $bleedingEdge) {
+			BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($bleedingEdge): void {
+				// array{'0': string} merged with array{'0': int} stays array{'0': string|int},
+				// which is a list because '0' is the integer key 0.
+				$stringKeyed = new ConstantArrayType([new ConstantStringType('0')], [new StringType()], [1]);
+				$otherStringKeyed = new ConstantArrayType([new ConstantStringType('0')], [new IntegerType()], [1]);
+
+				$this->assertSame(
+					TrinaryLogic::createYes()->describe(),
+					$stringKeyed->mergeWith($otherStringKeyed)->isList()->describe(),
+					sprintf('bleedingEdge: %d', (int) $bleedingEdge),
+				);
+
+				// array{0: string, '1': int} merged with array{0: string} widens '1' into an
+				// optional key. Both realizations - with and without the key - are lists.
+				$withNumericStringKey = new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantStringType('1')],
+					[new StringType(), new IntegerType()],
+					[2],
+				);
+				$withoutNumericStringKey = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [1], [], TrinaryLogic::createYes());
+
+				$this->assertSame(
+					TrinaryLogic::createYes()->describe(),
+					$withNumericStringKey->mergeWith($withoutNumericStringKey)->isList()->describe(),
+					sprintf('bleedingEdge: %d', (int) $bleedingEdge),
+				);
+
+				// '01' is not a canonical integer key, so it stays a list-breaking string key.
+				// Optional, so the key-less realization keeps the answer at maybe.
+				$withNonCanonicalKey = new ConstantArrayType(
+					[new ConstantIntegerType(0), new ConstantStringType('01')],
+					[new StringType(), new IntegerType()],
+					[1],
+				);
+
+				$this->assertSame(
+					TrinaryLogic::createMaybe()->describe(),
+					$withNonCanonicalKey->mergeWith($withoutNumericStringKey)->isList()->describe(),
+					sprintf('bleedingEdge: %d', (int) $bleedingEdge),
+				);
+			});
+		}
+	}
+
 	public function testSealedness(): void
 	{
 		BleedingEdgeToggle::withBleedingEdge(false, function () {

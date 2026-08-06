@@ -64,6 +64,51 @@ function withOptionalNegativeIntKey(array $f): void
 	}
 }
 
+/**
+ * Integer-like string keys are the integer keys they become at runtime,
+ * so they must be judged as such, not as list-breaking string keys.
+ *
+ * @param array{'1'?: string} $g
+ * @param array{'0': string, '1'?: int} $h
+ * @param array{'01'?: string} $i
+ */
+function withNumericStringKeys(array $g, array $h, array $i): void
+{
+	assertType('array{1?: string}', $g);
+	assertType('bool', array_is_list($g));
+
+	assertType('array{0: string, 1?: int}', $h);
+	assertType('true', array_is_list($h));
+
+	// '01' is not a canonical integer key, so it stays a string key.
+	assertType("array{'01'?: string}", $i);
+	assertType('bool', array_is_list($i));
+}
+
+function builtViaConditionalAssignmentWithNumericStringKeys(): void
+{
+	$a = [0 => 'z'];
+	if (rand(0, 1)) {
+		$a['1'] = 'w';
+	}
+	assertType("array{0: 'z', 1?: 'w'}", $a);
+	assertType('true', array_is_list($a));
+
+	$b = [0 => 'z'];
+	if (rand(0, 1)) {
+		$b['2'] = 'w';
+	}
+	assertType("array{0: 'z', 2?: 'w'}", $b);
+	assertType('bool', array_is_list($b));
+
+	$c = [0 => 'z'];
+	if (rand(0, 1)) {
+		$c['01'] = 'w';
+	}
+	assertType("array{0: 'z', '01'?: 'w'}", $c);
+	assertType('bool', array_is_list($c));
+}
+
 function builtViaConditionalAssignment(): void
 {
 	$b = [0 => 'z'];

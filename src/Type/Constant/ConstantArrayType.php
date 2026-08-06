@@ -1444,6 +1444,9 @@ class ConstantArrayType implements Type
 	 * key that breaks list-ness only degrades the answer to `maybe`, because the
 	 * realization where that key is absent may still be a list.
 	 *
+	 * Keys are normalized with `toArrayKey()` first, so an integer-like string key
+	 * such as `'1'` counts as the integer key `1` it becomes at runtime.
+	 *
 	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param int[] $optionalKeys
 	 */
@@ -1460,7 +1463,8 @@ class ConstantArrayType implements Type
 
 		foreach ($keyTypes as $i => $keyType) {
 			$isOptional = array_key_exists($i, $optional);
-			$value = $keyType instanceof ConstantIntegerType ? $keyType->getValue() : null;
+			$arrayKeyType = $keyType->toArrayKey();
+			$value = $arrayKeyType instanceof ConstantIntegerType ? $arrayKeyType->getValue() : null;
 
 			$newValidLengths = [];
 			foreach (array_keys($validLengths) as $length) {

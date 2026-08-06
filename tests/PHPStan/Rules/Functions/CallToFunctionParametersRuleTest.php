@@ -3025,10 +3025,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	}
 
 	#[DataProvider('dataNonEmptyMixedParameter')]
-	public function testNonEmptyMixedParameter(bool $checkExplicitMixed): void
+	public function testNonEmptyMixedParameter(bool $checkImplicitAndExplicitMixed): void
 	{
-		$this->checkExplicitMixed = $checkExplicitMixed;
-		$this->checkImplicitMixed = $checkExplicitMixed;
+		$this->checkExplicitMixed = $checkImplicitAndExplicitMixed;
+		$this->checkImplicitMixed = $checkImplicitAndExplicitMixed;
 		$this->analyse([__DIR__ . '/data/non-empty-mixed-parameter.php'], [
 			[
 				'Parameter #1 $value of function NonEmptyMixedParameter\acceptsNonEmptyMixed expects mixed~(0|0.0|\'\'|\'0\'|array{}|false|null), \'\' given.',

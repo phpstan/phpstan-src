@@ -97,7 +97,6 @@ final class IssetabilityResolution
 				$link->hasNativeType()
 				&& !$link->isVirtual()->yes()
 				&& !$link->hasExpressionTypeOfFetch()
-				&& !$link->hasConditionalExpressionsOfFetch()
 				&& !$link->nativeHasDefaultValue()
 				&& (!$link->nativeReflectionExists() || !$link->nativeIsPromoted() || (!$link->nativeIsReadOnly() && !$link->nativeIsHooked()))
 			) {

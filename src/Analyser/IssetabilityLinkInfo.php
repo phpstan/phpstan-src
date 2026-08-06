@@ -40,7 +40,6 @@ final class IssetabilityLinkInfo
 		private ?TrinaryLogic $isVirtual = null,
 		private ?Type $nativeType = null,
 		private bool $hasExpressionTypeOfFetch = false,
-		private bool $hasConditionalExpressionsOfFetch = false,
 		private bool $initializedThisProperty = false,
 		private bool $nativeReflectionExists = false,
 		private bool $nativeIsPromoted = false,
@@ -80,7 +79,6 @@ final class IssetabilityLinkInfo
 		Type $writableType,
 		Type $nativeType,
 		bool $hasExpressionTypeOfFetch,
-		bool $hasConditionalExpressionsOfFetch,
 		bool $initializedThisProperty,
 		bool $nativeReflectionExists,
 		bool $nativeIsPromoted,
@@ -99,7 +97,6 @@ final class IssetabilityLinkInfo
 			isVirtual: $isVirtual,
 			nativeType: $nativeType,
 			hasExpressionTypeOfFetch: $hasExpressionTypeOfFetch,
-			hasConditionalExpressionsOfFetch: $hasConditionalExpressionsOfFetch,
 			initializedThisProperty: $initializedThisProperty,
 			nativeReflectionExists: $nativeReflectionExists,
 			nativeIsPromoted: $nativeIsPromoted,
@@ -246,18 +243,6 @@ final class IssetabilityLinkInfo
 	public function hasExpressionTypeOfFetch(): bool
 	{
 		return $this->hasExpressionTypeOfFetch;
-	}
-
-	/**
-	 * Whether the scope holds conditional-expression entries about the fetch.
-	 * Such entries exist only when the fetch was narrowed in an evaluated
-	 * condition - and evaluating a condition READS the fetch, which would have
-	 * thrown on an uninitialized typed property. A typed-property read
-	 * witnesses initialization.
-	 */
-	public function hasConditionalExpressionsOfFetch(): bool
-	{
-		return $this->hasConditionalExpressionsOfFetch;
 	}
 
 	public function isInitializedThisProperty(): bool

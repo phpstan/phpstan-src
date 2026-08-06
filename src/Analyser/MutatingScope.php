@@ -102,6 +102,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use Serializable;
 use Throwable;
 use function abs;
 use function array_filter;
@@ -140,6 +141,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
+
+	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
+	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
 
 	/**
 	 * @internal accessed by ScopeOps (native and PHP implementations)
@@ -302,10 +306,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	/**
 	 * @param array<string, ExpressionTypeHolder> $currentExpressionTypes
+	 * @param array<string, true> $propertyNamesToForget
 	 * @return array<string, ExpressionTypeHolder>
 	 */
-	private function rememberConstructorExpressions(array $currentExpressionTypes): array
+	private function rememberConstructorExpressions(array $currentExpressionTypes, array $propertyNamesToForget): array
 	{
+		$rememberPropertyState = !$this->classHasCustomSerialization();
 		$expressionTypes = [];
 		foreach ($currentExpressionTypes as $exprString => $expressionTypeHolder) {
 			$expr = $expressionTypeHolder->getExpr();
@@ -318,10 +324,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					continue;
 				}
 			} elseif ($expr instanceof PropertyFetch) {
-				if (!$this->isReadonlyPropertyFetch($expr, true)) {
+				if (!$rememberPropertyState || !$this->isReadonlyPropertyFetch($expr, true)) {
 					continue;
 				}
-			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {
+
+				if (
+					$expr->name instanceof Identifier
+					&& array_key_exists($expr->name->toString(), $propertyNamesToForget)
+				) {
+					continue;
+				}
+			} elseif ($expr instanceof PropertyInitializationExpr) {
+				if (!$rememberPropertyState || array_key_exists($expr->getPropertyName(), $propertyNamesToForget)) {
+					continue;
+				}
+			} elseif (!$expr instanceof ConstFetch) {
 				continue;
 			}
 
@@ -335,15 +352,41 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $expressionTypes;
 	}
 
-	public function rememberConstructorScope(): self
+	/**
+	 * A class with custom serialization logic can be rebuilt by unserialize()
+	 * without the constructor ever running, and the author decides which properties
+	 * make the round trip - so nothing the constructor established can be relied upon
+	 * in the other methods.
+	 */
+	private function classHasCustomSerialization(): bool
+	{
+		if (!$this->isInClass()) {
+			return false;
+		}
+
+		$classReflection = $this->getClassReflection();
+		foreach (self::CUSTOM_SERIALIZATION_METHODS as $methodName) {
+			if ($classReflection->hasNativeMethod($methodName)) {
+				return true;
+			}
+		}
+
+		return $classReflection->implementsInterface(Serializable::class)
+			&& $classReflection->hasNativeMethod('unserialize');
+	}
+
+	/**
+	 * @param array<string, true> $propertyNamesToForget
+	 */
+	public function rememberConstructorScope(array $propertyNamesToForget = []): self
 	{
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			$this->rememberConstructorExpressions($this->expressionTypes),
-			$this->rememberConstructorExpressions($this->nativeExpressionTypes),
+			$this->rememberConstructorExpressions($this->expressionTypes, $propertyNamesToForget),
+			$this->rememberConstructorExpressions($this->nativeExpressionTypes, $propertyNamesToForget),
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
@@ -3170,6 +3213,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $scope;
+	}
+
+	/** unset() makes a typed property uninitialized again, undoing what assignInitializedProperty() recorded. */
+	public function unsetInitializedProperty(Type $fetchedOnType, string $propertyName): self
+	{
+		if (!$this->isInClass()) {
+			return $this;
+		}
+
+		if (TypeUtils::findThisType($fetchedOnType) === null) {
+			return $this;
+		}
+
+		return $this->invalidateExpression(new PropertyInitializationExpr($propertyName));
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self

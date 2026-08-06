@@ -214,6 +214,12 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
+	/** @var Node\Stmt[] */
+	private array $currentClassLikeStatements = [];
+
+	/** @var array<string, true>|null lazily resolved for $currentClassLikeStatements */
+	private ?array $unsetPropertiesInCurrentClassLike = null;
+
 	/**
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
 	 * @param ExtensionsCollection<MethodParameterOutTypeExtension> $methodParameterOutTypeExtensions
@@ -1066,7 +1072,7 @@ class NodeScopeResolver
 					}
 
 					if ($finalScope !== null) {
-						$scope = $finalScope->rememberConstructorScope();
+						$scope = $finalScope->rememberConstructorScope($this->getUnsetPropertiesInCurrentClassLike());
 					}
 
 				}
@@ -1266,7 +1272,15 @@ class NodeScopeResolver
 				return [!$a->isStatic(), $a->name->toLowerString() !== '__construct'] <=> [!$b->isStatic(), $b->name->toLowerString() !== '__construct'];
 			});
 
+			$previousClassLikeStatements = $this->currentClassLikeStatements;
+			$previousUnsetProperties = $this->unsetPropertiesInCurrentClassLike;
+			$this->currentClassLikeStatements = $classLikeStatements;
+			$this->unsetPropertiesInCurrentClassLike = null;
+
 			$this->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, $context);
+
+			$this->currentClassLikeStatements = $previousClassLikeStatements;
+			$this->unsetPropertiesInCurrentClassLike = $previousUnsetProperties;
 			$this->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensions, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
 			$this->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 			$this->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
@@ -2431,6 +2445,9 @@ class NodeScopeResolver
 					};
 					$scope = $this->processVirtualAssign($scope, $storage, $stmt, $buildExistingChain($var->var), new UnsetOffsetExpr($var->var, $var->dim), $nodeCallback)->getScope();
 				} elseif ($var instanceof PropertyFetch) {
+					if ($var->name instanceof Node\Identifier) {
+						$scope = $scope->unsetInitializedProperty($scope->getType($var->var), $var->name->toString());
+					}
 					$scope = $scope->invalidateExpression($var);
 					$impurePoints[] = new ImpurePoint(
 						$scope,
@@ -2682,6 +2699,37 @@ class NodeScopeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * Properties unset() anywhere in the class body cannot be assumed initialized in the
+	 * other methods just because the constructor assigned them - unset() can run in between.
+	 *
+	 * @return array<string, true>
+	 */
+	private function getUnsetPropertiesInCurrentClassLike(): array
+	{
+		if ($this->unsetPropertiesInCurrentClassLike !== null) {
+			return $this->unsetPropertiesInCurrentClassLike;
+		}
+
+		$propertyNames = [];
+		foreach ((new NodeFinder())->findInstanceOf($this->currentClassLikeStatements, Unset_::class) as $unset) {
+			foreach ($unset->vars as $var) {
+				if (
+					!$var instanceof PropertyFetch
+					|| !$var->name instanceof Node\Identifier
+					|| !$var->var instanceof Variable
+					|| $var->var->name !== 'this'
+				) {
+					continue;
+				}
+
+				$propertyNames[$var->name->toString()] = true;
+			}
+		}
+
+		return $this->unsetPropertiesInCurrentClassLike = $propertyNames;
 	}
 
 	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection

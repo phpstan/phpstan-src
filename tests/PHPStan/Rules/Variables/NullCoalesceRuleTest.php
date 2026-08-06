@@ -597,6 +597,45 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15056(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15056.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.2')]
+	public function testPropertyInitializationCustomSerialization(): void
+	{
+		$this->analyse([__DIR__ . '/data/property-initialization-custom-serialization.php'], [
+			[
+				'Property PropertyInitializationCustomSerialization\NoSerialization::$string on left side of ?? is not nullable nor uninitialized.',
+				20,
+			],
+			[
+				'Property PropertyInitializationCustomSerialization\OnlyWakeup::$string on left side of ?? is not nullable nor uninitialized.',
+				41,
+			],
+			[
+				'Property PropertyInitializationCustomSerialization\PromotedNoSerialization::$string on left side of ?? is not nullable nor uninitialized.',
+				238,
+			],
+			[
+				'Property PropertyInitializationCustomSerialization\CoalesceAssignNoSerialization::$string on left side of ??= is not nullable nor uninitialized.',
+				271,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.2')]
+	public function testPropertyInitializationUnset(): void
+	{
+		$this->analyse([__DIR__ . '/data/property-initialization-unset.php'], [
+			[
+				'Property PropertyInitializationUnset\NoUnset::$string on left side of ?? is not nullable nor uninitialized.',
+				18,
+			],
+		]);
+	}
+
 	public function testBug15046(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15046.php'], [

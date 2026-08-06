@@ -257,4 +257,34 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
+	public function testPropertyInitializationCustomSerialization(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/property-initialization-custom-serialization.php'], [
+			[
+				'Property PropertyInitializationCustomSerialization\NoSerialization::$true in empty() is not falsy nor uninitialized.',
+				23,
+			],
+			[
+				'Property PropertyInitializationCustomSerialization\OnlyWakeup::$true in empty() is not falsy nor uninitialized.',
+				44,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.2')]
+	public function testPropertyInitializationUnset(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/property-initialization-unset.php'], [
+			[
+				'Property PropertyInitializationUnset\NoUnset::$true in empty() is not falsy nor uninitialized.',
+				21,
+			],
+		]);
+	}
+
 }

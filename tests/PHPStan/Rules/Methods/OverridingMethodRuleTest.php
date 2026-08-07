@@ -56,7 +56,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 	}
 
 	#[DataProvider('dataOverridingFinalMethod')]
-	public function testOverridingFinalMethod(int $phpVersion, string $contravariantMessage): void
+	public function testOverridingFinalMethod(int $phpVersion, string $contravariantMessage, string $covariantMessage): void
 	{
 		$errors = [
 			[

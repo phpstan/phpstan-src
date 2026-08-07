@@ -1722,8 +1722,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				[new StringType(), new StringType()],
 				[2],
 				[1],
-				null,
-				[$never, $never],
+				unsealed: [$never, $never],
 			);
 			$y = $this->buildShape([[0, new StringType(), false]]);
 			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());

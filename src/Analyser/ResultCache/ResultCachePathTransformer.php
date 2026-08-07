@@ -9,6 +9,7 @@ use function array_key_exists;
 use function is_array;
 use function is_string;
 use function preg_match;
+use function str_replace;
 use function str_starts_with;
 use function strpos;
 use function substr;
@@ -42,7 +43,10 @@ final class ResultCachePathTransformer
 			return $path;
 		}
 
-		return $this->relativePathHelper->getRelativePath($path);
+		// Always store forward slashes so the cache is portable between Windows and Linux.
+		// getRelativePath() already yields '/'-separated output for a path reachable from the anchor;
+		// a path with no shared prefix is returned unchanged, so normalise its separators too.
+		return str_replace('\\', '/', $this->relativePathHelper->getRelativePath($path));
 	}
 
 	public function absolutizePath(string $path): string

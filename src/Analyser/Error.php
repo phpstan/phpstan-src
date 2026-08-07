@@ -14,6 +14,7 @@ use ReturnTypeWillChange;
 use Throwable;
 use function is_bool;
 use function sprintf;
+use function str_replace;
 
 /**
  * @api
@@ -137,17 +138,20 @@ final class Error implements JsonSerializable
 
 	/**
 	 * Rewrites the absolute paths this error carries to paths relative to the helper's base,
-	 * for portable storage in the result cache. Inverse of absolutizePaths().
+	 * for portable storage in the result cache. Separators are normalised to forward slashes so the
+	 * cache is portable between Windows and Linux. Inverse of absolutizePaths().
 	 */
 	public function relativizePaths(RelativePathHelper $relativePathHelper): self
 	{
+		$relativize = static fn (string $path): string => str_replace('\\', '/', $relativePathHelper->getRelativePath($path));
+
 		return new self(
 			$this->message,
-			$relativePathHelper->getRelativePath($this->file),
+			$relativize($this->file),
 			$this->line,
 			$this->canBeIgnored,
-			$this->filePath === null ? null : $relativePathHelper->getRelativePath($this->filePath),
-			$this->traitFilePath === null ? null : $relativePathHelper->getRelativePath($this->traitFilePath),
+			$this->filePath === null ? null : $relativize($this->filePath),
+			$this->traitFilePath === null ? null : $relativize($this->traitFilePath),
 			$this->tip,
 			$this->nodeLine,
 			$this->nodeType,

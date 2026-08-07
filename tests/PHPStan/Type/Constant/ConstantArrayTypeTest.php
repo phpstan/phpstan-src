@@ -1655,74 +1655,123 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		return $array;
 	}
 
-	public function testMakeListProjectsSealedShapeButKeepsUnsealedKeys(): void
+	/**
+	 * @return iterable<string, array{bool, string}>
+	 */
+	public static function dataMakeListProjectsSealedShapeButKeepsUnsealedKeys(): iterable
 	{
-		// A sealed shape with an optional key past the gap at 1 (2? here): key 2 can
-		// never appear in a list, so makeList() drops it and projects to the prefix.
-		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
-			$array = $this->buildShape([[0, new IntegerType(), false], [2, new StringType(), true]]);
-			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
-			$this->assertSame('array{int}', $array->makeList()->describe(VerbosityLevel::precise()));
-		});
+		// Sealed (bleeding edge): key 2 can never appear in a list, so makeList()
+		// drops it and projects to the prefix.
+		yield 'sealed shape drops the gap key' => [true, 'array{int}'];
 
-		// Unsealed: extras may fill the gap, so key 2 is reachable and every key is kept.
-		BleedingEdgeToggle::withBleedingEdge(false, function (): void {
+		// Unsealed: extras may fill the gap, so key 2 is reachable and every key
+		// is kept.
+		yield 'unsealed shape keeps the gap key' => [false, 'array{0: int, 2?: string}'];
+	}
+
+	#[DataProvider('dataMakeListProjectsSealedShapeButKeepsUnsealedKeys')]
+	public function testMakeListProjectsSealedShapeButKeepsUnsealedKeys(bool $bleedingEdge, string $expectedList): void
+	{
+		// A shape with an optional key past the gap at 1 (2? here).
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($expectedList): void {
 			$array = $this->buildShape([[0, new IntegerType(), false], [2, new StringType(), true]]);
 			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
-			$this->assertSame('array{0: int, 2?: string}', $array->makeList()->describe(VerbosityLevel::precise()));
+			$this->assertSame($expectedList, $array->makeList()->describe(VerbosityLevel::precise()));
 		});
 	}
 
-	public function testMergeWithRecomputesListnessOfSealedShape(): void
+	/**
+	 * @return iterable<string, array{bool, list<array{int|string, Type, bool}>, list<array{int|string, Type, bool}>, TrinaryLogic}>
+	 */
+	public static function dataMergeWithRecomputesListnessOfSealedShape(): iterable
 	{
-		// main mergeWith() path (bleeding edge: shapes carry real unsealed markers)
-		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
-			// Two pure lists merge into a list, even though the merged shape read with
-			// independent optional keys would over-approximate to maybe.
-			$x = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), true]]);
-			$y = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), false], [2, new IntegerType(), true]]);
-			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());
+		// Bleeding edge (shapes carry real unsealed markers) exercises the main
+		// mergeWith() path; without it (unsealed === null) legacyMergeWith() runs,
+		// which recomputes over $this's keys only.
 
-			// A mandatory non-list key that becomes optional through merging turns the
-			// naive `no` into `maybe` (the merged shape now admits list realizations).
-			$x2 = $this->buildShape([[0, new IntegerType(), false], ['a', new StringType(), false]]);
-			$y2 = $this->buildShape([[0, new IntegerType(), false]]);
-			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $x2->mergeWith($y2)->isList()->describe());
-		});
+		// Two pure lists merge into a list, even though the merged shape read with
+		// independent optional keys would over-approximate to maybe.
+		yield 'two lists merge into a list' => [
+			true,
+			[[0, new IntegerType(), false], [1, new StringType(), true]],
+			[[0, new IntegerType(), false], [1, new StringType(), false], [2, new IntegerType(), true]],
+			TrinaryLogic::createYes(),
+		];
 
-		// legacyMergeWith() path (unsealed === null)
-		BleedingEdgeToggle::withBleedingEdge(false, function (): void {
-			$x = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), false], [2, new StringType(), false]]);
-			$y = $this->buildShape([[0, new IntegerType(), false]]);
-			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());
+		// A mandatory non-list key that becomes optional through merging turns the
+		// naive `no` into `maybe` (the merged shape now admits list realizations).
+		yield 'mandatory string key going optional lifts no to maybe' => [
+			true,
+			[[0, new IntegerType(), false], ['a', new StringType(), false]],
+			[[0, new IntegerType(), false]],
+			TrinaryLogic::createMaybe(),
+		];
 
-			$x2 = $this->buildShape([[0, new IntegerType(), false], ['a', new StringType(), false]]);
-			$y2 = $this->buildShape([[0, new IntegerType(), false]]);
-			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $x2->mergeWith($y2)->isList()->describe());
+		yield 'legacy: keys widened to a trailing optional stay a list' => [
+			false,
+			[[0, new IntegerType(), false], [1, new StringType(), false], [2, new StringType(), false]],
+			[[0, new IntegerType(), false]],
+			TrinaryLogic::createYes(),
+		];
 
-			// Legacy merge keeps only $this's keys, so a naive `maybe` (the other side
-			// has a gap key) sharpens back to `yes`: the surviving keys form a list once
-			// the key absent from the other side is widened to a trailing optional.
-			$x3 = $this->buildShape([[0, new IntegerType(), false], [1, new StringType(), false]]);
-			$y3 = $this->buildShape([[0, new IntegerType(), false], [5, new StringType(), true]]);
-			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $y3->isList()->describe());
-			$this->assertSame(TrinaryLogic::createYes()->describe(), $x3->mergeWith($y3)->isList()->describe());
+		yield 'legacy: mandatory string key going optional lifts no to maybe' => [
+			false,
+			[[0, new IntegerType(), false], ['a', new StringType(), false]],
+			[[0, new IntegerType(), false]],
+			TrinaryLogic::createMaybe(),
+		];
+
+		// Legacy merge keeps only $this's keys, so a naive `maybe` (the other side
+		// alone is `maybe` — it has a gap key at 5) sharpens back to `yes`: the
+		// surviving keys form a list once the key absent from the other side is
+		// widened to a trailing optional.
+		yield 'legacy: naive maybe sharpens back to yes' => [
+			false,
+			[[0, new IntegerType(), false], [1, new StringType(), false]],
+			[[0, new IntegerType(), false], [5, new StringType(), true]],
+			TrinaryLogic::createYes(),
+		];
+	}
+
+	/**
+	 * @param list<array{int|string, Type, bool}> $left
+	 * @param list<array{int|string, Type, bool}> $right
+	 */
+	#[DataProvider('dataMergeWithRecomputesListnessOfSealedShape')]
+	public function testMergeWithRecomputesListnessOfSealedShape(bool $bleedingEdge, array $left, array $right, TrinaryLogic $expectedIsList): void
+	{
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($left, $right, $expectedIsList): void {
+			$merged = $this->buildShape($left)->mergeWith($this->buildShape($right));
+			$this->assertSame($expectedIsList->describe(), $merged->isList()->describe());
 		});
 	}
 
-	public function testMergeWithTreatsNumericStringKeyAsIntWhenRecomputingListness(): void
+	/**
+	 * @return iterable<string, array{bool}>
+	 */
+	public static function dataMergeWithTreatsNumericStringKeyAsIntWhenRecomputingListness(): iterable
 	{
-		BleedingEdgeToggle::withBleedingEdge(true, function (): void {
+		yield 'mergeWith (bleeding edge)' => [true];
+		yield 'legacyMergeWith' => [false];
+	}
+
+	#[DataProvider('dataMergeWithTreatsNumericStringKeyAsIntWhenRecomputingListness')]
+	public function testMergeWithTreatsNumericStringKeyAsIntWhenRecomputingListness(bool $bleedingEdge): void
+	{
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($bleedingEdge): void {
 			$never = new NeverType(true);
 			// array{0: string, '1'?: string} built directly with an un-normalized "1"
 			// string key. PHP stores "1" as the integer key 1, so the merged shape is
 			// a list — inferIsListFromShape() must normalize the key via toArrayKey().
+			// With bleeding edge the shape is sealed by an explicit-never unsealed
+			// marker and merges through mergeWith(); without it, unsealed === null
+			// routes through legacyMergeWith() — the recompute's other call site.
 			$x = new ConstantArrayType(
 				[new ConstantIntegerType(0), new ConstantStringType('1')],
 				[new StringType(), new StringType()],
 				[2],
 				[1],
-				unsealed: [$never, $never],
+				unsealed: $bleedingEdge ? [$never, $never] : null,
 			);
 			$y = $this->buildShape([[0, new StringType(), false]]);
 			$this->assertSame(TrinaryLogic::createYes()->describe(), $x->mergeWith($y)->isList()->describe());

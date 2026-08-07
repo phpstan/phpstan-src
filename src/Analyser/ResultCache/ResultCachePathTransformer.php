@@ -198,7 +198,7 @@ final class ResultCachePathTransformer
 
 	/**
 	 * Rewrites the absolute-path-bearing meta keys. projectConfig is handled separately by
-	 * relativizeProjectConfig()/absolutizeProjectConfig() because it is Neon-encoded to a string.
+	 * relativizeProjectConfig() because it is Neon-encoded to a string.
 	 *
 	 * @param mixed[] $meta
 	 * @return mixed[]
@@ -218,21 +218,29 @@ final class ResultCachePathTransformer
 	}
 
 	/**
+	 * Only relativizes: projectConfig is stored as a relative Neon string and never absolutized on
+	 * load. isMetaDifferent()/getMetaKeyDifferences() relativize the current config the same way to
+	 * compare it against the cached string.
+	 *
 	 * @param mixed[] $projectConfig
 	 * @return mixed[]
 	 */
 	public function relativizeProjectConfig(array $projectConfig): array
 	{
-		return $this->transformProjectConfig($projectConfig, false);
-	}
+		if (!array_key_exists('parameters', $projectConfig) || !is_array($projectConfig['parameters'])) {
+			return $projectConfig;
+		}
 
-	/**
-	 * @param mixed[] $projectConfig
-	 * @return mixed[]
-	 */
-	public function absolutizeProjectConfig(array $projectConfig): array
-	{
-		return $this->transformProjectConfig($projectConfig, true);
+		$parameters = $projectConfig['parameters'];
+		if (array_key_exists('paths', $parameters) && is_array($parameters['paths'])) {
+			$parameters['paths'] = $this->relativizeList($parameters['paths']);
+		}
+		if (array_key_exists('tmpDir', $parameters) && is_string($parameters['tmpDir'])) {
+			$parameters['tmpDir'] = $this->relativizePath($parameters['tmpDir']);
+		}
+		$projectConfig['parameters'] = $parameters;
+
+		return $projectConfig;
 	}
 
 	/**
@@ -281,28 +289,6 @@ final class ResultCachePathTransformer
 		return $result;
 	}
 
-	/**
-	 * @param mixed[] $projectConfig
-	 * @return mixed[]
-	 */
-	private function transformProjectConfig(array $projectConfig, bool $absolutize): array
-	{
-		if (!array_key_exists('parameters', $projectConfig) || !is_array($projectConfig['parameters'])) {
-			return $projectConfig;
-		}
-
-		$parameters = $projectConfig['parameters'];
-		if (array_key_exists('paths', $parameters) && is_array($parameters['paths'])) {
-			$parameters['paths'] = $this->transformList($parameters['paths'], $absolutize);
-		}
-		if (array_key_exists('tmpDir', $parameters) && is_string($parameters['tmpDir'])) {
-			$parameters['tmpDir'] = $this->transformPath($parameters['tmpDir'], $absolutize);
-		}
-		$projectConfig['parameters'] = $parameters;
-
-		return $projectConfig;
-	}
-
 	private function transformPath(string $path, bool $absolutize): string
 	{
 		return $absolutize ? $this->absolutizePath($path) : $this->relativizePath($path);
@@ -323,7 +309,7 @@ final class ResultCachePathTransformer
 	}
 
 	/**
-	 * @param list<string> $paths
+	 * @param mixed[] $paths
 	 * @return list<string>
 	 */
 	private function relativizeList(array $paths): array
@@ -332,7 +318,7 @@ final class ResultCachePathTransformer
 	}
 
 	/**
-	 * @param list<string> $paths
+	 * @param mixed[] $paths
 	 * @return list<string>
 	 */
 	private function absolutizeList(array $paths): array

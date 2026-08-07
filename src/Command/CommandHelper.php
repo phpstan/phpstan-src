@@ -41,6 +41,7 @@ use Throwable;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function array_values;
 use function class_exists;
 use function count;
@@ -56,6 +57,7 @@ use function is_dir;
 use function is_file;
 use function is_readable;
 use function is_string;
+use function PHPStan\collectNewAutoloadFunctions;
 use function register_shutdown_function;
 use function spl_autoload_functions;
 use function sprintf;
@@ -526,18 +528,15 @@ final class CommandHelper
 		$autoloadFunctionsAfter = spl_autoload_functions();
 
 		if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {
-			$newAutoloadFunctions = $GLOBALS['__phpstanAutoloadFunctions'] ?? [];
-			foreach ($autoloadFunctionsAfter as $after) {
-				foreach ($autoloadFunctionsBefore as $before) {
-					if ($after === $before) {
-						continue 2;
-					}
-				}
-
-				$newAutoloadFunctions[] = $after;
-			}
-
-			$GLOBALS['__phpstanAutoloadFunctions'] = $newAutoloadFunctions;
+			$collectedAutoloadFunctions = collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunctionsAfter);
+			$GLOBALS['__phpstanAutoloadFunctions'] = array_merge(
+				$GLOBALS['__phpstanAutoloadFunctions'] ?? [],
+				$collectedAutoloadFunctions['appended'],
+			);
+			$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] = array_merge(
+				$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] ?? [],
+				$collectedAutoloadFunctions['prepended'],
+			);
 		}
 
 		if (PHP_VERSION_ID >= 80000) {

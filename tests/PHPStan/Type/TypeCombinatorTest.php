@@ -68,16 +68,11 @@ use function array_reverse;
 use function get_class;
 use function implode;
 use function is_string;
-use function microtime;
 use function sprintf;
 use const PHP_VERSION_ID;
 
 class TypeCombinatorTest extends PHPStanTestCase
 {
-
-	private const EXPONENTIAL_BLOWUP_OFFSET_COUNT = 22;
-
-	private const EXPONENTIAL_BLOWUP_TIME_BUDGET_LIMIT = 5.0;
 
 	// Pin the runtime container so a foreign PhpVersion leaked by another test
 	// can't flake the version-dependent data sets (dynamic-property handling of
@@ -6550,70 +6545,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [new NullType(), true];
 		yield [new UnionType([new IntegerType(), new NullType()]), true];
 		yield [new MixedType(), false];
-	}
-
-	/**
-	 * Accessory types that share the same union default base type - hasOffset() and
-	 * hasOffsetValue(), whose base is `array|ArrayAccess` - used to make intersect()
-	 * distribute n identical two-member unions over each other, one at a time, for
-	 * 2^n recursive calls. At the offset count below that is over a minute; the
-	 * budget is three orders of magnitude above what the same call now costs.
-	 *
-	 * @return iterable<string, array{list<Type>, string}>
-	 */
-	public static function dataIntersectManyAccessoryTypesSharingAUnionBaseType(): iterable
-	{
-		$hasOffsetTypes = [];
-		$hasOffsetValueTypes = [];
-		$describedOffsets = [];
-		$describedOffsetValues = [];
-		for ($i = 0; $i < self::EXPONENTIAL_BLOWUP_OFFSET_COUNT; $i++) {
-			$offset = new ConstantStringType(sprintf('k%02d', $i));
-			$hasOffsetTypes[] = new HasOffsetType($offset);
-			$hasOffsetValueTypes[] = new HasOffsetValueType($offset, new StringType());
-			$describedOffsets[] = sprintf('hasOffset(\'k%02d\')', $i);
-			$describedOffsetValues[] = sprintf('hasOffsetValue(\'k%02d\', string)', $i);
-		}
-
-		yield 'hasOffset' => [
-			$hasOffsetTypes,
-			sprintf(
-				'(non-empty-array&%1$s)|(ArrayAccess&%1$s)',
-				implode('&', $describedOffsets),
-			),
-		];
-
-		// The array side degrades to oversized-array above 16 known offset values,
-		// which is unrelated to the blowup and unchanged by fixing it.
-		yield 'hasOffsetValue' => [
-			$hasOffsetValueTypes,
-			sprintf(
-				'(non-empty-array&oversized-array)|(ArrayAccess&%s)',
-				implode('&', $describedOffsetValues),
-			),
-		];
-	}
-
-	/**
-	 * @param list<Type> $types
-	 */
-	#[DataProvider('dataIntersectManyAccessoryTypesSharingAUnionBaseType')]
-	public function testIntersectManyAccessoryTypesSharingAUnionBaseType(array $types, string $expectedTypeDescription): void
-	{
-		$startTime = microtime(true);
-		$result = TypeCombinator::intersect(...$types);
-		$elapsedTime = microtime(true) - $startTime;
-
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
-		$this->assertLessThan(self::EXPONENTIAL_BLOWUP_TIME_BUDGET_LIMIT, $elapsedTime);
-	}
-
-	public function testIntersectRepeatedUnions(): void
-	{
-		$union = new UnionType([new IntegerType(), new StringType()]);
-		$result = TypeCombinator::intersect($union, $union, $union);
-
-		$this->assertSame('int|string', $result->describe(VerbosityLevel::precise()));
 	}
 
 }

@@ -39,6 +39,21 @@ class ExprPrinterTest extends PHPStanTestCase
 			'interpolated string' => [
 				['$a["x$b"]', '$a["x{$b}"]', "\$a[<<<EOT\nx\$b\nEOT]"],
 			],
+			// The three interpolation syntaxes a formatter rewrites into each
+			// other (php-cs-fixer's explicit_string_variable, Rector's
+			// SimpleToComplexStringVariableRector).
+			'interpolated variable syntax' => [
+				['$a["$b"]', '$a["{$b}"]', '$a["${b}"]'],
+			],
+			'interpolated property syntax' => [
+				['$a["$o->p"]', '$a["{$o->p}"]'],
+			],
+			'interpolated offset syntax' => [
+				['$a["$b[k]"]', '$a["{$b[\'k\']}"]'],
+			],
+			'variable variable' => [
+				['$$v', '${$v}'],
+			],
 			'true' => [
 				['$a[true]', '$a[TRUE]', '$a[True]', '$a[\true]'],
 			],

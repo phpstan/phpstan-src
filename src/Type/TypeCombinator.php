@@ -2084,7 +2084,21 @@ final class TypeCombinator
 				$accessoryBaseTypes = null;
 				break;
 			}
-			$accessoryBaseTypes[] = $type->getDefaultBaseType();
+			// Accessory types share their default base type: every string accessory
+			// returns `string`, hasOffset() and hasOffsetValue() both return
+			// `array|ArrayAccess`. Adding the same base type again narrows nothing -
+			// intersection is idempotent - but the intersect() below distributes
+			// `A & (B | C)` one union at a time, so n copies of `array|ArrayAccess`
+			// would cost 2^n recursive calls before the duplicates are recognized at
+			// the leaves. That is why isset() with many offsets used to grow
+			// exponentially: each offset contributes one hasOffset().
+			$baseType = $type->getDefaultBaseType();
+			foreach ($accessoryBaseTypes as $addedBaseType) {
+				if ($addedBaseType->equals($baseType)) {
+					continue 2;
+				}
+			}
+			$accessoryBaseTypes[] = $baseType;
 		}
 		if ($accessoryBaseTypes !== null) {
 			// Accessory types never stand alone — supply the base type they refine.

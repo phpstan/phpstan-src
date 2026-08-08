@@ -528,7 +528,7 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testPropertyInitializationCustomSerialization(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

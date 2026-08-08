@@ -1624,10 +1624,17 @@ final class TypeCombinator
 			return $types[0];
 		}
 
+		// The comparator only orders UnionTypes relative to each other, so sorting is
+		// a no-op unless there are at least two of them. Skip it in the common case.
+		$unionTypesCount = 0;
 		foreach ($types as $type) {
 			if ($type instanceof NeverType && !$type->isExplicit()) {
 				return $type;
 			}
+			if (!$type instanceof UnionType) {
+				continue;
+			}
+			$unionTypesCount++;
 		}
 
 		// Fast path: the intersection of two plain unions whose members are all finite,
@@ -1667,18 +1674,6 @@ final class TypeCombinator
 
 			return 0;
 		};
-		// The comparator only orders UnionTypes relative to each other, so sorting is
-		// a no-op unless there are at least two of them. Skip it in the common case.
-		$unionTypesCount = 0;
-		foreach ($types as $type) {
-			if (!$type instanceof UnionType) {
-				continue;
-			}
-			$unionTypesCount++;
-			if ($unionTypesCount >= 2) {
-				break;
-			}
-		}
 		if ($unionTypesCount >= 2) {
 			usort($types, $sortTypes);
 		}

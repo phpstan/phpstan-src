@@ -129,7 +129,20 @@ final class Printer extends Standard
 
 	/**
 	 * Always print the double-quoted form so that a heredoc and the equivalent
-	 * `"..."` interpolation share one expression key.
+	 * `"..."` interpolation share one expression key. The parts themselves are
+	 * already spelling-independent: `"$b"`, `"{$b}"` and `"${b}"` all print as
+	 * `"{$b}"`.
+	 *
+	 * Normalizing goes no further than the spelling: `"$b.value"` deliberately
+	 * keeps a different key than `$b . '.value'`, even though the two compute
+	 * the same string. Printing an InterpolatedString as a Concat would need
+	 * the node to take part in precedence handling - unlike a Scalar, which is
+	 * atomic - and without that `-"$a$b"` prints as `-$a . $b` and collides
+	 * with `(-$a) . $b`, and `"$a"` prints as `$a` and collides with the
+	 * uncast variable. A false collision hands one expression a type
+	 * established for a different one, which is worse than the narrowing this
+	 * would recover; and the concat form would then also reach every error
+	 * message that quotes the expression back to the user.
 	 */
 	#[Override]
 	protected function pScalar_InterpolatedString(InterpolatedString $node): string // phpcs:ignore

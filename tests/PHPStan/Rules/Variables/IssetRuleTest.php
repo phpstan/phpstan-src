@@ -2,14 +2,17 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<IssetRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class IssetRuleTest extends RuleTestCase
 {
@@ -18,11 +21,18 @@ class IssetRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IssetRule(new IssetCheck(
-			new PropertyDescriptor(),
-			true,
-			$this->treatPhpDocTypesAsCertain,
-		));
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new IssetRule(
+				new IssetCheck(
+					new PropertyDescriptor(),
+					true,
+					$this->treatPhpDocTypesAsCertain,
+				),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -632,6 +642,33 @@ class IssetRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-in-trait.php'], [
+			[
+				'Property IssetInTrait\FirstNonNullableProperty::$k (int<1, max>) in isset() is not nullable.',
+				83,
+			],
+			[
+				'Property IssetInTrait\SecondNonNullableProperty::$k (int<1, max>) in isset() is not nullable.',
+				83,
+			],
+			[
+				'Variable $s in isset() always exists and is not nullable.',
+				120,
+			],
+		]);
+	}
+
+	public function testBug14416(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14416.php'], []);
 	}
 
 }

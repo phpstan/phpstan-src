@@ -3,10 +3,13 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CoalesceExpressionNode;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
@@ -23,6 +26,7 @@ final class NullCoalesceRule implements Rule
 
 	public function __construct(
 		private IssetCheck $issetCheck,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter(ref: '%featureToggles.unnecessaryNullCoalesce%')]
 		private bool $unnecessaryNullCoalesce,
 	)
@@ -34,10 +38,11 @@ final class NullCoalesceRule implements Rule
 		return CoalesceExpressionNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
+		$subjectResult = $node->getSubjectResult();
 		$error = $this->issetCheck->check(
-			$node->getSubjectResult(),
+			$subjectResult,
 			$scope,
 			$node->getOperatorDescription(),
 			'nullCoalesce',
@@ -53,18 +58,21 @@ final class NullCoalesceRule implements Rule
 
 				return 'is not nullable';
 			},
-		);
+		) ?? $this->checkUnnecessaryNullCoalesce($node, $scope);
 
-		if ($error !== null) {
-			return [$error];
+		if ($error === null) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $subjectResult->getExpr());
+			return [];
 		}
 
-		$unnecessaryError = $this->checkUnnecessaryNullCoalesce($node, $scope);
-		if ($unnecessaryError !== null) {
-			return [$unnecessaryError];
+		if ($scope->isInTrait()) {
+			// The error messages already distinguish the possible outcomes,
+			// so the contexts only need to be told apart by error/no error.
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $subjectResult->getExpr(), true, $error);
+			return [];
 		}
 
-		return [];
+		return [$error];
 	}
 
 	private function checkUnnecessaryNullCoalesce(CoalesceExpressionNode $node, Scope $scope): ?IdentifierRuleError

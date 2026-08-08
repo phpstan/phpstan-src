@@ -613,7 +613,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15056.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
+	#[RequiresPhp('>= 8.2.0')]
 	public function testPropertyInitializationCustomSerialization(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-initialization-custom-serialization.php'], [

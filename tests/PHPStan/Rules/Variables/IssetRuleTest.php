@@ -518,6 +518,23 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
+	public function testPropertyInitializationCustomSerialization(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/property-initialization-custom-serialization.php'], [
+			[
+				'Property PropertyInitializationCustomSerialization\NoSerialization::$string in isset() is not nullable nor uninitialized.',
+				21,
+			],
+			[
+				'Property PropertyInitializationCustomSerialization\OnlyWakeup::$string in isset() is not nullable nor uninitialized.',
+				42,
+			],
+		]);
+	}
+
 	public function testPr4374(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

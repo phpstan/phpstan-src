@@ -102,6 +102,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use Serializable;
 use Throwable;
 use function abs;
 use function array_filter;
@@ -140,6 +141,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
+
+	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
+	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
 
 	/**
 	 * @internal accessed by ScopeOps (native and PHP implementations)
@@ -306,6 +310,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	private function rememberConstructorExpressions(array $currentExpressionTypes): array
 	{
+		$rememberPropertyState = !$this->classHasCustomSerialization();
 		$expressionTypes = [];
 		foreach ($currentExpressionTypes as $exprString => $expressionTypeHolder) {
 			$expr = $expressionTypeHolder->getExpr();
@@ -318,10 +323,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					continue;
 				}
 			} elseif ($expr instanceof PropertyFetch) {
-				if (!$this->isReadonlyPropertyFetch($expr, true)) {
+				if (!$rememberPropertyState || !$this->isReadonlyPropertyFetch($expr, true)) {
 					continue;
 				}
-			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {
+			} elseif ($expr instanceof PropertyInitializationExpr) {
+				if (!$rememberPropertyState) {
+					continue;
+				}
+			} elseif (!$expr instanceof ConstFetch) {
 				continue;
 			}
 
@@ -333,6 +342,29 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $expressionTypes;
+	}
+
+	/**
+	 * A class with custom serialization logic can be rebuilt by unserialize()
+	 * without the constructor ever running, and the author decides which properties
+	 * make the round trip - so nothing the constructor established can be relied upon
+	 * in the other methods.
+	 */
+	private function classHasCustomSerialization(): bool
+	{
+		if (!$this->isInClass()) {
+			return false;
+		}
+
+		$classReflection = $this->getClassReflection();
+		foreach (self::CUSTOM_SERIALIZATION_METHODS as $methodName) {
+			if ($classReflection->hasNativeMethod($methodName)) {
+				return true;
+			}
+		}
+
+		return $classReflection->implementsInterface(Serializable::class)
+			&& $classReflection->hasNativeMethod('unserialize');
 	}
 
 	public function rememberConstructorScope(): self

@@ -1602,56 +1602,6 @@ final class TypeCombinator
 		return $finiteTypeSet->getMembers();
 	}
 
-	/**
-	 * Drops every plain UnionType operand that repeats an earlier one.
-	 *
-	 * Intersection is idempotent, so a repeated operand adds nothing - but the
-	 * `A & (B | C)` distribution multiplies the operand list out one union at a time,
-	 * so n copies of the same two-member union cost 2^n intersect() calls before the
-	 * duplicates are finally recognized at the leaves. n accessory types sharing a
-	 * union default base type - hasOffset() and hasOffsetValue(), whose base is
-	 * `array|ArrayAccess` - reach exactly that, which is why isset() with many offsets
-	 * used to grow exponentially.
-	 *
-	 * Only unions are deduplicated: they are the only operands the distribution
-	 * multiplies, and the pairwise isSuperTypeOf() pass further down already drops
-	 * repeated operands of every other kind without any blowup. Restricted to the exact
-	 * UnionType class, like the finite fast path above - equals() ignores the variance
-	 * strategy of a TemplateUnionType, so two of them that compare equal are still not
-	 * interchangeable, and BenevolentUnionType keeps its dedicated handling too.
-	 *
-	 * @param list<Type> $types
-	 * @return list<Type>
-	 */
-	private static function removeDuplicateUnions(array $types): array
-	{
-		$unions = [];
-		$result = [];
-		foreach ($types as $type) {
-			if (get_class($type) === UnionType::class) {
-				$isDuplicate = false;
-				foreach ($unions as $union) {
-					if (!$union->equals($type)) {
-						continue;
-					}
-
-					$isDuplicate = true;
-					break;
-				}
-
-				if ($isDuplicate) {
-					continue;
-				}
-
-				$unions[] = $type;
-			}
-
-			$result[] = $type;
-		}
-
-		return $result;
-	}
-
 	public static function intersect(Type ...$types): Type
 	{
 		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
@@ -1725,12 +1675,6 @@ final class TypeCombinator
 			return 0;
 		};
 		if ($unionTypesCount >= 2) {
-			$types = self::removeDuplicateUnions($types);
-			$typesCount = count($types);
-			if ($typesCount === 1) {
-				return $types[0];
-			}
-
 			usort($types, $sortTypes);
 		}
 		// transform A & (B | C) to (A & B) | (A & C)
@@ -2140,7 +2084,21 @@ final class TypeCombinator
 				$accessoryBaseTypes = null;
 				break;
 			}
-			$accessoryBaseTypes[] = $type->getDefaultBaseType();
+			// Accessory types share their default base type: every string accessory
+			// returns `string`, hasOffset() and hasOffsetValue() both return
+			// `array|ArrayAccess`. Adding the same base type again narrows nothing -
+			// intersection is idempotent - but the intersect() below distributes
+			// `A & (B | C)` one union at a time, so n copies of `array|ArrayAccess`
+			// would cost 2^n recursive calls before the duplicates are recognized at
+			// the leaves. That is why isset() with many offsets used to grow
+			// exponentially: each offset contributes one hasOffset().
+			$baseType = $type->getDefaultBaseType();
+			foreach ($accessoryBaseTypes as $addedBaseType) {
+				if ($addedBaseType->equals($baseType)) {
+					continue 2;
+				}
+			}
+			$accessoryBaseTypes[] = $baseType;
 		}
 		if ($accessoryBaseTypes !== null) {
 			// Accessory types never stand alone — supply the base type they refine.

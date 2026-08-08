@@ -5,6 +5,9 @@ namespace PHPStan\Node\Printer;
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -31,9 +34,14 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
+use function addcslashes;
+use function count;
+use function in_array;
 use function preg_match;
 use function sprintf;
 use function str_contains;
+use function strtolower;
+use const PHP_INT_MAX;
 
 /**
  * @api
@@ -101,6 +109,66 @@ final class Printer extends Standard
 		}
 
 		return parent::pObjectProperty($node);
+	}
+
+	/**
+	 * Print a string literal from its value instead of its source spelling, so
+	 * that `'a'`, `"a"`, `"\x61"` and a heredoc or nowdoc holding `a` all end up
+	 * with the same expression key. The chosen form mirrors
+	 * ConstantStringType::export().
+	 */
+	#[Override]
+	protected function pScalar_String(String_ $node): string // phpcs:ignore
+	{
+		if (addcslashes($node->value, "\0..\37") !== $node->value) {
+			return '"' . $this->escapeString($node->value, '"') . '"';
+		}
+
+		return $this->pSingleQuotedString($node->value);
+	}
+
+	/**
+	 * Always print the double-quoted form so that a heredoc and the equivalent
+	 * `"..."` interpolation share one expression key.
+	 */
+	#[Override]
+	protected function pScalar_InterpolatedString(InterpolatedString $node): string // phpcs:ignore
+	{
+		return '"' . $this->pEncapsList($node->parts, '"') . '"';
+	}
+
+	/**
+	 * Always print the decimal form so that `1`, `0x1`, `01` and `0b1` share one
+	 * expression key.
+	 */
+	#[Override]
+	protected function pScalar_Int(Int_ $node): string // phpcs:ignore
+	{
+		if ($node->value === -PHP_INT_MAX - 1) {
+			// PHP_INT_MIN cannot be represented as a literal, because the sign is
+			// not part of the literal.
+			return '(-' . PHP_INT_MAX . '-1)';
+		}
+
+		return (string) $node->value;
+	}
+
+	/**
+	 * Lowercase the `true`, `false` and `null` keywords, the only case-insensitive
+	 * spellings the analyser does not already report through a `*.nameCase` rule.
+	 */
+	#[Override]
+	protected function pExpr_ConstFetch(ConstFetch $node): string // phpcs:ignore
+	{
+		$name = $node->name;
+		if (count($name->getParts()) === 1 && !$name->isRelative()) {
+			$lowercasedName = strtolower($name->getFirst());
+			if (in_array($lowercasedName, ['true', 'false', 'null'], true)) {
+				return $lowercasedName;
+			}
+		}
+
+		return parent::pExpr_ConstFetch($node);
 	}
 
 	protected function pPHPStan_Node_TypeExpr(TypeExpr $expr): string // phpcs:ignore

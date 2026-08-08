@@ -26,7 +26,7 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 		define('PHPSTAN_DUPLICATE_KEY', 0);
 		$this->analyse([__DIR__ . '/data/duplicate-keys.php'], [
 			[
-				'Array has 2 duplicate keys with value \'\' (null, NULL).',
+				'Array has 2 duplicate keys with value \'\' (null, null).',
 				15,
 			],
 			[

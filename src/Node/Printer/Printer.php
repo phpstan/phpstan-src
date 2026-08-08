@@ -5,6 +5,9 @@ namespace PHPStan\Node\Printer;
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Cast;
+use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -31,6 +34,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
+use function in_array;
 use function preg_match;
 use function sprintf;
 use function str_contains;
@@ -101,6 +105,85 @@ final class Printer extends Standard
 		}
 
 		return parent::pObjectProperty($node);
+	}
+
+	/**
+	 * The `kind` attribute records how a node was spelled in the source, not
+	 * what it means: `'k'`, `"k"` and a nowdoc holding `k` are the same string,
+	 * `1` and `0x1` are the same integer, `array(...)` and `[...]` are the same
+	 * array. Printing it back would make `$a['k']` and `$a["k"]` different
+	 * expression keys, so the analyser would track them as two unrelated
+	 * expressions and narrowing done on one would not apply to the other.
+	 *
+	 * Everything below therefore prints one canonical form per value, chosen
+	 * without looking at `kind`.
+	 */
+	#[Override]
+	protected function pScalar_String(String_ $node): string // phpcs:ignore
+	{
+		// keep escape sequences readable and the printed form single-line
+		if (preg_match('/[\x00-\x1f\x7f]/', $node->value) === 1) {
+			return '"' . $this->escapeString($node->value, '"') . '"';
+		}
+
+		return $this->pSingleQuotedString($node->value);
+	}
+
+	#[Override]
+	protected function pScalar_InterpolatedString(InterpolatedString $node): string // phpcs:ignore
+	{
+		return '"' . $this->pEncapsList($node->parts, '"') . '"';
+	}
+
+	#[Override]
+	protected function pScalar_Int(Int_ $node): string // phpcs:ignore
+	{
+		if ($node->getAttribute('kind', Int_::KIND_DEC) === Int_::KIND_DEC) {
+			return parent::pScalar_Int($node);
+		}
+
+		return parent::pScalar_Int(new Int_($node->value));
+	}
+
+	#[Override]
+	protected function pExpr_Array(Expr\Array_ $node): string // phpcs:ignore
+	{
+		if ($node->getAttribute('kind') === Expr\Array_::KIND_SHORT) {
+			return parent::pExpr_Array($node);
+		}
+
+		return parent::pExpr_Array(new Expr\Array_($node->items, ['kind' => Expr\Array_::KIND_SHORT]));
+	}
+
+	#[Override]
+	protected function pExpr_List(Expr\List_ $node): string // phpcs:ignore
+	{
+		if ($node->getAttribute('kind') === Expr\List_::KIND_ARRAY) {
+			return parent::pExpr_List($node);
+		}
+
+		return parent::pExpr_List(new Expr\List_($node->items, ['kind' => Expr\List_::KIND_ARRAY]));
+	}
+
+	#[Override]
+	protected function pExpr_Cast_Double(Cast\Double $node, int $precedence, int $lhsPrecedence): string // phpcs:ignore
+	{
+		return $this->pPrefixOp(Cast\Double::class, '(float) ', $node->expr, $precedence, $lhsPrecedence);
+	}
+
+	/**
+	 * `true`, `false` and `null` are the only case-insensitive constant names
+	 * in PHP, and `\true` means the same as `true`.
+	 */
+	#[Override]
+	protected function pExpr_ConstFetch(Expr\ConstFetch $node): string // phpcs:ignore
+	{
+		$lowerName = $node->name->toLowerString();
+		if (in_array($lowerName, ['true', 'false', 'null'], true)) {
+			return $lowerName;
+		}
+
+		return parent::pExpr_ConstFetch($node);
 	}
 
 	protected function pPHPStan_Node_TypeExpr(TypeExpr $expr): string // phpcs:ignore

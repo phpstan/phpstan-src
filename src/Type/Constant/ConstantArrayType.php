@@ -3089,7 +3089,10 @@ class ConstantArrayType implements Type
 
 		// Merging widens single-side keys to optional, so a sealed result may gain
 		// list realizations (e.g. `[]`) the naive `and` misses. `or`-ing in the
-		// shape's own list-ness lifts a `no`/`maybe` while keeping a genuine `yes`.
+		// shape's own list-ness lifts a `no`/`maybe`. The `or` also keeps a genuine
+		// `yes`: widening forgets which keys can appear together, so the shape read
+		// on its own counts realizations neither input admits and answers `maybe`
+		// where two list inputs guarantee `yes`.
 		$naiveIsList = $this->isList->and($otherArray->isList);
 		$mergedIsSealed = $mergedUnsealedKey instanceof NeverType && $mergedUnsealedKey->isExplicit();
 		$isList = $mergedIsSealed

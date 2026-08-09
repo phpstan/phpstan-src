@@ -1010,11 +1010,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function getNodeKey(Expr $node): string
 	{
-		// perf optimize for the most common path
-		if ($node instanceof Variable && !$node->name instanceof Expr) {
-			return '$' . $node->name;
-		}
-
 		return ScopeOps::nodeKey($node, $this->exprPrinter);
 	}
 

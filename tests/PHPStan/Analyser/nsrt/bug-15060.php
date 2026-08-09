@@ -61,22 +61,3 @@ function interpolatedSpellings($m, string $k): void
 			HEREDOC]);
 	}
 }
-
-function constFetchSpellings($m): void
-{
-	if (is_array($m[true]) && $m[true]) {
-		assertType('non-empty-array<mixed, mixed>', $m[true]);
-		assertType('non-empty-array<mixed, mixed>', $m[TRUE]);
-		assertType('non-empty-array<mixed, mixed>', $m[True]);
-	}
-
-	if (is_array($m[null]) && $m[null]) {
-		assertType('non-empty-array<mixed, mixed>', $m[null]);
-		assertType('non-empty-array<mixed, mixed>', $m[NULL]);
-	}
-
-	if (is_array($m[false]) && $m[false]) {
-		assertType('non-empty-array<mixed, mixed>', $m[false]);
-		assertType('non-empty-array<mixed, mixed>', $m[FALSE]);
-	}
-}

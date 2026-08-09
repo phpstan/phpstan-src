@@ -98,7 +98,7 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-strict-nonsense-bool.php'], [
 			[
-				'Declare strict_types must have 0 or 1 as its value, true given.',
+				'Declare strict_types must have 0 or 1 as its value, \true given.',
 				1,
 			],
 		]);

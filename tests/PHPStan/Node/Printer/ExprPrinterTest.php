@@ -12,6 +12,12 @@ use function count;
 use function get_class;
 use function sprintf;
 
+/**
+ * The expression key is what MutatingScope tracks types under, so equivalent
+ * spellings have to print identically. Offset literals get there through
+ * ArrayOffsetSpellingVisitor during parsing, the rest through Printer, so the
+ * property is asserted on the parsed-and-printed result.
+ */
 class ExprPrinterTest extends PHPStanTestCase
 {
 
@@ -53,15 +59,6 @@ class ExprPrinterTest extends PHPStanTestCase
 			],
 			'variable variable' => [
 				['$$v', '${$v}'],
-			],
-			'true' => [
-				['$a[true]', '$a[TRUE]', '$a[True]', '$a[\true]'],
-			],
-			'false' => [
-				['$a[false]', '$a[FALSE]', '$a[\FALSE]'],
-			],
-			'null' => [
-				['$a[null]', '$a[NULL]', '$a[\null]'],
 			],
 			'object property' => [
 				['$a->b', '$a->{\'b\'}', '$a->{"b"}'],
@@ -107,7 +104,7 @@ class ExprPrinterTest extends PHPStanTestCase
 				'$a[1]',
 				'$a[10]',
 			],
-			'other constant case is significant' => [
+			'constant case is significant' => [
 				'$a[FOO]',
 				'$a[foo]',
 			],

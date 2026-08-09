@@ -28,7 +28,7 @@ use function preg_match;
  * for these nodes.
  */
 #[AutowiredService]
-final class ArrayOffsetSpellingVisitor extends NodeVisitorAbstract
+final class ArrayOffsetNormalizingVisitor extends NodeVisitorAbstract
 {
 
 	#[Override]

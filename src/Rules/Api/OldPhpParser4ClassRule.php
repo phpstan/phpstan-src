@@ -42,6 +42,10 @@ final class OldPhpParser4ClassRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$scope->isInClass()) {
+			return [];
+		}
+
 		$nameMapping = array_change_key_case(self::NAME_MAPPING);
 		$lowerName = $node->toLowerString();
 		if (!array_key_exists($lowerName, $nameMapping)) {
@@ -49,10 +53,6 @@ final class OldPhpParser4ClassRule implements Rule
 		}
 
 		$newName = $nameMapping[$lowerName];
-
-		if (!$scope->isInClass()) {
-			return [];
-		}
 
 		$classReflection = $scope->getClassReflection();
 		$hasPhpStanInterface = false;

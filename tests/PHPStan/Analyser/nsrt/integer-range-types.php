@@ -329,7 +329,7 @@ class X {
 
 		assertType('int<-10, -1>', -$r1);
 		assertType('int<-10, 5>', -$r2);
-		assertType('int<-5, max>', -$rMin);
+		assertType('9.223372036854776E+18|int<-5, max>', -$rMin);
 		assertType('int<min, -5>', -$rMax);
 		assertType('int<-50, 0>', -$rZero);
 	}

@@ -17,13 +17,39 @@ assertType('9.223372036854776E+18', -$min);
 assertType('9223372036854775807', -(-9223372036854775807));
 assertType('-9223372036854775807', -9223372036854775807);
 
+function unboundedIntegers(int $int, string $numericString): void
+{
+	// https://github.com/phpstan/phpstan/issues/15069
+	assertType('9.223372036854776E+18|int', -$int);
+	assertType('9.223372036854776E+18|int', -((int) $numericString));
+
+	// Unary plus never overflows.
+	assertType('int', +$int);
+
+	/** @var numeric-string $numericString */
+	assertType('float|int', -$numericString);
+}
+
 function integerRanges(int $int): void
 {
 	/** @var int<min, -1> $int */
-	assertType('int<1, max>', -$int);
+	assertType('9.223372036854776E+18|int<1, max>', -$int);
 
 	/** @var int<-9223372036854775808, -1> $int */
-	assertType('int<1, max>', -$int);
+	assertType('9.223372036854776E+18|int<1, max>', -$int);
+
+	/** @var int<-9223372036854775807, -1> $int */
+	assertType('int<1, 9223372036854775807>', -$int);
+
+	/** @var int<min, 5> $int */
+	assertType('9.223372036854776E+18|int<-5, max>', -$int);
+
+	// The lower bound is known, so the overflow cannot happen.
+	/** @var int<0, max> $int */
+	assertType('int<min, 0>', -$int);
+
+	/** @var int<-5, 5> $int */
+	assertType('int<-5, 5>', -$int);
 }
 
 function constantUnion(int $int): void

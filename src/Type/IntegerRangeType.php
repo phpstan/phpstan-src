@@ -13,6 +13,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function array_filter;
 use function array_map;
@@ -499,16 +500,27 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return $this;
 		}
 
-		// Negating the smallest integer overflows, so its absolute value is treated as unbounded,
-		// the same way an unbounded lower bound is. This keeps abs(int<min, 0>) and
-		// abs(int<-9223372036854775808, 0>) in agreement.
-		$inversedMin = $this->min !== null && $this->min !== PHP_INT_MIN ? -$this->min : null;
-
-		if ($this->max === null || $this->max >= 0) {
-			return self::fromInterval(0, $inversedMin !== null && $this->max !== null ? max($inversedMin, $this->max) : null);
+		// The absolute value of the smallest integer overflows into a float.
+		$overflowType = new ConstantFloatType(-(float) PHP_INT_MIN);
+		if ($this->max !== null && $this->max <= PHP_INT_MIN) {
+			return $overflowType;
 		}
 
-		return self::fromInterval(-$this->max, $inversedMin);
+		// Without the smallest integer the absolute values only reach PHP_INT_MAX,
+		// which is what an unbounded upper bound stands for.
+		$inversedMin = $this->min !== null && $this->min > PHP_INT_MIN ? -$this->min : null;
+
+		if ($this->max === null || $this->max >= 0) {
+			$absoluteRange = self::fromInterval(0, $inversedMin !== null && $this->max !== null ? max($inversedMin, $this->max) : null);
+		} else {
+			$absoluteRange = self::fromInterval(-$this->max, $inversedMin);
+		}
+
+		if ($inversedMin !== null) {
+			return $absoluteRange;
+		}
+
+		return TypeCombinator::union($absoluteRange, $overflowType);
 	}
 
 	public function toString(): Type

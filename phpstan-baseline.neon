@@ -490,12 +490,6 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of native type int.
-			identifier: varTag.nativeType
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
 			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
 			identifier: varTag.type
 			count: 4

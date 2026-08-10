@@ -12,19 +12,19 @@ class Foo
 	public function singleIntegerRange(int $int): void
 	{
 		/** @var int $int */
-		assertType('int<0, max>', abs($int));
+		assertType('9.223372036854776E+18|int<0, max>', abs($int));
 
 		/** @var positive-int $int */
 		assertType('int<1, max>', abs($int));
 
 		/** @var negative-int $int */
-		assertType('int<1, max>', abs($int));
+		assertType('9.223372036854776E+18|int<1, max>', abs($int));
 
 		/** @var non-negative-int $int */
 		assertType('int<0, max>', abs($int));
 
 		/** @var non-positive-int $int */
-		assertType('int<0, max>', abs($int));
+		assertType('9.223372036854776E+18|int<0, max>', abs($int));
 
 		/** @var int<0, max> $int */
 		assertType('int<0, max>', abs($int));
@@ -45,13 +45,13 @@ class Foo
 		assertType('int<123, 456>', abs($int));
 
 		/** @var int<min, 0> $int */
-		assertType('int<0, max>', abs($int));
+		assertType('9.223372036854776E+18|int<0, max>', abs($int));
 
 		/** @var int<min, -1> $int */
-		assertType('int<1, max>', abs($int));
+		assertType('9.223372036854776E+18|int<1, max>', abs($int));
 
 		/** @var int<min, -123> $int */
-		assertType('int<123, max>', abs($int));
+		assertType('9.223372036854776E+18|int<123, max>', abs($int));
 
 		/** @var int<-456, -123> $int */
 		assertType('int<123, 456>', abs($int));
@@ -60,16 +60,16 @@ class Foo
 		assertType('int<0, 123>', abs($int));
 
 		/** @var int<min, max> $int */
-		assertType('int<0, max>', abs($int));
+		assertType('9.223372036854776E+18|int<0, max>', abs($int));
 	}
 
 	public function multipleIntegerRanges(int $int): void
 	{
 		/** @var non-zero-int $int */
-		assertType('int<1, max>', abs($int));
+		assertType('9.223372036854776E+18|int<1, max>', abs($int));
 
 		/** @var int<min, -1>|int<1, max> $int */
-		assertType('int<1, max>', abs($int));
+		assertType('9.223372036854776E+18|int<1, max>', abs($int));
 
 		/** @var int<-20, -10>|int<5, 25> $int */
 		assertType('int<5, 25>', abs($int));
@@ -106,7 +106,7 @@ class Foo
 		assertType('123|int<456, max>', abs($int));
 
 		/** @var int<min, -456>|-123 $int */
-		assertType('123|int<456, max>', abs($int));
+		assertType('123|9.223372036854776E+18|int<456, max>', abs($int));
 
 		/** @var -123|int<124, 125> $int */
 		assertType('int<123, 125>', abs($int));

@@ -17,8 +17,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
+use function is_int;
 use function sprintf;
-use const PHP_INT_MIN;
 
 /** @api */
 class ConstantIntegerType extends IntegerType implements ConstantScalarType
@@ -86,14 +86,13 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	public function toAbsoluteNumber(): Type
 	{
-		if ($this->value === PHP_INT_MIN) {
+		$absoluteValue = abs($this->value);
+		if (!is_int($absoluteValue)) {
 			// The absolute value of the smallest integer is not representable as an int.
-			// Checking is_int(abs($this->value)) instead is dead code to PHPStan itself,
-			// which infers abs(int) as int<0, max>.
-			return new ConstantFloatType(-(float) $this->value);
+			return new ConstantFloatType($absoluteValue);
 		}
 
-		return new self(abs($this->value));
+		return new self($absoluteValue);
 	}
 
 	public function toString(): Type

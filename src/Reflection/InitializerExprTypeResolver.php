@@ -122,6 +122,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
+use const PHP_INT_MIN;
 
 #[AutowiredService]
 final class InitializerExprTypeResolver
@@ -2607,12 +2608,21 @@ final class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		$type = $this->getUnaryMinusTypeFromType($expr, $type);
-		if ($type instanceof IntegerRangeType) {
-			return $getTypeCallback(new Expr\BinaryOp\Mul($expr, new Int_(-1)));
+		$negatedType = $this->getUnaryMinusTypeFromType($expr, $type);
+		if ($negatedType instanceof IntegerRangeType) {
+			$negatedType = $getTypeCallback(new Expr\BinaryOp\Mul($expr, new Int_(-1)));
 		}
 
-		return $type;
+		$numberType = $type->toNumber();
+		if (
+			$numberType->isInteger()->yes()
+			&& !(new ConstantIntegerType(PHP_INT_MIN))->isSuperTypeOf($numberType)->no()
+		) {
+			// Negating the smallest integer overflows into a float.
+			return TypeCombinator::union($negatedType, new ConstantFloatType(-(float) PHP_INT_MIN));
+		}
+
+		return $negatedType;
 	}
 
 	public function getUnaryMinusTypeFromType(Expr $expr, Type $type): Type
@@ -2624,7 +2634,6 @@ final class InitializerExprTypeResolver
 			$newTypes = [];
 			foreach ($scalarValues as $scalarValue) {
 				if (is_int($scalarValue)) {
-					/** @var int|float $newValue */
 					$newValue = -$scalarValue;
 					if (!is_int($newValue)) {
 						// Negating the smallest integer overflows into a float.

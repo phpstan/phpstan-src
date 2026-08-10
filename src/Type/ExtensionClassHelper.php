@@ -3,9 +3,9 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node;
-use PHPStan\Collectors\Collector;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
+use function array_merge;
 use function class_implements;
 use function class_parents;
 
@@ -25,7 +25,7 @@ final class ExtensionClassHelper
 	{
 		if (!array_key_exists($className, self::$extensionClassNames)) {
 			$class = $reflectionProvider->getClass($className);
-			self::$extensionClassNames[$className] = [$className] + $class->getParentClassesNames() + $class->getNativeReflection()->getInterfaceNames();
+			self::$extensionClassNames[$className] = array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames());
 		}
 
 		return self::$extensionClassNames[$className];

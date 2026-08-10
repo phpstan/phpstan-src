@@ -45,6 +45,10 @@ final class RuntimeReflectionInstantiationRule implements Rule
 			return [];
 		}
 
+		if (!$scope->isInClass()) {
+			return [];
+		}
+
 		$className = $scope->resolveName($node->class);
 		if (!$this->reflectionProvider->hasClass($className)) {
 			return [];
@@ -66,10 +70,6 @@ final class RuntimeReflectionInstantiationRule implements Rule
 			ReflectionGenerator::class,
 			'ReflectionFiber',
 		], true)) {
-			return [];
-		}
-
-		if (!$scope->isInClass()) {
 			return [];
 		}
 

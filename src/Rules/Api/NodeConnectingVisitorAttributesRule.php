@@ -34,12 +34,14 @@ final class NodeConnectingVisitorAttributesRule implements Rule
 		if ($node->name->toLowerString() !== 'getattribute') {
 			return [];
 		}
-		$calledOnType = $scope->getType($node->var);
-		if (!(new ObjectType(Node::class))->isSuperTypeOf($calledOnType)->yes()) {
-			return [];
-		}
+
 		$args = $node->getArgs();
 		if (!isset($args[0])) {
+			return [];
+		}
+
+		$calledOnType = $scope->getType($node->var);
+		if (!(new ObjectType(Node::class))->isSuperTypeOf($calledOnType)->yes()) {
 			return [];
 		}
 

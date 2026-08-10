@@ -35,6 +35,10 @@ final class RuntimeReflectionFunctionRule implements Rule
 			return [];
 		}
 
+		if (!$scope->isInClass()) {
+			return [];
+		}
+
 		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
@@ -47,10 +51,6 @@ final class RuntimeReflectionFunctionRule implements Rule
 			'class_implements',
 			'class_uses',
 		], true)) {
-			return [];
-		}
-
-		if (!$scope->isInClass()) {
 			return [];
 		}
 

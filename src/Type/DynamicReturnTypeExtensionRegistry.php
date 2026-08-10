@@ -7,6 +7,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_key_exists;
 use function array_merge;
 use function strtolower;
 
@@ -22,6 +23,9 @@ final class DynamicReturnTypeExtensionRegistry
 
 	/** @var array<string, list<DynamicFunctionReturnTypeExtension>> */
 	private array $dynamicReturnTypeExtensionsByFunction = [];
+
+	/** @var array<string, array<string>> */
+	private static array $extensionClassNames = [];
 
 	/**
 	 * @param ExtensionsCollection<DynamicMethodReturnTypeExtension> $dynamicMethodReturnTypeExtensions
@@ -83,8 +87,11 @@ final class DynamicReturnTypeExtensionRegistry
 		}
 
 		$extensionsForClass = [[]];
-		$class = $this->reflectionProvider->getClass($className);
-		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
+		if (!array_key_exists($className, self::$extensionClassNames)) {
+			$class = $this->reflectionProvider->getClass($className);
+			self::$extensionClassNames[$className] = array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames());
+		}
+		foreach (self::$extensionClassNames[$className] as $extensionClassName) {
 			$extensionClassName = strtolower($extensionClassName);
 			if (!isset($extensions[$extensionClassName])) {
 				continue;

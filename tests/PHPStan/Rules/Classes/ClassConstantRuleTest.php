@@ -188,6 +188,13 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindNamedArguments(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/closure-bind-named-arguments.php'], []);
+	}
+
 	public function testClassExists(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;

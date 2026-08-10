@@ -1420,13 +1420,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$originalClass = (string) $name;
 		$lowerClass = strtolower($originalClass);
 
-		$bindScopeClassName = $this->resolveClosureBindScopeClassName($name);
-		if ($bindScopeClassName !== null) {
+		$bindScopeClassReflection = $this->resolveClosureBindScopeClass($name);
+		if ($bindScopeClassReflection !== null) {
 			if (in_array($lowerClass, ['self', 'static'], true)) {
-				return $bindScopeClassName;
+				return $bindScopeClassReflection->getName();
 			}
-			if ($lowerClass === 'parent' && $this->reflectionProvider->hasClass($bindScopeClassName)) {
-				$parentClassReflection = $this->reflectionProvider->getClass($bindScopeClassName)->getParentClass();
+			if ($lowerClass === 'parent') {
+				$parentClassReflection = $bindScopeClassReflection->getParentClass();
 				if ($parentClassReflection !== null) {
 					return $parentClassReflection->getName();
 				}
@@ -1456,10 +1456,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
-		$bindScopeClassName = $this->resolveClosureBindScopeClassName($name);
+		$bindScopeClassReflection = $this->resolveClosureBindScopeClass($name);
 		if ($name->toLowerString() === 'static') {
-			if ($bindScopeClassName !== null && $this->reflectionProvider->hasClass($bindScopeClassName)) {
-				return new StaticType($this->reflectionProvider->getClass($bindScopeClassName));
+			if ($bindScopeClassReflection !== null) {
+				return new StaticType($bindScopeClassReflection);
 			}
 			if ($this->isInClass()) {
 				if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
@@ -1473,7 +1473,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$originalClass = $this->resolveName($name);
-		if ($bindScopeClassName !== null && $this->reflectionProvider->hasClass($originalClass)) {
+		if ($bindScopeClassReflection !== null && $this->reflectionProvider->hasClass($originalClass)) {
 			return new ObjectType($originalClass);
 		}
 		if ($this->isInClass()) {
@@ -1495,31 +1495,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
-	 * Resolves the class name that a `self`/`parent`/`static` node is bound to by a
-	 * surrounding `Closure::bind()` call, annotated by {@see ClosureBindArgVisitor}. Returns
-	 * null when the node is not inside a bound closure or the bind scope argument does not
-	 * resolve to a single known class (e.g. the default "static" scope). This works even
-	 * outside a class context, because the type of a bound closure's body is inferred in the
-	 * enclosing scope where the closure-bind scope classes are not otherwise available.
+	 * Resolves the class a `self`/`parent`/`static` node is bound to by a surrounding
+	 * `Closure::bind()` call, annotated by {@see ClosureBindArgVisitor} and resolved by
+	 * {@see ClosureBindScopeResolver}. Returns null when the node is not inside a bound
+	 * closure or the bind scope argument does not resolve to a single known class (e.g.
+	 * the default "static" scope).
+	 *
+	 * This complements enterClosureBind() and inClosureBindScopeClasses: that scope-based
+	 * path owns member accessibility while the closure body is being processed, but cannot
+	 * reach this case, because the body's type is inferred in the enclosing scope where the
+	 * closure-bind scope classes are not available (including outside any class).
 	 */
-	/** @return non-empty-string|null */
-	private function resolveClosureBindScopeClassName(Name $name): ?string
+	private function resolveClosureBindScopeClass(Name $name): ?ClassReflection
 	{
+		// Cheap pre-check so the common path stays free of a container lookup.
 		if (!$name->hasAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME)) {
 			return null;
 		}
 
-		$scopeArg = $name->getAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME);
-		if (!$scopeArg instanceof Expr) {
-			return null;
-		}
-
-		$objectClassNames = $this->getType($scopeArg)->getClassStringObjectType()->getObjectClassNames();
-		if (count($objectClassNames) !== 1) {
-			return null;
-		}
-
-		return $objectClassNames[0];
+		return $this->container->getByType(ClosureBindScopeResolver::class)->resolveScopeClass($this, $name);
 	}
 
 	/**

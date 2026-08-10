@@ -11,6 +11,7 @@ use function is_string;
 use function preg_match;
 use function str_replace;
 use function str_starts_with;
+use function strlen;
 use function strpos;
 use function substr;
 use const DIRECTORY_SEPARATOR;
@@ -39,19 +40,22 @@ final class ResultCachePathTransformer
 
 	public function relativizePath(string $path): string
 	{
-		if (!$this->isAbsolutePath($path)) {
+		[$scheme, $filesystemPath] = $this->splitScheme($path);
+		if (!$this->isAbsolutePath($filesystemPath)) {
 			return $path;
 		}
 
 		// Always store forward slashes so the cache is portable between Windows and Linux.
 		// getRelativePath() already yields '/'-separated output for a path reachable from the anchor;
 		// a path with no shared prefix is returned unchanged, so normalise its separators too.
-		return str_replace('\\', '/', $this->relativePathHelper->getRelativePath($path));
+		return $scheme . str_replace('\\', '/', $this->relativePathHelper->getRelativePath($filesystemPath));
 	}
 
 	public function absolutizePath(string $path): string
 	{
-		return $this->anchorFileHelper->normalizePath($this->anchorFileHelper->absolutizePath($path));
+		[$scheme, $filesystemPath] = $this->splitScheme($path);
+
+		return $scheme . $this->anchorFileHelper->normalizePath($this->anchorFileHelper->absolutizePath($filesystemPath));
 	}
 
 	/**
@@ -64,7 +68,7 @@ final class ResultCachePathTransformer
 		foreach ($errorsByFile as $file => $errors) {
 			$relativized = [];
 			foreach ($errors as $error) {
-				$relativized[] = $error->relativizePaths($this->relativePathHelper);
+				$relativized[] = $error->transformPaths(fn (string $path): string => $this->relativizePath($path));
 			}
 			$result[$this->relativizePath($file)] = $relativized;
 		}
@@ -82,7 +86,7 @@ final class ResultCachePathTransformer
 		foreach ($errorsByFile as $file => $errors) {
 			$absolutized = [];
 			foreach ($errors as $error) {
-				$absolutized[] = $error->absolutizePaths($this->anchorFileHelper);
+				$absolutized[] = $error->transformPaths(fn (string $path): string => $this->absolutizePath($path));
 			}
 			$result[$this->absolutizePath($file)] = $absolutized;
 		}
@@ -360,17 +364,35 @@ final class ResultCachePathTransformer
 		return $this->absolutizePath(substr($key, 0, $suffixPosition)) . substr($key, $suffixPosition);
 	}
 
+	/**
+	 * Splits a stream-wrapper URL into its scheme and the filesystem path that follows it. PHPStan
+	 * ships the runtime stubs it registers as bootstrapFiles inside its own phar, so in a phar
+	 * install those arrive here as `phar:///path/to/phpstan.phar/stubs/runtime/...`.
+	 *
+	 * Only the part after the scheme is rewritten, and the scheme is put back verbatim. Handing the
+	 * whole URL to getRelativePath() drops the scheme, which absolutizePath() cannot reconstruct -
+	 * the restored key then never equals the `phar://...` key the next run computes, so
+	 * executedFilesHashes differs on every run and the cache is discarded every time.
+	 *
+	 * @return array{string, string} the scheme including `://` (empty when the path carries none),
+	 *                               and the path following it
+	 */
+	private function splitScheme(string $path): array
+	{
+		if (preg_match('~^[a-z0-9+\-.]+://~i', $path, $matches) !== 1) {
+			return ['', $path];
+		}
+
+		return [$matches[0], substr($path, strlen($matches[0]))];
+	}
+
 	private function isAbsolutePath(string $path): bool
 	{
 		if (DIRECTORY_SEPARATOR === '/') {
-			if (str_starts_with($path, '/')) {
-				return true;
-			}
-		} elseif (substr($path, 1, 1) === ':') {
-			return true;
+			return str_starts_with($path, '/');
 		}
 
-		return preg_match('~^[a-z0-9+\-.]+://~i', $path) === 1;
+		return substr($path, 1, 1) === ':';
 	}
 
 }

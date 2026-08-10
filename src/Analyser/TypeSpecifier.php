@@ -27,6 +27,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\ExtensionClassHelper;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
@@ -791,8 +792,8 @@ final class TypeSpecifier
 	private function getTypeSpecifyingExtensionsForType(array $extensions, string $className): array
 	{
 		$extensionsForClass = [[]];
-		$class = $this->reflectionProvider->getClass($className);
-		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
+		$extensionClassNames = ExtensionClassHelper::getExtensionClassNames($this->reflectionProvider, $className);
+		foreach ($extensionClassNames as $extensionClassName) {
 			if (!isset($extensions[$extensionClassName])) {
 				continue;
 			}

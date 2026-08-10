@@ -5,9 +5,9 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\ExtensionClassHelper;
 use PHPStan\Type\Type;
 use function array_key_exists;
-use function array_merge;
 use function in_array;
 use function strtolower;
 
@@ -57,8 +57,8 @@ final class EarlyTerminatingCallHelper
 				continue;
 			}
 
-			$classReflection = $this->reflectionProvider->getClass($referencedClass);
-			foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
+			$extensionClassNames = ExtensionClassHelper::getExtensionClassNames($this->reflectionProvider, $referencedClass);
+			foreach ($extensionClassNames as $className) {
 				if (!isset($this->earlyTerminatingMethodCalls[$className])) {
 					continue;
 				}

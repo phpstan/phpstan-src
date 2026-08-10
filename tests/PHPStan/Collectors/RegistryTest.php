@@ -13,9 +13,10 @@ class RegistryTest extends PHPStanTestCase
 	{
 		$collector = new DummyCollector();
 
-		$registry = new Registry([
-			$collector,
-		]);
+		$registry = new Registry(
+			[$collector],
+			$this->createReflectionProvider(),
+		);
 
 		$collectors = $registry->getCollectors(Node\Expr\FuncCall::class);
 		$this->assertCount(1, $collectors);
@@ -29,10 +30,10 @@ class RegistryTest extends PHPStanTestCase
 		$fooCollector = new UniversalCollector(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Foo error']);
 		$barCollector = new UniversalCollector(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Bar error']);
 
-		$registry = new Registry([
-			$fooCollector,
-			$barCollector,
-		]);
+		$registry = new Registry(
+			[$fooCollector, $barCollector],
+			$this->createReflectionProvider(),
+		);
 
 		$collectors = $registry->getCollectors(Node\Expr\FuncCall::class);
 		$this->assertCount(2, $collectors);

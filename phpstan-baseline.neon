@@ -670,18 +670,6 @@ parameters:
 			path: src/Rules/Generics/TemplateTypeCheck.php
 
 		-
-			rawMessage: 'Function class_implements() is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.'
-			identifier: phpstanApi.runtimeReflection
-			count: 1
-			path: src/Rules/LazyRegistry.php
-
-		-
-			rawMessage: 'Function class_parents() is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.'
-			identifier: phpstanApi.runtimeReflection
-			count: 1
-			path: src/Rules/LazyRegistry.php
-
-		-
 			rawMessage: 'Method PHPStan\Rules\LazyRegistry::getRulesByNodeType() return type with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
 			identifier: missingType.generics
 			count: 1

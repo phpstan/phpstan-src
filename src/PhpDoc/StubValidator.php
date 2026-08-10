@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use Throwable;
 use function array_fill_keys;
@@ -59,7 +60,7 @@ final class StubValidator
 			$analysedFiles = array_fill_keys($stubFiles, true);
 
 			$ruleRegistry = new DirectRuleRegistry($container->getServicesByTag(self::SERVICE_RULE_TAG));
-			$collectorRegistry = new CollectorRegistry([]);
+			$collectorRegistry = new CollectorRegistry([], $container->getByType(ReflectionProvider::class));
 
 			$errors = [];
 			foreach ($stubFiles as $stubFile) {

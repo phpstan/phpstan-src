@@ -802,14 +802,14 @@ class AnalyserTest extends PHPStanTestCase
 
 	private function createAnalyser(): Analyser
 	{
+		$reflectionProvider = self::createReflectionProvider();
+
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
 		]);
-		$collectorRegistry = new CollectorRegistry([]);
+		$collectorRegistry = new CollectorRegistry([], $reflectionProvider);
 
-		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
-
 		$container = self::getContainer();
 		$typeSpecifier = $container->getService('typeSpecifier');
 		$fileTypeMapper = $container->getByType(FileTypeMapper::class);

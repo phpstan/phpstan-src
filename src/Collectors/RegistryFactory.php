@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
+use PHPStan\Reflection\ReflectionProvider;
 
 #[AutowiredService]
 final class RegistryFactory
@@ -19,6 +20,7 @@ final class RegistryFactory
 	public function __construct(
 		#[AutowiredExtensions(of: Collector::class)]
 		private ExtensionsCollection $collectors,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -27,6 +29,7 @@ final class RegistryFactory
 	{
 		return new Registry(
 			$this->collectors->getAll(),
+			$this->reflectionProvider,
 		);
 	}
 

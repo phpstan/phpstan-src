@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use function class_implements;
-use function class_parents;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\ExtensionClassHelper;
 
 #[AutowiredService(name: 'registry', as: Registry::class)]
 final class LazyRegistry implements Registry
@@ -27,6 +27,7 @@ final class LazyRegistry implements Registry
 	public function __construct(
 		#[AutowiredExtensions(of: Rule::class)]
 		private ExtensionsCollection $rules,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -39,7 +40,7 @@ final class LazyRegistry implements Registry
 	public function getRules(string $nodeType): array
 	{
 		if (!isset($this->cache[$nodeType])) {
-			$parentNodeTypes = [$nodeType] + class_parents($nodeType) + class_implements($nodeType);
+			$parentNodeTypes = ExtensionClassHelper::getExtensionClassNames($this->reflectionProvider, $nodeType);
 
 			$rules = [];
 			$rulesFromContainer = $this->getRulesByNodeType();

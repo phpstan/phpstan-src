@@ -95,3 +95,19 @@ function testEmptyVsNonEmpty(bool $flag): void {
 	];
 	assertType("array{key?: 'value'}", $result);
 }
+
+function testStringKeyBranchAndIntegerKeyBranch(bool $flag): void {
+	// integer keys are renumbered, string keys are kept
+	$result = [
+		9,
+		...($flag ? ['a' => 1] : [5]),
+	];
+	assertType('array{0: 9, a?: 1, 1?: 5}', $result);
+}
+
+function testMixedKeysInBothBranches(bool $flag): void {
+	$result = [
+		...($flag ? ['a' => 1, 7] : [5, 'a' => 2]),
+	];
+	assertType('array{a: 1|2, 0: 5|7}', $result);
+}

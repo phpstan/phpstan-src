@@ -12,7 +12,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use function array_key_exists;
 use function array_shift;
 use function array_unshift;
-use function count;
 use function spl_object_id;
 
 #[AutowiredService]
@@ -58,14 +57,39 @@ final class ClosureBindArgVisitor extends NodeVisitorAbstract
 			&& $node->name->toLowerString() === 'bind'
 			&& !$node->isFirstClassCallable()
 		) {
-			$args = $node->getArgs();
-			if (count($args) > 1) {
-				$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
+			$closureArg = null;
+			$newThisArg = null;
+			$newScopeArg = null;
+			foreach ($node->getArgs() as $i => $arg) {
+				if ($arg->name === null) {
+					if ($i === 0) {
+						$closureArg = $arg;
+					} elseif ($i === 1) {
+						$newThisArg = $arg;
+					} elseif ($i === 2) {
+						$newScopeArg = $arg;
+					}
+					continue;
+				}
 
-				$closure = $args[0]->value;
+				if ($arg->name->toString() === 'closure') {
+					$closureArg = $arg;
+				} elseif ($arg->name->toString() === 'newThis') {
+					$newThisArg = $arg;
+				} elseif ($arg->name->toString() === 'newScope') {
+					$newScopeArg = $arg;
+				}
+			}
+
+			if ($closureArg !== null) {
+				if ($newThisArg !== null) {
+					$closureArg->setAttribute(self::ATTRIBUTE_NAME, true);
+				}
+
+				$closure = $closureArg->value;
 				if ($closure instanceof Expr\Closure || $closure instanceof Expr\ArrowFunction) {
 					// null means default scope "static"
-					$this->boundClosures[spl_object_id($closure)] = $args[2]->value ?? null;
+					$this->boundClosures[spl_object_id($closure)] = $newScopeArg !== null ? $newScopeArg->value : null;
 				}
 			}
 		}

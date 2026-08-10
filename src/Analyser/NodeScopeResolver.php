@@ -3096,8 +3096,33 @@ class NodeScopeResolver
 		do {
 			$prevScope = $closureScope;
 
+			/** @var array<string, array{Type, Type}> $reentryPointTypes */
+			$reentryPointTypes = [];
+			$reentryPointCallback = new GatheringNodeCallback(static function (Node $node, Scope $nodeScope) use ($byRefUses, &$reentryPointTypes): void {
+				if (!self::isClosureReentryPoint($node)) {
+					return;
+				}
+
+				foreach ($byRefUses as $byRefUse) {
+					$variableName = $byRefUse->var->name;
+					if (!is_string($variableName) || !$nodeScope->hasVariableType($variableName)->yes()) {
+						continue;
+					}
+
+					$variableType = $nodeScope->getVariableType($variableName);
+					$variableNativeType = $nodeScope->getNativeType($byRefUse->var);
+					if (isset($reentryPointTypes[$variableName])) {
+						[$previousType, $previousNativeType] = $reentryPointTypes[$variableName];
+						$variableType = TypeCombinator::union($previousType, $variableType);
+						$variableNativeType = TypeCombinator::union($previousNativeType, $variableNativeType);
+					}
+
+					$reentryPointTypes[$variableName] = [$variableType, $variableNativeType];
+				}
+			}, new NoopNodeCallback());
+
 			$storage = $originalStorage->duplicate();
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $reentryPointCallback, StatementContext::createTopLevel());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -3106,6 +3131,28 @@ class NodeScopeResolver
 			if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
 				$closureResultScope = $intermediaryClosureScope;
 				break;
+			}
+
+			// Control can leave the closure at every call in its body, so the closure
+			// can be entered again while an outer invocation sits at that call. The
+			// values a by-ref use holds there are therefore observable on entry, even
+			// when a later assignment overwrites them before the body ends.
+			foreach ($byRefUses as $byRefUse) {
+				$variableName = $byRefUse->var->name;
+				if (!is_string($variableName) || !isset($reentryPointTypes[$variableName])) {
+					continue;
+				}
+				if (!$intermediaryClosureScope->hasVariableType($variableName)->yes()) {
+					continue;
+				}
+
+				[$reentryPointType, $reentryPointNativeType] = $reentryPointTypes[$variableName];
+				$intermediaryClosureScope = $intermediaryClosureScope->assignVariable(
+					$variableName,
+					TypeCombinator::union($intermediaryClosureScope->getVariableType($variableName), $reentryPointType),
+					TypeCombinator::union($intermediaryClosureScope->getNativeType($byRefUse->var), $reentryPointNativeType),
+					TrinaryLogic::createYes(),
+				);
 			}
 
 			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
@@ -3137,6 +3184,19 @@ class NodeScopeResolver
 		), $closureScope, $storage);
 
 		return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $closureResultScope, $byRefUses);
+	}
+
+	/**
+	 * Points in a closure body where control can leave it and the closure can be
+	 * entered again before the current invocation finishes.
+	 */
+	private static function isClosureReentryPoint(Node $node): bool
+	{
+		if ($node instanceof CallLike) {
+			return !$node->isFirstClassCallable();
+		}
+
+		return $node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom;
 	}
 
 	/**

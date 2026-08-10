@@ -7,14 +7,11 @@ use JsonSerializable;
 use Nette\Utils\Strings;
 use Override;
 use PhpParser\Node;
-use PHPStan\File\FileHelper;
-use PHPStan\File\RelativePathHelper;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use Throwable;
 use function is_bool;
 use function sprintf;
-use function str_replace;
 
 /**
  * @api
@@ -137,43 +134,22 @@ final class Error implements JsonSerializable
 	}
 
 	/**
-	 * Rewrites the absolute paths this error carries to paths relative to the helper's base,
-	 * for portable storage in the result cache. Separators are normalised to forward slashes so the
-	 * cache is portable between Windows and Linux. Inverse of absolutizePaths().
+	 * Rewrites every path this error carries, for portable storage in the result cache. The caller
+	 * owns the transformation - see ResultCachePathTransformer, which passes relativizePath() when
+	 * storing and absolutizePath() when loading - so both directions apply exactly the same rules
+	 * to the error's paths as to the cache's file-path keys.
+	 *
+	 * @param callable(string): string $transformPath
 	 */
-	public function relativizePaths(RelativePathHelper $relativePathHelper): self
-	{
-		$relativize = static fn (string $path): string => str_replace('\\', '/', $relativePathHelper->getRelativePath($path));
-
-		return new self(
-			$this->message,
-			$relativize($this->file),
-			$this->line,
-			$this->canBeIgnored,
-			$this->filePath === null ? null : $relativize($this->filePath),
-			$this->traitFilePath === null ? null : $relativize($this->traitFilePath),
-			$this->tip,
-			$this->nodeLine,
-			$this->nodeType,
-			$this->identifier,
-			$this->metadata,
-			$this->fixedErrorDiff,
-		);
-	}
-
-	/**
-	 * Rewrites the relative paths stored by relativizePaths() back to absolute paths against
-	 * the helper's base. Inverse of relativizePaths().
-	 */
-	public function absolutizePaths(FileHelper $fileHelper): self
+	public function transformPaths(callable $transformPath): self
 	{
 		return new self(
 			$this->message,
-			$fileHelper->normalizePath($fileHelper->absolutizePath($this->file)),
+			$transformPath($this->file),
 			$this->line,
 			$this->canBeIgnored,
-			$this->filePath === null ? null : $fileHelper->normalizePath($fileHelper->absolutizePath($this->filePath)),
-			$this->traitFilePath === null ? null : $fileHelper->normalizePath($fileHelper->absolutizePath($this->traitFilePath)),
+			$this->filePath === null ? null : $transformPath($this->filePath),
+			$this->traitFilePath === null ? null : $transformPath($this->traitFilePath),
 			$this->tip,
 			$this->nodeLine,
 			$this->nodeType,

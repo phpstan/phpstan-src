@@ -419,6 +419,24 @@ jobs:
               ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-phar-bootstrap
+              # A bootstrapFile living inside a phar is hashed into executedFilesHashes under its
+              # phar:// URL, and PHPStan registers its own runtime stubs exactly like that inside
+              # phpstan.phar. Only the path after the scheme may be relativized: dropping the scheme
+              # leaves absolutizePath() unable to reconstruct the URL, so the restored key never
+              # matches and the cache is discarded on every run.
+              php -d phar.readonly=0 build-boot-phar.php
+              ../../bin/phpstan analyse
+              # Every stored reference to the bootstrap file must keep its scheme. Grepping for
+              # 'phar://' alone would also match the Neon-encoded projectConfig, so assert the
+              # negative: no scheme-less key pointing at boot.phar/boot.php.
+              if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
+                echo 'bootstrap path stored without its phar:// scheme'; exit 1
+              fi
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-relative-path
               # Cold run: paths are stored relative to the phpstan install (the anchor), so the cache
               # no longer embeds the absolute checkout path. Assert the analysed file is NOT stored under

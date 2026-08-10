@@ -664,9 +664,8 @@ final class InitializerExprTypeResolver
 					foreach ($constantArrays as $constantArrayType) {
 						$nextIntegerSlot = 0;
 						foreach ($constantArrayType->getKeyTypes() as $i => $keyType) {
-							$keyValue = $keyType->getValue();
-							if ($keepStringKeys && is_string($keyValue)) {
-								$slotKey = 's' . $keyValue;
+							if ($keepStringKeys && $keyType->isString()->yes()) {
+								$slotKey = 's' . $keyType->getValue();
 								$slotKeyType = $keyType;
 							} else {
 								$slotKey = 'i' . $nextIntegerSlot;

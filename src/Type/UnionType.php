@@ -1568,8 +1568,7 @@ class UnionType implements CompoundType
 			return $this->finiteTypes = [];
 		}
 
-		$this->finiteTypes = array_values($uniquedTypes);
-		return $this->finiteTypes;
+		return $this->finiteTypes = array_values($uniquedTypes);
 	}
 
 	/**

@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ImpurePoint;
@@ -49,10 +50,12 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function count;
 use function implode;
+use function in_array;
 use function is_string;
 
 #[AutowiredService]
@@ -438,7 +441,72 @@ final class ClosureTypeResolver
 		// when the seeding pin copies the phpdoc build to the promoted key
 		$flavour = $expr instanceof ArrowFunction ? ($scope->nativeTypesPromoted ? '/native' : '/phpdoc') : '';
 
-		return $scope->getClosureScopeCacheKey() . '/' . implode('|', $parts) . $flavour;
+		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . $flavour;
+	}
+
+	/**
+	 * The expression roots this closure's type can read from the enclosing
+	 * scope: '$this' and the use()d variables for closures, '$this' and
+	 * every body variable that is not a parameter for arrow functions. Null
+	 * when the body accesses variables dynamically ($$name, compact(),
+	 * get_defined_vars()) and the whole scope must key the cache.
+	 *
+	 * @return list<string>|null
+	 */
+	private function freeVariableRoots(Node\Expr\Closure|ArrowFunction $expr): ?array
+	{
+		/** @var list<string>|false|null $cached */
+		$cached = $expr->getAttribute('phpstanFreeVariableRoots', false);
+		if ($cached !== false) {
+			return $cached;
+		}
+
+		$roots = [];
+		if (!$expr->static) {
+			$roots['$this'] = true;
+		}
+
+		if ($expr instanceof Node\Expr\Closure) {
+			foreach ($expr->uses as $use) {
+				if (!is_string($use->var->name)) {
+					$expr->setAttribute('phpstanFreeVariableRoots', null);
+					return null;
+				}
+				$roots['$' . $use->var->name] = true;
+			}
+		} else {
+			$paramNames = [];
+			foreach ($expr->params as $param) {
+				if (!($param->var instanceof Node\Expr\Variable) || !is_string($param->var->name)) {
+					continue;
+				}
+
+				$paramNames['$' . $param->var->name] = true;
+			}
+			$finder = new NodeFinder();
+			foreach ($finder->findInstanceOf([$expr->expr], Node\Expr\Variable::class) as $variable) {
+				if (!is_string($variable->name)) {
+					$expr->setAttribute('phpstanFreeVariableRoots', null);
+					return null;
+				}
+				$name = '$' . $variable->name;
+				if (isset($paramNames[$name])) {
+					continue;
+				}
+				$roots[$name] = true;
+			}
+			foreach ($finder->findInstanceOf([$expr->expr], Node\Expr\FuncCall::class) as $call) {
+				if ($call->name instanceof Node\Name && in_array($call->name->toLowerString(), ['compact', 'extract', 'get_defined_vars'], true)) {
+					$expr->setAttribute('phpstanFreeVariableRoots', null);
+					return null;
+				}
+			}
+		}
+
+		$rootList = array_keys($roots);
+		$expr->setAttribute('phpstanFreeVariableRoots', $rootList);
+
+		return $rootList;
 	}
 
 	/**

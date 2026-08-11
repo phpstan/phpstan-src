@@ -33,6 +33,14 @@ class MethodNeverRuleTest extends RuleTestCase
 				'Method MethodNever\Foo::doBaz() always terminates script execution, it should have return type "never".',
 				31,
 			],
+			[
+				'Method MethodNever\MagicMethodsWithoutNever::__clone() always throws an exception, it should have return type "never".',
+				132,
+			],
+			[
+				'Method MethodNever\MagicMethodsWithoutNever::__toString() always throws an exception, it should have return type "never".',
+				137,
+			],
 		]);
 	}
 

@@ -80,6 +80,8 @@ class UnionType implements CompoundType
 	 */
 	private FiniteTypeSet|false|null $finiteTypeSet = null;
 
+	private ?array $finiteTypes = null;
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -1552,6 +1554,10 @@ class UnionType implements CompoundType
 
 	public function getFiniteTypes(): array
 	{
+		if ($this->finiteTypes !== null) {
+			return $this->finiteTypes;
+		}
+
 		$types = $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getFiniteTypes());
 		$uniquedTypes = [];
 		foreach ($types as $type) {
@@ -1559,10 +1565,11 @@ class UnionType implements CompoundType
 		}
 
 		if (count($uniquedTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return [];
+			return $this->finiteTypes = [];
 		}
 
-		return array_values($uniquedTypes);
+		$this->finiteTypes = array_values($uniquedTypes);
+		return $this->finiteTypes;
 	}
 
 	/**

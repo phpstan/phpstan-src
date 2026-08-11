@@ -80,6 +80,7 @@ class UnionType implements CompoundType
 	 */
 	private FiniteTypeSet|false|null $finiteTypeSet = null;
 
+	/** @var list<Type>|null */
 	private ?array $finiteTypes = null;
 
 	/**

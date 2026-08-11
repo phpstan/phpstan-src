@@ -23,6 +23,7 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\EmitCollectedDataNode;
@@ -975,6 +976,36 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function getAnonymousFunctionReflection(): ?ClosureType
 	{
 		return $this->anonymousFunctionReflection;
+	}
+
+	/**
+	 * A copy of this scope with only the anonymous-function
+	 * reflection replaced. The scope entered at a closure/arrow carries only a
+	 * shallow reflection (parameters + declared return); once the single body
+	 * walk has gathered the returns, the engine builds the refined ClosureType and
+	 * swaps it in here so the closure/arrow return-type node and its rules see the
+	 * refined expected return.
+	 */
+	public function withAnonymousFunctionReflection(ClosureType $anonymousFunctionReflection): self
+	{
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
 	}
 
 	/** @api */
@@ -2129,10 +2160,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		?array $nativeCallableParameters = null,
 	): self
 	{
-		$anonymousFunctionReflection = $this->resolveType('__phpstanClosure', $closure);
-		if (!$anonymousFunctionReflection instanceof ClosureType) {
-			throw new ShouldNotHappenException();
-		}
+		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true);
 
 		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
 
@@ -2352,10 +2380,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters = null): self
 	{
-		$anonymousFunctionReflection = $this->resolveType('__phpStanArrowFn', $arrowFunction);
-		if (!$anonymousFunctionReflection instanceof ClosureType) {
-			throw new ShouldNotHappenException();
-		}
+		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true);
 
 		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $nativeCallableParameters);
 

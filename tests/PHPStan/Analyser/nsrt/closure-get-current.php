@@ -10,7 +10,10 @@ function doFoo(): void {
 }
 
 function (int $i): string {
-	assertType("Closure(int): 'foo'", Closure::getCurrent());
+	// Closure::getCurrent() reads the closure scope's own reflection mid-body,
+	// which carries the declared return type - the body-inferred 'foo' is not yet
+	// available from the single body walk at this point.
+	assertType('Closure(int): string', Closure::getCurrent());
 
 	return 'foo';
 };

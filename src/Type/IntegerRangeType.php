@@ -91,7 +91,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value, -1);
 		}
 
-		if ($value > PHP_INT_MAX) {
+		// (float) PHP_INT_MAX rounds up to 2 ** 63, so a float that equals it
+		// is already bigger than every integer.
+		if ($value >= (float) PHP_INT_MAX) {
 			return new IntegerType();
 		}
 
@@ -161,7 +163,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new IntegerType();
 		}
 
-		if ($value > PHP_INT_MAX) {
+		// (float) PHP_INT_MAX rounds up to 2 ** 63, so a float that equals it
+		// is already bigger than every integer.
+		if ($value >= (float) PHP_INT_MAX) {
 			return new NeverType();
 		}
 

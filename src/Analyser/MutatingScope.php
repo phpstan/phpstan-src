@@ -21,9 +21,9 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
-use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\EmitCollectedDataNode;
@@ -119,6 +119,7 @@ use function array_unique;
 use function array_values;
 use function assert;
 use function count;
+use function ctype_alnum;
 use function explode;
 use function implode;
 use function in_array;
@@ -1093,11 +1094,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
-	public function getClosureScopeCacheKey(): string
+	/**
+	 * A cache key of the scope state a closure's type can depend on. With
+	 * $relevantRoots (the closure's free variables, '$this' included) only
+	 * the expression types rooted in them contribute - narrow enough that
+	 * loop-local churn does not invalidate the closure's cached type. Null
+	 * means everything contributes (dynamic variable access in the body).
+	 *
+	 * @param list<string>|null $relevantRoots
+	 */
+	public function getClosureScopeCacheKey(?array $relevantRoots = null): string
 	{
 		$parts = [];
 		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
 			if ($expressionTypeHolder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
+			if ($relevantRoots !== null && !self::exprStringIsRootedIn($exprString, $relevantRoots)) {
 				continue;
 			}
 			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
@@ -1115,6 +1128,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return md5(implode("\n", $parts));
+	}
+
+	/**
+	 * @param list<string> $roots
+	 */
+	private static function exprStringIsRootedIn(string $exprString, array $roots): bool
+	{
+		foreach ($roots as $root) {
+			if ($exprString === $root) {
+				return true;
+			}
+			if (!str_starts_with($exprString, $root)) {
+				continue;
+			}
+
+			$next = $exprString[strlen($root)];
+			if ($next !== '_' && !ctype_alnum($next)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function resolveType(string $exprString, Expr $node): Type

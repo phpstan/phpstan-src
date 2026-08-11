@@ -649,27 +649,71 @@ final class InitializerExprTypeResolver
 			$valueType = $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
 				$constantArrays = $valueType->getConstantArrays();
-				if (count($constantArrays) === 1) {
-					$constantArrayType = $constantArrays[0];
+				if (count($constantArrays) > 0) {
+					$keepStringKeys = $this->phpVersion->supportsArrayUnpackingWithStringKeys();
+					$totalArrays = count($constantArrays);
 
-					$hasStringKey = false;
-					if ($this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-						foreach ($constantArrayType->getKeyTypes() as $keyType) {
-							if ($keyType->isString()->yes()) {
-								$hasStringKey = true;
-								break;
+					// Unpacking merges string keys by name, while integer keys are always
+					// renumbered, so they're merged by their position among integer keys.
+					// A slot missing from some of the unpacked arrays becomes optional.
+					/** @var array<string, array{keyType: ConstantStringType|null, valueTypes: list<Type>, presentCount: int, anyOptional: bool}> $slots */
+					$slots = [];
+					/** @var list<string> $slotOrder */
+					$slotOrder = [];
+
+					foreach ($constantArrays as $constantArrayType) {
+						$nextIntegerSlot = 0;
+						foreach ($constantArrayType->getKeyTypes() as $i => $keyType) {
+							if ($keepStringKeys && $keyType->isString()->yes()) {
+								$slotKey = 's' . $keyType->getValue();
+								$slotKeyType = $keyType;
+							} else {
+								$slotKey = 'i' . $nextIntegerSlot;
+								$slotKeyType = null;
+								$nextIntegerSlot++;
 							}
+
+							if (!isset($slots[$slotKey])) {
+								$slots[$slotKey] = [
+									'keyType' => $slotKeyType,
+									'valueTypes' => [],
+									'presentCount' => 0,
+									'anyOptional' => false,
+								];
+								$slotOrder[] = $slotKey;
+							}
+
+							$slots[$slotKey]['valueTypes'][] = $constantArrayType->getValueTypes()[$i];
+							$slots[$slotKey]['presentCount']++;
+							if (!$constantArrayType->isOptionalKey($i)) {
+								continue;
+							}
+
+							$slots[$slotKey]['anyOptional'] = true;
 						}
 					}
 
-					foreach ($constantArrayType->getValueTypes() as $i => $innerValueType) {
-						if ($hasStringKey) {
-							$arrayBuilder->setOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType, $constantArrayType->isOptionalKey($i));
-							if (!$constantArrayType->isOptionalKey($i)) {
-								$hasOffsetValueTypes[$constantArrayType->getKeyTypes()[$i]->getValue()] = new HasOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType);
-							}
-						} else {
-							$arrayBuilder->setOffsetValueType(null, $innerValueType, $constantArrayType->isOptionalKey($i));
+					foreach ($slotOrder as $slotKey) {
+						$slot = $slots[$slotKey];
+						$mergedValueType = TypeCombinator::union(...$slot['valueTypes']);
+						$isOptional = $slot['anyOptional'] || $slot['presentCount'] < $totalArrays;
+						$slotKeyType = $slot['keyType'];
+						$arrayBuilder->setOffsetValueType($slotKeyType, $mergedValueType, $isOptional);
+
+						if ($slotKeyType === null) {
+							continue;
+						}
+
+						$keyValue = $slotKeyType->getValue();
+						if (isset($hasOffsetValueTypes[$keyValue])) {
+							$hasOffsetValueTypes[$keyValue] = new HasOffsetValueType(
+								$slotKeyType,
+								$isOptional
+									? TypeCombinator::union($hasOffsetValueTypes[$keyValue]->getValueType(), $mergedValueType)
+									: $mergedValueType,
+							);
+						} elseif (!$isOptional) {
+							$hasOffsetValueTypes[$keyValue] = new HasOffsetValueType($slotKeyType, $mergedValueType);
 						}
 					}
 				} else {

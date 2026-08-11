@@ -3111,7 +3111,11 @@ class NodeScopeResolver
 			$prevScope = $closureScope;
 
 			$storage = $originalStorage->duplicate();
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
+			// deep context, like the loop handlers' own convergence passes: inner
+			// loops walk single-pass here and only the final walk below (top-level)
+			// runs their full convergence - otherwise every closure-convergence
+			// pass would re-converge every inner loop from scratch
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());

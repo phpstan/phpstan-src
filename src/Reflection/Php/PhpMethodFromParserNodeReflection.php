@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
@@ -74,6 +75,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		private bool $isConstructor,
 		array $attributes,
 		array $pureUnlessCallableIsImpureParameters,
+		PhpVersion $phpVersion,
 	)
 	{
 		if ($this->classMethod instanceof Node\PropertyHook) {
@@ -88,9 +90,9 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		if ($this->isConstructor) {
 			$realReturnType = new VoidType();
 		}
-		// PHP always accepts "never" as the declared return type of a magic method,
-		// even when it otherwise mandates a specific one.
-		if (!$realReturnType instanceof NeverType) {
+		// Since PHP 8.1 "never" is always accepted as the declared return type of a magic method,
+		// even when PHP otherwise mandates a specific one. Before 8.1 "never" is just a class name.
+		if (!$phpVersion->supportsNeverReturnType() || !$realReturnType instanceof NeverType) {
 			if (in_array($name, ['__destruct', '__unset', '__wakeup', '__clone'], true)) {
 				$realReturnType = new VoidType();
 			}

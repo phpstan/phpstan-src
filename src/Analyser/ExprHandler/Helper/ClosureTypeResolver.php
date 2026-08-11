@@ -82,9 +82,26 @@ final class ClosureTypeResolver
 	public function getClosureType(
 		MutatingScope $scope,
 		Node\Expr\Closure|ArrowFunction $expr,
+		bool $shallow = false,
 	): ClosureType
 	{
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr);
+
+		// A shallow reflection is the closure/arrow function's signature without
+		// walking its body: parameters plus the DECLARED return type. Used at scope
+		// ENTRY (enterAnonymousFunction()/enterArrowFunction()) so entering a
+		// closure/arrow scope never re-walks the body - the refined return type is
+		// built afterwards from the single body walk's gathered returns and carried
+		// on the node/rule scope (see NodeScopeResolver::processClosureNode()
+		// and processArrowFunctionNode()).
+		if ($shallow) {
+			return new ClosureType(
+				$parameters,
+				$scope->getFunctionType($expr->returnType, false, false),
+				$isVariadic,
+				isStatic: TrinaryLogic::createFromBoolean($expr->static),
+			);
+		}
 
 		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
@@ -242,6 +259,7 @@ final class ClosureTypeResolver
 		array $impurePoints,
 		array $invalidateExpressions,
 		bool $native = false,
+		bool $writeCache = true,
 	): ClosureType
 	{
 		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
@@ -271,6 +289,7 @@ final class ClosureTypeResolver
 				$parameters,
 			),
 			$native,
+			$writeCache,
 		);
 	}
 
@@ -292,6 +311,7 @@ final class ClosureTypeResolver
 		array $impurePoints,
 		array $invalidateExpressions,
 		bool $native = false,
+		bool $writeCache = true,
 	): ClosureType
 	{
 		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
@@ -310,7 +330,7 @@ final class ClosureTypeResolver
 			$expr,
 			$native ? $nativeCallableParameters : $callableParameters,
 			$parameters,
-		));
+		), $writeCache);
 	}
 
 	/**
@@ -458,6 +478,7 @@ final class ClosureTypeResolver
 		array $invalidateExpressions,
 		?string $cacheKey = null,
 		bool $native = false,
+		bool $writeCache = true,
 	): ClosureType
 	{
 		$onlyNeverExecutionEnds = $this->deriveOnlyNeverExecutionEnds($executionEnds);
@@ -562,7 +583,7 @@ final class ClosureTypeResolver
 			break;
 		}
 
-		return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, $usedVariables, $cacheKey);
+		return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, $usedVariables, $cacheKey, $writeCache);
 	}
 
 	private function resolveArrowFunctionReturnType(
@@ -795,6 +816,7 @@ final class ClosureTypeResolver
 		array $invalidateExpressions,
 		array $usedVariables,
 		?string $cacheKey = null,
+		bool $writeCache = true,
 	): ClosureType
 	{
 		foreach ($parameters as $parameter) {
@@ -814,16 +836,18 @@ final class ClosureTypeResolver
 		$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
 		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 
-		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
-		$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
-		$cachedTypes[$cacheKey] = [
-			'returnType' => $returnType,
-			'throwPoints' => $throwPointsForClosureType,
-			'impurePoints' => $impurePointsForClosureType,
-			'invalidateExpressions' => $invalidateExpressions,
-			'usedVariables' => $usedVariables,
-		];
-		$expr->setAttribute('phpstanCachedTypes', $cachedTypes);
+		if ($writeCache) {
+			$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
+			$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
+			$cachedTypes[$cacheKey] = [
+				'returnType' => $returnType,
+				'throwPoints' => $throwPointsForClosureType,
+				'impurePoints' => $impurePointsForClosureType,
+				'invalidateExpressions' => $invalidateExpressions,
+				'usedVariables' => $usedVariables,
+			];
+			$expr->setAttribute('phpstanCachedTypes', $cachedTypes);
+		}
 
 		$mustUseReturnValue = TrinaryLogic::createNo();
 		foreach ($expr->attrGroups as $attrGroup) {

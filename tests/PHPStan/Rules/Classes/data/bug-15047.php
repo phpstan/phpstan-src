@@ -4,29 +4,14 @@ namespace Bug15047Instantiation;
 
 use stdClass;
 
-abstract class AbstractJsonRepresentation
+final class MissalYearLimits
 {
 
-	/**
-	 * @param stdClass $data
-	 */
-	abstract protected static function fromObjectInternal(stdClass $data): self;
+	private ?int $until_year;
 
-}
-
-final class MissalYearLimits extends AbstractJsonRepresentation
-{
-
-	private ?int $untilYear;
-
-	private function __construct(?int $untilYear)
+	private function __construct(?int $until_year)
 	{
-		$this->untilYear = $untilYear;
-	}
-
-	public function getUntilYear(): ?int
-	{
-		return $this->untilYear;
+		$this->until_year = $until_year;
 	}
 
 	/**
@@ -34,9 +19,14 @@ final class MissalYearLimits extends AbstractJsonRepresentation
 	 */
 	protected static function fromObjectInternal(stdClass $data): self
 	{
-		// the optional key must keep its declared type through the ?? narrowing,
+		// the optional key must keep its declared type through the isset() narrowing,
 		// otherwise this reports "expects int|null, mixed given"
-		return new self($data->until_year ?? null);
+		return new self(isset($data->until_year) ? $data->until_year : null);
+	}
+
+	public function getUntilYear(): ?int
+	{
+		return $this->until_year;
 	}
 
 }

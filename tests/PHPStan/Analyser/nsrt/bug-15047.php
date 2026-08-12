@@ -1,28 +1,18 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace Bug15047;
 
 use stdClass;
 use function PHPStan\Testing\assertType;
 
-abstract class AbstractJsonRepresentation
+final class MissalYearLimits
 {
 
-	/**
-	 * @param stdClass $data
-	 */
-	abstract protected static function fromObjectInternal(stdClass $data): self;
+	private ?int $until_year;
 
-}
-
-final class MissalYearLimits extends AbstractJsonRepresentation
-{
-
-	private ?int $untilYear;
-
-	private function __construct(?int $untilYear)
+	private function __construct(?int $until_year)
 	{
-		$this->untilYear = $untilYear;
+		$this->until_year = $until_year;
 	}
 
 	/**
@@ -31,28 +21,19 @@ final class MissalYearLimits extends AbstractJsonRepresentation
 	protected static function fromObjectInternal(stdClass $data): self
 	{
 		assertType('object{since_year: int, until_year?: int}&stdClass', $data);
-		assertType('int|null', $data->until_year ?? null);
 		assertType('int', $data->since_year);
+		assertType('int|null', isset($data->until_year) ? $data->until_year : null);
+		assertType('int|null', $data->until_year ?? null);
 
+		// isset() adds a hasProperty() member to the intersection, and resolving the
+		// optional key against it must not depend on where that member lands in the
+		// member list - which is what this used to be sensitive to.
 		if (isset($data->until_year)) {
 			assertType('object{since_year: int, until_year: int}&stdClass', $data);
 			assertType('int', $data->until_year);
 		}
 
-		return new self($data->until_year ?? null);
+		return new self(isset($data->until_year) ? $data->until_year : null);
 	}
 
-}
-
-/**
- * The member order of the intersection must not change the result: whether the object shape or
- * stdClass is written first, isset()/?? narrowing resolves the optional key to its declared type.
- *
- * @param stdClass&object{u?:int} $stdFirst
- * @param object{u?:int}&stdClass $shapeFirst
- */
-function orderIndependent($stdFirst, $shapeFirst): void
-{
-	assertType('int|null', $stdFirst->u ?? null);
-	assertType('int|null', $shapeFirst->u ?? null);
 }

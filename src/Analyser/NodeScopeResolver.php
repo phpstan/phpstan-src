@@ -558,10 +558,30 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * The statement-list walk without the per-list pending-fiber flush - for
+	 * the callers that sit inside an enclosing statement walk (nested
+	 * control-flow lists, convergence passes) whose own boundary flushes.
+	 *
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processStmtNodesInternalWithoutFlushingPendingFibers(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+	): InternalStatementResult
+	{
+		return $this->doProcessStmtNodes($parentNode, $stmts, $scope, $storage, $nodeCallback, $context);
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function doProcessStmtNodes(
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,

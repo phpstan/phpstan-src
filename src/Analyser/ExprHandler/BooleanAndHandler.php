@@ -29,9 +29,11 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use function array_filter;
+use function array_key_last;
 use function array_merge;
 use function array_reverse;
 use function array_values;
+use function count;
 use function is_string;
 
 /**
@@ -58,6 +60,13 @@ final class BooleanAndHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		// For deep BooleanAnd chains, resolve the boolean type by iterating the flattened arms
+		// while threading the truthy scope, instead of recursing into the left operand and
+		// re-narrowing the whole chain at each level - the latter is O(n^2) in the number of arms.
+		if (self::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+			return $this->resolveTypeForFlattenedBooleanAnd($scope, $expr);
+		}
+
 		$leftBooleanType = $scope->getType($expr->left)->toBoolean();
 		if ($leftBooleanType->isFalse()->yes()) {
 			return new ConstantBooleanType(false);
@@ -84,20 +93,61 @@ final class BooleanAndHandler implements ExprHandler
 		return new BooleanType();
 	}
 
+	/**
+	 * The whole chain is false if any arm is false (given the previous arms are true), true if
+	 * every arm is true, and bool otherwise. Threading the truthy scope arm by arm keeps this
+	 * O(n), matching the recursive resolveType() result without re-narrowing the whole left
+	 * chain at each level.
+	 *
+	 * @param BooleanAnd|LogicalAnd $expr
+	 */
+	private function resolveTypeForFlattenedBooleanAnd(MutatingScope $scope, Expr $expr): Type
+	{
+		$arms = [];
+		$current = $expr;
+		while ($current instanceof BooleanAnd || $current instanceof LogicalAnd) {
+			$arms[] = $current->right;
+			$current = $current->left;
+		}
+		$arms[] = $current;
+		$arms = array_reverse($arms);
+
+		$allArmsAreTrue = true;
+		$armScope = $scope;
+		$lastArmKey = array_key_last($arms);
+		foreach ($arms as $key => $arm) {
+			$armType = $armScope->getType($arm);
+			if ($armType->toBoolean()->isFalse()->yes()) {
+				return new ConstantBooleanType(false);
+			}
+			if (!$armType->toBoolean()->isTrue()->yes()) {
+				$allArmsAreTrue = false;
+			}
+			if ($key === $lastArmKey) {
+				continue;
+			}
+			$armScope = $armScope->filterByTruthyValue($arm);
+		}
+
+		return $allArmsAreTrue ? new ConstantBooleanType(true) : new BooleanType();
+	}
+
 	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		if (!$scope instanceof MutatingScope) {
 			throw new ShouldNotHappenException();
 		}
 
-		// For deep BooleanAnd chains in truthy context, flatten and
-		// process all arms at once to avoid O(N²) recursive
-		// filterByTruthyValue calls.
-		if (
-			$context->true()
-			&& self::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH
-		) {
-			return $this->specifyTypesForFlattenedBooleanAnd($typeSpecifier, $scope, $expr, $context);
+		// For deep BooleanAnd chains, flatten and process all arms at once to avoid
+		// O(N²) recursive filterByTruthyValue / filterByFalseyValue calls.
+		if (self::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+			if ($context->true()) {
+				return $this->specifyTypesForFlattenedBooleanAnd($typeSpecifier, $scope, $expr, $context);
+			}
+
+			if (!$context->null()) {
+				return $this->specifyTypesForFlattenedFalseyBooleanAnd($typeSpecifier, $scope, $expr, $context);
+			}
 		}
 
 		$leftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
@@ -221,6 +271,55 @@ final class BooleanAndHandler implements ExprHandler
 		}
 
 		return SpecifiedTypes::unionAll($armTypes)->setRootExpr($expr);
+	}
+
+	/**
+	 * The falsey counterpart of specifyTypesForFlattenedBooleanAnd(): at least one arm is
+	 * false, so the arms' narrowings intersect, the same merge intersectWith() does for the
+	 * recursive path. This is the De Morgan mirror of the flattened truthy BooleanOr chain,
+	 * and like it, deep chains trade the per-pair conditional-holder augments for linear time.
+	 *
+	 * A mixed truthy-and-false context takes this path too, so it also forgoes the holders the
+	 * recursive path re-derives from the falsey narrowing - the same class of information a
+	 * plain falsey context already forgoes here.
+	 *
+	 * @param BooleanAnd|LogicalAnd $expr
+	 */
+	private function specifyTypesForFlattenedFalseyBooleanAnd(
+		TypeSpecifier $typeSpecifier,
+		MutatingScope $scope,
+		Expr $expr,
+		TypeSpecifierContext $context,
+	): SpecifiedTypes
+	{
+		$arms = [];
+		$current = $expr;
+		while ($current instanceof BooleanAnd || $current instanceof LogicalAnd) {
+			$arms[] = $current->right;
+			$current = $current->left;
+		}
+		$arms[] = $current;
+		$arms = array_reverse($arms);
+
+		$armSpecifiedTypes = [];
+		foreach ($arms as $arm) {
+			$armSpecifiedTypes[] = $typeSpecifier->specifyTypesInCondition($scope, $arm, $context);
+		}
+
+		$types = $armSpecifiedTypes[0];
+		for ($i = 1; $i < count($armSpecifiedTypes); $i++) {
+			$types = $types->intersectWith($armSpecifiedTypes[$i]);
+		}
+
+		$result = (new SpecifiedTypes(
+			$types->getSureTypes(),
+			$types->getSureNotTypes(),
+		))->withAlternativeTypesOf($types);
+		if ($types->shouldOverwrite()) {
+			$result = $result->setAlwaysOverwriteTypes();
+		}
+
+		return $result->setRootExpr($expr);
 	}
 
 	/**

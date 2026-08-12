@@ -49,4 +49,33 @@ class NoDynamicConstantClass
 		assertType('array', GLOBAL_DYNAMIC_EMPTY_ARRAY);
 		assertType('array{}', GLOBAL_NON_DYNAMIC_EMPTY_ARRAY);
 	}
+
+	private function conditionallyNarrowedDynamicConstant(bool $b): void
+	{
+		if ($b) {
+			if (!is_string(DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT)) {
+				return;
+			}
+		}
+
+		if ($b) {
+			// re-narrowed through the conditional expression remembered for the merge above
+			assertType('string', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
+		}
+
+		assertType('string|null', DynamicConstantClass::DYNAMIC_NULL_WITH_PHPDOC_CONSTANT);
+	}
+
+	private function conditionallyNarrowedPureConstant(bool $b): void
+	{
+		if ($b) {
+			if (!is_string(DynamicConstantClass::PURE_CONSTANT_IN_CLASS)) {
+				return;
+			}
+		}
+
+		if ($b) {
+			assertType("'abc123def'", DynamicConstantClass::PURE_CONSTANT_IN_CLASS);
+		}
+	}
 }

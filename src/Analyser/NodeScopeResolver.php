@@ -398,11 +398,20 @@ class NodeScopeResolver
 	{
 		$bodyScope = $scope;
 		$count = 0;
+		$prevEntryScope = null;
 		do {
 			$prevScope = $bodyScope;
 			if ($mergeBodyScopeEachIteration) {
 				$bodyScope = $bodyScope->mergeWith($scope);
 			}
+			if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+				// walking is deterministic in the entry scope - an unchanged entry
+				// reproduces the previous pass's exit, so the verification walk is
+				// skipped
+				$bodyScope = $prevScope;
+				break;
+			}
+			$prevEntryScope = $bodyScope;
 			$tempStorage = $storage->duplicate();
 			$bodyScopeResult = $this->processStmtNodesInternal(
 				$parentNode,
@@ -1527,9 +1536,18 @@ class NodeScopeResolver
 				} else {
 					$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 					$count = 0;
+					$prevEntryScope = null;
 					do {
 						$prevScope = $bodyScope;
 						$bodyScope = $bodyScope->mergeWith($iterateeScope);
+						if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+							// walking is deterministic in the entry scope - an unchanged entry
+							// reproduces the previous pass's exit, so the verification walk is
+							// skipped
+							$bodyScope = $prevScope;
+							break;
+						}
+						$prevEntryScope = $bodyScope;
 						$storage = $originalStorage->duplicate();
 						$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 						$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
@@ -1761,9 +1779,18 @@ class NodeScopeResolver
 
 			if ($context->isTopLevel()) {
 				$count = 0;
+				$prevEntryScope = null;
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($scope);
+					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+						// walking is deterministic in the entry scope - an unchanged entry
+						// reproduces the previous pass's exit, so the verification walk is
+						// skipped
+						$bodyScope = $prevScope;
+						break;
+					}
+					$prevEntryScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
 					$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
@@ -1853,9 +1880,18 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 
 			if ($context->isTopLevel()) {
+				$prevEntryScope = null;
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($scope);
+					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+						// walking is deterministic in the entry scope - an unchanged entry
+						// reproduces the previous pass's exit, so the verification walk is
+						// skipped (and repeats only idempotent merges into the final scope)
+						$bodyScope = $prevScope;
+						break;
+					}
+					$prevEntryScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
 					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
 					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
@@ -1973,10 +2009,19 @@ class NodeScopeResolver
 
 			if ($context->isTopLevel()) {
 				$count = 0;
+				$prevEntryScope = null;
 				do {
 					$prevScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
 					$bodyScope = $bodyScope->mergeWith($initScope);
+					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+						// walking is deterministic in the entry scope - an unchanged entry
+						// reproduces the previous pass's exit, so the verification walk is
+						// skipped
+						$bodyScope = $prevScope;
+						break;
+					}
+					$prevEntryScope = $bodyScope;
 					if ($lastCondExpr !== null) {
 						$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 					}

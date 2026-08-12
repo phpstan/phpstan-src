@@ -138,7 +138,7 @@ jobs:
         if: matrix.php-version == '7.4'
         run: |
           composer config --unset platform.php --working-dir=tests
-          composer require --dev phpbench/phpbench:1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 --update-with-all-dependencies --working-dir=tests
+          composer require --dev phpbench/phpbench:^1.2.14 phpunit/phpunit:^9.6 brianium/paratest:^6.5 --update-with-all-dependencies --working-dir=tests
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: matrix.php-version != '7.4'

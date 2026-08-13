@@ -13,53 +13,73 @@ function foo(): void {
 	assertType('int<0, 255>', $a ^ $b);
 	assertType('int<0, 255>', $a | $b);
 	assertType('int<0, 255>', $a & $b);
+}
 
-	/** @var int<0, 255> $c */
-	$c = 0;
+/**
+ * @param int<0, 255> $c
+ */
+function withConstantOperand(int $c): void {
 	assertType('int<0, 255>', $c ^ 42);
 	assertType('int<0, 255>', 42 ^ $c);
 	assertType('int<0, 255>', $c | 42);
 	assertType('int<0, 42>', $c & 42);
+}
 
-	/** @var int<0, 20> $x */
-	$x = 0;
-	/** @var int<0, 20> $y */
-	$y = 0;
+/**
+ * @param int<0, 20> $x
+ * @param int<0, 20> $y
+ */
+function smallRanges(int $x, int $y): void {
 	assertType('int<0, 31>', $x ^ $y);
 	assertType('int<0, 31>', $x | $y);
 	assertType('int<0, 20>', $x & $y);
+}
 
-	// AND with ranges of different sizes
+/**
+ * @param int<0, 255> $a
+ * @param int<0, 20> $x
+ */
+function differentRangeSizes(int $a, int $x): void {
 	assertType('int<0, 20>', $a & $x);
 	assertType('int<0, 20>', $x & $a);
+}
 
-	// Unbounded ranges stay int
-	/** @var int<0, max> $unbounded */
-	$unbounded = 0;
+/**
+ * @param int<0, max> $unbounded
+ * @param int<0, 255> $a
+ */
+function unboundedRanges(int $unbounded, int $a): void {
 	assertType('int', $unbounded ^ $a);
 	assertType('int', $unbounded | $a);
+}
 
-	// Negative ranges stay int for XOR/OR
-	/** @var int<-10, 10> $signed */
-	$signed = 0;
+/**
+ * @param int<-10, 10> $signed
+ * @param int<0, 20> $x
+ */
+function negativeRanges(int $signed, int $x): void {
 	assertType('int', $signed ^ $x);
 	assertType('int', $signed | $x);
+}
 
-	// Bitwise NOT preserves range bounds
+/**
+ * @param int<0, 255> $a
+ * @param int<0, 20> $x
+ * @param int<min, 10> $minBounded
+ * @param int<-5, max> $maxBounded
+ */
+function bitwiseNot(int $a, int $x, int $minBounded, int $maxBounded): void {
 	assertType('int<-256, -1>', ~$a);
 	assertType('int<-21, -1>', ~$x);
-
-	/** @var int<min, 10> $minBounded */
-	$minBounded = 0;
 	assertType('int<-11, max>', ~$minBounded);
-
-	/** @var int<-5, max> $maxBounded */
-	$maxBounded = 0;
 	assertType('int<min, 4>', ~$maxBounded);
+}
 
-	// Compound assignment operators
-	/** @var int<0, 255> $d */
-	$d = 0;
+/**
+ * @param int<0, 255> $d
+ * @param int<0, 255> $a
+ */
+function compoundAssignment(int $d, int $a): void {
 	$d &= $a;
 	assertType('int<0, 255>', $d);
 }

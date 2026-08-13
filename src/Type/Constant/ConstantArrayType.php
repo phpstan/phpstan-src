@@ -301,13 +301,8 @@ class ConstantArrayType implements Type
 			$keyType = new UnionType($this->keyTypes);
 		}
 
-		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
-			$unsealedKeyType = $this->unsealed[0];
-			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
-				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
-				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-			}
+		$unsealedKeyType = $this->getUnsealedKeyType();
+		if ($unsealedKeyType !== null) {
 			$keyType = TypeCombinator::union($keyType, $unsealedKeyType);
 		}
 
@@ -2143,17 +2138,12 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
-			$unsealedKeyType = $this->unsealed[0];
-			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
-				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
-				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-			}
+		$unsealedKeyType = $this->getUnsealedKeyType();
+		if ($unsealedKeyType !== null) {
 			$keyTypes[] = $unsealedKeyType;
 		}
 
-		return TypeCombinator::union(...$keyTypes);
+		return UnsafeArrayStringKeyCastingTraverser::castKeyType(TypeCombinator::union(...$keyTypes));
 	}
 
 	public function getLastIterableKeyType(): Type
@@ -2166,17 +2156,33 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
-			$unsealedKeyType = $this->unsealed[0];
-			if ($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType) {
-				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-			} elseif ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType) {
-				$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-			}
+		$unsealedKeyType = $this->getUnsealedKeyType();
+		if ($unsealedKeyType !== null) {
 			$keyTypes[] = $unsealedKeyType;
 		}
 
-		return TypeCombinator::union(...$keyTypes);
+		return UnsafeArrayStringKeyCastingTraverser::castKeyType(TypeCombinator::union(...$keyTypes));
+	}
+
+	/**
+	 * The unsealed tail's key type, with an implicit `mixed` spelled out as the
+	 * `array-key` it really is. Null when this shape is sealed.
+	 */
+	private function getUnsealedKeyType(): ?Type
+	{
+		if (!$this->isUnsealed()->yes() || $this->unsealed === null) {
+			return null;
+		}
+
+		$unsealedKeyType = $this->unsealed[0];
+		if (
+			($unsealedKeyType instanceof MixedType && !$unsealedKeyType instanceof TemplateMixedType)
+			|| ($unsealedKeyType instanceof StrictMixedType && !$unsealedKeyType instanceof TemplateStrictMixedType)
+		) {
+			return (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+		}
+
+		return $unsealedKeyType;
 	}
 
 	public function getFirstIterableValueType(): Type

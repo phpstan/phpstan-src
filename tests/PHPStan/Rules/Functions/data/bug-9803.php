@@ -13,16 +13,16 @@ function doFoo() {
 	$keys = array();
 	if ($random == 1) {
 		$keys = array(array_rand($array));
-		assertType('array{int}', $keys);
+		assertType('array{0|1|2|3|4|5|6|7|8|9}', $keys);
 	}
 	else {
 		$keys = array_rand($array, $random);
-		assertType('array<int, int>', $keys);
+		assertType('non-empty-list<0|1|2|3|4|5|6|7|8|9>', $keys);
 	}
 
-	assertType('array<int, int>', $keys);
+	assertType('non-empty-list<0|1|2|3|4|5|6|7|8|9>', $keys);
 	$theKeys = array_keys($keys);
-	assertType('list<int>', $theKeys);
+	assertType('non-empty-list<int<0, max>>', $theKeys);
 }
 
 

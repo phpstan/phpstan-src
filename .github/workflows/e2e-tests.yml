@@ -439,10 +439,16 @@ jobs:
           - script: |
               cd e2e/result-cache-relative-path
               # Cold run: paths are stored relative to the phpstan install (the anchor), so the cache
-              # no longer embeds the absolute checkout path. Assert the analysed file is NOT stored under
-              # its absolute checkout path (i.e. it was relativized).
+              # no longer embeds the absolute checkout path anywhere - not in the error/dependency
+              # sections and not inside collected data either, which is only reachable through the
+              # collector that produced it (CollectorWithPaths). Assert the whole file is free of the
+              # checkout prefix rather than just the analysed file's own key.
               ../../bin/phpstan analyse
-              if grep -q "'$(pwd)/src/HelloWorld.php'" tmp/resultCache.php; then echo 'cache still holds an absolute analysed path'; exit 1; fi
+              if grep -q "$(cd ../.. && pwd)/" tmp/resultCache.php; then
+                echo 'cache still holds absolute paths under the checkout:'
+                grep -o "$(cd ../.. && pwd)/[^'\"]*" tmp/resultCache.php | sort -u | head -20
+                exit 1
+              fi
               # Warm run: the relative cache re-absolutizes against the current anchor and is fully reused.
               OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"

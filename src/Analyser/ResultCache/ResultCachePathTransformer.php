@@ -3,9 +3,12 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\CollectorWithPaths;
 use PHPStan\File\FileHelper;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use function array_key_exists;
+use function is_a;
 use function is_array;
 use function is_string;
 use function preg_match;
@@ -24,6 +27,8 @@ use const DIRECTORY_SEPARATOR;
  * Only paths under (or reachable from) the anchor become relative; a path with no shared prefix is
  * left absolute, following ccache's CCACHE_BASEDIR rule. absolutizePath() is the inverse: an already
  * absolute path is passed through unchanged, so relative and absolute entries can coexist in one cache.
+ *
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class ResultCachePathTransformer
 {
@@ -68,7 +73,7 @@ final class ResultCachePathTransformer
 		foreach ($errorsByFile as $file => $errors) {
 			$relativized = [];
 			foreach ($errors as $error) {
-				$relativized[] = $error->transformPaths(fn (string $path): string => $this->relativizePath($path));
+				$relativized[] = $error->transformPaths(fn (string $path): string => $this->relativizeCompoundKey($path));
 			}
 			$result[$this->relativizePath($file)] = $relativized;
 		}
@@ -86,7 +91,7 @@ final class ResultCachePathTransformer
 		foreach ($errorsByFile as $file => $errors) {
 			$absolutized = [];
 			foreach ($errors as $error) {
-				$absolutized[] = $error->transformPaths(fn (string $path): string => $this->absolutizePath($path));
+				$absolutized[] = $error->transformPaths(fn (string $path): string => $this->absolutizeCompoundKey($path));
 			}
 			$result[$this->absolutizePath($file)] = $absolutized;
 		}
@@ -95,8 +100,57 @@ final class ResultCachePathTransformer
 	}
 
 	/**
+	 * Collected data is opaque to the cache, so only the collector that produced it can rewrite the
+	 * paths inside it - it does so by implementing CollectorWithPaths. Collectors that carry no paths
+	 * need nothing and keep their data unchanged.
+	 *
+	 * @param CollectorData $collectedData
+	 * @return CollectorData
+	 */
+	public function relativizeCollectedData(array $collectedData): array
+	{
+		return $this->transformCollectedData($collectedData, fn (string $path): string => $this->relativizeCompoundKey($path), true);
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 * @return CollectorData
+	 */
+	public function absolutizeCollectedData(array $collectedData): array
+	{
+		return $this->transformCollectedData($collectedData, fn (string $path): string => $this->absolutizeCompoundKey($path), false);
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 * @param callable(string): string $transformPath
+	 * @return CollectorData
+	 */
+	private function transformCollectedData(array $collectedData, callable $transformPath, bool $relativize): array
+	{
+		$result = [];
+		foreach ($collectedData as $file => $dataPerCollector) {
+			$newFile = $relativize ? $this->relativizePath($file) : $this->absolutizePath($file);
+			foreach ($dataPerCollector as $collectorType => $collectedValues) {
+				if (!is_a($collectorType, CollectorWithPaths::class, true)) {
+					$result[$newFile][$collectorType] = $collectedValues;
+					continue;
+				}
+
+				$transformed = [];
+				foreach ($collectedValues as $collectedValue) {
+					$transformed[] = $collectorType::transformCollectedDataPaths($collectedValue, $transformPath);
+				}
+				$result[$newFile][$collectorType] = $transformed;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Rewrites only the top-level file-path keys, leaving the values untouched. Used for sections whose
-	 * values carry no paths: collectedData, packageDependencies, exportedNodes, projectExtensionFiles.
+	 * values carry no paths: packageDependencies, exportedNodes, projectExtensionFiles.
 	 *
 	 * @param array<string, mixed> $byFile
 	 * @return array<string, mixed>

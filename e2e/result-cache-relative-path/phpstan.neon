@@ -3,3 +3,9 @@ parameters:
     tmpDir: tmp
     paths:
         - src
+    ignoreErrors:
+        # the trait fixture exists to make the in-trait constant-condition collector emit
+        # collected data carrying an Error; the error itself is not what is under test
+        -
+            identifier: booleanNot.alwaysFalse
+            path: src/TraitWithConstantCondition.php

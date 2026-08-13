@@ -48,6 +48,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -56,6 +57,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
@@ -107,6 +109,7 @@ final class FuncCallHandler implements ExprHandler
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 		private ExpressionResultFactory $expressionResultFactory,
+		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 	)
 	{
 	}
@@ -1050,6 +1053,19 @@ final class FuncCallHandler implements ExprHandler
 
 			if ($resolvedType !== null) {
 				return $resolvedType;
+			}
+		}
+
+		// for always-true/always-false type checks the call's own narrowing
+		// decides the return type - the verdict reads the same specified types
+		// the check contributes when used as a condition
+		if (
+			$normalizedNode->name instanceof Name
+			&& in_array($normalizedNode->name->toLowerString(), ['array_key_exists', 'key_exists', 'in_array', 'is_subclass_of'], true)
+		) {
+			$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $normalizedNode);
+			if ($isAlways !== null) {
+				return new ConstantBooleanType($isAlways);
 			}
 		}
 

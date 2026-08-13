@@ -25,6 +25,8 @@ class InstantiationRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -35,7 +37,7 @@ class InstantiationRuleTest extends RuleTestCase
 			checkThisOnly: false,
 			checkUnionTypes: true,
 			checkExplicitMixed: $this->checkExplicitMixed,
-			checkImplicitMixed: false,
+			checkImplicitMixed: $this->checkImplicitMixed,
 			checkBenevolentUnionTypes: false,
 			discoveringSymbolsTip: true,
 		);
@@ -729,6 +731,12 @@ class InstantiationRuleTest extends RuleTestCase
 				50,
 			],
 		]);
+	}
+
+	public function testBug15047(): void
+	{
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15047.php'], []);
 	}
 
 }

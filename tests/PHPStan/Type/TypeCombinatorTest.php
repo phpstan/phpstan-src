@@ -4965,6 +4965,26 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ObjectShapeType::class,
 			'object{foo: int}',
 		];
+		// A third member the generic supertype dedup can weigh the HasPropertyType against must
+		// not change whether the optional key is resolved - the member order used to decide it.
+		yield [
+			[
+				new ObjectType('stdClass'),
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new HasPropertyType('foo'),
+			],
+			IntersectionType::class,
+			'object{foo: int}&stdClass',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new ObjectType('Traversable'),
+				new HasPropertyType('foo'),
+			],
+			IntersectionType::class,
+			'object{foo: int}&Traversable',
+		];
 		yield [
 			[
 				new ObjectShapeType(['foo' => new IntegerType()], []),

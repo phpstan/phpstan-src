@@ -2071,9 +2071,12 @@ final class InitializerExprTypeResolver
 	 */
 	private static function allBitsMask(int $value): int
 	{
-		for ($shift = 1; $shift < PHP_INT_SIZE * 8; $shift *= 2) {
-			$value |= $value >> $shift;
-		}
+		$value |= $value >> 1;
+		$value |= $value >> 2;
+		$value |= $value >> 4;
+		$value |= $value >> 8;
+		$value |= $value >> 16;
+		$value |= $value >> 32;
 
 		return $value;
 	}

@@ -3338,6 +3338,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15073(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15073.php'], [
+			[
+				'Parameter #1 $s of function Bug15073Rule\\wantsString expects string, int|string given.',
+				16,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug15432ImplicitMixed(): void
 	{

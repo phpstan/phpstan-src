@@ -26,6 +26,18 @@ function withConstantOperand(int $c): void {
 }
 
 /**
+ * @param int<0, 255> $c
+ */
+function withOperandCoercedToInteger(int $integer, int $c): void {
+	assertType('int<0, 3>', $integer & '3');
+	assertType('int<0, 3>', '3' & $integer);
+	assertType('int<0, 1>', $integer & true);
+	assertType('int<0, 255>', $c ^ '3');
+	assertType('int<0, 255>', $c | '3');
+	assertType('int<0, 3>', $c & '3');
+}
+
+/**
  * @param int<0, 20> $x
  * @param int<0, 20> $y
  */
@@ -51,6 +63,7 @@ function differentRangeSizes(int $a, int $x): void {
 function unboundedRanges(int $unbounded, int $a): void {
 	assertType('int', $unbounded ^ $a);
 	assertType('int', $unbounded | $a);
+	assertType('int<0, 255>', $unbounded & $a);
 }
 
 /**
@@ -60,6 +73,7 @@ function unboundedRanges(int $unbounded, int $a): void {
 function negativeRanges(int $signed, int $x): void {
 	assertType('int', $signed ^ $x);
 	assertType('int', $signed | $x);
+	assertType('int<0, 20>', $signed & $x);
 }
 
 /**

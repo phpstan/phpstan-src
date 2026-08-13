@@ -1065,10 +1065,9 @@ final class InitializerExprTypeResolver
 			return $result;
 		}
 
-		$bitwiseAndRange = $this->computeBitwiseAndRange($leftType, $rightType);
-		if ($bitwiseAndRange !== null) {
-			return $bitwiseAndRange;
-		}
+		// computed before optimizeScalarType() below widens integer ranges to int
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
 
 		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
@@ -1093,6 +1092,11 @@ final class InitializerExprTypeResolver
 
 		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		$bitwiseAndRange = $this->computeBitwiseAndRange($leftNumberType, $rightNumberType);
+		if ($bitwiseAndRange !== null) {
+			return $bitwiseAndRange;
 		}
 
 		return new IntegerType();
@@ -1121,10 +1125,9 @@ final class InitializerExprTypeResolver
 			return $result;
 		}
 
-		$bitwiseOrRange = $this->computeBitwiseOrXorRange($leftType, $rightType);
-		if ($bitwiseOrRange !== null) {
-			return $bitwiseOrRange;
-		}
+		// computed before optimizeScalarType() below widens integer ranges to int
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
 
 		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
@@ -1149,6 +1152,11 @@ final class InitializerExprTypeResolver
 
 		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		$bitwiseOrRange = $this->computeBitwiseOrXorRange($leftNumberType, $rightNumberType);
+		if ($bitwiseOrRange !== null) {
+			return $bitwiseOrRange;
 		}
 
 		return new IntegerType();
@@ -1177,10 +1185,9 @@ final class InitializerExprTypeResolver
 			return $result;
 		}
 
-		$bitwiseXorRange = $this->computeBitwiseOrXorRange($leftType, $rightType);
-		if ($bitwiseXorRange !== null) {
-			return $bitwiseXorRange;
-		}
+		// computed before optimizeScalarType() below widens integer ranges to int
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
 
 		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
@@ -1205,6 +1212,11 @@ final class InitializerExprTypeResolver
 
 		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		$bitwiseXorRange = $this->computeBitwiseOrXorRange($leftNumberType, $rightNumberType);
+		if ($bitwiseXorRange !== null) {
+			return $bitwiseXorRange;
 		}
 
 		return new IntegerType();
@@ -2015,26 +2027,35 @@ final class InitializerExprTypeResolver
 		return null;
 	}
 
-	private function computeBitwiseAndRange(Type $leftType, Type $rightType): ?Type
+	/**
+	 * Expects the operands already converted with toNumber().
+	 *
+	 * A single non-negative operand is enough to bound the result: the result's bits
+	 * are a subset of that operand's bits, so it stays within int<0, thatMax>.
+	 */
+	private function computeBitwiseAndRange(Type $leftNumberType, Type $rightNumberType): ?Type
 	{
-		$leftBounds = $this->getNonNegativeIntegerBounds($leftType);
-		$rightBounds = $this->getNonNegativeIntegerBounds($rightType);
+		$leftBounds = $this->getNonNegativeIntegerBounds($leftNumberType);
+		$rightBounds = $this->getNonNegativeIntegerBounds($rightNumberType);
 		if ($leftBounds !== null && $rightBounds !== null) {
 			return IntegerRangeType::fromInterval(0, min($leftBounds[1], $rightBounds[1]));
 		}
-		if ($leftBounds !== null && $rightType->isInteger()->yes()) {
+		if ($leftBounds !== null) {
 			return IntegerRangeType::fromInterval(0, $leftBounds[1]);
 		}
-		if ($rightBounds !== null && $leftType->isInteger()->yes()) {
+		if ($rightBounds !== null) {
 			return IntegerRangeType::fromInterval(0, $rightBounds[1]);
 		}
 		return null;
 	}
 
-	private function computeBitwiseOrXorRange(Type $leftType, Type $rightType): ?Type
+	/**
+	 * Expects the operands already converted with toNumber().
+	 */
+	private function computeBitwiseOrXorRange(Type $leftNumberType, Type $rightNumberType): ?Type
 	{
-		$leftBounds = $this->getNonNegativeIntegerBounds($leftType);
-		$rightBounds = $this->getNonNegativeIntegerBounds($rightType);
+		$leftBounds = $this->getNonNegativeIntegerBounds($leftNumberType);
+		$rightBounds = $this->getNonNegativeIntegerBounds($rightNumberType);
 		if ($leftBounds === null || $rightBounds === null) {
 			return null;
 		}

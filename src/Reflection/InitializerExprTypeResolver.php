@@ -122,7 +122,6 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
-use const PHP_INT_SIZE;
 
 #[AutowiredService]
 final class InitializerExprTypeResolver

@@ -61,19 +61,31 @@ function differentRangeSizes(int $a, int $x): void {
  * @param int<0, 255> $a
  */
 function unboundedRanges(int $unbounded, int $a): void {
-	assertType('int', $unbounded ^ $a);
-	assertType('int', $unbounded | $a);
+	assertType('int<0, max>', $unbounded ^ $a);
+	assertType('int<0, max>', $unbounded | $a);
 	assertType('int<0, 255>', $unbounded & $a);
+}
+
+function nonNegativeUnboundedFunctionCalls(string $a, string $b): void {
+	assertType('int<0, max>', strlen($a) | strlen($b));
+	assertType('int<0, max>', strlen($a) ^ strlen($b));
+	assertType('int<0, max>', strlen($a) & strlen($b));
+	assertType('int<0, max>', strlen($a) | 8);
+	assertType('int<0, 8>', strlen($a) & 8);
 }
 
 /**
  * @param int<-10, 10> $signed
  * @param int<0, 20> $x
+ * @param int<0, max> $unbounded
  */
-function negativeRanges(int $signed, int $x): void {
+function negativeRanges(int $signed, int $x, int $unbounded): void {
 	assertType('int', $signed ^ $x);
 	assertType('int', $signed | $x);
 	assertType('int<0, 20>', $signed & $x);
+	assertType('int', $signed ^ $unbounded);
+	assertType('int', $signed | $unbounded);
+	assertType('int<0, max>', $signed & $unbounded);
 }
 
 /**

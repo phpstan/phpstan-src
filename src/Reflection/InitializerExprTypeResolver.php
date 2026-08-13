@@ -2009,15 +2009,16 @@ final class InitializerExprTypeResolver
 	}
 
 	/**
-	 * @return array{int, int}|null [min, max] or null if bounds are not known
+	 * @return array{int, int|null}|null [min, max] of a type known to be a non-negative integer,
+	 * with a null max when it has no finite upper bound. Null when the type is not known
+	 * to be a non-negative integer.
 	 */
 	private function getNonNegativeIntegerBounds(Type $type): ?array
 	{
 		if ($type instanceof IntegerRangeType) {
 			$min = $type->getMin();
-			$max = $type->getMax();
-			if ($min !== null && $min >= 0 && $max !== null) {
-				return [$min, $max];
+			if ($min !== null && $min >= 0) {
+				return [$min, $type->getMax()];
 			}
 			return null;
 		}
@@ -2032,25 +2033,32 @@ final class InitializerExprTypeResolver
 	 *
 	 * A single non-negative operand is enough to bound the result: the result's bits
 	 * are a subset of that operand's bits, so it stays within int<0, thatMax>.
+	 * With no finite max on any non-negative side the result is still int<0, max>.
 	 */
 	private function computeBitwiseAndRange(Type $leftNumberType, Type $rightNumberType): ?Type
 	{
 		$leftBounds = $this->getNonNegativeIntegerBounds($leftNumberType);
 		$rightBounds = $this->getNonNegativeIntegerBounds($rightNumberType);
-		if ($leftBounds !== null && $rightBounds !== null) {
-			return IntegerRangeType::fromInterval(0, min($leftBounds[1], $rightBounds[1]));
+		if ($leftBounds === null && $rightBounds === null) {
+			return null;
 		}
-		if ($leftBounds !== null) {
-			return IntegerRangeType::fromInterval(0, $leftBounds[1]);
+
+		$maxValues = [];
+		if ($leftBounds !== null && $leftBounds[1] !== null) {
+			$maxValues[] = $leftBounds[1];
 		}
-		if ($rightBounds !== null) {
-			return IntegerRangeType::fromInterval(0, $rightBounds[1]);
+		if ($rightBounds !== null && $rightBounds[1] !== null) {
+			$maxValues[] = $rightBounds[1];
 		}
-		return null;
+
+		return IntegerRangeType::fromInterval(0, $maxValues === [] ? null : min($maxValues));
 	}
 
 	/**
 	 * Expects the operands already converted with toNumber().
+	 *
+	 * Both operands have to be non-negative: they keep the sign bit of the result clear.
+	 * Without a finite max on either side the result is still int<0, max>.
 	 */
 	private function computeBitwiseOrXorRange(Type $leftNumberType, Type $rightNumberType): ?Type
 	{
@@ -2059,9 +2067,11 @@ final class InitializerExprTypeResolver
 		if ($leftBounds === null || $rightBounds === null) {
 			return null;
 		}
-		$maxValue = max($leftBounds[1], $rightBounds[1]);
-		$upperBound = self::allBitsMask($maxValue);
-		return IntegerRangeType::fromInterval(0, $upperBound);
+		if ($leftBounds[1] === null || $rightBounds[1] === null) {
+			return IntegerRangeType::fromInterval(0, null);
+		}
+
+		return IntegerRangeType::fromInterval(0, self::allBitsMask(max($leftBounds[1], $rightBounds[1])));
 	}
 
 	/**

@@ -122,6 +122,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
+use const PHP_INT_SIZE;
 
 #[AutowiredService]
 final class InitializerExprTypeResolver
@@ -2064,14 +2065,16 @@ final class InitializerExprTypeResolver
 		return IntegerRangeType::fromInterval(0, $upperBound);
 	}
 
+	/**
+	 * Propagates the highest set bit of a non-negative value into all lower bits:
+	 * 200 becomes 255, 10 becomes 15.
+	 */
 	private static function allBitsMask(int $value): int
 	{
-		$value |= $value >> 1;
-		$value |= $value >> 2;
-		$value |= $value >> 4;
-		$value |= $value >> 8;
-		$value |= $value >> 16;
-		$value |= $value >> 32;
+		for ($shift = 1; $shift < PHP_INT_SIZE * 8; $shift *= 2) {
+			$value |= $value >> $shift;
+		}
+
 		return $value;
 	}
 

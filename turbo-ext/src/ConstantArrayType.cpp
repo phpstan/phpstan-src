@@ -6771,7 +6771,8 @@ private:
 
 	/* getFirst/LastIterableKey/ValueType(): the leading (or trailing) keys
 	 * or values up to the first required key, plus the unsealed key type
-	 * (mixed substituted) or value type of an unsealed shape, unioned;
+	 * (mixed substituted) or value type of an unsealed shape, unioned - the
+	 * keys through UnsafeArrayStringKeyCastingTraverser::castKeyType();
 	 * UNDEF = pending exception */
 	zv::Val leadingUnion(bool keys, bool fromStart) const
 	{
@@ -6816,7 +6817,9 @@ private:
 			}
 		}
 
-		return combinatorSpread(PT_LC("union"), collected.table());
+		zv::Val unionType = combinatorSpread(PT_LC("union"), collected.table());
+		if (!keys || UNEXPECTED(unionType.isUndef())) return unionType;
+		return pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("castkeytype"), 1, unionType.raw());
 	}
 
 	/* $this->toBoolean()->$method() */

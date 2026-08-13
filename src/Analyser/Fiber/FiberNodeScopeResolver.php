@@ -10,6 +10,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
@@ -39,6 +40,12 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		while ($nodeCallback instanceof GatheringNodeCallback) {
 			($nodeCallback->getGatherer())($node, $scope);
 			$nodeCallback = $nodeCallback->getInner();
+		}
+
+		if ($nodeCallback instanceof NoopNodeCallback) {
+			// fibers exist solely to let node callbacks ask about types,
+			// a noop callback does not need one
+			return;
 		}
 
 		if (Fiber::getCurrent() !== null) {

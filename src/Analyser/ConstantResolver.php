@@ -396,6 +396,22 @@ final class ConstantResolver
 		return $result;
 	}
 
+	/**
+	 * Whether the constant is configured as dynamic, so that resolveClassConstantType()
+	 * may widen it beyond the declared value.
+	 */
+	public function isDynamicClassConstant(string $className, string $constantName): bool
+	{
+		if ($this->dynamicConstantNames === []) {
+			return false;
+		}
+
+		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
+
+		return array_key_exists($lookupConstantName, $this->dynamicConstantNames)
+			|| in_array($lookupConstantName, $this->dynamicConstantNames, true);
+	}
+
 	public function getConfiguredClassConstantType(string $className, string $constantName): ?Type
 	{
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);

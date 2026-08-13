@@ -10,7 +10,6 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -48,7 +47,6 @@ final class ImpossibleCheckTypeHelper
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private TypeSpecifier $typeSpecifier,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -315,7 +313,7 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		$typeSpecifierScope = $this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain();
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($typeSpecifierScope, $node, $this->determineContext($typeSpecifierScope, $node));
+		$specifiedTypes = $typeSpecifierScope->specifyTypesOfNewWorldHandlerNode($node, $this->determineContext($typeSpecifierScope, $node));
 
 		// don't validate types on overwrite
 		if ($specifiedTypes->shouldOverwrite()) {
@@ -505,7 +503,6 @@ final class ImpossibleCheckTypeHelper
 
 		return new self(
 			$this->reflectionProvider,
-			$this->typeSpecifier,
 			false,
 		);
 	}

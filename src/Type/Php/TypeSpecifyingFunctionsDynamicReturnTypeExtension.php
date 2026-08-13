@@ -4,8 +4,6 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
@@ -18,10 +16,8 @@ use function count;
 use function in_array;
 
 #[AutowiredService]
-final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension
+final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	private TypeSpecifier $typeSpecifier;
 
 	private ?ImpossibleCheckTypeHelper $helper = null;
 
@@ -31,11 +27,6 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-	}
-
-	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
-	{
-		$this->typeSpecifier = $typeSpecifier;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -71,7 +62,7 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 
 	private function getHelper(): ImpossibleCheckTypeHelper
 	{
-		return $this->helper ??= new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->typeSpecifier, $this->treatPhpDocTypesAsCertain);
+		return $this->helper ??= new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->treatPhpDocTypesAsCertain);
 	}
 
 }

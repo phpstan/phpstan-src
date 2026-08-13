@@ -3437,6 +3437,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * Asks the scope for a node's narrowing, so callers do not need to hold
+	 * a TypeSpecifier themselves.
+	 *
+	 * @internal
+	 */
+	public function specifyTypesOfNewWorldHandlerNode(Expr $node, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $this->typeSpecifier->specifyTypesInCondition($this, $node, $context);
+	}
+
+	/**
 	 * @api
 	 */
 	public function filterByTruthyValue(Expr $expr): self

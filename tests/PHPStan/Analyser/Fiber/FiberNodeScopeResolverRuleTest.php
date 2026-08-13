@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileHelper;
@@ -140,6 +141,7 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),

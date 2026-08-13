@@ -226,6 +226,7 @@ class NodeScopeResolver
 	 * @param ExtensionsCollection<FunctionParameterClosureTypeExtension> $functionParameterClosureTypeExtensions
 	 * @param ExtensionsCollection<MethodParameterClosureTypeExtension> $methodParameterClosureTypeExtensions
 	 * @param ExtensionsCollection<StaticMethodParameterClosureTypeExtension> $staticMethodParameterClosureTypeExtensions
+	 * @param ExtensionsCollection<PerFileAnalysisResettable> $perFileAnalysisResettables
 	 */
 	public function __construct(
 		private readonly Container $container,
@@ -259,6 +260,8 @@ class NodeScopeResolver
 		private readonly ExtensionsCollection $methodParameterClosureTypeExtensions,
 		#[AutowiredExtensions(of: StaticMethodParameterClosureTypeExtension::class)]
 		private readonly ExtensionsCollection $staticMethodParameterClosureTypeExtensions,
+		#[AutowiredExtensions(of: PerFileAnalysisResettable::class)]
+		private readonly ExtensionsCollection $perFileAnalysisResettables,
 		private readonly ScopeFactory $scopeFactory,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
@@ -286,6 +289,18 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * Releases the previous file's node-keyed captures: the parser cache
+	 * retains ASTs, so node-keyed cache entries never die on
+	 * their own and would hold that file's whole result graph alive.
+	 */
+	public function resetPerFileAnalysisState(): void
+	{
+		foreach ($this->perFileAnalysisResettables->getAll() as $resettableService) {
+			$resettableService->resetFileAnalysisState();
+		}
+	}
+
+	/**
 	 * @api
 	 * @param Node[] $nodes
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -296,6 +311,8 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
+		$this->resetPerFileAnalysisState();
+
 		$expressionResultStorage = new ExpressionResultStorage();
 		$alreadyTerminated = false;
 		$exitPoints = [];

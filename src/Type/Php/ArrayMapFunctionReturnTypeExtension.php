@@ -172,8 +172,9 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				[$argType],
 				isList: TrinaryLogic::createYes(),
 			);
+			// the resolved-closure-type cache is keyed by node identity
+			// (ClosureTypeResolver::$cachedTypes), so the clone starts uncached
 			$clone->setAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME, [new Node\Arg(new TypeExpr($wrappedType))]);
-			$clone->setAttribute('phpstanCachedTypes', []);
 
 			return $scope->getType($clone)->getCallableParametersAcceptors($scope)[0]->getReturnType();
 		}

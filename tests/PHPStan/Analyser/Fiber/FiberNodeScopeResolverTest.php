@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\Fiber;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\File\FileHelper;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
@@ -73,6 +74,7 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),

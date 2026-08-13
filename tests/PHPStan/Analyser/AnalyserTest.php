@@ -836,6 +836,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			false,
 			true,

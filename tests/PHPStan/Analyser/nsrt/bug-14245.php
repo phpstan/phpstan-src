@@ -104,7 +104,7 @@ function keyDifferentArray(array $arr): void {
 	$list = foo();
 	assertType('list<int>', $list);
 	$list[array_key_first($arr)] = 37;
-	assertType('non-empty-array<int|string, int>', $list);
+	assertType('non-empty-array<int>', $list);
 }
 
 function overwriteArraySearch($needle): void {

@@ -2650,7 +2650,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 			$scope = $scope->assignExpression(
 				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetExistingOffsetValueTypeExpr(
-					$iteratee,
+					new NativeTypeExpr($iterateeType, $nativeIterateeType),
 					new NativeTypeExpr(
 						$originalScope->getIterableKeyType($iterateeType),
 						$originalScope->getIterableKeyType($nativeIterateeType),

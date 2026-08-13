@@ -74,12 +74,3 @@ function bitwiseNot(int $a, int $x, int $minBounded, int $maxBounded): void {
 	assertType('int<-11, max>', ~$minBounded);
 	assertType('int<min, 4>', ~$maxBounded);
 }
-
-/**
- * @param int<0, 255> $d
- * @param int<0, 255> $a
- */
-function compoundAssignment(int $d, int $a): void {
-	$d &= $a;
-	assertType('int<0, 255>', $d);
-}

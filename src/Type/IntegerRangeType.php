@@ -511,6 +511,15 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return self::fromInterval(-$this->max, $inversedMin);
 	}
 
+	public function toBitwiseNotType(): Type
+	{
+		// ~int<a, b> = int<~b, ~a>  (bitwise NOT reverses the order)
+		return self::fromInterval(
+			$this->max !== null ? ~$this->max : null,
+			$this->min !== null ? ~$this->min : null,
+		);
+	}
+
 	public function toString(): Type
 	{
 		$finiteTypes = $this->getFiniteTypes();

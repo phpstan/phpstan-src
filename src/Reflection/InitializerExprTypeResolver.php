@@ -1063,7 +1063,13 @@ final class InitializerExprTypeResolver
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a & $b);
 		if ($result instanceof Type) {
 			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
+		}
+
+		// computed before optimizeScalarType() below widens integer ranges to int
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+
+		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1084,18 +1090,13 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
-
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
 		}
 
-		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() >= 0) {
-			return IntegerRangeType::fromInterval(0, $rightNumberType->getValue());
-		}
-		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() >= 0) {
-			return IntegerRangeType::fromInterval(0, $leftNumberType->getValue());
+		$bitwiseAndRange = $this->computeBitwiseAndRange($leftNumberType, $rightNumberType);
+		if ($bitwiseAndRange !== null) {
+			return $bitwiseAndRange;
 		}
 
 		return new IntegerType();
@@ -1122,7 +1123,13 @@ final class InitializerExprTypeResolver
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a | $b);
 		if ($result instanceof Type) {
 			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
+		}
+
+		// computed before optimizeScalarType() below widens integer ranges to int
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+
+		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1145,6 +1152,11 @@ final class InitializerExprTypeResolver
 
 		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		$bitwiseOrRange = $this->computeBitwiseOrXorRange($leftNumberType, $rightNumberType);
+		if ($bitwiseOrRange !== null) {
+			return $bitwiseOrRange;
 		}
 
 		return new IntegerType();
@@ -1171,7 +1183,13 @@ final class InitializerExprTypeResolver
 		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a ^ $b);
 		if ($result instanceof Type) {
 			return $result;
-		} elseif ($result === self::IS_SCALAR_TYPE) {
+		}
+
+		// computed before optimizeScalarType() below widens integer ranges to int
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+
+		if ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1194,6 +1212,11 @@ final class InitializerExprTypeResolver
 
 		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		$bitwiseXorRange = $this->computeBitwiseOrXorRange($leftNumberType, $rightNumberType);
+		if ($bitwiseXorRange !== null) {
+			return $bitwiseXorRange;
 		}
 
 		return new IntegerType();
@@ -1983,6 +2006,88 @@ final class InitializerExprTypeResolver
 		}
 
 		return new UnionType($types);
+	}
+
+	/**
+	 * @return array{int, int|null}|null [min, max] of a type known to be a non-negative integer,
+	 * with a null max when it has no finite upper bound. Null when the type is not known
+	 * to be a non-negative integer.
+	 */
+	private function getNonNegativeIntegerBounds(Type $type): ?array
+	{
+		if ($type instanceof IntegerRangeType) {
+			$min = $type->getMin();
+			if ($min !== null && $min >= 0) {
+				return [$min, $type->getMax()];
+			}
+			return null;
+		}
+		if ($type instanceof ConstantIntegerType && $type->getValue() >= 0) {
+			return [$type->getValue(), $type->getValue()];
+		}
+		return null;
+	}
+
+	/**
+	 * Expects the operands already converted with toNumber().
+	 *
+	 * A single non-negative operand is enough to bound the result: the result's bits
+	 * are a subset of that operand's bits, so it stays within int<0, thatMax>.
+	 * With no finite max on any non-negative side the result is still int<0, max>.
+	 */
+	private function computeBitwiseAndRange(Type $leftNumberType, Type $rightNumberType): ?Type
+	{
+		$leftBounds = $this->getNonNegativeIntegerBounds($leftNumberType);
+		$rightBounds = $this->getNonNegativeIntegerBounds($rightNumberType);
+		if ($leftBounds === null && $rightBounds === null) {
+			return null;
+		}
+
+		$maxValues = [];
+		if ($leftBounds !== null && $leftBounds[1] !== null) {
+			$maxValues[] = $leftBounds[1];
+		}
+		if ($rightBounds !== null && $rightBounds[1] !== null) {
+			$maxValues[] = $rightBounds[1];
+		}
+
+		return IntegerRangeType::fromInterval(0, $maxValues === [] ? null : min($maxValues));
+	}
+
+	/**
+	 * Expects the operands already converted with toNumber().
+	 *
+	 * Both operands have to be non-negative: they keep the sign bit of the result clear.
+	 * Without a finite max on either side the result is still int<0, max>.
+	 */
+	private function computeBitwiseOrXorRange(Type $leftNumberType, Type $rightNumberType): ?Type
+	{
+		$leftBounds = $this->getNonNegativeIntegerBounds($leftNumberType);
+		$rightBounds = $this->getNonNegativeIntegerBounds($rightNumberType);
+		if ($leftBounds === null || $rightBounds === null) {
+			return null;
+		}
+		if ($leftBounds[1] === null || $rightBounds[1] === null) {
+			return IntegerRangeType::fromInterval(0, null);
+		}
+
+		return IntegerRangeType::fromInterval(0, self::allBitsMask(max($leftBounds[1], $rightBounds[1])));
+	}
+
+	/**
+	 * Propagates the highest set bit of a non-negative value into all lower bits:
+	 * 200 becomes 255, 10 becomes 15.
+	 */
+	private static function allBitsMask(int $value): int
+	{
+		$value |= $value >> 1;
+		$value |= $value >> 2;
+		$value |= $value >> 4;
+		$value |= $value >> 8;
+		$value |= $value >> 16;
+		$value |= $value >> 32;
+
+		return $value;
 	}
 
 	/**

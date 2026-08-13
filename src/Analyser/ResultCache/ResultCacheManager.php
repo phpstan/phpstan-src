@@ -291,7 +291,7 @@ final class ResultCacheManager
 		$locallyIgnoredErrorsCallback = $data['locallyIgnoredErrorsCallback'];
 		$data['locallyIgnoredErrorsCallback'] = static fn (): array => $transformer->absolutizeErrors($locallyIgnoredErrorsCallback());
 		$collectedDataCallback = $data['collectedDataCallback'];
-		$data['collectedDataCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($collectedDataCallback());
+		$data['collectedDataCallback'] = static fn (): array => $transformer->absolutizeCollectedData($collectedDataCallback());
 		$exportedNodesCallback = $data['exportedNodesCallback'];
 		$data['exportedNodesCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($exportedNodesCallback());
 
@@ -1150,7 +1150,7 @@ final class ResultCacheManager
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param array<string, array<string, list<CollectedData>>> $collectedData
+	 * @param CollectorData $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<string>> $usedTraitDependencies
 	 * @param array<string, array<string>> $packageDependencies
@@ -1256,7 +1256,7 @@ final class ResultCacheManager
 		$locallyIgnoredErrors = $transformer->relativizeErrors($locallyIgnoredErrors);
 		$linesToIgnore = $transformer->relativizeCompoundKeyed($linesToIgnore);
 		$unmatchedLineIgnores = $transformer->relativizeCompoundKeyed($unmatchedLineIgnores);
-		$collectedData = $transformer->relativizeFileKeyed($collectedData);
+		$collectedData = $transformer->relativizeCollectedData($collectedData);
 		$invertedDependencies = $transformer->relativizeDependencies($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
 		$exportedNodes = $transformer->relativizeFileKeyed($exportedNodes);

@@ -14,6 +14,7 @@ use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
@@ -120,6 +121,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
+			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),

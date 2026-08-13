@@ -11,6 +11,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\File\FileHelper;
@@ -95,6 +96,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
+			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),

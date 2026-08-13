@@ -15,6 +15,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\ProcessArrowFunctionResult;
 use PHPStan\Analyser\ProcessClosureResult;
 use PHPStan\Analyser\Scope;
@@ -57,18 +58,39 @@ use function count;
 use function implode;
 use function in_array;
 use function is_string;
+use function spl_object_id;
 
 #[AutowiredService]
-final class ClosureTypeResolver
+final class ClosureTypeResolver implements PerFileAnalysisResettable
 {
 
 	private static int $resolveClosureTypeDepth = 0;
+
+	/**
+	 * Per-context resolved closure types, keyed by the closure node. Node
+	 * attributes would persist on the parser cache's retained ASTs after the
+	 * file's analysis ends - the per-file reset releases the Types and
+	 * throw/impure points with the rest of the file's result graph.
+	 *
+	 * Keyed by the closure node's spl_object_id(). The keys are AST nodes that
+	 * live for the whole file's analysis (the parser cache retains them), so
+	 * ids of live entries never collide; the per-file reset empties the map
+	 * before another file could reuse them.
+	 *
+	 * @var array<int, array<string, array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]}>>
+	 */
+	private array $cachedTypes = [];
 
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
+	}
+
+	public function resetFileAnalysisState(): void
+	{
+		$this->cachedTypes = [];
 	}
 
 	/**
@@ -106,7 +128,7 @@ final class ClosureTypeResolver
 			);
 		}
 
-		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
+		$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
 		if (array_key_exists($cacheKey, $cachedTypes)) {
 			return $this->createClosureTypeFromCache($expr, $parameters, $isVariadic, $cachedTypes[$cacheKey]);
@@ -375,7 +397,7 @@ final class ClosureTypeResolver
 
 		[$parameters, , $callableParameters] = $this->buildParametersAndAcceptors($scope, $expr);
 		$phpdocKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
-		$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
+		$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
 		if (!array_key_exists($phpdocKey, $cachedTypes)) {
 			return;
 		}
@@ -383,7 +405,7 @@ final class ClosureTypeResolver
 		$promotedScope = $scope->doNotTreatPhpDocTypesAsCertain();
 		[$promotedParameters, , $promotedCallableParameters] = $this->buildParametersAndAcceptors($promotedScope, $expr);
 		$cachedTypes[$this->closureContextCacheKey($promotedScope, $expr, $promotedCallableParameters, $promotedParameters)] = $cachedTypes[$phpdocKey];
-		$expr->setAttribute('phpstanCachedTypes', $cachedTypes);
+		$this->cachedTypes[spl_object_id($expr)] = $cachedTypes;
 	}
 
 	/**
@@ -905,7 +927,7 @@ final class ClosureTypeResolver
 		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 
 		if ($writeCache) {
-			$cachedTypes = $expr->getAttribute('phpstanCachedTypes', []);
+			$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
 			$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
 			$cachedTypes[$cacheKey] = [
 				'returnType' => $returnType,
@@ -914,7 +936,7 @@ final class ClosureTypeResolver
 				'invalidateExpressions' => $invalidateExpressions,
 				'usedVariables' => $usedVariables,
 			];
-			$expr->setAttribute('phpstanCachedTypes', $cachedTypes);
+			$this->cachedTypes[spl_object_id($expr)] = $cachedTypes;
 		}
 
 		$mustUseReturnValue = TrinaryLogic::createNo();

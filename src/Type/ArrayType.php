@@ -495,7 +495,9 @@ class ArrayType implements Type
 				return $stringKeyType;
 			}
 
-			return new ArrayType($stringKeyType, $valueType);
+			// The values become keys, so they go through the same cast as any
+			// other written key — just like flipArray() below.
+			return new ArrayType($stringKeyType->toArrayKey(), $valueType);
 		}
 
 		return new ArrayType($itemType, $valueType);

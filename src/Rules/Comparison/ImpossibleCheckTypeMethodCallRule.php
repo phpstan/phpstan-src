@@ -47,13 +47,14 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$methodCall = $node->getOriginalNode();
+		$nodeResult = $node->getResult();
 		if (!$methodCall->name instanceof Node\Identifier) {
 			return [];
 		}
 		$methodName = $methodCall->name->name;
 
 		$reasons = [];
-		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $methodCall, $reasons);
+		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $methodCall, $nodeResult, null, $reasons);
 		if ($isAlways === null) {
 			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $methodCall);
 			return [];
@@ -61,7 +62,7 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 
 		$this->functionCallConstantConditionHelper->emitImpossibleCheckReported($scope, $methodCall);
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $methodCall, $reasons): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $methodCall, $nodeResult, $reasons): RuleErrorBuilder {
 			if ($reasons !== []) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $methodCall, $ruleErrorBuilder->acceptsReasonsTip($reasons));
 			}
@@ -70,7 +71,7 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 				return $this->possiblyImpureTipHelper->addTip($scope, $methodCall, $ruleErrorBuilder);
 			}
 
-			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $methodCall);
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $methodCall, $nodeResult, null);
 			if ($isAlways !== null) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $methodCall, $ruleErrorBuilder);
 			}

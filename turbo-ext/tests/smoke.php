@@ -226,6 +226,21 @@ check(\PHPStanTurbo\ExpressionTypeHolder::createYes($expr1, $int)->getCertainty(
 check(\PHPStanTurbo\ExpressionTypeHolder::createMaybe($expr1, $int)->getCertainty()->maybe(), 'ETH createMaybe');
 check(\PHPStanTurbo\ExpressionTypeHolder::createYes($expr1, $int)->getType() === $int, 'ETH createYes type identity');
 
+// ---- ScopeOps::mergeVariableHolders differingKeys ----
+$sharedP = $pH($expr1, $int, $pYes);
+$sharedN = $nH($expr1, $int, $nYes);
+$mergePOurs = ['$shared' => $sharedP, '$a' => $pH($expr1, $int, $pYes), '$b' => $pH($expr2, $string, $pYes)];
+$mergePTheirs = ['$shared' => $sharedP, '$b' => $pH($expr2, $string, $pMaybe), '$c' => $pH($expr2, $int, $pYes)];
+$mergeNOurs = ['$shared' => $sharedN, '$a' => $nH($expr1, $int, $nYes), '$b' => $nH($expr2, $string, $nYes)];
+$mergeNTheirs = ['$shared' => $sharedN, '$b' => $nH($expr2, $string, $nMaybe), '$c' => $nH($expr2, $int, $nYes)];
+$pDiffering = [];
+$pMerged = \PHPStan\Analyser\ScopeOps::mergeVariableHolders($mergePOurs, $mergePTheirs, $pDiffering);
+$nDiffering = [];
+$nMerged = \PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs, $nDiffering);
+check($pDiffering === $nDiffering, 'ScopeOps mergeVariableHolders differingKeys parity: ' . json_encode($pDiffering) . ' vs ' . json_encode($nDiffering));
+check(array_keys($pMerged) === array_keys($nMerged), 'ScopeOps mergeVariableHolders merged keys parity');
+check(array_keys(\PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs)) === array_keys($nMerged), 'ScopeOps mergeVariableHolders without differingKeys');
+
 // ---- ConditionalExpressionHolder ----
 $covered[\PHPStan\Analyser\ConditionalExpressionHolder::class] = true;
 $pCEH = new \PHPStan\Analyser\ConditionalExpressionHolder(
@@ -312,9 +327,9 @@ check($afterClear !== $first, 'TCC clearCache actually drops entries');
 
 // ---- ExpressionResultStorage ----
 $covered[\PHPStan\Analyser\ExpressionResultStorage::class] = true;
-$makeScope = static function () {
+$makeResult = static function () {
 	static $reflection = null;
-	$reflection ??= new ReflectionClass(\PHPStan\Analyser\MutatingScope::class);
+	$reflection ??= new ReflectionClass(\PHPStan\Analyser\ExpressionResult::class);
 	return $reflection->newInstanceWithoutConstructor();
 };
 
@@ -322,24 +337,39 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	$storage = new $storageClass();
 	$exprA = new \PhpParser\Node\Expr\Variable('a');
 	$exprB = new \PhpParser\Node\Expr\Variable('b');
-	$scopeA = $makeScope();
-	$scopeB = $makeScope();
+	$exprC = new \PhpParser\Node\Expr\Variable('c');
+	$resultA = $makeResult();
+	$resultB = $makeResult();
+	$resultC = $makeResult();
 
-	check($storage->findBeforeScope($exprA) === null, "ERS $label: find on empty storage is null");
-	$storage->storeBeforeScope($exprA, $scopeA);
-	check($storage->findBeforeScope($exprA) === $scopeA, "ERS $label: find returns the stored scope");
-	check($storage->findBeforeScope($exprB) === null, "ERS $label: unknown expr is null");
-	$storage->storeBeforeScope($exprA, $scopeB);
-	check($storage->findBeforeScope($exprA) === $scopeB, "ERS $label: overwrite for the same expr");
+	check($storage->findExpressionResult($exprA) === null, "ERS $label: find on empty storage is null");
+	$storage->storeExpressionResult($exprA, $resultA);
+	check($storage->findExpressionResult($exprA) === $resultA, "ERS $label: find returns the stored result");
+	check($storage->findExpressionResult($exprB) === null, "ERS $label: unknown expr is null");
+	$storage->storeExpressionResult($exprA, $resultB);
+	check($storage->findExpressionResult($exprA) === $resultB, "ERS $label: overwrite for the same expr");
 
 	$duplicate = $storage->duplicate();
 	check(get_class($duplicate) === $storageClass, "ERS $label: duplicate creates the same class");
-	check($duplicate->findBeforeScope($exprA) === $scopeB, "ERS $label: duplicate carries stored entries");
-	$duplicate->storeBeforeScope($exprB, $scopeA);
-	check($duplicate->findBeforeScope($exprB) === $scopeA, "ERS $label: store on the duplicate");
-	check($storage->findBeforeScope($exprB) === null, "ERS $label: duplicate stores do not leak back");
-	$storage->storeBeforeScope($exprB, $scopeB);
-	check($duplicate->findBeforeScope($exprB) === $scopeA, "ERS $label: original stores do not leak into the duplicate");
+	check($duplicate->findExpressionResult($exprA) === $resultB, "ERS $label: duplicate reads through the fallback");
+	$duplicate->storeExpressionResult($exprB, $resultA);
+	check($duplicate->findExpressionResult($exprB) === $resultA, "ERS $label: store on the duplicate");
+	check($storage->findExpressionResult($exprB) === null, "ERS $label: duplicate stores do not leak back");
+	$duplicate->storeExpressionResult($exprA, $resultC);
+	check($duplicate->findExpressionResult($exprA) === $resultC, "ERS $label: duplicate store shadows the fallback");
+	check($storage->findExpressionResult($exprA) === $resultB, "ERS $label: shadowing store does not leak back");
+
+	$grandchild = $duplicate->duplicate();
+	check($grandchild->findExpressionResult($exprB) === $resultA, "ERS $label: find walks the whole fallback chain");
+
+	$other = new $storageClass();
+	$other->storeExpressionResult($exprC, $resultC);
+	$otherChild = $other->duplicate();
+	$otherChild->storeExpressionResult($exprB, $resultB);
+	$storage->mergeResults($otherChild);
+	check($storage->findExpressionResult($exprB) === $resultB, "ERS $label: mergeResults carries the other's own entries");
+	check($storage->findExpressionResult($exprC) === null, "ERS $label: mergeResults ignores the other's fallback chain");
+	check($storage->findExpressionResult($exprA) === $resultB, "ERS $label: mergeResults keeps existing entries");
 
 	$exprC = new \PhpParser\Node\Expr\Variable('c');
 	$duplicate->storeBeforeScope($exprC, $scopeB);
@@ -348,22 +378,6 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	check($storage->findBeforeScope($exprC) === $scopeB, "ERS $label: mergeResults adopts new entries");
 	check($duplicate->findBeforeScope($exprA) === $scopeB, "ERS $label: mergeResults leaves the source untouched");
 }
-
-// ---- ScopeOps::mergeVariableHolders differingKeys ----
-$sharedP = $pH($expr1, $int, $pYes);
-$sharedN = $nH($expr1, $int, $nYes);
-$mergePOurs = ['$shared' => $sharedP, '$a' => $pH($expr1, $int, $pYes), '$b' => $pH($expr2, $string, $pYes)];
-$mergePTheirs = ['$shared' => $sharedP, '$b' => $pH($expr2, $string, $pMaybe), '$c' => $pH($expr2, $int, $pYes)];
-$mergeNOurs = ['$shared' => $sharedN, '$a' => $nH($expr1, $int, $nYes), '$b' => $nH($expr2, $string, $nYes)];
-$mergeNTheirs = ['$shared' => $sharedN, '$b' => $nH($expr2, $string, $nMaybe), '$c' => $nH($expr2, $int, $nYes)];
-$pDiffering = [];
-$pMerged = \PHPStan\Analyser\ScopeOps::mergeVariableHolders($mergePOurs, $mergePTheirs, $pDiffering);
-$nDiffering = [];
-$nMerged = \PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs, $nDiffering);
-check($pDiffering === $nDiffering, 'ScopeOps mergeVariableHolders differingKeys parity: ' . json_encode($pDiffering) . ' vs ' . json_encode($nDiffering));
-check(array_keys($pMerged) === array_keys($nMerged), 'ScopeOps mergeVariableHolders merged keys parity');
-check(array_keys(\PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs)) === array_keys($nMerged), 'ScopeOps mergeVariableHolders without differingKeys');
-
 
 // ---- NodeScanner ----
 $covered[\PHPStan\Node\NodeScanner::class] = true;

@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -18,6 +19,8 @@ use PHPStan\Type\ExpressionTypeResolverExtension;
 
 final class DirectInternalScopeFactory implements InternalScopeFactory
 {
+
+	private ExpressionResultStorageStack $expressionResultStorageStack;
 
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
@@ -38,9 +41,11 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private int|array|null $configPhpVersion,
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
-		private bool $createsNodeCallbackScopes = false,
+		private bool $fiber = false,
+		?ExpressionResultStorageStack $expressionResultStorageStack = null,
 	)
 	{
+		$this->expressionResultStorageStack = $expressionResultStorageStack ?? new ExpressionResultStorageStack();
 	}
 
 	public function create(
@@ -63,8 +68,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
-		if ($this->createsNodeCallbackScopes) {
-			$className = NodeCallbackScope::class;
+		if ($this->fiber) {
+			$className = FiberScope::class;
 		}
 
 		return new $className(
@@ -78,6 +83,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->propertyReflectionFinder,
 			$this->parser,
 			$this->constantResolver,
+			$this->expressionResultStorageStack,
 			$context,
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
@@ -101,27 +107,17 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		);
 	}
 
-	public function toNodeCallbackScopeFactory(): InternalScopeFactory
+	public function toFiberFactory(): InternalScopeFactory
 	{
-		return new self(
-			$this->container,
-			$this->reflectionProvider,
-			$this->initializerExprTypeResolver,
-			$this->expressionTypeResolverExtensions,
-			$this->exprPrinter,
-			$this->typeSpecifier,
-			$this->propertyReflectionFinder,
-			$this->parser,
-			$this->phpVersion,
-			$this->attributeReflectionFactory,
-			$this->configPhpVersion,
-			$this->nodeCallback,
-			$this->constantResolver,
-			true,
-		);
+		return $this->withFlavor(true);
 	}
 
-	public function toWalkScopeFactory(): InternalScopeFactory
+	public function toMutatingFactory(): InternalScopeFactory
+	{
+		return $this->withFlavor(false);
+	}
+
+	private function withFlavor(bool $fiber): self
 	{
 		return new self(
 			$this->container,
@@ -137,7 +133,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->configPhpVersion,
 			$this->nodeCallback,
 			$this->constantResolver,
-			false,
+			$fiber,
+			$this->expressionResultStorageStack,
 		);
 	}
 

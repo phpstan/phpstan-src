@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
@@ -73,6 +74,7 @@ final class StaticCallHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private TypeSpecifier $typeSpecifier,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 	)
 	{
@@ -286,6 +288,7 @@ final class StaticCallHandler implements ExprHandler
 			$classResult,
 			$resolvedParametersAcceptor,
 			$specifyContext,
+			$argsResult,
 		);
 
 		// A type constraint on a (narrowable, i.e. non-side-effecting) static call
@@ -519,7 +522,7 @@ final class StaticCallHandler implements ExprHandler
 	 * @param StaticCall $expr
 	 * @param StaticCall $normalizedExpr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context): SpecifiedTypes
+	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
@@ -546,12 +549,19 @@ final class StaticCallHandler implements ExprHandler
 				&& $this->reflectionProvider->hasClass($referencedClasses[0])
 			) {
 				$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
-				foreach ($this->typeSpecifier->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
-					if (!$extension->isStaticMethodSupported($staticMethodReflection, $normalizedExpr, $context)) {
-						continue;
-					}
+				// runs lazily at narrowing-apply time - prime the storage with the
+				// argument results, see MethodCallHandler::specifyTypes()
+				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $args, $argsResult);
+				try {
+					foreach ($this->typeSpecifier->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
+						if (!$extension->isStaticMethodSupported($staticMethodReflection, $normalizedExpr, $context)) {
+							continue;
+						}
 
-					return $extension->specifyTypes($staticMethodReflection, $normalizedExpr, $scope, $context);
+						return $extension->specifyTypes($staticMethodReflection, $normalizedExpr, $scope, $context);
+					}
+				} finally {
+					$popPrimedStorage();
 				}
 			}
 

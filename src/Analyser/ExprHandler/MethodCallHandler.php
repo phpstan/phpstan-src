@@ -15,6 +15,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
@@ -69,6 +70,7 @@ final class MethodCallHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private TypeSpecifier $typeSpecifier,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 	)
 	{
@@ -202,6 +204,7 @@ final class MethodCallHandler implements ExprHandler
 			$varResult,
 			$resolvedParametersAcceptor,
 			$specifyContext,
+			$argsResult,
 		);
 
 		// A type constraint on a (narrowable, i.e. non-side-effecting) method call
@@ -463,7 +466,7 @@ final class MethodCallHandler implements ExprHandler
 	 * @param MethodCall $expr
 	 * @param MethodCall $normalizedExpr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context): SpecifiedTypes
+	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context);
@@ -482,12 +485,20 @@ final class MethodCallHandler implements ExprHandler
 				&& $this->reflectionProvider->hasClass($referencedClasses[0])
 			) {
 				$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
-				foreach ($this->typeSpecifier->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
-					if (!$extension->isMethodSupported($methodReflection, $normalizedExpr, $context)) {
-						continue;
-					}
+				// runs lazily at narrowing-apply time - prime the storage with the
+				// argument results so the extensions' Scope::getType() asks about
+				// the arguments answer from them instead of re-walking on demand
+				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $args, $argsResult);
+				try {
+					foreach ($this->typeSpecifier->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
+						if (!$extension->isMethodSupported($methodReflection, $normalizedExpr, $context)) {
+							continue;
+						}
 
-					return $extension->specifyTypes($methodReflection, $normalizedExpr, $scope, $context);
+						return $extension->specifyTypes($methodReflection, $normalizedExpr, $scope, $context);
+					}
+				} finally {
+					$popPrimedStorage();
 				}
 			}
 

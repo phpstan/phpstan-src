@@ -116,6 +116,7 @@ final class FuncCallHandler implements ExprHandler
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
+		private OutputBufferHelper $outputBufferHelper,
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 	)
 	{
@@ -764,9 +765,9 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
-		$outputBufferDelta = $functionReflection !== null ? OutputBufferHelper::getLevelDelta($functionReflection->getName()) : 0;
+		$outputBufferDelta = $functionReflection !== null ? $this->outputBufferHelper->getLevelDelta($functionReflection->getName()) : 0;
 		if ($outputBufferDelta !== 0) {
-			$scope = OutputBufferHelper::applyLevelDelta($scope, $outputBufferDelta);
+			$scope = $this->outputBufferHelper->applyLevelDelta($scope, $outputBufferDelta);
 		}
 
 		$pureCallable = $parametersAcceptor instanceof CallableParametersAcceptor

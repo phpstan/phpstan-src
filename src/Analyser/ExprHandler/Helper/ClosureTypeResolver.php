@@ -16,8 +16,6 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
-use PHPStan\Analyser\ProcessArrowFunctionResult;
-use PHPStan\Analyser\ProcessClosureResult;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\ThrowPoint;
@@ -72,10 +70,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * file's analysis ends - the per-file reset releases the Types and
 	 * throw/impure points with the rest of the file's result graph.
 	 *
-	 * Keyed by the closure node's spl_object_id(). The keys are AST nodes that
-	 * live for the whole file's analysis (the parser cache retains them), so
-	 * ids of live entries never collide; the per-file reset empties the map
-	 * before another file could reuse them.
+	 * Keyed by the closure node's spl_object_id() - see
+	 * TernaryHandler::$capturedResults for the lifetime/collision reasoning.
 	 *
 	 * @var array<int, array<string, array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]}>>
 	 */
@@ -95,14 +91,15 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 	/**
 	 * Resolves a closure/arrow function type by walking its body itself. Used by
-	 * the paths that have no prior walk to read return/yield types from. A
-	 * self-by-ref closure legitimately re-walks here (the
-	 * $resolveClosureTypeDepth guard answers that ask).
+	 * the paths that have NO prior walk to read return/yield types from - a
+	 * closure asking its own type before its result is stored, and
+	 * resolveCallableTypeForScope(). A self-by-ref closure legitimately re-walks
+	 * here (the $resolveClosureTypeDepth guard answers that ask).
 	 *
-	 * Callers that have already walked the body feed the gathered
-	 * returns/yields to buildClosureTypeForClosure()/
-	 * buildClosureTypeForArrowFunction() instead, which construct the same
-	 * ClosureType without a second walk.
+	 * Callers that have already walked the body (the closure/arrow handlers and
+	 * the closure-as-call-arg store sites) feed the gathered returns/yields to
+	 * buildClosureType() instead, which constructs the same ClosureType without
+	 * a second walk.
 	 */
 	public function getClosureType(
 		MutatingScope $scope,
@@ -117,7 +114,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		// ENTRY (enterAnonymousFunction()/enterArrowFunction()) so entering a
 		// closure/arrow scope never re-walks the body - the refined return type is
 		// built afterwards from the single body walk's gathered returns and carried
-		// on the node/rule scope (see NodeScopeResolver::processClosureNode()
+		// on the node/rule scope (see NodeScopeResolver::processClosureNodeInternal()
 		// and processArrowFunctionNode()).
 		if ($shallow) {
 			return new ClosureType(
@@ -284,7 +281,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $impurePoints,
 		array $invalidateExpressions,
 		bool $native = false,
-		bool $writeCache = true,
 	): ClosureType
 	{
 		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
@@ -314,7 +310,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				$parameters,
 			),
 			$native,
-			$writeCache,
 		);
 	}
 
@@ -336,7 +331,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $impurePoints,
 		array $invalidateExpressions,
 		bool $native = false,
-		bool $writeCache = true,
 	): ClosureType
 	{
 		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
@@ -355,82 +349,32 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$expr,
 			$native ? $nativeCallableParameters : $callableParameters,
 			$parameters,
-		), $writeCache);
+		));
 	}
 
 	/**
-	 * Seeds the per-node closure type cache from the single body walk the
-	 * engine just performed (see ClosureHandler::processExpr()), so later
-	 * getClosureType() asks answer from the walk instead of walking the
-	 * body again.
+	 * Whether getClosureType() would walk the body with different parameter types
+	 * than NodeScopeResolver's single walk (processClosureNode()/
+	 * processArrowFunctionNode()) did. array_map() callbacks and immediately
+	 * invoked closures get their parameter types from the array element type /
+	 * the invocation arguments in getClosureType(), whereas the single walk types
+	 * them from the closure's passed-to callable type - so the return type read
+	 * from the gathered scopes would differ, and getClosureType() must re-walk.
+	 */
+	/**
+	 * The expression roots this closure's type can read from the enclosing
+	 * scope: '$this' and the use()d variables for closures, '$this' and
+	 * every body variable that is not a parameter for arrow functions. Null
+	 * when the body accesses variables dynamically ($$name, compact(),
+	 * get_defined_vars()) and the whole scope must key the cache.
 	 *
-	 * A closure's native type equals its phpdoc type - the native-flavour
-	 * slot is seeded with the same build, keyed exactly as the
-	 * promoted-scope ask computes its key.
+	 * @return list<string>|null
 	 */
-	public function seedCacheFromClosureWalk(MutatingScope $scope, Node\Expr\Closure $expr, ProcessClosureResult $processClosureResult): void
-	{
-		// for array_map() callbacks and immediately invoked closures this
-		// delegates to a getClosureType() walk with the call-site parameter
-		// types; either way the phpdoc build lands in the cache under the
-		// key the plain ask computes
-		$this->buildClosureTypeForClosure(
-			$scope,
-			$expr,
-			$processClosureResult->getGatheredReturnStatements(),
-			$processClosureResult->getGatheredYieldStatements(),
-			$processClosureResult->getExecutionEnds(),
-			$processClosureResult->getThrowPoints(),
-			$processClosureResult->getClosureTypeImpurePoints(),
-			$processClosureResult->getInvalidateExpressions(),
-		);
-
-		[$parameters, , $callableParameters] = $this->buildParametersAndAcceptors($scope, $expr);
-		$phpdocKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
-		$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
-		if (!array_key_exists($phpdocKey, $cachedTypes)) {
-			return;
-		}
-
-		$promotedScope = $scope->doNotTreatPhpDocTypesAsCertain();
-		[$promotedParameters, , $promotedCallableParameters] = $this->buildParametersAndAcceptors($promotedScope, $expr);
-		$cachedTypes[$this->closureContextCacheKey($promotedScope, $expr, $promotedCallableParameters, $promotedParameters)] = $cachedTypes[$phpdocKey];
-		$this->cachedTypes[spl_object_id($expr)] = $cachedTypes;
-	}
-
-	/**
-	 * Arrow-function counterpart of seedCacheFromClosureWalk() (see
-	 * ArrowFunctionHandler::processExpr()). Unlike a closure, an arrow
-	 * function's native return type genuinely differs from its phpdoc one,
-	 * so the native-flavour slot is seeded with its own build reading the
-	 * walked body's native types.
-	 */
-	public function seedCacheFromArrowFunctionWalk(MutatingScope $scope, ArrowFunction $expr, ProcessArrowFunctionResult $arrowFunctionResult): void
-	{
-		$this->buildClosureTypeForArrowFunction(
-			$scope,
-			$expr,
-			$arrowFunctionResult->getArrowFunctionScope(),
-			$arrowFunctionResult->getClosureTypeThrowPoints(),
-			$arrowFunctionResult->getClosureTypeImpurePoints(),
-			$arrowFunctionResult->getInvalidateExpressions(),
-		);
-		$this->buildClosureTypeForArrowFunction(
-			$scope,
-			$expr,
-			$arrowFunctionResult->getArrowFunctionScope(),
-			$arrowFunctionResult->getClosureTypeThrowPoints(),
-			$arrowFunctionResult->getClosureTypeImpurePoints(),
-			$arrowFunctionResult->getInvalidateExpressions(),
-			true,
-		);
-	}
-
 	/**
 	 * The cache key of everything this closure's type can depend on: the
-	 * enclosing scope plus the parameter types the caller feeds in -
-	 * array_map style callers type the same closure node per element
-	 * through the callable parameters.
+	 * free-variable slice of the scope plus the parameter types the caller
+	 * feeds in - array_map style callers type the same closure node per
+	 * element through the callable parameters.
 	 *
 	 * @param array<ParameterReflection>|null $callableParameters
 	 * @param array<ParameterReflection> $parameters
@@ -442,21 +386,13 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$parts[] = $parameter->getType()->describe(VerbosityLevel::cache());
 		}
 
-		// only arrow functions get a flavour-separated slot: their native return
-		// type genuinely differs from the phpdoc one. A closure's two flavours are
-		// distinguished by the scope hash alone - and deliberately share values
-		// when the seeding pin copies the phpdoc build to the promoted key
-		$flavour = $expr instanceof ArrowFunction ? ($scope->nativeTypesPromoted ? '/native' : '/phpdoc') : '';
-
-		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . $flavour;
+		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . ($scope->nativeTypesPromoted ? '/native' : '/phpdoc');
 	}
 
 	/**
 	 * The expression roots this closure's type can read from the enclosing
-	 * scope: '$this' and the use()d variables for closures, '$this' and
-	 * every body variable that is not a parameter for arrow functions. Null
-	 * when the body accesses variables dynamically ($$name, compact(),
-	 * get_defined_vars()) and the whole scope must key the cache.
+	 * scope - null when the body accesses variables dynamically and the
+	 * whole scope must key the cache.
 	 *
 	 * @return list<string>|null
 	 */
@@ -516,15 +452,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		return $rootList;
 	}
 
-	/**
-	 * Whether getClosureType() would walk the body with different parameter types
-	 * than NodeScopeResolver's single walk (processClosureNode()/
-	 * processArrowFunctionNode()) did. array_map() callbacks and immediately
-	 * invoked closures get their parameter types from the array element type /
-	 * the invocation arguments in getClosureType(), whereas the single walk types
-	 * them from the closure's passed-to callable type - so the return type read
-	 * from the gathered scopes would differ, and getClosureType() must re-walk.
-	 */
 	private function bodyWalkHasOwnParameterTypes(Node\Expr\Closure|ArrowFunction $expr): bool
 	{
 		return $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME) !== null
@@ -553,7 +480,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $invalidateExpressions,
 		?string $cacheKey = null,
 		bool $native = false,
-		bool $writeCache = true,
 	): ClosureType
 	{
 		$onlyNeverExecutionEnds = $this->deriveOnlyNeverExecutionEnds($executionEnds);
@@ -569,7 +495,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				continue;
 			}
 
-			$readScope = $returnScope->toWalkScope();
+			$readScope = $returnScope->toMutatingScope();
 			if ($native) {
 				$readScope = $readScope->doNotTreatPhpDocTypesAsCertain();
 			}
@@ -596,7 +522,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$keyTypes = [];
 			$valueTypes = [];
 			foreach ($yieldStatements as [$yieldNode, $yieldScope]) {
-				$readScope = $yieldScope->toWalkScope();
+				$readScope = $yieldScope->toMutatingScope();
 				if ($native) {
 					$readScope = $readScope->doNotTreatPhpDocTypesAsCertain();
 				}
@@ -658,7 +584,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			break;
 		}
 
-		return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, $usedVariables, $cacheKey, $writeCache);
+		return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, $usedVariables, $cacheKey);
 	}
 
 	private function resolveArrowFunctionReturnType(
@@ -891,7 +817,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $invalidateExpressions,
 		array $usedVariables,
 		?string $cacheKey = null,
-		bool $writeCache = true,
 	): ClosureType
 	{
 		foreach ($parameters as $parameter) {
@@ -911,18 +836,16 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
 		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 
-		if ($writeCache) {
-			$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
-			$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
-			$cachedTypes[$cacheKey] = [
-				'returnType' => $returnType,
-				'throwPoints' => $throwPointsForClosureType,
-				'impurePoints' => $impurePointsForClosureType,
-				'invalidateExpressions' => $invalidateExpressions,
-				'usedVariables' => $usedVariables,
-			];
-			$this->cachedTypes[spl_object_id($expr)] = $cachedTypes;
-		}
+		$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
+		$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
+		$cachedTypes[$cacheKey] = [
+			'returnType' => $returnType,
+			'throwPoints' => $throwPointsForClosureType,
+			'impurePoints' => $impurePointsForClosureType,
+			'invalidateExpressions' => $invalidateExpressions,
+			'usedVariables' => $usedVariables,
+		];
+		$this->cachedTypes[spl_object_id($expr)] = $cachedTypes;
 
 		$mustUseReturnValue = TrinaryLogic::createNo();
 		foreach ($expr->attrGroups as $attrGroup) {

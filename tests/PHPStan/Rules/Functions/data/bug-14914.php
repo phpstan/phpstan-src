@@ -18,3 +18,13 @@ function doFoo(): void
 		flags: PREG_UNMATCHED_AS_NULL,
 	);
 }
+
+function doFoo2(): void
+{
+	preg_replace_callback(
+		'/a|(?<b>b)/',
+		fn (array $match) => $match['b'] !== null ? 'aa' : 'possible?',
+		'abcd',
+		flags: PREG_UNMATCHED_AS_NULL,
+	);
+}

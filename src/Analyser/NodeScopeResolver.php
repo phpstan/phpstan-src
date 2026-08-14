@@ -841,7 +841,15 @@ class NodeScopeResolver
 			$stmtScope = $this->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 		}
 
-		$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
+		// Statements whose work is processing their expressions emit their node
+		// callback AFTER that processing, inside their branches below, with the
+		// entry scope - a synchronously invoked rule (the plain resolver,
+		// PHP < 8.1) then finds the expressions' results in the storage instead
+		// of re-walking them on demand, mirroring processExprNodeInternal().
+		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_;
+		if (!$deferredStmtCallback) {
+			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
+		}
 
 		$stmtHandler = StmtHandlerRegistry::resolve($stmt, $this->container);
 		if ($stmtHandler !== null) {
@@ -1238,12 +1246,18 @@ class NodeScopeResolver
 			return $expressionResult;
 		}
 
-		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
-
 		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
 			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
+			// The node's own callback fires AFTER its result is stored, with the
+			// scope captured before processing. Rules observe the same (scope,
+			// answer) pair as at a pre-order emission - under fibers a pre-order
+			// rule parks on its first ask and resumes at this store anyway - but
+			// a synchronously invoked rule (the plain resolver, PHP < 8.1) now
+			// finds the node's and its subtree's results in the storage instead
+			// of re-walking them on demand.
+			$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 			// the call is now processed and stored; emit a virtual node so
 			// impossible-check rules read its specified types from the result
 			// instead of asking the scope before the call node is processed

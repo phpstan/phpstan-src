@@ -11,11 +11,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\IncDecTypeHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Type;
@@ -27,7 +27,11 @@ use PHPStan\Type\Type;
 final class PostDecHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private IncDecTypeHelper $incDecTypeHelper,
+	)
 	{
 	}
 
@@ -40,19 +44,21 @@ final class PostDecHandler implements ExprHandler
 	{
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 
-		// processVirtualAssign() emits nodes (PropertyAssignNode) whose rules ask
-		// about this whole expression - store a before-scope anchored result
-		// first so those asks answer from the storage; processExprNode()
-		// overwrites it with the final result after this handler returns
-		$nodeScopeResolver->storeExpressionResult($storage, $expr, $this->expressionResultFactory->create(
+		// the virtual assign writes the decremented value - hand it the synthetic's
+		// result so applyWrite composes off it instead of pricing the
+		// unprocessed synthetic (and sentinel comparisons against it) on demand
+		$virtualExpr = new PreDec($expr->var);
+		$virtualExprResult = $this->expressionResultFactory->create(
 			$varResult->getScope(),
-			$scope,
-			$expr,
+			beforeScope: $scope,
+			expr: $virtualExpr,
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-		));
+			typeCallback: $this->incDecTypeHelper->getTypeCallback($expr->var, $varResult, false),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($virtualExpr, $context),
+		);
 
 		return $this->expressionResultFactory->create(
 			$nodeScopeResolver->processVirtualAssign(
@@ -60,8 +66,9 @@ final class PostDecHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$expr->var,
-				new PreDec($expr->var),
+				$virtualExpr,
 				$nodeCallback,
+				$virtualExprResult,
 			)->getScope(),
 			beforeScope: $scope,
 			expr: $expr,
@@ -69,17 +76,10 @@ final class PostDecHandler implements ExprHandler
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),
 			impurePoints: $varResult->getImpurePoints(),
+			// post-decrement evaluates to the variable's pre-mutation value
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType()),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $scope->getType($expr->var);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

@@ -36,8 +36,9 @@ final class PreparedAssignTarget
 	 * @param non-empty-list<ArrayDimFetch>|null $dimFetchStack
 	 * @param non-empty-list<array{Type|null, ArrayDimFetch}>|null $offsetTypes
 	 * @param non-empty-list<array{Type|null, ArrayDimFetch}>|null $offsetNativeTypes
-	 * @param list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetTypes
-	 * @param list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetNativeTypes
+	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetTypes
+	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetNativeTypes
+	 * @param ExpressionResult[] $targetChainResults
 	 */
 	public function __construct(
 		private string $kind,
@@ -52,15 +53,19 @@ final class PreparedAssignTarget
 		private array $impurePoints,
 		private bool $isAlwaysTerminating,
 		private ?Expr $rootVar = null,
+		private ?ExpressionResult $varResult = null,
 		private ?array $dimFetchStack = null,
 		private ?Expr $assignedPropertyExpr = null,
 		private ?array $offsetTypes = null,
 		private ?array $offsetNativeTypes = null,
 		private ?array $existingOffsetTypes = null,
 		private ?array $existingOffsetNativeTypes = null,
+		private ?ExpressionResult $offsetSetTargetResult = null,
+		private ?ExpressionResult $objectResult = null,
 		private ?string $propertyName = null,
 		private ?Type $propertyHolderType = null,
 		private ?ExpressionResult $targetReadResult = null,
+		private array $targetChainResults = [],
 		private ?ExpressionResult $variableNameResult = null,
 	)
 	{
@@ -140,6 +145,15 @@ final class PreparedAssignTarget
 		return $this->rootVar;
 	}
 
+	public function getVarResult(): ExpressionResult
+	{
+		if ($this->varResult === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->varResult;
+	}
+
 	/**
 	 * @return non-empty-list<ArrayDimFetch>
 	 */
@@ -186,7 +200,7 @@ final class PreparedAssignTarget
 	}
 
 	/**
-	 * @return list<array{Type, ExistingArrayDimFetch}>
+	 * @return non-empty-list<array{Type, ExistingArrayDimFetch}>
 	 */
 	public function getExistingOffsetTypes(): array
 	{
@@ -198,7 +212,7 @@ final class PreparedAssignTarget
 	}
 
 	/**
-	 * @return list<array{Type, ExistingArrayDimFetch}>
+	 * @return non-empty-list<array{Type, ExistingArrayDimFetch}>
 	 */
 	public function getExistingOffsetNativeTypes(): array
 	{
@@ -207,6 +221,29 @@ final class PreparedAssignTarget
 		}
 
 		return $this->existingOffsetNativeTypes;
+	}
+
+	/**
+	 * The chain link an ArrayAccess::offsetSet would be invoked on: the
+	 * second-outermost link's write-flavoured result, or the root's result for
+	 * a single-dimension target.
+	 */
+	public function getOffsetSetTargetResult(): ExpressionResult
+	{
+		if ($this->offsetSetTargetResult === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->offsetSetTargetResult;
+	}
+
+	public function getObjectResult(): ExpressionResult
+	{
+		if ($this->objectResult === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->objectResult;
 	}
 
 	public function getPropertyName(): ?string
@@ -225,8 +262,7 @@ final class PreparedAssignTarget
 
 	/**
 	 * The whole target priced as a read - produced only in the
-	 * read-modify-write walk modes. For `$lvalue ??= ...` the read carries the
-	 * isset descriptor, composed from the walked chain (bug-13623).
+	 * read-modify-write walk modes.
 	 */
 	public function getTargetReadResult(): ExpressionResult
 	{
@@ -235,6 +271,14 @@ final class PreparedAssignTarget
 		}
 
 		return $this->targetReadResult;
+	}
+
+	/**
+	 * @return ExpressionResult[]
+	 */
+	public function getTargetChainResults(): array
+	{
+		return $this->targetChainResults;
 	}
 
 	/**

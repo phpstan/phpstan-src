@@ -3,10 +3,8 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\ExpressionContext;
@@ -14,18 +12,17 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\IssetabilityDescriptor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -44,6 +41,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -91,14 +89,12 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			),
 		];
 		$isAlwaysTerminating = false;
-		$containsNullsafe = false;
 		if ($classResult !== null) {
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();
 			$impurePoints = $classResult->getImpurePoints();
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			$scope = $classResult->getScope();
-			$containsNullsafe = $classResult->containsNullsafe();
 		}
 		if ($nameResult !== null) {
 			$hasYield = $hasYield || $nameResult->hasYield();
@@ -116,65 +112,75 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			containsNullsafe: $containsNullsafe,
+			containsNullsafe: $classResult !== null && $classResult->containsNullsafe(),
 			issetabilityDescriptor: IssetabilityDescriptor::property($classResult, fn (MutatingScope $s): ?FoundPropertyReflection => $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $s), $expr),
+			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $classResult, $nameResult, $beforeScope): Type {
+				$classType = $classResult !== null
+					? ($nativeTypesPromoted ? $classResult->getNativeType() : $classResult->getType())
+					: null;
+				$shortCircuit = static fn (Type $type): Type => $classResult !== null && $classResult->containsNullsafe() && $classType !== null && TypeCombinator::containsNull($classType)
+					? TypeCombinator::addNull($type)
+					: $type;
+
+				// the property's class/visibility/assign context is lexical, so it
+				// comes from beforeScope; the scope-dependent class-expression type
+				// is read from the operand result above, and the native-vs-phpdoc
+				// distinction comes from that type and the reflection accessor below.
+				$reflectionScope = $beforeScope;
+				if ($expr->class instanceof Name) {
+					$staticPropertyFetchedOnType = $reflectionScope->resolveTypeByName($expr->class);
+				} else {
+					// every caller walks a non-Name class and passes its result
+					if ($classType === null) {
+						throw new ShouldNotHappenException();
+					}
+					$staticPropertyFetchedOnType = TypeCombinator::removeNull($classType)->getObjectTypeOrClassStringObjectType();
+				}
+
+				$resolveProperty = function (string $propertyName) use ($nativeTypesPromoted, $reflectionScope, $staticPropertyFetchedOnType, $expr): Type {
+					if ($nativeTypesPromoted) {
+						$propertyReflection = $reflectionScope->getStaticPropertyReflection($staticPropertyFetchedOnType, $propertyName);
+						if ($propertyReflection === null) {
+							return new ErrorType();
+						}
+						if (!$propertyReflection->hasNativeType()) {
+							return new MixedType();
+						}
+
+						return $propertyReflection->getNativeType();
+					}
+
+					return $this->propertyFetchType($reflectionScope, $staticPropertyFetchedOnType, $propertyName, $expr) ?? new ErrorType();
+				};
+
+				if ($expr->name instanceof VarLikeIdentifier) {
+					return $shortCircuit($resolveProperty($expr->name->toString()));
+				}
+
+				// dynamic static property fetch Foo::${$name}: resolve each possible
+				// name from beforeScope. The asking scope is not narrowed per name,
+				// so such fetches can be less precise.
+				// every caller walks a non-VarLikeIdentifier name and passes its result
+				if ($nameResult === null) {
+					throw new ShouldNotHappenException();
+				}
+				$nameType = $nativeTypesPromoted ? $nameResult->getNativeType() : $nameResult->getType();
+				if (count($nameType->getConstantStrings()) > 0) {
+					return TypeCombinator::union(
+						...array_map(static function ($constantString) use ($resolveProperty): Type {
+							if ($constantString->getValue() === '') {
+								return new ErrorType();
+							}
+
+							return $resolveProperty($constantString->getValue());
+						}, $nameType->getConstantStrings()),
+					);
+				}
+
+				return new MixedType();
+			},
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		if ($expr->name instanceof VarLikeIdentifier) {
-			if ($scope->nativeTypesPromoted) {
-				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $scope);
-				if ($propertyReflection === null) {
-					return new ErrorType();
-				}
-				if (!$propertyReflection->hasNativeType()) {
-					return new MixedType();
-				}
-
-				$nativeType = $propertyReflection->getNativeType();
-
-				if ($expr->class instanceof Expr) {
-					return NullsafeShortCircuitingHelper::getType($scope, $expr->class, $nativeType);
-				}
-
-				return $nativeType;
-			}
-
-			if ($expr->class instanceof Name) {
-				$staticPropertyFetchedOnType = $scope->resolveTypeByName($expr->class);
-			} else {
-				$staticPropertyFetchedOnType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
-			}
-
-			$fetchType = $this->propertyFetchType(
-				$scope,
-				$staticPropertyFetchedOnType,
-				$expr->name->toString(),
-				$expr,
-			);
-			if ($fetchType === null) {
-				$fetchType = new ErrorType();
-			}
-
-			if ($expr->class instanceof Expr) {
-				return NullsafeShortCircuitingHelper::getType($scope, $expr->class, $fetchType);
-			}
-
-			return $fetchType;
-		}
-
-		$nameType = $scope->getType($expr->name);
-		if (count($nameType->getConstantStrings()) > 0) {
-			return TypeCombinator::union(
-				...array_map(static fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $scope
-					->filterByTruthyValue(new Identical($expr->name, new String_($constantString->getValue())))
-					->getType(new Expr\StaticPropertyFetch($expr->class, new VarLikeIdentifier($constantString->getValue()))), $nameType->getConstantStrings()),
-			);
-		}
-
-		return new MixedType();
 	}
 
 	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, StaticPropertyFetch $propertyFetch): ?Type
@@ -189,11 +195,6 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		}
 
 		return $propertyReflection->getReadableType();
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

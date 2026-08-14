@@ -91,10 +91,12 @@ final class ForeachHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$throwPoints = $condResult->getThrowPoints();
 		$impurePoints = $condResult->getImpurePoints();
 		$scope = $condResult->getScope();

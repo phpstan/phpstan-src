@@ -523,11 +523,36 @@ final class AssignHandler implements ExprHandler
 		AssignTargetWalkMode $mode,
 	): PreparedAssignTarget
 	{
+		// The raw target's node callback fires after the walk below composed and
+		// stored the target's read result, with the scope captured at entry -
+		// a synchronously invoked rule (the plain resolver, PHP < 8.1) then
+		// answers its asks from the storage instead of re-walking on demand,
+		// same as NodeScopeResolver::processExprNodeInternal().
+		$prepared = $this->doPrepareTarget($nodeScopeResolver, $scope, $storage, $stmt, $var, $assignedExpr, $nodeCallback, $context, $mode);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $mode->enterExpressionAssign() ? $scope->enterExpressionAssign($var) : $scope, $storage);
+
+		return $prepared;
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function doPrepareTarget(
+		NodeScopeResolver $nodeScopeResolver,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		Node\Stmt $stmt,
+		Expr $var,
+		Expr $assignedExpr,
+		callable $nodeCallback,
+		ExpressionContext $context,
+		AssignTargetWalkMode $mode,
+	): PreparedAssignTarget
+	{
 		$enterExpressionAssign = $mode->enterExpressionAssign();
 		$targetReadResult = null;
 		$targetChainResults = [];
 		$beforeScope = $scope;
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope, $storage);
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];

@@ -6,18 +6,13 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
-use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\NativeTypeExpr;
-use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<NativeTypeExpr>
@@ -26,7 +21,7 @@ use PHPStan\Type\Type;
 final class NativeTypeExprHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(private VirtualExprResultHelper $virtualExprResultHelper)
 	{
 	}
 
@@ -39,29 +34,7 @@ final class NativeTypeExprHandler implements ExprHandler
 	{
 		// because this is a virtual node handler, the caller will only be interested in the type
 		// we don't need to process the inner expr
-
-		return $this->expressionResultFactory->create(
-			$scope,
-			beforeScope: $scope,
-			expr: $expr,
-			hasYield: false,
-			isAlwaysTerminating: false,
-			throwPoints: [],
-			impurePoints: [],
-		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		if ($scope->nativeTypesPromoted) {
-			return $expr->getNativeType();
-		}
-		return $expr->getPhpDocType();
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		return $this->virtualExprResultHelper->createTypeExprResult($scope, $expr);
 	}
 
 }

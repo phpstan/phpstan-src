@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Type\TypeCombinator;
 use function array_key_first;
 
@@ -29,7 +30,8 @@ final class DisjunctionHolderProjectionAugment implements DeferredSpecifiedTypes
 	 *        be added on top
 	 */
 	public function __construct(
-		private TypeSpecifier $typeSpecifier,
+		private NodeScopeResolver $nodeScopeResolver,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private $leftTruthyScope,
 		private MutatingScope $leftFalseyScope,
 		private $rightTruthyScope,
@@ -69,19 +71,24 @@ final class DisjunctionHolderProjectionAugment implements DeferredSpecifiedTypes
 				}
 				$leftTruthyScope ??= ($this->leftTruthyScope)();
 				$rightTruthyScope ??= ($this->rightTruthyScope)();
+				if (!$leftTruthyScope->hasExpressionType($targetExpr)->yes()) {
+					continue;
+				}
+				if (!$rightTruthyScope->hasExpressionType($targetExpr)->yes()) {
+					continue;
+				}
 
-				// the guard above pins the target as tracked on the applying
-				// scope; the branch scopes are its own filtered views, so their
-				// reads answer from state (or price the same tracked state)
-				$origType = $scope->getType($targetExpr);
+				// the guards above pin the target as tracked on all three scopes -
+				// scope state answers without a walk
+				$origType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $scope);
 
-				$leftType = $leftTruthyScope->getType($targetExpr);
+				$leftType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $leftTruthyScope);
 				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
 				if (!$leftNarrowed) {
 					continue;
 				}
 
-				$rightType = $rightTruthyScope->getType($targetExpr);
+				$rightType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $rightTruthyScope);
 				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
 				if (!$rightNarrowed) {
 					continue;
@@ -92,7 +99,7 @@ final class DisjunctionHolderProjectionAugment implements DeferredSpecifiedTypes
 					continue;
 				}
 
-				$created = $this->typeSpecifier->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope);
+				$created = $this->defaultNarrowingHelper->createSubjectTypes($scope, $targetExpr, null, $unionType, TypeSpecifierContext::createTrue());
 				$result = $result === null ? $created : $result->unionWith($created);
 			}
 		}

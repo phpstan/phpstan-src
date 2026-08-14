@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
@@ -42,6 +43,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private ?ConstantResolver $constantResolver = null;
 
+	private ExpressionResultStorageStack $expressionResultStorageStack;
+
 	private ?PhpVersion $phpVersionType = null;
 
 	private ?AttributeReflectionFactory $attributeReflectionFactory = null;
@@ -57,11 +60,13 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	public function __construct(
 		private Container $container,
 		private $nodeCallback,
-		private bool $createsNodeCallbackScopes = false,
+		private bool $fiber = false,
+		?ExpressionResultStorageStack $expressionResultStorageStack = null,
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
 		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');
+		$this->expressionResultStorageStack = $expressionResultStorageStack ?? new ExpressionResultStorageStack();
 	}
 
 	public function create(
@@ -84,8 +89,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
-		if ($this->createsNodeCallbackScopes) {
-			$className = NodeCallbackScope::class;
+		if ($this->fiber) {
+			$className = FiberScope::class;
 		}
 
 		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
@@ -111,6 +116,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->propertyReflectionFinder,
 			$this->currentSimpleVersionParser,
 			$this->constantResolver,
+			$this->expressionResultStorageStack,
 			$context,
 			$this->phpVersionType,
 			$this->attributeReflectionFactory,
@@ -134,14 +140,14 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		);
 	}
 
-	public function toNodeCallbackScopeFactory(): InternalScopeFactory
+	public function toFiberFactory(): InternalScopeFactory
 	{
-		return $this->createsNodeCallbackScopes ? $this : $this->twin();
+		return $this->fiber ? $this : $this->twin();
 	}
 
-	public function toWalkScopeFactory(): InternalScopeFactory
+	public function toMutatingFactory(): InternalScopeFactory
 	{
-		return $this->createsNodeCallbackScopes ? $this->twin() : $this;
+		return $this->fiber ? $this->twin() : $this;
 	}
 
 	/**
@@ -169,7 +175,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			}
 		}
 
-		$this->twin = new self($this->container, $this->nodeCallback, !$this->createsNodeCallbackScopes);
+		$this->twin = new self($this->container, $this->nodeCallback, !$this->fiber, $this->expressionResultStorageStack);
 		$this->twin->origin = WeakReference::create($this);
 
 		return $this->twin;

@@ -387,7 +387,7 @@ final class StaticCallHandler implements ExprHandler
 			&& $scope->isInClass()
 			&& $scope->getClassReflection()->isSubclassOfClass($methodReflection->getDeclaringClass())
 		) {
-			$thisType = $scope->getType(new Variable('this'));
+			$thisType = $scope->getVariableType('this');
 			$methodClassReflection = $methodReflection->getDeclaringClass();
 			foreach ($methodClassReflection->getNativeReflection()->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
 				if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $methodClassReflection->getName()) {

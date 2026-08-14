@@ -633,6 +633,10 @@ final class NewHandler implements ExprHandler
 			}
 
 			$newParentNode = new New_(new Name($constructorMethod->getDeclaringClass()->getName()), $node->args);
+			// the synthetic walk is load-bearing: it re-resolves the parent
+			// constructor's template types from the arguments (processArgs against
+			// the parent's signature), which a direct exactInstantiation() recursion
+			// with the child's acceptor cannot do
 			$newParentType = $scope->getType($newParentNode);
 			$newParentTypeClassReflections = $newParentType->getObjectClassReflections();
 			if (count($newParentTypeClassReflections) !== 1) {

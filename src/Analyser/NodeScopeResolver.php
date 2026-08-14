@@ -695,7 +695,7 @@ class NodeScopeResolver
 		// PHP < 8.1) then finds the expressions' results in the storage instead
 		// of re-walking them on demand, mirroring processExprNodeInternal().
 		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_
-			|| $stmt instanceof If_ || $stmt instanceof Switch_;
+			|| $stmt instanceof If_ || $stmt instanceof Switch_ || $stmt instanceof Foreach_;
 		if (!$deferredStmtCallback) {
 			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		}

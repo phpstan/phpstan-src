@@ -275,9 +275,7 @@ final class BooleanAndHandler implements ExprHandler
 			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
 		}
 
-		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftTruthyScope), $scope, $storage, $context);
-
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$leftMergedWithRightScope,
 			beforeScope: $scope,
 			expr: $expr,
@@ -288,6 +286,14 @@ final class BooleanAndHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr->right),
 			falseyScopeCallback: static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
 		);
+		// store before emitting the virtual node: its rules ask about the raw
+		// expression, and a synchronously invoked rule (the plain resolver,
+		// PHP < 8.1) must find the result in the storage instead of re-walking
+		// it on demand; processExprNodeInternal()'s later store is a no-op
+		$nodeScopeResolver->storeExpressionResult($storage, $expr, $result);
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftTruthyScope), $scope, $storage, $context);
+
+		return $result;
 	}
 
 }

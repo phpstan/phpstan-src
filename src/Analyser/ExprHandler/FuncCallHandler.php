@@ -211,10 +211,12 @@ final class FuncCallHandler implements ExprHandler
 			// properties array resolve from stored results instead of unprocessed
 			// nodes; processArgs() below processes them again as clone()'s arguments,
 			// so the NoopNodeCallback here avoids duplicate node-callbacks.
-			$nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+			$cloneObjectArgResult = $nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 			$clonePropertiesArgResult = $nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[1]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 			$clonePropertiesArgType = $clonePropertiesArgResult->getType();
-			$cloneExpr = new TypeExpr($scope->getType(new Expr\Clone_($normalizedExpr->getArgs()[0]->value)));
+			// the cloned type is composed from the object argument's result -
+			// no synthetic Clone_ walk
+			$cloneExpr = new TypeExpr(CloneHandler::resolveCloneType($cloneObjectArgResult->getType()));
 			$clonePropertiesArgTypeConstantArrays = $clonePropertiesArgType->getConstantArrays();
 			foreach ($clonePropertiesArgTypeConstantArrays as $clonePropertiesArgTypeConstantArray) {
 				foreach ($clonePropertiesArgTypeConstantArray->getKeyTypes() as $i => $clonePropertyKeyType) {

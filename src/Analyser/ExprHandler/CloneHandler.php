@@ -35,6 +35,12 @@ final class CloneHandler implements ExprHandler
 	{
 	}
 
+	/** The type `clone $expr` produces for an operand of the given type. */
+	public static function resolveCloneType(Type $exprType): Type
+	{
+		return TypeTraverser::map(TypeCombinator::intersect($exprType, new ObjectWithoutClassType()), new CloneTypeTraverser());
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Clone_;
@@ -52,10 +58,7 @@ final class CloneHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
-			typeCallback: static function (bool $nativeTypesPromoted) use ($exprResult): Type {
-				$cloneType = TypeCombinator::intersect(($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType()), new ObjectWithoutClassType());
-				return TypeTraverser::map($cloneType, new CloneTypeTraverser());
-			},
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => self::resolveCloneType($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
 	}

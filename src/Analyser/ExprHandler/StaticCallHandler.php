@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
@@ -214,7 +213,10 @@ final class StaticCallHandler implements ExprHandler
 			// already-computed result instead of re-walking via Scope::getType().
 			$objectClasses = $classResult->getType()->getObjectClassNames();
 			if (count($objectClasses) !== 1) {
-				$objectClasses = $scope->getType(new New_($expr->class))->getObjectClassNames();
+				// the receiver may be a class-string instead of an object - the
+				// instantiated type is what `new` would produce, read from the
+				// same result instead of walking a synthetic New_ node
+				$objectClasses = $classResult->getType()->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			}
 			if (count($objectClasses) === 1) {
 				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());

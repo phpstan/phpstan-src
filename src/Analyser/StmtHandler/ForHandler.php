@@ -22,6 +22,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
 use function array_last;
@@ -42,7 +43,7 @@ final class ForHandler implements StmtHandler
 		return $stmt instanceof For_;
 	}
 
-	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope
+	private function inferForLoopExpressions(NodeScopeResolver $nodeScopeResolver, For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope, ExpressionResultStorage $storage): MutatingScope
 	{
 		// infer $items[$i] type from for ($i = 0; $i < count($items); $i++) {...}
 
@@ -73,12 +74,12 @@ final class ForHandler implements StmtHandler
 				&& $stmt->init[0]->var->name === $lastCondExpr->left->name
 			) {
 				$arrayArg = $lastCondExpr->right->getArgs()[0]->value;
-				$arrayType = $bodyScope->getType($arrayArg);
+				$arrayType = $nodeScopeResolver->readStoredResult($arrayArg, $storage)->getTypeOnScope($bodyScope, false);
 				if ($arrayType->isList()->yes()) {
 					$bodyScope = $bodyScope->assignExpression(
 						new ArrayDimFetch($lastCondExpr->right->getArgs()[0]->value, $lastCondExpr->left),
 						$arrayType->getIterableValueType(),
-						$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
+						$nodeScopeResolver->readStoredResult($arrayArg, $storage)->getTypeOnScope($bodyScope, true)->getIterableValueType(),
 					);
 				}
 			}
@@ -98,12 +99,12 @@ final class ForHandler implements StmtHandler
 				&& $stmt->init[0]->var->name === $lastCondExpr->right->name
 			) {
 				$arrayArg = $lastCondExpr->left->getArgs()[0]->value;
-				$arrayType = $bodyScope->getType($arrayArg);
+				$arrayType = $nodeScopeResolver->readStoredResult($arrayArg, $storage)->getTypeOnScope($bodyScope, false);
 				if ($arrayType->isList()->yes()) {
 					$bodyScope = $bodyScope->assignExpression(
 						new ArrayDimFetch($lastCondExpr->left->getArgs()[0]->value, $lastCondExpr->right),
 						$arrayType->getIterableValueType(),
-						$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
+						$nodeScopeResolver->readStoredResult($arrayArg, $storage)->getTypeOnScope($bodyScope, true)->getIterableValueType(),
 					);
 				}
 			}
@@ -140,21 +141,26 @@ final class ForHandler implements StmtHandler
 		$lastCondExpr = array_last($stmt->cond);
 		if (count($stmt->cond) > 0) {
 			$storage = $originalStorage->duplicate();
-			foreach ($stmt->cond as $condExpr) {
-				$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
-				$initScope = $condResult->getScope();
+			$scope->pushExpressionResultStorage($storage);
+			try {
+				foreach ($stmt->cond as $condExpr) {
+					$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
+					$initScope = $condResult->getScope();
 
-				// only the last condition expression is relevant whether the loop continues
-				// see https://www.php.net/manual/en/control-structures.for.php
-				if ($condExpr === $lastCondExpr) {
-					$condTruthiness = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
-					$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
+					// only the last condition expression is relevant whether the loop continues
+					// see https://www.php.net/manual/en/control-structures.for.php
+					if ($condExpr === $lastCondExpr) {
+						$condTruthiness = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
+					}
+
+					$hasYield = $hasYield || $condResult->hasYield();
+					$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
+					$bodyScope = $condResult->getTruthyScope();
 				}
-
-				$hasYield = $hasYield || $condResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
-				$bodyScope = $condResult->getTruthyScope();
+			} finally {
+				$scope->popExpressionResultStorage();
 			}
 		}
 
@@ -172,23 +178,28 @@ final class ForHandler implements StmtHandler
 					break;
 				}
 				$prevEntryScope = $bodyScope;
-				if ($lastCondExpr !== null) {
-					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
-				}
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
+				$scope->pushExpressionResultStorage($storage);
+				try {
+					if ($lastCondExpr !== null) {
+						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+					}
+					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
 
-				foreach ($stmt->loop as $loopExpr) {
-					$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
-					$bodyScope = $exprResult->getScope();
-					$hasYield = $hasYield || $exprResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
-				}
+					foreach ($stmt->loop as $loopExpr) {
+						$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
+						$bodyScope = $exprResult->getScope();
+						$hasYield = $hasYield || $exprResult->hasYield();
+						$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
+						$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
+					}
 
+				} finally {
+					$scope->popExpressionResultStorage();
+				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
@@ -209,9 +220,14 @@ final class ForHandler implements StmtHandler
 			// its result - the previous scope-based read was a guaranteed
 			// storage miss (the condition was only stored into discarded
 			// convergence duplicates) that re-priced it on demand
-			$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
-			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
-			$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
+			// process the condition once and read the always-iterates check off
+			// its result - the previous scope-based read was a guaranteed
+			// storage miss (the condition was only stored into discarded
+			// convergence duplicates) that re-priced it on demand
+			$condResult = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$alwaysIterates = $alwaysIterates->and($condResult->getType()->toBoolean()->isTrue());
+			$bodyScope = $condResult->getTruthyScope();
+			$bodyScope = $this->inferForLoopExpressions($nodeScopeResolver, $stmt, $lastCondExpr, $bodyScope, $storage);
 		}
 
 		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
@@ -227,7 +243,7 @@ final class ForHandler implements StmtHandler
 		$finalScope = $finalScope->generalizeWith($loopScope);
 
 		if ($lastCondExpr !== null) {
-			$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
+			$finalScope = $nodeScopeResolver->narrowScopeWithCondition($finalScope, $lastCondExpr, TypeSpecifierContext::createFalsey());
 		}
 
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);

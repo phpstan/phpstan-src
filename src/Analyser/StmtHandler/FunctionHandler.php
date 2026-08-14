@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\DeprecatedAttributeResolver;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -99,51 +100,58 @@ final class FunctionHandler implements StmtHandler
 		$gatheredYieldStatements = [];
 		$executionEnds = [];
 		$functionImpurePoints = [];
-			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
-				if ($scope->getFunction() !== $functionScope->getFunction()) {
-					return;
-				}
-				if ($scope->isInAnonymousFunction()) {
-					return;
-				}
-				if ($node instanceof PropertyAssignNode) {
-					$functionImpurePoints[] = new ImpurePoint(
-						$scope,
-						$node,
-						'propertyAssign',
-						'property assignment',
-						true,
-					);
-					return;
-				}
-				if ($node instanceof ExecutionEndNode) {
-					$executionEnds[] = $node;
-					return;
-				}
-				if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-					$gatheredYieldStatements[] = $node;
-				}
-				if (!$node instanceof Return_) {
-					return;
-				}
-
-				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-			});
+			// the body's results live in a per-body storage released right after
+		// the FunctionReturnStatementsNode rules ran - see the ClassMethod
+		// branch for the reasoning
+		$bodyStorage = $storage->duplicate();
+		$scope->pushExpressionResultStorage($bodyStorage);
 		try {
-			$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $storage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
-		} finally {
-			$nodeScopeResolver->popNodeGatherer();
-		}
+			$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
+					if ($scope->getFunction() !== $functionScope->getFunction()) {
+						return;
+					}
+					if ($scope->isInAnonymousFunction()) {
+						return;
+					}
+					if ($node instanceof PropertyAssignNode) {
+						$functionImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
+						return;
+					}
+					if ($node instanceof ExecutionEndNode) {
+						$executionEnds[] = $node;
+						return;
+					}
+					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+						$gatheredYieldStatements[] = $node;
+					}
+					if (!$node instanceof Return_) {
+						return;
+					}
 
-		$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
-			$stmt,
-			$gatheredReturnStatements,
-			$gatheredYieldStatements,
-			$statementResult,
-			$executionEnds,
-			array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
-			$functionReflection,
-		), $functionScope, $storage);
+					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+				}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
+
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
+				$stmt,
+				$gatheredReturnStatements,
+				$gatheredYieldStatements,
+				$statementResult,
+				$executionEnds,
+				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
+				$functionReflection,
+						), $functionScope, $bodyStorage);
+			if (!$scope->isInAnonymousFunction()) {
+				$nodeScopeResolver->processPendingFibers($bodyStorage);
+			}
+		} finally {
+			$scope->popExpressionResultStorage();
+		}
 
 		// declaring the function defines it in global state, so a negative
 		// function_exists() narrowing that may refer to that function must be forgotten

@@ -35,12 +35,14 @@ use function array_map;
 use function array_merge;
 use function assert;
 use function count;
+use function getenv;
 use function is_string;
 use function sprintf;
 use function str_replace;
 use function strtoupper;
 use function substr;
 use const PHP_OS;
+use const PHP_VERSION_ID;
 
 class AnalyserTest extends PHPStanTestCase
 {
@@ -810,7 +812,12 @@ class AnalyserTest extends PHPStanTestCase
 		$typeSpecifier = $container->getService('typeSpecifier');
 		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
 
-		$nodeScopeResolver = new NodeScopeResolver(
+		$nodeScopeResolverClassName = NodeScopeResolver::class;
+		if (PHP_VERSION_ID >= 80100 && getenv('PHPSTAN_FNSR') !== '0') {
+			$nodeScopeResolverClassName = Fiber\FiberNodeScopeResolver::class;
+		}
+
+		$nodeScopeResolver = new $nodeScopeResolverClassName(
 			$container,
 			$reflectionProvider,
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),

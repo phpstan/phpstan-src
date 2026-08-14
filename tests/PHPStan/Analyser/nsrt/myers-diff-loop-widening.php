@@ -44,8 +44,8 @@ class Foo
 					$y++;
 				}
 
-				assertType('(float|int)', $x);
-				assertType('(float|int)', $y);
+				assertType('int<0, max>', $x);
+				assertType('int<0, max>', $y);
 
 				$v[$k] = $x;
 				if ($x >= $n && $y >= $m) {

@@ -12,9 +12,9 @@ use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
-use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use function array_merge;
@@ -43,33 +43,36 @@ final class WhileHandler implements StmtHandler
 	{
 		$originalStorage = $storage;
 		$storage = $originalStorage->duplicate();
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
-		$beforeCondBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
-		$condScope = $condResult->getFalseyScope();
-		if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
-			if (!$nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
-				$scope = $condScope->mergeWith($scope);
+		// pass-local storages are pushed for the duration of each pass so
+		// in-pass asks (applySpecifiedTypes pricing, branch-scope derivation)
+		// read the pass's own results instead of re-pricing on demand
+		$scope->pushExpressionResultStorage($storage);
+		try {
+			$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
+			$beforeCondBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+			$condScope = $condResult->getFalseyScope();
+			if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
+				if (!$nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
+					$scope = $condScope->mergeWith($scope);
+				}
+
+				return new InternalStatementResult(
+					$scope,
+					hasYield: $condResult->hasYield(),
+					isAlwaysTerminating: false,
+					exitPoints: [],
+					throwPoints: $condResult->getThrowPoints(),
+					impurePoints: $condResult->getImpurePoints(),
+				);
 			}
-
-			return new InternalStatementResult(
-				$scope,
-				hasYield: $condResult->hasYield(),
-				isAlwaysTerminating: false,
-				exitPoints: [],
-				throwPoints: $condResult->getThrowPoints(),
-				impurePoints: $condResult->getImpurePoints(),
-			);
+			$bodyScope = $condResult->getTruthyScope();
+		} finally {
+			$scope->popExpressionResultStorage();
 		}
-		$bodyScope = $condResult->getTruthyScope();
 
-		$replayCondRecording = null;
-		$replayBodyRecording = null;
-		$replayPassStorage = null;
-		$replayPassResult = null;
-		$prevEntryScope = null;
 		if ($context->isTopLevel()) {
 			$count = 0;
-			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
+			$prevEntryScope = null;
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -81,21 +84,16 @@ final class WhileHandler implements StmtHandler
 				}
 				$prevEntryScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
-				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep())->getTruthyScope();
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				// the candidate to replace the final walk when this pass's
-				// entry turns out to be the fixpoint
-				if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback) {
-					$replayCondRecording = $condRecording;
-					$replayBodyRecording = $bodyRecording;
-					$replayPassStorage = $storage;
-					$replayPassResult = $bodyScopeResult;
+				$scope->pushExpressionResultStorage($storage);
+				try {
+					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+				} finally {
+					$scope->popExpressionResultStorage();
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
@@ -111,34 +109,21 @@ final class WhileHandler implements StmtHandler
 		$bodyScope = $bodyScope->mergeWith($scope);
 		$bodyScopeMaybeRan = $bodyScope;
 		$storage = $originalStorage;
-		if (
-			$replayCondRecording !== null && $replayBodyRecording !== null
-			&& $replayPassStorage !== null && $replayPassResult !== null
-			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
-		) {
-			// the final walk would repeat the recorded fixpoint pass exactly
-			// (same entry scope, deterministic walk) - adopt the pass's results
-			// and replay its emissions through the real callback instead
-			$originalStorage->mergeResults($replayPassStorage);
-			$nodeScopeResolver->replayRecording($replayCondRecording, $nodeCallback, $originalStorage);
-			// the While_ callback is deferred from processStmtNode(): it fires
-			// after the condition's results are in the storage, with the entry scope
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $originalStorage);
-			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
-			$finalScopeResult = $replayPassResult;
-		} else {
-			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
-			// the While_ callback is deferred from processStmtNode(): it fires
-			// after the condition's real walk stored its result, with the entry scope
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
-			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
-		}
-		$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
+		$bodyCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$bodyScope = $bodyCondResult->getTruthyScope();
+		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		$finalScope = $finalScopeResult->getScope();
+		// the loop condition narrows the post-loop scope to its falsey branch;
+		// $finalScope (after the body ran) is a different scope than the condition's
+		// own, so reprocess the condition there rather than re-running its result.
+		// The duplicate lets subresults whose state did not change in the body
+		// answer from the final pass instead of being re-priced.
+		$finalScope = $finalScope->applySpecifiedTypes($nodeScopeResolver->processExprOnDemand($stmt->cond, $finalScope, $storage->duplicate())->getSpecifiedTypesForScope($finalScope, TypeSpecifierContext::createFalsey()));
 
 		$alwaysIterates = false;
 		$neverIterates = false;
 		if ($context->isTopLevel()) {
-			$condBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
+			$condBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $bodyCondResult->getType() : $bodyCondResult->getNativeType())->toBoolean();
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 			$neverIterates = $condBooleanType->isFalse()->yes();
 		}

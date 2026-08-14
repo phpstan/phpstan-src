@@ -3,54 +3,36 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use ArrayAccess;
+use Closure;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\Isset_;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\PropertyFetch;
-use PhpParser\Node\Expr\StaticPropertyFetch;
-use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\BooleanNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\IssetExpr;
 use PHPStan\Node\IssetExpressionNode;
-use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
-use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Accessory\HasOffsetType;
-use PHPStan\Type\Accessory\HasPropertyType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function array_merge;
 use function array_reverse;
-use function array_shift;
 use function count;
-use function is_string;
 
 /**
  * @implements ExprHandler<Isset_>
@@ -63,6 +45,8 @@ final class IssetHandler implements ExprHandler
 		private NonNullabilityHelper $nonNullabilityHelper,
 		private ExpressionResultFactory $expressionResultFactory,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private BooleanNarrowingHelper $booleanNarrowingHelper,
 	)
 	{
 	}
@@ -70,284 +54,6 @@ final class IssetHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Isset_;
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$issetResult = true;
-		foreach ($expr->vars as $var) {
-			$result = $scope->issetCheck($var, static function (Type $type): ?bool {
-				$isNull = $type->isNull();
-				if ($isNull->maybe()) {
-					return null;
-				}
-
-				return !$isNull->yes();
-			});
-			if ($result !== null) {
-				if (!$result) {
-					return new ConstantBooleanType($result);
-				}
-
-				continue;
-			}
-
-			$issetResult = $result;
-		}
-
-		if ($issetResult === null) {
-			return new BooleanType();
-		}
-
-		return new ConstantBooleanType($issetResult);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		if (count($expr->vars) === 0 || $context->null()) {
-			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
-		}
-
-		// rewrite multi param isset() to and-chained single param isset()
-		if (count($expr->vars) > 1) {
-			$issets = [];
-			foreach ($expr->vars as $var) {
-				$issets[] = new Isset_([$var], $expr->getAttributes());
-			}
-
-			$first = array_shift($issets);
-			$andChain = null;
-			foreach ($issets as $isset) {
-				if ($andChain === null) {
-					$andChain = new BooleanAnd($first, $isset);
-					continue;
-				}
-
-				$andChain = new BooleanAnd($andChain, $isset);
-			}
-
-			if ($andChain === null) {
-				throw new ShouldNotHappenException();
-			}
-
-			return $typeSpecifier->specifyTypesInCondition($scope, $andChain, $context)->setRootExpr($expr);
-		}
-
-		$issetExpr = $expr->vars[0];
-
-		if (!$context->true()) {
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
-
-			$isset = $scope->issetCheck($issetExpr, static fn () => true);
-
-			if ($isset === false) {
-				return new SpecifiedTypes();
-			}
-
-			$type = $scope->getType($issetExpr);
-			$isNullable = !$type->isNull()->no();
-			$exprType = $typeSpecifier->create(
-				$issetExpr,
-				new NullType(),
-				$context->negate(),
-				$scope,
-			)->setRootExpr($expr);
-
-			if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
-				if ($isset === true) {
-					if ($isNullable) {
-						return $exprType;
-					}
-
-					// variable cannot exist in !isset()
-					return $exprType->unionWith($typeSpecifier->create(
-						new IssetExpr($issetExpr),
-						new NullType(),
-						$context,
-						$scope,
-					))->setRootExpr($expr);
-				}
-
-				if ($isNullable) {
-					// reduces variable certainty to maybe
-					return $exprType->unionWith($typeSpecifier->create(
-						new IssetExpr($issetExpr),
-						new NullType(),
-						$context->negate(),
-						$scope,
-					))->setRootExpr($expr);
-				}
-
-				// variable cannot exist in !isset()
-				return $typeSpecifier->create(
-					new IssetExpr($issetExpr),
-					new NullType(),
-					$context,
-					$scope,
-				)->setRootExpr($expr);
-			}
-
-			if ($isNullable && $isset === true) {
-				return $exprType;
-			}
-
-			if (
-				$issetExpr instanceof ArrayDimFetch
-				&& $issetExpr->dim !== null
-				// When the var is itself an offset access (a nested isset like
-				// $r['K']['Port']), narrowing it in the falsey branch leaks the
-				// intermediate offset's existence into the enclosing scope.
-				&& !($issetExpr->var instanceof ArrayDimFetch)
-			) {
-				$varType = $scope->getType($issetExpr->var);
-				if (!$varType instanceof MixedType) {
-					$dimType = $scope->getType($issetExpr->dim);
-
-					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						$constantArrays = $varType->getConstantArrays();
-						$typesToRemove = [];
-						foreach ($constantArrays as $constantArray) {
-							$hasOffset = $constantArray->hasOffsetValueType($dimType);
-							if (!$hasOffset->yes() || !$constantArray->getOffsetValueType($dimType)->isNull()->no()) {
-								continue;
-							}
-
-							$typesToRemove[] = $constantArray;
-						}
-
-						if ($typesToRemove !== []) {
-							$typeToRemove = TypeCombinator::union(...$typesToRemove);
-
-							$result = $typeSpecifier->create(
-								$issetExpr->var,
-								$typeToRemove,
-								TypeSpecifierContext::createFalse(),
-								$scope,
-							)->setRootExpr($expr);
-
-							if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
-								$result = $result->unionWith(
-									$typeSpecifier->create(
-										new IssetExpr($issetExpr->var),
-										new NullType(),
-										TypeSpecifierContext::createTruthy(),
-										$scope,
-									)->setRootExpr($expr),
-								);
-							}
-
-							return $result;
-						}
-					}
-				}
-			}
-
-			return new SpecifiedTypes();
-		}
-
-		$tmpVars = [$issetExpr];
-		while (
-			$issetExpr instanceof ArrayDimFetch
-			|| $issetExpr instanceof PropertyFetch
-			|| (
-				$issetExpr instanceof StaticPropertyFetch
-				&& $issetExpr->class instanceof Expr
-			)
-		) {
-			if ($issetExpr instanceof StaticPropertyFetch) {
-				/** @var Expr $issetExpr */
-				$issetExpr = $issetExpr->class;
-			} else {
-				$issetExpr = $issetExpr->var;
-			}
-			$tmpVars[] = $issetExpr;
-		}
-		$vars = array_reverse($tmpVars);
-
-		$types = new SpecifiedTypes();
-		foreach ($vars as $var) {
-
-			if ($var instanceof Expr\Variable && is_string($var->name)) {
-				if ($scope->hasVariableType($var->name)->no()) {
-					return (new SpecifiedTypes([], []))->setRootExpr($expr);
-				}
-			}
-
-			if (
-				$var instanceof ArrayDimFetch
-				&& $var->dim !== null
-				&& !$scope->getType($var->var) instanceof MixedType
-			) {
-				$dimType = $scope->getType($var->dim);
-
-				if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-					$types = $types->unionWith(
-						$typeSpecifier->create(
-							$var->var,
-							new HasOffsetType($dimType),
-							$context,
-							$scope,
-						)->setRootExpr($expr),
-					);
-				} else {
-					$varType = $scope->getType($var->var);
-
-					$narrowedKey = AllowedArrayKeysTypes::narrowOffsetKeyType($varType, $dimType);
-					if ($narrowedKey !== null) {
-						$types = $types->unionWith(
-							$typeSpecifier->create(
-								$var->dim,
-								$narrowedKey,
-								$context,
-								$scope,
-							)->setRootExpr($expr),
-						);
-					}
-
-					if ($varType->isArray()->yes()) {
-						$types = $types->unionWith(
-							$typeSpecifier->create(
-								$var->var,
-								new NonEmptyArrayType(),
-								$context,
-								$scope,
-							)->setRootExpr($expr),
-						);
-					}
-				}
-			}
-
-			if (
-				$var instanceof PropertyFetch
-				&& $var->name instanceof Identifier
-			) {
-				$types = $types->unionWith(
-					$typeSpecifier->create($var->var, new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($expr),
-				);
-			} elseif (
-				$var instanceof StaticPropertyFetch
-				&& $var->class instanceof Expr
-				&& $var->name instanceof VarLikeIdentifier
-			) {
-				$types = $types->unionWith(
-					$typeSpecifier->create($var->class, new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($expr),
-				);
-			}
-
-			$types = $types->unionWith(
-				$typeSpecifier->create($var, new NullType(), TypeSpecifierContext::createFalse(), $scope)->setRootExpr($expr),
-			);
-		}
-
-		return $types;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -375,7 +81,7 @@ final class IssetHandler implements ExprHandler
 				continue;
 			}
 
-			$varType = $scope->getType($var->var);
+			$varType = $nodeScopeResolver->readStoredResult($var->var, $storage)->getTypeOnScope($scope, false);
 			if ($varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 				continue;
 			}
@@ -394,7 +100,27 @@ final class IssetHandler implements ExprHandler
 			$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 		}
 
+		// The subjects and their chain links were just processed, so their
+		// ExpressionResults are in the storage; capture them (the results, not the
+		// storage - no reference cycle) so the narrowing reads their types via
+		// getTypeOnScope() instead of re-walking through Scope::getType().
+		$chainResults = [];
+		foreach ($expr->vars as $var) {
+			$this->defaultNarrowingHelper->captureChainResults($var, $storage, $chainResults);
+		}
+
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new IssetExpressionNode($expr, $varResults), $beforeScope, $storage, $context);
+
+		// The verdict and narrowing evaluate on the post-revert scope, not
+		// $beforeScope: revertNonNullability() leaves an originally-untracked
+		// nullable subject tracked at its original type (certainty yes), and the
+		// isSet() gate reads that as "the subject's value state is known" -
+		// !isset($this->prop) may then pin the property to null. Evaluating on
+		// $beforeScope would hide the device's holders from the gate.
+		$afterScope = $scope;
+
+		// lazily memoized multi-subject conjunction fold (ask-independent)
+		$foldAccTypes = null;
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -404,6 +130,127 @@ final class IssetHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			typeCallback: static function (bool $nativeTypesPromoted) use ($varResults, $afterScope): Type {
+				$issetResult = true;
+				foreach ($varResults as $varResult) {
+					$result = $varResult->getIssetabilityResolution($nativeTypesPromoted ? $afterScope->doNotTreatPhpDocTypesAsCertain() : $afterScope, false)->isSet(static function (Type $type): ?bool {
+						$isNull = $type->isNull();
+						if ($isNull->maybe()) {
+							return null;
+						}
+
+						return !$isNull->yes();
+					});
+					if ($result !== null) {
+						if (!$result) {
+							return new ConstantBooleanType($result);
+						}
+
+						continue;
+					}
+
+					$issetResult = $result;
+				}
+
+				if ($issetResult === null) {
+					return new BooleanType();
+				}
+
+				return new ConstantBooleanType($issetResult);
+			},
+			specifyTypesCallback: function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $varResults, $chainResults, $nodeScopeResolver, $afterScope, &$foldAccTypes): SpecifiedTypes {
+				// type of an already-processed chain link, read from its captured
+				// result on the evaluation point - never re-walked through the scope
+				$evaluationScope = $nativeTypesPromoted ? $afterScope->doNotTreatPhpDocTypesAsCertain() : $afterScope;
+				$readType = $this->defaultNarrowingHelper->buildChainTypeReader($chainResults, $evaluationScope);
+
+				if (count($expr->vars) === 0 || $context->null()) {
+					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+				}
+
+				if (count($expr->vars) > 1) {
+					// isset($a, $b) is true only when every subject is set - the
+					// truthy narrowing is the union of each subject's own truthy
+					// chain narrowing, composed directly from the captured results
+					if ($context->true()) {
+						$types = new SpecifiedTypes();
+						foreach ($expr->vars as $var) {
+							$types = $types->unionWith(
+								$this->defaultNarrowingHelper->createIssetTruthyChainTypes($evaluationScope, $var, $readType, $expr, $context),
+							);
+						}
+
+						return $types->setRootExpr($expr);
+					}
+
+					// non-true contexts (only SOME subject is unset): fold the
+					// subjects through the conjunction narrowing; the fabricated
+					// Isset_/BooleanAnd nodes are only printed into holder keys,
+					// never walked
+					$makeSubjectTypes = fn (Expr $var, ExpressionResult $varResult): Closure => function (MutatingScope $scope, TypeSpecifierContext $ctx) use ($chainResults, $expr, $var, $varResult): SpecifiedTypes {
+						$scopedReadType = $this->defaultNarrowingHelper->buildChainTypeReader($chainResults, $scope);
+						if ($ctx->null()) {
+							return $this->defaultNarrowingHelper->specifyDefaultTypes(new Isset_([$var], $expr->getAttributes()), $ctx);
+						}
+						if (!$ctx->true()) {
+							return $this->defaultNarrowingHelper->createIssetSingleSubjectNonTrueTypes($scope, $var, $varResult, $scopedReadType, $ctx, $expr);
+						}
+
+						return $this->defaultNarrowingHelper->createIssetTruthyChainTypes($scope, $var, $scopedReadType, $expr, $ctx);
+					};
+
+					// the fold's branch scopes derive from the evaluation point,
+					// not the asking scope - the accumulated conjunction closure
+					// is ask-independent and built once, reused across asks
+					if ($foldAccTypes !== null) {
+						return $foldAccTypes($evaluationScope, $context)->setRootExpr($expr);
+					}
+
+					$accExpr = new Isset_([$expr->vars[0]], $expr->getAttributes());
+					$accTypes = $makeSubjectTypes($expr->vars[0], $varResults[0]);
+					$accTruthyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createTruthy()));
+					$accFalseyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createFalsey()));
+
+					for ($i = 1, $varCount = count($expr->vars); $i < $varCount; $i++) {
+						$rightExprNode = new Isset_([$expr->vars[$i]], $expr->getAttributes());
+						$rightTypes = $makeSubjectTypes($expr->vars[$i], $varResults[$i]);
+						$rightFalseyScope = $accTruthyScope->applySpecifiedTypes($rightTypes($accTruthyScope, TypeSpecifierContext::createFalsey()));
+
+						$leftExprNode = $accExpr;
+						$leftTypes = $accTypes;
+						$leftTruthyScope = $accTruthyScope;
+						$leftFalseyScope = $accFalseyScope;
+						$accTypes = fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
+							$nodeScopeResolver,
+							$scope,
+							$ctx,
+							$expr,
+							$leftExprNode,
+							$leftTypes,
+							static fn (): MutatingScope => $leftTruthyScope,
+							static fn (): MutatingScope => $leftFalseyScope,
+							$rightExprNode,
+							$rightTypes,
+							static fn (): MutatingScope => $rightFalseyScope,
+						);
+						$accExpr = new BooleanAnd($leftExprNode, $rightExprNode);
+						$accTruthyScope = $accTruthyScope->applySpecifiedTypes($rightTypes($accTruthyScope, TypeSpecifierContext::createTruthy()));
+						$accFalseyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createFalsey()));
+					}
+
+					$foldAccTypes = $accTypes;
+
+					return $accTypes($evaluationScope, $context)->setRootExpr($expr);
+				}
+
+				$issetExpr = $expr->vars[0];
+
+				if (!$context->true()) {
+					return $this->defaultNarrowingHelper->createIssetSingleSubjectNonTrueTypes($evaluationScope, $issetExpr, $varResults[0], $readType, $context, $expr);
+				}
+
+				return $this->defaultNarrowingHelper->createIssetTruthyChainTypes($evaluationScope, $issetExpr, $readType, $expr, $context);
+			},
 		);
 	}
 

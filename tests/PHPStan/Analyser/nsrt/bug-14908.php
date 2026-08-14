@@ -2,7 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Bug14908;
+namespace Bug14908Nsrt;
+
+use function PHPStan\Testing\assertType;
 
 enum Grade { case One; case Two; case Three; }
 enum Kind { case K1; case K2; case K3; }
@@ -33,12 +35,10 @@ function run(Kind $kind, Grade $grade, Flags $flags, bool $extra, bool $cond): v
         throw new \Exception();
     }
 
+    // The narrowing from the first `if` must not leak here: skipping the first
+    // `if` says nothing about $flags->flagA or $kind on their own.
     if ($grade !== Grade::Three) {
-        if ($flags->flagA === false) {
-            throw new \Exception();
-        }
-        if (in_array($kind, [Kind::K1, Kind::K2], true)) {
-            echo "reachable";
-        }
+        assertType('bool', $flags->flagA);
+        assertType('Bug14908Nsrt\Kind', $kind);
     }
 }

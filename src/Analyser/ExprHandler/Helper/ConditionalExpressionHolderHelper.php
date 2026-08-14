@@ -10,22 +10,22 @@ use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PHPStan\Analyser\ConditionalExpressionHolderRecipe;
 use PHPStan\Analyser\DisjunctionBranchUnionAugment;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\DependencyInjection\AutowiredService;
 use function is_string;
 
 /**
- * Builds the conditional expression holders used to project narrowings of
- * boolean operands (`&&`, `||`) into later scopes. Shared by BooleanAndHandler
- * and BooleanOrHandler.
+ * Builds the conditional-expression-holder recipes used to project narrowings
+ * of boolean operands (`&&`, `||`) into later scopes. Shared by
+ * BooleanAndHandler and BooleanOrHandler.
  */
 #[AutowiredService]
 final class ConditionalExpressionHolderHelper
 {
 
 	public function __construct(
-		private TypeSpecifier $typeSpecifier,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -44,6 +44,7 @@ final class ConditionalExpressionHolderHelper
 	 * @param callable(): MutatingScope $rightFilteredScope
 	 */
 	public function buildBranchUnionAugment(
+		NodeScopeResolver $nodeScopeResolver,
 		SpecifiedTypes $leftTypes,
 		SpecifiedTypes $rightTypes,
 		callable $leftFilteredScope,
@@ -83,6 +84,12 @@ final class ConditionalExpressionHolderHelper
 				// union for this expression, deferred to the application point
 				continue;
 			}
+			// the exact either-branch merge already constrains this expression
+			// (an alternative-form entry) - the branch-scope union recovery
+			// would only add a weaker entry on top
+			if (isset($existingAlternativeTypes[$exprString])) {
+				continue;
+			}
 			$leftScope ??= $leftFilteredScope();
 			$rightScope ??= $rightFilteredScope();
 			if (!$leftScope->hasExpressionType($targetExpr)->yes()) {
@@ -96,8 +103,8 @@ final class ConditionalExpressionHolderHelper
 			// scopes - scope state answers without a walk
 			$candidates[] = [
 				$targetExpr,
-				$leftScope->getType($targetExpr),
-				$rightScope->getType($targetExpr),
+				$nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $leftScope),
+				$nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $rightScope),
 			];
 		}
 
@@ -105,7 +112,7 @@ final class ConditionalExpressionHolderHelper
 			return null;
 		}
 
-		return new DisjunctionBranchUnionAugment($this->typeSpecifier, $candidates);
+		return new DisjunctionBranchUnionAugment($nodeScopeResolver, $this->defaultNarrowingHelper, $candidates);
 	}
 
 	/**
@@ -153,14 +160,14 @@ final class ConditionalExpressionHolderHelper
 				continue;
 			}
 
-			$conditionEntries[] = [$exprString, $expr, true, $type];
+			$conditionEntries[] = [(string) $exprString, $expr, true, $type];
 		}
 		foreach ($conditionSpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
 			if (!$this->isTrackableExpression($expr)) {
 				continue;
 			}
 
-			$conditionEntries[] = [$exprString, $expr, false, $type];
+			$conditionEntries[] = [(string) $exprString, $expr, false, $type];
 		}
 
 		if ($conditionEntries === []) {
@@ -175,9 +182,9 @@ final class ConditionalExpressionHolderHelper
 			}
 
 			$pinnedTargetType = !$expr instanceof Expr\Variable && $nonVariableTargetScope !== null
-				? $nonVariableTargetScope->getType($expr)
+				? $nonVariableTargetScope->getStateType($expr)
 				: null;
-			$holderEntries[] = [$exprString, $expr, $type, $pinnedTargetType];
+			$holderEntries[] = [(string) $exprString, $expr, $type, $pinnedTargetType];
 		}
 
 		if ($holderEntries === []) {

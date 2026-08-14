@@ -44,7 +44,7 @@ final class ConditionalExpressionHolderRecipe
 		// dropped-self-condition complement below
 		$conditionOriginalTypes = [];
 		foreach ($this->conditionEntries as [$exprString, $expr, $fromSureTypes, $type]) {
-			$scopeType = $scope->getType($expr);
+			$scopeType = $scope->getStateType($expr);
 			$conditionType = $fromSureTypes
 				? TypeCombinator::remove($scopeType, $type)
 				: TypeCombinator::intersect($scopeType, $type);
@@ -81,7 +81,7 @@ final class ConditionalExpressionHolderRecipe
 				continue;
 			}
 
-			$targetType = $pinnedTargetType ?? $scope->getType($expr);
+			$targetType = $pinnedTargetType ?? $scope->getStateType($expr);
 			$holderType = $this->holdersFromSureTypes
 				? TypeCombinator::intersect($targetType, $type)
 				: TypeCombinator::remove($targetType, $type);

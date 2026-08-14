@@ -25,8 +25,10 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Goto_;
+use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
+use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
@@ -692,7 +694,8 @@ class NodeScopeResolver
 		// entry scope - a synchronously invoked rule (the plain resolver,
 		// PHP < 8.1) then finds the expressions' results in the storage instead
 		// of re-walking them on demand, mirroring processExprNodeInternal().
-		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_;
+		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_
+			|| $stmt instanceof If_ || $stmt instanceof Switch_;
 		if (!$deferredStmtCallback) {
 			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		}

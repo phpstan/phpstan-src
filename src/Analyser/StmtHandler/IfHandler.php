@@ -37,7 +37,9 @@ final class IfHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$conditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 		$ifAlwaysTrue = $conditionType->isTrue()->yes();
 		$exitPoints = [];
@@ -72,8 +74,8 @@ final class IfHandler implements StmtHandler
 
 		$condScope = $scope;
 		foreach ($stmt->elseifs as $elseif) {
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
 			$condResult = $nodeScopeResolver->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
 			$elseIfConditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());

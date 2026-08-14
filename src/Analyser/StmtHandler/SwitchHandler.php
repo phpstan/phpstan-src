@@ -42,7 +42,9 @@ final class SwitchHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$scope = $condResult->getScope();
 		$scopeForBranches = $scope;
 		$finalScope = null;

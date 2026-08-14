@@ -133,7 +133,6 @@ zend_string *pt_str_cache_printer = nullptr;
 zend_string *pt_str_contains_super_global = nullptr;
 zend_string *pt_str_array_map_args = nullptr;
 zend_string *pt_str_start_file_pos = nullptr;
-zend_string *pt_str_keep_void = nullptr;
 static bool pt_strs_inited = false;
 
 static HashTable pt_node_class_cache;
@@ -148,7 +147,6 @@ void pt_init_strs()
 	pt_str_contains_super_global = zend_string_init("containsSuperGlobal", sizeof("containsSuperGlobal") - 1, 0);
 	pt_str_array_map_args = zend_string_init("arrayMapArgs", sizeof("arrayMapArgs") - 1, 0);
 	pt_str_start_file_pos = zend_string_init("startFilePos", sizeof("startFilePos") - 1, 0);
-	pt_str_keep_void = zend_string_init("keepVoid", sizeof("keepVoid") - 1, 0);
 	pt_strs_inited = true;
 }
 
@@ -196,7 +194,6 @@ void pt_support_rshutdown()
 		zend_string_release(pt_str_contains_super_global);
 		zend_string_release(pt_str_array_map_args);
 		zend_string_release(pt_str_start_file_pos);
-		zend_string_release(pt_str_keep_void);
 		pt_strs_inited = false;
 	}
 	if (pt_node_class_cache_inited) {
@@ -641,17 +638,6 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 				zend_string_release(key);
 				key = smart_str_extract(&str);
 			}
-		}
-	}
-
-	{
-		zval *keep_void = pt_node_attribute(node, pt_str_keep_void);
-		if (keep_void != NULL && Z_TYPE_P(keep_void) == IS_TRUE) {
-			smart_str str = {};
-			smart_str_append(&str, key);
-			smart_str_appendl(&str, "/*keepVoid*/", sizeof("/*keepVoid*/") - 1);
-			zend_string_release(key);
-			key = smart_str_extract(&str);
 		}
 	}
 

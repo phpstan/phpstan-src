@@ -78,10 +78,6 @@ final class ScopeOps
 			$key .= '*/';
 		}
 
-		if (($attributes[MutatingScope::KEEP_VOID_ATTRIBUTE_NAME] ?? null) === true) {
-			$key .= '/*' . MutatingScope::KEEP_VOID_ATTRIBUTE_NAME . '*/';
-		}
-
 		return $key;
 	}
 
@@ -538,185 +534,6 @@ final class ScopeOps
 	}
 
 	/**
-	 * Depth-first pre-order search for the invalidated expression, replacing a
-	 * NodeFinder::findFirst() call - this runs for every (stored expression,
-	 * invalidated expression) pair whose keys pass the substring pre-filter,
-	 * so the traverser/visitor machinery overhead was significant.
-	 *
-	 * @param class-string<Expr> $expressionToInvalidateClass
-	 */
-	private static function containsExpressionToInvalidate(Scope $scope, ExprPrinter $exprPrinter, Node $node, string $expressionToInvalidateClass, string $exprStringToInvalidate): bool
-	{
-		if (
-			$exprStringToInvalidate === '$this'
-			&& $node instanceof Name
-			&& (
-				in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
-				|| ($scope->getClassReflection() !== null && $scope->getClassReflection()->is($scope->resolveName($node)))
-			)
-		) {
-			return true;
-		}
-
-		if (
-			$node instanceof $expressionToInvalidateClass
-			&& self::nodeKey($node, $exprPrinter) === $exprStringToInvalidate
-		) {
-			return true;
-		}
-
-		foreach ($node->getSubNodeNames() as $subNodeName) {
-			$subNode = $node->$subNodeName;
-			if ($subNode instanceof Node) {
-				if (self::containsExpressionToInvalidate($scope, $exprPrinter, $subNode, $expressionToInvalidateClass, $exprStringToInvalidate)) {
-					return true;
-				}
-			} elseif (is_array($subNode)) {
-				foreach ($subNode as $subNodeItem) {
-					if (
-						$subNodeItem instanceof Node
-						&& self::containsExpressionToInvalidate($scope, $exprPrinter, $subNodeItem, $expressionToInvalidateClass, $exprStringToInvalidate)
-					) {
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * The scan of MutatingScope::invalidateExpression(): computes the tables
-	 * with the invalidated entries removed, or null when nothing changed.
-	 *
-	 * @param array<string, ExpressionTypeHolder> $expressionTypes
-	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @return array{array<string, ExpressionTypeHolder>, array<string, ExpressionTypeHolder>, array<string, ConditionalExpressionHolder[]>}|null
-	 */
-	public static function invalidateExpressionEntries(
-		MutatingScope $scope,
-		ExprPrinter $exprPrinter,
-		string $exprStringToInvalidate,
-		Expr $expressionToInvalidate,
-		bool $requireMoreCharacters,
-		?ClassReflection $invalidatingClass,
-		array $expressionTypes,
-		array $nativeExpressionTypes,
-		array $conditionalExpressions,
-	): ?array
-	{
-		$invalidated = false;
-
-		// Mirrors the compositional-key shortcut in shouldInvalidateExpression(): outside
-		// the carve-outs listed there, a key that does not contain the invalidated key as
-		// a substring cannot belong to an expression containing the invalidated one, so
-		// the much more expensive per-expression check can be skipped without being called.
-		$canUseKeyPrefilter = $exprStringToInvalidate !== '$this'
-			&& !self::keyMayHideSubExpressions($exprStringToInvalidate)
-			&& !str_contains($exprStringToInvalidate, '/*');
-
-		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
-			$exprString = (string) $exprString;
-			if (
-				$canUseKeyPrefilter
-				&& !str_contains($exprString, $exprStringToInvalidate)
-				&& !self::keyMayHideSubExpressions($exprString)
-			) {
-				continue;
-			}
-			$exprExpr = $exprTypeHolder->getExpr();
-			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
-				continue;
-			}
-
-			unset($expressionTypes[$exprString]);
-			unset($nativeExpressionTypes[$exprString]);
-			$invalidated = true;
-		}
-
-		$newConditionalExpressions = [];
-		foreach ($conditionalExpressions as $conditionalExprString => $holders) {
-			if (count($holders) === 0) {
-				continue;
-			}
-			// Entries are keyed by the printed form of their target expression (see the
-			// ConditionalExpressionHolder creation sites), so the key doubles as the
-			// target's node key and there is no need to re-print the expression here.
-			$conditionalExprString = (string) $conditionalExprString; // @phpstan-ignore cast.useless
-			if (
-				!$canUseKeyPrefilter
-				|| str_contains($conditionalExprString, $exprStringToInvalidate)
-				|| self::keyMayHideSubExpressions($conditionalExprString)
-			) {
-				$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $conditionalExprString, $requireMoreCharacters, $invalidatingClass)) {
-					$invalidated = true;
-					continue;
-				}
-			}
-			// Lazily materialized: stays null while every holder seen so far is kept (so far
-			// always the first $keptCount ones), so the common no-drop case reuses the
-			// original array instead of rebuilding it holder by holder.
-			$filteredHolders = null;
-			$keptCount = 0;
-			foreach ($holders as $key => $holder) {
-				// The holder's array key (ConditionalExpressionHolder::getKey()) embeds every
-				// condition's expression key verbatim, so when the invalidated key does not
-				// occur in it, none of the conditions can contain the invalidated expression
-				// and the holder can be kept without inspecting its conditions.
-				if (
-					$canUseKeyPrefilter
-					&& !str_contains((string) $key, $exprStringToInvalidate)
-					&& !self::keyMayHideSubExpressions((string) $key)
-				) {
-					if ($filteredHolders !== null) {
-						$filteredHolders[$key] = $holder;
-					} else {
-						$keptCount++;
-					}
-					continue;
-				}
-				$shouldKeep = true;
-				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), (string) $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass)) {
-						$invalidated = true;
-						$shouldKeep = false;
-						break;
-					}
-				}
-				if ($shouldKeep) {
-					if ($filteredHolders !== null) {
-						$filteredHolders[$key] = $holder;
-					} else {
-						$keptCount++;
-					}
-					continue;
-				}
-
-				$filteredHolders ??= array_slice($holders, 0, $keptCount, true);
-			}
-			if ($filteredHolders === null) {
-				$newConditionalExpressions[$conditionalExprString] = $holders;
-				continue;
-			}
-			if (count($filteredHolders) <= 0) {
-				continue;
-			}
-
-			$newConditionalExpressions[$conditionalExprString] = $filteredHolders;
-		}
-
-		if (!$invalidated) {
-			return null;
-		}
-
-		return [$expressionTypes, $nativeExpressionTypes, $newConditionalExpressions];
-	}
-
-	/**
 	 * The scan of MutatingScope::invalidateMethodsOnExpression(): drops tracked
 	 * MethodCall expressions whose var matches the invalidated key, or returns
 	 * null when nothing changed.
@@ -772,15 +589,9 @@ final class ScopeOps
 	}
 
 	/**
-	 * Whether an expression key may textually hide the content of its sub-expressions.
-	 *
-	 * The standard printer is compositional - the key of any sub-expression appears
-	 * verbatim as a substring of the key of the expression containing it - but most
-	 * PHPStan virtual nodes (printed as '__phpstan...') are not: e.g. a wrapped
-	 * variable can be printed by name only. The wrappers in
-	 * COMPOSITIONAL_VIRTUAL_KEY_PREFIXES are the exceptions - they print all of
-	 * their children verbatim - so only a '__phpstan' occurrence that does not
-	 * start one of them signals a possibly non-compositional key.
+	 * Whether the compositional-key prefilter cannot be trusted for this key: a
+	 * `__phpstan...` virtual-node key outside the known compositional prefixes
+	 * may hide sub-expressions whose printed form does not occur in the key.
 	 */
 	private static function keyMayHideSubExpressions(string $exprString): bool
 	{
@@ -794,6 +605,192 @@ final class ScopeOps
 			}
 
 			return true;
+		}
+
+		return false;
+	}
+
+	public static function getIntertwinedRefRootVariableName(Expr $expr): ?string
+	{
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			return $expr->name;
+		}
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return self::getIntertwinedRefRootVariableName($expr->var);
+		}
+		return null;
+	}
+
+	/**
+	 * The scan of MutatingScope::invalidateExpression(): computes the tables
+	 * with the invalidated entries removed, or null when nothing changed.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array{array<string, ExpressionTypeHolder>, array<string, ExpressionTypeHolder>, array<string, ConditionalExpressionHolder[]>}|null
+	 */
+	public static function invalidateExpressionEntries(
+		MutatingScope $scope,
+		ExprPrinter $exprPrinter,
+		string $exprStringToInvalidate,
+		Expr $expressionToInvalidate,
+		bool $requireMoreCharacters,
+		?ClassReflection $invalidatingClass,
+		array $expressionTypes,
+		array $nativeExpressionTypes,
+		array $conditionalExpressions,
+	): ?array
+	{
+		$invalidated = false;
+
+		// Compositional-key shortcut mirroring shouldInvalidateExpression(): outside
+		// the carve-outs, a key that does not contain the invalidated key as a
+		// substring cannot belong to an expression containing the invalidated one,
+		// so the per-expression check can be skipped without being called.
+		$canUseKeyPrefilter = $exprStringToInvalidate !== '$this'
+			&& !self::keyMayHideSubExpressions($exprStringToInvalidate)
+			&& !str_contains($exprStringToInvalidate, '/*');
+
+		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$exprString = (string) $exprString; // @phpstan-ignore cast.useless
+			if (
+				$canUseKeyPrefilter
+				&& !str_contains($exprString, $exprStringToInvalidate)
+				&& !self::keyMayHideSubExpressions($exprString)
+			) {
+				continue;
+			}
+			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprTypeHolder->getExpr(), $exprString, $requireMoreCharacters, $invalidatingClass)) {
+				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$invalidated = true;
+		}
+
+		$newConditionalExpressions = [];
+		foreach ($conditionalExpressions as $conditionalExprString => $holders) {
+			if (count($holders) === 0) {
+				continue;
+			}
+			$conditionalExprString = (string) $conditionalExprString; // @phpstan-ignore cast.useless
+			if (
+				!$canUseKeyPrefilter
+				|| str_contains($conditionalExprString, $exprStringToInvalidate)
+				|| self::keyMayHideSubExpressions($conditionalExprString)
+			) {
+				$firstHolder = $holders[array_key_first($holders)]->getTypeHolder();
+				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstHolder->getExpr(), self::nodeKey($firstHolder->getExpr(), $exprPrinter), $requireMoreCharacters, $invalidatingClass)) {
+					$invalidated = true;
+					continue;
+				}
+			}
+			// Lazily materialized: stays null while every holder seen so far is kept (so far
+			// always the first $keptCount ones), so the common no-drop case reuses the
+			// original array instead of rebuilding it holder by holder.
+			$filteredHolders = null;
+			$keptCount = 0;
+			foreach ($holders as $key => $holder) {
+				// The holder's array key (ConditionalExpressionHolder::getKey()) embeds every
+				// condition's expression key verbatim, so when the invalidated key does not
+				// occur in it, none of the conditions can contain the invalidated expression
+				// and the holder can be kept without inspecting its conditions.
+				if (
+					$canUseKeyPrefilter
+					&& !str_contains((string) $key, $exprStringToInvalidate)
+					&& !self::keyMayHideSubExpressions((string) $key)
+				) {
+					if ($filteredHolders !== null) {
+						$filteredHolders[$key] = $holder;
+					} else {
+						$keptCount++;
+					}
+					continue;
+				}
+				$shouldKeep = true;
+				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
+				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
+					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass)) {
+						$invalidated = true;
+						$shouldKeep = false;
+						break;
+					}
+				}
+				if ($shouldKeep) {
+					if ($filteredHolders !== null) {
+						$filteredHolders[$key] = $holder;
+					} else {
+						$keptCount++;
+					}
+					continue;
+				}
+
+				$filteredHolders ??= array_slice($holders, 0, $keptCount, true);
+			}
+			if ($filteredHolders === null) {
+				$newConditionalExpressions[$conditionalExprString] = $holders;
+				continue;
+			}
+			if (count($filteredHolders) <= 0) {
+				continue;
+			}
+
+			$newConditionalExpressions[$conditionalExprString] = $filteredHolders;
+		}
+
+		if (!$invalidated) {
+			return null;
+		}
+
+		return [$expressionTypes, $nativeExpressionTypes, $newConditionalExpressions];
+	}
+
+	/**
+	 * Depth-first pre-order search for the invalidated expression, replacing a
+	 * NodeFinder::findFirst() call - this runs for every (stored expression,
+	 * invalidated expression) pair whose keys pass the substring pre-filter,
+	 * so the traverser/visitor machinery overhead was significant.
+	 *
+	 * @param class-string<Expr> $expressionToInvalidateClass
+	 */
+	private static function containsExpressionToInvalidate(Scope $scope, ExprPrinter $exprPrinter, Node $node, string $expressionToInvalidateClass, string $exprStringToInvalidate): bool
+	{
+		if (
+			$exprStringToInvalidate === '$this'
+			&& $node instanceof Name
+			&& (
+				in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
+				|| ($scope->getClassReflection() !== null && $scope->getClassReflection()->is($scope->resolveName($node)))
+			)
+		) {
+			return true;
+		}
+
+		if (
+			$node instanceof $expressionToInvalidateClass
+			&& self::nodeKey($node, $exprPrinter) === $exprStringToInvalidate
+		) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				if (self::containsExpressionToInvalidate($scope, $exprPrinter, $subNode, $expressionToInvalidateClass, $exprStringToInvalidate)) {
+					return true;
+				}
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $subNodeItem) {
+					if (
+						$subNodeItem instanceof Node
+						&& self::containsExpressionToInvalidate($scope, $exprPrinter, $subNodeItem, $expressionToInvalidateClass, $exprStringToInvalidate)
+					) {
+						return true;
+					}
+				}
+			}
 		}
 
 		return false;
@@ -834,17 +831,16 @@ final class ScopeOps
 			return $exprStringToInvalidate === $exprString;
 		}
 
-		// getNodeKey() is the pretty-printed expression, and the standard printer is
+		// nodeKey() is the pretty-printed expression, and the standard printer is
 		// compositional: the key of any sub-expression appears verbatim as a substring of
 		// the key of the expression containing it. So if the invalidated expression's key
 		// does not appear anywhere in this expression's key, this expression cannot contain
-		// it and we can skip the expensive AST traversal below.
+		// it and we can skip the containment check below.
 		// Carve-outs where that invariant does not hold:
 		// - '$this' is special-cased in the visitor to also match self/static/parent,
-		// - most PHPStan virtual nodes (printed as '__phpstan…') use non-compositional
-		//   printers (e.g. a wrapped variable is printed by name, not as '$name') -
-		//   see keyMayHideSubExpressions() for the compositional exceptions,
-		// - keys carrying a getNodeKey() suffix ('/*…*/') are not plain substrings.
+		// - PHPStan's virtual nodes (printed as '__phpstan…') use non-compositional printers
+		//   (e.g. a wrapped variable is printed by name, not as '$name'),
+		// - keys carrying a nodeKey() suffix ('/*…*/') are not plain substrings.
 		if (
 			$exprStringToInvalidate !== '$this'
 			&& !self::keyMayHideSubExpressions($exprStringToInvalidate)
@@ -876,17 +872,6 @@ final class ScopeOps
 		}
 
 		return true;
-	}
-
-	public static function getIntertwinedRefRootVariableName(Expr $expr): ?string
-	{
-		if ($expr instanceof Variable && is_string($expr->name)) {
-			return $expr->name;
-		}
-		if ($expr instanceof Expr\ArrayDimFetch) {
-			return self::getIntertwinedRefRootVariableName($expr->var);
-		}
-		return null;
 	}
 
 	/**

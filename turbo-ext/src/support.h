@@ -282,7 +282,6 @@ extern zend_string *pt_str_cache_printer;
 extern zend_string *pt_str_contains_super_global;
 extern zend_string *pt_str_array_map_args;
 extern zend_string *pt_str_start_file_pos;
-extern zend_string *pt_str_keep_void;
 void pt_init_strs();
 
 zval *pt_node_attribute(zend_object *node, zend_string *name);

@@ -38,11 +38,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/wrong-variable-name-var.php'], [
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				11,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				14,
 			],
 			[
@@ -86,7 +86,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				109,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				120,
 			],
 			[
@@ -552,19 +552,19 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/wrong-variable-name-var-assign-op.php'], [
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				11,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				14,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				20,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of native type void.',
+				'PHPDoc tag @var with type int is not subtype of native type null.',
 				23,
 			],
 		]);

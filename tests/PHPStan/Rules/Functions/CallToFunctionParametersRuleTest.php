@@ -3015,6 +3015,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13643.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug13334(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13334.php'], []);
+	}
+
 	public function testBug3842(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-3842.php'], []);

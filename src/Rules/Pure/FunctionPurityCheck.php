@@ -292,14 +292,16 @@ final class FunctionPurityCheck
 		}
 
 		$function = $this->reflectionProvider->getFunction($node->name, $scope);
+		$calleeFlaggedParameters = $function->getPureUnlessCallableIsImpureParameters();
+		if ($calleeFlaggedParameters === []) {
+			return false;
+		}
+
 		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $function->getVariants());
 
 		$hasFlaggedParameter = false;
 		foreach ($variant->getParameters() as $parameterIndex => $parameter) {
-			if (!$parameter instanceof ExtendedParameterReflection) {
-				continue;
-			}
-			if ($parameter->isPureUnlessCallableIsImpureParameter()->no()) {
+			if (!array_key_exists($parameter->getName(), $calleeFlaggedParameters)) {
 				continue;
 			}
 

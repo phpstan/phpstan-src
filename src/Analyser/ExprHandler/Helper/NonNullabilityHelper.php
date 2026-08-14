@@ -12,18 +12,91 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\EnsuredNonNullabilityResult;
 use PHPStan\Analyser\EnsuredNonNullabilityResultExpression;
 use PHPStan\Analyser\MutatingScope;
-use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_pop;
+use function count;
 
 #[AutowiredService]
-final class NonNullabilityHelper
+final class NonNullabilityHelper implements PerFileAnalysisResettable
 {
 
-	public function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
+	/**
+	 * The ensures currently in effect during the walk, innermost last. An
+	 * ensure writes non-null "device" types into the scope so nested fetches
+	 * walk without spurious possibly-null noise - indistinguishable from
+	 * genuine narrowing in scope state. Handlers whose semantics depend on an
+	 * expression's REAL nullability (a nullsafe operator's short-circuit)
+	 * consult this stack for the pre-device type instead.
+	 *
+	 * @var list<array<string, array{Type, Type}>>
+	 */
+	private array $activeEnsures = [];
+
+	public function __construct(private ExprPrinter $exprPrinter)
 	{
-		$exprType = $scope->getType($exprToSpecify);
+	}
+
+	/**
+	 * An internal error escaping between an ensure and its revert would leave
+	 * stale frames matched by common print keys ($this->foo) for the rest of
+	 * the worker's batch - the per-file reset clears them.
+	 */
+	public function resetFileAnalysisState(): void
+	{
+		$this->activeEnsures = [];
+	}
+
+	/**
+	 * The pre-device type an active ensure saved for this expression, or null
+	 * when no ensure covers it.
+	 */
+	public function getActiveEnsuredOriginalType(Expr $expr, bool $native): ?Type
+	{
+		if ($this->activeEnsures === []) {
+			return null;
+		}
+
+		$key = $this->exprPrinter->printExpr($expr);
+		for ($i = count($this->activeEnsures) - 1; $i >= 0; $i--) {
+			if (isset($this->activeEnsures[$i][$key])) {
+				return $this->activeEnsures[$i][$key][$native ? 1 : 0];
+			}
+		}
+
+		return null;
+	}
+
+	public function ensureShallowNonNullability(MutatingScope $scope, MutatingScope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
+	{
+		$result = $this->doEnsureShallowNonNullability($scope, $originalScope, $exprToSpecify);
+		$this->pushActiveEnsure($result);
+
+		return $result;
+	}
+
+	private function pushActiveEnsure(EnsuredNonNullabilityResult $result): void
+	{
+		$originals = [];
+		foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
+			$originals[$this->exprPrinter->printExpr($specifiedExpression->getExpression())] = [
+				$specifiedExpression->getOriginalType(),
+				$specifiedExpression->getOriginalNativeType(),
+			];
+		}
+		$this->activeEnsures[] = $originals;
+	}
+
+	private function doEnsureShallowNonNullability(MutatingScope $scope, MutatingScope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
+	{
+		// the expression has not been processed into the storage yet (this runs
+		// before processExprNode) - derive its current type from the scope's
+		// tracked state instead of pricing the node on demand.
+		$exprType = $scope->getStateType($exprToSpecify);
 		$isNull = $exprType->isNull();
 		if ($isNull->yes()) {
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -33,9 +106,9 @@ final class NonNullabilityHelper
 
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
-			$originalExprType = $originalScope->getType($exprToSpecify);
+			$originalExprType = $originalScope->getStateType($exprToSpecify);
 			if (!$originalExprType->equals($exprTypeWithoutNull)) {
-				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
+				$originalNativeType = $originalScope->doNotTreatPhpDocTypesAsCertain()->getStateType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
 					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $hasExpressionType),
@@ -53,8 +126,8 @@ final class NonNullabilityHelper
 			$parentExpr = $exprToSpecify->var;
 			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression(
 				$parentExpr,
-				$scope->getType($parentExpr),
-				$scope->getNativeType($parentExpr),
+				$scope->getStateType($parentExpr),
+				$scope->doNotTreatPhpDocTypesAsCertain()->getStateType($parentExpr),
 				$originalScope->hasExpressionType($parentExpr),
 			);
 		}
@@ -68,7 +141,7 @@ final class NonNullabilityHelper
 			$certainty = $hasExpressionType;
 		}
 
-		$nativeType = $scope->getNativeType($exprToSpecify);
+		$nativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getStateType($exprToSpecify);
 		$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty);
 		$scope = $scope->specifyExpressionType(
 			$exprToSpecify,
@@ -88,14 +161,17 @@ final class NonNullabilityHelper
 		$specifiedExpressions = [];
 		$originalScope = $scope;
 		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions, $originalScope) {
-			$result = $this->ensureShallowNonNullability($scope, $originalScope, $expr);
+			$result = $this->doEnsureShallowNonNullability($scope, $originalScope, $expr);
 			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
 				$specifiedExpressions[] = $specifiedExpression;
 			}
 			return $result->getScope();
-		});
+		}, false);
 
-		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
+		$result = new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
+		$this->pushActiveEnsure($result);
+
+		return $result;
 	}
 
 	/**
@@ -103,6 +179,7 @@ final class NonNullabilityHelper
 	 */
 	public function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
 	{
+		array_pop($this->activeEnsures);
 		foreach ($specifiedExpressions as $specifiedExpressionResult) {
 			if ($specifiedExpressionResult->getCertainty()->no()) {
 				$scope = $scope->invalidateExpression($specifiedExpressionResult->getExpression());
@@ -122,9 +199,13 @@ final class NonNullabilityHelper
 	/**
 	 * @param Closure(MutatingScope, Expr): MutatingScope $callback
 	 */
-	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
+	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback, bool $includeExpr = true): MutatingScope
 	{
-		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
+		// $includeExpr is false only for the outermost operand: ensuring its chain
+		// links non-null lets it be walked without spurious "possibly null" noise,
+		// but the operand's own value must keep its real (nullable) type - that is
+		// the type the isset/empty/?? verdict and narrowing read from its result.
+		if ($includeExpr && (!$expr instanceof ArrayDimFetch || $expr->dim !== null)) {
 			$scope = $callback($scope, $expr);
 		}
 

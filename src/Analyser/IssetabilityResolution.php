@@ -150,4 +150,28 @@ final class IssetabilityResolution
 		return null;
 	}
 
+	/**
+	 * Whether empty() of the whole chain is surely false (i.e. set and not falsy);
+	 * null = maybe. EmptyHandler negates the result.
+	 */
+	public function notEmpty(): ?bool
+	{
+		return $this->isSet(static function (Type $type): ?bool {
+			$isNull = $type->isNull();
+			$isFalsey = $type->toBoolean()->isFalse();
+			if ($isNull->maybe()) {
+				return null;
+			}
+			if ($isFalsey->maybe()) {
+				return null;
+			}
+
+			if ($isNull->yes()) {
+				return $isFalsey->no();
+			}
+
+			return !$isFalsey->yes();
+		});
+	}
+
 }

@@ -10,6 +10,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\DeprecatedAttributeResolver;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -168,66 +169,81 @@ final class ClassMethodHandler implements StmtHandler
 			$gatheredYieldStatements = [];
 			$executionEnds = [];
 			$methodImpurePoints = [];
-				$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
-					if ($scope->getFunction() !== $methodScope->getFunction()) {
-						return;
-					}
-					if ($scope->isInAnonymousFunction()) {
-						return;
-					}
-					if ($node instanceof PropertyAssignNode) {
-						if (
-						$node->getPropertyFetch() instanceof Expr\PropertyFetch
-						&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
-						&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
-						&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
-						&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
-						) {
+				// the body's results live in a per-body storage released right
+			// after the MethodReturnStatementsNode rules ran: later asks about
+			// body expressions (e.g. class-level rules pricing gathered nodes)
+			// go through the on-demand bridge, so keeping the results for the
+			// rest of the file would only pin the body's whole result graph
+			// (callbacks, scopes, types) at no benefit
+			$bodyStorage = $storage->duplicate();
+			$scope->pushExpressionResultStorage($bodyStorage);
+			try {
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, new GatheringNodeCallback(function (Node $node, Scope $scope) use ($nodeScopeResolver, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
+						if ($scope->getFunction() !== $methodScope->getFunction()) {
 							return;
 						}
-						$methodImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-						return;
-					}
-					if ($node instanceof ExecutionEndNode) {
-						$executionEnds[] = $node;
-						return;
-					}
-					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-						$gatheredYieldStatements[] = $node;
-					}
-					if (!$node instanceof Return_) {
-						return;
-					}
+						if ($scope->isInAnonymousFunction()) {
+							return;
+						}
+						if ($node instanceof PropertyAssignNode) {
+							if (
+							$node->getPropertyFetch() instanceof Expr\PropertyFetch
+							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
+							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
+							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
+							&& TypeUtils::findThisType($nodeScopeResolver->readScopeStateOrSyntheticType($node->getPropertyFetch()->var, $scope->toMutatingScope())) !== null
+							) {
+								return;
+							}
+							$methodImpurePoints[] = new ImpurePoint(
+								$scope,
+								$node,
+								'propertyAssign',
+								'property assignment',
+								true,
+							);
+							return;
+						}
+						if ($node instanceof ExecutionEndNode) {
+							$executionEnds[] = $node;
+							return;
+						}
+						if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+							$gatheredYieldStatements[] = $node;
+						}
+						if (!$node instanceof Return_) {
+							return;
+						}
 
-					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-				});
-			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+						$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+					}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
+
+				$methodReflection = $methodScope->getFunction();
+				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
+					throw new ShouldNotHappenException();
+				}
+
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new MethodReturnStatementsNode(
+					$stmt,
+					$gatheredReturnStatements,
+					$gatheredYieldStatements,
+					$statementResult,
+					$executionEnds,
+					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+					$classReflection,
+					$methodReflection,
+				), $methodScope, $bodyStorage);
+				// flush the fibers the MethodReturnStatementsNode rules parked
+				// on $bodyStorage (synthetic-node type asks) before the storage
+				// is dropped - mirrors the FunctionReturnStatementsNode flush; a
+				// dropped fiber silently loses the asking rule's errors and
+				// every later rule in the same callback batch
+				if (!$scope->isInAnonymousFunction()) {
+					$nodeScopeResolver->processPendingFibers($bodyStorage);
+				}
 			} finally {
-				$nodeScopeResolver->popNodeGatherer();
+				$scope->popExpressionResultStorage();
 			}
-
-			$methodReflection = $methodScope->getFunction();
-			if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
-				throw new ShouldNotHappenException();
-			}
-
-			$nodeScopeResolver->callNodeCallback($nodeCallback, new MethodReturnStatementsNode(
-				$stmt,
-				$gatheredReturnStatements,
-				$gatheredYieldStatements,
-				$statementResult,
-				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
-				$classReflection,
-				$methodReflection,
-			), $methodScope, $storage);
 
 			if ($isConstructor) {
 				$finalScope = null;

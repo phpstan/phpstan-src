@@ -1197,7 +1197,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => '~null & mixed~non-empty-string'],
+				['$a' => 'mixed~non-empty-string & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -1327,7 +1327,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\NullsafeMethodCall(new Variable('fooOrNull'), new Identifier('doFoo')),
-				['$fooOrNull' => '~null'],
+				[
+					'$fooOrNull' => '~null',
+					'$fooOrNull?->doFoo()' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
+				],
 				[],
 			],
 			[
@@ -1348,7 +1351,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new ConstFetch(new Name('true')),
 				),
 				['$fooOrNull?->doFoo()' => '~true'],
-				['$fooOrNull' => '~null'],
+				[
+					'$fooOrNull?->doFoo()' => 'true & ~0|0.0|\'\'|\'0\'|array{}|false|null',
+					'$fooOrNull' => '~null',
+				],
 			],
 			[
 				new NotIdentical(
@@ -1385,10 +1391,6 @@ class TypeSpecifierTest extends PHPStanTestCase
 			$typesDescription[$exprString][] = $exprType->describe(VerbosityLevel::precise());
 		}
 
-		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$exprNode, $exprType]) {
-			$typesDescription[$exprString][] = '~' . $exprType->describe(VerbosityLevel::precise());
-		}
-
 		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$exprNode, $terms]) {
 			// evaluate the alternative-form entry against the test scope, the
 			// same way applySpecifiedTypes() evaluates it at the application
@@ -1399,6 +1401,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 				$parts[] = $subtract !== null ? TypeCombinator::remove($base, $subtract) : $base;
 			}
 			$typesDescription[$exprString][] = TypeCombinator::union(...$parts)->describe(VerbosityLevel::precise());
+		}
+
+		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$exprNode, $exprType]) {
+			$typesDescription[$exprString][] = '~' . $exprType->describe(VerbosityLevel::precise());
 		}
 
 		$descriptions = [];

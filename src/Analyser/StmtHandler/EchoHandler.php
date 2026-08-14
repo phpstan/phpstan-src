@@ -50,7 +50,7 @@ final class EchoHandler implements StmtHandler
 			$result = $nodeScopeResolver->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope);
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope, $result);
 			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 			$scope = $result->getScope();

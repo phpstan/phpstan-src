@@ -56,8 +56,20 @@ final class TraitUseHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$traitStorage = $storage->duplicate();
-		$this->processTraitUse($nodeScopeResolver, $stmt, $scope, $traitStorage, $nodeCallback);
+		// fresh storage - the same trait node objects are processed once per
+		// using class and fibers must not see results from a previous pass
+		$traitStorage = new ExpressionResultStorage();
+		$scope->pushExpressionResultStorage($traitStorage);
+		try {
+			$this->processTraitUse($nodeScopeResolver, $stmt, $scope, $traitStorage, $nodeCallback);
+			$nodeScopeResolver->processPendingFibers($traitStorage);
+		} finally {
+			$scope->popExpressionResultStorage();
+		}
+
+		// class-level node callbacks (like ClassMethodsNode) are invoked with
+		// the outer storage but ask about expressions inside the used trait
+		$storage->mergeResults($traitStorage);
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 	}

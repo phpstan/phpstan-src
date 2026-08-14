@@ -49,13 +49,13 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function addcslashes;
+use function array_key_first;
 use function array_unique;
 use function array_values;
 use function in_array;
 use function is_float;
 use function is_int;
 use function is_numeric;
-use function key;
 use function strlen;
 use function strtolower;
 use function strtoupper;
@@ -385,8 +385,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return $this->arrayKeyType;
 		}
 
-		/** @var int|string $offsetValue */
-		$offsetValue = key([$this->value => null]);
+		$offsetValue = array_key_first([$this->value => null]);
 
 		if ($offsetValue === $this->value) {
 			return $this;

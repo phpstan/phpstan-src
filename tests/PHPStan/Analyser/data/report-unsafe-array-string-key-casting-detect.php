@@ -127,3 +127,25 @@ class Unsealed
 	}
 
 }
+
+class ReadKeys
+{
+
+	/**
+	 * @param array<string, int> $a
+	 * @param non-empty-array<string, int> $b
+	 */
+	public function doFoo(array $a, array $b, string $s): void
+	{
+		assertType('int|non-decimal-int-string', array_key_first([$s => null]));
+		assertType('int|non-decimal-int-string', array_key_last([$s => null]));
+		assertType('non-empty-list<int|non-decimal-int-string>', array_keys([$s => null]));
+
+		assertType('int|non-decimal-int-string|null', array_key_first($a));
+		assertType('int|non-decimal-int-string', array_key_last($b));
+		assertType('list<int|non-decimal-int-string>', array_keys($a));
+		assertType('int|non-decimal-int-string|null', key($a));
+		assertType('int|non-decimal-int-string|false', array_search(1, $a, true));
+	}
+
+}

@@ -222,7 +222,7 @@ class ArrayType implements Type
 
 	public function getKeysArray(): Type
 	{
-		return TypeCombinator::intersect(new self(new IntegerType(), $this->getIterableKeyType()), new AccessoryArrayListType());
+		return TypeCombinator::intersect(new self(new IntegerType(), UnsafeArrayStringKeyCastingTraverser::castReadKeyType($this->getIterableKeyType())), new AccessoryArrayListType());
 	}
 
 	public function getValuesArray(): Type
@@ -505,7 +505,8 @@ class ArrayType implements Type
 
 	public function flipArray(): Type
 	{
-		return new self($this->getIterableValueType()->toArrayKey(), $this->getIterableKeyType());
+		// The keys become values, so they're subject to PHP's array key cast.
+		return new self($this->getIterableValueType()->toArrayKey(), UnsafeArrayStringKeyCastingTraverser::castReadKeyType($this->getIterableKeyType()));
 	}
 
 	public function intersectKeyArray(Type $otherArraysType): Type
@@ -587,7 +588,7 @@ class ArrayType implements Type
 			return new ConstantBooleanType(false);
 		}
 
-		return TypeCombinator::union($this->getIterableKeyType(), new ConstantBooleanType(false));
+		return UnsafeArrayStringKeyCastingTraverser::unionWithReadKeyType($this->getIterableKeyType(), new ConstantBooleanType(false));
 	}
 
 	public function shiftArray(): Type

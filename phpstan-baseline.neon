@@ -13,12 +13,6 @@ parameters:
 			path: src/Analyser/AnalyserResultFinalizer.php
 
 		-
-			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
-			identifier: varTag.type
-			count: 1
-			path: src/Analyser/ArgumentsNormalizer.php
-
-		-
 			rawMessage: Casting to string something that's already string.
 			identifier: cast.useless
 			count: 3
@@ -1050,12 +1044,6 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\StringType is error-prone and deprecated. Use Type::isString() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Constant/ConstantStringType.php
-
-		-
-			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
-			identifier: varTag.type
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 

@@ -213,9 +213,9 @@ final class OptimizedDirectorySourceLocatorFactory
 
 			if ($findInFiles !== []) {
 				$cacheModified = true;
-				foreach ($this->symbolFinderInFiles->findSymbols($findInFiles, $this->phpVersion->supportsEnums()) as $file => [$newClasses, $newFunctions, $newConstants]) {
-					$newHash = $originalFileHashes[$file];
-					$cached[$file] = [$newHash, $newClasses, $newFunctions, $newConstants];
+				foreach ($this->symbolFinderInFiles->findSymbols($findInFiles, $this->phpVersion->supportsEnums()) as $scannedFile => [$newClasses, $newFunctions, $newConstants]) {
+					$newHash = $originalFileHashes[$scannedFile];
+					$cached[$scannedFile] = [$newHash, $newClasses, $newFunctions, $newConstants];
 				}
 			}
 

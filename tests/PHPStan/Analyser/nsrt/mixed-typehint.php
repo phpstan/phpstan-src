@@ -30,7 +30,7 @@ function (mixed $foo) {
 	$f = function (): mixed {
 
 	};
-	assertType('void', $f());
+	assertType('null', $f());
 
 	$f = function () use ($foo): mixed {
 		return $foo;

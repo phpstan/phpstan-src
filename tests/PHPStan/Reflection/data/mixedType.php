@@ -38,5 +38,5 @@ function (): void {
 		assertType('mixed', $foo);
 	};
 
-	assertType('void', $f(1));
+	assertType('null', $f(1));
 };

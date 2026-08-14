@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Closure;
 use PhpParser\Node\Expr;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -12,6 +13,9 @@ use function count;
 
 final class SpecifiedTypes
 {
+
+	/** @var (Closure(TypeSpecifierContext, bool): self)|null */
+	private static ?Closure $emptySpecifyCallback = null;
 
 	/**
 	 * Cross-producing alternative forms doubles the term count per conjunction;
@@ -66,6 +70,18 @@ final class SpecifiedTypes
 		private array $sureNotTypes = [],
 	)
 	{
+	}
+
+	/**
+	 * A shared no-narrowing specify callback for results whose expression never
+	 * narrows anything (literals, virtual write nodes) - one process-wide
+	 * closure instead of one allocation per created ExpressionResult.
+	 *
+	 * @return Closure(TypeSpecifierContext, bool): self
+	 */
+	public static function emptySpecifyCallback(): Closure
+	{
+		return self::$emptySpecifyCallback ??= static fn (): self => new self();
 	}
 
 	/**
@@ -191,22 +207,6 @@ final class SpecifiedTypes
 		return $self;
 	}
 
-	/**
-	 * A copy of this with the other's alternative-form entries - for the
-	 * composition tails that rebuild a SpecifiedTypes from the sure/sure-not
-	 * slots and must not drop the merged alternatives.
-	 */
-	public function withAlternativeTypesOf(self $other): self
-	{
-		$self = new self($this->sureTypes, $this->sureNotTypes);
-		$self->alternativeTypes = $other->alternativeTypes;
-		$self->overwrite = $this->overwrite;
-		$self->newConditionalExpressionHolders = $this->newConditionalExpressionHolders;
-		$self->rootExpr = $this->rootExpr;
-
-		return $self;
-	}
-
 	public function shouldOverwrite(): bool
 	{
 		return $this->overwrite;
@@ -251,7 +251,7 @@ final class SpecifiedTypes
 		$sureTypeUnion = [];
 		$sureNotTypeUnion = [];
 		$alternativeUnion = [];
-		$rootExpr = self::mergeRootExpr($this->rootExpr, $other->rootExpr);
+		$rootExpr = $this->mergeRootExpr($this->rootExpr, $other->rootExpr);
 
 		$keys = [];
 		foreach ([$this->sureTypes, $this->sureNotTypes, $this->alternativeTypes, $other->sureTypes, $other->sureNotTypes, $other->alternativeTypes] as $map) {
@@ -419,6 +419,37 @@ final class SpecifiedTypes
 	}
 
 	/**
+	 * @param list<array{?Type, ?Type}> $terms
+	 * @return list<array{?Type, ?Type}>
+	 */
+	private static function dedupeTerms(array $terms): array
+	{
+		$deduped = [];
+		foreach ($terms as [$sure, $subtract]) {
+			foreach ($deduped as [$seenSure, $seenSubtract]) {
+				if (($sure === null) !== ($seenSure === null)) {
+					continue;
+				}
+				if (($subtract === null) !== ($seenSubtract === null)) {
+					continue;
+				}
+				if ($sure !== null && $seenSure !== null && !$sure->equals($seenSure)) {
+					continue;
+				}
+				if ($subtract !== null && $seenSubtract !== null && !$subtract->equals($seenSubtract)) {
+					continue;
+				}
+
+				continue 2;
+			}
+
+			$deduped[] = [$sure, $subtract];
+		}
+
+		return $deduped;
+	}
+
+	/**
 	 * A single term covering the union of all of them - the safety net that
 	 * stops a chain of conjoined alternative forms from growing its
 	 * cross-product without bound. Widening a narrowing only loses precision.
@@ -452,43 +483,12 @@ final class SpecifiedTypes
 		];
 	}
 
-	/**
-	 * @param list<array{?Type, ?Type}> $terms
-	 * @return list<array{?Type, ?Type}>
-	 */
-	private static function dedupeTerms(array $terms): array
-	{
-		$deduped = [];
-		foreach ($terms as [$sure, $subtract]) {
-			foreach ($deduped as [$seenSure, $seenSubtract]) {
-				if (($sure === null) !== ($seenSure === null)) {
-					continue;
-				}
-				if (($subtract === null) !== ($seenSubtract === null)) {
-					continue;
-				}
-				if ($sure !== null && $seenSure !== null && !$sure->equals($seenSure)) {
-					continue;
-				}
-				if ($subtract !== null && $seenSubtract !== null && !$subtract->equals($seenSubtract)) {
-					continue;
-				}
-
-				continue 2;
-			}
-
-			$deduped[] = [$sure, $subtract];
-		}
-
-		return $deduped;
-	}
-
 	/** @api */
 	public function unionWith(SpecifiedTypes $other): self
 	{
 		$sureTypeUnion = $this->sureTypes + $other->sureTypes;
 		$sureNotTypeUnion = $this->sureNotTypes + $other->sureNotTypes;
-		$rootExpr = self::mergeRootExpr($this->rootExpr, $other->rootExpr);
+		$rootExpr = $this->mergeRootExpr($this->rootExpr, $other->rootExpr);
 
 		foreach ($this->sureTypes as $exprString => [$exprNode, $type]) {
 			if (!isset($other->sureTypes[$exprString])) {
@@ -512,6 +512,7 @@ final class SpecifiedTypes
 			];
 		}
 
+		$result = new self($sureTypeUnion, $sureNotTypeUnion);
 		$alternativeUnion = $this->alternativeTypes;
 		foreach ($other->alternativeTypes as $exprString => [$exprNode, $otherTerms]) {
 			if (!isset($alternativeUnion[$exprString])) {
@@ -525,7 +526,6 @@ final class SpecifiedTypes
 			];
 		}
 
-		$result = new self($sureTypeUnion, $sureNotTypeUnion);
 		$result->alternativeTypes = $alternativeUnion;
 		if ($this->overwrite || $other->overwrite) {
 			$result = $result->setAlwaysOverwriteTypes();
@@ -546,83 +546,7 @@ final class SpecifiedTypes
 		return $result->setRootExpr($rootExpr);
 	}
 
-	/**
-	 * The n-ary both-sides-hold merge - the truthy narrowing of a flattened
-	 * `&&` chain, the falsey narrowing of a flattened `||` chain. Same result
-	 * as folding unionWith() over the list, but each expression's constraints
-	 * are combined in one pass instead of being rebuilt per arm, which is what
-	 * lets the flattened chain paths stay linear in the number of arms.
-	 *
-	 * @param list<self> $typesList
-	 */
-	public static function unionAll(array $typesList): self
-	{
-		/** @var array<string, array{Expr, list<Type>}> $surePerExpr */
-		$surePerExpr = [];
-		/** @var array<string, array{Expr, list<Type>}> $sureNotPerExpr */
-		$sureNotPerExpr = [];
-		/** @var array<string, array{Expr, list<array{?Type, ?Type}>}> $alternatives */
-		$alternatives = [];
-		$overwrite = false;
-		$rootExpr = null;
-		$conditionalExpressionHolders = [];
-		$recipes = [];
-		$augments = [];
-
-		foreach ($typesList as $types) {
-			foreach ($types->sureTypes as $exprString => [$exprNode, $type]) {
-				$surePerExpr[$exprString][0] = $exprNode;
-				$surePerExpr[$exprString][1][] = $type;
-			}
-			foreach ($types->sureNotTypes as $exprString => [$exprNode, $type]) {
-				$sureNotPerExpr[$exprString][0] = $exprNode;
-				$sureNotPerExpr[$exprString][1][] = $type;
-			}
-			foreach ($types->alternativeTypes as $exprString => [$exprNode, $terms]) {
-				if (!isset($alternatives[$exprString])) {
-					$alternatives[$exprString] = [$exprNode, $terms];
-					continue;
-				}
-
-				$alternatives[$exprString][1] = self::conjoinTerms($alternatives[$exprString][1], $terms);
-			}
-
-			$overwrite = $overwrite || $types->overwrite;
-			$rootExpr = self::mergeRootExpr($rootExpr, $types->rootExpr);
-
-			foreach ($types->newConditionalExpressionHolders as $exprString => $holders) {
-				if (!array_key_exists($exprString, $conditionalExpressionHolders)) {
-					$conditionalExpressionHolders[$exprString] = $holders;
-				} else {
-					$conditionalExpressionHolders[$exprString] = array_merge($conditionalExpressionHolders[$exprString], $holders);
-				}
-			}
-			$recipes = array_merge($recipes, $types->conditionalExpressionHolderRecipes);
-			$augments = array_merge($augments, $types->deferredAugments);
-		}
-
-		$sureTypes = [];
-		foreach ($surePerExpr as $exprString => [$exprNode, $types]) {
-			$sureTypes[$exprString] = [$exprNode, TypeCombinator::intersect(...$types)];
-		}
-		$sureNotTypes = [];
-		foreach ($sureNotPerExpr as $exprString => [$exprNode, $types]) {
-			$sureNotTypes[$exprString] = [$exprNode, TypeCombinator::union(...$types)];
-		}
-
-		$result = new self($sureTypes, $sureNotTypes);
-		$result->alternativeTypes = $alternatives;
-		if ($overwrite) {
-			$result = $result->setAlwaysOverwriteTypes();
-		}
-		$result->newConditionalExpressionHolders = $conditionalExpressionHolders;
-		$result->conditionalExpressionHolderRecipes = $recipes;
-		$result->deferredAugments = $augments;
-
-		return $result->setRootExpr($rootExpr);
-	}
-
-	private static function mergeRootExpr(?Expr $rootExprA, ?Expr $rootExprB): ?Expr
+	private function mergeRootExpr(?Expr $rootExprA, ?Expr $rootExprB): ?Expr
 	{
 		if ($rootExprA === $rootExprB) {
 			return $rootExprA;

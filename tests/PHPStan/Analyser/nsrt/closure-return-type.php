@@ -12,12 +12,12 @@ class Foo
 		$f = function () {
 
 		};
-		assertType('void', $f());
+		assertType('null', $f());
 
 		$f = function () {
 			return;
 		};
-		assertType('void', $f());
+		assertType('null', $f());
 
 		$f = function () {
 			return 1;

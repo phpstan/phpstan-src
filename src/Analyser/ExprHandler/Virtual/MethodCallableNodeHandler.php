@@ -2,22 +2,23 @@
 
 namespace PHPStan\Analyser\ExprHandler\Virtual;
 
+use Closure;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\MethodCallableNode;
-use PHPStan\Type\MixedType;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -28,7 +29,11 @@ use function array_merge;
 final class MethodCallableNodeHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
 	{
 	}
 
@@ -63,19 +68,31 @@ final class MethodCallableNodeHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->resolveType($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, $expr, $varResult),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
 	}
 
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	private function resolveType(MutatingScope $scope, MethodCallableNode $expr, ExpressionResult $varResult): Type
 	{
-		// in practice the type of the first-class callable is resolved
-		// by FirstClassCallableMethodCallHandler
-		return new MixedType();
-	}
+		$originalNode = $expr->getOriginalNode();
+		if (!$originalNode->name instanceof Identifier) {
+			return new ObjectType(Closure::class);
+		}
 
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		// $originalNode->var is the same node as $expr->getVar(), processed in
+		// processExpr - read its ExpressionResult instead of Scope::getType()
+		$varType = $varResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+		$method = $scope->getMethodReflection($varType, $originalNode->name->toString());
+		if ($method === null) {
+			return new ObjectType(Closure::class);
+		}
+
+		return $this->initializerExprTypeResolver->createFirstClassCallable(
+			$method,
+			$method->getVariants(),
+			$scope->nativeTypesPromoted,
+		);
 	}
 
 }

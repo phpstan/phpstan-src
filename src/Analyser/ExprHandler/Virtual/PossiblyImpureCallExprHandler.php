@@ -14,21 +14,18 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Node\IssetExpr;
+use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Type\Type;
 
 /**
- * IssetExpr is a certainty marker IssetHandler wraps around the isset-tested
- * expression so a type specification can reduce that expression's existence
- * certainty (to maybe / unset) instead of narrowing its type. The specifications
- * carrying it read only its certainty, never its type - so the marker just
- * reports its inner expression's type, which lets it be priced like any other
- * node rather than being a special case in the resolution paths.
+ * PossiblyImpureCallExpr wraps a call so its remembered value can be invalidated
+ * when the call may be impure. Its type is just the wrapped call's type, so it
+ * can be priced like any other node rather than being a resolution special case.
  *
- * @implements ExprHandler<IssetExpr>
+ * @implements ExprHandler<PossiblyImpureCallExpr>
  */
 #[AutowiredService]
-final class IssetExprHandler implements ExprHandler
+final class PossiblyImpureCallExprHandler implements ExprHandler
 {
 
 	public function __construct(
@@ -40,14 +37,11 @@ final class IssetExprHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof IssetExpr;
+		return $expr instanceof PossiblyImpureCallExpr;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// because this is a virtual node handler, the caller will only be interested
-		// in the type - we don't process the inner expr, just report its type
-
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $scope,
@@ -56,7 +50,7 @@ final class IssetExprHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-			typeCallback: static fn (bool $nativeTypesPromoted): Type => $nodeScopeResolver->readScopeStateOrSyntheticType($expr->getExpr(), $nativeTypesPromoted ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope),
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => $nodeScopeResolver->readScopeStateOrSyntheticType($expr->callExpr, $nativeTypesPromoted ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
 	}

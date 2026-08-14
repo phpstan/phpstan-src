@@ -11,10 +11,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Type\Type;
@@ -37,8 +34,15 @@ final class SetExistingOffsetValueTypeExprHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// because this is a virtual node handler, the caller will only be interested in the type
-		// we don't need to process the inner expr
+		// virtual node: callers only read the type, computed lazily by the
+		// typeCallback. The (synthetic) sub-expressions are processed here - by
+		// on-demand time their real leaves are already stored, so this reads them
+		// back; the typeCallback then reads the ExpressionResults instead of
+		// Scope::getType(). A null specifyTypesCallback falls back to default
+		// narrowing in TypeSpecifier, matching the old specifyDefaultTypes().
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, $context);
+		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->getDim(), $scope, $storage, $nodeCallback, $context);
+		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->getValue(), $scope, $storage, $nodeCallback, $context);
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -48,21 +52,12 @@ final class SetExistingOffsetValueTypeExprHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType())->setExistingOffsetValueType(
+				($nativeTypesPromoted ? $dimResult->getNativeType() : $dimResult->getType()),
+				($nativeTypesPromoted ? $valueResult->getNativeType() : $valueResult->getType()),
+			),
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$varType = $scope->getType($expr->getVar());
-		return $varType->setExistingOffsetValueType(
-			$scope->getType($expr->getDim()),
-			$scope->getType($expr->getValue()),
-		);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

@@ -10,11 +10,9 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -30,6 +28,7 @@ final class UnaryMinusHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -51,17 +50,17 @@ final class UnaryMinusHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			typeCallback: fn (bool $nativeTypesPromoted) => $this->initializerExprTypeResolver->getUnaryMinusType($expr->expr, static function (Expr $e) use ($nativeTypesPromoted, $expr, $exprResult, $nodeScopeResolver, $scope): Type {
+				if ($e === $expr->expr) {
+					return $nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType();
+				}
+
+				// a synthetic node ($expr->expr * -1, derived for an IntegerRangeType
+				// operand) created inside getUnaryMinusType - priced on demand
+				return $nodeScopeResolver->processSyntheticOnDemand($e, $scope)->getTypeOnScope($scope, $nativeTypesPromoted);
+			}),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $this->initializerExprTypeResolver->getUnaryMinusType($expr->expr, static fn (Expr $expr): Type => $scope->getType($expr));
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

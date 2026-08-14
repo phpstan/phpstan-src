@@ -15,12 +15,11 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -51,7 +50,7 @@ final class CastStringHandler implements ExprHandler
 		$impurePoints = $exprResult->getImpurePoints();
 		$throwPoints = $exprResult->getThrowPoints();
 
-		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
+		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope, $exprResult);
 		$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 
@@ -65,21 +64,17 @@ final class CastStringHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->initializerExprTypeResolver->getCastType($expr, static function (Expr $e) use ($nativeTypesPromoted, $expr, $exprResult): Type {
+				if ($e === $expr->expr) {
+					return $nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType();
+				}
+
+					throw new ShouldNotHappenException();
+			}),
+			specifyTypesCallback: static fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => ($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope)->obtainResultForNode(
+				new NotEqual($expr->expr, new String_('')),
+			)->getSpecifiedTypes($context, $nativeTypesPromoted)->setRootExpr($expr),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $this->initializerExprTypeResolver->getCastType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyTypesInCondition(
-			$scope,
-			new NotEqual($expr->expr, new String_('')),
-			$context,
-		)->setRootExpr($expr);
 	}
 
 }

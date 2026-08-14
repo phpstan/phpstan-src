@@ -10,12 +10,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -39,6 +37,7 @@ final class ShellExecHandler implements ExprHandler
 	public function __construct(
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -64,7 +63,7 @@ final class ShellExecHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
 
-			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($part, $scope);
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($part, $scope, $partResult);
 			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 
@@ -80,17 +79,9 @@ final class ShellExecHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => TypeCombinator::union(new StringType(), new ConstantBooleanType(false), new NullType()),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return TypeCombinator::union(new StringType(), new ConstantBooleanType(false), new NullType());
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

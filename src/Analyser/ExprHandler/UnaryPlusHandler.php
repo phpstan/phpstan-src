@@ -10,14 +10,13 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
 /**
@@ -30,6 +29,7 @@ final class UnaryPlusHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -51,17 +51,15 @@ final class UnaryPlusHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			typeCallback: fn (bool $nativeTypesPromoted) => $this->initializerExprTypeResolver->getUnaryPlusType($expr->expr, static function (Expr $e) use ($nativeTypesPromoted, $expr, $exprResult): Type {
+				if ($e === $expr->expr) {
+					return $nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType();
+				}
+
+				throw new ShouldNotHappenException();
+			}),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $this->initializerExprTypeResolver->getUnaryPlusType($expr->expr, static fn (Expr $expr): Type => $scope->getType($expr));
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

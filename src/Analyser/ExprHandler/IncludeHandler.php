@@ -10,13 +10,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\MixedType;
@@ -31,18 +29,16 @@ use function in_array;
 final class IncludeHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
 	{
 	}
 
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Include_;
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return new MixedType();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -60,12 +56,9 @@ final class IncludeHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => new MixedType(),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

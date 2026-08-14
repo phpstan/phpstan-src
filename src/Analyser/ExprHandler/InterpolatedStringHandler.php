@@ -11,18 +11,17 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_merge;
+use function spl_object_id;
 
 /**
  * @implements ExprHandler<InterpolatedString>
@@ -35,6 +34,7 @@ final class InterpolatedStringHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -51,16 +51,19 @@ final class InterpolatedStringHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		/** @var array<int, ExpressionResult> $partResults */
+		$partResults = [];
 		foreach ($expr->parts as $part) {
 			if (!$part instanceof Expr) {
 				continue;
 			}
 			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$partResults[spl_object_id($part)] = $partResult;
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
 
-			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($part, $scope);
+			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($part, $scope, $partResult);
 			$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 
@@ -76,32 +79,27 @@ final class InterpolatedStringHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $partResults): Type {
+				$resultType = null;
+				foreach ($expr->parts as $part) {
+					if ($part instanceof InterpolatedStringPart) {
+						$partType = new ConstantStringType($part->value);
+					} else {
+						$partResult = $partResults[spl_object_id($part)];
+						$partType = ($nativeTypesPromoted ? $partResult->getNativeType() : $partResult->getType())->toString();
+					}
+					if ($resultType === null) {
+						$resultType = $partType;
+						continue;
+					}
+
+					$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
+				}
+
+				return $resultType ?? new ConstantStringType('');
+			},
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$resultType = null;
-		foreach ($expr->parts as $part) {
-			if ($part instanceof InterpolatedStringPart) {
-				$partType = new ConstantStringType($part->value);
-			} else {
-				$partType = $scope->getType($part)->toString();
-			}
-			if ($resultType === null) {
-				$resultType = $partType;
-				continue;
-			}
-
-			$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
-		}
-
-		return $resultType ?? new ConstantStringType('');
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

@@ -10,13 +10,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -33,6 +31,7 @@ final class PrintHandler implements ExprHandler
 	public function __construct(
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -42,11 +41,6 @@ final class PrintHandler implements ExprHandler
 		return $expr instanceof Print_;
 	}
 
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return new ConstantIntegerType(1);
-	}
-
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
@@ -54,7 +48,7 @@ final class PrintHandler implements ExprHandler
 		$throwPoints = $exprResult->getThrowPoints();
 		$impurePoints = $exprResult->getImpurePoints();
 
-		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope);
+		$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($expr->expr, $scope, $exprResult);
 		$throwPoints = array_merge($throwPoints, $toStringResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $toStringResult->getImpurePoints());
 
@@ -68,12 +62,9 @@ final class PrintHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: array_merge($impurePoints, [new ImpurePoint($scope, $expr, 'print', 'print', true)]),
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => new ConstantIntegerType(1),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

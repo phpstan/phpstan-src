@@ -31,7 +31,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeFunctionCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
@@ -44,7 +43,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeMethodCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
@@ -57,7 +55,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeStaticMethodCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),

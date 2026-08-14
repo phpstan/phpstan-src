@@ -29,7 +29,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeFunctionCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),

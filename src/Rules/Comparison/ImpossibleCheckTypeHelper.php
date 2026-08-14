@@ -8,9 +8,10 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\ArgsResult;
+use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -48,7 +49,6 @@ final class ImpossibleCheckTypeHelper
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private TypeSpecifier $typeSpecifier,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -62,10 +62,12 @@ final class ImpossibleCheckTypeHelper
 	public function findSpecifiedType(
 		Scope $scope,
 		Expr $node,
+		ExpressionResult $nodeResult,
+		?ArgsResult $argsResult = null,
 		array &$reasons = [],
 	): ?bool
 	{
-		$specifiedValue = $this->getSpecifiedType($scope, $node, $reasons);
+		$specifiedValue = $this->getSpecifiedType($scope, $node, $reasons, $nodeResult, $argsResult);
 		$reasons = array_values(array_unique($reasons));
 
 		/**
@@ -92,12 +94,40 @@ final class ImpossibleCheckTypeHelper
 	}
 
 	/**
+	 * Reads an argument's type from its already-computed ExpressionResult when the
+	 * caller passed the call's ArgsResult (the engine-side verdict in
+	 * FuncCallHandler); rule-side callers read through the scope, whose asks are
+	 * answered from stored results.
+	 */
+	private function getArgumentType(Scope $scope, ?ArgsResult $argsResult, Expr $expr, bool $phpDocFlavour = false): Type
+	{
+		if ($argsResult !== null && $scope instanceof MutatingScope) {
+			$argResult = $argsResult->getArgResult($expr);
+			if ($argResult !== null) {
+				$native = $phpDocFlavour
+					? $scope->nativeTypesPromoted
+					: (!$this->treatPhpDocTypesAsCertain || $scope->nativeTypesPromoted);
+
+				return $argResult->getTypeOnScope($scope, $native);
+			}
+		}
+
+		if ($phpDocFlavour || $this->treatPhpDocTypesAsCertain) {
+			return $scope->getType($expr);
+		}
+
+		return $scope->getNativeType($expr);
+	}
+
+	/**
 	 * @param list<string> $reasons
 	 */
 	private function getSpecifiedType(
 		Scope $scope,
 		Expr $node,
-		array &$reasons = [],
+		array &$reasons,
+		ExpressionResult $nodeResult,
+		?ArgsResult $argsResult,
 	): ?bool
 	{
 		if ($node instanceof FuncCall) {
@@ -129,7 +159,7 @@ final class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'in_array' && $argsCount >= 2) {
 					$haystackArg = $args[1]->value;
-					$haystackType = $this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg) : $scope->getNativeType($haystackArg);
+					$haystackType = $this->getArgumentType($scope, $argsResult, $haystackArg);
 					if ($haystackType instanceof MixedType) {
 						return null;
 					}
@@ -139,11 +169,11 @@ final class ImpossibleCheckTypeHelper
 					}
 
 					$needleArg = $args[0]->value;
-					$needleType = $this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg);
+					$needleType = $this->getArgumentType($scope, $argsResult, $needleArg);
 
 					$isStrictComparison = false;
 					if ($argsCount >= 3) {
-						$strictNodeType = $scope->getType($args[2]->value);
+						$strictNodeType = $this->getArgumentType($scope, $argsResult, $args[2]->value, true);
 						$isStrictComparison = $strictNodeType->isTrue()->yes();
 					}
 
@@ -315,7 +345,11 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		$typeSpecifierScope = $this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain();
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($typeSpecifierScope, $node, $this->determineContext($typeSpecifierScope, $node));
+		$typeSpecifierContext = $this->determineContext($typeSpecifierScope, $node);
+		// the condition expression was already analysed; read its narrowing straight
+		// from its already-computed ExpressionResult instead of asking the scope
+		// to specify it again.
+		$specifiedTypes = $nodeResult->getSpecifiedTypesForScope($typeSpecifierScope, $typeSpecifierContext);
 
 		// don't validate types on overwrite
 		if ($specifiedTypes->shouldOverwrite()) {
@@ -375,11 +409,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($this->treatPhpDocTypesAsCertain) {
-				$argumentType = $scope->getType($sureType[0]);
-			} else {
-				$argumentType = $scope->getNativeType($sureType[0]);
-			}
+			$argumentType = $this->getArgumentType($scope, $argsResult, $sureType[0]);
 
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
@@ -505,7 +535,6 @@ final class ImpossibleCheckTypeHelper
 
 		return new self(
 			$this->reflectionProvider,
-			$this->typeSpecifier,
 			false,
 		);
 	}

@@ -14,20 +14,22 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
-use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\IssetabilityDescriptor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -39,7 +41,9 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 	)
 	{
 	}
@@ -47,40 +51,6 @@ final class ArrayDimFetchHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof ArrayDimFetch;
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		if ($expr->dim === null) {
-			return new NeverType();
-		}
-
-		$offsetAccessibleType = $scope->getType($expr->var);
-		if (
-			!$offsetAccessibleType->isArray()->yes()
-			&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()
-		) {
-			return NullsafeShortCircuitingHelper::getType(
-				$scope,
-				$expr->var,
-				$scope->getType(
-					new MethodCall(
-						$expr->var,
-						new Identifier('offsetGet'),
-						[
-							new Arg($expr->dim),
-						],
-					),
-				),
-			);
-		}
-
-		$offsetType = $scope->getType($expr->dim);
-		return NullsafeShortCircuitingHelper::getType(
-			$scope,
-			$expr->var,
-			$offsetAccessibleType->getOffsetValueType($offsetType),
-		);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -118,6 +88,9 @@ final class ArrayDimFetchHandler implements ExprHandler
 				throwPoints: $varResult->getThrowPoints(),
 				impurePoints: $varResult->getImpurePoints(),
 				containsNullsafe: $varResult->containsNullsafe(),
+				// `$arr[]` only appears as an assignment target; reading it is a NeverType
+				typeCallback: static fn (): Type => new NeverType(),
+				specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			);
 		}
 
@@ -125,6 +98,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 		$impurePoints = array_merge($dimResult->getImpurePoints(), $varResult->getImpurePoints());
 
 		$varType = $varResult->getType();
+		$offsetGetCall = null;
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 			$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
 				$scope,
@@ -132,6 +106,11 @@ final class ArrayDimFetchHandler implements ExprHandler
 				$varType,
 				new MethodCall(new TypeExpr($varType), 'offsetGet'),
 			));
+			// the offsetGet return type resolves directly in the typeCallback (per
+			// flavour); the fabricated node is only the payload dynamic return
+			// type extensions receive - nothing walks it. Gated by the same
+			// maybe-ArrayAccess condition, so plain arrays never reach it.
+			$offsetGetCall = new MethodCall($expr->var, new Identifier('offsetGet'), [new Arg($expr->dim)]);
 		}
 
 		return $this->expressionResultFactory->create(
@@ -144,12 +123,33 @@ final class ArrayDimFetchHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			containsNullsafe: $varResult->containsNullsafe(),
 			issetabilityDescriptor: IssetabilityDescriptor::offset($varResult, $dimResult),
-		);
-	}
+			typeCallback: function (bool $nativeTypesPromoted) use ($varResult, $dimResult, $offsetGetCall, $scope): Type {
+				$offsetAccessibleType = ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType());
+				$shortCircuit = static fn (Type $type): Type => $varResult->containsNullsafe() && TypeCombinator::containsNull($offsetAccessibleType)
+					? TypeCombinator::addNull($type)
+					: $type;
 
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+				if (
+					$offsetGetCall !== null
+					&& !$offsetAccessibleType->isArray()->yes()
+					&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()
+				) {
+					if ($nativeTypesPromoted) {
+						$methodReflection = $scope->getMethodReflection($offsetAccessibleType, 'offsetGet');
+						if ($methodReflection === null) {
+							return $shortCircuit(new ErrorType());
+						}
+
+						return $shortCircuit(ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType());
+					}
+
+					return $shortCircuit($this->methodCallReturnTypeHelper->methodCallReturnType($scope, $offsetAccessibleType, 'offsetGet', $offsetGetCall) ?? new ErrorType());
+				}
+
+				return $shortCircuit($offsetAccessibleType->getOffsetValueType(($nativeTypesPromoted ? $dimResult->getNativeType() : $dimResult->getType())));
+			},
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypesWithNullsafeFan($expr, $context, $beforeScope, $nativeTypesPromoted),
+		);
 	}
 
 }

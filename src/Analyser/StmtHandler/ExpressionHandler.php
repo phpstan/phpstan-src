@@ -53,6 +53,7 @@ final class ExpressionHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		$hasAssign = false;
 		$currentScope = $scope;
 		$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
@@ -66,6 +67,7 @@ final class ExpressionHandler implements StmtHandler
 
 			$hasAssign = true;
 		}, $nodeCallback), ExpressionContext::createTopLevel());
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 		if (
 			count($result->getImpurePoints()) === 0

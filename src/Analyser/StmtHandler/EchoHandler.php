@@ -41,6 +41,7 @@ final class EchoHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -56,6 +57,8 @@ final class EchoHandler implements StmtHandler
 			$hasYield = $hasYield || $result->hasYield();
 			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 		}
+
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
 		$impurePoints[] = new ImpurePoint($scope, $stmt, 'echo', 'echo', true);
 		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints);

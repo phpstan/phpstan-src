@@ -394,6 +394,7 @@ final class FuncCallHandler implements ExprHandler
 			$nameResult,
 			$resolvedParametersAcceptor,
 			$specifyContext,
+			$argsResult,
 		);
 
 		// A type constraint on a (narrowable, i.e. non-side-effecting, non-first-class)
@@ -1147,19 +1148,26 @@ final class FuncCallHandler implements ExprHandler
 	 *
 	 * @param FuncCall $expr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context): SpecifiedTypes
+	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if ($expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				$args = $expr->getArgs();
 
-				foreach ($this->typeSpecifier->getFunctionTypeSpecifyingExtensions() as $extension) {
-					if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
-						continue;
-					}
+				// runs lazily at narrowing-apply time - prime the storage with the
+				// argument results, see MethodCallHandler::specifyTypes()
+				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $args, $argsResult);
+				try {
+					foreach ($this->typeSpecifier->getFunctionTypeSpecifyingExtensions() as $extension) {
+						if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
+							continue;
+						}
 
-					return $extension->specifyTypes($functionReflection, $normalizedExpr, $scope, $context);
+						return $extension->specifyTypes($functionReflection, $normalizedExpr, $scope, $context);
+					}
+				} finally {
+					$popPrimedStorage();
 				}
 
 				if (count($args) > 0 && $resolvedParametersAcceptor !== null) {

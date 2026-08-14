@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -15,6 +16,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -89,6 +91,7 @@ final class NewHandler implements ExprHandler
 		private bool $implicitThrows,
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private DynamicReturnTypeStoragePrimer $storagePrimer,
 	)
 	{
 	}
@@ -241,6 +244,7 @@ final class NewHandler implements ExprHandler
 			$expr,
 			$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
 			$classResult !== null ? ($nativeTypesPromoted ? $classResult->getNativeType() : $classResult->getType()) : null,
+			$argsResult,
 		);
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
@@ -396,10 +400,10 @@ final class NewHandler implements ExprHandler
 	 *
 	 * @param New_ $expr
 	 */
-	private function resolveReturnType(MutatingScope $scope, Expr $expr, ?ParametersAcceptor $preResolvedAcceptor, ?Type $classExprType): Type
+	private function resolveReturnType(MutatingScope $scope, Expr $expr, ?ParametersAcceptor $preResolvedAcceptor, ?Type $classExprType, ?ArgsResult $argsResult = null): Type
 	{
 		if ($expr->class instanceof Name) {
-			return $this->exactInstantiation($scope, $expr, $expr->class, $preResolvedAcceptor);
+			return $this->exactInstantiation($scope, $expr, $expr->class, $preResolvedAcceptor, $argsResult);
 		}
 		if ($expr->class instanceof Node\Stmt\Class_) {
 			$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope);
@@ -415,7 +419,7 @@ final class NewHandler implements ExprHandler
 		return $classExprType->getObjectTypeOrClassStringObjectType();
 	}
 
-	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor): Type
+	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult = null): Type
 	{
 		$resolvedClassName = $scope->resolveName($className);
 		$isStatic = false;
@@ -469,21 +473,29 @@ final class NewHandler implements ExprHandler
 		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 
 		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
-				if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
-					continue;
-				}
+			// runs lazily in the typeCallback - prime the storage with the argument
+			// results so the extensions' Scope::getType() asks about the arguments
+			// answer from them instead of re-walking on demand
+			$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $normalizedMethodCall->getArgs(), $argsResult);
+			try {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
+						continue;
+					}
 
-				$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-					$constructorMethod,
-					$normalizedMethodCall,
-					$scope,
-				);
-				if ($resolvedType === null) {
-					continue;
-				}
+					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
+						$constructorMethod,
+						$normalizedMethodCall,
+						$scope,
+					);
+					if ($resolvedType === null) {
+						continue;
+					}
 
-				$resolvedTypes[] = $resolvedType;
+					$resolvedTypes[] = $resolvedType;
+				}
+			} finally {
+				$popPrimedStorage();
 			}
 		}
 

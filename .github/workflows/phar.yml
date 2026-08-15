@@ -1291,10 +1291,13 @@ jobs:
     needs:
       - compiler-tests
       - turbo-version
+      - turbo-phpize
       - turbo-compile
       - turbo-compile-musl-arm64
       - turbo-compile-windows
       - turbo-macos-universal
+      - turbo-docker-run
+      - turbo-run
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:
@@ -1451,6 +1454,33 @@ jobs:
           TURBO_VERSION: ${{ steps.turbo-difference.outputs.version }}
           VERSION_CHANGED: ${{ steps.turbo-difference.outputs.version-changed }}
         run: |
+          # A version bump must refresh EVERY binary the dist carries: staging a
+          # partial artifact set and bumping .version anyway would leave the
+          # missing platforms on a stale extension the new phar refuses to
+          # activate - permanently, because later runs compare .version and see
+          # "same". Fail loudly instead of committing a torn set.
+          if [[ "$VERSION_CHANGED" == "yes" ]]; then
+            MISSING=""
+            if ! ls turbo-artifacts/phpstan_turbo-* >/dev/null 2>&1; then
+              echo "::error::no turbo extension artifacts were downloaded"
+              MISSING=yes
+            fi
+            for dist_file in phpstan-dist/turbo-ext/*/phpstan_turbo-*; do
+              [ -f "$dist_file" ] || continue
+              rel="${dist_file#phpstan-dist/turbo-ext/}"
+              target="${rel%%/*}"
+              base="${rel##*/}"
+              minor="${base#phpstan_turbo-}"
+              minor="${minor%.*}"
+              if ! ls "turbo-artifacts/phpstan_turbo-$target-php$minor"/* >/dev/null 2>&1; then
+                echo "::error::$dist_file has no freshly built replacement (artifact phpstan_turbo-$target-php$minor missing) - refusing to bump turbo-ext/.version over a stale binary."
+                MISSING=yes
+              fi
+            done
+            if [[ -n "$MISSING" ]]; then
+              exit 1
+            fi
+          fi
           for dir in turbo-artifacts/phpstan_turbo-*; do
             [ -d "$dir" ] || continue
             name="${dir#turbo-artifacts/phpstan_turbo-}"

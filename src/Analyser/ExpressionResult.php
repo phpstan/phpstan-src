@@ -576,30 +576,6 @@ final class ExpressionResult
 	 * memoized walk-position type; the caller re-prices the node on the asking
 	 * scope instead.
 	 */
-	/** The retained equivalent of askScopeVariableStateMatches() - see ReadVariableStateSnapshot. */
-	public function takeReadVariableStateSnapshot(): ReadVariableStateSnapshot
-	{
-		if ($this->expr instanceof Expr\Closure || $this->expr instanceof Expr\ArrowFunction) {
-			return new ReadVariableStateSnapshot([]);
-		}
-
-		$states = [];
-		$positionScope = $this->beforeScope;
-		$nativePositionScope = $positionScope->doNotTreatPhpDocTypesAsCertain();
-		foreach ($this->getReadVariableNames() as $name) {
-			$knows = $positionScope->hasVariableType($name);
-			$nativeKnows = $nativePositionScope->hasVariableType($name);
-			$states[$name] = [
-				$knows,
-				$knows->no() ? null : $positionScope->getVariableType($name),
-				$nativeKnows,
-				$nativeKnows->no() ? null : $nativePositionScope->getVariableType($name),
-			];
-		}
-
-		return new ReadVariableStateSnapshot($states);
-	}
-
 	/**
 	 * $ruleFacingAsk: a FiberScope ask tolerates walk-side divergence - a
 	 * variable the asking scope has no opinion on (born inside the asked node,

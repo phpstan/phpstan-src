@@ -233,14 +233,6 @@ final class ClassMethodHandler implements StmtHandler
 					$classReflection,
 					$methodReflection,
 				), $methodScope, $bodyStorage);
-				// flush the fibers the MethodReturnStatementsNode rules parked
-				// on $bodyStorage (synthetic-node type asks) before the storage
-				// is dropped - mirrors the FunctionReturnStatementsNode flush; a
-				// dropped fiber silently loses the asking rule's errors and
-				// every later rule in the same callback batch
-				if (!$scope->isInAnonymousFunction()) {
-					$nodeScopeResolver->processPendingFibers($bodyStorage);
-				}
 			} finally {
 				$scope->popExpressionResultStorage();
 			}

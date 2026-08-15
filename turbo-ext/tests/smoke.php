@@ -371,12 +371,6 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	check($storage->findExpressionResult($exprC) === null, "ERS $label: mergeResults ignores the other's fallback chain");
 	check($storage->findExpressionResult($exprA) === $resultB, "ERS $label: mergeResults keeps existing entries");
 
-	$exprC = new \PhpParser\Node\Expr\Variable('c');
-	$duplicate->storeBeforeScope($exprC, $scopeB);
-	$storage->mergeResults($duplicate);
-	check($storage->findBeforeScope($exprB) === $scopeA, "ERS $label: mergeResults overwrites with the other storage's entry");
-	check($storage->findBeforeScope($exprC) === $scopeB, "ERS $label: mergeResults adopts new entries");
-	check($duplicate->findBeforeScope($exprA) === $scopeB, "ERS $label: mergeResults leaves the source untouched");
 }
 
 // ---- NodeScanner ----

@@ -62,7 +62,6 @@ final class TraitUseHandler implements StmtHandler
 		$scope->pushExpressionResultStorage($traitStorage);
 		try {
 			$this->processTraitUse($nodeScopeResolver, $stmt, $scope, $traitStorage, $nodeCallback);
-			$nodeScopeResolver->processPendingFibers($traitStorage);
 		} finally {
 			$scope->popExpressionResultStorage();
 		}

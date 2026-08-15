@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
-use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -41,7 +40,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private int|array|null $configPhpVersion,
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
-		private bool $fiber = false,
+		private bool $createsNodeCallbackScopes = false,
 		?ExpressionResultStorageStack $expressionResultStorageStack = null,
 	)
 	{
@@ -68,8 +67,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
-		if ($this->fiber) {
-			$className = FiberScope::class;
+		if ($this->createsNodeCallbackScopes) {
+			$className = NodeCallbackScope::class;
 		}
 
 		return new $className(
@@ -107,7 +106,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		);
 	}
 
-	public function toFiberFactory(): InternalScopeFactory
+	public function toNodeCallbackScopeFactory(): InternalScopeFactory
 	{
 		return $this->withFlavor(true);
 	}
@@ -117,7 +116,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		return $this->withFlavor(false);
 	}
 
-	private function withFlavor(bool $fiber): self
+	private function withFlavor(bool $createsNodeCallbackScopes): self
 	{
 		return new self(
 			$this->container,
@@ -133,7 +132,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->configPhpVersion,
 			$this->nodeCallback,
 			$this->constantResolver,
-			$fiber,
+			$createsNodeCallbackScopes,
 			$this->expressionResultStorageStack,
 		);
 	}

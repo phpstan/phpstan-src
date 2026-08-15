@@ -24,7 +24,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
-use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\Container;
@@ -157,7 +156,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public array $resolvedTypes = [];
 
-	private ?self $fiberScope = null;
+	private ?self $nodeCallbackScope = null;
 
 	/** @var non-empty-string|null */
 	private ?string $namespace;
@@ -219,13 +218,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$this->namespace = $namespace;
 	}
 
-	public function toFiberScope(): self
+	public function toNodeCallbackScope(): self
 	{
-		if ($this->fiberScope !== null) {
-			return $this->fiberScope;
+		if ($this->nodeCallbackScope !== null) {
+			return $this->nodeCallbackScope;
 		}
 
-		$fiberScope = $this->scopeFactory->toFiberFactory()->create(
+		$nodeCallbackScope = $this->scopeFactory->toNodeCallbackScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -243,11 +242,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-		if ($fiberScope instanceof FiberScope) {
-			$fiberScope->seedMutatingScope($this);
+		if ($nodeCallbackScope instanceof NodeCallbackScope) {
+			$nodeCallbackScope->seedMutatingScope($this);
 		}
 
-		return $this->fiberScope = $fiberScope;
+		return $this->nodeCallbackScope = $nodeCallbackScope;
 	}
 
 	public function toMutatingScope(): self
@@ -1204,9 +1203,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	private function resolveTypeOfNewWorldHandlerNode(Expr $node): Type
 	{
 		// the hooks are the boundary between the rule-facing world and the
-		// engine - a rule's FiberScope must not flow into result callbacks or
-		// on-demand processing, where its suspending type asks crash outside
-		// a fiber
+		// engine - a rule's NodeCallbackScope must not flow into result
+		// callbacks or on-demand processing
 		$scope = $this->toMutatingScope();
 		$storage = $this->expressionResultStorageStack->getCurrent();
 		$counterfactualAsk = false;
@@ -1349,7 +1347,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function obtainResultForNode(Expr $node): ExpressionResult
 	{
 		// see resolveTypeOfNewWorldHandlerNode() - rules ask the dispatcher
-		// with their FiberScope (e.g. ImpossibleCheckTypeHelper), the engine
+		// with their NodeCallbackScope (e.g. ImpossibleCheckTypeHelper), the engine
 		// side of the boundary works with the mutating flavor
 		$scope = $this->toMutatingScope();
 		$storage = $this->expressionResultStorageStack->getCurrent();
@@ -1406,7 +1404,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 *
 	 * @internal
 	 */
-	/** The settled stored result of the current storage - FiberScope's no-switch fast path. */
+	/** The settled stored result of the current storage - NodeCallbackScope's no-switch fast path. */
 	protected function findSettledStoredResult(Expr $node): ?ExpressionResult
 	{
 		$storage = $this->expressionResultStorageStack->getCurrent();

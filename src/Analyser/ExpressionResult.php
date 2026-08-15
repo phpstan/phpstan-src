@@ -577,7 +577,7 @@ final class ExpressionResult
 	 * scope instead.
 	 */
 	/**
-	 * $ruleFacingAsk: a FiberScope ask tolerates walk-side divergence - a
+	 * $ruleFacingAsk: a NodeCallbackScope ask tolerates walk-side divergence - a
 	 * variable the asking scope has no opinion on (born inside the asked node,
 	 * past the ask position) and a variable NARROWER at the evaluation
 	 * position (the coalesce right side priced on the left's falsey branch)

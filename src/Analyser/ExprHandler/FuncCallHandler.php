@@ -850,7 +850,7 @@ final class FuncCallHandler implements ExprHandler
 		$arrayArgResult = $argsResult->getArgResult($arrayArg);
 		// closure args have no ExpressionResult (ProcessClosureResult carries none);
 		// they fall back to the scope, every other arg reads its captured result.
-		$arrayType = $arrayArgResult !== null ? $arrayArgResult->getTypeOnScope($scope->toMutatingScope(), $scope->toMutatingScope()->nativeTypesPromoted) : $scope->getType($arrayArg);
+		$arrayType = $arrayArgResult !== null ? $arrayArgResult->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted) : $scope->getType($arrayArg);
 		$callArgs = array_slice($expr->getArgs(), 1);
 
 		/**
@@ -860,7 +860,7 @@ final class FuncCallHandler implements ExprHandler
 		$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null) use ($argsResult): void {
 			foreach ($callArgs as $callArg) {
 				$callArgResult = $argsResult->getArgResult($callArg->value);
-				$callArgType = $callArgResult !== null ? $callArgResult->getTypeOnScope($scope->toMutatingScope(), $scope->toMutatingScope()->nativeTypesPromoted) : $scope->getType($callArg->value);
+				$callArgType = $callArgResult !== null ? $callArgResult->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted) : $scope->getType($callArg->value);
 				if ($callArg->unpack) {
 					$constantArrays = $callArgType->getConstantArrays();
 					if (count($constantArrays) === 1) {

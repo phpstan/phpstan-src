@@ -380,8 +380,8 @@ therefore means absorbing whole call subtrees, not porting leaf bodies.
 What each gain level over the no-extension baseline requires:
 
 - **30%** (−5.5s) — reachable with targeted ports and known PHP-side fixes:
-  a native `ExpressionResultStorage` (the fiber bridge's per-expression
-  before-scope table; its `SplObjectStorage` copies and inserts allocate
+  a native `ExpressionResultStorage` (the per-expression
+  result table; its `SplObjectStorage` copies and inserts allocate
   ~3GB per run), the `CachedParser` content-key re-read fix (72K full-file
   reads per run just to compute LRU keys), `getName()`/return-type memos in
   better-reflection (5.3M calls survive), member-lookup pricing

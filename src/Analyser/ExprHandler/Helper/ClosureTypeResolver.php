@@ -495,7 +495,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				continue;
 			}
 
-			$readScope = $returnScope->toMutatingScope();
+			$readScope = $returnScope->toWalkScope();
 			if ($native) {
 				$readScope = $readScope->doNotTreatPhpDocTypesAsCertain();
 			}
@@ -522,7 +522,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$keyTypes = [];
 			$valueTypes = [];
 			foreach ($yieldStatements as [$yieldNode, $yieldScope]) {
-				$readScope = $yieldScope->toMutatingScope();
+				$readScope = $yieldScope->toWalkScope();
 				if ($native) {
 					$readScope = $readScope->doNotTreatPhpDocTypesAsCertain();
 				}

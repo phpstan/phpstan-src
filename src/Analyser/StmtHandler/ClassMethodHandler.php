@@ -191,7 +191,7 @@ final class ClassMethodHandler implements StmtHandler
 							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
 							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
 							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
-							&& TypeUtils::findThisType($nodeScopeResolver->readScopeStateOrSyntheticType($node->getPropertyFetch()->var, $scope->toMutatingScope())) !== null
+							&& TypeUtils::findThisType($nodeScopeResolver->readScopeStateOrSyntheticType($node->getPropertyFetch()->var, $scope->toWalkScope())) !== null
 							) {
 								return;
 							}

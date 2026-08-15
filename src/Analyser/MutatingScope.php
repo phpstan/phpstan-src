@@ -243,13 +243,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 		);
 		if ($nodeCallbackScope instanceof NodeCallbackScope) {
-			$nodeCallbackScope->seedMutatingScope($this);
+			$nodeCallbackScope->seedWalkScope($this);
 		}
 
 		return $this->nodeCallbackScope = $nodeCallbackScope;
 	}
 
-	public function toMutatingScope(): self
+	public function toWalkScope(): self
 	{
 		return $this;
 	}
@@ -1205,7 +1205,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// the hooks are the boundary between the rule-facing world and the
 		// engine - a rule's NodeCallbackScope must not flow into result
 		// callbacks or on-demand processing
-		$scope = $this->toMutatingScope();
+		$scope = $this->toWalkScope();
 		$storage = $this->expressionResultStorageStack->getCurrent();
 		$counterfactualAsk = false;
 		if ($storage !== null) {
@@ -1300,7 +1300,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			// demand: one walk answers both flavours. Not memoized - a census
 			// showed repeat asks for the same unstored subject on one scope
 			// never happen (0 hits across corpora)
-			$scope = $this->toMutatingScope();
+			$scope = $this->toWalkScope();
 			$result = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 				$expr,
 				$scope,
@@ -1334,7 +1334,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function specifyTypesOfNewWorldHandlerNode(Expr $node, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		return $this->obtainResultForNode($node)->getSpecifiedTypesForScope($this->toMutatingScope(), $context);
+		return $this->obtainResultForNode($node)->getSpecifiedTypesForScope($this->toWalkScope(), $context);
 	}
 
 	/**
@@ -1349,7 +1349,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// see resolveTypeOfNewWorldHandlerNode() - rules ask the dispatcher
 		// with their NodeCallbackScope (e.g. ImpossibleCheckTypeHelper), the engine
 		// side of the boundary works with the mutating flavor
-		$scope = $this->toMutatingScope();
+		$scope = $this->toWalkScope();
 		$storage = $this->expressionResultStorageStack->getCurrent();
 		if ($storage !== null) {
 			$result = $storage->findExpressionResult($node);
@@ -1459,7 +1459,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		if ($result === null) {
 			$result = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 				$node,
-				$this->toMutatingScope(),
+				$this->toWalkScope(),
 				$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
 			);
 		}

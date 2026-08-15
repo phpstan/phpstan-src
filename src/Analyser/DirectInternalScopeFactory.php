@@ -111,7 +111,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		return $this->withFlavor(true);
 	}
 
-	public function toMutatingFactory(): InternalScopeFactory
+	public function toWalkScopeFactory(): InternalScopeFactory
 	{
 		return $this->withFlavor(false);
 	}

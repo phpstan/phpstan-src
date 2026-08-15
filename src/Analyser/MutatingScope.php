@@ -254,6 +254,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this;
 	}
 
+	/** @deprecated */
+	public function toMutatingScope(): self
+	{
+		return $this;
+	}
+
 	/** @api */
 	public function getFile(): string
 	{

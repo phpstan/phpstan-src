@@ -110,6 +110,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$resolver = static::createNodeScopeResolver();
 		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], static::getAdditionalAnalysedFiles())));
 
+		$resolver->resetPerFileAnalysisState();
 		$resolver->processNodes(
 			self::getParser()->parseFile($file),
 			self::createScope($file, $dynamicConstantNames),

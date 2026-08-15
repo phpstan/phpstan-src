@@ -126,6 +126,7 @@ final class FileAnalyser
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
 				$nodeCallback(new FileNode($parserNodes), $scope);
+				$this->nodeScopeResolver->resetPerFileAnalysisState();
 				$this->nodeScopeResolver->processNodes(
 					$parserNodes,
 					$scope,

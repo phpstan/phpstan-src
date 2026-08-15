@@ -188,6 +188,12 @@ class NodeScopeResolver
 	 * Releases the previous file's node-keyed captures: the parser cache
 	 * retains ASTs, so node-keyed cache entries never die on
 	 * their own and would hold that file's whole result graph alive.
+	 *
+	 * Called at the per-file boundary (FileAnalyser), NOT in processNodes():
+	 * extensions start nested processNodes() walks mid-file (phpstan-doctrine
+	 * parsing a query-builder method, rule tooling re-analysing a callee) and
+	 * wiping the per-file caches there forces the outer file to rebuild them -
+	 * closure types re-converge, narrowing memos recompute.
 	 */
 	public function resetPerFileAnalysisState(): void
 	{
@@ -208,7 +214,6 @@ class NodeScopeResolver
 	): void
 	{
 		$scope = $scope->toWalkScope();
-		$this->resetPerFileAnalysisState();
 
 		$expressionResultStorage = new ExpressionResultStorage();
 		$alreadyTerminated = false;

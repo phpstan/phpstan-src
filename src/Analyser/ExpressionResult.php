@@ -241,10 +241,6 @@ final class ExpressionResult
 
 	public function getType(): Type
 	{
-		if ($this->type !== null) {
-			return $this->type;
-		}
-
 		if ($this->cachedType !== null) {
 			return $this->cachedType;
 		}
@@ -254,6 +250,10 @@ final class ExpressionResult
 			if ($type !== null) {
 				return $this->cachedType = $type;
 			}
+		}
+
+		if ($this->type !== null) {
+			return $this->type;
 		}
 
 		if ($this->hasOwnLazyResolution() && !$this->hasTrackedExpressionType($this->beforeScope)) {
@@ -268,12 +268,21 @@ final class ExpressionResult
 
 	public function getNativeType(): Type
 	{
-		if ($this->nativeType !== null) {
-			return $this->nativeType;
-		}
-
 		if ($this->cachedNativeType !== null) {
 			return $this->cachedNativeType;
+		}
+
+		// old-world getNativeType() promoted the scope and re-entered
+		// resolveType(), extension hook included
+		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
+			$type = $extension->getType($this->expr, $this->beforeScope->doNotTreatPhpDocTypesAsCertain());
+			if ($type !== null) {
+				return $this->cachedNativeType = $type;
+			}
+		}
+
+		if ($this->nativeType !== null) {
+			return $this->nativeType;
 		}
 
 		if ($this->hasOwnLazyResolution() && !$this->hasTrackedExpressionType($this->beforeScope->doNotTreatPhpDocTypesAsCertain())) {
@@ -479,6 +488,16 @@ final class ExpressionResult
 	public function getTypeOnScope(MutatingScope $scope, bool $useNativeTypes): Type
 	{
 		$readScope = $useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope;
+		// old-world resolveType() consulted these on every ask, both flavours -
+		// a consumer reading a call's type here (an assign filling the target's
+		// holder) must see the override or it never enters the scope state
+		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
+			$type = $extension->getType($this->expr, $readScope);
+			if ($type !== null) {
+				return $type;
+			}
+		}
+
 		if ($this->type === null && $this->isScopeAuthoritative($readScope)) {
 			// the state read is a value read: resolve late-resolvable types and
 			// project void to null exactly like resolveOwnType() does

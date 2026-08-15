@@ -1210,6 +1210,29 @@ class IntersectionType implements CompoundType
 
 	public function popArray(): Type
 	{
+		if ($this->isList()->yes()) {
+			// hasOffsetValue(n, T) on a list proves indices 0..n exist; popping
+			// removes the highest index, so offsets up to n - 1 survive. Their
+			// values are unknown - the value known at n may have been the popped one.
+			$members = [];
+			foreach ($this->types as $type) {
+				if ($type instanceof TemplateType) {
+					$members[] = $type;
+					continue;
+				}
+				if ($type instanceof HasOffsetValueType || $type instanceof HasOffsetType) {
+					$offsetType = $type->getOffsetType();
+					if ($offsetType instanceof ConstantIntegerType && $offsetType->getValue() >= 1) {
+						$members[] = new HasOffsetType(new ConstantIntegerType($offsetType->getValue() - 1));
+					}
+					continue;
+				}
+				$members[] = $type->popArray();
+			}
+
+			return TypeCombinator::intersect(...$members);
+		}
+
 		return $this->intersectTypesPreserveTemplateType(static fn (Type $type): Type => $type->popArray());
 	}
 
@@ -1225,6 +1248,34 @@ class IntersectionType implements CompoundType
 
 	public function shiftArray(): Type
 	{
+		if ($this->isList()->yes()) {
+			// shifting a list reindexes: index n's value always moves to n - 1
+			$members = [];
+			foreach ($this->types as $type) {
+				if ($type instanceof TemplateType) {
+					$members[] = $type;
+					continue;
+				}
+				if ($type instanceof HasOffsetValueType) {
+					$offsetType = $type->getOffsetType();
+					if ($offsetType instanceof ConstantIntegerType && $offsetType->getValue() >= 1) {
+						$members[] = new HasOffsetValueType(new ConstantIntegerType($offsetType->getValue() - 1), $type->getValueType());
+					}
+					continue;
+				}
+				if ($type instanceof HasOffsetType) {
+					$offsetType = $type->getOffsetType();
+					if ($offsetType instanceof ConstantIntegerType && $offsetType->getValue() >= 1) {
+						$members[] = new HasOffsetType(new ConstantIntegerType($offsetType->getValue() - 1));
+					}
+					continue;
+				}
+				$members[] = $type->shiftArray();
+			}
+
+			return TypeCombinator::intersect(...$members);
+		}
+
 		return $this->intersectTypesPreserveTemplateType(static fn (Type $type): Type => $type->shiftArray());
 	}
 

@@ -24,6 +24,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\Container;
@@ -229,7 +230,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this->fiberScope;
 		}
 
-		return $this->fiberScope = $this->scopeFactory->toFiberFactory()->create(
+		$fiberScope = $this->scopeFactory->toFiberFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -247,6 +248,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+		if ($fiberScope instanceof FiberScope) {
+			$fiberScope->seedMutatingScope($this);
+		}
+
+		return $this->fiberScope = $fiberScope;
 	}
 
 	public function toMutatingScope(): self

@@ -560,7 +560,17 @@ final class ExpressionResult
 		return new ReadVariableStateSnapshot($states);
 	}
 
-	public function askScopeVariableStateMatches(MutatingScope $scope, bool $useNativeTypes): bool
+	/**
+	 * $ruleFacingAsk: a FiberScope ask tolerates walk-side divergence - a
+	 * variable the asking scope has no opinion on (born inside the asked node,
+	 * past the ask position) and a variable NARROWER at the evaluation
+	 * position (the coalesce right side priced on the left's falsey branch)
+	 * both leave the walk answer standing; only an asker-side refinement (a
+	 * callback pinning a call-site literal onto a parameter) re-prices.
+	 * Engine-side consumers keep the strict direction: any state divergence -
+	 * including a variable removed since the walk - forces re-pricing.
+	 */
+	public function askScopeVariableStateMatches(MutatingScope $scope, bool $useNativeTypes, bool $ruleFacingAsk = false): bool
 	{
 		// same unpromoted position implies same promoted position - skip the
 		// flavour derivation for the common same-position ask
@@ -588,6 +598,19 @@ final class ExpressionResult
 		foreach ($names as $name) {
 			$askKnows = $readScope->hasVariableType($name);
 			$positionKnows = $positionScope->hasVariableType($name);
+			if ($ruleFacingAsk) {
+				if ($askKnows->no()) {
+					continue;
+				}
+				if ($positionKnows->no()) {
+					return false;
+				}
+				if ($readScope->getVariableType($name)->isSuperTypeOf($positionScope->getVariableType($name))->yes()) {
+					continue;
+				}
+
+				return false;
+			}
 			if ($askKnows->no() && $positionKnows->no()) {
 				continue;
 			}

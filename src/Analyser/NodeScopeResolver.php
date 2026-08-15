@@ -1294,7 +1294,25 @@ class NodeScopeResolver
 		ExpressionResultStorage $storage,
 	): void
 	{
-		$nodeCallback($node, $scope);
+		// Engine-feeding gatherers must observe the node at the emission
+		// position - their arrays are read as soon as the enclosing body walk
+		// returns. Gatherers are engine code and never ask about types -
+		// handing them the raw scope skips a FiberScope construction per
+		// emission; the scopes they capture (return statements, impure points)
+		// answer later asks through the storage hub like any MutatingScope.
+		while ($nodeCallback instanceof GatheringNodeCallback) {
+			($nodeCallback->getGatherer())($node, $scope);
+			$nodeCallback = $nodeCallback->getInner();
+		}
+
+		if ($nodeCallback instanceof NoopNodeCallback) {
+			return;
+		}
+
+		// post-order emission means the node's own result and every subnode
+		// result are already stored when the callback fires - FiberScope
+		// answers every ask synchronously from the storage
+		$nodeCallback($node, $scope->toFiberScope());
 	}
 
 	/**

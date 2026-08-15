@@ -142,7 +142,6 @@ use function uksort;
 use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
-use const PHP_VERSION_ID;
 
 class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 {
@@ -222,10 +221,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function toFiberScope(): self
 	{
-		if (PHP_VERSION_ID < 80100) {
-			throw new ShouldNotHappenException('Cannot create FiberScope below PHP 8.1');
-		}
-
 		if ($this->fiberScope !== null) {
 			return $this->fiberScope;
 		}

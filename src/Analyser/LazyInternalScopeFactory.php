@@ -144,7 +144,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		return $this->createsNodeCallbackScopes ? $this : $this->twin();
 	}
 
-	public function toMutatingFactory(): InternalScopeFactory
+	public function toWalkScopeFactory(): InternalScopeFactory
 	{
 		return $this->createsNodeCallbackScopes ? $this->twin() : $this;
 	}

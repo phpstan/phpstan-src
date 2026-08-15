@@ -95,7 +95,7 @@ final class DefaultNarrowingHelper
 			return (new SpecifiedTypes([], []))->setRootExpr($node);
 		}
 
-		return $scope->toMutatingScope()->specifyTypesOfNewWorldHandlerNode($node, $context);
+		return $scope->toWalkScope()->specifyTypesOfNewWorldHandlerNode($node, $context);
 	}
 
 	public function specifyDefaultTypes(Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
@@ -360,13 +360,13 @@ final class DefaultNarrowingHelper
 	 */
 	public function createForSubject(Expr $subject, Type $type, TypeSpecifierContext $context, Scope $scope, ?Closure $resultFor = null): SpecifiedTypes
 	{
-		$mutatingScope = $scope->toMutatingScope();
+		$walkScope = $scope->toWalkScope();
 		$subjectResult = $resultFor !== null ? $resultFor($subject) : null;
 
-		$storage = $mutatingScope->getCurrentExpressionResultStorage();
+		$storage = $walkScope->getCurrentExpressionResultStorage();
 
 		return $this->createSubjectTypes(
-			$mutatingScope,
+			$walkScope,
 			$subject,
 			$subjectResult ?? ($storage !== null ? $storage->findExpressionResult($subject) : null),
 			$type,

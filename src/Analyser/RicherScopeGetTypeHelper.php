@@ -45,10 +45,10 @@ final class RicherScopeGetTypeHelper
 		// $nodeScopeResolver reads them from storage instead of Scope::getType();
 		// rules call this with neither (BC).
 		$leftType ??= $nodeScopeResolver !== null
-			? $nodeScopeResolver->readTypeOfMaybeStored($expr->left, $scope->toMutatingScope())
+			? $nodeScopeResolver->readTypeOfMaybeStored($expr->left, $scope->toWalkScope())
 			: $scope->getType($expr->left);
 		$rightType ??= $nodeScopeResolver !== null
-			? $nodeScopeResolver->readTypeOfMaybeStored($expr->right, $scope->toMutatingScope())
+			? $nodeScopeResolver->readTypeOfMaybeStored($expr->right, $scope->toWalkScope())
 			: $scope->getType($expr->right);
 
 		if (

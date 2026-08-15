@@ -89,7 +89,7 @@ final class CalledMethodProcessor
 				$statementResult = $executionEnd->getStatementResult();
 				$endNode = $executionEnd->getNode();
 				if ($endNode instanceof Node\Stmt\Expression) {
-					$exprType = $nodeScopeResolver->readTypeOfMaybeStored($endNode->expr, $statementResult->getScope()->toMutatingScope());
+					$exprType = $nodeScopeResolver->readTypeOfMaybeStored($endNode->expr, $statementResult->getScope()->toWalkScope());
 					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
 						continue;
 					}

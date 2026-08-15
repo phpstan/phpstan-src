@@ -358,7 +358,6 @@ class NodeScopeResolver
 			$this->processUnreachableStatement($nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
 
-		$this->processPendingFibers($expressionResultStorage);
 	}
 
 	/** The stored result an outside asker may consume. */
@@ -395,9 +394,6 @@ class NodeScopeResolver
 		$storage->storeExpressionResult($expr, $expressionResult);
 	}
 
-	public function processPendingFibers(ExpressionResultStorage $storage): void
-	{
-	}
 
 	/**
 	 * @param Node\Stmt[] $bodyStmts
@@ -577,48 +573,7 @@ class NodeScopeResolver
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function processStmtNodesInternal(
-		Node $parentNode,
-		array $stmts,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-		StatementContext $context,
-	): InternalStatementResult
-	{
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers(
-			$parentNode,
-			$stmts,
-			$scope,
-			$storage,
-			$nodeCallback,
-			$context,
-		);
-		// Flush pending fibers only at a scope boundary - a function/method body,
-		// a class/trait body, a namespace. Nested control-flow statement lists
-		// (if/else branches, loop and switch/try bodies) must NOT flush: a rule
-		// invoked at the scope's entry node (e.g. UnusedConstructorParametersRule
-		// on InClassMethodNode) asks the types of expressions appearing later in
-		// the body, and a flush at an earlier branch would resolve those fibers
-		// on the asker's scope before natural traversal stores the results. Such
-		// fibers are resumed when their expression stores its result, or at this
-		// scope boundary once the whole body is processed.
-		if (
-			$parentNode instanceof Node\FunctionLike
-			|| $parentNode instanceof Node\Stmt\ClassLike
-			|| $parentNode instanceof Node\Stmt\Namespace_
-		) {
-			$this->processPendingFibers($storage);
-		}
-
-		return $statementResult;
-	}
-
-	/**
-	 * @param Node\Stmt[] $stmts
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	private function processStmtNodesInternalWithoutFlushingPendingFibers(
+	private function processStmtNodesInternal(
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,
@@ -645,6 +600,7 @@ class NodeScopeResolver
 			}
 		}
 	}
+
 
 	/**
 	 * @param Node\Stmt[] $stmts
@@ -1204,21 +1160,7 @@ class NodeScopeResolver
 			}
 		}
 
-		// Track that this expression is being processed. A fiber suspended on it
-		// (a rule asked its type before processing reached it) must not be
-		// flushed at a nested statement-list boundary inside this very
-		// expression - e.g. an immediately-invoked closure's body. It is resumed
-		// when this processExprNode stores the result below.
-		$exprId = spl_object_id($expr);
-		$this->processingExprIds[$exprId] = ($this->processingExprIds[$exprId] ?? 0) + 1;
-
-		try {
-			return $this->processExprNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context);
-		} finally {
-			if (--$this->processingExprIds[$exprId] === 0) {
-				unset($this->processingExprIds[$exprId]);
-			}
-		}
+		return $this->processExprNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context);
 	}
 
 	/**
@@ -1369,21 +1311,7 @@ class NodeScopeResolver
 		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
-		// Closures reached as call arguments are processed here directly rather
-		// than through processExprNode (which tracks the node), so track the
-		// closure too: the dependency/node callbacks fired for it ask its type
-		// and suspend a fiber that must not be flushed at a nested boundary
-		// inside the closure body before the caller stores the closure result.
-		$exprId = spl_object_id($expr);
-		$this->processingExprIds[$exprId] = ($this->processingExprIds[$exprId] ?? 0) + 1;
-
-		try {
-			return $this->processClosureNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context, $passedToType, $nativePassedToType);
-		} finally {
-			if (--$this->processingExprIds[$exprId] === 0) {
-				unset($this->processingExprIds[$exprId]);
-			}
-		}
+		return $this->processClosureNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context, $passedToType, $nativePassedToType);
 	}
 
 	/**
@@ -1511,7 +1439,7 @@ class NodeScopeResolver
 		}, $nodeCallback);
 
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 			$publicStatementResult = $statementResult->toPublic();
 			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -1547,7 +1475,7 @@ class NodeScopeResolver
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
 			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -1575,7 +1503,7 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 		$publicStatementResult = $statementResult->toPublic();
 		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -2340,9 +2268,8 @@ class NodeScopeResolver
 
 					$scope = $closureResult->getScope();
 					$deferredByRefClosureResults[] = $closureResult;
-					// Prefer the invalidate expressions collected on the ClosureType: those
-					// are gathered with the closure's pending fibers flushed, so they also
-					// cover writes that go through a parked fiber (e.g. $this->prop[] = ...),
+					// Prefer the invalidate expressions collected on the ClosureType -
+					// they also cover writes the closure's own body walk observed,
 					// unlike $closureResult->getInvalidateExpressions().
 					$closureExprType = $scope->getType($arg->value);
 					$invalidateExpressions = $closureExprType instanceof ClosureType

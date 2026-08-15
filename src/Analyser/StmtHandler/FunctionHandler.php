@@ -146,9 +146,6 @@ final class FunctionHandler implements StmtHandler
 				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
 				$functionReflection,
 						), $functionScope, $bodyStorage);
-			if (!$scope->isInAnonymousFunction()) {
-				$nodeScopeResolver->processPendingFibers($bodyStorage);
-			}
 		} finally {
 			$scope->popExpressionResultStorage();
 		}

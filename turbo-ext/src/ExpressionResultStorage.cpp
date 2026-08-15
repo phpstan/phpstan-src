@@ -14,8 +14,6 @@
  * twin's O(1) duplicate(); findExpressionResult() walks the fallback chain
  * on a miss. mergeResults() unions the other storage's own entries (not its
  * fallback chain) into this one, like the twin's SplObjectStorage::addAll().
- * pendingFibers/parkedFibers are ordinary public properties read and written
- * by FiberNodeScopeResolver in PHP; the native code never touches them.
  */
 
 #include "support.h"
@@ -105,8 +103,6 @@ void pt_register_expression_result_storage()
 	cls.privateArrayProperty("exprsById");
 	cls.privateArrayProperty("resultsById");
 	cls.privateNullProperty("fallback");
-	cls.publicArrayProperty("pendingFibers");
-	cls.publicArrayProperty("parkedFibers");
 
 	/* the twin's constructor only initialized its SplObjectStorage; the
 	 * native property defaults already cover that */

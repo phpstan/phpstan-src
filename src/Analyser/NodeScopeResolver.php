@@ -999,6 +999,17 @@ class NodeScopeResolver
 
 	public function processExprOnDemand(Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage): ExpressionResult
 	{
+		// A node no handler supports - a virtual node (BooleanOrNode, ...) a
+		// rule asked the type of - degrades to mixed, mirroring
+		// MutatingScope::resolveType()'s fallback. The main walk's unhandled
+		// throw stays: real source nodes must have a handler.
+		if (
+			ExprHandlerRegistry::resolve($expr, $this->container) === null
+			&& !($expr instanceof Expr\CallLike && $expr->isFirstClassCallable())
+		) {
+			return $this->createEagerExpressionResult($scope, $expr, new MixedType(), new MixedType());
+		}
+
 		// save/restore, never reset: on-demand walks nest (a typeCallback
 		// evaluated mid-walk prices another synthetic node) and a hard reset
 		// would turn stored-result consumption off for the rest of the outer

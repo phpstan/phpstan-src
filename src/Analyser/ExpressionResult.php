@@ -44,6 +44,15 @@ final class ExpressionResult
 
 	private ?Type $cachedType = null;
 
+	/**
+	 * Whether every ExpressionTypeResolverExtension declined this expression.
+	 * One full-null round settles it: a decline is (in practice) a structural
+	 * decision about the expression, and re-running an expensive extension
+	 * (phpstan-doctrine resolves the receiver's method reflection every time)
+	 * on every read of every call-typed result is what it costs to re-ask.
+	 */
+	private bool $extensionsDeclined = false;
+
 	private ?Type $cachedNativeType = null;
 
 	private ?Type $resolvedType = null;
@@ -245,11 +254,9 @@ final class ExpressionResult
 			return $this->cachedType;
 		}
 
-		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
-			$type = $extension->getType($this->expr, $this->beforeScope);
-			if ($type !== null) {
-				return $this->cachedType = $type;
-			}
+		$extensionType = $this->consultExpressionTypeResolverExtensions($this->beforeScope);
+		if ($extensionType !== null) {
+			return $this->cachedType = $extensionType;
 		}
 
 		if ($this->type !== null) {
@@ -274,11 +281,9 @@ final class ExpressionResult
 
 		// old-world getNativeType() promoted the scope and re-entered
 		// resolveType(), extension hook included
-		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
-			$type = $extension->getType($this->expr, $this->beforeScope->doNotTreatPhpDocTypesAsCertain());
-			if ($type !== null) {
-				return $this->cachedNativeType = $type;
-			}
+		$extensionType = $this->extensionsDeclined ? null : $this->consultExpressionTypeResolverExtensions($this->beforeScope->doNotTreatPhpDocTypesAsCertain());
+		if ($extensionType !== null) {
+			return $this->cachedNativeType = $extensionType;
 		}
 
 		if ($this->nativeType !== null) {
@@ -292,6 +297,24 @@ final class ExpressionResult
 		// Tracked native holder (getNativeType() promotes the scope, so its
 		// expressionTypes are the native ones) - read it directly.
 		return $this->cachedNativeType = $this->beforeScope->doNotTreatPhpDocTypesAsCertain()->getTrackedExpressionType($this->expr);
+	}
+
+	private function consultExpressionTypeResolverExtensions(MutatingScope $readScope): ?Type
+	{
+		if ($this->extensionsDeclined) {
+			return null;
+		}
+
+		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
+			$type = $extension->getType($this->expr, $readScope);
+			if ($type !== null) {
+				return $type;
+			}
+		}
+
+		$this->extensionsDeclined = true;
+
+		return null;
 	}
 
 	/**
@@ -491,11 +514,9 @@ final class ExpressionResult
 		// old-world resolveType() consulted these on every ask, both flavours -
 		// a consumer reading a call's type here (an assign filling the target's
 		// holder) must see the override or it never enters the scope state
-		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
-			$type = $extension->getType($this->expr, $readScope);
-			if ($type !== null) {
-				return $type;
-			}
+		$extensionType = $this->consultExpressionTypeResolverExtensions($readScope);
+		if ($extensionType !== null) {
+			return $extensionType;
 		}
 
 		if ($this->type === null && $this->isScopeAuthoritative($readScope)) {

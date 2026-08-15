@@ -1,9 +1,10 @@
-<?php // lint < 8.1
+<?php
 
-namespace NativeTypesPre81;
+namespace NativeTypesClosureReturns;
 
 use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertNativeType;
+
 
 /** @return non-empty-string */
 function funcWithANativeReturnType(): string
@@ -29,7 +30,7 @@ class TestFuncWithANativeReturnType
 		assertType('non-empty-string', (function (): string {
 			return funcWithANativeReturnType();
 		})());
-		assertNativeType('string', (function (): string {
+		assertNativeType('non-empty-string', (function (): string {
 			return funcWithANativeReturnType();
 		})());
 

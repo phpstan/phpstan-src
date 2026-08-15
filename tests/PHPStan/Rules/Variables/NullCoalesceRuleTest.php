@@ -395,17 +395,15 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug14213(): void
 	{
-		$errors = [];
-		if (PHP_VERSION_ID >= 80100) {
-			// This is only detected with FiberScope.
-			$errors[] = [
+		$errors = [
+			[
 				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
 				21,
-			];
-		}
-		$errors[] = [
-			'Variable $x1 on left side of ?? always exists and is always null.',
-			22,
+			],
+			[
+				'Variable $x1 on left side of ?? always exists and is always null.',
+				22,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], $errors);

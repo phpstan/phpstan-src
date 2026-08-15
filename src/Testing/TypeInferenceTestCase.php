@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ExpressionResultFactory;
-use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
@@ -41,7 +40,6 @@ use function count;
 use function fclose;
 use function fgets;
 use function fopen;
-use function getenv;
 use function in_array;
 use function is_dir;
 use function is_string;
@@ -53,7 +51,6 @@ use function stripos;
 use function strtolower;
 use function version_compare;
 use const PHP_VERSION;
-use const PHP_VERSION_ID;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -64,13 +61,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$container = self::getContainer();
 		$reflectionProvider = self::createReflectionProvider();
 
-		$enableFnsr = getenv('PHPSTAN_FNSR');
-		$className = NodeScopeResolver::class;
-		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0') {
-			$className = FiberNodeScopeResolver::class;
-		}
-
-		return new $className(
+		return new NodeScopeResolver(
 			$container,
 			$reflectionProvider,
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),

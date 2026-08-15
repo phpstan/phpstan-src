@@ -10,7 +10,7 @@ use function count;
 /**
  * The ExpressionResultStorage a node callback's type asks resolve against.
  *
- * FiberNodeScopeResolver::callNodeCallback() pushes the emitting walk's
+ * NodeScopeResolver::callNodeCallback() pushes the emitting walk's
  * storage for the duration of the callback and always pops it in a finally
  * block - the same association a suspended fiber's request had with the
  * frame that would resolve it. Scopes deliberately do not reference the

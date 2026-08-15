@@ -11,6 +11,7 @@ use PHPStan\Type\Type;
 use WeakReference;
 use function array_pop;
 use function count;
+use function spl_object_id;
 
 final class NodeCallbackScope extends MutatingScope
 {
@@ -77,6 +78,23 @@ final class NodeCallbackScope extends MutatingScope
 		);
 	}
 
+	/**
+	 * Asked types memoized by node identity. Rules and collectors re-ask the
+	 * same nodes across a callback batch (this scope is shared by every
+	 * callback fired at the emission point), and the walk scope's own
+	 * resolvedTypes memo answered those in O(1) before this class existed -
+	 * without this, every repeat pays the stored-result guard again. The
+	 * entry keeps the node itself: a synthetic node a rule dropped can hand
+	 * its object id to the next synthetic, and the identity check rejects
+	 * such stale hits.
+	 *
+	 * @var array<int, array{Expr, Type}>
+	 */
+	private array $askedTypes = [];
+
+	/** @var array<int, array{Expr, Type}> */
+	private array $askedNativeTypes = [];
+
 	/** @api */
 	public function getType(Expr $node): Type
 	{
@@ -85,6 +103,19 @@ final class NodeCallbackScope extends MutatingScope
 			return $node->getExprType();
 		}
 
+		$nodeId = spl_object_id($node);
+		if (isset($this->askedTypes[$nodeId]) && $this->askedTypes[$nodeId][0] === $node) {
+			return $this->askedTypes[$nodeId][1];
+		}
+
+		$type = $this->doGetType($node);
+		$this->askedTypes[$nodeId] = [$node, $type];
+
+		return $type;
+	}
+
+	private function doGetType(Expr $node): Type
+	{
 		if (
 			!$this->nativeTypesPromoted
 			&& count($this->truthyValueExprs) === 0
@@ -147,6 +178,19 @@ final class NodeCallbackScope extends MutatingScope
 			return $expr->getExprType();
 		}
 
+		$nodeId = spl_object_id($expr);
+		if (isset($this->askedNativeTypes[$nodeId]) && $this->askedNativeTypes[$nodeId][0] === $expr) {
+			return $this->askedNativeTypes[$nodeId][1];
+		}
+
+		$type = $this->doGetNativeType($expr);
+		$this->askedNativeTypes[$nodeId] = [$expr, $type];
+
+		return $type;
+	}
+
+	private function doGetNativeType(Expr $expr): Type
+	{
 		if (
 			!$this->nativeTypesPromoted
 			&& count($this->truthyValueExprs) === 0

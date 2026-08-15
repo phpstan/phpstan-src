@@ -73,6 +73,12 @@ final class BetterReflectionProvider implements ReflectionProvider
 	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
 
+	/** @var array<string, string|false> */
+	private array $resolvedFunctionNames = [];
+
+	/** @var array<string, string|false> */
+	private array $resolvedConstantNames = [];
+
 	/** @var ClassReflection[] */
 	private array $classReflections = [];
 
@@ -366,7 +372,20 @@ final class BetterReflectionProvider implements ReflectionProvider
 			return $name;
 		}
 
-		return $this->resolveName($nameNode, function (string $name): bool {
+		// memoized per (namespace, name AS WRITTEN): the namespaced-fallback
+		// probe of an unqualified name is exception-driven in the reflector, and
+		// type callbacks re-ask the same names many times per file. The key is
+		// case-sensitive - the resolved name preserves the asked case, which the
+		// incorrect-case rules compare against the canonical one - and keeps the
+		// leading backslash Name::__toString() drops: `\strlen()` and `strlen()`
+		// resolve differently in a namespace declaring its own strlen()
+		$cacheKey = $this->nameResolutionCacheKey($nameNode, $namespaceAnswerer);
+		if (array_key_exists($cacheKey, $this->resolvedFunctionNames)) {
+			$cached = $this->resolvedFunctionNames[$cacheKey];
+			return $cached === false ? null : $cached;
+		}
+
+		$resolved = $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectFunction($name);
 				return true;
@@ -381,6 +400,9 @@ final class BetterReflectionProvider implements ReflectionProvider
 			}
 			return false;
 		}, $namespaceAnswerer);
+		$this->resolvedFunctionNames[$cacheKey] = $resolved ?? false;
+
+		return $resolved;
 	}
 
 	public function hasConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
@@ -466,7 +488,14 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 	public function resolveConstantName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->resolveName($nameNode, function (string $name): bool {
+		// memoized per (namespace, name as written) - see resolveFunctionName()
+		$cacheKey = $this->nameResolutionCacheKey($nameNode, $namespaceAnswerer);
+		if (array_key_exists($cacheKey, $this->resolvedConstantNames)) {
+			$cached = $this->resolvedConstantNames[$cacheKey];
+			return $cached === false ? null : $cached;
+		}
+
+		$resolved = $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectConstant($name);
 				return true;
@@ -479,6 +508,17 @@ final class BetterReflectionProvider implements ReflectionProvider
 			}
 			return false;
 		}, $namespaceAnswerer);
+		$this->resolvedConstantNames[$cacheKey] = $resolved ?? false;
+
+		return $resolved;
+	}
+
+	private function nameResolutionCacheKey(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): string
+	{
+		return ($namespaceAnswerer !== null ? ($namespaceAnswerer->getNamespace() ?? '') : '')
+			. '::'
+			. ($nameNode->isFullyQualified() ? '\\' : '')
+			. (string) $nameNode;
 	}
 
 	/**

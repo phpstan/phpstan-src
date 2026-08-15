@@ -17,8 +17,8 @@ use function sprintf;
 
 /**
  * Asks the type of a rule-built synthetic node from a ReturnStatementsNode
- * callback - the ImpossibleCheckTypeHelper-style pattern. The suspended fiber
- * must be resumed at the body boundary for the error to surface.
+ * callback - the ImpossibleCheckTypeHelper-style pattern; the ask is
+ * answered on demand and the error must surface.
  *
  * @implements Rule<ReturnStatementsNode>
  */

@@ -57,7 +57,7 @@ final class TraitUseHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		// fresh storage - the same trait node objects are processed once per
-		// using class and fibers must not see results from a previous pass
+		// using class must not see results from a previous pass
 		$traitStorage = new ExpressionResultStorage();
 		$scope->pushExpressionResultStorage($traitStorage);
 		try {

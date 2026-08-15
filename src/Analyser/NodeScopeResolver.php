@@ -389,8 +389,7 @@ class NodeScopeResolver
 		if (self::$guardNewWorld) {
 			self::$guardProcessedExprIds[spl_object_id($expr)] = true;
 		}
-		// handlers are answered from stored results in both worlds - storing must
-		// not depend on fibers
+		// handlers are answered from stored results in both worlds
 		$storage->storeExpressionResult($expr, $expressionResult);
 	}
 
@@ -548,7 +547,7 @@ class NodeScopeResolver
 		StatementContext $context,
 	): StatementResult
 	{
-		// a rule may pass the scope it was handed - the rule-facing FiberScope -
+		// a rule may pass the scope it was handed - the rule-facing NodeCallbackScope -
 		// as the walk's initial scope; the walk must anchor its results to the
 		// state-identical MutatingScope or their consumption re-enters the
 		// rule-facing ask paths
@@ -1150,7 +1149,7 @@ class NodeScopeResolver
 				if ($this->consumeStoredExpressionResults) {
 					// the re-anchored view IS this walk's result for the node
 					// (the nullsafe twin's receiver at the ensured position) -
-					// store it so later asks (rules' fiber reads) see the same
+					// store it so later asks (rules' storage reads) see the same
 					// result the twin walk itself consumed, exactly like the
 					// receiver walked inside the twin used to be stored
 					$this->storeExpressionResult($storage, $expr, $reanchored);
@@ -1212,7 +1211,7 @@ class NodeScopeResolver
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			// The node's own callback fires AFTER its result is stored, with the
 			// scope captured before processing. Rules observe the same (scope,
-			// answer) pair as at a pre-order emission - under fibers a pre-order
+			// answer) pair as at a pre-order emission - previously a pre-order
 			// rule parks on its first ask and resumes at this store anyway - but
 			// a synchronously invoked rule (the plain resolver, PHP < 8.1) now
 			// finds the node's and its subtree's results in the storage instead
@@ -1297,7 +1296,7 @@ class NodeScopeResolver
 		// Engine-feeding gatherers must observe the node at the emission
 		// position - their arrays are read as soon as the enclosing body walk
 		// returns. Gatherers are engine code and never ask about types -
-		// handing them the raw scope skips a FiberScope construction per
+		// handing them the raw scope skips a NodeCallbackScope construction per
 		// emission; the scopes they capture (return statements, impure points)
 		// answer later asks through the storage hub like any MutatingScope.
 		while ($nodeCallback instanceof GatheringNodeCallback) {
@@ -1310,9 +1309,9 @@ class NodeScopeResolver
 		}
 
 		// post-order emission means the node's own result and every subnode
-		// result are already stored when the callback fires - FiberScope
+		// result are already stored when the callback fires - NodeCallbackScope
 		// answers every ask synchronously from the storage
-		$nodeCallback($node, $scope->toFiberScope());
+		$nodeCallback($node, $scope->toNodeCallbackScope());
 	}
 
 	/**

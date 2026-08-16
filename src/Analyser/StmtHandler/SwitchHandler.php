@@ -10,11 +10,11 @@ use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Switch_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
-use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -31,13 +31,13 @@ use function array_merge;
 final class SwitchHandler implements StmtHandler
 {
 
-	public function __construct(private Container $container)
-	{
-	}
-
 	public function supports(Stmt $stmt): bool
 	{
 		return $stmt instanceof Switch_;
+	}
+
+	public function __construct(private Container $container)
+	{
 	}
 
 	public function processStmt(
@@ -148,9 +148,6 @@ final class SwitchHandler implements StmtHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new SwitchConditionNode($stmt->cond, $switchConditionArms, $stmt), $scope, $storage);
 		}
 
-		// $scopeForBranches is the subject narrowed by "none of the cases
-		// matched". The narrowing is tracked by the scope (getTypeOnScope's
-		// authoritative read); only an untracked subject needs reprocessing there.
 		// $scopeForBranches is the subject narrowed by "none of the cases
 		// matched". The narrowing is tracked by the scope (getTypeOnScope's
 		// authoritative read); only an untracked subject needs reprocessing there.

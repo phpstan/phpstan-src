@@ -169,7 +169,7 @@ final class ClassMethodHandler implements StmtHandler
 			$gatheredYieldStatements = [];
 			$executionEnds = [];
 			$methodImpurePoints = [];
-				// the body's results live in a per-body storage released right
+			// the body's results live in a per-body storage released right
 			// after the MethodReturnStatementsNode rules ran: later asks about
 			// body expressions (e.g. class-level rules pricing gathered nodes)
 			// go through the on-demand bridge, so keeping the results for the
@@ -178,45 +178,45 @@ final class ClassMethodHandler implements StmtHandler
 			$bodyStorage = $storage->duplicate();
 			$scope->pushExpressionResultStorage($bodyStorage);
 			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, new GatheringNodeCallback(function (Node $node, Scope $scope) use ($nodeScopeResolver, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
-						if ($scope->getFunction() !== $methodScope->getFunction()) {
-							return;
-						}
-						if ($scope->isInAnonymousFunction()) {
-							return;
-						}
-						if ($node instanceof PropertyAssignNode) {
-							if (
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($nodeScopeResolver, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
+					if ($scope->getFunction() !== $methodScope->getFunction()) {
+						return;
+					}
+					if ($scope->isInAnonymousFunction()) {
+						return;
+					}
+					if ($node instanceof PropertyAssignNode) {
+						if (
 							$node->getPropertyFetch() instanceof Expr\PropertyFetch
 							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
 							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
 							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
 							&& TypeUtils::findThisType($nodeScopeResolver->readScopeStateOrSyntheticType($node->getPropertyFetch()->var, $scope->toWalkScope())) !== null
-							) {
-								return;
-							}
-							$methodImpurePoints[] = new ImpurePoint(
-								$scope,
-								$node,
-								'propertyAssign',
-								'property assignment',
-								true,
-							);
+						) {
 							return;
 						}
-						if ($node instanceof ExecutionEndNode) {
-							$executionEnds[] = $node;
-							return;
-						}
-						if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-							$gatheredYieldStatements[] = $node;
-						}
-						if (!$node instanceof Return_) {
-							return;
-						}
+						$methodImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
+						return;
+					}
+					if ($node instanceof ExecutionEndNode) {
+						$executionEnds[] = $node;
+						return;
+					}
+					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+						$gatheredYieldStatements[] = $node;
+					}
+					if (!$node instanceof Return_) {
+						return;
+					}
 
-						$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-					}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
+					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+				}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
 
 				$methodReflection = $methodScope->getFunction();
 				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {

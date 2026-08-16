@@ -23,6 +23,7 @@ use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
+use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -31,6 +32,7 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -42,6 +44,9 @@ use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\InForeachNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
@@ -70,9 +75,9 @@ final class ForeachHandler implements StmtHandler
 
 	public function __construct(
 		private Container $container,
-		private VarAnnotationProcessor $varAnnotationProcessor,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
+		private VarAnnotationProcessor $varAnnotationProcessor,
 	)
 	{
 	}
@@ -110,7 +115,6 @@ final class ForeachHandler implements StmtHandler
 
 		$foreachIterateeType = $condResult->getType();
 		$foreachNativeIterateeType = $condResult->getNativeType();
-
 
 		if ($stmt->keyVar instanceof Variable) {
 			$keyTypeExpr = new NativeTypeExpr(
@@ -289,10 +293,6 @@ final class ForeachHandler implements StmtHandler
 			$finalScope = $unrolledEndScope;
 		}
 
-		// $scope is the post-loop scope; the body may have modified the iteratee
-		// (e.g. $arr[] = ...). A tracked iteratee reads the modified type off the
-		// scope (getTypeOnScope's authoritative read); only an untracked one whose
-		// inputs the body changed needs reprocessing there to observe it.
 		// $scope is the post-loop scope; the body may have modified the iteratee
 		// (e.g. $arr[] = ...). A tracked iteratee reads the modified type off the
 		// scope (getTypeOnScope's authoritative read); only an untracked one whose

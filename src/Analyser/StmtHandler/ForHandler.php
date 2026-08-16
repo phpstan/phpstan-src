@@ -196,10 +196,10 @@ final class ForHandler implements StmtHandler
 						$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 						$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 					}
-
 				} finally {
 					$scope->popExpressionResultStorage();
 				}
+
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
@@ -216,10 +216,6 @@ final class ForHandler implements StmtHandler
 
 		$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
 		if ($lastCondExpr !== null) {
-			// process the condition once and read the always-iterates check off
-			// its result - the previous scope-based read was a guaranteed
-			// storage miss (the condition was only stored into discarded
-			// convergence duplicates) that re-priced it on demand
 			// process the condition once and read the always-iterates check off
 			// its result - the previous scope-based read was a guaranteed
 			// storage miss (the condition was only stored into discarded

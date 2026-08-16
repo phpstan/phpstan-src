@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -45,10 +46,14 @@ final class ExpressionHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$entryScope = $scope;
+		$stmtScope = $scope;
+		if ($stmt->expr instanceof Expr\Throw_) {
+			$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
+			$scope = $stmtScope;
+		}
 		$hasAssign = false;
 		$currentScope = $scope;
-		$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
+		$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
 			if (
 				!($node instanceof VariableAssignNode) && !($node instanceof PropertyAssignNode)
 				|| $scope->getAnonymousFunctionReflection() !== $currentScope->getAnonymousFunctionReflection()
@@ -58,14 +63,8 @@ final class ExpressionHandler implements StmtHandler
 			}
 
 			$hasAssign = true;
-		});
-		try {
-			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
-		} finally {
-			$nodeScopeResolver->popNodeGatherer();
-		}
-
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
+		}, $nodeCallback), ExpressionContext::createTopLevel());
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 		if (
 			count($result->getImpurePoints()) === 0
@@ -80,14 +79,15 @@ final class ExpressionHandler implements StmtHandler
 		$scope = $result->getScope();
 		// the expression statement was just processed; read its narrowing from
 		// the result instead of re-resolving it via specifyTypesInCondition().
-		// the expression statement was just processed; read its narrowing from
-		// the result instead of re-resolving it via specifyTypesInCondition().
 		$scope = $scope->applySpecifiedTypes($result->getSpecifiedTypesForScope($scope, TypeSpecifierContext::createNull()));
 		$hasYield = $result->hasYield();
 		$throwPoints = $result->getThrowPoints();
 		$impurePoints = $result->getImpurePoints();
 		$isAlwaysTerminating = $result->isAlwaysTerminating();
 
+		// The expression statement is an exit point when its value type is an
+		// explicit never: exit/die/throw, a never-returning call, or a call
+		// configured as early-terminating (the call handlers give those never).
 		$statementType = $result->getType();
 		if ($statementType instanceof NeverType && $statementType->isExplicit()) {
 			return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [

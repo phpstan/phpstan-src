@@ -10,11 +10,9 @@ use PHPStan\DependencyInjection\ExtensionInterface;
 /**
  * @template T of Expr
  */
-#[ExtensionInterface(tag: self::EXTENSION_TAG)]
+#[ExtensionInterface(tag: 'phpstan.exprHandler')]
 interface ExprHandler
 {
-
-	public const EXTENSION_TAG = 'phpstan.exprHandler';
 
 	/** @phpstan-assert-if-true T $expr */
 	public function supports(Expr $expr): bool;

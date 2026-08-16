@@ -100,42 +100,42 @@ final class FunctionHandler implements StmtHandler
 		$gatheredYieldStatements = [];
 		$executionEnds = [];
 		$functionImpurePoints = [];
-			// the body's results live in a per-body storage released right after
+		// the body's results live in a per-body storage released right after
 		// the FunctionReturnStatementsNode rules ran - see the ClassMethod
 		// branch for the reasoning
 		$bodyStorage = $storage->duplicate();
 		$scope->pushExpressionResultStorage($bodyStorage);
 		try {
 			$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
-					if ($scope->getFunction() !== $functionScope->getFunction()) {
-						return;
-					}
-					if ($scope->isInAnonymousFunction()) {
-						return;
-					}
-					if ($node instanceof PropertyAssignNode) {
-						$functionImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-						return;
-					}
-					if ($node instanceof ExecutionEndNode) {
-						$executionEnds[] = $node;
-						return;
-					}
-					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
-						$gatheredYieldStatements[] = $node;
-					}
-					if (!$node instanceof Return_) {
-						return;
-					}
+				if ($scope->getFunction() !== $functionScope->getFunction()) {
+					return;
+				}
+				if ($scope->isInAnonymousFunction()) {
+					return;
+				}
+				if ($node instanceof PropertyAssignNode) {
+					$functionImpurePoints[] = new ImpurePoint(
+						$scope,
+						$node,
+						'propertyAssign',
+						'property assignment',
+						true,
+					);
+					return;
+				}
+				if ($node instanceof ExecutionEndNode) {
+					$executionEnds[] = $node;
+					return;
+				}
+				if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+					$gatheredYieldStatements[] = $node;
+				}
+				if (!$node instanceof Return_) {
+					return;
+				}
 
-					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-				}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
+				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+			}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
 
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
 				$stmt,
@@ -145,7 +145,7 @@ final class FunctionHandler implements StmtHandler
 				$executionEnds,
 				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
 				$functionReflection,
-						), $functionScope, $bodyStorage);
+			), $functionScope, $bodyStorage);
 		} finally {
 			$scope->popExpressionResultStorage();
 		}

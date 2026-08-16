@@ -22,10 +22,13 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Goto_;
+use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
+use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
@@ -105,7 +108,10 @@ use function array_merge;
 use function array_slice;
 use function array_values;
 use function count;
+use function get_class;
+use function getenv;
 use function in_array;
+use function is_array;
 use function is_int;
 use function is_string;
 use function max;
@@ -124,7 +130,7 @@ class NodeScopeResolver
 	private array $analysedFiles = [];
 
 	/**
-	 * When processing a synthetic node on demand (for a Fiber request), real AST
+	 * When processing a synthetic node on demand, real AST
 	 * nodes contained in it were already processed and must not be processed again.
 	 */
 	protected bool $returnStoredExpressionResults = false;
@@ -136,16 +142,6 @@ class NodeScopeResolver
 	 * re-processing - node callbacks fired during the original walk.
 	 */
 	private bool $consumeStoredExpressionResults = false;
-
-	/**
-	 * spl_object_id => recursion depth of the expressions currently being
-	 * processed by processExprNode. A fiber pending on one of them must not be
-	 * flushed at a nested statement-list boundary inside that expression - it
-	 * is resumed when the expression's own processing stores its result.
-	 *
-	 * @var array<int, int>
-	 */
-	protected array $processingExprIds = [];
 
 	/** Whether the PHPSTAN_GUARD_NW diagnostic is enabled (cached from the env). */
 	public static bool $guardNewWorld = false;
@@ -219,6 +215,7 @@ class NodeScopeResolver
 		private readonly ExpressionResultFactory $expressionResultFactory,
 	)
 	{
+		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
 	}
 
 	/**
@@ -361,7 +358,6 @@ class NodeScopeResolver
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
 			$this->processUnreachableStatement($nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
-
 	}
 
 	/** The stored result an outside asker may consume. */
@@ -397,7 +393,6 @@ class NodeScopeResolver
 		$storage->storeExpressionResult($expr, $expressionResult);
 	}
 
-
 	/**
 	 * @param Node\Stmt[] $bodyStmts
 	 * @param Closure(string): bool $gotoNameMatcher
@@ -407,7 +402,7 @@ class NodeScopeResolver
 	 * way: resolve its narrowing through the scope's on-demand dispatcher and apply
 	 * it via applySpecifiedTypes, instead of the old-world filterBy*Value().
 	 */
-	private function narrowScopeWithCondition(MutatingScope $scope, Expr $expr, TypeSpecifierContext $context): MutatingScope
+	public function narrowScopeWithCondition(MutatingScope $scope, Expr $expr, TypeSpecifierContext $context): MutatingScope
 	{
 		$specifiedTypes = $scope->specifyTypesOfNewWorldHandlerNode($expr, $context);
 
@@ -576,7 +571,7 @@ class NodeScopeResolver
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processStmtNodesInternal(
+	public function processStmtNodesInternal(
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,
@@ -603,7 +598,6 @@ class NodeScopeResolver
 			}
 		}
 	}
-
 
 	/**
 	 * @param Node\Stmt[] $stmts
@@ -778,6 +772,8 @@ class NodeScopeResolver
 		}
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
+			// a trait method the using class overrides is not analysed here at all -
+			// decided before the node callback is emitted
 			if (!$scope->isInClass()) {
 				throw new ShouldNotHappenException();
 			}
@@ -798,14 +794,6 @@ class NodeScopeResolver
 			}
 		}
 
-		$stmtScope = $scope;
-		if ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Expr\Throw_) {
-			$stmtScope = $this->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
-		}
-		if ($stmt instanceof Return_) {
-			$stmtScope = $this->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
-		}
-
 		// Statements whose work is processing their expressions emit their node
 		// callback AFTER that processing, inside their branches below, with the
 		// entry scope - a synchronously invoked rule (the plain resolver,
@@ -814,12 +802,12 @@ class NodeScopeResolver
 		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_
 			|| $stmt instanceof If_ || $stmt instanceof Switch_ || $stmt instanceof Foreach_;
 		if (!$deferredStmtCallback) {
-			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
+			$this->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
 		}
 
 		$stmtHandler = StmtHandlerRegistry::resolve($stmt, $this->container);
 		if ($stmtHandler !== null) {
-			$stmtResult = $stmtHandler->processStmt($this, $stmt, $stmtScope, $storage, $nodeCallback, $context);
+			$stmtResult = $stmtHandler->processStmt($this, $stmt, $scope, $storage, $nodeCallback, $context);
 			if ($overridingThrowPoints !== null) {
 				return new InternalStatementResult(
 					$stmtResult->getScope(),
@@ -2610,6 +2598,122 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * Ports the gather-keying of ParametersAcceptorSelector::selectFromArgs():
+	 * indexes the gathered arg type by name (sets $hasName) vs position, and
+	 * expands unpacked constant arrays / falls back to the iterable value type
+	 * (sets $unpack), so selectFromTypes() picks the matching variant.
+	 *
+	 * @param array<int|string, Type> $types
+	 */
+	private function addGatheredArgType(array &$types, bool &$unpack, bool &$hasName, Node\Arg $originalArg, int $i, Type $type): void
+	{
+		if ($originalArg->name !== null) {
+			$index = $originalArg->name->toString();
+			$hasName = true;
+		} else {
+			$index = $i;
+		}
+
+		if ($originalArg->unpack) {
+			$unpack = true;
+			$constantArrays = $type->getConstantArrays();
+			if (count($constantArrays) > 0) {
+				foreach ($constantArrays as $constantArray) {
+					$values = $constantArray->getValueTypes();
+					foreach ($constantArray->getKeyTypes() as $j => $keyType) {
+						$valueType = $values[$j];
+						$valueIndex = $keyType->getValue();
+						if (is_string($valueIndex)) {
+							$hasName = true;
+						} else {
+							$valueIndex = $i + $j;
+						}
+
+						$types[$valueIndex] = isset($types[$valueIndex])
+							? TypeCombinator::union($types[$valueIndex], $valueType)
+							: $valueType;
+					}
+				}
+			} else {
+				$types[$index] = $type->getIterableValueType();
+			}
+		} else {
+			$types[$index] = $type;
+		}
+	}
+
+	/**
+	 * Whether processing this argument consumes the generic-RESOLVED parameter
+	 * type: a closure/arrow function does - its parameters and body scope are
+	 * typed from the resolved callable(T) - whether it IS the argument or is
+	 * nested anywhere inside it (the enclosing parameter is pushed on the
+	 * in-function-call stack and the nested closure types itself from there).
+	 * Every other argument only reads variant-stable facts off its parameter.
+	 */
+	private function argConsumesResolvedParameterType(Expr $value): bool
+	{
+		if ($value instanceof Expr\Closure || $value instanceof Expr\ArrowFunction) {
+			return true;
+		}
+
+		// cached on the node - args are re-processed across convergence passes
+		$cached = $value->getAttribute('phpstanArgContainsClosure');
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$contains = (new NodeFinder())->findFirst(
+			[$value],
+			static fn (Node $node): bool => $node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction,
+		) !== null;
+		$value->setAttribute('phpstanArgContainsClosure', $contains);
+
+		return $contains;
+	}
+
+	/**
+	 * Resolves the type of a closure/arrow function argument for the generic
+	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
+	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
+	 * onto the in-function-call stack, so its body sees the template parameter
+	 * (effectively mixed for an untyped param) rather than a parameter already
+	 * resolved from sibling args. That keeps the inferred return type (the U in
+	 * callable(T): U) faithful to the closure's own declaration.
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 */
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
+	{
+		$rawParameter = null;
+		if (count($parametersAcceptors) === 1) {
+			$rawParameters = $parametersAcceptors[0]->getParameters();
+			if (isset($rawParameters[$i])) {
+				$rawParameter = $rawParameters[$i];
+			} elseif (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
+				$rawParameter = array_last($rawParameters);
+			}
+		}
+
+		if ($rawParameter !== null) {
+			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
+		}
+
+		return $this->resolveCallableTypeForScope($closureExpr, $scope);
+	}
+
+	/**
+	 * @param array<int|string, Type> $types
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 */
+	private function selectArgsAcceptor(array $types, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack): ParametersAcceptor
+	{
+		return $hasName && $namedArgumentsVariants !== null
+			? ParametersAcceptorSelector::selectFromTypes($types, $namedArgumentsVariants, $unpack)
+			: ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack);
+	}
+
+	/**
 	 * Applies the intrinsic argument overrides (array_map/filter/walk/find,
 	 * curl_setopt, implode, Closure::bind) on the arg-to-arg evolved scope via
 	 * the non-reprocessing readers, then type-selects the metadata acceptor over
@@ -2670,122 +2774,6 @@ class NodeScopeResolver
 
 			$this->processExprNode($stmt, $originalArg->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 		}
-	}
-
-	/**
-	 * @param array<int|string, Type> $types
-	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
-	 */
-	private function selectArgsAcceptor(array $types, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack): ParametersAcceptor
-	{
-		return $hasName && $namedArgumentsVariants !== null
-			? ParametersAcceptorSelector::selectFromTypes($types, $namedArgumentsVariants, $unpack)
-			: ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack);
-	}
-
-	/**
-	 * Ports the gather-keying of ParametersAcceptorSelector::selectFromArgs():
-	 * indexes the gathered arg type by name (sets $hasName) vs position, and
-	 * expands unpacked constant arrays / falls back to the iterable value type
-	 * (sets $unpack), so selectFromTypes() picks the matching variant.
-	 *
-	 * @param array<int|string, Type> $types
-	 */
-	private function addGatheredArgType(array &$types, bool &$unpack, bool &$hasName, Node\Arg $originalArg, int $i, Type $type): void
-	{
-		if ($originalArg->name !== null) {
-			$index = $originalArg->name->toString();
-			$hasName = true;
-		} else {
-			$index = $i;
-		}
-
-		if ($originalArg->unpack) {
-			$unpack = true;
-			$constantArrays = $type->getConstantArrays();
-			if (count($constantArrays) > 0) {
-				foreach ($constantArrays as $constantArray) {
-					$values = $constantArray->getValueTypes();
-					foreach ($constantArray->getKeyTypes() as $j => $keyType) {
-						$valueType = $values[$j];
-						$valueIndex = $keyType->getValue();
-						if (is_string($valueIndex)) {
-							$hasName = true;
-						} else {
-							$valueIndex = $i + $j;
-						}
-
-						$types[$valueIndex] = isset($types[$valueIndex])
-							? TypeCombinator::union($types[$valueIndex], $valueType)
-							: $valueType;
-					}
-				}
-			} else {
-				$types[$index] = $type->getIterableValueType();
-			}
-		} else {
-			$types[$index] = $type;
-		}
-	}
-
-	/**
-	 * Resolves the type of a closure/arrow function argument for the generic
-	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
-	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
-	 * onto the in-function-call stack, so its body sees the template parameter
-	 * (effectively mixed for an untyped param) rather than a parameter already
-	 * resolved from sibling args. That keeps the inferred return type (the U in
-	 * callable(T): U) faithful to the closure's own declaration.
-	 *
-	 * @param ParametersAcceptor[] $parametersAcceptors
-	 */
-	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
-	{
-		$rawParameter = null;
-		if (count($parametersAcceptors) === 1) {
-			$rawParameters = $parametersAcceptors[0]->getParameters();
-			if (isset($rawParameters[$i])) {
-				$rawParameter = $rawParameters[$i];
-			} elseif (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
-				$rawParameter = array_last($rawParameters);
-			}
-		}
-
-		if ($rawParameter !== null) {
-			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
-		}
-
-		return $this->resolveCallableTypeForScope($closureExpr, $scope);
-	}
-
-	/**
-	 * Whether processing this argument consumes the generic-RESOLVED parameter
-	 * type: a closure/arrow function does - its parameters and body scope are
-	 * typed from the resolved callable(T) - whether it IS the argument or is
-	 * nested anywhere inside it (the enclosing parameter is pushed on the
-	 * in-function-call stack and the nested closure types itself from there).
-	 * Every other argument only reads variant-stable facts off its parameter.
-	 */
-	private function argConsumesResolvedParameterType(Expr $value): bool
-	{
-		if ($value instanceof Expr\Closure || $value instanceof Expr\ArrowFunction) {
-			return true;
-		}
-
-		// cached on the node - args are re-processed across convergence passes
-		$cached = $value->getAttribute('phpstanArgContainsClosure');
-		if ($cached !== null) {
-			return $cached;
-		}
-
-		$contains = (new NodeFinder())->findFirst(
-			[$value],
-			static fn (Node $node): bool => $node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction,
-		) !== null;
-		$value->setAttribute('phpstanArgContainsClosure', $contains);
-
-		return $contains;
 	}
 
 	/**

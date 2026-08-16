@@ -46,10 +46,10 @@ final class ClassLikeHandler implements StmtHandler
 {
 
 	public function __construct(
-		private CalledMethodProcessor $calledMethodProcessor,
-		private ReflectionProvider $reflectionProvider,
 		private Reflector $reflector,
 		private ClassReflectionFactory $classReflectionFactory,
+		private CalledMethodProcessor $calledMethodProcessor,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}

@@ -481,6 +481,13 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15080(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15080.php'], []);
+	}
+
 	public function testBug13114(): void
 	{
 		$this->checkNullables = true;

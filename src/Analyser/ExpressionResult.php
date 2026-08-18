@@ -621,7 +621,14 @@ final class ExpressionResult
 				if ($positionKnows->no()) {
 					return false;
 				}
-				if ($readScope->getVariableType($name)->isSuperTypeOf($positionScope->getVariableType($name))->yes()) {
+				$askType = $readScope->getVariableType($name);
+				$positionType = $positionScope->getVariableType($name);
+				// identity and equality short-circuit the O(keys^2) constant-array
+				// isSuperTypeOf() - unchanged variables are the common ask case
+				if ($askType === $positionType || $askType->equals($positionType)) {
+					continue;
+				}
+				if ($askType->isSuperTypeOf($positionType)->yes()) {
 					continue;
 				}
 
@@ -633,7 +640,9 @@ final class ExpressionResult
 			if (!$askKnows->equals($positionKnows)) {
 				return false;
 			}
-			if (!$readScope->getVariableType($name)->equals($positionScope->getVariableType($name))) {
+			$askType = $readScope->getVariableType($name);
+			$positionType = $positionScope->getVariableType($name);
+			if ($askType !== $positionType && !$askType->equals($positionType)) {
 				return false;
 			}
 		}

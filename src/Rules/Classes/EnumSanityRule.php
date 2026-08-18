@@ -190,7 +190,7 @@ final class EnumSanityRule implements Rule
 				continue;
 			}
 
-			$exprType = $scope->getType($stmt->expr);
+			$exprType = $this->initializerExprTypeResolver->getType($stmt->expr, InitializerExprContext::fromScope($scope));
 			$scalarType = $enumNode->scalarType->toLowerString() === 'int' ? new IntegerType() : new StringType();
 			if ($scalarType->isSuperTypeOf($exprType)->yes()) {
 				$constantValues = $exprType->getConstantScalarValues();

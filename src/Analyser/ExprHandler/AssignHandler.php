@@ -608,30 +608,8 @@ final class AssignHandler implements ExprHandler
 		if ($var instanceof ArrayDimFetch) {
 			$dimFetchStack = [];
 			$originalVar = $var;
-			$assignedPropertyExpr = $assignedExpr;
+			$scopeBeforeTargetWalk = $scope;
 			while ($var instanceof ArrayDimFetch) {
-				$varForSetOffsetValue = $var->var;
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new TypeExpr($this->getOriginalPropertyType($nodeScopeResolver, $varForSetOffsetValue, $scope));
-				}
-
-				if (
-					$var === $originalVar
-					&& $var->dim !== null
-					&& $scope->hasExpressionType($var)->yes()
-				) {
-					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
-						$varForSetOffsetValue,
-						$var->dim,
-						$assignedPropertyExpr,
-					);
-				} else {
-					$assignedPropertyExpr = new SetOffsetValueTypeExpr(
-						$varForSetOffsetValue,
-						$var->dim,
-						$assignedPropertyExpr,
-					);
-				}
 				$dimFetchStack[] = $var;
 				$var = $var->var;
 			}
@@ -651,6 +629,37 @@ final class AssignHandler implements ExprHandler
 			$scope = $varResult->getScope();
 			if ($enterExpressionAssign) {
 				$scope = $scope->exitExpressionAssign($var);
+			}
+
+			// 1b. build the write chain (Set*OffsetValueTypeExpr nesting) after
+			// the root walk, so a property base's holder and current types are
+			// read from its stored result instead of pricing the unwalked fetch
+			$assignedPropertyExpr = $assignedExpr;
+			$chainVar = $originalVar;
+			while ($chainVar instanceof ArrayDimFetch) {
+				$varForSetOffsetValue = $chainVar->var;
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new TypeExpr($this->getOriginalPropertyType($nodeScopeResolver, $varForSetOffsetValue, $scope));
+				}
+
+				if (
+					$chainVar === $originalVar
+					&& $chainVar->dim !== null
+					&& $scopeBeforeTargetWalk->hasExpressionType($chainVar)->yes()
+				) {
+					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$chainVar->dim,
+						$assignedPropertyExpr,
+					);
+				} else {
+					$assignedPropertyExpr = new SetOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$chainVar->dim,
+						$assignedPropertyExpr,
+					);
+				}
+				$chainVar = $chainVar->var;
 			}
 
 			// 2. eval dimensions

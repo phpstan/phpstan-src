@@ -82,7 +82,7 @@ final class ArrayHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
+			$itemCallbackScope = $scope;
 			if ($arrayItem->key !== null) {
 				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $keyResult->hasYield();
@@ -98,6 +98,10 @@ final class ArrayHandler implements ExprHandler
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 			$scope = $valueResult->getScope();
+			// the item's callback fires after its key and value were processed,
+			// with the item's entry scope - callback-side asks answer from the
+			// storage instead of re-walking the yet-unstored sub-expressions
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemCallbackScope, $storage);
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 

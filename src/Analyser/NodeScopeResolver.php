@@ -3038,6 +3038,22 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * Whether a walk driven by this callback produces no rule or collector
+	 * output - its only product is the resulting scope. Such a walk may be
+	 * replaced by any other walk of the same body from the same entry scope.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private static function isScopeOnlyWalk(callable $nodeCallback): bool
+	{
+		while ($nodeCallback instanceof GatheringNodeCallback) {
+			$nodeCallback = $nodeCallback->getInner();
+		}
+
+		return $nodeCallback instanceof NoopNodeCallback;
+	}
+
+	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processClosureNode(
@@ -3188,17 +3204,45 @@ class NodeScopeResolver
 
 		$originalStorage = $storage;
 
+		// A scope-only walk emits no rule output, so the convergence pass that
+		// settles the by-ref uses already IS this walk's result pass: let it
+		// gather and reuse it instead of walking the body once more below.
+		// Without this a by-ref closure walks its body twice, which multiplies
+		// with every level of closure nesting.
+		$reuseSettledPass = self::isScopeOnlyWalk($nodeCallback);
+
+		// only the gathering walk that ends up being the result walk may
+		// contribute - every gathering walk starts the arrays over so a repeated
+		// one does not append to them twice
+		$restartGathering = static function () use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureImpurePoints, &$invalidateExpressions): void {
+			$executionEnds = [];
+			$gatheredReturnStatements = [];
+			$gatheredReturnStatementsWithScope = [];
+			$gatheredYieldStatements = [];
+			$gatheredYieldStatementsWithScope = [];
+			$closureImpurePoints = [];
+			$invalidateExpressions = [];
+		};
+
 		$count = 0;
 		$closureResultScope = null;
+		$settledStatementResult = null;
 		do {
 			$prevScope = $closureScope;
 
-			$storage = $originalStorage->duplicate();
+			if ($reuseSettledPass) {
+				$restartGathering();
+				$storage = $originalStorage;
+			} else {
+				$storage = $originalStorage->duplicate();
+			}
 			// deep context, like the loop handlers' own convergence passes: inner
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
-			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
+			// pass would re-converge every inner loop from scratch. A scope-only
+			// walk has no final walk to reach that convergence, matching how it
+			// approximates every other loop it enters deep.
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $reuseSettledPass ? $closureStmtsCallback : new NoopNodeCallback(), StatementContext::createDeep());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -3206,6 +3250,9 @@ class NodeScopeResolver
 
 			if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
 				$closureResultScope = $intermediaryClosureScope;
+				if ($reuseSettledPass) {
+					$settledStatementResult = $intermediaryClosureScopeResult;
+				}
 				break;
 			}
 
@@ -3213,6 +3260,10 @@ class NodeScopeResolver
 			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
 
 			if ($closureScope->equals($prevScope)) {
+				if ($reuseSettledPass) {
+					// the settled entry scope is the one this pass walked from
+					$settledStatementResult = $intermediaryClosureScopeResult;
+				}
 				break;
 			}
 			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
@@ -3226,7 +3277,14 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		if ($settledStatementResult !== null) {
+			$statementResult = $settledStatementResult;
+		} else {
+			if ($reuseSettledPass) {
+				$restartGathering();
+			}
+			$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		}
 		$publicStatementResult = $statementResult->toPublic();
 		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(

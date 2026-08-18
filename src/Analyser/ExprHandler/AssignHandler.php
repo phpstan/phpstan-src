@@ -1073,8 +1073,14 @@ final class AssignHandler implements ExprHandler
 					&& $expr->dim !== null
 					&& !$scope->getType($expr->dim)->equals($offsetType)
 				) {
-					// the offset expression - e.g. count($list) - no longer points at the
-					// offset that was just written now that the container has changed
+					// Registering $expr would make the scope remember the written value under
+					// an offset re-read from the *post-assignment* scope. Only an offset that
+					// still resolves to exactly what was written may be registered, so anything
+					// else is skipped: the offset moved because it was derived from the container
+					// ($list[count($list)]) or from a side effect ($list[$i++]), or it merely
+					// widened because the container changed ($list[key($list)]). The equality is
+					// the only cheap evidence that the expression still designates the element
+					// that was just written, so both cases are treated the same way.
 					continue;
 				}
 

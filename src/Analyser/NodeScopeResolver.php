@@ -2226,7 +2226,6 @@ class NodeScopeResolver
 						}
 					}
 
-					$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 					$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
@@ -2271,6 +2270,10 @@ class NodeScopeResolver
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 					);
 					$this->storeExpressionResult($storage, $arg->value, $storedClosureResult);
+					// the closure node's own callback fires after its result is
+					// stored, mirroring processExprNodeInternal() - callback-side
+					// getType() answers from the stored result
+					$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 					// the arg result must be the properly-typed stored result -
 					// ArgsResult readers price array_push() & co. from it
 					$argResults[spl_object_id($arg->value)] = $storedClosureResult;
@@ -2367,7 +2370,6 @@ class NodeScopeResolver
 						}
 					}
 
-					$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 					$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
 					$arrowFunctionExprResult = $arrowFunctionResult->getExpressionResult();
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
@@ -2412,6 +2414,10 @@ class NodeScopeResolver
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 					);
 					$this->storeExpressionResult($storage, $arg->value, $storedArrowResult);
+					// the arrow function node's own callback fires after its result
+					// is stored, mirroring processExprNodeInternal() - callback-side
+					// getType() answers from the stored result
+					$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 					// the arg result must be the properly-typed stored result, not
 					// the body walk's placeholder (whose typeCallback answers mixed) -
 					// ArgsResult readers price array_push() & co. from it

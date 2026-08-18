@@ -3835,6 +3835,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					$trackedType = $currentTypes[0];
 					$trackedNativeType ??= $currentTypes[1];
 				}
+			} elseif (!$specifiedTypes->shouldOverwrite() && $scope->isComplexUnionType($trackedType)) {
+				// mirrors addTypeToExpression()/removeTypeFromExpression(): narrowing
+				// a combinatorially-grown offset union doubles it with every isset()-
+				// style check and gets skipped (overwrites assign, they never narrow)
+				continue;
 			}
 
 			if (isset($typeSpecification['terms'])) {

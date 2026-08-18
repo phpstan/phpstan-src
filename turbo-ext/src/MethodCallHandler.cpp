@@ -66,6 +66,49 @@ zv::Val extensionSpecifyTypes(zval *extension, zval *methodReflection, zval *nor
 
 /* }}} */
 
+/* {{{ the native reflection getPromotedParameterNames() reads (BetterReflection
+ * adapters, PHP for good) */
+
+pt_method_site pt_mch_native_class_has_method_site;
+pt_method_site pt_mch_native_class_get_method_site;
+pt_method_site pt_mch_native_method_get_parameters_site;
+pt_method_site pt_mch_native_parameter_is_promoted_site;
+pt_method_site pt_mch_native_parameter_get_name_site;
+
+/* $nativeClassReflection->hasMethod($methodName) (coerced); false = pending exception */
+bool nativeClassHasMethod(zval *nativeClassReflection, zval *methodName, bool &out)
+{
+	zv::Val result = pt_call_method_cached(pt_mch_native_class_has_method_site, Z_OBJ_P(nativeClassReflection), PT_LC("hasmethod"), 1, methodName);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+/* $nativeClassReflection->getMethod($methodName) */
+zv::Val nativeClassGetMethod(zval *nativeClassReflection, zval *methodName)
+{
+	return pt_call_method_cached(pt_mch_native_class_get_method_site, Z_OBJ_P(nativeClassReflection), PT_LC("getmethod"), 1, methodName);
+}
+
+/* $nativeMethodReflection->getParameters() */
+zv::Val nativeMethodGetParameters(zval *nativeMethodReflection)
+{
+	return pt_call_method_cached(pt_mch_native_method_get_parameters_site, Z_OBJ_P(nativeMethodReflection), PT_LC("getparameters"), 0, NULL);
+}
+
+/* $parameter->isPromoted() / ->getName() */
+zv::Val nativeParameterIsPromoted(zval *parameter)
+{
+	return pt_call_method_cached(pt_mch_native_parameter_is_promoted_site, Z_OBJ_P(parameter), PT_LC("ispromoted"), 0, NULL);
+}
+
+zv::Val nativeParameterGetName(zval *parameter)
+{
+	return pt_call_method_cached(pt_mch_native_parameter_get_name_site, Z_OBJ_P(parameter), PT_LC("getname"), 0, NULL);
+}
+
+/* }}} */
+
 /* {{{ the PhpParser nodes' properties */
 
 pt_property_site pt_mch_var_site;
@@ -480,6 +523,22 @@ public:
 					zv::Val varNativeType = pt_expression_result_get_native_type(varResult.raw());
 					if (UNEXPECTED(varNativeType.isUndef())) return zv::Val();
 					currentScope = pt_mutating_scope_assign_expression(Z_OBJ_P(currentScope.raw()), Z_OBJ_P(normalizedVar), resolvedSelfOutType.raw(), varNativeType.raw());
+					if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
+				}
+			}
+
+			bool initializesPromotedProperties = !zend_is_true(isStatic.raw());
+			if (initializesPromotedProperties && UNEXPECTED(!isDeclaredInScopeClass(currentScope.raw(), methodReflection.raw(), initializesPromotedProperties))) return zv::Val();
+			if (initializesPromotedProperties) {
+				zval *normalizedVar = exprVar(normalizedExpr.raw());
+				if (UNEXPECTED(normalizedVar == NULL)) return zv::Val();
+				zv::Val promotedOnType = pt_mutating_scope_get_type(Z_OBJ_P(currentScope.raw()), normalizedVar);
+				if (UNEXPECTED(promotedOnType.isUndef())) return zv::Val();
+				zv::Val promotedParameterNames = getPromotedParameterNames(methodReflection.raw());
+				if (UNEXPECTED(promotedParameterNames.isUndef())) return zv::Val();
+				for (zv::ArrayEntry entry : zv::ArrRef(promotedParameterNames.raw())) {
+					zval *propertyName = entry.value().deref().raw();
+					currentScope = pt_mutating_scope_assign_initialized_property(Z_OBJ_P(currentScope.raw()), promotedOnType.raw(), Z_STR_P(propertyName));
 					if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 				}
 			}
@@ -928,6 +987,88 @@ public:
 		return true;
 	}
 
+	/* Mirrors getPromotedParameterNames(): the names of the method's promoted
+	 * parameters, memoized per declaring class and method in the twin's
+	 * $promotedParameterNamesCache slot; UNDEF = pending exception */
+	zv::Val getPromotedParameterNames(zval *methodReflection) const
+	{
+		zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
+		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+		if (UNEXPECTED(!declaringClass.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(declaringClass.raw()));
+			return zv::Val();
+		}
+		zv::Val className = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+		if (UNEXPECTED(className.isUndef())) return zv::Val();
+		zv::Val methodName = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAME);
+		if (UNEXPECTED(methodName.isUndef())) return zv::Val();
+		/* sprintf('%s::%s', ...) of the two string getters */
+		zend_string *classNameString = zval_try_get_string(className.raw());
+		if (UNEXPECTED(classNameString == NULL)) return zv::Val();
+		zv::Val classNameHold = zv::Val::adoptString(classNameString);
+		zend_string *methodNameString = zval_try_get_string(methodName.raw());
+		if (UNEXPECTED(methodNameString == NULL)) return zv::Val();
+		zv::Val methodNameHold = zv::Val::adoptString(methodNameString);
+		zend_string *cacheKey = zend_string_concat3(ZSTR_VAL(classNameString), ZSTR_LEN(classNameString), PT_LC("::"), ZSTR_VAL(methodNameString), ZSTR_LEN(methodNameString));
+		zv::Val cacheKeyHold = zv::Val::adoptString(cacheKey);
+
+		zval *cache = OBJ_PROP_NUM(self, slots::promotedParameterNamesCache);
+		ZVAL_DEREF(cache);
+		if (EXPECTED(Z_TYPE_P(cache) == IS_ARRAY)) {
+			zval *cached = zend_symtable_find(Z_ARRVAL_P(cache), cacheKey);
+			if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
+		}
+
+		zv::Arr names = zv::Arr::empty();
+		zv::Val nativeClassReflection = pt_class_reflection_get_native_reflection(Z_OBJ_P(declaringClass.raw()));
+		if (UNEXPECTED(nativeClassReflection.isUndef())) return zv::Val();
+		if (UNEXPECTED(!nativeClassReflection.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function hasMethod() on %s", zend_zval_value_name(nativeClassReflection.raw()));
+			return zv::Val();
+		}
+		bool hasMethod;
+		if (UNEXPECTED(!nativeClassHasMethod(nativeClassReflection.raw(), methodName.raw(), hasMethod))) return zv::Val();
+		if (hasMethod) {
+			zv::Val nativeMethodReflection = nativeClassGetMethod(nativeClassReflection.raw(), methodName.raw());
+			if (UNEXPECTED(nativeMethodReflection.isUndef())) return zv::Val();
+			if (UNEXPECTED(!nativeMethodReflection.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function getParameters() on %s", zend_zval_value_name(nativeMethodReflection.raw()));
+				return zv::Val();
+			}
+			zv::Val parameters = nativeMethodGetParameters(nativeMethodReflection.raw());
+			if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(parameters.raw()) != IS_ARRAY)) {
+				zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(parameters.raw()));
+				if (UNEXPECTED(EG(exception))) return zv::Val();
+			} else {
+				for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
+					zval *parameter = entry.value().deref().raw();
+					if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) {
+						zend_throw_error(NULL, "Call to a member function isPromoted() on %s", zend_zval_value_name(parameter));
+						return zv::Val();
+					}
+					zv::Val isPromoted = nativeParameterIsPromoted(parameter);
+					if (UNEXPECTED(isPromoted.isUndef())) return zv::Val();
+					if (!zend_is_true(isPromoted.raw())) continue;
+					zv::Val parameterName = nativeParameterGetName(parameter);
+					if (UNEXPECTED(parameterName.isUndef())) return zv::Val();
+					names.push(std::move(parameterName));
+				}
+			}
+		}
+
+		/* return $this->promotedParameterNamesCache[$cacheKey] = $names; */
+		cache = OBJ_PROP_NUM(self, slots::promotedParameterNamesCache);
+		ZVAL_DEREF(cache);
+		if (EXPECTED(Z_TYPE_P(cache) == IS_ARRAY)) {
+			SEPARATE_ARRAY(cache);
+			zval copy;
+			ZVAL_COPY(&copy, names.raw());
+			zend_symtable_update(Z_ARRVAL_P(cache), cacheKey, &copy);
+		}
+		return zv::Val(std::move(names));
+	}
+
 private:
 	zend_object *self;
 
@@ -980,10 +1121,10 @@ private:
 		return zv::Val::null();
 	}
 
-	/* the purity gate of processCalledMethod(): $scope->isInClass() && the
-	 * class is the method's declaring class && the function is __construct
-	 * && the receiver is $this; false = pending exception */
-	[[nodiscard]] static bool shouldProcessCalledMethod(zval *scope, zval *methodReflection, zval *calledOnType, bool &out)
+	/* $scope->isInClass() && $scope->getClassReflection()->getName() ===
+	 * $methodReflection->getDeclaringClass()->getName(); false = pending
+	 * exception */
+	[[nodiscard]] static bool isDeclaredInScopeClass(zval *scope, zval *methodReflection, bool &out)
 	{
 		out = false;
 		bool inClass;
@@ -1001,7 +1142,18 @@ private:
 		if (UNEXPECTED(declaringClass.isUndef())) return false;
 		zv::Val declaringClassName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
 		if (UNEXPECTED(declaringClassName.isUndef())) return false;
-		if (!zend_is_identical(className.raw(), declaringClassName.raw())) return true;
+		out = zend_is_identical(className.raw(), declaringClassName.raw());
+		return true;
+	}
+
+	/* the purity gate of processCalledMethod(): $scope->isInClass() && the
+	 * class is the method's declaring class && the function is __construct
+	 * && the receiver is $this; false = pending exception */
+	[[nodiscard]] static bool shouldProcessCalledMethod(zval *scope, zval *methodReflection, zval *calledOnType, bool &out)
+	{
+		if (UNEXPECTED(!isDeclaredInScopeClass(scope, methodReflection, out))) return false;
+		if (!out) return true;
+		out = false;
 
 		zv::Val functionName = pt_mutating_scope_get_function_name(Z_OBJ_P(scope));
 		if (UNEXPECTED(functionName.isUndef())) return false;
@@ -1225,6 +1377,12 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 		bool out;
 		if (UNEXPECTED(!MethodCallHandler(Z_OBJ_P(ZEND_THIS)).isMethodCallNarrowable(scope, expr, varResult, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
+	});
+
+	cls.method(sigs::getPromotedParameterNames, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *methodReflection;
+		if (!zp::parse<zp::Obj>(execute_data, methodReflection)) RETURN_THROWS();
+		PT_RETURN_VAL(MethodCallHandler(Z_OBJ_P(ZEND_THIS)).getPromotedParameterNames(methodReflection));
 	});
 
 	cls.shadow(&pt_ce_method_call_handler);

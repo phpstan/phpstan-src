@@ -55,9 +55,11 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
+use function sprintf;
 use function strtolower;
 
 /**
@@ -67,6 +69,9 @@ use function strtolower;
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodCallHandler.cpp')]
 final class MethodCallHandler implements ExprHandler
 {
+
+	/** @var array<string, list<string>> */
+	private array $promotedParameterNamesCache = [];
 
 	public function __construct(
 		private CalledMethodProcessor $calledMethodProcessor,
@@ -334,6 +339,17 @@ final class MethodCallHandler implements ExprHandler
 						ConditionalTypeResolver::resolveForCall($selfOutType, $acceptorForGenerics, $normalizedExpr->getArgs(), $scope),
 						$varResult->getNativeType(),
 					);
+				}
+			}
+
+			if (
+				!$methodReflection->isStatic()
+				&& $scope->isInClass()
+				&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+			) {
+				$calledOnType = $scope->getType($normalizedExpr->var);
+				foreach ($this->getPromotedParameterNames($methodReflection) as $propertyName) {
+					$scope = $scope->assignInitializedProperty($calledOnType, $propertyName);
 				}
 			}
 
@@ -634,6 +650,36 @@ final class MethodCallHandler implements ExprHandler
 		}
 
 		return $this->rememberPossiblyImpureFunctionValues || $hasSideEffects->no();
+	}
+
+	/**
+	 * Constructor promotion is not limited to methods called __construct: a trait
+	 * constructor imported under a different name (use T { __construct as init; })
+	 * keeps promoting its parameters, so calling it initializes those properties.
+	 *
+	 * @return list<string>
+	 */
+	private function getPromotedParameterNames(ExtendedMethodReflection $methodReflection): array
+	{
+		$declaringClass = $methodReflection->getDeclaringClass();
+		$cacheKey = sprintf('%s::%s', $declaringClass->getName(), $methodReflection->getName());
+		if (array_key_exists($cacheKey, $this->promotedParameterNamesCache)) {
+			return $this->promotedParameterNamesCache[$cacheKey];
+		}
+
+		$names = [];
+		$nativeClassReflection = $declaringClass->getNativeReflection();
+		if ($nativeClassReflection->hasMethod($methodReflection->getName())) {
+			foreach ($nativeClassReflection->getMethod($methodReflection->getName())->getParameters() as $parameter) {
+				if (!$parameter->isPromoted()) {
+					continue;
+				}
+
+				$names[] = $parameter->getName();
+			}
+		}
+
+		return $this->promotedParameterNamesCache[$cacheKey] = $names;
 	}
 
 }

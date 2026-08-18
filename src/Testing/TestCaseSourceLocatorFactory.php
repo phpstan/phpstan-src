@@ -18,6 +18,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
+use PHPStan\Reflection\ConditionallyDeclaredSymbolDetector;
 use ReflectionClass;
 use function dirname;
 use function hash;
@@ -44,6 +45,7 @@ final class TestCaseSourceLocatorFactory
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private PhpVersion $phpVersion,
+		private ConditionallyDeclaredSymbolDetector $conditionallyDeclaredSymbolDetector,
 		private array $fileExtensions,
 		private ?array $excludePaths,
 	)
@@ -84,7 +86,7 @@ final class TestCaseSourceLocatorFactory
 				$composerLocators[] = $composerSourceLocator;
 			}
 
-			self::$composerSourceLocatorsCache[$cacheKey] = [new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion)];
+			self::$composerSourceLocatorsCache[$cacheKey] = [new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion, $this->conditionallyDeclaredSymbolDetector, $this->phpstormStubsSourceStubber)];
 		}
 
 		$locators = self::$composerSourceLocatorsCache[$cacheKey] ?? [];

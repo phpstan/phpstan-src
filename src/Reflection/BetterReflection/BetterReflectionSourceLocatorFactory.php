@@ -30,6 +30,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocat
 use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
+use PHPStan\Reflection\ConditionallyDeclaredSymbolDetector;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_merge;
 use function array_unique;
@@ -64,6 +65,7 @@ final class BetterReflectionSourceLocatorFactory
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private FileNodesFetcher $fileNodesFetcher,
+		private ConditionallyDeclaredSymbolDetector $conditionallyDeclaredSymbolDetector,
 		#[AutowiredParameter]
 		private array $scanFiles,
 		#[AutowiredParameter]
@@ -163,7 +165,7 @@ final class BetterReflectionSourceLocatorFactory
 			}
 
 			if (count($composerLocators) > 0) {
-				$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion);
+				$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion, $this->conditionallyDeclaredSymbolDetector, $this->phpstormStubsSourceStubber);
 			}
 
 			if (extension_loaded('phar')) {

@@ -10,15 +10,22 @@ use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ConditionallyDeclaredSymbolDetector;
 use function str_contains;
 use function str_replace;
 
 final class SkipPolyfillSourceLocator implements SourceLocator
 {
 
-	public function __construct(private SourceLocator $sourceLocator, private PhpVersion $phpVersion)
+	public function __construct(
+		private SourceLocator $sourceLocator,
+		private PhpVersion $phpVersion,
+		private ConditionallyDeclaredSymbolDetector $conditionallyDeclaredSymbolDetector,
+		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+	)
 	{
 	}
 
@@ -52,10 +59,37 @@ final class SkipPolyfillSourceLocator implements SourceLocator
 				if (str_contains($normalized, '/symfony/polyfill-php85/') && $this->phpVersion->getVersionId() >= 80500) {
 					return null;
 				}
+				if ($this->isShadowingNativeSymbol($reflection, $fileName)) {
+					return null;
+				}
 			}
 		}
 
 		return $reflection;
+	}
+
+	/**
+	 * A polyfill guards its declaration so that it never runs when PHP provides
+	 * the symbol natively. Its shape is then only an approximation of the real
+	 * one and must not be reflected instead of it.
+	 *
+	 * Functions are left alone here: hiding them would also hide their
+	 * existence from a PHP version that does not have them natively yet.
+	 * NativeFunctionReflectionProvider prefers the native signature instead.
+	 */
+	private function isShadowingNativeSymbol(ReflectionClass|ReflectionFunction|ReflectionConstant $reflection, string $fileName): bool
+	{
+		if ($reflection instanceof ReflectionClass) {
+			return $this->conditionallyDeclaredSymbolDetector->isConditionallyDeclaredClass($fileName, $reflection->getName())
+				&& $this->phpstormStubsSourceStubber->isPresentClass($reflection->getName()) === true;
+		}
+
+		if ($reflection instanceof ReflectionConstant) {
+			return $this->conditionallyDeclaredSymbolDetector->isConditionallyDeclaredConstant($fileName, $reflection->getName())
+				&& $this->phpstormStubsSourceStubber->generateConstantStub($reflection->getName()) !== null;
+		}
+
+		return false;
 	}
 
 	#[Override]

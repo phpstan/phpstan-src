@@ -559,6 +559,8 @@ jobs:
             extensions: ""
           - script: "bin/phpstan analyse e2e/only-files-not-analysed-trait/src -c e2e/only-files-not-analysed-trait/ignore.neon"
             extensions: ""
+          - script: "bin/phpstan analyse -c e2e/shadowed-native-function/phpstan.neon"
+            extensions: ""
           - script: "bin/phpstan analyse e2e/only-files-not-analysed-trait/src/Foo.php e2e/only-files-not-analysed-trait/src/BarTrait.php -c e2e/only-files-not-analysed-trait/no-ignore.neon"
             extensions: ""
           - script: |

@@ -6,12 +6,14 @@ use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflectionFactory;
+use PHPStan\Reflection\ConditionallyDeclaredSymbolDetector;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
@@ -25,7 +27,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
-use function str_contains;
 use function strtolower;
 
 #[AutowiredService]
@@ -43,6 +44,8 @@ final class NativeFunctionReflectionProvider
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
+		private ConditionallyDeclaredSymbolDetector $conditionallyDeclaredSymbolDetector,
+		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 	)
 	{
 	}
@@ -78,7 +81,7 @@ final class NativeFunctionReflectionProvider
 			$isDeprecated = $reflectionFunction->isDeprecated();
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
-				if (!$reflectionFunctionAdapter->isInternal() && !str_contains(strtolower($fileName), 'polyfill')) {
+				if (!$reflectionFunctionAdapter->isInternal() && !$this->isPolyfill($fileName, $realFunctionName)) {
 					return null;
 				}
 				$docComment = $reflectionFunction->getDocComment();
@@ -194,6 +197,21 @@ final class NativeFunctionReflectionProvider
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 
 		return $functionReflection;
+	}
+
+	/**
+	 * A userland declaration of a function PHP provides natively can only be a
+	 * polyfill - PHP would fatal on the redeclaration otherwise - so it is
+	 * guarded by a conditional and never runs. Its PHPDoc must not replace the
+	 * native signature.
+	 */
+	private function isPolyfill(string $fileName, string $functionName): bool
+	{
+		if ($this->phpstormStubsSourceStubber->isPresentFunction($functionName) !== true) {
+			return false;
+		}
+
+		return $this->conditionallyDeclaredSymbolDetector->isConditionallyDeclaredFunction($fileName, $functionName);
 	}
 
 	private function getReturnTypeFromPhpDoc(ResolvedPhpDocBlock $phpDoc): ?Type

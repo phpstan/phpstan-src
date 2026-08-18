@@ -9,6 +9,7 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\VariadicByRefParameterOutType;
 use function lcfirst;
 use function sprintf;
 
@@ -93,6 +94,13 @@ final class TooWideParameterOutTypeCheck
 
 		$variableExpr = new Variable($parameter->getName());
 		$variableType = $scope->getType($variableExpr);
+
+		if ($parameter->isVariadic()) {
+			$variableType = VariadicByRefParameterOutType::elementType($variableType);
+			if ($variableType === null) {
+				return [];
+			}
+		}
 
 		return $this->tooWideTypeCheck->checkParameterOutType(
 			$outType,

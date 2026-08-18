@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\VariadicByRefParameterOutType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -21,6 +22,9 @@ use function sprintf;
  *
  * The promise is either an explicit `@param-out` or, in its absence, the parameter's own type.
  * Which one it is only shows in the error message, so callers report it via $isParamOutType.
+ *
+ * For a variadic parameter the promise describes a single argument while the variable holds the
+ * packed array of them, so the two sides are reconciled through VariadicByRefParameterOutType.
  *
  * @internal
  */
@@ -47,17 +51,35 @@ final class ParameterOutTypeCheck
 		bool $isParamOutType,
 	): array
 	{
+		$isVariadic = $parameter->isVariadic();
+
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$checkedExpr,
 			'',
-			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
+			static function (Type $type) use ($outType, $isVariadic): bool {
+				if ($isVariadic) {
+					$type = VariadicByRefParameterOutType::elementType($type);
+					if ($type === null) {
+						return false;
+					}
+				}
+
+				return $outType->isSuperTypeOf($type)->yes();
+			},
 		);
 		if ($typeResult->getType() instanceof ErrorType) {
 			return $typeResult->getUnknownClassErrors();
 		}
 
 		$assignedExprType = $scope->getType($checkedExpr);
+		if ($isVariadic) {
+			$assignedExprType = VariadicByRefParameterOutType::elementType($assignedExprType);
+			if ($assignedExprType === null) {
+				return [];
+			}
+		}
+
 		if ($outType->isSuperTypeOf($assignedExprType)->yes()) {
 			return [];
 		}

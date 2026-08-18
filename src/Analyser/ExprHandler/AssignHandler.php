@@ -1805,11 +1805,27 @@ final class AssignHandler implements ExprHandler
 				}
 			}
 
-			$arrayDimFetch = $dimFetchStack[$i] ?? null;
+			// This loop walks the chain from the innermost write outwards: $offsetType is the
+			// offset written by $writtenDimFetch, and $offsetValueType is the type of the
+			// container it is written into ($writtenDimFetch->var). $dimFetchStack is indexed
+			// the other way round, so $dimFetchStack[$i] is the mirror image of
+			// $writtenDimFetch - the two only coincide for a non-nested write.
+			//
+			// Swapping the mirror for $writtenDimFetch here is not a no-op. At the outermost
+			// level of a nested write the mirror is the whole left-hand side, which is untracked
+			// before the assignment, so the write takes the setOffsetValueType() branch below and
+			// *replaces* the container's value type. $writtenDimFetch is tracked there, so the
+			// write would take the setExistingOffsetValueType() branch and *union* the old value
+			// type into the new one, widening every nested write back to what it was before
+			// (assign-nested-arrays.php, pr-4390.php, bug-13637.php, bug-13786.php,
+			// bug-14084.php). Making the index consistent therefore means teaching this branch to
+			// tell replacing a known element from widening a maybe-existing one, which no index
+			// on its own can do.
+			$mirroredDimFetch = $dimFetchStack[$i] ?? null;
 			if (
 				$offsetType !== null
-				&& $arrayDimFetch !== null
-				&& $scope->hasExpressionType($arrayDimFetch)->yes()
+				&& $mirroredDimFetch !== null
+				&& $scope->hasExpressionType($mirroredDimFetch)->yes()
 				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
 			) {
 				$hasOffsetType = null;
@@ -1853,8 +1869,9 @@ final class AssignHandler implements ExprHandler
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
-			// $writtenDimFetch is the dim fetch $offsetType belongs to - unlike
-			// $dimFetchStack[$i] above, which this reversed loop indexes the other way round
+			// $writtenDimFetch, not the mirror above: shouldKeepList() reads the offset
+			// expression together with the array it indexes, so it has to be handed the link
+			// of the chain that $offsetType belongs to
 			if ($offsetValueType->isList()->yes() && $this->shouldKeepList($writtenDimFetch, $scope, $offsetValueType)) {
 				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 			}

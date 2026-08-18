@@ -25,6 +25,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateIterableType;
@@ -50,6 +51,7 @@ use function sprintf;
 use function str_contains;
 
 /** @api */
+#[ReferencedByTurboExtension(key: 'unionType')]
 class UnionType implements CompoundType
 {
 

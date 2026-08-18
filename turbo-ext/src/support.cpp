@@ -7,6 +7,7 @@ pt_globals_t pt_globals;
 zend_class_entry *pt_ce_trinary = nullptr;
 zend_class_entry *pt_ce_expr_type_holder = nullptr;
 zend_class_entry *pt_ce_cond_expr_holder = nullptr;
+zend_class_entry *pt_ce_finite_type_set = nullptr;
 
 /* {{{ class map */
 
@@ -49,9 +50,17 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARROW_FUNCTION */ {"arrowFunction", "PhpParser\\Node\\Expr\\ArrowFunction"},
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
+	/* PT_CLASS_NULL_TYPE */ {"nullType", "PHPStan\\Type\\NullType"},
+	/* PT_CLASS_CONSTANT_INTEGER_TYPE */ {"constantIntegerType", "PHPStan\\Type\\Constant\\ConstantIntegerType"},
+	/* PT_CLASS_CONSTANT_STRING_TYPE */ {"constantStringType", "PHPStan\\Type\\Constant\\ConstantStringType"},
+	/* PT_CLASS_ENUM_CASE_OBJECT_TYPE */ {"enumCaseObjectType", "PHPStan\\Type\\Enum\\EnumCaseObjectType"},
+	/* PT_CLASS_TEMPLATE_TYPE */ {"templateType", "PHPStan\\Type\\Generic\\TemplateType"},
+	/* PT_CLASS_UNION_TYPE */ {"unionType", "PHPStan\\Type\\UnionType"},
+	/* PT_CLASS_INTERSECTION_TYPE */ {"intersectionType", "PHPStan\\Type\\IntersectionType"},
 	/* PT_CLASS_TRINARY */ {"trinaryLogic", NULL},
 	/* PT_CLASS_ETH */ {"expressionTypeHolder", NULL},
 	/* PT_CLASS_CEH */ {"conditionalExpressionHolder", NULL},
+	/* PT_CLASS_FINITE_TYPE_SET */ {"finiteTypeSet", NULL},
 };
 
 zend_class_entry *pt_class(int idx)

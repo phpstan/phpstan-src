@@ -81,12 +81,22 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
+	/* the classes FiniteTypeSet::key() recognises without crossing back into
+	 * PHP (exact-class fast paths) and the three it excludes outright */
+	PT_CLASS_NULL_TYPE,
+	PT_CLASS_CONSTANT_INTEGER_TYPE,
+	PT_CLASS_CONSTANT_STRING_TYPE,
+	PT_CLASS_ENUM_CASE_OBJECT_TYPE,
+	PT_CLASS_TEMPLATE_TYPE,
+	PT_CLASS_UNION_TYPE,
+	PT_CLASS_INTERSECTION_TYPE,
 	/* classes the extension instantiates (their PHP twins are themselves
 	 * shadowed, hence no default name): configured to the stub subclasses
 	 * so created objects satisfy the original PHPStan type hints */
 	PT_CLASS_TRINARY,
 	PT_CLASS_ETH,
 	PT_CLASS_CEH,
+	PT_CLASS_FINITE_TYPE_SET,
 	PT_CLASS_COUNT
 };
 
@@ -135,6 +145,7 @@ extern zend_class_entry *pt_ce_trinary;
 extern zend_class_entry *pt_ce_expr_type_holder;
 extern zend_class_entry *pt_ce_cond_expr_holder;
 extern zend_class_entry *pt_ce_type_combinator_cache;
+extern zend_class_entry *pt_ce_finite_type_set;
 
 /* registration hooks, called from the extension's onStartup */
 void pt_register_trinary_logic();
@@ -148,6 +159,7 @@ void pt_register_parser_runner();
 void pt_register_type_combinator_cache();
 void pt_register_arena_cache();
 void pt_register_expression_result_storage();
+void pt_register_finite_type_set();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();
@@ -156,6 +168,7 @@ void pt_scope_ops_rinit();
 void pt_scope_ops_rshutdown();
 void pt_type_combinator_cache_rinit();
 void pt_type_combinator_cache_rshutdown();
+void pt_finite_type_set_rinit();
 
 /* module-shutdown backstop: destroys the arena mapping if the run skipped
  * ArenaCache::destroy() on a graceful exit */
@@ -175,6 +188,10 @@ void pt_arena_mshutdown();
 #define PT_ETH_PROP_CERTAINTY 2
 #define PT_CEH_PROP_CONDS 0
 #define PT_CEH_PROP_TYPEHOLDER 1
+#define PT_FTS_PROP_HAS_CLASS_STRING_MEMBER 0
+#define PT_FTS_PROP_MEMBERS 1
+#define PT_FTS_PROP_MEMBERS_BY_KIND 2
+#define PT_FTS_PROP_OTHERS 3
 
 /* Returns the singleton for the given value (instances of the configured
  * trinaryLogicImpl class). Borrowed zval; callers must copy. */

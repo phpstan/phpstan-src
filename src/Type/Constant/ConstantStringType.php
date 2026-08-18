@@ -19,6 +19,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -63,6 +64,7 @@ use function substr;
 use function substr_count;
 
 /** @api */
+#[ReferencedByTurboExtension(key: 'constantStringType')]
 #[InstanceofDeprecated(insteadUse: 'Type::getConstantStrings()')]
 class ConstantStringType extends StringType implements ConstantScalarType
 {

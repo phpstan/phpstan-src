@@ -27,6 +27,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -69,6 +70,7 @@ use function substr;
 use function usort;
 
 /** @api */
+#[ReferencedByTurboExtension(key: 'intersectionType')]
 #[InstanceofDeprecated]
 class IntersectionType implements CompoundType
 {

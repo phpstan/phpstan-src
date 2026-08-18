@@ -612,6 +612,139 @@ foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
 }
 check($matchResults['php'] === $matchResults['native'], 'ScopeOps matchConditionalExpressions: fixed point and remaining conditions');
 
+// ---- FiniteTypeSet ----
+// Both implementations are handed the very same Type objects, so members,
+// others and representatives can be compared with === : same keys, same
+// order, same instances.
+$covered[\PHPStan\Type\FiniteTypeSet::class] = true;
+
+$ftsTemplate = new \PHPStan\Type\Generic\TemplateConstantStringType(
+	\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('smoke'),
+	new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(),
+	\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(),
+	'T',
+	new \PHPStan\Type\Constant\ConstantStringType('a'),
+	null,
+);
+// a subclass of a keyed class takes the userland path natively, exactly like
+// the twin does — it may have overridden getConstantScalarValues()
+$ftsStringSubclass = new class ('sub') extends \PHPStan\Type\Constant\ConstantStringType {};
+$ftsEnumA = new \PHPStan\Type\Enum\EnumCaseObjectType('SmokeEnum', 'A');
+$ftsEnumB = new \PHPStan\Type\Enum\EnumCaseObjectType('SmokeEnum', 'B');
+$ftsOtherEnumA = new \PHPStan\Type\Enum\EnumCaseObjectType('OtherSmokeEnum', 'A');
+
+$ftsInputs = [
+	'constant ints' => [new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(-2), new \PHPStan\Type\Constant\ConstantIntegerType(PHP_INT_MIN)],
+	'constant strings' => [new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantStringType(''), new \PHPStan\Type\Constant\ConstantStringType('a::b')],
+	'mixed kinds' => [new \PHPStan\Type\NullType(), new \PHPStan\Type\Constant\ConstantBooleanType(true), new \PHPStan\Type\Constant\ConstantBooleanType(false), new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantStringType('0')],
+	'enum cases' => [$ftsEnumA, $ftsEnumB, $ftsOtherEnumA],
+	'duplicate values' => [new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantStringType('a'), $ftsEnumA, $ftsEnumA],
+	'with others' => [new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\StringType(), new \PHPStan\Type\Constant\ConstantFloatType(1.0), $ftsTemplate],
+	'subclass of a keyed class' => [new \PHPStan\Type\Constant\ConstantStringType('sub'), $ftsStringSubclass],
+	'nothing keyed' => [new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()],
+	'union and intersection members' => [new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]), new \PHPStan\Type\Constant\ConstantIntegerType(3)],
+	'empty' => [],
+];
+
+$ftsSets = [];
+foreach ($ftsInputs as $label => $types) {
+	$php = \PHPStan\Type\FiniteTypeSet::create($types);
+	$native = \PHPStanTurbo\FiniteTypeSet::create($types);
+	check(($php === null) === ($native === null), "FiniteTypeSet create($label): nullness");
+	if ($php === null || $native === null) {
+		continue;
+	}
+	$ftsSets[$label] = [$php, $native];
+	check($php->getMembers() === $native->getMembers(), "FiniteTypeSet create($label): members");
+	check($php->getOthers() === $native->getOthers(), "FiniteTypeSet create($label): others");
+	check($php->isComplete() === $native->isComplete(), "FiniteTypeSet create($label): isComplete");
+}
+
+// key() over every shape, keyed and unkeyed alike
+$ftsKeyProbes = [
+	new \PHPStan\Type\NullType(),
+	new \PHPStan\Type\Constant\ConstantIntegerType(42),
+	new \PHPStan\Type\Constant\ConstantIntegerType(PHP_INT_MAX),
+	new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	new \PHPStan\Type\Constant\ConstantBooleanType(false),
+	new \PHPStan\Type\Constant\ConstantStringType('a'),
+	new \PHPStan\Type\Constant\ConstantStringType('Foo\\Bar', true),
+	new \PHPStan\Type\Constant\ConstantFloatType(1.5),
+	$ftsEnumA,
+	$ftsStringSubclass,
+	$ftsTemplate,
+	new \PHPStan\Type\StringType(),
+	new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+	new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+];
+foreach ($ftsKeyProbes as $i => $probe) {
+	check(
+		\PHPStan\Type\FiniteTypeSet::key($probe) === \PHPStanTurbo\FiniteTypeSet::key($probe),
+		"FiniteTypeSet key(#$i " . get_class($probe) . ')',
+	);
+}
+
+// has()/containedInKey() over keys that exist, keys that do not, and a
+// numeric-looking key (PHP array keys coerce those to integers)
+[$ftsPhpMixed, $ftsNativeMixed] = $ftsSets['mixed kinds'];
+foreach (['null', 'i:0', 's:0', 'b:1', 'b:0', 'i:1', 's:missing', '0', ''] as $probeKey) {
+	check($ftsPhpMixed->has($probeKey) === $ftsNativeMixed->has($probeKey), "FiniteTypeSet has($probeKey)");
+	check(
+		$ftsPhpMixed->containedInKey($probeKey)->describe() === $ftsNativeMixed->containedInKey($probeKey)->describe(),
+		"FiniteTypeSet containedInKey($probeKey)",
+	);
+}
+[$ftsPhpSingle, $ftsNativeSingle] = [\PHPStan\Type\FiniteTypeSet::create([new \PHPStan\Type\NullType()]), \PHPStanTurbo\FiniteTypeSet::create([new \PHPStan\Type\NullType()])];
+check(
+	$ftsPhpSingle->containedInKey('null')->describe() === $ftsNativeSingle->containedInKey('null')->describe(),
+	'FiniteTypeSet containedInKey: single-member set',
+);
+
+// containedIn(): yes / no / maybe across every pair of sets
+foreach ($ftsSets as $label => [$php, $native]) {
+	foreach ($ftsSets as $otherLabel => [$otherPhp, $otherNative]) {
+		check(
+			$php->containedIn($otherPhp)->describe() === $native->containedIn($otherNative)->describe(),
+			"FiniteTypeSet containedIn($label, $otherLabel)",
+		);
+	}
+}
+
+// getRepresentativesOfOtherKinds(): the kind of the queried type is skipped,
+// including the enum-per-class kinds
+foreach ($ftsSets as $label => [$php, $native]) {
+	foreach ($ftsKeyProbes as $i => $probe) {
+		check(
+			$php->getRepresentativesOfOtherKinds($probe) === $native->getRepresentativesOfOtherKinds($probe),
+			"FiniteTypeSet getRepresentativesOfOtherKinds($label, #$i " . get_class($probe) . ')',
+		);
+	}
+}
+
+// hasClassStringMember(): a class-string member, a member answering no
+// through userland, and the memoized second call. Members answering no
+// natively without a call are what the other sets are made of.
+$ftsNoClassString = new class ('x') extends \PHPStan\Type\Constant\ConstantStringType {
+
+	public function isClassString(): \PHPStan\TrinaryLogic
+	{
+		return \PHPStan\TrinaryLogic::createNo();
+	}
+
+};
+$ftsClassStringInputs = [
+	'class-string first' => [new \PHPStan\Type\Constant\ConstantStringType('Foo\\Bar', true), new \PHPStan\Type\NullType()],
+	'no class-string' => [new \PHPStan\Type\NullType(), new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantBooleanType(true), $ftsEnumA],
+	'userland no' => [$ftsNoClassString, new \PHPStan\Type\NullType()],
+	'userland yes' => [$ftsNoClassString, new \PHPStan\Type\Constant\ConstantStringType('Foo\\Bar', true)],
+];
+foreach ($ftsClassStringInputs as $label => $types) {
+	$php = \PHPStan\Type\FiniteTypeSet::create($types);
+	$native = \PHPStanTurbo\FiniteTypeSet::create($types);
+	check($php->hasClassStringMember() === $native->hasClassStringMember(), "FiniteTypeSet hasClassStringMember($label)");
+	check($php->hasClassStringMember() === $native->hasClassStringMember(), "FiniteTypeSet hasClassStringMember($label): memoized");
+}
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

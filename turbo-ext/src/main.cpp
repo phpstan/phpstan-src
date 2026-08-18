@@ -82,6 +82,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_type_combinator_cache();
 	pt_register_arena_cache();
 	pt_register_expression_result_storage();
+	pt_register_finite_type_set();
 
 	return SUCCESS;
 }
@@ -103,6 +104,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_node_traverser_rinit();
 	pt_scope_ops_rinit();
 	pt_type_combinator_cache_rinit();
+	pt_finite_type_set_rinit();
 
 	return SUCCESS;
 }

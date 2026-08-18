@@ -3213,6 +3213,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	private function resolveScopeStateType(Expr $expr, bool $native): Type
 	{
 		if (!$expr instanceof Variable && $this->hasExpressionType($expr)->yes()) {
+			// mirror resolveType()'s tracked-holder lookup without pricing the
+			// node - the tracked type IS scope state (the extension hook is
+			// deliberately skipped, like the getVariableType() read below)
+			$askScope = $native ? $this->doNotTreatPhpDocTypesAsCertain() : $this;
+			$trackedType = ScopeOps::expressionTypeByKey($askScope, $expr, $askScope->getNodeKey($expr));
+			if ($trackedType !== null) {
+				return TypeUtils::resolveLateResolvableTypes($trackedType);
+			}
+
 			return $native ? $this->getNativeType($expr) : $this->getType($expr);
 		}
 
@@ -3291,7 +3300,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $native ? $variant->getNativeReturnType() : $variant->getReturnType();
 		}
 
-		// genuinely non-narrowed expressions (constants, calls, ...) have no
+		// position-independent constant expressions (isset()/?? dimensions and
+		// narrowing subjects like self::KEY) are priced without walking the node
+		if (
+			$expr instanceof Node\Scalar\String_
+			|| $expr instanceof Node\Scalar\Int_
+			|| $expr instanceof Node\Scalar\Float_
+			|| ($expr instanceof Expr\ClassConstFetch && $expr->class instanceof Name && $expr->name instanceof Identifier)
+			|| $expr instanceof ConstFetch
+		) {
+			return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($this));
+		}
+
+		// genuinely non-narrowed expressions (calls, ...) have no
 		// variable-callback hazard, so read them normally.
 		return $native ? $this->getNativeType($expr) : $this->getType($expr);
 	}

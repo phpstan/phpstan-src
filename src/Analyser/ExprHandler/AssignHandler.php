@@ -723,12 +723,13 @@ final class AssignHandler implements ExprHandler
 
 				// The whole target's callback fires in prepareTarget() after the
 				// walk; an intermediate link's fires here, after its dimension was
-				// processed, so callback-side asks about the dimension answer from
-				// the storage with the link's entry scope.
+				// processed and its write-flavoured result stored, so callback-side
+				// asks answer from the storage with the link's entry scope.
 				if ($key === $lastDimKey) {
 					continue;
 				}
 
+				$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $previousLinkResult);
 				$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $callbackScope->enterExpressionAssign($dimFetch) : $callbackScope, $storage);
 			}
 

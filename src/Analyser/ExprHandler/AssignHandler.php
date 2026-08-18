@@ -578,11 +578,7 @@ final class AssignHandler implements ExprHandler
 			$lastDimKey = array_key_last($dimFetchStack);
 			foreach ($dimFetchStack as $key => $dimFetch) {
 				$dimExpr = $dimFetch->dim;
-
-				// Callback was already called for last dim at the beginning of the method.
-				if ($key !== $lastDimKey) {
-					$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $scope->enterExpressionAssign($dimFetch) : $scope, $storage);
-				}
+				$callbackScope = $scope;
 
 				if ($dimExpr === null) {
 					$dimResults[$key] = null;
@@ -623,6 +619,16 @@ final class AssignHandler implements ExprHandler
 						$scope = $scope->exitExpressionAssign($dimExpr);
 					}
 				}
+
+				// The whole target's callback fires in prepareTarget() after the
+				// walk; an intermediate link's fires here, after its dimension was
+				// processed, so callback-side asks about the dimension answer from
+				// the storage with the link's entry scope.
+				if ($key === $lastDimKey) {
+					continue;
+				}
+
+				$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $callbackScope->enterExpressionAssign($dimFetch) : $callbackScope, $storage);
 			}
 
 			if ($mode->issetSemanticsForRead()) {

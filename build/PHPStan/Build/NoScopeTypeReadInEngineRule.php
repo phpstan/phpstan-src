@@ -39,8 +39,6 @@ final class NoScopeTypeReadInEngineRule implements Rule
 		'PHPStan\\Analyser\\ExprHandler\\Helper\\CountNarrowingHelper' => ['isNormalCountCall'],
 		// immediately invoked closures: the invocation args are walked after the closure
 		'PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver#buildParametersAndAcceptors' => [],
-		// synthetic-node pricing pending the task-4 extraction
-		'PHPStan\\Analyser\\ExprHandler\\NewHandler' => ['exactInstantiation'],
 	];
 
 	public function getNodeType(): string

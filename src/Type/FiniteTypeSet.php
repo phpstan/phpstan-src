@@ -144,9 +144,13 @@ final class FiniteTypeSet
 	 */
 	private static function kind(Type $type): string
 	{
-		$enumCaseObject = $type->getEnumCaseObject();
-		if ($enumCaseObject !== null && $enumCaseObject->equals($type)) {
-			return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName();
+		if (!$type instanceof UnionType
+			&& !$type instanceof IntersectionType
+		) {
+			$enumCaseObject = $type->getEnumCaseObject();
+			if ($enumCaseObject !== null) {
+				return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName();
+			}
 		}
 
 		return get_class($type);

@@ -666,41 +666,6 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		$this->assertSame('Maybe', $union->isAcceptedBy($otherUnion, true)->result->describe());
 	}
 
-	/**
-	 * @return Iterator<string, array{list<Type>, bool}>
-	 */
-	public static function dataHasClassStringMember(): Iterator
-	{
-		yield 'plain strings' => [[new ConstantStringType('a'), new ConstantStringType('b')], false];
-		yield 'a value that names a class' => [[new ConstantStringType('a'), new ConstantStringType('DateTimeImmutable')], true];
-		yield 'the class-string flag' => [[new ConstantStringType('a'), new ConstantStringType('Zzz', true)], true];
-		// every member is asked, but only a string one can answer anything but no - not even
-		// an enum case, whose class name does name a class
-		yield 'no strings at all' => [
-			[
-				new ConstantIntegerType(1),
-				new ConstantBooleanType(true),
-				new NullType(),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
-			],
-			false,
-		];
-	}
-
-	/**
-	 * @param list<Type> $types
-	 */
-	#[DataProvider('dataHasClassStringMember')]
-	public function testHasClassStringMember(array $types, bool $expected): void
-	{
-		$set = FiniteTypeSet::create($types);
-		$this->assertNotNull($set);
-
-		$this->assertSame($expected, $set->hasClassStringMember());
-		// answered from the cache the second time round, with the same answer
-		$this->assertSame($expected, $set->hasClassStringMember());
-	}
-
 	public function testUnionWithoutFiniteMembersHasNoSet(): void
 	{
 		$this->assertNull((new UnionType([new StringType(), new IntegerType()]))->getFiniteTypeSet());

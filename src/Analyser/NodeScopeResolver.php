@@ -1450,7 +1450,7 @@ class NodeScopeResolver
 		if (count($byRefUses) === 0) {
 			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 			$publicStatementResult = $statementResult->toPublic();
-			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
+			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions, $storage);
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 				$expr,
 				$gatheredReturnStatements,
@@ -1514,7 +1514,7 @@ class NodeScopeResolver
 		$storage = $originalStorage;
 		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 		$publicStatementResult = $statementResult->toPublic();
-		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
+		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions, $storage);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 			$expr,
 			$gatheredReturnStatements,
@@ -1563,6 +1563,7 @@ class NodeScopeResolver
 		array $throwPoints,
 		array $impurePoints,
 		array $invalidateExpressions,
+		ExpressionResultStorage $storage,
 	): MutatingScope
 	{
 		$refinedClosureType = $this->container->getByType(ClosureTypeResolver::class)->buildClosureTypeForClosure(
@@ -1574,6 +1575,7 @@ class NodeScopeResolver
 			$throwPoints,
 			$impurePoints,
 			$invalidateExpressions,
+			storage: $storage,
 		);
 
 		return $closureScope->withAnonymousFunctionReflection($refinedClosureType);
@@ -1678,6 +1680,7 @@ class NodeScopeResolver
 			$closureTypeThrowPoints,
 			$closureTypeImpurePoints,
 			$invalidateExpressions,
+			storage: $storage,
 		);
 		$refinedArrowFunctionScope = $arrowFunctionScope->withAnonymousFunctionReflection($refinedArrowFunctionType);
 		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr), $refinedArrowFunctionScope, $storage);
@@ -1731,7 +1734,7 @@ class NodeScopeResolver
 	private function resolveCallableTypeForScope(Expr $expr, MutatingScope $scope): Type
 	{
 		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
-			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr);
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, storage: $scope->getCurrentExpressionResultStorage());
 		}
 
 		return $this->readTypeOfMaybeStored($expr, $scope);
@@ -2051,7 +2054,7 @@ class NodeScopeResolver
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
 					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
-					: $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $arg->value, true);
+					: $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
@@ -2182,8 +2185,8 @@ class NodeScopeResolver
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value),
-							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value),
+							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, storage: $storage),
+							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, storage: $storage),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						);
@@ -2231,7 +2234,7 @@ class NodeScopeResolver
 					}
 
 					$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
-					$this->storeExpressionResult($storage, $arg->value, $this->expressionResultFactory->create(
+					$storedClosureResult = $this->expressionResultFactory->create(
 						$closureResult->getScope(),
 						$scopeToPass,
 						$arg->value,
@@ -2248,6 +2251,7 @@ class NodeScopeResolver
 							$closureResult->getThrowPoints(),
 							$closureResult->getClosureTypeImpurePoints(),
 							$closureResult->getInvalidateExpressions(),
+							storage: $storage,
 						),
 						// the native flavour reads the stored native types off the same
 						// single body walk - no second walk on the promoted scope
@@ -2261,10 +2265,15 @@ class NodeScopeResolver
 							$closureResult->getClosureTypeImpurePoints(),
 							$closureResult->getInvalidateExpressions(),
 							true,
+							$storage,
 						),
 						typeCallback: null,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
-					));
+					);
+					$this->storeExpressionResult($storage, $arg->value, $storedClosureResult);
+					// the arg result must be the properly-typed stored result -
+					// ArgsResult readers price array_push() & co. from it
+					$argResults[spl_object_id($arg->value)] = $storedClosureResult;
 
 					$uses = [];
 					foreach ($arg->value->uses as $use) {
@@ -2280,7 +2289,7 @@ class NodeScopeResolver
 					// Prefer the invalidate expressions collected on the ClosureType -
 					// they also cover writes the closure's own body walk observed,
 					// unlike $closureResult->getInvalidateExpressions().
-					$closureExprType = $scope->getType($arg->value);
+					$closureExprType = $storedClosureResult->getType();
 					$invalidateExpressions = $closureExprType instanceof ClosureType
 						? $closureExprType->getInvalidateExpressions()
 						: $closureResult->getInvalidateExpressions();
@@ -2319,8 +2328,8 @@ class NodeScopeResolver
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value),
-							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value),
+							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, storage: $storage),
+							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, storage: $storage),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						);
@@ -2378,6 +2387,7 @@ class NodeScopeResolver
 						$arrowFunctionResult->getClosureTypeThrowPoints(),
 						$arrowFunctionResult->getClosureTypeImpurePoints(),
 						$arrowFunctionResult->getInvalidateExpressions(),
+						storage: $storage,
 					);
 					$storedArrowResult = $this->expressionResultFactory->create(
 						$arrowFunctionExprResult->getScope(),
@@ -2396,6 +2406,7 @@ class NodeScopeResolver
 							$arrowFunctionResult->getClosureTypeImpurePoints(),
 							$arrowFunctionResult->getInvalidateExpressions(),
 							true,
+							$storage,
 						),
 						typeCallback: null,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),

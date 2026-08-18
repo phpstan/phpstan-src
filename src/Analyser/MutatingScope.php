@@ -1237,7 +1237,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// whose result NodeScopeResolver stores without an eager type.
 		// getClosureType()'s own depth guard answers the self-by-ref ask.
 		if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
-			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node);
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, storage: $storage);
 		}
 
 		if (!$counterfactualAsk && $storage !== null && $storage->findExpressionResult($node) !== null) {
@@ -2305,7 +2305,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		?array $nativeCallableParameters = null,
 	): self
 	{
-		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true);
+		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true, $this->getCurrentExpressionResultStorage());
 
 		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
 
@@ -2525,7 +2525,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters = null): self
 	{
-		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true);
+		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true, $this->getCurrentExpressionResultStorage());
 
 		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $nativeCallableParameters);
 

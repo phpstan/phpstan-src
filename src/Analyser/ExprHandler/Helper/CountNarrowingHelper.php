@@ -47,6 +47,8 @@ final class CountNarrowingHelper
 		$modeArg = $countFuncCall->getArgs()[1]->value;
 		$storage = $scope->getCurrentExpressionResultStorage();
 		$modeResult = $storage !== null ? $storage->findExpressionResult($modeArg) : null;
+		// walk-time asks answer from the stored result; the scope read only
+		// remains for rule-facing bridge asks whose scope carries no storage
 		$mode = $modeResult !== null
 			? $modeResult->getTypeOnScope($scope, $scope->nativeTypesPromoted)
 			: $scope->getType($modeArg);

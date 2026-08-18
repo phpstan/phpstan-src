@@ -143,18 +143,30 @@ final class StaticCallHandler implements ExprHandler
 						$declaringClass->getName() === 'Closure'
 						&& strtolower($methodName) === 'bind'
 					) {
-						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr): MutatingScope {
+						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr, $storage): MutatingScope {
+							// invoked while the closure argument is walked; the other
+							// arguments were processed before it (processArgs orders
+							// closures last), so their results are already stored. A
+							// missing result means degenerate code (a closure passed
+							// where the bound $this/scope belongs) - price it as mixed
+							// instead of walking on demand.
+							$readArgType = static function (Expr $argValue, bool $useNativeTypes) use ($boundScope, $storage): Type {
+								$argResult = $storage->findExpressionResult($argValue);
+								return $argResult !== null
+									? $argResult->getTypeOnScope($boundScope, $useNativeTypes)
+									: new MixedType();
+							};
 							$thisType = null;
 							$nativeThisType = null;
 							if (isset($expr->getArgs()[1])) {
-								$argType = $boundScope->getType($expr->getArgs()[1]->value);
+								$argType = $readArgType($expr->getArgs()[1]->value, false);
 								if ($argType->isNull()->yes()) {
 									$thisType = null;
 								} else {
 									$thisType = $argType;
 								}
 
-								$nativeArgType = $boundScope->getNativeType($expr->getArgs()[1]->value);
+								$nativeArgType = $readArgType($expr->getArgs()[1]->value, true);
 								if ($nativeArgType->isNull()->yes()) {
 									$nativeThisType = null;
 								} else {
@@ -164,7 +176,7 @@ final class StaticCallHandler implements ExprHandler
 							$scopeClasses = ['static'];
 							if (isset($expr->getArgs()[2])) {
 								$argValue = $expr->getArgs()[2]->value;
-								$argValueType = $boundScope->getType($argValue);
+								$argValueType = $readArgType($argValue, false);
 
 								$directClassNames = $argValueType->getObjectClassNames();
 								if (count($directClassNames) > 0) {

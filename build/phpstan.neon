@@ -183,6 +183,7 @@ parameters:
 
 rules:
 	- PHPStan\Build\FinalClassRule
+	- PHPStan\Build\NoScopeTypeReadInEngineRule
 	- PHPStan\Build\AttributeNamedArgumentsRule
 	- PHPStan\Build\NamedArgumentsRule
 	- PHPStan\Build\OverrideAttributeThirdPartyMethodRule

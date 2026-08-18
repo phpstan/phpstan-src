@@ -1912,7 +1912,7 @@ final class AssignHandler implements ExprHandler
 			$arrayDimFetch->dim instanceof Expr\FuncCall
 			&& $arrayDimFetch->dim->name instanceof Name
 			&& $arrayDimFetch->dim->name->toLowerString() === 'array_search'
-			&& count($arrayDimFetch->dim->getArgs()) >= 1
+			&& count($arrayDimFetch->dim->getArgs()) >= 2 // the haystack is the second argument
 			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[1]->value)
 		) {
 			return true;

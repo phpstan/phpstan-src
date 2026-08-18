@@ -85,6 +85,8 @@ class UnionType implements CompoundType
 
 	private ?TrinaryLogic $isNull = null;
 
+	private ?TrinaryLogic $isCallable = null;
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -1126,7 +1128,7 @@ class UnionType implements CompoundType
 
 	public function isCallable(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
+		return $this->isCallable ??= $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

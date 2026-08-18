@@ -81,4 +81,14 @@ class RestrictedInternalStaticMethodUsageExtensionTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13210.php'], []);
 	}
 
+	public function testBug13042(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13042.php'], [
+			[
+				'Call to internal static method Bug13042\Foo::doInternalStatic() from outside its root namespace Bug13042.',
+				145,
+			],
+		]);
+	}
+
 }

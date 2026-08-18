@@ -87,4 +87,14 @@ class RestrictedInternalClassConstantUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13042(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13042.php'], [
+			[
+				'Access to internal constant Bug13042\Foo::INTERNAL from outside its root namespace Bug13042.',
+				143,
+			],
+		]);
+	}
+
 }

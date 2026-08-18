@@ -16,6 +16,10 @@ final class RestrictedInternalUsageHelper
 
 	public function shouldClassBeReported(Scope $scope, ClassReflection $classReflection): bool
 	{
+		if ($classReflection->isAnonymous()) {
+			return false;
+		}
+
 		return $this->shouldBeReported($scope, $classReflection->getName());
 	}
 

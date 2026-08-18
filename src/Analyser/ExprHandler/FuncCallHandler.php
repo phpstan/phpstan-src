@@ -289,13 +289,13 @@ final class FuncCallHandler implements ExprHandler
 						}
 
 						$types[] = $exitScope->getVariableType($firstParamName);
-						$nativeTypes[] = $exitScope->getNativeType(new Variable($firstParamName));
+						$nativeTypes[] = $exitScope->toWalkScope()->doNotTreatPhpDocTypesAsCertain()->getVariableType($firstParamName);
 					}
 					if (!$stmtResult->isAlwaysTerminating()) {
 						$stmtScope = $stmtResult->getScope();
 						if ($stmtScope->hasVariableType($firstParamName)->yes()) {
 							$types[] = $stmtScope->getVariableType($firstParamName);
-							$nativeTypes[] = $stmtScope->getNativeType(new Variable($firstParamName));
+							$nativeTypes[] = $stmtScope->toWalkScope()->doNotTreatPhpDocTypesAsCertain()->getVariableType($firstParamName);
 						}
 					}
 					if (count($types) <= 0) {
@@ -331,8 +331,9 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($arrayWalkValueTypes !== null && $arrayWalkArrayArg !== null) {
-			$arrayWalkOriginalArrayType = $scope->getType($arrayWalkArrayArg);
-			$arrayWalkOriginalArrayNativeType = $scope->getNativeType($arrayWalkArrayArg);
+			$arrayWalkArrayArgResult = $argsResult->requireArgResult($arrayWalkArrayArg);
+			$arrayWalkOriginalArrayType = $arrayWalkArrayArgResult->getTypeOnScope($scope, false);
+			$arrayWalkOriginalArrayNativeType = $arrayWalkArrayArgResult->getTypeOnScope($scope, true);
 			$arrayWalkValueType = $arrayWalkValueTypes[0];
 			$arrayWalkValueNativeType = $arrayWalkValueTypes[1];
 			$newArrayType = $arrayWalkOriginalArrayType->mapValueType(static fn (Type $type): Type => $arrayWalkValueType);
@@ -468,7 +469,7 @@ final class FuncCallHandler implements ExprHandler
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $preliminaryResult);
 
 		if ($normalizedExpr->name instanceof Expr) {
-			$nameType = $scope->getType($normalizedExpr->name);
+			$nameType = $nodeScopeResolver->readStoredResult($normalizedExpr->name, $storage)->getTypeOnScope($scope, false);
 			if (
 				$nameType->isObject()->yes()
 				&& $nameType->isCallable()->yes()
@@ -564,8 +565,9 @@ final class FuncCallHandler implements ExprHandler
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$arrayArgType = $scope->getType($arrayArg);
-			$arrayArgNativeType = $scope->getNativeType($arrayArg);
+			$arrayArgResult = $argsResult->requireArgResult($arrayArg);
+			$arrayArgType = $arrayArgResult->getTypeOnScope($scope, false);
+			$arrayArgNativeType = $arrayArgResult->getTypeOnScope($scope, true);
 			$isArrayPop = $functionReflection->getName() === 'array_pop';
 
 			$scope = $nodeScopeResolver->processVirtualAssign(
@@ -619,7 +621,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
+				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->shuffleArray(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->shuffleArray()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -630,26 +632,25 @@ final class FuncCallHandler implements ExprHandler
 			&& count($normalizedExpr->getArgs()) >= 2
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
-			$arrayArgResult = $argsResult->getArgResult($arrayArg);
-			$arrayArgType = $arrayArgResult !== null ? $arrayArgResult->getType() : $scope->getType($arrayArg);
-			$arrayArgNativeType = $arrayArgResult !== null ? $arrayArgResult->getNativeType() : $scope->getNativeType($arrayArg);
+			$arrayArgResult = $argsResult->requireArgResult($arrayArg);
+			$arrayArgType = $arrayArgResult->getType();
+			$arrayArgNativeType = $arrayArgResult->getNativeType();
 
 			$offsetArg = $normalizedExpr->getArgs()[1]->value;
-			$offsetArgResult = $argsResult->getArgResult($offsetArg);
-			$offsetType = $offsetArgResult !== null ? $offsetArgResult->getType() : $scopeBeforeArgs->getType($offsetArg);
+			$offsetType = $argsResult->requireArgResult($offsetArg)->getType();
 
 			if (isset($normalizedExpr->getArgs()[2])) {
 				$lengthArg = $normalizedExpr->getArgs()[2]->value;
-				$lengthArgResult = $argsResult->getArgResult($lengthArg);
-				$lengthType = $lengthArgResult !== null ? $lengthArgResult->getType() : $scopeBeforeArgs->getType($lengthArg);
+				$lengthType = $argsResult->requireArgResult($lengthArg)->getType();
 			} else {
 				$lengthType = new NullType();
 			}
 
 			if (isset($normalizedExpr->getArgs()[3])) {
 				$replacementArg = $normalizedExpr->getArgs()[3]->value;
-				$replacementType = $scopeBeforeArgs->getType($replacementArg);
-				$replacementNativeType = $scopeBeforeArgs->getNativeType($replacementArg);
+				$replacementArgResult = $argsResult->requireArgResult($replacementArg);
+				$replacementType = $replacementArgResult->getType();
+				$replacementNativeType = $replacementArgResult->getNativeType();
 			} else {
 				$replacementType = new ConstantArrayType([], []);
 				$replacementNativeType = new ConstantArrayType([], []);
@@ -680,7 +681,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
+				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->shuffleArray(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->shuffleArray()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -697,7 +698,7 @@ final class FuncCallHandler implements ExprHandler
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->makeListMaybe(), $scope->getNativeType($arrayArg)->makeListMaybe()),
+				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->makeListMaybe(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->makeListMaybe()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -707,7 +708,7 @@ final class FuncCallHandler implements ExprHandler
 			&& $functionReflection->getName() === 'extract'
 		) {
 			$extractedArg = $normalizedExpr->getArgs()[0]->value;
-			$extractedType = $scope->getType($extractedArg);
+			$extractedType = $argsResult->requireArgResult($extractedArg)->getTypeOnScope($scope, false);
 			$constantArrays = $extractedType->getConstantArrays();
 			if (count($constantArrays) > 0) {
 				$properties = [];
@@ -769,7 +770,7 @@ final class FuncCallHandler implements ExprHandler
 
 		$outputBufferDelta = $functionReflection !== null ? $this->outputBufferHelper->getLevelDelta($functionReflection->getName()) : 0;
 		if ($outputBufferDelta !== 0) {
-			$scope = $this->outputBufferHelper->applyLevelDelta($scope, $outputBufferDelta);
+			$scope = $this->outputBufferHelper->applyLevelDelta($nodeScopeResolver, $scope, $outputBufferDelta);
 		}
 
 		$pureCallable = $parametersAcceptor instanceof CallableParametersAcceptor
@@ -847,10 +848,7 @@ final class FuncCallHandler implements ExprHandler
 	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr, ArgsResult $argsResult): Type
 	{
 		$arrayArg = $expr->getArgs()[0]->value;
-		$arrayArgResult = $argsResult->getArgResult($arrayArg);
-		// closure args have no ExpressionResult (ProcessClosureResult carries none);
-		// they fall back to the scope, every other arg reads its captured result.
-		$arrayType = $arrayArgResult !== null ? $arrayArgResult->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted) : $scope->getType($arrayArg);
+		$arrayType = $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted);
 		$callArgs = array_slice($expr->getArgs(), 1);
 
 		/**
@@ -859,8 +857,7 @@ final class FuncCallHandler implements ExprHandler
 		 */
 		$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null) use ($argsResult): void {
 			foreach ($callArgs as $callArg) {
-				$callArgResult = $argsResult->getArgResult($callArg->value);
-				$callArgType = $callArgResult !== null ? $callArgResult->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted) : $scope->getType($callArg->value);
+				$callArgType = $argsResult->requireArgResult($callArg->value)->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted);
 				if ($callArg->unpack) {
 					$constantArrays = $callArgType->getConstantArrays();
 					if (count($constantArrays) === 1) {

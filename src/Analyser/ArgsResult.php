@@ -4,7 +4,10 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
+use function get_class;
 use function spl_object_id;
+use function sprintf;
 
 /**
  * Result of NodeScopeResolver::processArgs(): the scope/throw/impure state after
@@ -35,6 +38,25 @@ final class ArgsResult
 	public function getArgResult(Expr $argValue): ?ExpressionResult
 	{
 		return $this->argResults[spl_object_id($argValue)] ?? null;
+	}
+
+	/**
+	 * The stored ExpressionResult of a call argument's value expression; the
+	 * argument must have been processed by processArgs() - engine code reads
+	 * argument types through this instead of re-asking the scope.
+	 */
+	public function requireArgResult(Expr $argValue): ExpressionResult
+	{
+		$result = $this->argResults[spl_object_id($argValue)] ?? null;
+		if ($result === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'No stored ExpressionResult for a %s argument on line %d.',
+				get_class($argValue),
+				$argValue->getStartLine(),
+			));
+		}
+
+		return $result;
 	}
 
 	public function getScope(): MutatingScope

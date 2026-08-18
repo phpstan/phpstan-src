@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -39,15 +40,17 @@ final class OutputBufferHelper
 		return 0;
 	}
 
-	public function applyLevelDelta(MutatingScope $scope, int $delta): MutatingScope
+	public function applyLevelDelta(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, int $delta): MutatingScope
 	{
 		foreach ([new Name('ob_get_level'), new Name\FullyQualified('ob_get_level')] as $name) {
 			$obGetLevelCall = new FuncCall($name, []);
 
+			// a tracked ob_get_level() holder answers from scope state; only an
+			// untracked one prices the synthetic call
 			$scope = $scope->assignExpression(
 				$obGetLevelCall,
-				$this->addDelta($scope->getType($obGetLevelCall), $delta),
-				$this->addDelta($scope->getNativeType($obGetLevelCall), $delta),
+				$this->addDelta($nodeScopeResolver->readScopeStateOrSyntheticType($obGetLevelCall, $scope), $delta),
+				$this->addDelta($nodeScopeResolver->readScopeStateOrSyntheticType($obGetLevelCall, $scope->doNotTreatPhpDocTypesAsCertain()), $delta),
 			);
 		}
 

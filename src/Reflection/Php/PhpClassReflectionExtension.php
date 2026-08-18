@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Namespace_;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\ScopeContext;
@@ -101,6 +102,7 @@ final class PhpClassReflectionExtension
 	public function __construct(
 		private ScopeFactory $scopeFactory,
 		private PhpDocsResolver $phpDocsResolver,
+		private NodeScopeResolver $nodeScopeResolver,
 		private PhpMethodReflectionFactory $methodReflectionFactory,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private DeprecationProvider $deprecationProvider,
@@ -1223,7 +1225,9 @@ final class PhpClassReflectionExtension
 				continue;
 			}
 
-			$propertyType = $methodScope->getType($expr->expr);
+			// an independent lazy pass on its own scope - never read through
+			// Scope::getType(), which is reserved for the file's main walk
+			$propertyType = $this->nodeScopeResolver->processIndependentPassExpr($expr->expr, $methodScope)->getType();
 			if ($propertyType instanceof ErrorType || $propertyType instanceof NeverType) {
 				continue;
 			}

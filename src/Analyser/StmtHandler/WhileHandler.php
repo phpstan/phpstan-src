@@ -110,6 +110,9 @@ final class WhileHandler implements StmtHandler
 		$bodyScopeMaybeRan = $bodyScope;
 		$storage = $originalStorage;
 		$bodyCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		// the While_ callback is deferred from processStmtNode(): it fires after
+		// the condition's real walk stored its result, with the entry scope
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
 		$bodyScope = $bodyCondResult->getTruthyScope();
 		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 		$finalScope = $finalScopeResult->getScope();

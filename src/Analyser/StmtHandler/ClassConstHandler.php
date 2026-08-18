@@ -38,11 +38,14 @@ final class ClassConstHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		$impurePoints = [];
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		foreach ($stmt->consts as $const) {
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);
 			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			// the constant's callback fires after its value was processed, so
+			// rule-side asks about the value answer from the storage
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);
 			$impurePoints = array_merge($impurePoints, $constResult->getImpurePoints());
 			if ($scope->getClassReflection() === null) {
 				throw new ShouldNotHappenException();
@@ -53,6 +56,9 @@ final class ClassConstHandler implements StmtHandler
 				$constResult->getNativeType(),
 			);
 		}
+
+		// deferred from processStmtNode() - fires after the values were processed
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints);
 	}

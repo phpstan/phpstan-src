@@ -52,6 +52,7 @@ final class UnsetHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -103,6 +104,11 @@ final class UnsetHandler implements StmtHandler
 
 			$scope = $scope->invalidateExpression(new ForeachValueByRefExpr($var));
 		}
+
+		// the Unset_ callback is deferred from processStmtNode(): it fires after
+		// the unset targets were processed, with the entry scope, so rule-side
+		// asks about them answer from the storage
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
 		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: false, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints);
 	}

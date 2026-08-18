@@ -42,8 +42,6 @@ final class FiniteTypeSet
 
 	private const ENUM_CASE_KEY_PREFIX = 'enum:';
 
-	private ?bool $hasClassStringMember = null;
-
 	/**
 	 * @param array<string, Type> $members
 	 * @param array<string, Type> $membersByKind
@@ -254,38 +252,6 @@ final class FiniteTypeSet
 		}
 
 		return TrinaryLogic::createMaybe();
-	}
-
-	/**
-	 * Whether a constant string member might also be a class-string.
-	 *
-	 * The class-string flag is part of a constant string's representation but not of its
-	 * value, so operations that pick a member to hand back - as opposed to merely comparing
-	 * values - cannot treat two same-valued constant strings as interchangeable. Answering
-	 * this costs a reflection lookup per string member, so it is computed on demand: only
-	 * combining operations ask.
-	 *
-	 * Every member is asked, no matter its kind: a keyed member is an instance of one of the
-	 * five classes key() accepts, and every one of them but ConstantStringType answers
-	 * isClassString() no outright - which is also the only one whose answer costs anything.
-	 */
-	public function hasClassStringMember(): bool
-	{
-		if ($this->hasClassStringMember !== null) {
-			return $this->hasClassStringMember;
-		}
-
-		$this->hasClassStringMember = false;
-		foreach ($this->members as $member) {
-			if ($member->isClassString()->no()) {
-				continue;
-			}
-
-			$this->hasClassStringMember = true;
-			break;
-		}
-
-		return $this->hasClassStringMember;
 	}
 
 }

@@ -1595,10 +1595,6 @@ final class TypeCombinator
 			return null;
 		}
 
-		if ($finiteTypeSet->hasClassStringMember()) {
-			return null;
-		}
-
 		return $finiteTypeSet->getMembers();
 	}
 

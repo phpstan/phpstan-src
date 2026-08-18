@@ -990,6 +990,18 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * Processes an expression for an independent analysis pass - a reflection-
+	 * level lazy computation that builds its own scope from scratch (e.g.
+	 * private property type inference from constructor assignments). Such a
+	 * pass legitimately prices real AST nodes outside the file's main walk,
+	 * on a fresh storage of its own.
+	 */
+	public function processIndependentPassExpr(Expr $expr, MutatingScope $scope): ExpressionResult
+	{
+		return $this->processExprOnDemand($expr, $scope, new ExpressionResultStorage());
+	}
+
+	/**
 	 * The stored ExpressionResult of a node processExprNode() already processed
 	 * into the given storage - the caller asserts the processing order by
 	 * holding the very storage it processed the node into (a scope-based lookup

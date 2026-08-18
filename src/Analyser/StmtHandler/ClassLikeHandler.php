@@ -86,7 +86,6 @@ final class ClassLikeHandler implements StmtHandler
 		if (isset($stmt->namespacedName)) {
 			$classReflection = $this->getCurrentClassReflection($nodeScopeResolver, $stmt, $stmt->namespacedName->toString(), $scope);
 			$classScope = $scope->enterClass($classReflection);
-			$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassNode($stmt, $classReflection), $classScope, $storage);
 		} elseif ($stmt instanceof Class_) {
 			if ($stmt->name === null) {
 				throw new ShouldNotHappenException();
@@ -97,13 +96,16 @@ final class ClassLikeHandler implements StmtHandler
 				$classReflection = $this->reflectionProvider->getAnonymousClassReflection($stmt, $scope);
 			}
 			$classScope = $scope->enterClass($classReflection);
-			$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassNode($stmt, $classReflection), $classScope, $storage);
 		} else {
 			throw new ShouldNotHappenException();
 		}
 
 		$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
+		// the class attributes are processed before the InClassNode emission, so
+		// rules firing on it (ClassAttributesRule) read the attribute arguments
+		// from the storage
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $storage, $classStatementsGatherer);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassNode($stmt, $classReflection), $classScope, $storage);
 
 		$classLikeStatements = $stmt->stmts;
 		// analyze static methods first; constructor next; instance methods and property hooks last so we can carry over the scope

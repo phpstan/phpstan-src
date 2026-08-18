@@ -39,4 +39,14 @@ class RestrictedInternalFunctionUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testRecursion(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-internal-tag-recursion.php'], [
+			[
+				'Call to internal function doInternalRecursionWithoutNamespace().',
+				36,
+			],
+		]);
+	}
+
 }

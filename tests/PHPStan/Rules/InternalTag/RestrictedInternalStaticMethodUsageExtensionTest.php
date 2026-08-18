@@ -81,4 +81,17 @@ class RestrictedInternalStaticMethodUsageExtensionTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13210.php'], []);
 	}
 
+	public function testAnonymousClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/anonymous-class-internal-tag.php'], []);
+	}
+
+	public function testAnonymousClassInTrait(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/anonymous-class-in-trait-internal-tag.php',
+			__DIR__ . '/data/anonymous-class-in-trait-user.php',
+		], []);
+	}
+
 }

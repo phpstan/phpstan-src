@@ -8,6 +8,7 @@ use Attributes\IsAttribute2;
 use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
 use ClassConstantReflectionTest\ClassWithConstants;
+use Exception;
 use GenericInheritance\C;
 use HasTraitUse\Bar;
 use HasTraitUse\Baz;
@@ -318,6 +319,15 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
+	}
+
+	public function testGetNamespaceName(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+
+		$this->assertSame('PHPStan\\Reflection', $reflectionProvider->getClass(self::class)->getNamespaceName());
+		$this->assertSame('PHPStan\\Fixture', $reflectionProvider->getClass('PHPStan\\Fixture\\TestEnum')->getNamespaceName());
+		$this->assertNull($reflectionProvider->getClass(Exception::class)->getNamespaceName());
 	}
 
 	public function testIs(): void

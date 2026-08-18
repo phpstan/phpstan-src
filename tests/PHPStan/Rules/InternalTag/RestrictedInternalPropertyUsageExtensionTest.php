@@ -56,4 +56,27 @@ class RestrictedInternalPropertyUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13042(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13042.php'], []);
+	}
+
+	public function testBug13042NoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13042-no-namespace.php'], []);
+	}
+
+	public function testAnonymousClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/anonymous-class-internal-tag.php'], []);
+	}
+
+	public function testAnonymousClassInTrait(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/anonymous-class-in-trait-internal-tag.php',
+			__DIR__ . '/data/anonymous-class-in-trait-user.php',
+		], []);
+	}
+
 }

@@ -87,4 +87,17 @@ class RestrictedInternalClassConstantUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testAnonymousClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/anonymous-class-internal-tag.php'], []);
+	}
+
+	public function testAnonymousClassInTrait(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/anonymous-class-in-trait-internal-tag.php',
+			__DIR__ . '/data/anonymous-class-in-trait-user.php',
+		], []);
+	}
+
 }

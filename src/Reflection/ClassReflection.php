@@ -17,7 +17,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
-use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -75,9 +74,7 @@ use function is_file;
 use function is_int;
 use function reset;
 use function sprintf;
-use function strrpos;
 use function strtolower;
-use function substr;
 
 /**
  * @api
@@ -140,8 +137,6 @@ final class ClassReflection
 	private array $subclasses = [];
 
 	private string|false|null $filename = false;
-
-	private string|false|null $namespaceName = false;
 
 	private string|false|null $reflectionDocComment = false;
 
@@ -276,34 +271,6 @@ final class ClassReflection
 	public function getName(): string
 	{
 		return $this->reflection->getName();
-	}
-
-	/**
-	 * Anonymous classes have no namespace in their name, so it's resolved
-	 * from the place where they're declared.
-	 */
-	public function getNamespaceName(): ?string
-	{
-		if (!is_bool($this->namespaceName)) {
-			return $this->namespaceName;
-		}
-
-		$name = $this->getName();
-		$lastNamespaceSeparatorPosition = strrpos($name, '\\');
-		if ($lastNamespaceSeparatorPosition !== false) {
-			return $this->namespaceName = substr($name, 0, $lastNamespaceSeparatorPosition);
-		}
-
-		$fileName = $this->getFileName();
-		if (!$this->isAnonymous() || $fileName === null) {
-			return $this->namespaceName = null;
-		}
-
-		try {
-			return $this->namespaceName = $this->fileTypeMapper->getNameScope($fileName, $name, null, null)->getNamespace();
-		} catch (NameScopeAlreadyBeingCreatedException) {
-			return null;
-		}
 	}
 
 	public function getDisplayName(bool $withTemplateTypes = true): string

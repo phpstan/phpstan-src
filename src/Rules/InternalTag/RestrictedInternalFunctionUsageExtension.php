@@ -23,7 +23,7 @@ final class RestrictedInternalFunctionUsageExtension implements RestrictedFuncti
 			return null;
 		}
 
-		if (!$this->helper->shouldBeReported($scope, $functionReflection->getName())) {
+		if (!$this->helper->shouldFunctionBeReported($scope, $functionReflection)) {
 			return null;
 		}
 

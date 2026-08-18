@@ -29,7 +29,7 @@ final class RestrictedInternalClassNameUsageExtension implements RestrictedClass
 			return null;
 		}
 
-		if (!$this->helper->shouldBeReported($scope, $classReflection->getName())) {
+		if (!$this->helper->shouldClassBeReported($scope, $classReflection)) {
 			return null;
 		}
 

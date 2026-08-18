@@ -6,8 +6,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassConstantUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
-use function array_slice;
-use function explode;
 use function sprintf;
 use function strtolower;
 
@@ -30,12 +28,11 @@ final class RestrictedInternalClassConstantUsageExtension implements RestrictedC
 			return null;
 		}
 
-		$declaringClassName = $declaringClass->getName();
-		if (!$this->helper->shouldBeReported($scope, $declaringClassName)) {
+		if (!$this->helper->shouldClassBeReported($scope, $declaringClass)) {
 			return null;
 		}
 
-		$namespace = array_slice(explode('\\', $declaringClassName), 0, -1)[0] ?? null;
+		$namespace = $this->helper->getRootNamespace($declaringClass);
 		if ($namespace === null) {
 			if (!$isConstantInternal) {
 				return RestrictedUsage::create(

@@ -83,6 +83,8 @@ class UnionType implements CompoundType
 	/** @var list<Type>|null */
 	private ?array $finiteTypes = null;
 
+	private ?TrinaryLogic $isNull = null;
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -1163,7 +1165,7 @@ class UnionType implements CompoundType
 
 	public function isNull(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNull());
+		return $this->isNull ??= $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNull());
 	}
 
 	public function isConstantValue(): TrinaryLogic

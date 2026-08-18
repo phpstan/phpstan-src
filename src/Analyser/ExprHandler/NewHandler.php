@@ -117,11 +117,12 @@ final class NewHandler implements ExprHandler
 		$normalizedExpr = $expr;
 		$className = null;
 		$classResult = null;
+		$deferredConstructorImpureIsDynamic = null;
 		if ($expr->class instanceof Name) {
 			$className = $scope->resolveName($expr->class);
 
-			[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, false);
-			$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
+			[$constructorReflection, $classReflection, $parametersAcceptor] = $this->processConstructorReflection($className, $expr);
+			$deferredConstructorImpureIsDynamic = false;
 
 			if ($parametersAcceptor !== null) {
 				$normalizedExpr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
@@ -207,8 +208,8 @@ final class NewHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
 
 			if ($className !== null) {
-				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope, true);
-				$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
+				[$constructorReflection, $classReflection, $parametersAcceptor] = $this->processConstructorReflection($className, $expr);
+				$deferredConstructorImpureIsDynamic = true;
 			} else {
 				$impurePoints[] = new ImpurePoint(
 					$scope,
@@ -226,6 +227,7 @@ final class NewHandler implements ExprHandler
 
 		$variants = $constructorReflection !== null ? $constructorReflection->getVariants() : [];
 		$namedArgumentsVariants = $constructorReflection !== null ? $constructorReflection->getNamedArgumentsVariants() : null;
+		$scopeBeforeArgs = $scope;
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
@@ -233,6 +235,12 @@ final class NewHandler implements ExprHandler
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
+		if ($deferredConstructorImpureIsDynamic !== null) {
+			// created after the args were processed - the pure-unless-callable-
+			// is-impure parameters read an argument's type, which is only
+			// available once its result is stored
+			$impurePoints = array_merge($impurePoints, $this->getConstructorImpurePoints($constructorReflection, $classReflection, $parametersAcceptor, $expr, $scope, $scopeBeforeArgs, $deferredConstructorImpureIsDynamic));
+		}
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		// The new-expression type is derived from $resolvedParametersAcceptor - the
@@ -298,13 +306,12 @@ final class NewHandler implements ExprHandler
 	}
 
 	/**
-	 * @return array{?ExtendedMethodReflection, ?ClassReflection, ?ParametersAcceptor, ImpurePoint[]}
+	 * @return array{?ExtendedMethodReflection, ?ClassReflection, ?ParametersAcceptor}
 	 */
-	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope, bool $isDynamic): array
+	private function processConstructorReflection(string $className, New_ $expr): array
 	{
 		$constructorReflection = null;
 		$parametersAcceptor = null;
-		$impurePoints = [];
 
 		$classReflection = null;
 		if ($this->reflectionProvider->hasClass($className)) {
@@ -318,43 +325,67 @@ final class NewHandler implements ExprHandler
 			}
 		}
 
+		return [$constructorReflection, $classReflection, $parametersAcceptor];
+	}
+
+	/**
+	 * @return ImpurePoint[]
+	 */
+	private function getConstructorImpurePoints(?ExtendedMethodReflection $constructorReflection, ?ClassReflection $classReflection, ?ParametersAcceptor $parametersAcceptor, New_ $expr, MutatingScope $scope, MutatingScope $scopeBeforeArgs, bool $isDynamic): array
+	{
 		if ($constructorReflection !== null) {
-			if (!$constructorReflection->hasSideEffects()->no()) {
-				$certain = $constructorReflection->isPure()->no();
-				$verdict = SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($parametersAcceptor, $scope, $expr->getArgs());
-				if ($verdict !== null && $verdict->yes()) {
-					return [$constructorReflection, $classReflection, $parametersAcceptor, $impurePoints];
-				}
-				if ($verdict !== null && $verdict->no()) {
-					$certain = true;
-				}
-				$impurePoints[] = new ImpurePoint(
-					$scope,
+			if ($parametersAcceptor === null) {
+				throw new ShouldNotHappenException();
+			}
+			if ($constructorReflection->hasSideEffects()->no()) {
+				return [];
+			}
+
+			$certain = $constructorReflection->isPure()->no();
+			$verdict = SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($parametersAcceptor, $scope, $expr->getArgs());
+			if ($verdict !== null && $verdict->yes()) {
+				return [];
+			}
+			if ($verdict !== null && $verdict->no()) {
+				$certain = true;
+			}
+
+			return [
+				new ImpurePoint(
+					$scopeBeforeArgs,
 					$expr,
 					'new',
 					sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
 					$certain,
-				);
-			}
-		} elseif ($classReflection === null) {
-			$impurePoints[] = new ImpurePoint(
-				$scope,
-				$expr,
-				'new',
-				'instantiation of unknown class',
-				false,
-			);
-		} elseif ($isDynamic && !$classReflection->isFinal()) {
-			$impurePoints[] = new ImpurePoint(
-				$scope,
-				$expr,
-				'new',
-				sprintf('instantiation of class %s', $classReflection->getDisplayName()),
-				false,
-			);
+				),
+			];
 		}
 
-		return [$constructorReflection, $classReflection, $parametersAcceptor, $impurePoints];
+		if ($classReflection === null) {
+			return [
+				new ImpurePoint(
+					$scopeBeforeArgs,
+					$expr,
+					'new',
+					'instantiation of unknown class',
+					false,
+				),
+			];
+		}
+
+		if ($isDynamic && !$classReflection->isFinal()) {
+			return [
+				new ImpurePoint(
+					$scopeBeforeArgs,
+					$expr,
+					'new',
+					sprintf('instantiation of class %s', $classReflection->getDisplayName()),
+					false,
+				),
+			];
+		}
+
+		return [];
 	}
 
 	/**

@@ -121,10 +121,16 @@ final class WhileHandler implements StmtHandler
 			// and replay its emissions through the real callback instead
 			$originalStorage->mergeResults($replayPassStorage);
 			$nodeScopeResolver->replayRecording($replayCondRecording, $nodeCallback, $originalStorage);
+			// the While_ callback is deferred from processStmtNode(): it fires
+			// after the condition's results are in the storage, with the entry scope
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $originalStorage);
 			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
 			$finalScopeResult = $replayPassResult;
 		} else {
 			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			// the While_ callback is deferred from processStmtNode(): it fires
+			// after the condition's real walk stored its result, with the entry scope
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
 			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 		}
 		$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);

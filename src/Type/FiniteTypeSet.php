@@ -102,26 +102,18 @@ final class FiniteTypeSet
 	 */
 	public static function key(Type $type): ?string
 	{
-		if ($type instanceof TemplateType) {
+		if ($type instanceof TemplateType || $type instanceof UnionType || $type instanceof IntersectionType) {
 			return null;
 		}
 
-		// Only a bare case is safe to key by class + case name: for anything else -
-		// $this & Enum::C, a whole single-case enum, an enum subtracted to one case -
-		// EnumCaseObjectType::equals() is false because it requires an EnumCaseObjectType,
-		// which makes instanceof exactly the question being asked here. Type::getEnumCases()
-		// would answer it too, but only by resolving a ClassReflection - and a key has to be
-		// derivable from the type alone, on every comparison, without reflection.
-		// Key by class + case name, the identity equals() compares (describe() would also
-		// fold in a subtracted type, which equals() ignores).
 		$enumCaseObject = $type->getEnumCaseObject();
-		if ($enumCaseObject !== null && $enumCaseObject->equals($type)) {
+		if ($enumCaseObject !== null) {
 			return self::ENUM_CASE_KEY_PREFIX . $enumCaseObject->getClassName() . '::' . $enumCaseObject->getEnumCaseName();
 		}
 
-		$scalarTypes = $type->getConstantScalarTypes();
-		if (count($scalarTypes) === 1 && $scalarTypes[0]->equals($type)) {
-			$value = $scalarTypes[0]->getValue();
+		$scalarValues = $type->getConstantScalarValues();
+		if (count($scalarValues) === 1) {
+			$value = $scalarValues[0];
 			if ($value === null) {
 				return self::NULL_KEY;
 			}

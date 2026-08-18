@@ -242,6 +242,11 @@ final class AssignOpHandler implements ExprHandler
 			createTypesCallback: $createTypesCallback,
 		);
 
+		// applyWrite() emits nodes (PropertyAssignNode) whose rules ask about
+		// this whole `$lvalue OP= value` expression - store its result first so
+		// those asks answer from the storage; processExprNode() overwrites it
+		// with the final result after this handler returns
+		$nodeScopeResolver->storeExpressionResult($storage, $expr, $assignOpValueResult);
 		$assignResult = $this->assignHandler->applyWrite(
 			$nodeScopeResolver,
 			$target,
@@ -268,6 +273,10 @@ final class AssignOpHandler implements ExprHandler
 		}
 
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
+			if ($condResult === null) {
+				throw new ShouldNotHappenException();
+			}
+
 			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??='), $beforeScope, $storage, $context);
 		}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ParameterOutExecutionEndTypeRule>
@@ -72,6 +73,17 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 	public function testBug12330(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12330.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15066(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15066.php'], [
+			[
+				'Parameter &$refs @param-out type of function Bug15066Variables\\variadicParamOutNeverWritten() expects string, string|null given.',
+				35,
+			],
+		]);
 	}
 
 }

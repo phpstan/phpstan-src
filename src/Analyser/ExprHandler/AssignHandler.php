@@ -1067,7 +1067,23 @@ final class AssignHandler implements ExprHandler
 			}
 
 			foreach ($additionalExpressions as $k => $additionalExpression) {
-				[$expr, $type] = $additionalExpression;
+				[$expr, $type, $offsetType] = $additionalExpression;
+				if (
+					$offsetType !== null
+					&& $expr->dim !== null
+					&& !$scope->getType($expr->dim)->equals($offsetType)
+				) {
+					// Registering $expr would make the scope remember the written value under
+					// an offset re-read from the *post-assignment* scope. Only an offset that
+					// still resolves to exactly what was written may be registered, so anything
+					// else is skipped: the offset moved because it was derived from the container
+					// ($list[count($list)]) or from a side effect ($list[$i++]), or it merely
+					// widened because the container changed ($list[key($list)]). The equality is
+					// the only cheap evidence that the expression still designates the element
+					// that was just written, so both cases are treated the same way.
+					continue;
+				}
+
 				$nativeType = $type;
 				if (isset($additionalNativeExpressions[$k])) {
 					[, $nativeType] = $additionalNativeExpressions[$k];
@@ -1731,7 +1747,7 @@ final class AssignHandler implements ExprHandler
 	 * @param non-empty-list<ArrayDimFetch> $dimFetchStack
 	 * @param non-empty-list<array{Type|null, ArrayDimFetch}> $offsetTypes
 	 *
-	 * @return array{Type, list<array{Expr, Type}>}
+	 * @return array{Type, list<array{ArrayDimFetch, Type, Type|null}>}
 	 */
 	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope): array
 	{
@@ -1775,7 +1791,7 @@ final class AssignHandler implements ExprHandler
 
 		$lastDimKey = array_key_last($dimFetchStack);
 		$computedContainerValues = [];
-		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
+		foreach (array_reverse($offsetTypes) as $i => [$offsetType, $writtenDimFetch]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
 			if (
@@ -1789,11 +1805,27 @@ final class AssignHandler implements ExprHandler
 				}
 			}
 
-			$arrayDimFetch = $dimFetchStack[$i] ?? null;
+			// This loop walks the chain from the innermost write outwards: $offsetType is the
+			// offset written by $writtenDimFetch, and $offsetValueType is the type of the
+			// container it is written into ($writtenDimFetch->var). $dimFetchStack is indexed
+			// the other way round, so $dimFetchStack[$i] is the mirror image of
+			// $writtenDimFetch - the two only coincide for a non-nested write.
+			//
+			// Swapping the mirror for $writtenDimFetch here is not a no-op. At the outermost
+			// level of a nested write the mirror is the whole left-hand side, which is untracked
+			// before the assignment, so the write takes the setOffsetValueType() branch below and
+			// *replaces* the container's value type. $writtenDimFetch is tracked there, so the
+			// write would take the setExistingOffsetValueType() branch and *union* the old value
+			// type into the new one, widening every nested write back to what it was before
+			// (assign-nested-arrays.php, pr-4390.php, bug-13637.php, bug-13786.php,
+			// bug-14084.php). Making the index consistent therefore means teaching this branch to
+			// tell replacing a known element from widening a maybe-existing one, which no index
+			// on its own can do.
+			$mirroredDimFetch = $dimFetchStack[$i] ?? null;
 			if (
 				$offsetType !== null
-				&& $arrayDimFetch !== null
-				&& $scope->hasExpressionType($arrayDimFetch)->yes()
+				&& $mirroredDimFetch !== null
+				&& $scope->hasExpressionType($mirroredDimFetch)->yes()
 				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
 			) {
 				$hasOffsetType = null;
@@ -1837,7 +1869,10 @@ final class AssignHandler implements ExprHandler
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
-			if ($arrayDimFetch !== null && $offsetValueType->isList()->yes() && $this->shouldKeepList($arrayDimFetch, $scope, $offsetValueType)) {
+			// $writtenDimFetch, not the mirror above: shouldKeepList() reads the offset
+			// expression together with the array it indexes, so it has to be handed the link
+			// of the chain that $offsetType belongs to
+			if ($offsetValueType->isList()->yes() && $this->shouldKeepList($writtenDimFetch, $scope, $offsetValueType)) {
 				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 			}
 
@@ -1864,7 +1899,7 @@ final class AssignHandler implements ExprHandler
 				$additionalValueType = $valueToWrite->getOffsetValueType($offsetType);
 			}
 
-			$additionalExpressions[] = [$dimFetch, $additionalValueType];
+			$additionalExpressions[] = [$dimFetch, $additionalValueType, $offsetTypes[$key][0] ?? null];
 		}
 
 		return [$valueToWrite, $additionalExpressions];
@@ -1872,59 +1907,135 @@ final class AssignHandler implements ExprHandler
 
 	private function shouldKeepList(ArrayDimFetch $arrayDimFetch, Scope $scope, Type $offsetValueType): bool
 	{
-		if ($arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
-			if ( // keep list for $list[$index + 1] assignments
-				$arrayDimFetch->dim->right instanceof Variable
-				&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
-				&& $arrayDimFetch->dim->left->value === 1
-				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
-			) {
-				return true;
-			} elseif ( // keep list for $list[1 + $index] assignments
-				$arrayDimFetch->dim->left instanceof Variable
-				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-				&& $arrayDimFetch->dim->right->value === 1
-				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
+		$dim = $arrayDimFetch->dim;
+		if ($dim === null) {
+			return false;
+		}
+
+		$array = $arrayDimFetch->var;
+
+		if ($dim instanceof Expr\BinaryOp\Plus) {
+			[$plusOperand, $plusIncrement] = $dim->left instanceof Node\Scalar\Int_
+				? [$dim->right, $dim->left]
+				: [$dim->left, $dim->right];
+
+			if (!$plusIncrement instanceof Node\Scalar\Int_ || $plusIncrement->value !== 1) {
+				return false;
+			}
+
+			if ( // keep list for $list[$index + 1] and $list[1 + $index] assignments
+				$plusOperand instanceof Variable
+				&& $scope->hasExpressionType(new ArrayDimFetch($array, $plusOperand))->yes()
 			) {
 				return true;
 			}
-		} elseif ( // keep list for $list[count($list) - n] assignments
-			$arrayDimFetch->dim instanceof Expr\BinaryOp\Minus
-			&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-			&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
-			&& $arrayDimFetch->dim->left->name instanceof Name
-			&& in_array($arrayDimFetch->dim->left->name->toLowerString(), ['count', 'sizeof'], true)
-			&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
-			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
-			&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($arrayDimFetch->dim))->yes()
-			&& $offsetValueType->isIterableAtLeastOnce()->yes()
-		) {
-			return true;
-		} elseif ( // keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
-			$arrayDimFetch->dim instanceof Expr\FuncCall
-			&& $arrayDimFetch->dim->name instanceof Name
-			&& in_array($arrayDimFetch->dim->name->toLowerString(), ['array_key_last', 'array_key_first'], true)
-			&& count($arrayDimFetch->dim->getArgs()) >= 1
-			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[0]->value)
-		) {
-			return true;
-		} elseif ( // keep list for $list[array_search($needle, $list)] assignments
-			$arrayDimFetch->dim instanceof Expr\FuncCall
-			&& $arrayDimFetch->dim->name instanceof Name
-			&& $arrayDimFetch->dim->name->toLowerString() === 'array_search'
-			&& count($arrayDimFetch->dim->getArgs()) >= 1
-			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[1]->value)
+
+			// keep list for $list[array_key_last($list) + 1] assignments;
+			// on an empty list array_key_last() returns null, so 0 + 1 would leave a hole
+			return $this->isFuncCallOnSameArray($plusOperand, ['array_key_last'], 0, $array)
+				&& $offsetValueType->isIterableAtLeastOnce()->yes();
+		}
+
+		if ( // keep list for $list[count($list)] assignments - writes right behind the last element
+			$this->isCountOfSameArray($dim, $array)
 		) {
 			return true;
 		}
 
-		return false;
+		if ( // keep list for $list[count($list) - n] assignments
+			$dim instanceof Expr\BinaryOp\Minus
+			&& $dim->right instanceof Node\Scalar\Int_
+			&& $this->isCountOfSameArray($dim->left, $array)
+			&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($dim))->yes()
+			&& ($offsetValueType->isIterableAtLeastOnce()->yes() || $dim->right->value === 0)
+		) {
+			return true;
+		}
+
+		// keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
+		if ($this->isFuncCallOnSameArray($dim, ['array_key_last', 'array_key_first'], 0, $array)) {
+			return true;
+		}
+
+		// keep list for $list[array_search($needle, $list)] assignments
+		return $this->isFuncCallOnSameArray($dim, ['array_search'], 1, $array);
 	}
 
-	private function isSameVariable(Expr $a, Expr $b): bool
+	private function isCountOfSameArray(Expr $expr, Expr $array): bool
 	{
-		if ($a instanceof Variable && $b instanceof Variable && is_string($a->name) && is_string($b->name)) {
-			return $a->name === $b->name;
+		// a second argument could be COUNT_RECURSIVE, which no longer describes the offset behind the last element
+		return $expr instanceof Expr\FuncCall
+			&& count($expr->getArgs()) === 1
+			&& $this->isFuncCallOnSameArray($expr, ['count', 'sizeof'], 0, $array);
+	}
+
+	/**
+	 * @param non-empty-list<string> $functionNames
+	 */
+	private function isFuncCallOnSameArray(Expr $expr, array $functionNames, int $argPosition, Expr $array): bool
+	{
+		if (!$expr instanceof Expr\FuncCall || !$expr->name instanceof Name) {
+			return false;
+		}
+
+		if (!in_array($expr->name->toLowerString(), $functionNames, true)) {
+			return false;
+		}
+
+		$args = $expr->getArgs();
+		if (!isset($args[$argPosition])) {
+			return false;
+		}
+
+		$arg = $args[$argPosition];
+		if ($arg->unpack || $arg->name !== null) {
+			return false;
+		}
+
+		return $this->isSameArrayExpr($array, $arg->value);
+	}
+
+	private function isSameArrayExpr(Expr $a, Expr $b): bool
+	{
+		if (!$this->isStableExpr($a) || !$this->isStableExpr($b)) {
+			return false;
+		}
+
+		return $this->exprPrinter->printExpr($a) === $this->exprPrinter->printExpr($b);
+	}
+
+	/**
+	 * Only expressions that are side-effect free and denote the same container
+	 * on every evaluation may be compared through their printed form.
+	 */
+	private function isStableExpr(Expr $expr): bool
+	{
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+
+		if ($expr instanceof PropertyFetch) {
+			return $expr->name instanceof Node\Identifier && $this->isStableExpr($expr->var);
+		}
+
+		if ($expr instanceof StaticPropertyFetch) {
+			return $expr->class instanceof Name && $expr->name instanceof Node\Identifier;
+		}
+
+		if ($expr instanceof ArrayDimFetch) {
+			if ($expr->dim === null) {
+				return false;
+			}
+
+			if (
+				!$expr->dim instanceof Node\Scalar\Int_
+				&& !$expr->dim instanceof Node\Scalar\String_
+				&& !$this->isStableExpr($expr->dim)
+			) {
+				return false;
+			}
+
+			return $this->isStableExpr($expr->var);
 		}
 
 		return false;

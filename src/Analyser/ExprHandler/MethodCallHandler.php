@@ -142,21 +142,6 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $nameResult->getScope();
 		}
 
-		if ($methodReflection !== null) {
-			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
-			if ($impurePoint !== null) {
-				$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
-			}
-		} else {
-			$impurePoints[] = new ImpurePoint(
-				$scope,
-				$expr,
-				'methodCall',
-				'call to unknown method',
-				false,
-			);
-		}
-
 		$normalizedExpr = $expr;
 		if ($parametersAcceptor !== null) {
 			$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
@@ -164,6 +149,7 @@ final class MethodCallHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
 		}
 
+		$scopeBeforeArgs = $scope;
 		$argsResult = $nodeScopeResolver->processArgs(
 			$stmt,
 			$methodReflection,
@@ -179,6 +165,24 @@ final class MethodCallHandler implements ExprHandler
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
 		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);
+
+		if ($methodReflection !== null) {
+			// created after the args were processed - the pure-unless-callable-
+			// is-impure parameters read an argument's type, which is only
+			// available once its result is stored
+			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
+			if ($impurePoint !== null) {
+				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
+			}
+		} else {
+			$impurePoints[] = new ImpurePoint(
+				$scopeBeforeArgs,
+				$expr,
+				'methodCall',
+				'call to unknown method',
+				false,
+			);
+		}
 
 		// The return type is derived from $resolvedParametersAcceptor - the acceptor
 		// processArgs() selected from the arg types gathered on the arg-to-arg

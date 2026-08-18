@@ -37,6 +37,7 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -772,9 +773,29 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
 				// an immediately invoked closure is the callee: its invocation
 				// arguments are walked AFTER the closure itself, so there is no
-				// stored result yet - the ask-ahead-of-walk scope read is the seam
-				$callableParameters[] = new DummyParameter('item', $scope->getType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-				$nativeCallableParameters[] = new DummyParameter('item', $scope->getNativeType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				// stored result yet. Constants price through the initializer
+				// resolver and plain variables read scope state by name; the
+				// ask-ahead-of-walk scope read remains the seam for the rest.
+				$argValue = $immediatelyInvokedArg->value;
+				if (
+					$argValue instanceof Node\Scalar\String_
+					|| $argValue instanceof Node\Scalar\Int_
+					|| $argValue instanceof Node\Scalar\Float_
+					|| ($argValue instanceof Node\Expr\ClassConstFetch && $argValue->class instanceof Node\Name && $argValue->name instanceof Node\Identifier)
+					|| $argValue instanceof Node\Expr\ConstFetch
+				) {
+					$argType = $this->initializerExprTypeResolver->getType($argValue, InitializerExprContext::fromScope($scope));
+					$argNativeType = $argType;
+				} elseif ($argValue instanceof Node\Expr\Variable && is_string($argValue->name)) {
+					$argType = $scope->hasVariableType($argValue->name)->no() ? new ErrorType() : $scope->getVariableType($argValue->name);
+					$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
+					$argNativeType = $nativeScope->hasVariableType($argValue->name)->no() ? new ErrorType() : $nativeScope->getVariableType($argValue->name);
+				} else {
+					$argType = $scope->getType($argValue);
+					$argNativeType = $scope->getNativeType($argValue);
+				}
+				$callableParameters[] = new DummyParameter('item', $argType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				$nativeCallableParameters[] = new DummyParameter('item', $argNativeType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} else {
 			$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);

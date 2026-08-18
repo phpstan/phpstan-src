@@ -2379,7 +2379,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$variableNativeType = new ErrorType();
 			} else {
 				$variableType = $this->getVariableType($variableName);
-				$variableNativeType = $this->getNativeType($use->var);
+				// a plain variable read is scope state - never priced via the
+				// node, which may not have been processed yet
+				$nativeScope = $this->doNotTreatPhpDocTypesAsCertain();
+				$variableNativeType = $nativeScope->hasVariableType($variableName)->no() ? new ErrorType() : $nativeScope->getVariableType($variableName);
 			}
 			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableType);
 			$nativeTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableNativeType);

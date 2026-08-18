@@ -31,6 +31,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -43,6 +44,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
@@ -55,6 +57,9 @@ use function strtolower;
 #[AutowiredService]
 final class MethodCallHandler implements ExprHandler
 {
+
+	/** @var array<string, list<string>> */
+	private array $promotedParameterNamesCache = [];
 
 	public function __construct(
 		private EarlyTerminatingCallHelper $earlyTerminatingCallHelper,
@@ -200,6 +205,17 @@ final class MethodCallHandler implements ExprHandler
 						),
 						$scope->getNativeType($normalizedExpr->var),
 					);
+				}
+			}
+
+			if (
+				!$methodReflection->isStatic()
+				&& $scope->isInClass()
+				&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+			) {
+				$calledOnType = $scope->getType($normalizedExpr->var);
+				foreach ($this->getPromotedParameterNames($methodReflection) as $propertyName) {
+					$scope = $scope->assignInitializedProperty($calledOnType, $propertyName);
 				}
 			}
 
@@ -373,6 +389,36 @@ final class MethodCallHandler implements ExprHandler
 		}
 
 		return $typeSpecifier->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+	}
+
+	/**
+	 * Constructor promotion is not limited to methods called __construct: a trait
+	 * constructor imported under a different name (use T { __construct as init; })
+	 * keeps promoting its parameters, so calling it initializes those properties.
+	 *
+	 * @return list<string>
+	 */
+	private function getPromotedParameterNames(ExtendedMethodReflection $methodReflection): array
+	{
+		$declaringClass = $methodReflection->getDeclaringClass();
+		$cacheKey = sprintf('%s::%s', $declaringClass->getName(), $methodReflection->getName());
+		if (array_key_exists($cacheKey, $this->promotedParameterNamesCache)) {
+			return $this->promotedParameterNamesCache[$cacheKey];
+		}
+
+		$names = [];
+		$nativeClassReflection = $declaringClass->getNativeReflection();
+		if ($nativeClassReflection->hasMethod($methodReflection->getName())) {
+			foreach ($nativeClassReflection->getMethod($methodReflection->getName())->getParameters() as $parameter) {
+				if (!$parameter->isPromoted()) {
+					continue;
+				}
+
+				$names[] = $parameter->getName();
+			}
+		}
+
+		return $this->promotedParameterNamesCache[$cacheKey] = $names;
 	}
 
 }

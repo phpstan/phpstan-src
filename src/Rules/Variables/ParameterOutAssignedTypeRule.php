@@ -6,16 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableAssignNode;
-use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\VerbosityLevel;
 use function is_string;
-use function sprintf;
 
 /**
  * @implements Rule<VariableAssignNode>
@@ -25,7 +18,7 @@ final class ParameterOutAssignedTypeRule implements Rule
 {
 
 	public function __construct(
-		private RuleLevelHelper $ruleLevelHelper,
+		private ParameterOutTypeCheck $parameterOutTypeCheck,
 	)
 	{
 	}
@@ -78,45 +71,14 @@ final class ParameterOutAssignedTypeRule implements Rule
 
 		$outType = TypeUtils::resolveLateResolvableTypes($outType);
 
-		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+		return $this->parameterOutTypeCheck->check(
 			$scope,
+			$inFunction,
+			$foundParameter,
 			$node->getAssignedExpr(),
-			'',
-			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
+			$outType,
+			$isParamOutType,
 		);
-		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
-			return $typeResult->getUnknownClassErrors();
-		}
-
-		$assignedExprType = $scope->getType($node->getAssignedExpr());
-		if ($outType->isSuperTypeOf($assignedExprType)->yes()) {
-			return [];
-		}
-
-		if ($inFunction instanceof ExtendedMethodReflection) {
-			$functionDescription = sprintf('method %s::%s()', $inFunction->getDeclaringClass()->getDisplayName(), $inFunction->getName());
-		} else {
-			$functionDescription = sprintf('function %s()', $inFunction->getName());
-		}
-
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($outType, $assignedExprType);
-		$errorBuilder = RuleErrorBuilder::message(sprintf(
-			'Parameter &$%s %s of %s expects %s, %s given.',
-			$foundParameter->getName(),
-			$isParamOutType ? '@param-out type' : 'by-ref type',
-			$functionDescription,
-			$outType->describe($verbosityLevel),
-			$assignedExprType->describe($verbosityLevel),
-		))->identifier(sprintf('%s.type', $isParamOutType ? 'paramOut' : 'parameterByRef'));
-
-		if (!$isParamOutType) {
-			$errorBuilder->tip('You can change the parameter out type with @param-out PHPDoc tag.');
-		}
-
-		return [
-			$errorBuilder->build(),
-		];
 	}
 
 }

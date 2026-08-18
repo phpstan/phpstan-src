@@ -15,15 +15,17 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ParameterOutExecutionEndTypeRule(
-			new RuleLevelHelper(
-				self::createReflectionProvider(),
-				checkNullables: true,
-				checkThisOnly: false,
-				checkUnionTypes: true,
-				checkExplicitMixed: true,
-				checkImplicitMixed: false,
-				checkBenevolentUnionTypes: false,
-				discoveringSymbolsTip: true,
+			new ParameterOutTypeCheck(
+				new RuleLevelHelper(
+					self::createReflectionProvider(),
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: true,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
 			),
 		);
 	}

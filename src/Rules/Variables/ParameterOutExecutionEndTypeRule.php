@@ -12,14 +12,8 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\VerbosityLevel;
-use function sprintf;
 
 /**
  * @implements Rule<ExecutionEndNode>
@@ -29,7 +23,7 @@ final class ParameterOutExecutionEndTypeRule implements Rule
 {
 
 	public function __construct(
-		private RuleLevelHelper $ruleLevelHelper,
+		private ParameterOutTypeCheck $parameterOutTypeCheck,
 	)
 	{
 	}
@@ -94,41 +88,14 @@ final class ParameterOutExecutionEndTypeRule implements Rule
 
 		$outType = TypeUtils::resolveLateResolvableTypes($outType);
 
-		$variableExpr = new Node\Expr\Variable($parameter->getName());
-		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+		return $this->parameterOutTypeCheck->check(
 			$scope,
-			$variableExpr,
-			'',
-			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
+			$inFunction,
+			$parameter,
+			new Node\Expr\Variable($parameter->getName()),
+			$outType,
+			true, // this rule only runs when @param-out is present
 		);
-		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
-			return $typeResult->getUnknownClassErrors();
-		}
-
-		$assignedExprType = $scope->getType($variableExpr);
-		if ($outType->isSuperTypeOf($assignedExprType)->yes()) {
-			return [];
-		}
-
-		if ($inFunction instanceof ExtendedMethodReflection) {
-			$functionDescription = sprintf('method %s::%s()', $inFunction->getDeclaringClass()->getDisplayName(), $inFunction->getName());
-		} else {
-			$functionDescription = sprintf('function %s()', $inFunction->getName());
-		}
-
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($outType, $assignedExprType);
-		$errorBuilder = RuleErrorBuilder::message(sprintf(
-			'Parameter &$%s @param-out type of %s expects %s, %s given.',
-			$parameter->getName(),
-			$functionDescription,
-			$outType->describe($verbosityLevel),
-			$assignedExprType->describe($verbosityLevel),
-		))->identifier(sprintf('paramOut.type'));
-
-		return [
-			$errorBuilder->build(),
-		];
 	}
 
 }

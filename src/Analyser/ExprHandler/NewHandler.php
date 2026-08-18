@@ -32,6 +32,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -92,6 +93,7 @@ final class NewHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
+		private Container $container,
 	)
 	{
 	}
@@ -511,10 +513,10 @@ final class NewHandler implements ExprHandler
 		// void/object constructor - skip it unless the return type could be never.
 		$constructorReturnType = $parametersAcceptor->getReturnType();
 		if ($constructorReturnType instanceof NeverType || $constructorReturnType->hasTemplateOrLateResolvableType()) {
-			// $methodCall is a synthetic StaticCall the handler built - it is not
-			// a source node, so Scope::getType() prices it on demand (the
-			// constructor's own never-returning conditional return type).
-			$methodResult = $scope->getType($methodCall);
+			// $methodCall is a synthetic StaticCall the handler built; price it
+			// through the sanctioned on-demand walk (the constructor's own
+			// never-returning conditional return type).
+			$methodResult = $this->container->getByType(NodeScopeResolver::class)->processSyntheticOnDemand($methodCall, $scope)->getTypeOnScope($scope, false);
 			if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 				return $methodResult;
 			}
@@ -637,7 +639,7 @@ final class NewHandler implements ExprHandler
 			// constructor's template types from the arguments (processArgs against
 			// the parent's signature), which a direct exactInstantiation() recursion
 			// with the child's acceptor cannot do
-			$newParentType = $scope->getType($newParentNode);
+			$newParentType = $this->container->getByType(NodeScopeResolver::class)->processSyntheticOnDemand($newParentNode, $scope)->getTypeOnScope($scope, false);
 			$newParentTypeClassReflections = $newParentType->getObjectClassReflections();
 			if (count($newParentTypeClassReflections) !== 1) {
 				if ($isStatic) {

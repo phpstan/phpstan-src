@@ -530,15 +530,14 @@ public:
 			bool initializesPromotedProperties = !zend_is_true(isStatic.raw());
 			if (initializesPromotedProperties && UNEXPECTED(!isDeclaredInScopeClass(currentScope.raw(), methodReflection.raw(), initializesPromotedProperties))) return zv::Val();
 			if (initializesPromotedProperties) {
-				zval *normalizedVar = exprVar(normalizedExpr.raw());
-				if (UNEXPECTED(normalizedVar == NULL)) return zv::Val();
-				zv::Val promotedOnType = pt_mutating_scope_get_type(Z_OBJ_P(currentScope.raw()), normalizedVar);
-				if (UNEXPECTED(promotedOnType.isUndef())) return zv::Val();
+				// calledOnType is the receiver before the arguments were evaluated, which is
+				// the object the call goes to: an argument reassigning the receiver variable
+				// does not change who gets called.
 				zv::Val promotedParameterNames = getPromotedParameterNames(methodReflection.raw());
 				if (UNEXPECTED(promotedParameterNames.isUndef())) return zv::Val();
 				for (zv::ArrayEntry entry : zv::ArrRef(promotedParameterNames.raw())) {
 					zval *propertyName = entry.value().deref().raw();
-					currentScope = pt_mutating_scope_assign_initialized_property(Z_OBJ_P(currentScope.raw()), promotedOnType.raw(), Z_STR_P(propertyName));
+					currentScope = pt_mutating_scope_assign_initialized_property(Z_OBJ_P(currentScope.raw()), calledOnType.raw(), Z_STR_P(propertyName));
 					if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 				}
 			}

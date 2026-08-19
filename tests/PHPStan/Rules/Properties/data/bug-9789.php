@@ -132,3 +132,23 @@ class NotReadOnlyReadBeforeInit
 	}
 
 }
+
+class WithAdditionalConstructor
+{
+
+	use T {
+		__construct as protected init;
+	}
+
+	protected function setUp(): void
+	{
+		$this->init('x');
+		echo $this->readValue();
+	}
+
+	private function readValue(): string
+	{
+		return $this->value;
+	}
+
+}

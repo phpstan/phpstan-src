@@ -213,7 +213,9 @@ final class MethodCallHandler implements ExprHandler
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
 			) {
-				$calledOnType = $scope->getType($normalizedExpr->var);
+				// $calledOnType is the receiver before the arguments were evaluated, which is
+				// the object the call goes to: an argument reassigning the receiver variable
+				// does not change who gets called.
 				foreach ($this->getPromotedParameterNames($methodReflection) as $propertyName) {
 					$scope = $scope->assignInitializedProperty($calledOnType, $propertyName);
 				}

@@ -4,14 +4,17 @@ namespace PHPStan\Parser;
 
 use PhpParser\Node;
 use PHPStan\File\FileReader;
-use function array_key_first;
+use PHPStan\Internal\LruCache;
+use function clearstatcache;
+use function filemtime;
+use function filesize;
 use function strlen;
 
 final class CachedParser implements Parser
 {
 
 	/**
-	 * Size-based eviction never shrinks the cache below this many entries.
+	 * Size-based eviction never shrinks the AST cache below this many entries.
 	 * Without this floor, a single source larger than $cachedSourceBytesMax
 	 * would flush the whole cache on every insertion, degenerating the cache
 	 * to a single entry whenever such a source is hot.
@@ -26,15 +29,23 @@ final class CachedParser implements Parser
 	 */
 	private const CACHED_SOURCE_BYTES_DEFAULT_LIMIT = 4_194_304;
 
-	/** @var array<string, Node\Stmt[]>*/
-	private array $cachedNodesByString = [];
+	/**
+	 * parseFile() is called once per class using a trait, so the same file
+	 * is read from disk over and over (one hot trait file was read 94,000
+	 * times in a cold run of a large Laravel project). Memoizing the contents
+	 * by path skips those redundant reads; the total memoized source size is
+	 * bounded the same way as the AST cache.
+	 */
+	private const MEMOIZED_SOURCE_BYTES_LIMIT = 524_288;
 
-	private int $cachedNodesByStringCount = 0;
-
-	private int $cachedSourceBytes = 0;
+	/** @var LruCache<Node\Stmt[]> keyed by source code, weighing the length of that source */
+	private LruCache $cachedNodesByString;
 
 	/** @var array<string, true> */
 	private array $parsedByString = [];
+
+	/** @var LruCache<array{int, int, string}> path => [mtime, size, source code] */
+	private LruCache $cachedSourceByFile;
 
 	/**
 	 * The AST of a parsed file takes up roughly 50-60x more memory than the
@@ -51,6 +62,12 @@ final class CachedParser implements Parser
 		private int $cachedSourceBytesMax = self::CACHED_SOURCE_BYTES_DEFAULT_LIMIT,
 	)
 	{
+		$this->cachedNodesByString = new LruCache(
+			$this->cachedNodesByStringCountMax,
+			$this->cachedSourceBytesMax,
+			self::SIZE_EVICTION_FLOOR_LIMIT,
+		);
+		$this->cachedSourceByFile = new LruCache(maxWeight: self::MEMOIZED_SOURCE_BYTES_LIMIT);
 	}
 
 	/**
@@ -59,24 +76,23 @@ final class CachedParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		$sourceCode = FileReader::read($file);
-		$isCached = isset($this->cachedNodesByString[$sourceCode]);
-		if ($isCached && !isset($this->parsedByString[$sourceCode])) {
-			return $this->markRecentlyUsed($sourceCode);
+		$sourceCode = $this->readFile($file);
+		$cachedNodes = $this->cachedNodesByString->get($sourceCode);
+		if ($cachedNodes !== null && !isset($this->parsedByString[$sourceCode])) {
+			return $cachedNodes;
 		}
 
 		$nodes = $this->originalParser->parseFile($file);
-		if ($isCached) {
+		if ($cachedNodes !== null) {
 			// upgrade an entry previously produced by parseString() in place -
 			// no net change to the entry count, just refresh its LRU position
-			unset($this->cachedNodesByString[$sourceCode], $this->parsedByString[$sourceCode]);
-		} else {
-			$this->evictLeastRecentlyUsed(strlen($sourceCode));
-			$this->cachedNodesByStringCount++;
-			$this->cachedSourceBytes += strlen($sourceCode);
+			$this->cachedNodesByString->replace($sourceCode, $nodes);
+			unset($this->parsedByString[$sourceCode]);
+
+			return $nodes;
 		}
 
-		$this->cachedNodesByString[$sourceCode] = $nodes;
+		$this->store($sourceCode, $nodes);
 
 		return $nodes;
 	}
@@ -86,63 +102,59 @@ final class CachedParser implements Parser
 	 */
 	public function parseString(string $sourceCode): array
 	{
-		if (isset($this->cachedNodesByString[$sourceCode])) {
-			return $this->markRecentlyUsed($sourceCode);
+		$cachedNodes = $this->cachedNodesByString->get($sourceCode);
+		if ($cachedNodes !== null) {
+			return $cachedNodes;
 		}
 
 		$nodes = $this->originalParser->parseString($sourceCode);
-		$this->evictLeastRecentlyUsed(strlen($sourceCode));
-		$this->cachedNodesByString[$sourceCode] = $nodes;
-		$this->cachedNodesByStringCount++;
-		$this->cachedSourceBytes += strlen($sourceCode);
+		$this->store($sourceCode, $nodes);
 		$this->parsedByString[$sourceCode] = true;
 
 		return $nodes;
 	}
 
 	/**
-	 * LRU bookkeeping: re-insert the entry at the end so genuinely cold sources
-	 * are evicted first, not the ones inserted earliest.
-	 *
-	 * @return Node\Stmt[]
+	 * @param Node\Stmt[] $nodes
 	 */
-	private function markRecentlyUsed(string $sourceCode): array
+	private function store(string $sourceCode, array $nodes): void
 	{
-		$nodes = $this->cachedNodesByString[$sourceCode];
-		unset($this->cachedNodesByString[$sourceCode]);
-		$this->cachedNodesByString[$sourceCode] = $nodes;
-
-		return $nodes;
+		foreach ($this->cachedNodesByString->set($sourceCode, $nodes, strlen($sourceCode)) as $evictedSourceCode) {
+			unset($this->parsedByString[$evictedSourceCode]);
+		}
 	}
 
-	private function evictLeastRecentlyUsed(int $incomingSourceBytes): void
+	private function readFile(string $file): string
 	{
-		if ($this->cachedNodesByStringCountMax === 0) {
-			return;
+		// mtime alone has one-second granularity, so a same-second edit could be
+		// served stale in a long-running process (PHPStan Pro, fixer worker);
+		// keying by size as well catches edits that change the length. filesize()
+		// is served from PHP's stat cache populated by filemtime(), so it costs
+		// no extra syscall.
+		clearstatcache(true, $file);
+		$mtime = @filemtime($file);
+		$size = @filesize($file);
+		if ($mtime === false || $size === false) {
+			return FileReader::read($file);
 		}
 
-		while (
-			$this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax
-			|| (
-				$this->cachedSourceBytesMax > 0
-				&& $this->cachedSourceBytes + $incomingSourceBytes > $this->cachedSourceBytesMax
-				&& $this->cachedNodesByStringCount > self::SIZE_EVICTION_FLOOR_LIMIT
-			)
-		) {
-			$oldestKey = array_key_first($this->cachedNodesByString);
-			if ($oldestKey === null) {
-				break;
-			}
-
-			unset($this->cachedNodesByString[$oldestKey], $this->parsedByString[$oldestKey]);
-			$this->cachedNodesByStringCount--;
-			$this->cachedSourceBytes -= strlen($oldestKey);
+		$cached = $this->cachedSourceByFile->get($file);
+		if ($cached !== null && $cached[0] === $mtime && $cached[1] === $size) {
+			return $cached[2];
 		}
+
+		$sourceCode = FileReader::read($file);
+		if (strlen($sourceCode) <= self::MEMOIZED_SOURCE_BYTES_LIMIT) {
+			// set() replaces a stale entry for this path (mtime or size changed) as well
+			$this->cachedSourceByFile->set($file, [$mtime, $size, $sourceCode], strlen($sourceCode));
+		}
+
+		return $sourceCode;
 	}
 
 	public function getCachedNodesByStringCount(): int
 	{
-		return $this->cachedNodesByStringCount;
+		return $this->cachedNodesByString->count();
 	}
 
 	public function getCachedNodesByStringCountMax(): int
@@ -155,7 +167,7 @@ final class CachedParser implements Parser
 	 */
 	public function getCachedNodesByString(): array
 	{
-		return $this->cachedNodesByString;
+		return $this->cachedNodesByString->all();
 	}
 
 }

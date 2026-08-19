@@ -5,13 +5,21 @@ namespace PHPStan\Parser;
 use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Nop;
 use PHPStan\BetterReflection\Reflection\ExprCacheHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\Stub;
+use function file_put_contents;
 use function sprintf;
+use function str_repeat;
+use function sys_get_temp_dir;
+use function time;
+use function touch;
+use function uniqid;
+use function unlink;
 
 class CachedParserTest extends PHPStanTestCase
 {
@@ -235,6 +243,86 @@ class CachedParserTest extends PHPStanTestCase
 		$reImported = ExprCacheHelper::import($exported);
 		// assert that we get back the default start-line instead of a stale cached startLine of previous same value expression
 		$this->assertSame(['startLine' => 1, 'startTokenPos' => 35, 'startFilePos' => 137, 'endLine' => 10, 'endTokenPos' => 35, 'endFilePos' => 143, 'kind' => 1, 'rawValue' => "'hello'"], $reImported->getAttributes());
+	}
+
+	public function testParseFileSkipsReadingUnchangedFileAndRereadsAfterChange(): void
+	{
+		$parser = new CachedParser($this->getContentEchoingParserStub(), 500);
+		$path = sys_get_temp_dir() . '/phpstan-cached-parser-' . uniqid() . '.php';
+		$baseTime = time() - 10;
+
+		try {
+			file_put_contents($path, 'contents A');
+			touch($path, $baseTime);
+			$this->assertSame('contents A', $parser->parseFile($path)[0]->getAttribute('content'));
+
+			// Same-length contents change with an unchanged mtime is not detectable
+			// by the [mtime, size] key: the memoized contents are returned without re-reading.
+			file_put_contents($path, 'contents B');
+			touch($path, $baseTime);
+			$this->assertSame('contents A', $parser->parseFile($path)[0]->getAttribute('content'));
+
+			// A size change invalidates the memo even when the mtime is unchanged.
+			file_put_contents($path, 'contents B longer');
+			touch($path, $baseTime);
+			$this->assertSame('contents B longer', $parser->parseFile($path)[0]->getAttribute('content'));
+
+			// A newer mtime invalidates the memo, so the file is read again.
+			file_put_contents($path, 'contents C longer');
+			touch($path, $baseTime + 10);
+			$this->assertSame('contents C longer', $parser->parseFile($path)[0]->getAttribute('content'));
+		} finally {
+			@unlink($path);
+		}
+	}
+
+	public function testFileContentsMemoIsBoundedByTotalSourceBytes(): void
+	{
+		$parser = new CachedParser($this->getContentEchoingParserStub(), 500);
+		$baseTime = time() - 10;
+		$bigA = sys_get_temp_dir() . '/phpstan-cached-parser-a-' . uniqid() . '.php';
+		$bigB = sys_get_temp_dir() . '/phpstan-cached-parser-b-' . uniqid() . '.php';
+		$huge = sys_get_temp_dir() . '/phpstan-cached-parser-h-' . uniqid() . '.php';
+
+		try {
+			// A file larger than the memo limit is never memoized: a content change
+			// with an unchanged mtime is still picked up because the file is re-read.
+			file_put_contents($huge, 'huge first ' . str_repeat('x', 600_000));
+			touch($huge, $baseTime);
+			$this->assertStringStartsWith('huge first', $parser->parseFile($huge)[0]->getAttribute('content'));
+			file_put_contents($huge, 'huge second ' . str_repeat('x', 600_000));
+			touch($huge, $baseTime);
+			$this->assertStringStartsWith('huge second', $parser->parseFile($huge)[0]->getAttribute('content'));
+
+			// Two ~300 KB files exceed the limit together: memoizing the second
+			// evicts the first (least recently used), so a content change to the
+			// first with an unchanged mtime is picked up by the forced re-read.
+			file_put_contents($bigA, 'big-a first ' . str_repeat('a', 300_000));
+			touch($bigA, $baseTime);
+			$this->assertStringStartsWith('big-a first', $parser->parseFile($bigA)[0]->getAttribute('content'));
+
+			file_put_contents($bigB, 'big-b ' . str_repeat('b', 300_000));
+			touch($bigB, $baseTime);
+			$this->assertStringStartsWith('big-b', $parser->parseFile($bigB)[0]->getAttribute('content'));
+
+			file_put_contents($bigA, 'big-a second ' . str_repeat('a', 300_000));
+			touch($bigA, $baseTime);
+			$this->assertStringStartsWith('big-a second', $parser->parseFile($bigA)[0]->getAttribute('content'));
+		} finally {
+			@unlink($bigA);
+			@unlink($bigB);
+			@unlink($huge);
+		}
+	}
+
+	private function getContentEchoingParserStub(): Parser&Stub
+	{
+		$mock = $this->createStub(Parser::class);
+		$mock->method('parseFile')->willReturnCallback(
+			static fn (string $file): array => [new Nop(['content' => FileReader::read($file)])],
+		);
+
+		return $mock;
 	}
 
 }

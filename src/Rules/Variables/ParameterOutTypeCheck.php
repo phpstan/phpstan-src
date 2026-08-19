@@ -57,16 +57,7 @@ final class ParameterOutTypeCheck
 			$scope,
 			$checkedExpr,
 			'',
-			static function (Type $type) use ($outType, $isVariadic): bool {
-				if ($isVariadic) {
-					$type = VariadicByRefParameterOutType::elementType($type);
-					if ($type === null) {
-						return false;
-					}
-				}
-
-				return $outType->isSuperTypeOf($type)->yes();
-			},
+			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
 		);
 		if ($typeResult->getType() instanceof ErrorType) {
 			return $typeResult->getUnknownClassErrors();

@@ -66,4 +66,22 @@ class RestrictedInternalMethodUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13042(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13042.php'], [
+			[
+				'Call to internal method Bug13042\Foo::doInternal() from outside its root namespace Bug13042.',
+				144,
+			],
+			[
+				'Call to internal method Bug13042\Foo::doInternal() from outside its root namespace Bug13042.',
+				163,
+			],
+			[
+				'Call to internal method Bug13042\Foo::doInternal() from outside its root namespace Bug13042.',
+				182,
+			],
+		]);
+	}
+
 }

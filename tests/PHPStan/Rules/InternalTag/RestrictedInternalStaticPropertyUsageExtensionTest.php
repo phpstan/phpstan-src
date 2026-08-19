@@ -66,4 +66,14 @@ class RestrictedInternalStaticPropertyUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13042(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13042.php'], [
+			[
+				'Access to internal static property Bug13042\Foo::$internalStatic from outside its root namespace Bug13042.',
+				142,
+			],
+		]);
+	}
+
 }

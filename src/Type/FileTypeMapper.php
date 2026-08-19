@@ -15,6 +15,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileContentHasher;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Internal\LruCache;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -58,10 +59,8 @@ final class FileTypeMapper
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
 
-	/** @var array<string, array{array<string, IntermediaryNameScope>}> */
-	private array $memoryCache = [];
-
-	private int $memoryCacheCount = 0;
+	/** @var LruCache<array{array<string, IntermediaryNameScope>}> */
+	private LruCache $memoryCache;
 
 	/** @var array<string, true> */
 	private array $inProcess = [];
@@ -90,6 +89,10 @@ final class FileTypeMapper
 		private int $nameScopeMapMemoryCacheCountMax,
 	)
 	{
+		// 0 kept one entry here rather than meaning "no limit" as it does for the other bounded
+		// caches: the eviction loop ran before the insertion, emptying the cache and then putting
+		// a single entry back. Preserved rather than normalised - see the PR description.
+		$this->memoryCache = new LruCache($this->nameScopeMapMemoryCacheCountMax === 0 ? 1 : $this->nameScopeMapMemoryCacheCountMax);
 	}
 
 	/** @api */
@@ -336,13 +339,8 @@ final class FileTypeMapper
 	 */
 	private function getNameScopeMap(string $fileName): array
 	{
-		if (isset($this->memoryCache[$fileName])) {
-			// LRU: move the freshly-accessed entry to the end so eviction drops
-			// genuinely cold files, not hot dependencies inserted early on.
-			$cachedEntry = $this->memoryCache[$fileName];
-			unset($this->memoryCache[$fileName]);
-			$this->memoryCache[$fileName] = $cachedEntry;
-
+		$cachedEntry = $this->memoryCache->get($fileName);
+		if ($cachedEntry !== null) {
 			return $cachedEntry;
 		}
 
@@ -364,19 +362,10 @@ final class FileTypeMapper
 		} else {
 			[$nameScopeMap] = $cached;
 		}
-		while ($this->memoryCacheCount >= $this->nameScopeMapMemoryCacheCountMax) {
-			$oldestKey = array_key_first($this->memoryCache);
-			if ($oldestKey === null) {
-				break;
-			}
-			unset($this->memoryCache[$oldestKey]);
-			$this->memoryCacheCount--;
-		}
+		$entry = [$nameScopeMap];
+		$this->memoryCache->set($fileName, $entry, 0);
 
-		$this->memoryCache[$fileName] = [$nameScopeMap];
-		$this->memoryCacheCount++;
-
-		return $this->memoryCache[$fileName];
+		return $entry;
 	}
 
 	/**

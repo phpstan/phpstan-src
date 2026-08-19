@@ -5,13 +5,12 @@ namespace PHPStan\Type;
 use PHPStan\Analyser\NameScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Internal\LruCache;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
-use function array_key_first;
-use function count;
 use function sprintf;
 
 #[AutowiredService(as: TypeAliasResolver::class)]
@@ -21,8 +20,8 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 	/** @var array<string, Type> */
 	private array $resolvedGlobalTypeAliases = [];
 
-	/** @var array<string, Type> LRU; first entry = least recently used */
-	private array $resolvedLocalTypeAliases = [];
+	/** @var LruCache<Type> */
+	private LruCache $resolvedLocalTypeAliases;
 
 	/** @var array<string, true> */
 	private array $resolvingClassTypeAliases = [];
@@ -43,6 +42,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		private int $resolvedLocalTypeAliasesCountMax,
 	)
 	{
+		$this->resolvedLocalTypeAliases = new LruCache($this->resolvedLocalTypeAliasesCountMax);
 	}
 
 	public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool
@@ -84,12 +84,9 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 
 		$aliasNameInClassScope = $className . '::' . $aliasName;
 
-		if (array_key_exists($aliasNameInClassScope, $this->resolvedLocalTypeAliases)) {
-			// LRU: move to the most-recently-used position
-			$resolvedAliasType = $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
-			unset($this->resolvedLocalTypeAliases[$aliasNameInClassScope]);
-
-			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
+		$resolvedAliasType = $this->resolvedLocalTypeAliases->get($aliasNameInClassScope);
+		if ($resolvedAliasType !== null) {
+			return $resolvedAliasType;
 		}
 
 		// prevent infinite recursion
@@ -127,12 +124,9 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 			$resolvedAliasType = new CircularTypeAliasErrorType();
 		}
 
-		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
-		if ($this->resolvedLocalTypeAliasesCountMax !== 0 && count($this->resolvedLocalTypeAliases) > $this->resolvedLocalTypeAliasesCountMax) {
-			// resolved alias types transitively pin ClassReflections and their whole
-			// reflection trees — evict the least recently used
-			unset($this->resolvedLocalTypeAliases[array_key_first($this->resolvedLocalTypeAliases)]);
-		}
+		// resolved alias types transitively pin ClassReflections and their whole
+		// reflection trees, so the cache is bounded and evicts the least recently used
+		$this->resolvedLocalTypeAliases->set($aliasNameInClassScope, $resolvedAliasType, 0);
 		unset($this->inProcess[$aliasNameInClassScope]);
 
 		return $resolvedAliasType;

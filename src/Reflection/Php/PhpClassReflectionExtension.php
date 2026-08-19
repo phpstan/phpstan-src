@@ -16,6 +16,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Internal\LruCache;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -62,7 +63,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
-use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_slice;
@@ -77,8 +77,8 @@ use function strtolower;
 final class PhpClassReflectionExtension
 {
 
-	/** @var array<string, true> shared LRU over the member cache keys below; first entry = least recently used */
-	private array $memberCacheOrder = [];
+	/** @var LruCache<true> shared LRU over the member cache keys below */
+	private LruCache $memberCacheOrder;
 
 	/** @var PhpPropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
@@ -121,6 +121,7 @@ final class PhpClassReflectionExtension
 		private int $memberCacheKeysMax,
 	)
 	{
+		$this->memberCacheOrder = new LruCache($this->memberCacheKeysMax);
 	}
 
 	/**
@@ -135,25 +136,18 @@ final class PhpClassReflectionExtension
 	 */
 	private function touchMemberCacheKey(string $cacheKey): void
 	{
-		if (isset($this->memberCacheOrder[$cacheKey])) {
-			unset($this->memberCacheOrder[$cacheKey]);
-			$this->memberCacheOrder[$cacheKey] = true;
+		if ($this->memberCacheOrder->get($cacheKey) !== null) {
 			return;
 		}
 
-		$this->memberCacheOrder[$cacheKey] = true;
-		if ($this->memberCacheKeysMax === 0 || count($this->memberCacheOrder) <= $this->memberCacheKeysMax) {
-			return;
+		foreach ($this->memberCacheOrder->set($cacheKey, true, 0) as $evictKey) {
+			unset(
+				$this->methodsIncludingAnnotations[$evictKey],
+				$this->nativeMethods[$evictKey],
+				$this->propertiesIncludingAnnotations[$evictKey],
+				$this->nativeProperties[$evictKey],
+			);
 		}
-
-		$evictKey = array_key_first($this->memberCacheOrder);
-		unset(
-			$this->memberCacheOrder[$evictKey],
-			$this->methodsIncludingAnnotations[$evictKey],
-			$this->nativeMethods[$evictKey],
-			$this->propertiesIncludingAnnotations[$evictKey],
-			$this->nativeProperties[$evictKey],
-		);
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool

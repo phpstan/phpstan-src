@@ -86,13 +86,13 @@ final class FileTypeMapper
 		#[AutowiredParameter(ref: '%cache.resolvedPhpDocBlockCacheCountMax%')]
 		private int $resolvedPhpDocBlockCacheCountMax,
 		#[AutowiredParameter(ref: '%cache.nameScopeMapMemoryCacheCountMax%')]
-		private int $nameScopeMapMemoryCacheCountMax,
+		int $nameScopeMapMemoryCacheCountMax,
 	)
 	{
 		// 0 kept one entry here rather than meaning "no limit" as it does for the other bounded
 		// caches: the eviction loop ran before the insertion, emptying the cache and then putting
 		// a single entry back. Preserved rather than normalised - see the PR description.
-		$this->memoryCache = new LruCache($this->nameScopeMapMemoryCacheCountMax === 0 ? 1 : $this->nameScopeMapMemoryCacheCountMax);
+		$this->memoryCache = new LruCache($nameScopeMapMemoryCacheCountMax === 0 ? 1 : $nameScopeMapMemoryCacheCountMax);
 	}
 
 	/** @api */

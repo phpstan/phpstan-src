@@ -59,12 +59,12 @@ final class CachedParser implements Parser
 	public function __construct(
 		private Parser $originalParser,
 		private int $cachedNodesByStringCountMax,
-		private int $cachedSourceBytesMax = self::CACHED_SOURCE_BYTES_DEFAULT_LIMIT,
+		int $cachedSourceBytesMax = self::CACHED_SOURCE_BYTES_DEFAULT_LIMIT,
 	)
 	{
 		$this->cachedNodesByString = new LruCache(
 			$this->cachedNodesByStringCountMax,
-			$this->cachedSourceBytesMax,
+			$cachedSourceBytesMax,
 			self::SIZE_EVICTION_FLOOR_LIMIT,
 		);
 		$this->cachedSourceByFile = new LruCache(maxWeight: self::MEMOIZED_SOURCE_BYTES_LIMIT);

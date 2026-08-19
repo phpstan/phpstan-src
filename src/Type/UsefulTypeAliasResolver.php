@@ -39,10 +39,10 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		private TypeNodeResolver $typeNodeResolver,
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter(ref: '%cache.resolvedLocalTypeAliasesCountMax%')]
-		private int $resolvedLocalTypeAliasesCountMax,
+		int $resolvedLocalTypeAliasesCountMax,
 	)
 	{
-		$this->resolvedLocalTypeAliases = new LruCache($this->resolvedLocalTypeAliasesCountMax);
+		$this->resolvedLocalTypeAliases = new LruCache($resolvedLocalTypeAliasesCountMax);
 	}
 
 	public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool

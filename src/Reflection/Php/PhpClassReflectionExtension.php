@@ -118,10 +118,10 @@ final class PhpClassReflectionExtension
 		private bool $inferPrivatePropertyTypeFromConstructor,
 		private PhpVersion $phpVersion,
 		#[AutowiredParameter(ref: '%cache.memberCacheKeysMax%')]
-		private int $memberCacheKeysMax,
+		int $memberCacheKeysMax,
 	)
 	{
-		$this->memberCacheOrder = new LruCache($this->memberCacheKeysMax);
+		$this->memberCacheOrder = new LruCache($memberCacheKeysMax);
 	}
 
 	/**

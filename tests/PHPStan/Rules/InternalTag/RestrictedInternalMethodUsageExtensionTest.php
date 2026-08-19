@@ -77,6 +77,10 @@ class RestrictedInternalMethodUsageExtensionTest extends RuleTestCase
 				'Call to internal method Bug13042\Foo::doInternal() from outside its root namespace Bug13042.',
 				163,
 			],
+			[
+				'Call to internal method Bug13042\Foo::doInternal() from outside its root namespace Bug13042.',
+				182,
+			],
 		]);
 	}
 

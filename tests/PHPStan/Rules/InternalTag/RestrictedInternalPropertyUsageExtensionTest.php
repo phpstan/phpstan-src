@@ -67,6 +67,10 @@ class RestrictedInternalPropertyUsageExtensionTest extends RuleTestCase
 				'Access to internal property Bug13042\Foo::$internal from outside its root namespace Bug13042.',
 				160,
 			],
+			[
+				'Access to internal property Bug13042\Foo::$internal from outside its root namespace Bug13042.',
+				179,
+			],
 		]);
 	}
 

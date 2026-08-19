@@ -167,4 +167,22 @@ namespace Bug13042Inheritance {
 		};
 	};
 
+	// A named subclass gets the very same exemptions: the static access rules re-ask
+	// the extension with the referenced class instead of the declaring one, so only
+	// the instance accesses below are reported. The anonymous subclass above must not
+	// be reported any more strictly than this one.
+	class NamedSubclass extends \Bug13042\Foo
+	{
+
+		public function doFoo(): void
+		{
+			$this->internal;
+			self::$internalStatic;
+			self::INTERNAL;
+			$this->doInternal();
+			self::doInternalStatic();
+		}
+
+	}
+
 }

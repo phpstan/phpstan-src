@@ -212,8 +212,8 @@ class Foo
 
 		assertType('-1', -$a);
 		assertNativeType('-1', -$a);
-		assertType('int', -$i);
-		assertNativeType('int', -$i);
+		assertType('9.223372036854776E+18|int', -$i);
+		assertNativeType('9.223372036854776E+18|int', -$i);
 	}
 
 	/**

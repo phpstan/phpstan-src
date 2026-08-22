@@ -9,6 +9,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -19,6 +20,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use const PHP_INT_MIN;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isInteger()')]
@@ -63,7 +65,11 @@ class IntegerType implements Type
 
 	public function toAbsoluteNumber(): Type
 	{
-		return IntegerRangeType::createAllGreaterThanOrEqualTo(0);
+		return TypeCombinator::union(
+			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+			// The absolute value of the smallest integer overflows into a float.
+			new ConstantFloatType(-(float) PHP_INT_MIN),
+		);
 	}
 
 	public function toFloat(): Type

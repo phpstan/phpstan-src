@@ -383,7 +383,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @return Generator<string, array{errors: list<Error>, existingBaselineContent: string, expectedNewlinesCount: int}>
+	 * @return Generator<string, array{errors: list<Error>, existingBaselineContent: string, expectedNewlinesCount: int<0, max>}>
 	 */
 	public static function endOfFileNewlinesProvider(): Generator
 	{
@@ -467,6 +467,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 
 	/**
 	 * @param list<Error> $errors
+	 * @param int<0, max> $expectedNewlinesCount
 	 */
 	#[DataProvider('endOfFileNewlinesProvider')]
 	public function testEndOfFileNewlines(

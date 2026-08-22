@@ -481,6 +481,22 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15069(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-15069.php'], [
+			[
+				'Function Bug15069\absint() should return int but returns float|int<0, max>.',
+				10,
+			],
+			[
+				'Function Bug15069\negate() should return int but returns float|int.',
+				24,
+			],
+		]);
+	}
+
 	public function testBug13114(): void
 	{
 		$this->checkNullables = true;

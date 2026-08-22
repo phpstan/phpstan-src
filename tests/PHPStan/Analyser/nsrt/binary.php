@@ -273,7 +273,7 @@ class Foo
 		assertType('*ERROR*', -"blabla");
 		assertType('-5', -5);
 		assertType('5', -(-5));
-		assertType('int', -$integer);
+		assertType('9.223372036854776E+18|int', -$integer);
 		assertType('-2|-1', -$conditionalInt);
 		assertType('*ERROR*', -$string);
 		assertType('2', 1 + 1);

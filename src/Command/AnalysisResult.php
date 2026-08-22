@@ -39,6 +39,7 @@ final class AnalysisResult
 		private bool $isResultCacheUsed,
 		private array $changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		private array $processedFiles = [],
+		private bool $resultCacheExisted = true,
 	)
 	{
 		usort(
@@ -143,6 +144,16 @@ final class AnalysisResult
 	}
 
 	/**
+	 * Whether the result cache file existed when PHPStan started.
+	 * False means the cache was never created; a stale/invalid cache that
+	 * triggered a full re-analysis still counts as existing.
+	 */
+	public function resultCacheExisted(): bool
+	{
+		return $this->resultCacheExisted;
+	}
+
+	/**
 	 * @return array<string, string>
 	 */
 	public function getChangedProjectExtensionFilesOutsideOfAnalysedPaths(): array
@@ -177,6 +188,7 @@ final class AnalysisResult
 			$this->isResultCacheUsed,
 			$this->changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$this->processedFiles,
+			$this->resultCacheExisted,
 		);
 	}
 

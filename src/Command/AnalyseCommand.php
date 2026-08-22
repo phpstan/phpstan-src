@@ -510,6 +510,7 @@ final class AnalyseCommand extends Command
 				$analysisResult->isResultCacheUsed(),
 				$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
 				$analysisResult->getProcessedFiles(),
+				$analysisResult->resultCacheExisted(),
 			);
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
@@ -666,6 +667,8 @@ final class AnalyseCommand extends Command
 			}
 		}
 
+		$this->reportMissingResultCacheInCi($errorOutput, $analysisResult, $onlyFiles);
+
 		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
 		return $inceptionResult->handleReturn(
@@ -673,6 +676,27 @@ final class AnalyseCommand extends Command
 			$analysisResult->getPeakMemoryUsageBytes(),
 			$this->analysisStartTime,
 		);
+	}
+
+	private function reportMissingResultCacheInCi(Output $errorOutput, AnalysisResult $analysisResult, bool $onlyFiles): void
+	{
+		if (
+			$onlyFiles
+			|| $analysisResult->isResultCacheUsed()
+			|| $analysisResult->resultCacheExisted()
+		) {
+			return;
+		}
+
+		if (!(new CiDetector())->isCiDetected()) {
+			return;
+		}
+
+		$errorOutput->writeLineFormatted('<comment>Tip: This CI run analysed your whole project from scratch because there was no result cache.</comment>');
+		$errorOutput->writeLineFormatted('Persist PHPStan\'s result cache directory between CI runs to make your pipeline dramatically faster.');
+		$errorOutput->writeLineFormatted('Only changed files and their dependencies are re-analysed, so most runs finish in a fraction of the time.');
+		$errorOutput->writeLineFormatted('Learn how to set it up: https://phpstan.org/user-guide/result-cache');
+		$errorOutput->writeLineFormatted('');
 	}
 
 	private function createStreamOutput(): StreamOutput

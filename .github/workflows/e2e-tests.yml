@@ -524,6 +524,20 @@ jobs:
               ../bashunit -a contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
               ../bashunit -a contains 'Subject.php:5:installer rule version 2' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-ci-notification
+              # https://github.com/phpstan/phpstan/issues/14881
+              # A full analysis in CI without a pre-existing result cache should hint
+              # the user to persist the result cache directory between runs.
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../../bin/phpstan analyse 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Persist PHPStan' "$OUTPUT"
+              ../bashunit -a contains 'to make your pipeline dramatically faster' "$OUTPUT"
+              # The second run finds the cache present, so the hint is not shown again.
+              OUTPUT=$(../../bin/phpstan analyse 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'to make your pipeline dramatically faster' "$OUTPUT"
+          - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test
               ../../bin/phpstan

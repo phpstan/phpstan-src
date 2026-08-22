@@ -137,6 +137,15 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * Whether the result cache file was present on disk when PHPStan started.
+	 * Distinguishes "the cache never existed" from "the cache existed but was invalid".
+	 */
+	public function resultCacheExists(): bool
+	{
+		return is_file($this->cacheFilePath);
+	}
+
+	/**
 	 * @param string[] $allAnalysedFiles
 	 * @param mixed[]|null $projectConfigArray
 	 */

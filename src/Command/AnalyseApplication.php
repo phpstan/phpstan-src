@@ -71,6 +71,7 @@ final class AnalyseApplication
 			$fileReplacements = [$insteadOfFile => $tmpFile];
 		}
 		$resultCacheManager = $this->resultCacheManagerFactory->create($fileReplacements);
+		$resultCacheExisted = $resultCacheManager->resultCacheExists();
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		$fileSpecificErrors = [];
@@ -190,6 +191,7 @@ final class AnalyseApplication
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$processedFiles,
+			$resultCacheExisted,
 		);
 	}
 

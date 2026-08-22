@@ -56,6 +56,7 @@ use function is_array;
 use function is_bool;
 use function is_file;
 use function is_string;
+use function microtime;
 use function pathinfo;
 use function rewind;
 use function sprintf;
@@ -77,6 +78,13 @@ final class AnalyseCommand extends Command
 	public const OPTION_LEVEL = 'level';
 
 	public const DEFAULT_LEVEL = CommandHelper::DEFAULT_LEVEL;
+
+	/**
+	 * The result cache CI notification is only shown when the analysis took
+	 * longer than this many seconds. Faster runs do not benefit enough from
+	 * a persisted result cache to be worth nagging about.
+	 */
+	private const RESULT_CACHE_CI_NOTIFICATION_ELAPSED_LIMIT = 60.0;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -688,11 +696,15 @@ final class AnalyseCommand extends Command
 			return;
 		}
 
+		if (microtime(true) - $this->analysisStartTime < self::RESULT_CACHE_CI_NOTIFICATION_ELAPSED_LIMIT) {
+			return;
+		}
+
 		if (!(new CiDetector())->isCiDetected()) {
 			return;
 		}
 
-		$errorOutput->writeLineFormatted('<comment>Tip: This CI run analysed your whole project from scratch because there was no result cache.</comment>');
+		$errorOutput->writeLineFormatted('<comment>Tip: This CI run was slow because it analysed your whole project from scratch - there was no result cache.</comment>');
 		$errorOutput->writeLineFormatted('Persist PHPStan\'s result cache directory between CI runs to make your pipeline dramatically faster.');
 		$errorOutput->writeLineFormatted('Only changed files and their dependencies are re-analysed, so most runs finish in a fraction of the time.');
 		$errorOutput->writeLineFormatted('Learn how to set it up: https://phpstan.org/user-guide/result-cache');

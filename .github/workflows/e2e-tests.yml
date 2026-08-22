@@ -526,14 +526,22 @@ jobs:
           - script: |
               cd e2e/result-cache-ci-notification
               # https://github.com/phpstan/phpstan/issues/14881
-              # A full analysis in CI without a pre-existing result cache should hint
-              # the user to persist the result cache directory between runs.
+              # A slow full analysis in CI without a pre-existing result cache should
+              # hint the user to persist the result cache directory between runs.
+              # PHPSTAN_E2E_SLOW_ANALYSIS makes bootstrap.php sleep past the
+              # elapsed-time limit the notification requires.
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../../bin/phpstan analyse 2>&1)
+              OUTPUT=$(PHPSTAN_E2E_SLOW_ANALYSIS=1 ../../bin/phpstan analyse 2>&1)
               echo "$OUTPUT"
               ../bashunit -a contains 'Persist PHPStan' "$OUTPUT"
               ../bashunit -a contains 'to make your pipeline dramatically faster' "$OUTPUT"
-              # The second run finds the cache present, so the hint is not shown again.
+              # The second run is just as slow, but finds the cache present,
+              # so the hint is not shown again.
+              OUTPUT=$(PHPSTAN_E2E_SLOW_ANALYSIS=1 ../../bin/phpstan analyse 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'to make your pipeline dramatically faster' "$OUTPUT"
+              # A fast run without any result cache does not show the hint either.
+              ../../bin/phpstan clear-result-cache
               OUTPUT=$(../../bin/phpstan analyse 2>&1)
               echo "$OUTPUT"
               ../bashunit -a not_contains 'to make your pipeline dramatically faster' "$OUTPUT"

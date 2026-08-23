@@ -15,7 +15,7 @@ final class ExtDsStubFilesExtension implements StubFilesExtension
 
 	public function getFiles(): array
 	{
-		if (($this->extensionVersionProvider->getExtensionVersions()['ds'] ?? null) === 2) {
+		if (($this->extensionVersionProvider->getExtensionVersions()['ds'] ?? null) !== null) {
 			return [];
 		}
 

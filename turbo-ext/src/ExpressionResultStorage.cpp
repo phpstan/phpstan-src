@@ -11,8 +11,6 @@
  * handle cannot be reused while scopesById still maps it. duplicate() copies
  * the two array zvals by refcount (copy-on-write) — the eager per-entry copy
  * of the twin's former SplObjectStorage is what made this worth porting.
- * pendingFibers/parkedFibers are ordinary public properties read and written
- * by FiberNodeScopeResolver in PHP; the native code never touches them.
  */
 
 #include "support.h"
@@ -79,8 +77,6 @@ void pt_register_expression_result_storage()
 	 * must stay in this order (OBJ_PROP_NUM slots) */
 	cls.privateArrayProperty("exprsById");
 	cls.privateArrayProperty("scopesById");
-	cls.publicArrayProperty("pendingFibers");
-	cls.publicArrayProperty("parkedFibers");
 
 	cls.method("duplicate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

@@ -42,7 +42,7 @@ final class ArrowFunctionHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$arrowFunctionResult = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null);
-		$this->closureTypeResolver->seedCacheFromArrowFunctionWalk($scope, $expr, $arrowFunctionResult, $storage);
+		$this->closureTypeResolver->seedCacheFromArrowFunctionWalk($scope, $expr, $arrowFunctionResult);
 		$result = $arrowFunctionResult->getExpressionResult();
 
 		return $this->expressionResultFactory->create(

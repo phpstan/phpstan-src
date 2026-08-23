@@ -258,10 +258,6 @@ final class ClassMethodHandler implements StmtHandler
 			}
 		}
 
-		if (!$scope->getClassReflection()->isAnonymous() && !$scope->isInAnonymousFunction()) {
-			$nodeScopeResolver->processPendingFibers($storage);
-		}
-
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 	}
 

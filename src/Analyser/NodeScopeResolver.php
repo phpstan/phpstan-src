@@ -135,7 +135,7 @@ class NodeScopeResolver
 	 * @param ExtensionsCollection<PerFileAnalysisResettable> $perFileAnalysisResettables
 	 */
 	public function __construct(
-		private readonly Container $container,
+		protected readonly Container $container,
 		private readonly ReflectionProvider $reflectionProvider,
 		#[AutowiredExtensions(of: FunctionParameterOutTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterOutTypeExtensions,
@@ -281,15 +281,9 @@ class NodeScopeResolver
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
 			$this->processUnreachableStatement($nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
-
-		$this->processPendingFibers($expressionResultStorage);
 	}
 
 	public function storeExpressionResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
-	{
-	}
-
-	public function processPendingFibers(ExpressionResultStorage $storage): void
 	{
 	}
 
@@ -447,36 +441,6 @@ class NodeScopeResolver
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processStmtNodesInternal(
-		Node $parentNode,
-		array $stmts,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-		StatementContext $context,
-	): InternalStatementResult
-	{
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers(
-			$parentNode,
-			$stmts,
-			$scope,
-			$storage,
-			$nodeCallback,
-			$context,
-		);
-		$this->processPendingFibers($storage);
-
-		return $statementResult;
-	}
-
-	/**
-	 * The statement-list walk without the per-list pending-fiber flush - for
-	 * the callers that sit inside an enclosing statement walk (nested
-	 * control-flow lists, convergence passes) whose own boundary flushes.
-	 *
-	 * @param Node\Stmt[] $stmts
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	private function processStmtNodesInternalWithoutFlushingPendingFibers(
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,
@@ -1085,7 +1049,7 @@ class NodeScopeResolver
 		}, $nodeCallback);
 
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 			$publicStatementResult = $statementResult->toPublic();
 			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -1121,7 +1085,7 @@ class NodeScopeResolver
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
 			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -1149,7 +1113,7 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 		$publicStatementResult = $statementResult->toPublic();
 		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -1829,7 +1793,7 @@ class NodeScopeResolver
 				// the preferred ClosureType read below now answers from this seed
 				// instead of walking the body again (unless a parked fiber may
 				// still complete the gathered data - then it keeps re-walking)
-				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult, $storage);
+				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -1917,7 +1881,7 @@ class NodeScopeResolver
 				// the invalidation read below now answers from this seed instead
 				// of walking the body again (unless a parked fiber may still
 				// complete the gathered data - then it keeps re-walking)
-				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult, $storage);
+				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult);
 				$arrowFunctionResult = $processArrowFunctionResult->getExpressionResult();
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));

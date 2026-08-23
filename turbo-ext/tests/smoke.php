@@ -327,14 +327,6 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	$storage->storeBeforeScope($exprB, $scopeB);
 	check($duplicate->findBeforeScope($exprB) === $scopeA, "ERS $label: original stores do not leak into the duplicate");
 
-	check($duplicate->pendingFibers === [] && $duplicate->parkedFibers === [], "ERS $label: duplicate starts with empty fiber arrays");
-	$storage->pendingFibers[] = ['marker' => 1];
-	$storage->parkedFibers[] = 'parked';
-	check(count($storage->pendingFibers) === 1 && $storage->parkedFibers === ['parked'], "ERS $label: fiber arrays are appendable");
-	$secondDuplicate = $storage->duplicate();
-	check($secondDuplicate->pendingFibers === [] && $secondDuplicate->parkedFibers === [], "ERS $label: duplicate does not carry fiber arrays");
-	unset($storage->pendingFibers[0]);
-	check($storage->pendingFibers === [], "ERS $label: fiber array entries can be unset");
 }
 
 // ---- ScopeOps::mergeVariableHolders differingKeys ----

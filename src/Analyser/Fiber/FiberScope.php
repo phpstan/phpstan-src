@@ -2,9 +2,8 @@
 
 namespace PHPStan\Analyser\Fiber;
 
-use Fiber;
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultStorageStack;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
@@ -25,6 +24,29 @@ final class FiberScope extends MutatingScope
 	private array $falseyValueExprs = [];
 
 	private ?MutatingScope $mutatingScope = null;
+
+	/**
+	 * The storage of the emitting walk, pushed by callNodeCallback() for the
+	 * duration of the callback - the same association a suspended fiber's
+	 * request had with the frame that would resolve it. Resolved through the
+	 * container so the scope never references a storage directly (a direct
+	 * reference would cycle with the storage's stored scopes and never free
+	 * with the cycle collector disabled).
+	 */
+	private function findStoredBeforeScope(Expr $expr): ?MutatingScope
+	{
+		$storage = $this->container->getByType(ExpressionResultStorageStack::class)->getCurrent();
+		if ($storage === null) {
+			return null;
+		}
+
+		$beforeScope = $storage->findBeforeScope($expr);
+		if ($beforeScope instanceof MutatingScope) {
+			return $beforeScope;
+		}
+
+		return null;
+	}
 
 	public function toFiberScope(): self
 	{
@@ -67,20 +89,26 @@ final class FiberScope extends MutatingScope
 			return $node->getExprType();
 		}
 
-		/** @var ExpressionResult $expressionResult */
-		$expressionResult = Fiber::suspend(
-			new ExpressionResultRequest($node, $this),
-		);
+		// post-order emission means the node's own result and every subnode
+		// result are already stored when the callback fires - answer from the
+		// stored before-scope; an unstored ask is a synthetic node or a node
+		// ahead of the walk, answered on demand through the MutatingScope path
+		// (the same answer the fiber flush produced for a never-stored ask)
+		$beforeScope = $this->findStoredBeforeScope($node);
 
 		if (
 			!$this->nativeTypesPromoted
 			&& count($this->truthyValueExprs) === 0
 			&& count($this->falseyValueExprs) === 0
 		) {
-			return $expressionResult->getType();
+			if ($beforeScope !== null) {
+				return $beforeScope->getType($node);
+			}
+
+			return $this->toMutatingScope()->getType($node);
 		}
 
-		$scope = $this->preprocessScope($expressionResult->getBeforeScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toMutatingScope());
 		return $scope->getType($node);
 	}
 
@@ -102,31 +130,29 @@ final class FiberScope extends MutatingScope
 			return $expr->getExprType();
 		}
 
-		/** @var ExpressionResult $expressionResult */
-		$expressionResult = Fiber::suspend(
-			new ExpressionResultRequest($expr, $this),
-		);
+		$beforeScope = $this->findStoredBeforeScope($expr);
 
 		if (
 			!$this->nativeTypesPromoted
 			&& count($this->truthyValueExprs) === 0
 			&& count($this->falseyValueExprs) === 0
 		) {
-			return $expressionResult->getNativeType();
+			if ($beforeScope !== null) {
+				return $beforeScope->getNativeType($expr);
+			}
+
+			return $this->toMutatingScope()->getNativeType($expr);
 		}
 
-		$scope = $this->preprocessScope($expressionResult->getBeforeScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toMutatingScope());
 		return $scope->getNativeType($expr);
 	}
 
 	public function getKeepVoidType(Expr $node): Type
 	{
-		/** @var ExpressionResult $expressionResult */
-		$expressionResult = Fiber::suspend(
-			new ExpressionResultRequest($node, $this),
-		);
+		$beforeScope = $this->findStoredBeforeScope($node);
 
-		$scope = $this->preprocessScope($expressionResult->getBeforeScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toMutatingScope());
 
 		return $scope->getKeepVoidType($node);
 	}

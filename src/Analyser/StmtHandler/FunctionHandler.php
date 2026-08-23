@@ -140,9 +140,6 @@ final class FunctionHandler implements StmtHandler
 			array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
 			$functionReflection,
 		), $functionScope, $storage);
-		if (!$scope->isInAnonymousFunction()) {
-			$nodeScopeResolver->processPendingFibers($storage);
-		}
 
 		// declaring the function defines it in global state, so a negative
 		// function_exists() narrowing that may refer to that function must be forgotten

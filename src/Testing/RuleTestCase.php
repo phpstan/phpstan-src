@@ -21,7 +21,6 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
-use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -90,7 +89,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 	{
 		$readWritePropertiesExtensions = $this->getReadWritePropertiesExtensions();
 		$reflectionProvider = $this->createReflectionProvider();
-		$typeSpecifier = $this->getTypeSpecifier();
 
 		$enableFnsr = getenv('PHPSTAN_FNSR');
 		$className = NodeScopeResolver::class;
@@ -105,10 +103,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
-			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
-			self::getContainer()->getByType(FileHelper::class),
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -117,7 +113,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
-			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],

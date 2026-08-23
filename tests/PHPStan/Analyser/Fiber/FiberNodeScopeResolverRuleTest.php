@@ -8,7 +8,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
-use PHPStan\File\FileHelper;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\IdentifierRuleError;
@@ -116,7 +115,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 	{
 		$readWritePropertiesExtensions = $this->getReadWritePropertiesExtensions();
 		$reflectionProvider = $this->createReflectionProvider();
-		$typeSpecifier = $this->getTypeSpecifier();
 
 		return new FiberNodeScopeResolver(
 			self::getContainer(),
@@ -125,10 +123,8 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
-			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
-			self::getContainer()->getByType(FileHelper::class),
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -137,7 +133,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
-			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],

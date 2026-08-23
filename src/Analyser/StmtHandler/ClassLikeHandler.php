@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
+use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -45,6 +46,7 @@ final class ClassLikeHandler implements StmtHandler
 {
 
 	public function __construct(
+		private CalledMethodProcessor $calledMethodProcessor,
 		private ReflectionProvider $reflectionProvider,
 		private Reflector $reflector,
 		private ClassReflectionFactory $classReflectionFactory,
@@ -125,7 +127,7 @@ final class ClassLikeHandler implements StmtHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 		$classReflection->evictPrivateSymbols();
-		$nodeScopeResolver->clearCalledMethodResults();
+		$this->calledMethodProcessor->clearCalledMethodResults();
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 	}

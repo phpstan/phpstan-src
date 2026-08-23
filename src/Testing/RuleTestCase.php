@@ -7,7 +7,6 @@ use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
-use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
@@ -40,13 +39,11 @@ use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use function array_map;
 use function array_merge;
 use function count;
-use function getenv;
 use function implode;
 use function sprintf;
 use function str_replace;
 use function strcmp;
 use function usort;
-use const PHP_VERSION_ID;
 
 /**
  * @api
@@ -88,13 +85,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$readWritePropertiesExtensions = $this->getReadWritePropertiesExtensions();
 		$reflectionProvider = $this->createReflectionProvider();
 
-		$enableFnsr = getenv('PHPSTAN_FNSR');
-		$className = NodeScopeResolver::class;
-		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0') {
-			$className = FiberNodeScopeResolver::class;
-		}
-
-		return new $className(
+		return new NodeScopeResolver(
 			self::getContainer(),
 			$reflectionProvider,
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),

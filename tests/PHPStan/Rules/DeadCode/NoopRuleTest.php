@@ -27,9 +27,8 @@ class NoopRuleTest extends RuleTestCase
 	protected function getCollectors(): array
 	{
 		// Asks for the type of a not-yet-walked expression, the same way
-		// TypesAssignedToPropertiesRule does, so FiberNodeScopeResolver parks
-		// the node callback on PropertyAssignNode. The hasAssign gatherer
-		// feeding NoopExpressionNode must not be delayed by that
+		// TypesAssignedToPropertiesRule does. The hasAssign gatherer feeding
+		// NoopExpressionNode must not be affected by that ask
 		// (https://github.com/phpstan/phpstan/issues/15038).
 		return [
 			new /** @implements Collector<PropertyAssignNode, string> */ class implements Collector {

@@ -6,19 +6,19 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<FiberScopeFilterByValueRule>
+ * @extends RuleTestCase<NodeCallbackScopeFilterByValueRule>
  */
-class FiberScopeFilterByValueRuleTest extends RuleTestCase
+class NodeCallbackScopeFilterByValueRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new FiberScopeFilterByValueRule();
+		return new NodeCallbackScopeFilterByValueRule();
 	}
 
 	public function testFilterByValue(): void
 	{
-		$this->analyse([__DIR__ . '/data/fiber-scope-filter-by-value.php'], [
+		$this->analyse([__DIR__ . '/data/node-callback-scope-filter-by-value.php'], [
 			[
 				'truthy: int, falsey: null',
 				15,

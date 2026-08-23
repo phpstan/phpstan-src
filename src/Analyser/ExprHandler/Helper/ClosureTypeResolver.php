@@ -368,18 +368,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * slot is seeded with the same build, keyed exactly as the
 	 * promoted-scope ask computes its key.
 	 */
-	public function seedCacheFromClosureWalk(MutatingScope $scope, Node\Expr\Closure $expr, ProcessClosureResult $processClosureResult, ExpressionResultStorage $storage): void
+	public function seedCacheFromClosureWalk(MutatingScope $scope, Node\Expr\Closure $expr, ProcessClosureResult $processClosureResult): void
 	{
-		// a parked fiber may still append to the walk's gathered data - the
-		// invalidate expressions of a write like $this->prop[] = ... arrive
-		// only when the fiber flushes (see the invalidate-expressions note in
-		// NodeScopeResolver::processArgs()). Seed only when nothing is parked,
-		// so a seeded entry is never incomplete; otherwise the lazy ask keeps
-		// re-walking with the fibers flushed, as before.
-		if ($storage->pendingFibers !== []) {
-			return;
-		}
-
 		// for array_map() callbacks and immediately invoked closures this
 		// delegates to a getClosureType() walk with the call-site parameter
 		// types; either way the phpdoc build lands in the cache under the
@@ -415,13 +405,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * so the native-flavour slot is seeded with its own build reading the
 	 * walked body's native types.
 	 */
-	public function seedCacheFromArrowFunctionWalk(MutatingScope $scope, ArrowFunction $expr, ProcessArrowFunctionResult $arrowFunctionResult, ExpressionResultStorage $storage): void
+	public function seedCacheFromArrowFunctionWalk(MutatingScope $scope, ArrowFunction $expr, ProcessArrowFunctionResult $arrowFunctionResult): void
 	{
-		// see the parked-fiber note in seedCacheFromClosureWalk()
-		if ($storage->pendingFibers !== []) {
-			return;
-		}
-
 		$this->buildClosureTypeForArrowFunction(
 			$scope,
 			$expr,
@@ -584,7 +569,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				continue;
 			}
 
-			$readScope = $returnScope->toMutatingScope();
+			$readScope = $returnScope->toWalkScope();
 			if ($native) {
 				$readScope = $readScope->doNotTreatPhpDocTypesAsCertain();
 			}
@@ -611,7 +596,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$keyTypes = [];
 			$valueTypes = [];
 			foreach ($yieldStatements as [$yieldNode, $yieldScope]) {
-				$readScope = $yieldScope->toMutatingScope();
+				$readScope = $yieldScope->toWalkScope();
 				if ($native) {
 					$readScope = $readScope->doNotTreatPhpDocTypesAsCertain();
 				}

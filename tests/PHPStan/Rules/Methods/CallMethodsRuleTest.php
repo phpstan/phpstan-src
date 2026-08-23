@@ -3933,7 +3933,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/closure-passed-to-type-fiberscope-php81.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/closure-passed-to-type-node-callback-scope-php81.php'], []);
 	}
 
 	public function testDiscussion14038(): void

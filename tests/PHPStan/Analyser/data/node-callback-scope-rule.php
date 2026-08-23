@@ -1,6 +1,6 @@
 <?php
 
-namespace FiberNodeScopeResolverRule;
+namespace NodeCallbackScopeResolverRule;
 
 class Foo
 {

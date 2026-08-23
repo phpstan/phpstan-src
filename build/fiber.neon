@@ -1,6 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: '#Fiber#'
-			identifier: class.notFound
-			path: ../src/Analyser/*

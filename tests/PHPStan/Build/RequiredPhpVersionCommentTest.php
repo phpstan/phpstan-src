@@ -31,7 +31,6 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		$directories = [
 			__DIR__ . '/../Analyser/data',
 			__DIR__ . '/../Analyser/nsrt',
-			__DIR__ . '/../Analyser/Fiber/data',
 			__DIR__ . '/../../bench/data',
 		];
 

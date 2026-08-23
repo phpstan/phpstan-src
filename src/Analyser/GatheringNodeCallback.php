@@ -6,11 +6,9 @@ use PhpParser\Node;
 
 /**
  * Pairs an engine-feeding gatherer (impure points, execution ends, return
- * statements, ...) with the rule-facing node callback. The gatherer's
- * by-reference arrays are read as soon as the enclosing body walk returns,
- * so FiberNodeScopeResolver runs the gatherer synchronously at the emission
- * position and defers only the inner callback to a fiber - a rule parking
- * on an unsettled expression must not delay the gathering past the read.
+ * statements, ...) with the rule-facing node callback. callNodeCallback()
+ * hands the gatherer the raw walk scope at the emission position; only the
+ * inner rule-facing remainder gets the storage-backed scope.
  */
 final class GatheringNodeCallback
 {

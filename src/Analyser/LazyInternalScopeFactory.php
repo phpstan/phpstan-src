@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
-use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
@@ -58,7 +57,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	public function __construct(
 		private Container $container,
 		private $nodeCallback,
-		private bool $fiber = false,
+		private bool $createsNodeCallbackScopes = false,
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
@@ -85,8 +84,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
-		if ($this->fiber) {
-			$className = FiberScope::class;
+		if ($this->createsNodeCallbackScopes) {
+			$className = NodeCallbackScope::class;
 		}
 
 		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
@@ -135,14 +134,14 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		);
 	}
 
-	public function toFiberFactory(): InternalScopeFactory
+	public function toNodeCallbackScopeFactory(): InternalScopeFactory
 	{
-		return $this->fiber ? $this : $this->twin();
+		return $this->createsNodeCallbackScopes ? $this : $this->twin();
 	}
 
-	public function toMutatingFactory(): InternalScopeFactory
+	public function toWalkScopeFactory(): InternalScopeFactory
 	{
-		return $this->fiber ? $this->twin() : $this;
+		return $this->createsNodeCallbackScopes ? $this->twin() : $this;
 	}
 
 	/**
@@ -170,7 +169,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			}
 		}
 
-		$this->twin = new self($this->container, $this->nodeCallback, !$this->fiber);
+		$this->twin = new self($this->container, $this->nodeCallback, !$this->createsNodeCallbackScopes);
 		$this->twin->origin = WeakReference::create($this);
 
 		return $this->twin;

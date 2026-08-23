@@ -34,12 +34,12 @@ typedef struct _pt_scope_offsets {
 	int32_t resolved_types;
 	int32_t truthy_scopes;
 	int32_t falsey_scopes;
-	int32_t fiber_scope;
+	int32_t node_callback_scope;
 	int32_t scope_out_of_first_level;
 	int32_t scope_with_promoted_native;
-	int32_t mutating_scope;      /* FiberScope */
-	int32_t truthy_value_exprs;  /* FiberScope */
-	int32_t falsey_value_exprs;  /* FiberScope */
+	int32_t walk_scope;          /* NodeCallbackScope */
+	int32_t truthy_value_exprs;  /* NodeCallbackScope */
+	int32_t falsey_value_exprs;  /* NodeCallbackScope */
 } pt_scope_offsets;
 
 static HashTable pt_scope_offsets_cache;
@@ -75,10 +75,10 @@ static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
 	off->resolved_types = pt_instance_prop_offset(ce, "resolvedTypes", sizeof("resolvedTypes") - 1);
 	off->truthy_scopes = pt_instance_prop_offset(ce, "truthyScopes", sizeof("truthyScopes") - 1);
 	off->falsey_scopes = pt_instance_prop_offset(ce, "falseyScopes", sizeof("falseyScopes") - 1);
-	off->fiber_scope = pt_instance_prop_offset(ce, "fiberScope", sizeof("fiberScope") - 1);
+	off->node_callback_scope = pt_instance_prop_offset(ce, "nodeCallbackScope", sizeof("nodeCallbackScope") - 1);
 	off->scope_out_of_first_level = pt_instance_prop_offset(ce, "scopeOutOfFirstLevelStatement", sizeof("scopeOutOfFirstLevelStatement") - 1);
 	off->scope_with_promoted_native = pt_instance_prop_offset(ce, "scopeWithPromotedNativeTypes", sizeof("scopeWithPromotedNativeTypes") - 1);
-	off->mutating_scope = pt_instance_prop_offset(ce, "mutatingScope", sizeof("mutatingScope") - 1);
+	off->walk_scope = pt_instance_prop_offset(ce, "walkScope", sizeof("walkScope") - 1);
 	off->truthy_value_exprs = pt_instance_prop_offset(ce, "truthyValueExprs", sizeof("truthyValueExprs") - 1);
 	off->falsey_value_exprs = pt_instance_prop_offset(ce, "falseyValueExprs", sizeof("falseyValueExprs") - 1);
 
@@ -299,10 +299,10 @@ public:
 		resetToEmptyArray(cloneObj, off->resolved_types);
 		resetToEmptyArray(cloneObj, off->truthy_scopes);
 		resetToEmptyArray(cloneObj, off->falsey_scopes);
-		resetToNull(cloneObj, off->fiber_scope);
+		resetToNull(cloneObj, off->node_callback_scope);
 		resetToNull(cloneObj, off->scope_out_of_first_level);
 		resetToNull(cloneObj, off->scope_with_promoted_native);
-		resetToNull(cloneObj, off->mutating_scope);
+		resetToNull(cloneObj, off->walk_scope);
 		resetToEmptyArray(cloneObj, off->truthy_value_exprs);
 		resetToEmptyArray(cloneObj, off->falsey_value_exprs);
 

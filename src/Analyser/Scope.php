@@ -344,6 +344,9 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function getPhpVersion(): PhpVersions;
 
 	/** @internal */
+	public function toWalkScope(): MutatingScope;
+
+	/** @deprecated The scope answers every ask directly - call the methods on the scope itself, or toWalkScope() for the engine-facing walk scope. */
 	public function toMutatingScope(): MutatingScope;
 
 }

@@ -137,7 +137,6 @@ use function uksort;
 use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
-use const PHP_VERSION_ID;
 
 class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 {
@@ -160,7 +159,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @var array<string, static> */
 	private array $falseyScopes = [];
 
-	private ?self $fiberScope = null;
+	private ?self $nodeCallbackScope = null;
 
 	/** @var non-empty-string|null */
 	private ?string $namespace;
@@ -182,7 +181,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
 	 */
 	public function __construct(
-		private Container $container,
+		protected Container $container,
 		protected InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -221,17 +220,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$this->namespace = $namespace;
 	}
 
-	public function toFiberScope(): self
+	public function toNodeCallbackScope(): self
 	{
-		if (PHP_VERSION_ID < 80100) {
-			throw new ShouldNotHappenException('Cannot create FiberScope below PHP 8.1');
+		if ($this->nodeCallbackScope !== null) {
+			return $this->nodeCallbackScope;
 		}
 
-		if ($this->fiberScope !== null) {
-			return $this->fiberScope;
-		}
-
-		return $this->fiberScope = $this->scopeFactory->toFiberFactory()->create(
+		return $this->nodeCallbackScope = $this->scopeFactory->toNodeCallbackScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -251,6 +246,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
+	public function toWalkScope(): self
+	{
+		return $this;
+	}
+
+	/** @deprecated */
 	public function toMutatingScope(): self
 	{
 		return $this;
@@ -3198,7 +3199,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$this->resolvedTypes = [];
 		$this->truthyScopes = [];
 		$this->falseyScopes = [];
-		$this->fiberScope = null;
+		$this->nodeCallbackScope = null;
 		$this->scopeOutOfFirstLevelStatement = null;
 		$this->scopeWithPromotedNativeTypes = null;
 

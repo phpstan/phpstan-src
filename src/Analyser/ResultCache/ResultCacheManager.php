@@ -45,7 +45,6 @@ use function fclose;
 use function fopen;
 use function fwrite;
 use function get_loaded_extensions;
-use function getenv;
 use function hash_file;
 use function implode;
 use function is_array;
@@ -1514,12 +1513,9 @@ return [
 			ksort($projectConfigArray);
 		}
 
-		$fnsr = getenv('PHPSTAN_FNSR', true);
-
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
-			'fnsr' => $fnsr,
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
 			'phpVersion' => PHP_VERSION_ID,
 			'projectConfig' => $projectConfigArray,

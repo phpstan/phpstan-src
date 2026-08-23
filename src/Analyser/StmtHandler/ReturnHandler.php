@@ -35,6 +35,7 @@ final class ReturnHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$entryScope = $scope;
 		if ($stmt->expr !== null) {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			$throwPoints = $result->getThrowPoints();
@@ -46,6 +47,8 @@ final class ReturnHandler implements StmtHandler
 			$throwPoints = [];
 			$impurePoints = [];
 		}
+
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
 		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [
 			new InternalStatementExitPoint($stmt, $scope),

@@ -1,12 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser\Fiber;
+namespace PHPStan\Analyser;
 
-use Fiber;
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\ExpressionResult;
-use PHPStan\Analyser\MutatingScope;
-use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -14,8 +10,9 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Type;
 use function array_pop;
 use function count;
+use function spl_object_id;
 
-final class FiberScope extends MutatingScope
+final class NodeCallbackScope extends MutatingScope
 {
 
 	/** @var Expr[] */
@@ -24,20 +21,43 @@ final class FiberScope extends MutatingScope
 	/** @var Expr[] */
 	private array $falseyValueExprs = [];
 
-	private ?MutatingScope $mutatingScope = null;
+	private ?MutatingScope $walkScope = null;
 
-	public function toFiberScope(): self
+	/**
+	 * The storage of the emitting walk, pushed by callNodeCallback() for the
+	 * duration of the callback - the same association a suspended fiber's
+	 * request had with the frame that would resolve it. Resolved through the
+	 * container so the scope never references a storage directly (a direct
+	 * reference would cycle with the storage's stored scopes and never free
+	 * with the cycle collector disabled).
+	 */
+	private function findStoredBeforeScope(Expr $expr): ?MutatingScope
+	{
+		$storage = $this->container->getByType(ExpressionResultStorageStack::class)->getCurrent();
+		if ($storage === null) {
+			return null;
+		}
+
+		$beforeScope = $storage->findBeforeScope($expr);
+		if ($beforeScope instanceof MutatingScope) {
+			return $beforeScope;
+		}
+
+		return null;
+	}
+
+	public function toNodeCallbackScope(): self
 	{
 		return $this;
 	}
 
-	public function toMutatingScope(): MutatingScope
+	public function toWalkScope(): MutatingScope
 	{
-		if ($this->mutatingScope !== null) {
-			return $this->mutatingScope;
+		if ($this->walkScope !== null) {
+			return $this->walkScope;
 		}
 
-		return $this->mutatingScope = $this->scopeFactory->toMutatingFactory()->create(
+		return $this->walkScope = $this->scopeFactory->toWalkScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -57,6 +77,23 @@ final class FiberScope extends MutatingScope
 		);
 	}
 
+	/**
+	 * Asked types memoized by node identity. Rules and collectors re-ask the
+	 * same nodes across a callback batch (this scope is shared by every
+	 * callback fired at the emission point), and the walk scope's own
+	 * resolvedTypes memo answered those in O(1) before this class existed -
+	 * without this, every repeat pays the stored-result lookup again. The
+	 * entry keeps the node itself: a synthetic node a rule dropped can hand
+	 * its object id to the next synthetic, and the identity check rejects
+	 * such stale hits.
+	 *
+	 * @var array<int, array{Expr, Type}>
+	 */
+	private array $askedTypes = [];
+
+	/** @var array<int, array{Expr, Type}> */
+	private array $askedNativeTypes = [];
+
 	/** @api */
 	public function getType(Expr $node): Type
 	{
@@ -67,31 +104,50 @@ final class FiberScope extends MutatingScope
 			return $node->getExprType();
 		}
 
-		/** @var ExpressionResult $expressionResult */
-		$expressionResult = Fiber::suspend(
-			new ExpressionResultRequest($node, $this),
-		);
+		$nodeId = spl_object_id($node);
+		if (isset($this->askedTypes[$nodeId]) && $this->askedTypes[$nodeId][0] === $node) {
+			return $this->askedTypes[$nodeId][1];
+		}
+
+		$type = $this->doGetType($node);
+		$this->askedTypes[$nodeId] = [$node, $type];
+
+		return $type;
+	}
+
+	private function doGetType(Expr $node): Type
+	{
+		// post-order emission means the node's own result and every subnode
+		// result are already stored when the callback fires - answer from the
+		// stored before-scope; an unstored ask is a synthetic node or a node
+		// ahead of the walk, answered on demand through the MutatingScope path
+		// (the same answer the fiber flush produced for a never-stored ask)
+		$beforeScope = $this->findStoredBeforeScope($node);
 
 		if (
 			!$this->nativeTypesPromoted
 			&& count($this->truthyValueExprs) === 0
 			&& count($this->falseyValueExprs) === 0
 		) {
-			return $expressionResult->getType();
+			if ($beforeScope !== null) {
+				return $beforeScope->getType($node);
+			}
+
+			return $this->toWalkScope()->getType($node);
 		}
 
-		$scope = $this->preprocessScope($expressionResult->getBeforeScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toWalkScope());
 		return $scope->getType($node);
 	}
 
 	public function getScopeType(Expr $expr): Type
 	{
-		return $this->toMutatingScope()->getType($expr);
+		return $this->toWalkScope()->getType($expr);
 	}
 
 	public function getScopeNativeType(Expr $expr): Type
 	{
-		return $this->toMutatingScope()->getNativeType($expr);
+		return $this->toWalkScope()->getNativeType($expr);
 	}
 
 	/** @api */
@@ -102,31 +158,42 @@ final class FiberScope extends MutatingScope
 			return $expr->getExprType();
 		}
 
-		/** @var ExpressionResult $expressionResult */
-		$expressionResult = Fiber::suspend(
-			new ExpressionResultRequest($expr, $this),
-		);
+		$nodeId = spl_object_id($expr);
+		if (isset($this->askedNativeTypes[$nodeId]) && $this->askedNativeTypes[$nodeId][0] === $expr) {
+			return $this->askedNativeTypes[$nodeId][1];
+		}
+
+		$type = $this->doGetNativeType($expr);
+		$this->askedNativeTypes[$nodeId] = [$expr, $type];
+
+		return $type;
+	}
+
+	private function doGetNativeType(Expr $expr): Type
+	{
+		$beforeScope = $this->findStoredBeforeScope($expr);
 
 		if (
 			!$this->nativeTypesPromoted
 			&& count($this->truthyValueExprs) === 0
 			&& count($this->falseyValueExprs) === 0
 		) {
-			return $expressionResult->getNativeType();
+			if ($beforeScope !== null) {
+				return $beforeScope->getNativeType($expr);
+			}
+
+			return $this->toWalkScope()->getNativeType($expr);
 		}
 
-		$scope = $this->preprocessScope($expressionResult->getBeforeScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toWalkScope());
 		return $scope->getNativeType($expr);
 	}
 
 	public function getKeepVoidType(Expr $node): Type
 	{
-		/** @var ExpressionResult $expressionResult */
-		$expressionResult = Fiber::suspend(
-			new ExpressionResultRequest($node, $this),
-		);
+		$beforeScope = $this->findStoredBeforeScope($node);
 
-		$scope = $this->preprocessScope($expressionResult->getBeforeScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toWalkScope());
 
 		return $scope->getKeepVoidType($node);
 	}
@@ -155,6 +222,10 @@ final class FiberScope extends MutatingScope
 
 	private function preprocessScope(MutatingScope $scope): Scope
 	{
+		// a nested walk a rule started from its NodeCallbackScope may have anchored
+		// results to fiber scopes - re-entering this class's ask paths from
+		// here would derive scopes without end
+		$scope = $scope->toWalkScope();
 		if ($this->nativeTypesPromoted) {
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		}
@@ -202,7 +273,7 @@ final class FiberScope extends MutatingScope
 			return null;
 		}
 
-		return $parent->toFiberScope();
+		return $parent->toNodeCallbackScope();
 	}
 
 }

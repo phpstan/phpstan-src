@@ -22,10 +22,13 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Goto_;
+use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
+use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
@@ -118,6 +121,8 @@ class NodeScopeResolver
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
+	private ?ExpressionResultStorageStack $expressionResultStorageStack = null;
+
 	/**
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
 	 * @param ExtensionsCollection<MethodParameterOutTypeExtension> $methodParameterOutTypeExtensions
@@ -132,7 +137,7 @@ class NodeScopeResolver
 	 * @param ExtensionsCollection<PerFileAnalysisResettable> $perFileAnalysisResettables
 	 */
 	public function __construct(
-		private readonly Container $container,
+		protected readonly Container $container,
 		private readonly ReflectionProvider $reflectionProvider,
 		#[AutowiredExtensions(of: FunctionParameterOutTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterOutTypeExtensions,
@@ -183,6 +188,12 @@ class NodeScopeResolver
 	 * Releases the previous file's node-keyed captures: the parser cache
 	 * retains ASTs, so node-keyed cache entries never die on
 	 * their own and would hold that file's whole result graph alive.
+	 *
+	 * Called at the per-file boundary (FileAnalyser), NOT in processNodes():
+	 * extensions start nested processNodes() walks mid-file (phpstan-doctrine
+	 * parsing a query-builder method, rule tooling re-analysing a callee) and
+	 * wiping the per-file caches there forces the outer file to rebuild them -
+	 * closure types re-converge, narrowing memos recompute.
 	 */
 	public function resetPerFileAnalysisState(): void
 	{
@@ -202,7 +213,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
-		$this->resetPerFileAnalysisState();
+		$scope = $scope->toWalkScope();
 
 		$expressionResultStorage = new ExpressionResultStorage();
 		$alreadyTerminated = false;
@@ -278,16 +289,16 @@ class NodeScopeResolver
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
 			$this->processUnreachableStatement($nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
-
-		$this->processPendingFibers($expressionResultStorage);
 	}
 
 	public function storeExpressionResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
 	{
-	}
-
-	public function processPendingFibers(ExpressionResultStorage $storage): void
-	{
+		// The storage only ever answers type questions from NodeCallbackScope, which
+		// resolves them from the before-scope. Storing just the before-scope
+		// keeps the storage from pinning throw points, impure points, scope
+		// callbacks and the after-scope of every expression until the end of
+		// the file.
+		$storage->storeBeforeScope($expr, $expressionResult->getBeforeScope());
 	}
 
 	/**
@@ -428,6 +439,11 @@ class NodeScopeResolver
 		StatementContext $context,
 	): StatementResult
 	{
+		// a rule may pass the scope it was handed - the rule-facing NodeCallbackScope -
+		// as the walk's initial scope; the walk must anchor its results to the
+		// state-identical MutatingScope or their consumption re-enters the
+		// rule-facing ask paths
+		$scope = $scope->toWalkScope();
 		$storage = new ExpressionResultStorage();
 		return $this->processStmtNodesInternal(
 			$parentNode,
@@ -444,36 +460,6 @@ class NodeScopeResolver
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processStmtNodesInternal(
-		Node $parentNode,
-		array $stmts,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-		StatementContext $context,
-	): InternalStatementResult
-	{
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers(
-			$parentNode,
-			$stmts,
-			$scope,
-			$storage,
-			$nodeCallback,
-			$context,
-		);
-		$this->processPendingFibers($storage);
-
-		return $statementResult;
-	}
-
-	/**
-	 * The statement-list walk without the per-list pending-fiber flush - for
-	 * the callers that sit inside an enclosing statement walk (nested
-	 * control-flow lists, convergence passes) whose own boundary flushes.
-	 *
-	 * @param Node\Stmt[] $stmts
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	private function processStmtNodesInternalWithoutFlushingPendingFibers(
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,
@@ -686,7 +672,16 @@ class NodeScopeResolver
 			$stmtScope = $this->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 		}
 
-		$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
+		// Statements whose work is processing their expressions emit their node
+		// callback AFTER that processing, inside their branches below, with the
+		// entry scope - a synchronously invoked rule (the plain resolver,
+		// PHP < 8.1) then finds the expressions' results in the storage instead
+		// of re-walking them on demand, mirroring processExprNodeInternal().
+		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_
+			|| $stmt instanceof If_ || $stmt instanceof Switch_ || $stmt instanceof Foreach_;
+		if (!$deferredStmtCallback) {
+			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
+		}
 
 		$stmtHandler = StmtHandlerRegistry::resolve($stmt, $this->container);
 		if ($stmtHandler !== null) {
@@ -846,12 +841,18 @@ class NodeScopeResolver
 			return $expressionResult;
 		}
 
-		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
-
 		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
 			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
+			// The node's own callback fires AFTER its result is stored, with the
+			// scope captured before processing. Rules observe the same (scope,
+			// answer) pair as at a pre-order emission - under fibers a pre-order
+			// rule parks on its first ask and resumes at this store anyway - but
+			// a synchronously invoked rule (the plain resolver, PHP < 8.1) now
+			// finds the node's and its subtree's results in the storage instead
+			// of re-walking them on demand.
+			$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 			// the call is now processed and stored; emit a virtual node so
 			// impossible-check rules run on the fully processed call instead of
 			// asking the scope before the call node itself is processed
@@ -939,7 +940,37 @@ class NodeScopeResolver
 		ExpressionResultStorage $storage,
 	): void
 	{
-		$nodeCallback($node, $scope);
+		// Engine-feeding gatherers must observe the node at the emission
+		// position - their arrays are read as soon as the enclosing body walk
+		// returns. Gatherers are engine code and never ask about types -
+		// handing them the raw scope skips a NodeCallbackScope construction per
+		// emission; the scopes they capture (return statements, impure points)
+		// answer later asks through the storage hub like any MutatingScope.
+		while ($nodeCallback instanceof GatheringNodeCallback) {
+			($nodeCallback->getGatherer())($node, $scope);
+			$nodeCallback = $nodeCallback->getInner();
+		}
+
+		if ($nodeCallback instanceof NoopNodeCallback) {
+			return;
+		}
+
+		// post-order emission means the node's own result and every subnode
+		// result are already stored when the callback fires - NodeCallbackScope
+		// answers every ask synchronously from the storage; the emitting
+		// walk's storage is bound for the duration of the callback
+		$stack = $this->getExpressionResultStorageStack();
+		$stack->push($storage);
+		try {
+			$nodeCallback($node, $scope->toNodeCallbackScope());
+		} finally {
+			$stack->pop();
+		}
+	}
+
+	private function getExpressionResultStorageStack(): ExpressionResultStorageStack
+	{
+		return $this->expressionResultStorageStack ??= $this->container->getByType(ExpressionResultStorageStack::class);
 	}
 
 	/**
@@ -1067,7 +1098,7 @@ class NodeScopeResolver
 		}, $nodeCallback);
 
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 			$publicStatementResult = $statementResult->toPublic();
 			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -1103,7 +1134,7 @@ class NodeScopeResolver
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
 			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -1131,7 +1162,7 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 		$publicStatementResult = $statementResult->toPublic();
 		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -1811,7 +1842,7 @@ class NodeScopeResolver
 				// the preferred ClosureType read below now answers from this seed
 				// instead of walking the body again (unless a parked fiber may
 				// still complete the gathered data - then it keeps re-walking)
-				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult, $storage);
+				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -1899,7 +1930,7 @@ class NodeScopeResolver
 				// the invalidation read below now answers from this seed instead
 				// of walking the body again (unless a parked fiber may still
 				// complete the gathered data - then it keeps re-walking)
-				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult, $storage);
+				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult);
 				$arrowFunctionResult = $processArrowFunctionResult->getExpressionResult();
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));

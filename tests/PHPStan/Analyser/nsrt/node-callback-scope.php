@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace FiberNodeScopeResolverTest;
+namespace NodeCallbackScope;
 
 use Closure;
 use DivisionByZeroError;
@@ -369,9 +369,9 @@ class FooWithStaticMethods
 
 	public function doFoo(): void
 	{
-		assertType('FiberNodeScopeResolverTest\\FooWithStaticMethods', self::returnSelf());
-		assertNativeType('FiberNodeScopeResolverTest\\FooWithStaticMethods', self::returnSelf());
-		assertType('FiberNodeScopeResolverTest\\FooWithStaticMethods', self::returnPhpDocSelf());
+		assertType('NodeCallbackScope\\FooWithStaticMethods', self::returnSelf());
+		assertNativeType('NodeCallbackScope\\FooWithStaticMethods', self::returnSelf());
+		assertType('NodeCallbackScope\\FooWithStaticMethods', self::returnPhpDocSelf());
 		assertNativeType('mixed', self::returnPhpDocSelf());
 	}
 
@@ -402,7 +402,7 @@ class FooWithStaticMethods
 	{
 		assertType('1', self::genericStatic(1));
 
-		$s = 'FiberNodeScopeResolverTest\\FooWithStaticMethods';
+		$s = 'NodeCallbackScope\\FooWithStaticMethods';
 		assertType('1', $s::genericStatic(1));
 	}
 
@@ -450,7 +450,7 @@ class FooGeneric
 
 function (): void {
 	$foo = new FooGeneric(5);
-	assertType('FiberNodeScopeResolverTest\\FooGeneric<int>', $foo);
+	assertType('NodeCallbackScope\\FooGeneric<int>', $foo);
 };
 
 function (): void {
@@ -469,11 +469,11 @@ class MagicConstUser {
 		assertType('literal-string&non-falsy-string', __DIR__);
 		assertType('literal-string&non-falsy-string', __FILE__);
 		assertType('471', __LINE__);
-		assertType("'FiberNodeScopeResolverTest'", __NAMESPACE__);
-		assertType("'FiberNodeScopeResolverTest\\\\MagicConstUser'", __CLASS__);
+		assertType("'NodeCallbackScope'", __NAMESPACE__);
+		assertType("'NodeCallbackScope\\\\MagicConstUser'", __CLASS__);
 		assertType("''", __TRAIT__);
 		assertType("'doFoo'", __FUNCTION__);
-		assertType("'FiberNodeScopeResolverTest\\\\MagicConstUser::doFoo'", __METHOD__);
+		assertType("'NodeCallbackScope\\\\MagicConstUser::doFoo'", __METHOD__);
 		assertType("''", __PROPERTY__);
 	}
 }

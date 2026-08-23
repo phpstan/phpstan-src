@@ -57,9 +57,7 @@ final class TraitUseHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$traitStorage = $storage->duplicate();
-		$traitStorage->pendingFibers = [];
 		$this->processTraitUse($nodeScopeResolver, $stmt, $scope, $traitStorage, $nodeCallback);
-		$nodeScopeResolver->processPendingFibers($traitStorage);
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 	}

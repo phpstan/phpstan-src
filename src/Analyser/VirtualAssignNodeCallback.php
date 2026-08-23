@@ -18,9 +18,9 @@ final class VirtualAssignNodeCallback implements ShallowNodeCallback
 
 	/**
 	 * Rebuilds the chain instead of wrapping it so that GatheringNodeCallback
-	 * layers stay on the outside. Hiding a gatherer behind this filter would let
-	 * FiberNodeScopeResolver defer it into a fiber, and a parked fiber can run
-	 * the gatherer long after the caller already read its result.
+	 * layers stay on the outside. Hiding a gatherer behind this filter would
+	 * keep callNodeCallback() from unwrapping it, and the gatherer would miss
+	 * nodes this filter drops for the rule-facing remainder.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 * @return callable(Node $node, Scope $scope): void

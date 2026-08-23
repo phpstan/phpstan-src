@@ -43,10 +43,6 @@ if (PHP_VERSION_ID < 80500) {
 	$includes[] = __DIR__ . '/php-85.neon';
 }
 
-if (PHP_VERSION_ID < 80100) {
-	$includes[] = __DIR__ . '/fiber.neon';
-}
-
 $config = [];
 $config['includes'] = $includes;
 

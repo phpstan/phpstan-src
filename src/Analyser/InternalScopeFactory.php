@@ -39,8 +39,8 @@ interface InternalScopeFactory
 		bool $nativeTypesPromoted = false,
 	): MutatingScope;
 
-	public function toFiberFactory(): self;
+	public function toNodeCallbackScopeFactory(): self;
 
-	public function toMutatingFactory(): self;
+	public function toWalkScopeFactory(): self;
 
 }

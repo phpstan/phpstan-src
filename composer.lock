@@ -2389,12 +2389,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/simPod/BetterReflection.git",
-        "reference": "efb7b409f7a49c67be1462d2d51a436010ce1ce1"
+        "reference": "165422d408bc16a3d8a784886cc4157ae744ba76"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/simPod/BetterReflection/zipball/efb7b409f7a49c67be1462d2d51a436010ce1ce1",
-        "reference": "efb7b409f7a49c67be1462d2d51a436010ce1ce1",
+        "url": "https://api.github.com/repos/simPod/BetterReflection/zipball/165422d408bc16a3d8a784886cc4157ae744ba76",
+        "reference": "165422d408bc16a3d8a784886cc4157ae744ba76",
         "shasum": ""
       },
       "require": {
@@ -2472,7 +2472,7 @@
       "support": {
         "source": "https://github.com/simPod/BetterReflection/tree/feat/versioned-extension-stubs"
       },
-      "time": "2026-08-22T07:47:19+00:00"
+      "time": "2026-08-23T20:46:29+00:00"
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",

@@ -26,6 +26,12 @@ use function array_merge;
 final class PropertyHooksProcessor
 {
 
+	public function __construct(
+		private PhpDocsResolver $phpDocsResolver,
+	)
+	{
+	}
+
 	/**
 	 * @param Node\PropertyHook[] $hooks
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -52,7 +58,7 @@ final class PropertyHooksProcessor
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $hook, $scope, $storage);
 			$nodeScopeResolver->processAttributeGroups($stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
 
-			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $nodeScopeResolver->getPhpDocs($scope, $hook);
+			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
 
 			foreach ($hook->params as $param) {
 				$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);

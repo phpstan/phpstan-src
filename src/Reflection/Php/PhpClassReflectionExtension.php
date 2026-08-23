@@ -7,8 +7,8 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Namespace_;
-use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
@@ -100,7 +100,7 @@ final class PhpClassReflectionExtension
 
 	public function __construct(
 		private ScopeFactory $scopeFactory,
-		private NodeScopeResolver $nodeScopeResolver,
+		private PhpDocsResolver $phpDocsResolver,
 		private PhpMethodReflectionFactory $methodReflectionFactory,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private DeprecationProvider $deprecationProvider,
@@ -1175,7 +1175,7 @@ final class PhpClassReflectionExtension
 			$classScope = $classScope->enterNamespace($namespace);
 		}
 		$classScope = $classScope->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,

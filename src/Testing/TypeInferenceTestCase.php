@@ -16,7 +16,6 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
 use PHPStan\Node\InClassNode;
-use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
@@ -80,7 +79,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$container->getByType(FileTypeMapper::class),
-			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),

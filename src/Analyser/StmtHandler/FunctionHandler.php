@@ -13,6 +13,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
@@ -33,6 +34,12 @@ use function array_merge;
 final class FunctionHandler implements StmtHandler
 {
 
+	public function __construct(
+		private PhpDocsResolver $phpDocsResolver,
+	)
+	{
+	}
+
 	public function supports(Stmt $stmt): bool
 	{
 		return $stmt instanceof Function_;
@@ -48,7 +55,7 @@ final class FunctionHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $nodeScopeResolver->getPhpDocs($scope, $stmt);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
 		foreach ($stmt->params as $param) {
 			$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);

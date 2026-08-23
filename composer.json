@@ -26,7 +26,7 @@
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/file": "1.17.07.11",
-		"jetbrains/phpstorm-stubs": "dev-master#709e512210784a7c0a677b3a89d35def844a59b9",
+		"jetbrains/phpstorm-stubs": "dev-master#2da66a03e379335dba086b0d493c70185eb01ddd",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.10",
 		"nette/neon": "3.3.4",
@@ -35,7 +35,7 @@
 		"nette/utils": "^3.2.5",
 		"nikic/php-parser": "^5.8.0",
 		"ondram/ci-detector": "^4.0",
-		"ondrejmirtes/better-reflection": "6.70.0.3",
+		"ondrejmirtes/better-reflection": "dev-feat/versioned-extension-stubs as 6.70.0.4",
 		"ondrejmirtes/composer-attribute-collector": "^1.2.0",
 		"ondrejmirtes/php-merge": "^4.1",
 		"phpstan/php-8-stubs": "0.4.35",
@@ -80,6 +80,12 @@
 		"shipmonk/dead-code-detector": "^1.0.0",
 		"shipmonk/name-collision-detector": "^2.0"
 	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/simPod/BetterReflection"
+		}
+	],
 	"config": {
 		"platform": {
 			"php": "8.2.99"

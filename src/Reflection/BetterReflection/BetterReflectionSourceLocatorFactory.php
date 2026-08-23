@@ -58,6 +58,7 @@ final class BetterReflectionSourceLocatorFactory
 		private Cache $cache,
 		private PhpVersion $phpVersion,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		private SourceStubber\ExtensionVersionProvider $extensionVersionProvider,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
@@ -188,6 +189,7 @@ final class BetterReflectionSourceLocatorFactory
 				new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber),
 				$this->cache,
 				$this->phpVersion,
+				$this->extensionVersionProvider,
 			));
 
 			// Custom autoloaders registered *after* Composer's class loader are

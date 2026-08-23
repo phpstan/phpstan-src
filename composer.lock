@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "83ac8eae39eeb3d9d2d813a2808f421c",
+  "content-hash": "dba4ceefffec82c5e1cb1028f49f32a7",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1637,19 +1637,19 @@
       "source": {
         "type": "git",
         "url": "https://github.com/JetBrains/phpstorm-stubs",
-        "reference": "709e512210784a7c0a677b3a89d35def844a59b9"
+        "reference": "2da66a03e379335dba086b0d493c70185eb01ddd"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/709e512210784a7c0a677b3a89d35def844a59b9",
-        "reference": "709e512210784a7c0a677b3a89d35def844a59b9",
+        "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/2da66a03e379335dba086b0d493c70185eb01ddd",
+        "reference": "2da66a03e379335dba086b0d493c70185eb01ddd",
         "shasum": ""
       },
       "require-dev": {
         "friendsofphp/php-cs-fixer": "^v3.86",
         "nikic/php-parser": "^v5.6",
-        "phpdocumentor/reflection-docblock": "^5.6",
-        "phpunit/phpunit": "^12.3"
+        "phpdocumentor/reflection-docblock": "^6.0",
+        "phpunit/phpunit": "^13.2"
       },
       "default-branch": true,
       "type": "library",
@@ -1674,7 +1674,7 @@
         "stubs",
         "type"
       ],
-      "time": "2026-06-12T13:19:10+00:00"
+      "time": "2026-08-21T14:57:18+00:00"
     },
     {
       "name": "nette/bootstrap",
@@ -2385,21 +2385,21 @@
     },
     {
       "name": "ondrejmirtes/better-reflection",
-      "version": "6.70.0.3",
+      "version": "dev-feat/versioned-extension-stubs",
       "source": {
         "type": "git",
-        "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-        "reference": "b67bcda6eac8d2faa57b3c9aa01746b9a43a37bd"
+        "url": "https://github.com/simPod/BetterReflection.git",
+        "reference": "efb7b409f7a49c67be1462d2d51a436010ce1ce1"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/b67bcda6eac8d2faa57b3c9aa01746b9a43a37bd",
-        "reference": "b67bcda6eac8d2faa57b3c9aa01746b9a43a37bd",
+        "url": "https://api.github.com/repos/simPod/BetterReflection/zipball/efb7b409f7a49c67be1462d2d51a436010ce1ce1",
+        "reference": "efb7b409f7a49c67be1462d2d51a436010ce1ce1",
         "shasum": ""
       },
       "require": {
         "ext-json": "*",
-        "jetbrains/phpstorm-stubs": "dev-master#dfcad4524db603bd20bdec3aab1a31c5f5128ea3",
+        "jetbrains/phpstorm-stubs": "dev-master#2da66a03e379335dba086b0d493c70185eb01ddd",
         "nikic/php-parser": "^5.7.0",
         "php": "^7.4 || ^8.0"
       },
@@ -2423,7 +2423,26 @@
           "PHPStan\\BetterReflection\\": "src"
         }
       },
-      "notification-url": "https://packagist.org/downloads/",
+      "autoload-dev": {
+        "psr-4": {
+          "Roave\\BetterReflectionTest\\": "test/unit",
+          "Roave\\BetterReflectionBenchmark\\": "test/benchmark"
+        }
+      },
+      "scripts": {
+        "cs": [
+          "tools/vendor/bin/phpcs"
+        ],
+        "csfix": [
+          "tools/vendor/bin/phpcbf"
+        ],
+        "psalm": [
+          "tools/vendor/bin/psalm"
+        ],
+        "psalm-baseline": [
+          "tools/vendor/bin/psalm --set-baseline=psalm-baseline.xml"
+        ]
+      },
       "license": [
         "MIT"
       ],
@@ -2451,9 +2470,9 @@
       ],
       "description": "Better Reflection - an improved code reflection API",
       "support": {
-        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.70.0.3"
+        "source": "https://github.com/simPod/BetterReflection/tree/feat/versioned-extension-stubs"
       },
-      "time": "2026-07-02T06:50:33+00:00"
+      "time": "2026-08-22T07:47:19+00:00"
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",
@@ -6960,10 +6979,18 @@
       "time": "2025-11-17T20:03:58+00:00"
     }
   ],
-  "aliases": [],
+  "aliases": [
+    {
+      "package": "ondrejmirtes/better-reflection",
+      "version": "dev-feat/versioned-extension-stubs",
+      "alias": "6.70.0.4",
+      "alias_normalized": "6.70.0.4"
+    }
+  ],
   "minimum-stability": "dev",
   "stability-flags": {
-    "jetbrains/phpstorm-stubs": 20
+    "jetbrains/phpstorm-stubs": 20,
+    "ondrejmirtes/better-reflection": 20
   },
   "prefer-stable": true,
   "prefer-lowest": false,

@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use function array_key_exists;
 use function is_array;
 use function is_file;
@@ -59,6 +60,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 		private SourceLocator $inner,
 		private Cache $cache,
 		private PhpVersion $phpVersion,
+		private ExtensionVersionProvider $extensionVersionProvider,
 	)
 	{
 	}
@@ -162,10 +164,11 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 	private function getVariableCacheKey(): string
 	{
 		return $this->variableCacheKey ??= sprintf(
-			'v2-%s-%s-%s',
+			'v3-%s-%s-%s-%s',
 			ComposerHelper::getBetterReflectionVersion(),
 			ComposerHelper::getPhpStormStubsVersion(),
 			$this->phpVersion->getVersionString(),
+			$this->extensionVersionProvider->getCacheKey(),
 		);
 	}
 

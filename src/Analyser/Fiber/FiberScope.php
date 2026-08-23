@@ -181,6 +181,10 @@ final class FiberScope extends MutatingScope
 
 	private function preprocessScope(MutatingScope $scope): Scope
 	{
+		// a nested walk a rule started from its FiberScope may have anchored
+		// results to fiber scopes - re-entering this class's ask paths from
+		// here would derive scopes without end
+		$scope = $scope->toMutatingScope();
 		if ($this->nativeTypesPromoted) {
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		}

@@ -205,6 +205,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
+		$scope = $scope->toMutatingScope();
 		$this->resetPerFileAnalysisState();
 
 		$expressionResultStorage = new ExpressionResultStorage();
@@ -425,6 +426,11 @@ class NodeScopeResolver
 		StatementContext $context,
 	): StatementResult
 	{
+		// a rule may pass the scope it was handed - the rule-facing FiberScope -
+		// as the walk's initial scope; the walk must anchor its results to the
+		// state-identical MutatingScope or their consumption re-enters the
+		// rule-facing ask paths
+		$scope = $scope->toMutatingScope();
 		$storage = new ExpressionResultStorage();
 		return $this->processStmtNodesInternal(
 			$parentNode,

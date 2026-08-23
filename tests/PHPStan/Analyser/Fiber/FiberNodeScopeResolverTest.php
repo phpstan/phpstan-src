@@ -3,12 +3,10 @@
 namespace PHPStan\Analyser\Fiber;
 
 use PHPStan\Analyser\ExpressionResultFactory;
-use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\File\FileHelper;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\TypeInferenceTestCase;
@@ -57,8 +55,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container,
 			$reflectionProvider,
 			$container->getByType(InitializerExprTypeResolver::class),
-			self::getReflector(),
-			$container->getByType(ClassReflectionFactory::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
@@ -66,7 +62,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getByType(FileTypeMapper::class),
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),
-			$typeSpecifier,
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -78,10 +73,8 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
-			$container->getParameter('polluteScopeWithBlock'),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
-			$container->getByType(ImplicitToStringCallHelper::class),
 			$container->getByType(ExpressionResultFactory::class),
 		);
 	}

@@ -35,7 +35,7 @@ parameters:
 		-
 			rawMessage: 'Parameter #2 $reflection of method PHPStan\Reflection\ClassReflectionFactory::create() expects ReflectionClass, PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum given.'
 			count: 1
-			path: ../src/Analyser/NodeScopeResolver.php
+			path: ../src/Analyser/StmtHandler/ClassLikeHandler.php
 
 		-
 			rawMessage: 'Right side of || is always false.'

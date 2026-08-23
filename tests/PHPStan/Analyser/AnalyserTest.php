@@ -6,7 +6,6 @@ use PhpParser\Lexer;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
-use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -18,7 +17,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -819,8 +817,6 @@ class AnalyserTest extends PHPStanTestCase
 			$container,
 			$reflectionProvider,
 			$container->getByType(InitializerExprTypeResolver::class),
-			self::getReflector(),
-			$container->getByType(ClassReflectionFactory::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
@@ -828,7 +824,6 @@ class AnalyserTest extends PHPStanTestCase
 			$fileTypeMapper,
 			$phpDocInheritanceResolver,
 			$fileHelper,
-			$typeSpecifier,
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -841,9 +836,7 @@ class AnalyserTest extends PHPStanTestCase
 			false,
 			true,
 			true,
-			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			$container->getByType(ImplicitToStringCallHelper::class),
 			$container->getByType(ExpressionResultFactory::class),
 		);
 		$lexer = new Lexer();

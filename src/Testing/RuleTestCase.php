@@ -7,7 +7,6 @@ use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
-use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\IgnoreErrorExtension;
@@ -26,7 +25,6 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
@@ -104,8 +102,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer(),
 			$reflectionProvider,
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
-			self::getReflector(),
-			self::getContainer()->getByType(ClassReflectionFactory::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
@@ -113,7 +109,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),
-			$typeSpecifier,
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -125,10 +120,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
-			self::getContainer()->getParameter('polluteScopeWithBlock'),
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			self::getContainer()->getByType(ImplicitToStringCallHelper::class),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
 		);
 	}

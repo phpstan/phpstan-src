@@ -91,12 +91,6 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Stmt\ClassLike given.'
-			identifier: argument.type
-			count: 1
-			path: src/Analyser/NodeScopeResolver.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -119,6 +113,12 @@ parameters:
 			identifier: cast.useless
 			count: 2
 			path: src/Analyser/ScopeOps.php
+
+		-
+			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Stmt\ClassLike given.'
+			identifier: argument.type
+			count: 1
+			path: src/Analyser/StmtHandler/ClassLikeHandler.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'

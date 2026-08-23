@@ -17,6 +17,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\IssetabilityDescriptor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PropertyHookThrowPointsResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -44,6 +45,7 @@ final class PropertyFetchHandler implements ExprHandler
 		private PhpVersion $phpVersion,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ExpressionResultFactory $expressionResultFactory,
+		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
 	)
 	{
 	}
@@ -88,7 +90,7 @@ final class PropertyFetchHandler implements ExprHandler
 					$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
 					if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
 						$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
-						$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
+						$throwPoints = array_merge($throwPoints, $this->propertyHookThrowPointsResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
 					}
 				}
 			}

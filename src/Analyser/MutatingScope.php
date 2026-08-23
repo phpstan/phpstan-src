@@ -246,7 +246,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
-	public function toMutatingScope(): self
+	public function toWalkScope(): self
 	{
 		return $this;
 	}

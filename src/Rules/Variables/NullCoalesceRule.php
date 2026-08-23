@@ -99,7 +99,7 @@ final class NullCoalesceRule implements Rule
 		// The coalesce only changes the result when the left side is undefined.
 		// If the left side is always set, `?? null` (or `??= null`) never changes
 		// anything, so the whole coalesce is redundant.
-		$resolution = $node->getSubjectResult()->getIssetabilityResolution($scope->toMutatingScope(), false);
+		$resolution = $node->getSubjectResult()->getIssetabilityResolution($scope->toWalkScope(), false);
 		if ($resolution->isSet(static fn (): bool => true) !== true) {
 			return null;
 		}

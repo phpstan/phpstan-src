@@ -344,6 +344,6 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function getPhpVersion(): PhpVersions;
 
 	/** @internal */
-	public function toMutatingScope(): MutatingScope;
+	public function toWalkScope(): MutatingScope;
 
 }

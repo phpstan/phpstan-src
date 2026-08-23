@@ -20,7 +20,7 @@ final class NodeCallbackScope extends MutatingScope
 	/** @var Expr[] */
 	private array $falseyValueExprs = [];
 
-	private ?MutatingScope $mutatingScope = null;
+	private ?MutatingScope $walkScope = null;
 
 	/**
 	 * The storage of the emitting walk, pushed by callNodeCallback() for the
@@ -50,13 +50,13 @@ final class NodeCallbackScope extends MutatingScope
 		return $this;
 	}
 
-	public function toMutatingScope(): MutatingScope
+	public function toWalkScope(): MutatingScope
 	{
-		if ($this->mutatingScope !== null) {
-			return $this->mutatingScope;
+		if ($this->walkScope !== null) {
+			return $this->walkScope;
 		}
 
-		return $this->mutatingScope = $this->scopeFactory->toWalkScopeFactory()->create(
+		return $this->walkScope = $this->scopeFactory->toWalkScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -102,21 +102,21 @@ final class NodeCallbackScope extends MutatingScope
 				return $beforeScope->getType($node);
 			}
 
-			return $this->toMutatingScope()->getType($node);
+			return $this->toWalkScope()->getType($node);
 		}
 
-		$scope = $this->preprocessScope($beforeScope ?? $this->toMutatingScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toWalkScope());
 		return $scope->getType($node);
 	}
 
 	public function getScopeType(Expr $expr): Type
 	{
-		return $this->toMutatingScope()->getType($expr);
+		return $this->toWalkScope()->getType($expr);
 	}
 
 	public function getScopeNativeType(Expr $expr): Type
 	{
-		return $this->toMutatingScope()->getNativeType($expr);
+		return $this->toWalkScope()->getNativeType($expr);
 	}
 
 	/** @api */
@@ -138,10 +138,10 @@ final class NodeCallbackScope extends MutatingScope
 				return $beforeScope->getNativeType($expr);
 			}
 
-			return $this->toMutatingScope()->getNativeType($expr);
+			return $this->toWalkScope()->getNativeType($expr);
 		}
 
-		$scope = $this->preprocessScope($beforeScope ?? $this->toMutatingScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toWalkScope());
 		return $scope->getNativeType($expr);
 	}
 
@@ -149,7 +149,7 @@ final class NodeCallbackScope extends MutatingScope
 	{
 		$beforeScope = $this->findStoredBeforeScope($node);
 
-		$scope = $this->preprocessScope($beforeScope ?? $this->toMutatingScope());
+		$scope = $this->preprocessScope($beforeScope ?? $this->toWalkScope());
 
 		return $scope->getKeepVoidType($node);
 	}
@@ -181,7 +181,7 @@ final class NodeCallbackScope extends MutatingScope
 		// a nested walk a rule started from its NodeCallbackScope may have anchored
 		// results to fiber scopes - re-entering this class's ask paths from
 		// here would derive scopes without end
-		$scope = $scope->toMutatingScope();
+		$scope = $scope->toWalkScope();
 		if ($this->nativeTypesPromoted) {
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		}

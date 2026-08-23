@@ -244,11 +244,11 @@ final class ClassMethodHandler implements StmtHandler
 
 				foreach ($gatheredReturnStatements as $statement) {
 					if ($finalScope === null) {
-						$finalScope = $statement->getScope()->toMutatingScope();
+						$finalScope = $statement->getScope()->toWalkScope();
 						continue;
 					}
 
-					$finalScope = $finalScope->mergeWith($statement->getScope()->toMutatingScope());
+					$finalScope = $finalScope->mergeWith($statement->getScope()->toWalkScope());
 				}
 
 				if ($finalScope !== null) {

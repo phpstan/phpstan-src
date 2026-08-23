@@ -207,7 +207,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
-		$scope = $scope->toMutatingScope();
+		$scope = $scope->toWalkScope();
 		$this->resetPerFileAnalysisState();
 
 		$expressionResultStorage = new ExpressionResultStorage();
@@ -438,7 +438,7 @@ class NodeScopeResolver
 		// as the walk's initial scope; the walk must anchor its results to the
 		// state-identical MutatingScope or their consumption re-enters the
 		// rule-facing ask paths
-		$scope = $scope->toMutatingScope();
+		$scope = $scope->toWalkScope();
 		$storage = new ExpressionResultStorage();
 		return $this->processStmtNodesInternal(
 			$parentNode,

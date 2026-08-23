@@ -395,6 +395,18 @@ class PureMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14511-method.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testPropertyHookImpurePoint(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/property-hook-impure-point.php'], [
+			[
+				'Impure call to get hook of property PropertyHookImpurePoint\Foo::$impureGet in pure method PropertyHookImpurePoint\Foo::readOwnImpureGet().',
+				42,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug14557(): void
 	{

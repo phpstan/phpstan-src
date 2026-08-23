@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ExpressionResultFactory;
-use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -19,7 +18,6 @@ use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
-use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -79,8 +77,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container,
 			$reflectionProvider,
 			$container->getByType(InitializerExprTypeResolver::class),
-			self::getReflector(),
-			$container->getByType(ClassReflectionFactory::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
@@ -88,7 +84,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getByType(FileTypeMapper::class),
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),
-			$typeSpecifier,
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -100,10 +95,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
-			$container->getParameter('polluteScopeWithBlock'),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
-			$container->getByType(ImplicitToStringCallHelper::class),
 			$container->getByType(ExpressionResultFactory::class),
 		);
 	}

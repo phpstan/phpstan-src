@@ -118,7 +118,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		}
 	}
 
-	protected function processPendingFibers(ExpressionResultStorage $storage): void
+	public function processPendingFibers(ExpressionResultStorage $storage): void
 	{
 		start:
 

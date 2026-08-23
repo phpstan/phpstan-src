@@ -91,6 +91,7 @@ final class PropertyFetchHandler implements ExprHandler
 					if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
 						$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
 						$throwPoints = array_merge($throwPoints, $this->propertyHookThrowPointsResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
+						$impurePoints = array_merge($impurePoints, $nodeScopeResolver->getImpurePointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
 					}
 				}
 			}

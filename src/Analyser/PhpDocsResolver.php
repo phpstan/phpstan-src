@@ -212,12 +212,16 @@ final class PhpDocsResolver
 		}
 
 		if ($isPure === null && $node instanceof Node\FunctionLike && $scope->isInClass()) {
+			// a set hook has no return type node of its own, but it always returns
+			// void - the class-level @phpstan-pure must not make it pure
+			$isSetHook = $node instanceof Node\PropertyHook && $node->name->toLowerString() === 'set';
 			$classResolvedPhpDoc = $scope->getClassReflection()->getResolvedPhpDoc();
 			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
 				if (
 					strtolower($functionName ?? '') === '__construct'
 					|| (
-						($phpDocReturnType === null || !$phpDocReturnType->isVoid()->yes())
+						!$isSetHook
+						&& ($phpDocReturnType === null || !$phpDocReturnType->isVoid()->yes())
 						&& !$scope->getFunctionType($node->getReturnType(), false, false)->isVoid()->yes()
 					)
 				) {

@@ -163,10 +163,12 @@ final class WorkerRunner
 			$processedFiles = [];
 			foreach ($files as $file) {
 				try {
+					$reportedFile = null;
 					if ($file === $insteadOfFile) {
+						$reportedFile = $insteadOfFile;
 						$file = $tmpFile;
 					}
-					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null);
+					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null, $reportedFile);
 					$fileErrors = $fileAnalyserResult->getErrors();
 					$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
 					$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());

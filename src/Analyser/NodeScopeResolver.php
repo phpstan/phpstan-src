@@ -2767,14 +2767,14 @@ class NodeScopeResolver
 		return null;
 	}
 
-	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
+	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, MutatingScope $scope): ClassReflection
 	{
 		if (!$this->reflectionProvider->hasClass($className)) {
 			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
 		$defaultClassReflection = $this->reflectionProvider->getClass($className);
-		if ($defaultClassReflection->getFileName() !== $scope->getFile()) {
+		if ($defaultClassReflection->getFileName() !== $scope->getAnalysisFile()) {
 			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
@@ -2786,13 +2786,14 @@ class NodeScopeResolver
 		return $defaultClassReflection;
 	}
 
-	private function createAstClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
+	private function createAstClassReflection(Node\Stmt\ClassLike $stmt, string $className, MutatingScope $scope): ClassReflection
 	{
+		$analysisFile = $scope->getAnalysisFile();
 		$nodeToReflection = new NodeToReflection();
 		$betterReflectionClass = $nodeToReflection->__invoke(
 			$this->reflector,
 			$stmt,
-			new LocatedSource(FileReader::read($scope->getFile()), $className, $scope->getFile()),
+			new LocatedSource(FileReader::read($analysisFile), $className, $analysisFile),
 			$scope->getNamespace() !== null ? new Node\Stmt\Namespace_(new Name($scope->getNamespace())) : null,
 		);
 		if (!$betterReflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionClass) {
@@ -2807,7 +2808,7 @@ class NodeScopeResolver
 			null,
 			null,
 			null,
-			sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine()),
+			sprintf('%s:%d', $analysisFile, $stmt->getStartLine()),
 		);
 	}
 

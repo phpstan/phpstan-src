@@ -42,6 +42,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -96,6 +97,7 @@ final class AssignHandler implements ExprHandler
 {
 
 	public function __construct(
+		private VarAnnotationProcessor $varAnnotationProcessor,
 		private TypeSpecifier $typeSpecifier,
 		private PhpVersion $phpVersion,
 		private ExprPrinter $exprPrinter,
@@ -395,7 +397,7 @@ final class AssignHandler implements ExprHandler
 		$vars = $nodeScopeResolver->getAssignedVariables($expr->var);
 		if (count($vars) > 0) {
 			$varChangedScope = false;
-			$scope = $nodeScopeResolver->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
+			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
 			if (!$varChangedScope) {
 				$scope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
 			}

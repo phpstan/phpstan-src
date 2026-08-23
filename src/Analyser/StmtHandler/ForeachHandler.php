@@ -31,6 +31,7 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
@@ -67,6 +68,7 @@ final class ForeachHandler implements StmtHandler
 	private const FOREACH_UNROLL_NESTED_LIMIT = 8;
 
 	public function __construct(
+		private VarAnnotationProcessor $varAnnotationProcessor,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -88,7 +90,7 @@ final class ForeachHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
-			$scope = $nodeScopeResolver->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 		$throwPoints = $condResult->getThrowPoints();
@@ -384,7 +386,7 @@ final class ForeachHandler implements StmtHandler
 	private function enterForeach(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Foreach_ $stmt, Type $iterateeType, Type $nativeIterateeType, callable $nodeCallback): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
-			$scope = $nodeScopeResolver->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
 
 		if (
@@ -502,7 +504,7 @@ final class ForeachHandler implements StmtHandler
 			}
 		}
 
-		return $nodeScopeResolver->processVarAnnotation($scope, $vars, $stmt);
+		return $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
 	}
 
 	/**

@@ -13,6 +13,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -28,6 +29,12 @@ use function is_string;
 #[AutowiredService]
 final class GlobalHandler implements StmtHandler
 {
+
+	public function __construct(
+		private VarAnnotationProcessor $varAnnotationProcessor,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -82,7 +89,7 @@ final class GlobalHandler implements StmtHandler
 			$scope = $scope->assignVariable($var->name, $varType, $varType, TrinaryLogic::createYes());
 			$vars[] = $var->name;
 		}
-		$scope = $nodeScopeResolver->processVarAnnotation($scope, $vars, $stmt);
+		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints);
 	}

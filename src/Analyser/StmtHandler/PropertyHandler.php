@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PropertyHooksProcessor;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -23,6 +24,12 @@ use function count;
 #[AutowiredService]
 final class PropertyHandler implements StmtHandler
 {
+
+	public function __construct(
+		private PropertyHooksProcessor $propertyHooksProcessor,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -95,7 +102,8 @@ final class PropertyHandler implements StmtHandler
 			if (!isset($propertyName)) {
 				throw new ShouldNotHappenException('Property name should be known when analysing hooks.');
 			}
-			$nodeScopeResolver->processPropertyHooks(
+			$this->propertyHooksProcessor->processPropertyHooks(
+				$nodeScopeResolver,
 				$stmt,
 				$stmt->type,
 				$phpDocType,

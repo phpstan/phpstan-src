@@ -112,7 +112,7 @@ final class PropertyHooksProcessor
 
 			$gatheredReturnStatements = [];
 			$executionEnds = [];
-			$methodImpurePoints = [];
+			$hookImpurePoints = [];
 			$statementResult = $nodeScopeResolver->processStmtNodesInternal(new PropertyHookStatementNode($hook), $stmts, $hookScope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
 				if ($scope->getFunction() !== $hookScope->getFunction()) {
 					return;
@@ -146,7 +146,7 @@ final class PropertyHooksProcessor
 				$gatheredReturnStatements,
 				$statementResult,
 				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+				array_merge($statementResult->getImpurePoints(), $hookImpurePoints),
 				$classReflection,
 				$hookReflection,
 				$propertyReflection,

@@ -22,7 +22,7 @@ final class InitContainerBeforeTestSubscriber implements PreparationStartedSubsc
 
 		$testClassName = $test->className();
 
-		if (!is_a($testClassName, PhpStanTestCase::class, true)) {
+		if (!is_a($testClassName, PHPStanTestCase::class, true)) {
 			return;
 		}
 

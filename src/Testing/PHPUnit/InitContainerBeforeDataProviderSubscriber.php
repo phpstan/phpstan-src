@@ -16,7 +16,7 @@ final class InitContainerBeforeDataProviderSubscriber implements DataProviderMet
 	{
 		$testClassName = $event->testMethod()->className();
 
-		if (!is_a($testClassName, PhpStanTestCase::class, true)) {
+		if (!is_a($testClassName, PHPStanTestCase::class, true)) {
 			return;
 		}
 

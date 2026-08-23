@@ -378,4 +378,23 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testPropertyHookImpurePoint(): void
+	{
+		$this->analyse([__DIR__ . '/data/property-hook-impure-point.php'], [
+			[
+				'Impure call to get hook of property PropertyHookImpurePoint\\Foo::$impureGet in pure function PropertyHookImpurePoint\\readImpureGet().',
+				56,
+			],
+			[
+				'Impure call to get hook of property PropertyHookImpurePoint\\Foo::$impureGet in pure function PropertyHookImpurePoint\\readImpureGetNullsafe().',
+				62,
+			],
+			[
+				'Impure call to get hook of property PropertyHookImpurePoint\\Foo::$impureGet in pure function PropertyHookImpurePoint\\readImpureGetInCompoundAssign().',
+				69,
+			],
+		]);
+	}
+
 }

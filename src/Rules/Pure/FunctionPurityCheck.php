@@ -31,7 +31,7 @@ final class FunctionPurityCheck
 {
 
 	/**
-	 * @param 'Function'|'Method' $identifier
+	 * @param 'Function'|'Method'|'PropertyHook' $identifier
 	 * @param ExtendedParameterReflection[] $parameters
 	 * @param ImpurePoint[] $impurePoints
 	 * @param ThrowPoint[] $throwPoints

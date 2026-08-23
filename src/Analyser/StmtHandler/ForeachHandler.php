@@ -158,41 +158,66 @@ final class ForeachHandler implements StmtHandler
 				$count = 0;
 				$prevEntryScope = null;
 				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
-				do {
-					$prevScope = $bodyScope;
-					$bodyScope = $bodyScope->mergeWith($iterateeScope);
-					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
-						// walking is deterministic in the entry scope - an unchanged entry
-						// reproduces the previous pass's exit, so the verification walk is skipped
-						$bodyScope = $prevScope;
-						break;
-					}
-					$prevEntryScope = $bodyScope;
-					$storage = $originalStorage->duplicate();
-					$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
-					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
-					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-					}
-					// the candidate to replace the final walk when this pass's
-					// entry turns out to be the fixpoint
-					if ($bodyRecording instanceof RecordingNodeCallback) {
-						$replayBodyRecording = $bodyRecording;
-						$replayPassStorage = $storage;
-						$replayPassResult = $bodyScopeResult;
-						$replayEntryScope = $prevEntryScope;
-					}
-					if ($bodyScope->equals($prevScope)) {
-						break;
-					}
+				// each pass chains the previous pass's storage as its baseline, so
+				// the convergence-pass mode consumes unchanged effect-free subtrees
+				// instead of re-walking the whole body every round
+				$previousPassStorage = null;
+				$nodeScopeResolver->enterConvergenceSite();
+				try {
+					do {
+						$prevScope = $bodyScope;
+						$bodyScope = $bodyScope->mergeWith($iterateeScope);
+						if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+							// walking is deterministic in the entry scope - an unchanged entry
+							// reproduces the previous pass's exit, so the verification walk is skipped
+							$bodyScope = $prevScope;
+							break;
+						}
+						$prevEntryScope = $bodyScope;
+						$storage = ($previousPassStorage ?? $originalStorage)->duplicate();
+						$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+						$nodeScopeResolver->enterConvergencePass($storage);
+						$passGapped = false;
+						try {
+							$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
+							if ($bodyRecording instanceof RecordingNodeCallback) {
+								$nodeScopeResolver->setActiveConvergenceRecorder($bodyRecording);
+							}
+							$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
+						} finally {
+							$passGapped = $nodeScopeResolver->exitConvergencePass();
+						}
+						$previousPassStorage = $storage;
+						$bodyScope = $bodyScopeResult->getScope();
+						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						}
+						// a pass whose recording is complete is the candidate
+						// to replace the final walk when its entry turns out
+						// to be the fixpoint
+						if ($bodyRecording instanceof RecordingNodeCallback && !$passGapped) {
+							$replayBodyRecording = $bodyRecording;
+							$replayPassStorage = $storage;
+							$replayPassResult = $bodyScopeResult;
+							$replayEntryScope = $prevEntryScope;
+						} else {
+							$replayBodyRecording = null;
+							$replayPassStorage = null;
+							$replayPassResult = null;
+							$replayEntryScope = null;
+						}
+						if ($bodyScope->equals($prevScope)) {
+							break;
+						}
 
-					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope);
-					}
-					$count++;
-				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+						if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+							$bodyScope = $prevScope->generalizeWith($bodyScope);
+						}
+						$count++;
+					} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+				} finally {
+					$nodeScopeResolver->exitConvergenceSite();
+				}
 			}
 		}
 
@@ -717,28 +742,43 @@ final class ForeachHandler implements StmtHandler
 		if ($hasUnsealed) {
 			$loopScope = $endScope;
 			$count = 0;
-			do {
-				$prevLoopScope = $loopScope;
-				$iterStorage = $originalStorage->duplicate();
-				$iterBodyScope = $loopScope->mergeWith($endScope);
-				$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
-				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-				$loopScope = $iterBodyScopeResult->getScope();
-				foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$loopScope = $loopScope->mergeWith($continueExitPoint->getScope());
-				}
-				foreach ($iterBodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-					$endScope = $endScope->mergeWith($breakExitPoint->getScope());
-				}
-				$bodyScope = $bodyScope->mergeWith($loopScope);
-				if ($loopScope->equals($prevLoopScope)) {
-					break;
-				}
-				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$loopScope = $prevLoopScope->generalizeWith($loopScope);
-				}
-				$count++;
-			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			// each pass chains the previous pass's storage as its baseline, so
+			// the convergence-pass mode consumes unchanged effect-free subtrees
+			// instead of re-walking the whole body every round
+			$previousPassStorage = null;
+			$nodeScopeResolver->enterConvergenceSite();
+			try {
+				do {
+					$prevLoopScope = $loopScope;
+					$iterStorage = ($previousPassStorage ?? $originalStorage)->duplicate();
+					$iterBodyScope = $loopScope->mergeWith($endScope);
+					$nodeScopeResolver->enterConvergencePass($iterStorage);
+					try {
+						$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
+						$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+					} finally {
+						$nodeScopeResolver->exitConvergencePass();
+					}
+					$previousPassStorage = $iterStorage;
+					$loopScope = $iterBodyScopeResult->getScope();
+					foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$loopScope = $loopScope->mergeWith($continueExitPoint->getScope());
+					}
+					foreach ($iterBodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+						$endScope = $endScope->mergeWith($breakExitPoint->getScope());
+					}
+					$bodyScope = $bodyScope->mergeWith($loopScope);
+					if ($loopScope->equals($prevLoopScope)) {
+						break;
+					}
+					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+						$loopScope = $prevLoopScope->generalizeWith($loopScope);
+					}
+					$count++;
+				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			} finally {
+				$nodeScopeResolver->exitConvergenceSite();
+			}
 
 			$endScope = $endScope->mergeWith($loopScope);
 		}

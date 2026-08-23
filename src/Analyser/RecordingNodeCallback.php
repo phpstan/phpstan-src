@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\ShouldNotHappenException;
+use function count;
 
 /**
  * Records every (node, scope) emission of a convergence pass in order. When
@@ -26,6 +27,25 @@ final class RecordingNodeCallback
 	public function __invoke(Node $node, Scope $scope): void
 	{
 		$this->pairs[] = [$node, $scope];
+	}
+
+	public function count(): int
+	{
+		return count($this->pairs);
+	}
+
+	/**
+	 * Splices another recording's [$start, $end) segment onto this one - a
+	 * convergence pass consuming a subtree copies the subtree's emissions from
+	 * the pass that last walked it, so the consuming pass's recording stays
+	 * complete. Recordings are append-only, so a tagged segment stays valid
+	 * for the lifetime of its recording.
+	 */
+	public function copyRange(self $source, int $start, int $end): void
+	{
+		for ($i = $start; $i < $end; $i++) {
+			$this->pairs[] = $source->pairs[$i];
+		}
 	}
 
 	/**

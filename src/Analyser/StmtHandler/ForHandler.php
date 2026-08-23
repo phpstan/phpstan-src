@@ -161,43 +161,58 @@ final class ForHandler implements StmtHandler
 		if ($context->isTopLevel()) {
 			$count = 0;
 			$prevEntryScope = null;
-			do {
-				$prevScope = $bodyScope;
-				$storage = $originalStorage->duplicate();
-				$bodyScope = $bodyScope->mergeWith($initScope);
-				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
-					// walking is deterministic in the entry scope - an unchanged entry
-					// reproduces the previous pass's exit, so the verification walk is skipped
-					$bodyScope = $prevScope;
-					break;
-				}
-				$prevEntryScope = $bodyScope;
-				if ($lastCondExpr !== null) {
-					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
-				}
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
+			// each pass chains the previous pass's storage as its baseline, so
+			// the convergence-pass mode consumes unchanged effect-free subtrees
+			// instead of re-walking the whole body every round
+			$previousPassStorage = null;
+			$nodeScopeResolver->enterConvergenceSite();
+			try {
+				do {
+					$prevScope = $bodyScope;
+					$storage = ($previousPassStorage ?? $originalStorage)->duplicate();
+					$bodyScope = $bodyScope->mergeWith($initScope);
+					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+						// walking is deterministic in the entry scope - an unchanged entry
+						// reproduces the previous pass's exit, so the verification walk is skipped
+						$bodyScope = $prevScope;
+						break;
+					}
+					$prevEntryScope = $bodyScope;
+					$nodeScopeResolver->enterConvergencePass($storage);
+					try {
+						if ($lastCondExpr !== null) {
+							$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+						}
+						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+						$bodyScope = $bodyScopeResult->getScope();
+						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						}
 
-				foreach ($stmt->loop as $loopExpr) {
-					$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
-					$bodyScope = $exprResult->getScope();
-					$hasYield = $hasYield || $exprResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
-				}
+						foreach ($stmt->loop as $loopExpr) {
+							$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
+							$bodyScope = $exprResult->getScope();
+							$hasYield = $hasYield || $exprResult->hasYield();
+							$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
+							$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
+						}
+					} finally {
+						$nodeScopeResolver->exitConvergencePass();
+					}
+					$previousPassStorage = $storage;
 
-				if ($bodyScope->equals($prevScope)) {
-					break;
-				}
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
 
-				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
-				}
-				$count++;
-			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			} finally {
+				$nodeScopeResolver->exitConvergenceSite();
+			}
 		}
 
 		$storage = $originalStorage;

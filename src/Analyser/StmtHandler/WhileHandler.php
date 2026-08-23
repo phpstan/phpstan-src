@@ -66,46 +66,77 @@ final class WhileHandler implements StmtHandler
 		$replayBodyRecording = null;
 		$replayPassStorage = null;
 		$replayPassResult = null;
+		$replayEntryScope = null;
 		$prevEntryScope = null;
 		if ($context->isTopLevel()) {
 			$count = 0;
 			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
-			do {
-				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($scope);
-				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
-					// walking is deterministic in the entry scope - an unchanged entry
-					// reproduces the previous pass's exit, so the verification walk is skipped
-					$bodyScope = $prevScope;
-					break;
-				}
-				$prevEntryScope = $bodyScope;
-				$storage = $originalStorage->duplicate();
-				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep())->getTruthyScope();
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				// the candidate to replace the final walk when this pass's
-				// entry turns out to be the fixpoint
-				if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback) {
-					$replayCondRecording = $condRecording;
-					$replayBodyRecording = $bodyRecording;
-					$replayPassStorage = $storage;
-					$replayPassResult = $bodyScopeResult;
-				}
-				if ($bodyScope->equals($prevScope)) {
-					break;
-				}
+			// each pass chains the previous pass's storage as its baseline, so
+			// the convergence-pass mode consumes unchanged effect-free subtrees
+			// instead of re-walking the whole body every round
+			$previousPassStorage = null;
+			$nodeScopeResolver->enterConvergenceSite();
+			try {
+				do {
+					$prevScope = $bodyScope;
+					$bodyScope = $bodyScope->mergeWith($scope);
+					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+						// walking is deterministic in the entry scope - an unchanged entry
+						// reproduces the previous pass's exit, so the verification walk is skipped
+						$bodyScope = $prevScope;
+						break;
+					}
+					$prevEntryScope = $bodyScope;
+					$storage = ($previousPassStorage ?? $originalStorage)->duplicate();
+					$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+					$nodeScopeResolver->enterConvergencePass($storage);
+					$passGapped = false;
+					try {
+						if ($condRecording instanceof RecordingNodeCallback) {
+							$nodeScopeResolver->setActiveConvergenceRecorder($condRecording);
+						}
+						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep())->getTruthyScope();
+						if ($bodyRecording instanceof RecordingNodeCallback) {
+							$nodeScopeResolver->setActiveConvergenceRecorder($bodyRecording);
+						}
+						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
+					} finally {
+						$passGapped = $nodeScopeResolver->exitConvergencePass();
+					}
+					$previousPassStorage = $storage;
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+					// a pass whose recording is complete is the candidate to
+					// replace the final walk when its entry turns out to be
+					// the fixpoint
+					if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback && !$passGapped) {
+						$replayCondRecording = $condRecording;
+						$replayBodyRecording = $bodyRecording;
+						$replayPassStorage = $storage;
+						$replayPassResult = $bodyScopeResult;
+						$replayEntryScope = $prevEntryScope;
+					} else {
+						$replayCondRecording = null;
+						$replayBodyRecording = null;
+						$replayPassStorage = null;
+						$replayPassResult = null;
+						$replayEntryScope = null;
+					}
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
 
-				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
-				}
-				$count++;
-			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			} finally {
+				$nodeScopeResolver->exitConvergenceSite();
+			}
 		}
 
 		$bodyScope = $bodyScope->mergeWith($scope);
@@ -114,7 +145,7 @@ final class WhileHandler implements StmtHandler
 		if (
 			$replayCondRecording !== null && $replayBodyRecording !== null
 			&& $replayPassStorage !== null && $replayPassResult !== null
-			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
+			&& $replayEntryScope !== null && $bodyScope->equals($replayEntryScope)
 		) {
 			// the final walk would repeat the recorded fixpoint pass exactly
 			// (same entry scope, deterministic walk) - adopt the pass's results

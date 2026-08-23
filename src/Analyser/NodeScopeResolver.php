@@ -102,6 +102,7 @@ use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
+use function array_pop;
 use function array_slice;
 use function array_values;
 use function count;
@@ -110,6 +111,7 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function max;
+use function spl_object_id;
 use function usort;
 
 #[AutowiredService]
@@ -123,6 +125,54 @@ class NodeScopeResolver
 	private array $analysedFiles = [];
 
 	private ?ExpressionResultStorageStack $expressionResultStorageStack = null;
+
+	/**
+	 * Per convergence site (a loop's fixpoint iteration, a by-ref closure
+	 * convergence, a backward-goto replay), the full ExpressionResult of every
+	 * expression its passes walked, keyed by spl_object_id of the Expr. A
+	 * later pass consumes an entry instead of re-walking the subtree when the
+	 * result is effect-free and everything it reads is unchanged. Frames pop
+	 * when their site's convergence loop finishes, releasing the pinned
+	 * results; lookups search innermost-out so a nested site (a closure
+	 * converging inside a loop pass) still consumes the enclosing pass's
+	 * entries.
+	 *
+	 * @var array<int, array<int, ExpressionResult>>
+	 */
+	private array $convergenceSiteResults = [];
+
+	/**
+	 * Whether each convergence pass on the stack (innermost last) consumed a
+	 * subtree whose recorded emissions could not be preserved - such a pass
+	 * has an incomplete recording and cannot replace the final walk.
+	 *
+	 * @var array<int, bool>
+	 */
+	private array $convergencePassGaps = [];
+
+	/**
+	 * The active recording of each convergence pass on the stack (null for a
+	 * pass that does not record, e.g. a non-replayable body). Tracked here and
+	 * not derived from the walk's node callback: wrappers (a closure's
+	 * gathering callback) hide the recorder underneath while emissions still
+	 * reach it.
+	 *
+	 * @var array<int, RecordingNodeCallback|null>
+	 */
+	private array $convergencePassRecorders = [];
+
+	/**
+	 * The storage of each convergence pass on the stack. Consumption, segment
+	 * tagging and frame stores apply only to walks carrying the pass's own
+	 * storage: the old-world pricing walks that resolveType() starts for
+	 * short-circuit operators re-enter processExprNode() with a fresh
+	 * throwaway storage - they emit nowhere, so they may consume stored
+	 * results but must not splice segments, store results, or tag brackets
+	 * (a mispriced splice duplicated emissions in the pass recording).
+	 *
+	 * @var array<int, ExpressionResultStorage>
+	 */
+	private array $convergencePassStorages = [];
 
 	/**
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
@@ -231,6 +281,32 @@ class NodeScopeResolver
 			$stmts[] = $node;
 		}
 
+		$convergenceState = $this->suspendConvergenceState();
+		try {
+			$this->processNodesInternal($nodes, $stmts, $stmtToNodeIndex, $scope, $expressionResultStorage, $nodeCallback, $alreadyTerminated, $exitPoints);
+		} finally {
+			$this->restoreConvergenceState($convergenceState);
+		}
+	}
+
+	/**
+	 * @param Node[] $nodes
+	 * @param Node\Stmt[] $stmts
+	 * @param array<int, int> $stmtToNodeIndex
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param InternalStatementExitPoint[] $exitPoints
+	 */
+	private function processNodesInternal(
+		array $nodes,
+		array $stmts,
+		array $stmtToNodeIndex,
+		MutatingScope $scope,
+		ExpressionResultStorage $expressionResultStorage,
+		callable $nodeCallback,
+		bool $alreadyTerminated,
+		array $exitPoints,
+	): void
+	{
 		$dummyParent = new Node\Stmt\Nop();
 		foreach ($stmts as $si => $node) {
 			if ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\Label)) {
@@ -300,6 +376,16 @@ class NodeScopeResolver
 		// callbacks and the after-scope of every expression until the end of
 		// the file.
 		$storage->storeBeforeScope($expr, $expressionResult->getBeforeScope());
+		if ($this->convergencePassGaps === [] || $this->convergencePassStorages[count($this->convergencePassStorages) - 1] !== $storage) {
+			return;
+		}
+
+		// a convergence pass additionally keeps the full result in the
+		// innermost site frame, so a later pass can consume it instead of
+		// re-walking the subtree; the frame pops when the site finishes.
+		// Walks on a foreign storage (a resolveType() pricing walk) do not
+		// store - their results carry no usable emission segments.
+		$this->convergenceSiteResults[count($this->convergenceSiteResults) - 1][spl_object_id($expr)] = $expressionResult;
 	}
 
 	/**
@@ -319,52 +405,67 @@ class NodeScopeResolver
 		$bodyScope = $scope;
 		$count = 0;
 		$prevEntryScope = null;
-		do {
-			$prevScope = $bodyScope;
-			if ($mergeBodyScopeEachIteration) {
-				$bodyScope = $bodyScope->mergeWith($scope);
-			}
-			if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
-				// walking is deterministic in the entry scope - an unchanged entry
-				// reproduces the previous pass's exit, so the verification walk is
-				// skipped
-				$bodyScope = $prevScope;
-				break;
-			}
-			$prevEntryScope = $bodyScope;
-			$tempStorage = $storage->duplicate();
-			$bodyScopeResult = $this->processStmtNodesInternal(
-				$parentNode,
-				$bodyStmts,
-				$bodyScope,
-				$tempStorage,
-				new NoopNodeCallback(),
-				$context,
-			);
+		// each pass chains the previous pass's storage as its baseline, so
+		// the convergence-pass mode consumes unchanged effect-free subtrees
+		// instead of re-walking the whole body every round
+		$previousPassStorage = null;
+		$this->enterConvergenceSite();
+		try {
+			do {
+				$prevScope = $bodyScope;
+				if ($mergeBodyScopeEachIteration) {
+					$bodyScope = $bodyScope->mergeWith($scope);
+				}
+				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
+					// walking is deterministic in the entry scope - an unchanged entry
+					// reproduces the previous pass's exit, so the verification walk is
+					// skipped
+					$bodyScope = $prevScope;
+					break;
+				}
+				$prevEntryScope = $bodyScope;
+				$tempStorage = ($previousPassStorage ?? $storage)->duplicate();
+				$this->enterConvergencePass($tempStorage);
+				try {
+					$bodyScopeResult = $this->processStmtNodesInternal(
+						$parentNode,
+						$bodyStmts,
+						$bodyScope,
+						$tempStorage,
+						new NoopNodeCallback(),
+						$context,
+					);
+				} finally {
+					$this->exitConvergencePass();
+				}
+				$previousPassStorage = $tempStorage;
 
-			$gotoScope = null;
-			foreach ($bodyScopeResult->getExitPoints() as $ep) {
-				$epStmt = $ep->getStatement();
-				if (!($epStmt instanceof Goto_) || !$gotoNameMatcher($epStmt->name->toString())) {
-					continue;
+					$gotoScope = null;
+				foreach ($bodyScopeResult->getExitPoints() as $ep) {
+					$epStmt = $ep->getStatement();
+					if (!($epStmt instanceof Goto_) || !$gotoNameMatcher($epStmt->name->toString())) {
+						continue;
+					}
+
+					$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
 				}
 
-				$gotoScope = $gotoScope === null ? $ep->getScope() : $gotoScope->mergeWith($ep->getScope());
-			}
+				if ($gotoScope !== null) {
+					$bodyScope = $scope->mergeWith($gotoScope);
+				}
 
-			if ($gotoScope !== null) {
-				$bodyScope = $scope->mergeWith($gotoScope);
-			}
+				if ($bodyScope->equals($prevScope)) {
+					break;
+				}
 
-			if ($bodyScope->equals($prevScope)) {
-				break;
-			}
-
-			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-				$bodyScope = $prevScope->generalizeWith($bodyScope);
-			}
-			$count++;
-		} while ($count < self::LOOP_SCOPE_ITERATIONS);
+				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
+				}
+				$count++;
+			} while ($count < self::LOOP_SCOPE_ITERATIONS);
+		} finally {
+			$this->exitConvergenceSite();
+		}
 
 		return $bodyScope;
 	}
@@ -446,14 +547,19 @@ class NodeScopeResolver
 		// rule-facing ask paths
 		$scope = $scope->toWalkScope();
 		$storage = new ExpressionResultStorage();
-		return $this->processStmtNodesInternal(
-			$parentNode,
-			$stmts,
-			$scope,
-			$storage,
-			$nodeCallback,
-			$context,
-		)->toPublic();
+		$convergenceState = $this->suspendConvergenceState();
+		try {
+			return $this->processStmtNodesInternal(
+				$parentNode,
+				$stmts,
+				$scope,
+				$storage,
+				$nodeCallback,
+				$context,
+			)->toPublic();
+		} finally {
+			$this->restoreConvergenceState($convergenceState);
+		}
 	}
 
 	/**
@@ -815,6 +921,72 @@ class NodeScopeResolver
 		ExpressionContext $context,
 	): ExpressionResult
 	{
+		if ($this->convergencePassGaps !== []) {
+			// a convergence pass: the previous pass's result answers exactly
+			// when the walk had no scope effects and nothing this expression
+			// reads changed between the passes - the loop-carried parts of the
+			// body fail one of the two gates and re-walk. A walk on a foreign
+			// storage (a resolveType() pricing walk re-entering here) may
+			// consume too - it emits nowhere - but never splices, gaps, tags
+			// or stores.
+			$passIndex = count($this->convergencePassGaps) - 1;
+			$inPassWalk = $this->convergencePassStorages[$passIndex] === $storage;
+			$storedResult = $this->findConvergenceStoredResult($expr);
+			if (
+				$storedResult !== null
+				&& $storedResult->isEffectFree()
+				&& $storedResult->readStateMatches($scope, $scope->nativeTypesPromoted)
+			) {
+				$recorder = $inPassWalk ? $this->convergencePassRecorders[$passIndex] : null;
+				$segment = $storedResult->getRecordingSegment();
+				$consumed = $storedResult->getBeforeScope() === $scope ? $storedResult : $storedResult->atAskPosition($scope);
+				if ($recorder !== null && $segment !== null) {
+					// the consumption skips the subtree's emissions - splice its
+					// recorded segment from the pass that last walked it, so
+					// this pass's recording stays complete (the segment's scopes
+					// agree with the replay on everything the subtree reads)
+					$start = $recorder->count();
+					$recorder->copyRange($segment[0], $segment[1], $segment[2]);
+					$consumed->setRecordingSegment($recorder, $start, $recorder->count());
+				} elseif ($recorder !== null) {
+					// nothing to splice - the pass's recording is incomplete
+					// and cannot replace the final walk
+					$this->convergencePassGaps[$passIndex] = true;
+				}
+
+				return $consumed;
+			}
+
+			$recorder = $inPassWalk ? $this->convergencePassRecorders[$passIndex] : null;
+			if ($recorder !== null) {
+				// tag the subtree's emission segment in the pass recording, so
+				// a later pass consuming this result can splice the emissions
+				// it skips; the segment brackets the recorder's own growth, so
+				// emissions reaching it through wrappers are included and a
+				// nested walk emitting elsewhere tags an empty segment
+				$segmentStart = $recorder->count();
+				$result = $this->processExprNodeDispatch($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+				$result->setRecordingSegment($recorder, $segmentStart, $recorder->count());
+
+				return $result;
+			}
+		}
+
+		return $this->processExprNodeDispatch($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processExprNodeDispatch(
+		Node\Stmt $stmt,
+		Expr $expr,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		ExpressionContext $context,
+	): ExpressionResult
+	{
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
 			if ($expr instanceof FuncCall) {
 				$newExpr = new FunctionCallableNode($expr->name, $expr);
@@ -912,6 +1084,94 @@ class NodeScopeResolver
 		}
 
 		return [];
+	}
+
+	/**
+	 * Opens a convergence site: a frame collecting the full ExpressionResults
+	 * its passes walk. The caller wraps the whole fixpoint loop and closes the
+	 * site in a finally block via exitConvergenceSite().
+	 */
+	public function enterConvergenceSite(): void
+	{
+		$this->convergenceSiteResults[] = [];
+	}
+
+	public function exitConvergenceSite(): void
+	{
+		array_pop($this->convergenceSiteResults);
+	}
+
+	/**
+	 * Enters one convergence pass of the innermost site: expressions whose
+	 * stored result is effect-free (ExpressionResult::isEffectFree()) and
+	 * whose read state did not change since the pass that walked them are
+	 * consumed instead of re-walked - only the loop-carried parts of the body
+	 * re-walk. The caller restores in a finally block via
+	 * exitConvergencePass().
+	 */
+	public function enterConvergencePass(ExpressionResultStorage $passStorage): void
+	{
+		$this->convergencePassGaps[] = false;
+		$this->convergencePassRecorders[] = null;
+		$this->convergencePassStorages[] = $passStorage;
+	}
+
+	/** Sets the innermost pass's active recording (While switches between the cond and body recorders mid-pass). */
+	public function setActiveConvergenceRecorder(?RecordingNodeCallback $recorder): void
+	{
+		$this->convergencePassRecorders[count($this->convergencePassRecorders) - 1] = $recorder;
+	}
+
+	/** Returns whether the exited pass has a recording gap (a consumption whose emissions were lost). */
+	public function exitConvergencePass(): bool
+	{
+		array_pop($this->convergencePassRecorders);
+		array_pop($this->convergencePassStorages);
+		$gapped = array_pop($this->convergencePassGaps);
+		if ($gapped === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $gapped;
+	}
+
+	/**
+	 * A fresh walk an extension starts mid-analysis (processNodes() and
+	 * processStmtNodes() are @api) must not inherit the enclosing walk's
+	 * convergence state - site frames and pass modes describe the walk that
+	 * was interrupted, not the nested one.
+	 *
+	 * @return array{array<int, array<int, ExpressionResult>>, array<int, bool>, array<int, RecordingNodeCallback|null>, array<int, ExpressionResultStorage>}
+	 */
+	private function suspendConvergenceState(): array
+	{
+		$state = [$this->convergenceSiteResults, $this->convergencePassGaps, $this->convergencePassRecorders, $this->convergencePassStorages];
+		$this->convergenceSiteResults = [];
+		$this->convergencePassGaps = [];
+		$this->convergencePassRecorders = [];
+		$this->convergencePassStorages = [];
+
+		return $state;
+	}
+
+	/**
+	 * @param array{array<int, array<int, ExpressionResult>>, array<int, bool>, array<int, RecordingNodeCallback|null>, array<int, ExpressionResultStorage>} $state
+	 */
+	private function restoreConvergenceState(array $state): void
+	{
+		[$this->convergenceSiteResults, $this->convergencePassGaps, $this->convergencePassRecorders, $this->convergencePassStorages] = $state;
+	}
+
+	private function findConvergenceStoredResult(Expr $expr): ?ExpressionResult
+	{
+		$id = spl_object_id($expr);
+		for ($i = count($this->convergenceSiteResults) - 1; $i >= 0; $i--) {
+			if (isset($this->convergenceSiteResults[$i][$id])) {
+				return $this->convergenceSiteResults[$i][$id];
+			}
+		}
+
+		return null;
 	}
 
 	private const REPLAYABLE_BODY_ATTRIBUTE = 'convergenceReplayableBody';
@@ -1224,45 +1484,70 @@ class NodeScopeResolver
 		$replayPassResult = null;
 		$replayEntryScope = null;
 		$bodyIsReplayable = $this->isReplayableConvergenceBody($expr, $expr->stmts);
-		do {
-			$prevScope = $closureScope;
+		// each pass chains the previous pass's storage as its baseline, so
+		// the convergence-pass mode consumes unchanged effect-free subtrees
+		// instead of re-walking the whole body every round
+		$previousPassStorage = null;
+		$this->enterConvergenceSite();
+		try {
+			do {
+				$prevScope = $closureScope;
 
-			$storage = $originalStorage->duplicate();
-			$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-			// deep context, like the loop handlers' own convergence passes: inner
-			// loops walk single-pass here and only the final walk below (top-level)
-			// runs their full convergence - otherwise every closure-convergence
-			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep());
-			// the candidate to replace the final walk when this pass's entry
-			// turns out to be the fixpoint
-			if ($bodyRecording instanceof RecordingNodeCallback) {
-				$replayBodyRecording = $bodyRecording;
-				$replayPassStorage = $storage;
-				$replayPassResult = $intermediaryClosureScopeResult;
-				$replayEntryScope = $prevScope;
-			}
-			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
-			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
-				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
-			}
+				$storage = ($previousPassStorage ?? $originalStorage)->duplicate();
+				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$this->enterConvergencePass($storage);
+				$passGapped = false;
+				if ($bodyRecording instanceof RecordingNodeCallback) {
+					$this->setActiveConvergenceRecorder($bodyRecording);
+				}
+				try {
+					// deep context, like the loop handlers' own convergence passes: inner
+					// loops walk single-pass here and only the final walk below (top-level)
+					// runs their full convergence - otherwise every closure-convergence
+					// pass would re-converge every inner loop from scratch
+					$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep());
+				} finally {
+					$passGapped = $this->exitConvergencePass();
+				}
+				$previousPassStorage = $storage;
+				// a pass whose recording is complete is the candidate to
+				// replace the final walk when its entry turns out to be the
+				// fixpoint
+				if ($bodyRecording instanceof RecordingNodeCallback && !$passGapped) {
+					$replayBodyRecording = $bodyRecording;
+					$replayPassStorage = $storage;
+					$replayPassResult = $intermediaryClosureScopeResult;
+					$replayEntryScope = $prevScope;
+				} else {
+					$replayBodyRecording = null;
+					$replayPassStorage = null;
+					$replayPassResult = null;
+					$replayEntryScope = null;
+				}
+				$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
+				foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
+					$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
+				}
 
-			if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
-				$closureResultScope = $intermediaryClosureScope;
-				break;
-			}
+				if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
+					$closureResultScope = $intermediaryClosureScope;
+					break;
+				}
 
-			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
-			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
+				$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
+				$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
 
-			if ($closureScope->equals($prevScope)) {
-				break;
-			}
-			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-				$closureScope = $prevScope->generalizeWith($closureScope);
-			}
-			$count++;
-		} while ($count < self::LOOP_SCOPE_ITERATIONS);
+				if ($closureScope->equals($prevScope)) {
+					break;
+				}
+				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					$closureScope = $prevScope->generalizeWith($closureScope);
+				}
+				$count++;
+			} while ($count < self::LOOP_SCOPE_ITERATIONS);
+		} finally {
+			$this->exitConvergenceSite();
+		}
 
 		if ($closureResultScope === null) {
 			$closureResultScope = $closureScope;

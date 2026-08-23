@@ -58,6 +58,24 @@ public:
 		return zv::Val::copyOf(found);
 	}
 
+	void mergeResults(zval *other)
+	{
+		zv::ObjRef dst(self);
+		zv::ObjRef src(other);
+		zv::ArrRef dstExprs(dst.propAt(PT_ERS_PROP_EXPRS).raw());
+		zv::ArrRef dstScopes(dst.propAt(PT_ERS_PROP_SCOPES).raw());
+		zv::ArrRef srcScopes(src.propAt(PT_ERS_PROP_SCOPES).raw());
+		zend_ulong id;
+		zval *exprZv;
+		ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL_P(src.propAt(PT_ERS_PROP_EXPRS).raw()), id, exprZv) {
+			dstExprs.setIndex(id, zv::Ref(exprZv));
+			zv::Ref scopeRef = srcScopes.findIndex(id);
+			if (scopeRef.raw() != NULL) {
+				dstScopes.setIndex(id, scopeRef);
+			}
+		} ZEND_HASH_FOREACH_END();
+	}
+
 private:
 	zval *self;
 };
@@ -102,6 +120,14 @@ void pt_register_expression_result_storage()
 			Z_PARAM_OBJECT(expr)
 		ZEND_PARSE_PARAMETERS_END();
 		ExpressionResultStorage(ZEND_THIS).findBeforeScope(expr).intoReturnValue(return_value);
+	});
+
+	cls.method("mergeResults", reg::Public, 1, { reg::any("other") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *other;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(other)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).mergeResults(other);
 	});
 
 	cls.register_();

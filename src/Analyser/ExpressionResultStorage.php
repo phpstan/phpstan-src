@@ -41,4 +41,17 @@ final class ExpressionResultStorage
 		return $this->scopesById[spl_object_id($expr)] ?? null;
 	}
 
+	/**
+	 * Adopts every before-scope the other storage stored - a finished
+	 * convergence pass's stores answer for the final walk its replay
+	 * replaces.
+	 */
+	public function mergeResults(self $other): void
+	{
+		foreach ($other->exprsById as $id => $expr) {
+			$this->exprsById[$id] = $expr;
+			$this->scopesById[$id] = $other->scopesById[$id];
+		}
+	}
+
 }

@@ -327,6 +327,12 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	$storage->storeBeforeScope($exprB, $scopeB);
 	check($duplicate->findBeforeScope($exprB) === $scopeA, "ERS $label: original stores do not leak into the duplicate");
 
+	$exprC = new \PhpParser\Node\Expr\Variable('c');
+	$duplicate->storeBeforeScope($exprC, $scopeB);
+	$storage->mergeResults($duplicate);
+	check($storage->findBeforeScope($exprB) === $scopeA, "ERS $label: mergeResults overwrites with the other storage's entry");
+	check($storage->findBeforeScope($exprC) === $scopeB, "ERS $label: mergeResults adopts new entries");
+	check($duplicate->findBeforeScope($exprA) === $scopeB, "ERS $label: mergeResults leaves the source untouched");
 }
 
 // ---- ScopeOps::mergeVariableHolders differingKeys ----

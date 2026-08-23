@@ -9,6 +9,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\PropertyHooksProcessor;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
@@ -26,6 +27,7 @@ final class PropertyHandler implements StmtHandler
 {
 
 	public function __construct(
+		private PhpDocsResolver $phpDocsResolver,
 		private PropertyHooksProcessor $propertyHooksProcessor,
 	)
 	{
@@ -49,7 +51,7 @@ final class PropertyHandler implements StmtHandler
 
 		$nativePropertyType = $stmt->type !== null ? ParserNodeTypeToPHPStanType::resolve($stmt->type, $scope->getClassReflection()) : null;
 
-		[,,,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags, $isAllowedPrivateMutation] = $nodeScopeResolver->getPhpDocs($scope, $stmt);
+		[,,,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags, $isAllowedPrivateMutation] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 		$phpDocType = null;
 		if (isset($varTags[0]) && count($varTags) === 1) {
 			$phpDocType = $varTags[0]->getType();

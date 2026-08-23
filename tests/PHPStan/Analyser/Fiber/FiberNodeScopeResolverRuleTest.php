@@ -8,7 +8,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
-use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -124,7 +123,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			self::getContainer()->getByType(FileTypeMapper::class),
-			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),

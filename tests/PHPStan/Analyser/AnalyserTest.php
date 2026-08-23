@@ -16,7 +16,6 @@ use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
-use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -811,7 +810,6 @@ class AnalyserTest extends PHPStanTestCase
 		$container = self::getContainer();
 		$typeSpecifier = $container->getService('typeSpecifier');
 		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,
@@ -821,7 +819,6 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$fileTypeMapper,
-			$phpDocInheritanceResolver,
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),

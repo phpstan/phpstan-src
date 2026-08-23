@@ -14,6 +14,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\PropertyHooksProcessor;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
@@ -42,6 +43,7 @@ final class ClassMethodHandler implements StmtHandler
 {
 
 	public function __construct(
+		private PhpDocsResolver $phpDocsResolver,
 		private PropertyHooksProcessor $propertyHooksProcessor,
 	)
 	{
@@ -62,7 +64,7 @@ final class ClassMethodHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $nodeScopeResolver->getPhpDocs($scope, $stmt);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
 		foreach ($stmt->params as $param) {
 			$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);

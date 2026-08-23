@@ -12,6 +12,7 @@ use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -48,8 +49,12 @@ final class DoWhileHandler implements StmtHandler
 		$impurePoints = [];
 		$originalStorage = $storage;
 
+		$replayBodyRecording = null;
+		$replayPassStorage = null;
+		$replayPassResult = null;
+		$prevEntryScope = null;
 		if ($context->isTopLevel()) {
-			$prevEntryScope = null;
+			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -62,7 +67,8 @@ final class DoWhileHandler implements StmtHandler
 				}
 				$prevEntryScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -71,6 +77,13 @@ final class DoWhileHandler implements StmtHandler
 				$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
 				foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 					$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+				}
+				// the candidate to replace the final body walk when this pass's
+				// entry turns out to be the fixpoint
+				if ($bodyRecording instanceof RecordingNodeCallback) {
+					$replayBodyRecording = $bodyRecording;
+					$replayPassStorage = $storage;
+					$replayPassResult = $bodyScopeResult;
 				}
 				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 				if ($bodyScope->equals($prevScope)) {
@@ -87,7 +100,20 @@ final class DoWhileHandler implements StmtHandler
 		}
 
 		$storage = $originalStorage;
-		$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		if (
+			$replayBodyRecording !== null && $replayPassStorage !== null && $replayPassResult !== null
+			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
+		) {
+			// the final body walk would repeat the recorded fixpoint pass exactly
+			// (same entry scope, deterministic walk) - adopt the pass's results
+			// and replay its emissions through the real callback instead; the
+			// condition walks below stay real
+			$originalStorage->mergeResults($replayPassStorage);
+			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
+			$bodyScopeResult = $replayPassResult;
+		} else {
+			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		}
 		$bodyScope = $bodyScopeResult->getScope();
 		foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 			$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());

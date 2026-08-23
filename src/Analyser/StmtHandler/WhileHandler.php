@@ -12,6 +12,7 @@ use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -61,9 +62,14 @@ final class WhileHandler implements StmtHandler
 		}
 		$bodyScope = $condResult->getTruthyScope();
 
+		$replayCondRecording = null;
+		$replayBodyRecording = null;
+		$replayPassStorage = null;
+		$replayPassResult = null;
+		$prevEntryScope = null;
 		if ($context->isTopLevel()) {
 			$count = 0;
-			$prevEntryScope = null;
+			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -75,11 +81,21 @@ final class WhileHandler implements StmtHandler
 				}
 				$prevEntryScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
-				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep())->getTruthyScope();
+				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+				}
+				// the candidate to replace the final walk when this pass's
+				// entry turns out to be the fixpoint
+				if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback) {
+					$replayCondRecording = $condRecording;
+					$replayBodyRecording = $bodyRecording;
+					$replayPassStorage = $storage;
+					$replayPassResult = $bodyScopeResult;
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
@@ -95,8 +111,22 @@ final class WhileHandler implements StmtHandler
 		$bodyScope = $bodyScope->mergeWith($scope);
 		$bodyScopeMaybeRan = $bodyScope;
 		$storage = $originalStorage;
-		$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
-		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		if (
+			$replayCondRecording !== null && $replayBodyRecording !== null
+			&& $replayPassStorage !== null && $replayPassResult !== null
+			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
+		) {
+			// the final walk would repeat the recorded fixpoint pass exactly
+			// (same entry scope, deterministic walk) - adopt the pass's results
+			// and replay its emissions through the real callback instead
+			$originalStorage->mergeResults($replayPassStorage);
+			$nodeScopeResolver->replayRecording($replayCondRecording, $nodeCallback, $originalStorage);
+			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
+			$finalScopeResult = $replayPassResult;
+		} else {
+			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		}
 		$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
 
 		$alwaysIterates = false;

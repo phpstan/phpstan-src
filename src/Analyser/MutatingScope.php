@@ -159,7 +159,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @var array<string, static> */
 	private array $falseyScopes = [];
 
-	private ?self $fiberScope = null;
+	private ?self $nodeCallbackScope = null;
 
 	/** @var non-empty-string|null */
 	private ?string $namespace;
@@ -220,13 +220,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$this->namespace = $namespace;
 	}
 
-	public function toFiberScope(): self
+	public function toNodeCallbackScope(): self
 	{
-		if ($this->fiberScope !== null) {
-			return $this->fiberScope;
+		if ($this->nodeCallbackScope !== null) {
+			return $this->nodeCallbackScope;
 		}
 
-		return $this->fiberScope = $this->scopeFactory->toFiberFactory()->create(
+		return $this->nodeCallbackScope = $this->scopeFactory->toNodeCallbackScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -3193,7 +3193,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$this->resolvedTypes = [];
 		$this->truthyScopes = [];
 		$this->falseyScopes = [];
-		$this->fiberScope = null;
+		$this->nodeCallbackScope = null;
 		$this->scopeOutOfFirstLevelStatement = null;
 		$this->scopeWithPromotedNativeTypes = null;
 

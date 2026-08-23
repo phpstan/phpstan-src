@@ -288,7 +288,7 @@ class NodeScopeResolver
 
 	public function storeExpressionResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
 	{
-		// The storage only ever answers type questions from FiberScope, which
+		// The storage only ever answers type questions from NodeCallbackScope, which
 		// resolves them from the before-scope. Storing just the before-scope
 		// keeps the storage from pinning throw points, impure points, scope
 		// callbacks and the after-scope of every expression until the end of
@@ -434,7 +434,7 @@ class NodeScopeResolver
 		StatementContext $context,
 	): StatementResult
 	{
-		// a rule may pass the scope it was handed - the rule-facing FiberScope -
+		// a rule may pass the scope it was handed - the rule-facing NodeCallbackScope -
 		// as the walk's initial scope; the walk must anchor its results to the
 		// state-identical MutatingScope or their consumption re-enters the
 		// rule-facing ask paths
@@ -938,7 +938,7 @@ class NodeScopeResolver
 		// Engine-feeding gatherers must observe the node at the emission
 		// position - their arrays are read as soon as the enclosing body walk
 		// returns. Gatherers are engine code and never ask about types -
-		// handing them the raw scope skips a FiberScope construction per
+		// handing them the raw scope skips a NodeCallbackScope construction per
 		// emission; the scopes they capture (return statements, impure points)
 		// answer later asks through the storage hub like any MutatingScope.
 		while ($nodeCallback instanceof GatheringNodeCallback) {
@@ -951,13 +951,13 @@ class NodeScopeResolver
 		}
 
 		// post-order emission means the node's own result and every subnode
-		// result are already stored when the callback fires - FiberScope
+		// result are already stored when the callback fires - NodeCallbackScope
 		// answers every ask synchronously from the storage; the emitting
 		// walk's storage is bound for the duration of the callback
 		$stack = $this->getExpressionResultStorageStack();
 		$stack->push($storage);
 		try {
-			$nodeCallback($node, $scope->toFiberScope());
+			$nodeCallback($node, $scope->toNodeCallbackScope());
 		} finally {
 			$stack->pop();
 		}

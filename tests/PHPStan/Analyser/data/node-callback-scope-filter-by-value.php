@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace FiberScopeFilterByValue;
+namespace NodeCallbackScopeFilterByValue;
 
 function probeFilter(bool $condition, ?int $subject): void
 {

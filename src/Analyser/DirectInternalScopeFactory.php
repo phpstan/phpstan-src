@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
-use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -39,7 +38,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private int|array|null $configPhpVersion,
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
-		private bool $fiber = false,
+		private bool $createsNodeCallbackScopes = false,
 	)
 	{
 	}
@@ -64,8 +63,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
-		if ($this->fiber) {
-			$className = FiberScope::class;
+		if ($this->createsNodeCallbackScopes) {
+			$className = NodeCallbackScope::class;
 		}
 
 		return new $className(
@@ -102,7 +101,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		);
 	}
 
-	public function toFiberFactory(): InternalScopeFactory
+	public function toNodeCallbackScopeFactory(): InternalScopeFactory
 	{
 		return new self(
 			$this->container,
@@ -122,7 +121,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		);
 	}
 
-	public function toMutatingFactory(): InternalScopeFactory
+	public function toWalkScopeFactory(): InternalScopeFactory
 	{
 		return new self(
 			$this->container,

@@ -1,11 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser\Fiber;
+namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\ExpressionResultStorageStack;
-use PHPStan\Analyser\MutatingScope;
-use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -14,7 +11,7 @@ use PHPStan\Type\Type;
 use function array_pop;
 use function count;
 
-final class FiberScope extends MutatingScope
+final class NodeCallbackScope extends MutatingScope
 {
 
 	/** @var Expr[] */
@@ -48,7 +45,7 @@ final class FiberScope extends MutatingScope
 		return null;
 	}
 
-	public function toFiberScope(): self
+	public function toNodeCallbackScope(): self
 	{
 		return $this;
 	}
@@ -59,7 +56,7 @@ final class FiberScope extends MutatingScope
 			return $this->mutatingScope;
 		}
 
-		return $this->mutatingScope = $this->scopeFactory->toMutatingFactory()->create(
+		return $this->mutatingScope = $this->scopeFactory->toWalkScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -181,7 +178,7 @@ final class FiberScope extends MutatingScope
 
 	private function preprocessScope(MutatingScope $scope): Scope
 	{
-		// a nested walk a rule started from its FiberScope may have anchored
+		// a nested walk a rule started from its NodeCallbackScope may have anchored
 		// results to fiber scopes - re-entering this class's ask paths from
 		// here would derive scopes without end
 		$scope = $scope->toMutatingScope();
@@ -232,7 +229,7 @@ final class FiberScope extends MutatingScope
 			return null;
 		}
 
-		return $parent->toFiberScope();
+		return $parent->toNodeCallbackScope();
 	}
 
 }

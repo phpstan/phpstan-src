@@ -19,7 +19,7 @@ use function sprintf;
  *
  * @implements Rule<FuncCall>
  */
-class FiberScopeFilterByValueRule implements Rule
+class NodeCallbackScopeFilterByValueRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -53,7 +53,7 @@ class FiberScopeFilterByValueRule implements Rule
 					'truthy: %s, falsey: %s',
 					$truthyType->describe(VerbosityLevel::precise()),
 					$falseyType->describe(VerbosityLevel::precise()),
-				))->identifier('tests.fiberScopeFilter')->build(),
+				))->identifier('tests.nodeCallbackScopeFilter')->build(),
 			];
 		}
 
@@ -70,7 +70,7 @@ class FiberScopeFilterByValueRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'chained: %s',
 					$chainedType->describe(VerbosityLevel::precise()),
-				))->identifier('tests.fiberScopeFilter')->build(),
+				))->identifier('tests.nodeCallbackScopeFilter')->build(),
 			];
 		}
 

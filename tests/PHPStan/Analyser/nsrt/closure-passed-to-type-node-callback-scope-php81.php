@@ -1,17 +1,16 @@
 <?php // lint >= 8.1
 
-namespace ClosurePassedToTypeFiberScope;
+namespace ClosurePassedToTypeNodeCallbackScope;
 
 use Closure;
 use function PHPStan\Testing\assertType;
 
 /**
- * Regression tests for closure parameter type inference in FiberScope.
+ * Regression tests for closure parameter type inference in NodeCallbackScope.
  * @see https://github.com/phpstan/phpstan/issues/13993
  *
  * These tests verify that closure parameter types are properly inferred from
- * expected callable types when using FiberScope. Since FiberScope requires
- * PHP 8.1+ (Fibers), this file requires PHP 8.1+.
+ * expected callable types when using NodeCallbackScope.
  */
 
 // ============================================================================
@@ -45,9 +44,9 @@ class Loader
  */
 $loader = new Loader(
 	loader: function (Context $context, array $items): iterable {
-		assertType('non-empty-array<array{ClosurePassedToTypeFiberScope\DateRange, list<int>}>', $items);
+		assertType('non-empty-array<array{ClosurePassedToTypeNodeCallbackScope\DateRange, list<int>}>', $items);
 		foreach ($items as [$dateRange, $ids]) {
-			assertType('ClosurePassedToTypeFiberScope\DateRange', $dateRange);
+			assertType('ClosurePassedToTypeNodeCallbackScope\DateRange', $dateRange);
 			assertType('list<int>', $ids);
 			foreach ($ids as $id) {
 				assertType('int', $id);
@@ -122,10 +121,10 @@ class Subject
  */
 $decision = new Decision([new Vote(granted: true, subject: new Subject())]);
 $result = $decision->collect(static function (Vote $vote): iterable {
-	assertType('ClosurePassedToTypeFiberScope\Vote<ClosurePassedToTypeFiberScope\Subject>', $vote);
-	assertType('ClosurePassedToTypeFiberScope\Subject', $vote->subject);
+	assertType('ClosurePassedToTypeNodeCallbackScope\Vote<ClosurePassedToTypeNodeCallbackScope\Subject>', $vote);
+	assertType('ClosurePassedToTypeNodeCallbackScope\Subject', $vote->subject);
 	if ($vote->granted) {
 		yield $vote->subject->id() => $vote->subject;
 	}
 });
-assertType('array<int, ClosurePassedToTypeFiberScope\Subject>', $result);
+assertType('array<int, ClosurePassedToTypeNodeCallbackScope\Subject>', $result);

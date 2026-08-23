@@ -16,7 +16,6 @@ use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -814,7 +813,6 @@ class AnalyserTest extends PHPStanTestCase
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,
 			$reflectionProvider,
-			$container->getByType(InitializerExprTypeResolver::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),

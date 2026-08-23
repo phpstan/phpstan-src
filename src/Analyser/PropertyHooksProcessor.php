@@ -27,6 +27,7 @@ final class PropertyHooksProcessor
 {
 
 	public function __construct(
+		private DeprecatedAttributeResolver $deprecatedAttributeResolver,
 		private PhpDocsResolver $phpDocsResolver,
 	)
 	{
@@ -64,7 +65,7 @@ final class PropertyHooksProcessor
 				$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
 			}
 
-			[$isDeprecated, $deprecatedDescription] = $nodeScopeResolver->getDeprecatedAttribute($scope, $hook);
+			[$isDeprecated, $deprecatedDescription] = $this->deprecatedAttributeResolver->getDeprecatedAttribute($scope, $hook);
 
 			$hookScope = $scope->enterPropertyHook(
 				$hook,

@@ -267,6 +267,8 @@ class NodeScopeResolver
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
+		#[AutowiredParameter(ref: '%featureToggles.narrowForeachBodyNonEmpty%')]
+		private readonly bool $narrowForeachBodyNonEmpty,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithBlock,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
@@ -1558,7 +1560,13 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$unrolledEndScope = null;
 			$unrolledTotalKeys = null;
-			$iterateeScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
+			// The loop body is only entered when the iteratee is non-empty. Under
+			// narrowForeachBodyNonEmpty we narrow it there (list to non-empty-list,
+			// array to non-empty-array) even with polluteScopeWithAlwaysIterableForeach
+			// off; with the toggle off the body scope is unchanged.
+			$iterateeScope = $this->narrowForeachBodyNonEmpty || $this->polluteScopeWithAlwaysIterableForeach
+				? $scope->filterByTruthyValue($arrayComparisonExpr)
+				: $scope;
 			if ($context->isTopLevel()) {
 				$storage = $originalStorage->duplicate();
 

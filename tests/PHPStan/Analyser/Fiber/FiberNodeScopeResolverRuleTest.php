@@ -145,6 +145,7 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
+			self::getContainer()->getParameter('featureToggles')['narrowForeachBodyNonEmpty'],
 			self::getContainer()->getParameter('polluteScopeWithBlock'),
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),

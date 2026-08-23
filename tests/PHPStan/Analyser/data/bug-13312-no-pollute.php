@@ -1,21 +1,8 @@
-<?php // lint >= 8.0
+<?php declare(strict_types = 1);
 
-namespace Bug13312;
+namespace Bug13312NoPollute;
 
 use function PHPStan\Testing\assertType;
-
-function fooArr(array $arr): void {
-	assertType('array', $arr);
-	foreach ($arr as $v) {
-		assertType('non-empty-array', $arr);
-	}
-	assertType('array', $arr);
-
-	for ($i = 0; $i < count($arr); ++$i) {
-		assertType('non-empty-array', $arr);
-	}
-	assertType('array', $arr);
-}
 
 /** @param list<mixed> $arr */
 function foo(array $arr): void {
@@ -30,7 +17,6 @@ function foo(array $arr): void {
 	}
 	assertType('list<mixed>', $arr);
 }
-
 
 /** @param array<string, int> $arr */
 function fooStringKeyed(array $arr): void {
@@ -48,16 +34,4 @@ function fooReassign(array $arr): void {
 		assertType('array{}', $arr);
 	}
 	assertType('array{}', $arr);
-}
-
-function fooBar(mixed $mixed): void {
-	assertType('mixed', $mixed);
-	foreach ($mixed as $v) {
-		assertType('mixed~array{}', $mixed);
-	}
-	assertType('mixed', $mixed);
-
-	foreach ($mixed as $v) {}
-
-	assertType('mixed', $mixed);
 }

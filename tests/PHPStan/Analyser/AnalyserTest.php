@@ -840,6 +840,7 @@ class AnalyserTest extends PHPStanTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			false,
 			true,
+			false,
 			true,
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),

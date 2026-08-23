@@ -61,8 +61,6 @@ use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\InitializerExprContext;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -136,7 +134,6 @@ class NodeScopeResolver
 	public function __construct(
 		private readonly Container $container,
 		private readonly ReflectionProvider $reflectionProvider,
-		private readonly InitializerExprTypeResolver $initializerExprTypeResolver,
 		#[AutowiredExtensions(of: FunctionParameterOutTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterOutTypeExtensions,
 		#[AutowiredExtensions(of: MethodParameterOutTypeExtension::class)]
@@ -711,57 +708,6 @@ class NodeScopeResolver
 
 		// statements with no analysis of their own (e.g. HaltCompiler)
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: $overridingThrowPoints ?? [], impurePoints: []);
-	}
-
-	/**
-	 * @return array{bool, string|null}
-	 */
-	public function getDeprecatedAttribute(Scope $scope, Node\Stmt\Function_|Node\Stmt\ClassMethod|Node\PropertyHook $stmt): array
-	{
-		$initializerExprContext = InitializerExprContext::fromStubParameter(
-			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-			$scope->getFile(),
-			$stmt,
-		);
-		$isDeprecated = false;
-		$deprecatedDescription = null;
-		$deprecatedDescriptionType = null;
-		foreach ($stmt->attrGroups as $attrGroup) {
-			foreach ($attrGroup->attrs as $attr) {
-				if ($attr->name->toString() !== 'Deprecated') {
-					continue;
-				}
-				$isDeprecated = true;
-				$arguments = $attr->args;
-				foreach ($arguments as $i => $arg) {
-					$argName = $arg->name;
-					if ($argName === null) {
-						if ($i !== 0) {
-							continue;
-						}
-
-						$deprecatedDescriptionType = $this->initializerExprTypeResolver->getType($arg->value, $initializerExprContext);
-						break;
-					}
-
-					if ($argName->toString() !== 'message') {
-						continue;
-					}
-
-					$deprecatedDescriptionType = $this->initializerExprTypeResolver->getType($arg->value, $initializerExprContext);
-					break;
-				}
-			}
-		}
-
-		if ($deprecatedDescriptionType !== null) {
-			$constantStrings = $deprecatedDescriptionType->getConstantStrings();
-			if (count($constantStrings) === 1) {
-				$deprecatedDescription = $constantStrings[0]->getValue();
-			}
-		}
-
-		return [$isDeprecated, $deprecatedDescription];
 	}
 
 	/**

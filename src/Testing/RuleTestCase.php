@@ -23,7 +23,6 @@ use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -98,7 +97,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 		return new $className(
 			self::getContainer(),
 			$reflectionProvider,
-			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),

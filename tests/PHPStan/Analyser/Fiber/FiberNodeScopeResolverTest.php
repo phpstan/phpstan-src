@@ -5,7 +5,6 @@ namespace PHPStan\Analyser\Fiber;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -51,7 +50,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 		return new FiberNodeScopeResolver(
 			$container,
 			$reflectionProvider,
-			$container->getByType(InitializerExprTypeResolver::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),

@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
+use PHPStan\Analyser\DeprecatedAttributeResolver;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
@@ -43,6 +44,7 @@ final class ClassMethodHandler implements StmtHandler
 {
 
 	public function __construct(
+		private DeprecatedAttributeResolver $deprecatedAttributeResolver,
 		private PhpDocsResolver $phpDocsResolver,
 		private PropertyHooksProcessor $propertyHooksProcessor,
 	)
@@ -75,7 +77,7 @@ final class ClassMethodHandler implements StmtHandler
 		}
 
 		if (!$isDeprecated) {
-			[$isDeprecated, $deprecatedDescription] = $nodeScopeResolver->getDeprecatedAttribute($scope, $stmt);
+			[$isDeprecated, $deprecatedDescription] = $this->deprecatedAttributeResolver->getDeprecatedAttribute($scope, $stmt);
 		}
 
 		$isFromTrait = $stmt->getAttribute('originalTraitMethodName') === '__construct';

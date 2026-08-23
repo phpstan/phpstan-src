@@ -14,6 +14,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\PropertyHooksProcessor;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
@@ -39,6 +40,12 @@ use function is_string;
 #[AutowiredService]
 final class ClassMethodHandler implements StmtHandler
 {
+
+	public function __construct(
+		private PropertyHooksProcessor $propertyHooksProcessor,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -130,7 +137,8 @@ final class ClassMethodHandler implements StmtHandler
 					false,
 					$classReflection,
 				), $methodScope, $storage);
-				$nodeScopeResolver->processPropertyHooks(
+				$this->propertyHooksProcessor->processPropertyHooks(
+					$nodeScopeResolver,
 					$stmt,
 					$param->type,
 					$phpDocParameterTypes[$param->var->name] ?? null,

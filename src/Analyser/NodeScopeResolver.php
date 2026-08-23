@@ -6,7 +6,6 @@ use Closure;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\AttributeGroup;
-use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
@@ -28,7 +27,6 @@ use PhpParser\Node\Stmt\Goto_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
 use PhpParser\NodeFinder;
-use PhpParser\NodeTraverser;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\DependencyInjection\AutowiredExtensions;
@@ -43,13 +41,11 @@ use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionCallExpressionNode;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClosureNode;
-use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodCallExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
-use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
@@ -60,7 +56,6 @@ use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
-use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -79,7 +74,6 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -1559,126 +1553,6 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $attr, $scope, $storage);
 			}
 			$this->callNodeCallback($nodeCallback, $attrGroup, $scope, $storage);
-		}
-	}
-
-	/**
-	 * @param Node\PropertyHook[] $hooks
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	public function processPropertyHooks(
-		Node\Stmt $stmt,
-		Identifier|Name|ComplexType|null $nativeTypeNode,
-		?Type $phpDocType,
-		string $propertyName,
-		array $hooks,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-	): void
-	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$classReflection = $scope->getClassReflection();
-
-		foreach ($hooks as $hook) {
-			$this->callNodeCallback($nodeCallback, $hook, $scope, $storage);
-			$this->processAttributeGroups($stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
-
-			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->getPhpDocs($scope, $hook);
-
-			foreach ($hook->params as $param) {
-				$this->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
-			}
-
-			[$isDeprecated, $deprecatedDescription] = $this->getDeprecatedAttribute($scope, $hook);
-
-			$hookScope = $scope->enterPropertyHook(
-				$hook,
-				$propertyName,
-				$nativeTypeNode,
-				$phpDocType,
-				$phpDocParameterTypes,
-				$phpDocThrowType,
-				$deprecatedDescription,
-				$isDeprecated,
-				$phpDocComment,
-				$resolvedPhpDoc,
-			);
-			$hookReflection = $hookScope->getFunction();
-			if (!$hookReflection instanceof PhpMethodFromParserNodeReflection) {
-				throw new ShouldNotHappenException();
-			}
-
-			if (!$classReflection->hasNativeProperty($propertyName)) {
-				throw new ShouldNotHappenException();
-			}
-
-			$propertyReflection = $classReflection->getNativeProperty($propertyName);
-
-			$this->callNodeCallback($nodeCallback, new InPropertyHookNode(
-				$classReflection,
-				$hookReflection,
-				$propertyReflection,
-				$hook,
-			), $hookScope, $storage);
-
-			$stmts = $hook->getStmts();
-			if ($stmts === null) {
-				return;
-			}
-
-			if ($hook->body instanceof Expr) {
-				// enrich attributes of nodes in short hook body statements
-				$traverser = new NodeTraverser(
-					new LineAttributesVisitor($hook->body->getStartLine(), $hook->body->getEndLine()),
-				);
-				$traverser->traverse($stmts);
-			}
-
-			$gatheredReturnStatements = [];
-			$executionEnds = [];
-			$methodImpurePoints = [];
-			$statementResult = $this->processStmtNodesInternal(new PropertyHookStatementNode($hook), $stmts, $hookScope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
-				if ($scope->getFunction() !== $hookScope->getFunction()) {
-					return;
-				}
-				if ($scope->isInAnonymousFunction()) {
-					return;
-				}
-				if ($node instanceof PropertyAssignNode) {
-					$hookImpurePoints[] = new ImpurePoint(
-						$scope,
-						$node,
-						'propertyAssign',
-						'property assignment',
-						true,
-					);
-					return;
-				}
-				if ($node instanceof ExecutionEndNode) {
-					$executionEnds[] = $node;
-					return;
-				}
-				if (!$node instanceof Return_) {
-					return;
-				}
-
-				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-			}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
-
-			$this->callNodeCallback($nodeCallback, new PropertyHookReturnStatementsNode(
-				$hook,
-				$gatheredReturnStatements,
-				$statementResult,
-				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
-				$classReflection,
-				$hookReflection,
-				$propertyReflection,
-			), $hookScope, $storage);
 		}
 	}
 

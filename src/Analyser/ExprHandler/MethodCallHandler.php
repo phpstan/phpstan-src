@@ -9,6 +9,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -57,6 +58,7 @@ final class MethodCallHandler implements ExprHandler
 {
 
 	public function __construct(
+		private CalledMethodProcessor $calledMethodProcessor,
 		private EarlyTerminatingCallHelper $earlyTerminatingCallHelper,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
@@ -246,7 +248,7 @@ final class MethodCallHandler implements ExprHandler
 			&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
 			&& TypeUtils::findThisType($calledOnType) !== null
 		) {
-			$calledMethodScope = $nodeScopeResolver->processCalledMethod($methodReflection);
+			$calledMethodScope = $this->calledMethodProcessor->processCalledMethod($nodeScopeResolver, $methodReflection);
 			if ($calledMethodScope !== null) {
 				$scope = $scope->mergeInitializedProperties($calledMethodScope);
 				return $this->expressionResultFactory->create(

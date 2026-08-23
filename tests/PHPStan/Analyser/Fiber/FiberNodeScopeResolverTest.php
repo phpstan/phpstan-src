@@ -5,7 +5,6 @@ namespace PHPStan\Analyser\Fiber;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
-use PHPStan\File\FileHelper;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -49,7 +48,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		$container = self::getContainer();
 		$reflectionProvider = self::createReflectionProvider();
-		$typeSpecifier = $container->getService('typeSpecifier');
 
 		return new FiberNodeScopeResolver(
 			$container,
@@ -58,10 +56,8 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
-			self::getParser(),
 			$container->getByType(FileTypeMapper::class),
 			$container->getByType(PhpDocInheritanceResolver::class),
-			$container->getByType(FileHelper::class),
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -70,7 +66,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
-			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
 			$container->getParameter('exceptions')['implicitThrows'],

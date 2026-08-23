@@ -36,7 +36,6 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use PHPStan\File\FileHelper;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\TypeExpr;
@@ -49,7 +48,6 @@ use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodCallExpressionNode;
-use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
@@ -63,7 +61,6 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
-use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -99,7 +96,6 @@ use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ResourceType;
@@ -124,7 +120,6 @@ use function array_slice;
 use function array_values;
 use function count;
 use function in_array;
-use function is_array;
 use function is_int;
 use function is_string;
 use function max;
@@ -142,12 +137,6 @@ class NodeScopeResolver
 
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
-
-	/** @var array<string, true> */
-	private array $calledMethodStack = [];
-
-	/** @var array<string, MutatingScope|null> */
-	private array $calledMethodResults = [];
 
 	/**
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
@@ -172,11 +161,8 @@ class NodeScopeResolver
 		private readonly ExtensionsCollection $methodParameterOutTypeExtensions,
 		#[AutowiredExtensions(of: StaticMethodParameterOutTypeExtension::class)]
 		private readonly ExtensionsCollection $staticMethodParameterOutTypeExtensions,
-		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
-		private readonly Parser $parser,
 		private readonly FileTypeMapper $fileTypeMapper,
 		private readonly PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		private readonly FileHelper $fileHelper,
 		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
 		private readonly ExtensionsCollection $readWritePropertiesExtensions,
 		#[AutowiredExtensions(of: FunctionParameterClosureThisExtension::class)]
@@ -193,7 +179,6 @@ class NodeScopeResolver
 		private readonly ExtensionsCollection $staticMethodParameterClosureTypeExtensions,
 		#[AutowiredExtensions(of: PerFileAnalysisResettable::class)]
 		private readonly ExtensionsCollection $perFileAnalysisResettables,
-		private readonly ScopeFactory $scopeFactory,
 		#[AutowiredParameter]
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		#[AutowiredParameter]
@@ -855,11 +840,6 @@ class NodeScopeResolver
 	public function getReadWritePropertiesExtensions(): ExtensionsCollection
 	{
 		return $this->readWritePropertiesExtensions;
-	}
-
-	public function clearCalledMethodResults(): void
-	{
-		$this->calledMethodResults = [];
 	}
 
 	public function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
@@ -2686,141 +2666,6 @@ class NodeScopeResolver
 		}
 
 		return $scope;
-	}
-
-	public function processCalledMethod(MethodReflection $methodReflection): ?MutatingScope
-	{
-		$declaringClass = $methodReflection->getDeclaringClass();
-		if ($declaringClass->isAnonymous()) {
-			return null;
-		}
-		if ($declaringClass->getFileName() === null) {
-			return null;
-		}
-
-		$stackName = sprintf('%s::%s', $declaringClass->getName(), $methodReflection->getName());
-		if (array_key_exists($stackName, $this->calledMethodResults)) {
-			return $this->calledMethodResults[$stackName];
-		}
-
-		if (array_key_exists($stackName, $this->calledMethodStack)) {
-			return null;
-		}
-
-		if (count($this->calledMethodStack) > 0) {
-			return null;
-		}
-
-		$this->calledMethodStack[$stackName] = true;
-
-		$fileName = $this->fileHelper->normalizePath($declaringClass->getFileName());
-		if (!isset($this->analysedFiles[$fileName])) {
-			unset($this->calledMethodStack[$stackName]);
-			return null;
-		}
-		$parserNodes = $this->parser->parseFile($fileName);
-
-		$returnStatement = null;
-		$this->processNodesForCalledMethod($parserNodes, new ExpressionResultStorage(), $fileName, $methodReflection, static function (Node $node, Scope $scope) use ($methodReflection, &$returnStatement): void {
-			if (!$node instanceof MethodReturnStatementsNode) {
-				return;
-			}
-
-			if ($node->getClassReflection()->getName() !== $methodReflection->getDeclaringClass()->getName()) {
-				return;
-			}
-
-			if ($returnStatement !== null) {
-				return;
-			}
-
-			$returnStatement = $node;
-		});
-
-		$calledMethodEndScope = null;
-		if ($returnStatement !== null) {
-			foreach ($returnStatement->getExecutionEnds() as $executionEnd) {
-				$statementResult = $executionEnd->getStatementResult();
-				$endNode = $executionEnd->getNode();
-				if ($endNode instanceof Node\Stmt\Expression) {
-					$exprType = $statementResult->getScope()->getType($endNode->expr);
-					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
-						continue;
-					}
-				}
-				if ($calledMethodEndScope === null) {
-					$calledMethodEndScope = $statementResult->getScope();
-					continue;
-				}
-
-				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
-			}
-			foreach ($returnStatement->getReturnStatements() as $statement) {
-				if ($calledMethodEndScope === null) {
-					$calledMethodEndScope = $statement->getScope();
-					continue;
-				}
-
-				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statement->getScope());
-			}
-		}
-
-		unset($this->calledMethodStack[$stackName]);
-
-		$this->calledMethodResults[$stackName] = $calledMethodEndScope;
-
-		return $calledMethodEndScope;
-	}
-
-	/**
-	 * @param Node[]|Node|scalar|null $node
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	private function processNodesForCalledMethod($node, ExpressionResultStorage $storage, string $fileName, MethodReflection $methodReflection, callable $nodeCallback): void
-	{
-		if ($node instanceof Node) {
-			$declaringClass = $methodReflection->getDeclaringClass();
-			if (
-				$node instanceof Node\Stmt\Class_
-				&& isset($node->namespacedName)
-				&& $declaringClass->getName() === (string) $node->namespacedName
-				&& $declaringClass->getNativeReflection()->getStartLine() === $node->getStartLine()
-			) {
-
-				$stmts = $node->stmts;
-				foreach ($stmts as $stmt) {
-					if (!$stmt instanceof Node\Stmt\ClassMethod) {
-						continue;
-					}
-
-					if ($stmt->name->toString() !== $methodReflection->getName()) {
-						continue;
-					}
-
-					if ($stmt->getEndLine() - $stmt->getStartLine() > 50) {
-						continue;
-					}
-
-					$scope = $this->scopeFactory->create(ScopeContext::create($fileName))->enterClass($declaringClass);
-					$this->processStmtNode($stmt, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
-				}
-				return;
-			}
-			if ($node instanceof Node\Stmt\ClassLike) {
-				return;
-			}
-			if ($node instanceof Node\FunctionLike) {
-				return;
-			}
-			foreach ($node->getSubNodeNames() as $subNodeName) {
-				$subNode = $node->{$subNodeName};
-				$this->processNodesForCalledMethod($subNode, $storage, $fileName, $methodReflection, $nodeCallback);
-			}
-		} elseif (is_array($node)) {
-			foreach ($node as $subNode) {
-				$this->processNodesForCalledMethod($subNode, $storage, $fileName, $methodReflection, $nodeCallback);
-			}
-		}
 	}
 
 	/**

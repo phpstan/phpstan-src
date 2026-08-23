@@ -37,6 +37,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\PreparedAssignTarget;
+use PHPStan\Analyser\PropertyHookThrowPointsResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -107,6 +108,7 @@ final class AssignHandler implements ExprHandler
 		private PropertyFetchHandler $propertyFetchHandler,
 		private StaticPropertyFetchHandler $staticPropertyFetchHandler,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
 	)
 	{
 	}
@@ -1162,7 +1164,7 @@ final class AssignHandler implements ExprHandler
 						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}
 					if ($this->phpVersion->supportsPropertyHooks()) {
-						$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scope, $var, $nativeProperty, 'set'));
+						$throwPoints = array_merge($throwPoints, $this->propertyHookThrowPointsResolver->getThrowPointsFromPropertyHook($scope, $var, $nativeProperty, 'set'));
 					}
 					if ($enterExpressionAssign) {
 						$scope = $scope->assignInitializedProperty($propertyHolderType, $propertyName);

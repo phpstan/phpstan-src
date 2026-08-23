@@ -84,7 +84,6 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
-use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
@@ -971,59 +970,6 @@ class NodeScopeResolver
 		$this->storeExpressionResult($storage, $expr, $expressionResult);
 
 		return $expressionResult;
-	}
-
-	/**
-	 * @param 'get'|'set' $hookName
-	 * @return InternalThrowPoint[]
-	 */
-	public function getThrowPointsFromPropertyHook(
-		MutatingScope $scope,
-		PropertyFetch $propertyFetch,
-		PhpPropertyReflection $propertyReflection,
-		string $hookName,
-	): array
-	{
-		$scopeFunction = $scope->getFunction();
-		if (
-			$scopeFunction instanceof PhpMethodFromParserNodeReflection
-			&& $scopeFunction->isPropertyHook()
-			&& $propertyFetch->var instanceof Variable
-			&& $propertyFetch->var->name === 'this'
-			&& $propertyFetch->name instanceof Identifier
-			&& $propertyFetch->name->toString() === $scopeFunction->getHookedPropertyName()
-		) {
-			return [];
-		}
-		$declaringClass = $propertyReflection->getDeclaringClass();
-		if (!$propertyReflection->hasHook($hookName)) {
-			if (
-				$propertyReflection->isPrivate()
-				|| $propertyReflection->isFinal()->yes()
-				|| $declaringClass->isFinal()
-			) {
-				return [];
-			}
-
-			if ($this->implicitThrows) {
-				return [InternalThrowPoint::createImplicit($scope, $propertyFetch)];
-			}
-
-			return [];
-		}
-
-		$getHook = $propertyReflection->getHook($hookName);
-		$throwType = $getHook->getThrowType();
-
-		if ($throwType !== null) {
-			if (!$throwType->isVoid()->yes()) {
-				return [InternalThrowPoint::createExplicit($scope, $throwType, $propertyFetch, true)];
-			}
-		} elseif ($this->implicitThrows) {
-			return [InternalThrowPoint::createImplicit($scope, $propertyFetch)];
-		}
-
-		return [];
 	}
 
 	/**

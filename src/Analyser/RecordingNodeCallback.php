@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
-use PHPStan\ShouldNotHappenException;
 
 /**
  * Records every (node, scope) emission of a convergence pass in order. When
@@ -14,8 +13,8 @@ use PHPStan\ShouldNotHappenException;
  *
  * Recording appends the raw walk scope - nothing asks about types until a
  * replay happens, so the pass pays no callback-scope construction and no
- * storage binding. replayThrough() wraps each pair the way
- * NodeScopeResolver::callNodeCallback() would have.
+ * storage binding. NodeScopeResolver::replayRecording()
+ * wraps each pair the way callNodeCallback() would have.
  */
 final class RecordingNodeCallback
 {
@@ -29,16 +28,11 @@ final class RecordingNodeCallback
 	}
 
 	/**
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @return list<array{Node, Scope}>
 	 */
-	public function replayThrough(callable $nodeCallback): void
+	public function getPairs(): array
 	{
-		foreach ($this->pairs as [$node, $scope]) {
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
-			$nodeCallback($node, $scope->toNodeCallbackScope());
-		}
+		return $this->pairs;
 	}
 
 }

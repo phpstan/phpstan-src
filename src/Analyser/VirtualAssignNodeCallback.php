@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
 
-final class VirtualAssignNodeCallback implements ShallowNodeCallback
+final class VirtualAssignNodeCallback
 {
 
 	/**
@@ -17,23 +17,15 @@ final class VirtualAssignNodeCallback implements ShallowNodeCallback
 	}
 
 	/**
-	 * Rebuilds the chain instead of wrapping it so that GatheringNodeCallback
-	 * layers stay on the outside. Hiding a gatherer behind this filter would
-	 * keep callNodeCallback() from unwrapping it, and the gatherer would miss
-	 * nodes this filter drops for the rule-facing remainder.
+	 * Filters the rule-facing callback down to assign nodes. Engine-feeding
+	 * gatherer frames live on NodeScopeResolver and observe every emission
+	 * regardless of this filter.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 * @return callable(Node $node, Scope $scope): void
 	 */
 	public static function create(callable $nodeCallback): callable
 	{
-		if ($nodeCallback instanceof GatheringNodeCallback) {
-			return new GatheringNodeCallback(
-				self::create($nodeCallback->getGatherer()),
-				self::create($nodeCallback->getInner()),
-			);
-		}
-
 		return new self($nodeCallback);
 	}
 

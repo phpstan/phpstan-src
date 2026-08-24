@@ -102,6 +102,7 @@ use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
+use function array_pop;
 use function array_slice;
 use function array_values;
 use function count;
@@ -123,6 +124,20 @@ class NodeScopeResolver
 	private array $analysedFiles = [];
 
 	private ?ExpressionResultStorageStack $expressionResultStorageStack = null;
+
+	/**
+	 * Engine-feeding gatherer frames (return statements, execution ends,
+	 * impure points, ...), innermost last. callNodeCallback() feeds every
+	 * frame the raw walk scope at the emission position - gatherers are
+	 * engine code and never ask about types, and their arrays are read as
+	 * soon as the enclosing body walk returns. Frames replace the former
+	 * GatheringNodeCallback wrapper chain: gatherers no longer ride the
+	 * node-callback channel, so callback filters (VirtualAssignNodeCallback)
+	 * cannot accidentally starve them.
+	 *
+	 * @var list<callable(Node, Scope): void>
+	 */
+	private array $nodeGatherers = [];
 
 	/**
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
@@ -217,8 +232,6 @@ class NodeScopeResolver
 		$scope = $scope->toWalkScope();
 
 		$expressionResultStorage = new ExpressionResultStorage();
-		$alreadyTerminated = false;
-		$exitPoints = [];
 
 		$stmts = [];
 		$stmtToNodeIndex = [];
@@ -231,6 +244,34 @@ class NodeScopeResolver
 			$stmts[] = $node;
 		}
 
+		// a fresh walk an extension starts mid-analysis must not feed the
+		// interrupted walk's gatherer frames (see processStmtNodes())
+		$gatherers = $this->nodeGatherers;
+		$this->nodeGatherers = [];
+		try {
+			$this->processNodesStatements($nodes, $stmts, $stmtToNodeIndex, $scope, $expressionResultStorage, $nodeCallback);
+		} finally {
+			$this->nodeGatherers = $gatherers;
+		}
+	}
+
+	/**
+	 * @param Node[] $nodes
+	 * @param Node\Stmt[] $stmts
+	 * @param array<int, int> $stmtToNodeIndex
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processNodesStatements(
+		array $nodes,
+		array $stmts,
+		array $stmtToNodeIndex,
+		MutatingScope $scope,
+		ExpressionResultStorage $expressionResultStorage,
+		callable $nodeCallback,
+	): void
+	{
+		$alreadyTerminated = false;
+		$exitPoints = [];
 		$dummyParent = new Node\Stmt\Nop();
 		foreach ($stmts as $si => $node) {
 			if ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\Label)) {
@@ -446,14 +487,23 @@ class NodeScopeResolver
 		// rule-facing ask paths
 		$scope = $scope->toWalkScope();
 		$storage = new ExpressionResultStorage();
-		return $this->processStmtNodesInternal(
-			$parentNode,
-			$stmts,
-			$scope,
-			$storage,
-			$nodeCallback,
-			$context,
-		)->toPublic();
+		// a fresh walk an extension starts mid-analysis must not feed the
+		// interrupted walk's gatherer frames - they describe the body walk
+		// that was interrupted, not the nested one
+		$gatherers = $this->nodeGatherers;
+		$this->nodeGatherers = [];
+		try {
+			return $this->processStmtNodesInternal(
+				$parentNode,
+				$stmts,
+				$scope,
+				$storage,
+				$nodeCallback,
+				$context,
+			)->toPublic();
+		} finally {
+			$this->nodeGatherers = $gatherers;
+		}
 	}
 
 	/**
@@ -988,12 +1038,41 @@ class NodeScopeResolver
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
+	/**
+	 * Opens an engine-feeding gatherer frame for the duration of a body walk.
+	 * The caller closes it in a finally block via popNodeGatherer().
+	 *
+	 * @param callable(Node, Scope): void $gatherer
+	 */
+	public function pushNodeGatherer(callable $gatherer): void
+	{
+		$this->nodeGatherers[] = $gatherer;
+	}
+
+	public function popNodeGatherer(): void
+	{
+		array_pop($this->nodeGatherers);
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
 	public function replayRecording(RecordingNodeCallback $recording, callable $nodeCallback, ExpressionResultStorage $storage): void
 	{
 		$stack = $this->getExpressionResultStorageStack();
 		$stack->push($storage);
 		try {
-			$recording->replayThrough($nodeCallback);
+			foreach ($recording->getPairs() as [$node, $scope]) {
+				if (!$scope instanceof MutatingScope) {
+					throw new ShouldNotHappenException();
+				}
+				// gatherer frames observe replayed emissions exactly like live
+				// ones - with the raw walk scope
+				foreach ($this->nodeGatherers as $gatherer) {
+					$gatherer($node, $scope);
+				}
+				$nodeCallback($node, $scope->toNodeCallbackScope());
+			}
 		} finally {
 			$stack->pop();
 		}
@@ -1026,15 +1105,14 @@ class NodeScopeResolver
 		ExpressionResultStorage $storage,
 	): void
 	{
-		// Engine-feeding gatherers must observe the node at the emission
+		// Engine-feeding gatherer frames observe the node at the emission
 		// position - their arrays are read as soon as the enclosing body walk
 		// returns. Gatherers are engine code and never ask about types -
 		// handing them the raw scope skips a NodeCallbackScope construction per
 		// emission; the scopes they capture (return statements, impure points)
 		// answer later asks through the storage hub like any MutatingScope.
-		while ($nodeCallback instanceof GatheringNodeCallback) {
-			($nodeCallback->getGatherer())($node, $scope);
-			$nodeCallback = $nodeCallback->getInner();
+		foreach ($this->nodeGatherers as $gatherer) {
+			$gatherer($node, $scope);
 		}
 
 		if ($nodeCallback instanceof NoopNodeCallback) {
@@ -1155,7 +1233,7 @@ class NodeScopeResolver
 		$gatheredYieldStatementsWithScope = [];
 		$closureImpurePoints = [];
 		$invalidateExpressions = [];
-		$closureStmtsCallback = new GatheringNodeCallback(static function (Node $node, Scope $scope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
+		$closureStmtsGatherer = static function (Node $node, Scope $scope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 				return;
 			}
@@ -1188,10 +1266,15 @@ class NodeScopeResolver
 
 			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 			$gatheredReturnStatementsWithScope[] = [$node, $scope];
-		}, $nodeCallback);
+		};
 
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+			$this->pushNodeGatherer($closureStmtsGatherer);
+			try {
+				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+			} finally {
+				$this->popNodeGatherer();
+			}
 			$publicStatementResult = $statementResult->toPublic();
 			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
@@ -1269,23 +1352,28 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		if (
-			$replayBodyRecording !== null && $replayPassStorage !== null
-			&& $replayPassResult !== null && $replayEntryScope !== null
-			&& $closureScope->equals($replayEntryScope)
-		) {
-			// the final walk would repeat the recorded fixpoint pass exactly
-			// (same entry scope, deterministic walk) - adopt the pass's result
-			// and replay its emissions through the gathering callback instead.
-			// The pass's own entry scope takes over: the recorded pairs carry
-			// its anonymous-function reflection, which the gathering filter
-			// compares by identity (the state is equals-identical anyway).
-			$closureScope = $replayEntryScope;
-			$originalStorage->mergeResults($replayPassStorage);
-			$this->replayRecording($replayBodyRecording, $closureStmtsCallback, $originalStorage);
-			$statementResult = $replayPassResult;
-		} else {
-			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		$this->pushNodeGatherer($closureStmtsGatherer);
+		try {
+			if (
+				$replayBodyRecording !== null && $replayPassStorage !== null
+				&& $replayPassResult !== null && $replayEntryScope !== null
+				&& $closureScope->equals($replayEntryScope)
+			) {
+				// the final walk would repeat the recorded fixpoint pass exactly
+				// (same entry scope, deterministic walk) - adopt the pass's result
+				// and replay its emissions through the real callback instead.
+				// The pass's own entry scope takes over: the recorded pairs carry
+				// its anonymous-function reflection, which the gatherer's filter
+				// compares by identity (the state is equals-identical anyway).
+				$closureScope = $replayEntryScope;
+				$originalStorage->mergeResults($replayPassStorage);
+				$this->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
+				$statementResult = $replayPassResult;
+			} else {
+				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+			}
+		} finally {
+			$this->popNodeGatherer();
 		}
 		$publicStatementResult = $statementResult->toPublic();
 		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
@@ -1410,7 +1498,7 @@ class NodeScopeResolver
 		// feeds ClosureTypeResolver::buildClosureTypeForArrowFunction().
 		$arrowFunctionImpurePoints = [];
 		$invalidateExpressions = [];
-		$arrowFunctionStmtsCallback = new GatheringNodeCallback(static function (Node $node, Scope $innerScope) use ($arrowFunctionScope, &$arrowFunctionImpurePoints, &$invalidateExpressions): void {
+		$arrowFunctionStmtsGatherer = static function (Node $node, Scope $innerScope) use ($arrowFunctionScope, &$arrowFunctionImpurePoints, &$invalidateExpressions): void {
 			if ($innerScope->getAnonymousFunctionReflection() !== $arrowFunctionScope->getAnonymousFunctionReflection()) {
 				return;
 			}
@@ -1432,9 +1520,14 @@ class NodeScopeResolver
 				true,
 			);
 			$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
-		}, $nodeCallback);
+		};
 
-		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $arrowFunctionStmtsCallback, ExpressionContext::createTopLevel());
+		$this->pushNodeGatherer($arrowFunctionStmtsGatherer);
+		try {
+			$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+		} finally {
+			$this->popNodeGatherer();
+		}
 
 		$closureTypeThrowPoints = array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->toPublic(), $exprResult->getThrowPoints());
 		$closureTypeImpurePoints = array_merge($arrowFunctionImpurePoints, $exprResult->getImpurePoints());

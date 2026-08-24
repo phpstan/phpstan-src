@@ -291,6 +291,20 @@ $explicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\MixedType
 $implicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\MixedType(false), $intT);
 check($describe($explicit) !== $describe($implicit), 'TCC keeps explicit/implicit mixed apart');
 
+// interning: argument tuples with different memo keys that arrive at the same
+// value hand back one shared instance
+$wider = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT, new \PHPStan\Type\NeverType());
+check($describe($wider) === $describe($first), 'TCC intern: the extra never collapses to the same value');
+check($wider === $first, 'TCC intern: shared instance across memo keys');
+
+// interning merges on the *structural* hash, so equal values that are built
+// differently are not merged — union() keeps its argument order, and a union
+// listing the same members in another order is a different structure
+check(\PHPStanTurbo\TypeCombinatorCache::union($stringT, $intT) !== $first, 'TCC intern does not merge on equals()');
+
+// distinct values must not be merged
+check(\PHPStanTurbo\TypeCombinatorCache::union($intT, $nullT) !== $first, 'TCC intern keeps distinct values apart');
+
 \PHPStanTurbo\TypeCombinatorCache::clearCache();
 $afterClear = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT);
 check($describe($afterClear) === $describe($first), 'TCC clearCache keeps results correct');

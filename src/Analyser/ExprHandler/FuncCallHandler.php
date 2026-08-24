@@ -23,7 +23,6 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\FuncCallScopeEffectsHelper;
-use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -230,7 +229,7 @@ final class FuncCallHandler implements ExprHandler
 		/** @var array{Type, Type}|null $arrayWalkValueTypes */
 		$arrayWalkValueTypes = null;
 		$arrayWalkArrayArg = null;
-		$nodeCallbackForArgs = $nodeCallback;
+		$argsGatherer = null;
 		if (
 			$functionReflection !== null
 			&& $functionReflection->getName() === 'array_walk'
@@ -252,7 +251,7 @@ final class FuncCallHandler implements ExprHandler
 			if ($firstParamName !== null) {
 				$arrayWalkArrayArg = $normalizedExpr->getArgs()[0]->value;
 
-				$nodeCallbackForArgs = new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($callbackArg, $firstParamName, &$arrayWalkValueTypes): void {
+				$argsGatherer = static function (Node $node, Scope $scope) use ($callbackArg, $firstParamName, &$arrayWalkValueTypes): void {
 					if (!($node instanceof ClosureReturnStatementsNode) || $node->getClosureExpr() !== $callbackArg) {
 						return;
 					}
@@ -284,12 +283,21 @@ final class FuncCallHandler implements ExprHandler
 						TypeCombinator::union(...$types),
 						TypeCombinator::union(...$nativeTypes),
 					];
-				}, $nodeCallback);
+				};
 			}
 		}
 
 		$scopeBeforeArgs = $scope;
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallbackForArgs, $context);
+		if ($argsGatherer !== null) {
+			$nodeScopeResolver->pushNodeGatherer($argsGatherer);
+		}
+		try {
+			$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		} finally {
+			if ($argsGatherer !== null) {
+				$nodeScopeResolver->popNodeGatherer();
+			}
+		}
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
 		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);

@@ -9,7 +9,6 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\DeprecatedAttributeResolver;
 use PHPStan\Analyser\ExpressionResultStorage;
-use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -106,7 +105,7 @@ final class FunctionHandler implements StmtHandler
 		$bodyStorage = $storage->duplicate();
 		$scope->pushExpressionResultStorage($bodyStorage);
 		try {
-			$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
+			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
 				}
@@ -135,7 +134,12 @@ final class FunctionHandler implements StmtHandler
 				}
 
 				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-			}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
+			});
+			try {
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+			} finally {
+				$nodeScopeResolver->popNodeGatherer();
+			}
 
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
 				$stmt,

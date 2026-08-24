@@ -2,26 +2,40 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
 
 /**
- * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
-			self::createReflectionProvider(),
-			[],
-			[],
-			[],
-			[],
-		), true);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new CatchWithUnthrownExceptionRule(
+				new DefaultExceptionTypeResolver(
+					self::createReflectionProvider(),
+					[],
+					[],
+					[],
+					[],
+				),
+				true,
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			),
+			new CatchWithThrownExceptionInTraitRule(
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testRule(): void
@@ -93,6 +107,28 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 			[
 				'Dead catch - Exception is never thrown in the try block.',
 				19,
+			],
+		]);
+	}
+
+	public function testBug10315(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10315.php'], []);
+	}
+
+	public function testDeadCatchInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-in-trait.php'], [
+			[
+				// dead in both FirstUser and SecondUser: reported once, on the trait
+				'Dead catch - DeadCatchInTrait\AlphaException is never thrown in the try block.',
+				36,
+			],
+			[
+				// same catch as AlphaException on line 67, which is dead in ThrowsNeither
+				// but alive in ThrowsAlphaOnly and therefore not reported
+				'Dead catch - DeadCatchInTrait\BetaException is never thrown in the try block.',
+				67,
 			],
 		]);
 	}

@@ -44,5 +44,5 @@ function () {
 		unset($review['Review']['User']);
 		assertType("non-empty-array&hasOffsetValue('Review', array<mixed~'User', mixed>)&hasOffsetValue('User', mixed)", $review);
 	}
-	assertType("non-empty-array&hasOffsetValue('Review', array)", $review);
+	assertType("non-empty-array&hasOffsetValue('Review', array<mixed~'User', mixed>)", $review);
 };

@@ -937,6 +937,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 				IntersectionType::class,
 				'list{object, \'foo\'}&callable(): mixed',
 			],
+			// Equal-but-distinct array operands must union to the same type as
+			// identical ones. Reconstructing the pair through
+			// ArrayType::getIterableKeyType() would coerce the subtracted key
+			// away and yield plain 'array'.
+			[
+				[
+					new ArrayType(new MixedType(subtractedType: new ConstantStringType('User')), new MixedType()),
+					new ArrayType(new MixedType(subtractedType: new ConstantStringType('User')), new MixedType()),
+				],
+				ArrayType::class,
+				'array<mixed~\'User\', mixed>',
+			],
 			[
 				[
 					new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType()]),

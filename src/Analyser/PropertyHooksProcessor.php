@@ -59,7 +59,7 @@ final class PropertyHooksProcessor
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $hook, $scope, $storage);
 			$nodeScopeResolver->processAttributeGroups($stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
 
-			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
+			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,, $isPure,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
 
 			foreach ($hook->params as $param) {
 				$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
@@ -76,6 +76,7 @@ final class PropertyHooksProcessor
 				$phpDocThrowType,
 				$deprecatedDescription,
 				$isDeprecated,
+				$isPure,
 				$phpDocComment,
 				$resolvedPhpDoc,
 			);
@@ -99,7 +100,9 @@ final class PropertyHooksProcessor
 
 			$stmts = $hook->getStmts();
 			if ($stmts === null) {
-				return;
+				// abstract hook - the sibling hook of the same property may still
+				// have a body, so keep going
+				continue;
 			}
 
 			if ($hook->body instanceof Expr) {
@@ -112,7 +115,7 @@ final class PropertyHooksProcessor
 
 			$gatheredReturnStatements = [];
 			$executionEnds = [];
-			$methodImpurePoints = [];
+			$hookImpurePoints = [];
 			$statementResult = $nodeScopeResolver->processStmtNodesInternal(new PropertyHookStatementNode($hook), $stmts, $hookScope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
 				if ($scope->getFunction() !== $hookScope->getFunction()) {
 					return;
@@ -146,7 +149,7 @@ final class PropertyHooksProcessor
 				$gatheredReturnStatements,
 				$statementResult,
 				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+				array_merge($statementResult->getImpurePoints(), $hookImpurePoints),
 				$classReflection,
 				$hookReflection,
 				$propertyReflection,

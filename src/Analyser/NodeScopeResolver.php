@@ -70,7 +70,9 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
@@ -110,6 +112,7 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function max;
+use function sprintf;
 use function usort;
 
 #[AutowiredService]
@@ -879,6 +882,67 @@ class NodeScopeResolver
 		$this->storeExpressionResult($storage, $expr, $expressionResult);
 
 		return $expressionResult;
+	}
+
+	/**
+	 * Unlike a method call, a property read defaults to pure: only a hook we're
+	 * certain about and that is certainly side-effecting makes the read impure.
+	 *
+	 * The reset is assumed pure as reporting those would make accessing them
+	 * unreasonably annoying.
+	 *
+	 * @param 'get'|'set' $hookName
+	 * @return ImpurePoint[]
+	 */
+	public function getImpurePointsFromPropertyHook(
+		MutatingScope $scope,
+		PropertyFetch $propertyFetch,
+		PhpPropertyReflection $propertyReflection,
+		string $hookName,
+	): array
+	{
+		if ($this->isPropertyHookBackingValueAccess($scope, $propertyFetch)) {
+			return [];
+		}
+
+		if (!$propertyReflection->hasHook($hookName)) {
+			return [];
+		}
+
+		if (!$propertyReflection->getHook($hookName)->hasSideEffects()->yes()) {
+			return [];
+		}
+
+		return [
+			new ImpurePoint(
+				$scope,
+				$propertyFetch,
+				'propertyHookCall',
+				sprintf(
+					'call to %s hook of property %s::$%s',
+					$hookName,
+					$propertyReflection->getDeclaringClass()->getDisplayName(),
+					$propertyReflection->getName(),
+				),
+				true,
+			),
+		];
+	}
+
+	/**
+	 * Inside a hook of the same property, $this->prop is the backing value, not
+	 * a re-entrant hook call.
+	 */
+	private function isPropertyHookBackingValueAccess(MutatingScope $scope, PropertyFetch $propertyFetch): bool
+	{
+		$scopeFunction = $scope->getFunction();
+
+		return $scopeFunction instanceof PhpMethodFromParserNodeReflection
+			&& $scopeFunction->isPropertyHook()
+			&& $propertyFetch->var instanceof Variable
+			&& $propertyFetch->var->name === 'this'
+			&& $propertyFetch->name instanceof Identifier
+			&& $propertyFetch->name->toString() === $scopeFunction->getHookedPropertyName();
 	}
 
 	/**

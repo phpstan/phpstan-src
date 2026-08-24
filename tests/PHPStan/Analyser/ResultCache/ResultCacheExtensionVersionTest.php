@@ -53,6 +53,7 @@ class ResultCacheExtensionVersionTest extends PHPStanTestCase
 			checkDependenciesOfProjectExtensionFiles: false,
 			parametersNotInvalidatingCache: [],
 			skipResultCacheIfOlderThanDays: 7,
+			anchorDirectory: $container->getParameter('rootDir'),
 		);
 
 		return $manager->restore([], true, false, null, $this->createStub(Output::class))->getMeta();

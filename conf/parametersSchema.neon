@@ -109,7 +109,7 @@ parametersSchema:
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),
-		maximumNumberOfProcesses: int(),
+		maximumNumberOfProcesses: anyOf(int(), 'auto'),
 		minimumNumberOfJobsPerProcess: int(),
 		buffer: int(),
 		loadLimit: schema(float(), nullable())

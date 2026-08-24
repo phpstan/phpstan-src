@@ -5,19 +5,25 @@ namespace PHPStan\Rules\Exceptions;
 use Error;
 use InvalidArgumentException;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\ComposerAutoloaderProjectPathsProvider;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
  */
-class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
+class CatchWithUnthrownExceptionRuleTest extends RuleTestCase implements ComposerAutoloaderProjectPathsProvider
 {
 
 	private bool $reportUncheckedExceptionDeadCatch = true;
 
 	/** @var string[] */
 	private array $uncheckedExceptionClasses = [];
+
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/../../Reflection/BetterReflection/SourceStubber/data/ext-ds-v1-platform'];
+	}
 
 	protected function getRule(): Rule
 	{

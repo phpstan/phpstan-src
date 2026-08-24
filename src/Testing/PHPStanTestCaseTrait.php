@@ -11,6 +11,7 @@ use RuntimeException;
 use function array_merge;
 use function hash;
 use function implode;
+use function is_a;
 use function sys_get_temp_dir;
 use const PHP_VERSION_ID;
 
@@ -26,7 +27,11 @@ trait PHPStanTestCaseTrait
 		foreach (static::getAdditionalConfigFiles() as $configFile) {
 			$additionalConfigFiles[] = $configFile;
 		}
-		$cacheKey = hash('sha256', implode("\n", $additionalConfigFiles));
+		$className = static::class;
+		$composerAutoloaderProjectPaths = is_a($className, ComposerAutoloaderProjectPathsProvider::class, true)
+			? $className::getComposerAutoloaderProjectPaths()
+			: [];
+		$cacheKey = hash('sha256', implode("\n", $additionalConfigFiles) . "\0" . implode("\n", $composerAutoloaderProjectPaths));
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
@@ -42,7 +47,7 @@ trait PHPStanTestCaseTrait
 			$containerFactory = new ContainerFactory($rootDir);
 			$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
-			], $additionalConfigFiles), []);
+			], $additionalConfigFiles), [], $composerAutoloaderProjectPaths);
 			self::$containers[$cacheKey] = $container;
 
 			foreach ($container->getParameter('bootstrapFiles') as $bootstrapFile) {

@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use function array_filter;
-use function array_map;
 use function array_values;
 use function dirname;
 use function str_contains;
@@ -48,9 +47,25 @@ final class DefaultStubFilesProvider implements StubFilesProvider
 			return $this->cachedFiles;
 		}
 
-		$files = array_map(fn ($path) => $this->fileHelper->normalizePath($path), $this->stubFiles);
+		$files = [];
 		$extensions = $this->stubFilesExtensions->getAll();
 		foreach ($extensions as $extension) {
+			if (!$extension instanceof PredefinedStubFilesExtension) {
+				continue;
+			}
+
+			foreach ($extension->getFiles() as $extensionFile) {
+				$files[] = $this->fileHelper->normalizePath($extensionFile);
+			}
+		}
+		foreach ($this->stubFiles as $stubFile) {
+			$files[] = $this->fileHelper->normalizePath($stubFile);
+		}
+		foreach ($extensions as $extension) {
+			if ($extension instanceof PredefinedStubFilesExtension) {
+				continue;
+			}
+
 			foreach ($extension->getFiles() as $extensionFile) {
 				$files[] = $this->fileHelper->normalizePath($extensionFile);
 			}

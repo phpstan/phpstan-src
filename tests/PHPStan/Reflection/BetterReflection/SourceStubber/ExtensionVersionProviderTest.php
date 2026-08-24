@@ -25,6 +25,20 @@ class ExtensionVersionProviderTest extends PHPStanTestCase
 		$this->assertSame(['ds' => 2], $provider->getExtensionVersions());
 	}
 
+	public function testFallsBackToRequireWhenPlatformVersionIsUnknown(): void
+	{
+		$provider = new ExtensionVersionProvider([__DIR__ . '/data/ext-ds-v2-unknown-platform']);
+
+		$this->assertSame(['ds' => 2], $provider->getExtensionVersions());
+	}
+
+	public function testSelectsExtensionVersionFromSameMajorOrConstraint(): void
+	{
+		$provider = new ExtensionVersionProvider([__DIR__ . '/data/ext-ds-v2-same-major-or-require']);
+
+		$this->assertSame(['ds' => 2], $provider->getExtensionVersions());
+	}
+
 	public function testPassesSelectedVersionToPhpStormStubsSourceStubber(): void
 	{
 		$provider = new ExtensionVersionProvider([__DIR__ . '/data/ext-ds-v2-platform']);
@@ -50,8 +64,10 @@ class ExtensionVersionProviderTest extends PHPStanTestCase
 
 	public function testLoadsExtDsV1OverlayForV1(): void
 	{
-		$extension = new ExtDsStubFilesExtension(new ExtensionVersionProvider([__DIR__ . '/data/ext-ds-v1-platform']));
+		$provider = new ExtensionVersionProvider([__DIR__ . '/data/ext-ds-v1-platform']);
+		$extension = new ExtDsStubFilesExtension($provider);
 
+		$this->assertSame(['ds' => 1], $provider->getExtensionVersions());
 		$files = $extension->getFiles();
 		$this->assertCount(1, $files);
 		$this->assertStringEndsWith('/stubs/ext-ds.stub', $files[0]);

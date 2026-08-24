@@ -142,7 +142,8 @@
 				"patches/ReflectionProperty.patch",
 				"patches/SessionHandler.patch",
 				"patches/xmlreader.patch",
-				"patches/dom_c.patch"
+				"patches/dom_c.patch",
+				"patches/conditional-function-throws.patch"
 			],
 			"nette/di": [
 				"patches/Resolver.patch"

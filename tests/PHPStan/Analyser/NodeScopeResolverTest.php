@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use EnumTypeAssertions\Foo;
 use PHPStan\File\FileHelper;
+use PHPStan\Testing\ComposerAutoloaderProjectPathsProvider;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
@@ -20,7 +21,7 @@ use const DIRECTORY_SEPARATOR;
 use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
-class NodeScopeResolverTest extends TypeInferenceTestCase
+class NodeScopeResolverTest extends TypeInferenceTestCase implements ComposerAutoloaderProjectPathsProvider
 {
 
 	/**
@@ -358,6 +359,11 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 				__DIR__ . '/nodeScopeResolverEarlyTerminating.neon',
 			],
 		);
+	}
+
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/../Reflection/BetterReflection/SourceStubber/data/ext-ds-v1-platform'];
 	}
 
 	/** @return string[] */

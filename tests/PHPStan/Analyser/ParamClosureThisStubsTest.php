@@ -2,10 +2,11 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Testing\ComposerAutoloaderProjectPathsProvider;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-class ParamClosureThisStubsTest extends TypeInferenceTestCase
+class ParamClosureThisStubsTest extends TypeInferenceTestCase implements ComposerAutoloaderProjectPathsProvider
 {
 
 	public static function dataAsserts(): iterable
@@ -31,6 +32,11 @@ class ParamClosureThisStubsTest extends TypeInferenceTestCase
 		return [
 			__DIR__ . '/param-closure-this-stubs.neon',
 		];
+	}
+
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/../Reflection/BetterReflection/SourceStubber/data/ext-ds-v1-platform'];
 	}
 
 }

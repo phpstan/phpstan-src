@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use Override;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use function dirname;
@@ -30,6 +31,25 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 		$fileHelper = new FileHelper(__DIR__);
 		$this->assertContains($fileHelper->normalizePath('/projectStub.stub'), $stubFiles);
 		$this->assertContains($fileHelper->normalizePath($thirdPartyStubFile), $stubFiles);
+	}
+
+	public function testPredefinedStubFilesComeBeforeConfiguredAndExtensionFiles(): void
+	{
+		$extension = $this->createStub(StubFilesExtension::class);
+		$extension->method('getFiles')->willReturn(['/extensionStub.stub']);
+		$predefinedExtension = $this->createStub(PredefinedStubFilesExtension::class);
+		$predefinedExtension->method('getFiles')->willReturn(['/predefinedStub.stub']);
+		$extensions = $this->createStub(ExtensionsCollection::class);
+		$extensions->method('getAll')->willReturn([$extension, $predefinedExtension]);
+
+		$fileHelper = new FileHelper(__DIR__);
+		$provider = new DefaultStubFilesProvider($extensions, $fileHelper, ['/projectStub.stub'], []);
+
+		$this->assertSame([
+			$fileHelper->normalizePath('/predefinedStub.stub'),
+			$fileHelper->normalizePath('/projectStub.stub'),
+			$fileHelper->normalizePath('/extensionStub.stub'),
+		], $provider->getStubFiles());
 	}
 
 	public function testGetProjectStubFiles(): void

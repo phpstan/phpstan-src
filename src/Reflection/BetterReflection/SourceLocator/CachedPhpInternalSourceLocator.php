@@ -35,8 +35,8 @@ use function substr;
  * entry, and shared across a run's parallel workers through the arena.
  *
  * The stubber's output depends on the stubs package, the reflection library
- * and the target PHP version (stub members are version-filtered), so all
- * three are part of the cache key.
+ * and the target PHP and extension versions (stub members are version-filtered),
+ * so all four are part of the cache key.
  *
  * The exported blob contains the absolute path of the stub file, but the
  * cache key deliberately contains no paths - the same entries are shared by

@@ -17,11 +17,15 @@ use function ksort;
 use function phpversion;
 use function preg_match;
 use function sprintf;
-use function str_contains;
 
 #[AutowiredService]
 final class ExtensionVersionProvider
 {
+
+	private const DEFAULT_EXTENSION_MAJOR_VERSIONS = [
+		'couchbase' => 3,
+		'ds' => 1,
+	];
 
 	/** @var array<string, int>|null */
 	private ?array $extensionVersions = null;
@@ -89,7 +93,10 @@ final class ExtensionVersionProvider
 		$extensionPackageName = 'ext-' . $extensionName;
 		$platformVersion = $composerConfig['config']['platform'][$extensionPackageName] ?? null;
 		if (is_string($platformVersion)) {
-			return [$this->getKnownVersion($platformVersion, $versionMaps), false];
+			$knownVersion = $this->getKnownVersion($extensionName, $platformVersion, $versionMaps);
+			if ($knownVersion !== null) {
+				return [$knownVersion, false];
+			}
 		}
 
 		$requiredVersion = $composerConfig['require'][$extensionPackageName] ?? null;
@@ -102,7 +109,12 @@ final class ExtensionVersionProvider
 			return [null, true];
 		}
 
-		return [$this->getKnownVersion((string) $majorVersion, $versionMaps), false];
+		$knownVersion = $this->getKnownVersion($extensionName, (string) $majorVersion, $versionMaps);
+		if ($knownVersion === null) {
+			return [null, true];
+		}
+
+		return [$knownVersion, false];
 	}
 
 	/**
@@ -115,34 +127,31 @@ final class ExtensionVersionProvider
 			return null;
 		}
 
-		return $this->getKnownVersion($version, $versionMaps);
+		return $this->getKnownVersion($extensionName, $version, $versionMaps);
 	}
 
 	/**
 	 * @param array<int|string, array{classes: array<string, string>, functions: array<string, string>, constants: array<string, string>}> $versionMaps
 	 */
-	private function getKnownVersion(string $version, array $versionMaps): ?int
+	private function getKnownVersion(string $extensionName, string $version, array $versionMaps): ?int
 	{
 		if (preg_match('~^(\d+)~', $version, $matches) !== 1) {
 			return null;
 		}
 
 		$majorVersion = (int) $matches[1];
-		if (!array_key_exists($majorVersion, $versionMaps)) {
+		if (
+			!array_key_exists($majorVersion, $versionMaps)
+			&& (self::DEFAULT_EXTENSION_MAJOR_VERSIONS[$extensionName] ?? null) !== $majorVersion
+		) {
 			return null;
 		}
 
 		return $majorVersion;
 	}
 
-	/**
-	 */
 	private function getConstraintMajor(string $constraint): ?int
 	{
-		if (str_contains($constraint, '|')) {
-			return null;
-		}
-
 		try {
 			$parsedConstraint = (new VersionParser())->parseConstraints($constraint);
 		} catch (UnexpectedValueException) {

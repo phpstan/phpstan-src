@@ -12,6 +12,7 @@ use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -70,9 +71,15 @@ final class WhileHandler implements StmtHandler
 			$scope->popExpressionResultStorage();
 		}
 
+		$replayCondRecording = null;
+		$replayBodyRecording = null;
+		$replayCondResult = null;
+		$replayPassStorage = null;
+		$replayPassResult = null;
+		$prevEntryScope = null;
 		if ($context->isTopLevel()) {
 			$count = 0;
-			$prevEntryScope = null;
+			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -84,16 +91,28 @@ final class WhileHandler implements StmtHandler
 				}
 				$prevEntryScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
+				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 				$scope->pushExpressionResultStorage($storage);
 				try {
-					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+					$passCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep());
+					$bodyScope = $passCondResult->getTruthyScope();
+					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
 					$bodyScope = $bodyScopeResult->getScope();
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 					}
 				} finally {
 					$scope->popExpressionResultStorage();
+				}
+				// the candidate to replace the final walk when this pass's
+				// entry turns out to be the fixpoint
+				if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback) {
+					$replayCondRecording = $condRecording;
+					$replayBodyRecording = $bodyRecording;
+					$replayPassStorage = $storage;
+					$replayPassResult = $bodyScopeResult;
+					$replayCondResult = $passCondResult;
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
@@ -109,12 +128,31 @@ final class WhileHandler implements StmtHandler
 		$bodyScope = $bodyScope->mergeWith($scope);
 		$bodyScopeMaybeRan = $bodyScope;
 		$storage = $originalStorage;
-		$bodyCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
-		// the While_ callback is deferred from processStmtNode(): it fires after
-		// the condition's real walk stored its result, with the entry scope
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
-		$bodyScope = $bodyCondResult->getTruthyScope();
-		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		if (
+			$replayCondRecording !== null && $replayBodyRecording !== null
+			&& $replayPassStorage !== null && $replayPassResult !== null
+			&& $replayCondResult !== null
+			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
+		) {
+			// the final walk would repeat the recorded fixpoint pass exactly
+			// (same entry scope, deterministic walk) - adopt the pass's results
+			// and replay its emissions through the real callback instead
+			$originalStorage->mergeResults($replayPassStorage);
+			$nodeScopeResolver->replayRecording($replayCondRecording, $nodeCallback, $originalStorage, $scope);
+			// the While_ callback is deferred from processStmtNode(): it fires
+			// after the condition's result is available, with the entry scope
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
+			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
+			$bodyCondResult = $replayCondResult;
+			$finalScopeResult = $replayPassResult;
+		} else {
+			$bodyCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			// the While_ callback is deferred from processStmtNode(): it fires after
+			// the condition's real walk stored its result, with the entry scope
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
+			$bodyScope = $bodyCondResult->getTruthyScope();
+			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		}
 		$finalScope = $finalScopeResult->getScope();
 		// the loop condition narrows the post-loop scope to its falsey branch;
 		// $finalScope (after the body ran) is a different scope than the condition's

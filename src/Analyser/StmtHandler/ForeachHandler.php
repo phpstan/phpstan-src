@@ -29,6 +29,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
@@ -173,6 +174,10 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		$originalStorage = $storage;
+		$replayBodyRecording = null;
+		$replayPassStorage = null;
+		$replayPassResult = null;
+		$replayEntryScope = null;
 		$unrolledEndScope = null;
 		$unrolledTotalKeys = null;
 		if ($context->isTopLevel()) {
@@ -207,6 +212,7 @@ final class ForeachHandler implements StmtHandler
 				}
 				$count = 0;
 				$prevEntryScope = null;
+				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
@@ -218,16 +224,25 @@ final class ForeachHandler implements StmtHandler
 					}
 					$prevEntryScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
+					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 					$scope->pushExpressionResultStorage($storage);
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
-						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
 						$bodyScope = $bodyScopeResult->getScope();
 						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 						}
 					} finally {
 						$scope->popExpressionResultStorage();
+					}
+					// the candidate to replace the final walk when this pass's
+					// entry turns out to be the fixpoint
+					if ($bodyRecording instanceof RecordingNodeCallback) {
+						$replayBodyRecording = $bodyRecording;
+						$replayPassStorage = $storage;
+						$replayPassResult = $bodyScopeResult;
+						$replayEntryScope = $prevEntryScope;
 					}
 					if ($bodyScope->equals($prevScope)) {
 						break;
@@ -242,10 +257,24 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
+		$finalEntryScope = $bodyScope;
 		$storage = $originalStorage;
 		$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
-		$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
-		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
+		if (
+			$replayBodyRecording !== null && $replayPassStorage !== null
+			&& $replayPassResult !== null && $replayEntryScope !== null
+			&& $unrolledTotalKeys === null && $finalEntryScope->equals($replayEntryScope)
+		) {
+			// the final walk would repeat the recorded fixpoint pass exactly
+			// (same entry scope, deterministic walk) - adopt the pass's results
+			// and replay its emissions through the real callback instead
+			$originalStorage->mergeResults($replayPassStorage);
+			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
+			$finalScopeResult = $replayPassResult;
+		} else {
+			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
+			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
+		}
 		$finalScope = $finalScopeResult->getScope();
 		$scopesWithIterableValueType = [];
 

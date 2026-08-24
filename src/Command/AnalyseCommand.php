@@ -28,6 +28,7 @@ use PHPStan\Internal\BytesHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Process\PcovHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use Symfony\Component\Console\Command\Command;
@@ -85,6 +86,13 @@ final class AnalyseCommand extends Command
 	 * a persisted result cache to be worth nagging about.
 	 */
 	private const RESULT_CACHE_CI_NOTIFICATION_ELAPSED_LIMIT = 60.0;
+
+	/**
+	 * The pcov notification is only shown when the analysis took longer than this
+	 * many seconds. Shorter runs do not waste enough time on pcov's call hook to
+	 * be worth nagging about.
+	 */
+	private const PCOV_NOTIFICATION_ELAPSED_LIMIT = 10.0;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -676,6 +684,7 @@ final class AnalyseCommand extends Command
 		}
 
 		$this->reportMissingResultCacheInCi($errorOutput, $analysisResult, $onlyFiles);
+		$this->reportPcovOverhead($errorOutput);
 
 		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 
@@ -708,6 +717,23 @@ final class AnalyseCommand extends Command
 		$errorOutput->writeLineFormatted('Persist PHPStan\'s result cache directory between CI runs to make your pipeline dramatically faster.');
 		$errorOutput->writeLineFormatted('Only changed files and their dependencies are re-analysed, so most runs finish in a fraction of the time.');
 		$errorOutput->writeLineFormatted('Learn how to set it up: https://phpstan.org/user-guide/result-cache');
+		$errorOutput->writeLineFormatted('');
+	}
+
+	private function reportPcovOverhead(Output $errorOutput): void
+	{
+		if (!PcovHelper::isActive() || PcovHelper::isAllowed()) {
+			return;
+		}
+
+		if (microtime(true) - $this->analysisStartTime < self::PCOV_NOTIFICATION_ELAPSED_LIMIT) {
+			return;
+		}
+
+		$errorOutput->writeLineFormatted('<comment>Tip: The pcov extension is active, which makes this run slower than it needs to be.</comment>');
+		$errorOutput->writeLineFormatted('pcov hooks into every function call in the process, even though PHPStan never collects code coverage.');
+		$errorOutput->writeLineFormatted(sprintf('PHPStan disables it in its worker processes - run PHPStan with "php -d %s" to disable it in the main process too.', PcovHelper::DISABLED_INI_SETTING));
+		$errorOutput->writeLineFormatted(sprintf('Set %s=1 if you need pcov to stay enabled.', PcovHelper::ALLOW_ENV_VARIABLE));
 		$errorOutput->writeLineFormatted('');
 	}
 

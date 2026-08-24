@@ -44,6 +44,13 @@ final class ProcessHelper
 			$processCommandArray[] = 'memory_limit=' . ini_get('memory_limit');
 		}
 
+		if (PcovHelper::shouldDisableInSubProcesses()) {
+			// pcov's call hook is installed before any PHP code of the worker runs,
+			// so the worker cannot turn it off itself.
+			$processCommandArray[] = '-d';
+			$processCommandArray[] = PcovHelper::DISABLED_INI_SETTING;
+		}
+
 		$turboExtension = TurboExtensionSelector::findExtensionForWorkers();
 		if ($turboExtension !== null) {
 			$processCommandArray[] = '-d';

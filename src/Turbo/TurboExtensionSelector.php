@@ -18,7 +18,9 @@ use const PHP_ZTS;
 
 /**
  * Locates the distributed turbo extension binary matching the current runtime
- * so worker processes can load it via `-d extension=`.
+ * so it can be loaded via `-d extension=` — into spawned worker processes
+ * (ProcessHelper), or into the restarted main process (TurboProcessRestarter)
+ * whose pcntl_fork()ed workers then inherit it.
  *
  * The binaries are committed to the phpstan/phpstan repository next to
  * phpstan.phar (turbo-ext/<platform>/phpstan_turbo-<minor>.so, .dll on
@@ -37,12 +39,30 @@ final class TurboExtensionSelector
 	public static function findExtensionForWorkers(): ?string
 	{
 		if (TurboExtensionEnabler::isLoaded()) {
+			$restartPath = TurboProcessRestarter::getRestartExtensionPath();
+			if ($restartPath !== null) {
+				// loaded through the restart's own -d flag (see
+				// TurboProcessRestarter) — spawned workers do not inherit
+				// command-line -d flags, so they need it passed explicitly
+				return $restartPath;
+			}
+
 			// loaded through php.ini — workers inherit the ini file
 			return null;
 		}
 		if (getenv('PHPSTAN_TURBO') === '0') {
 			return null;
 		}
+
+		return self::findExtension();
+	}
+
+	/**
+	 * Locates the distributed extension binary for the current platform —
+	 * present only next to a phar-based installation.
+	 */
+	public static function findExtension(): ?string
+	{
 		if ((bool) PHP_DEBUG) {
 			return null;
 		}

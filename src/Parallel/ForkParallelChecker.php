@@ -5,8 +5,8 @@ namespace PHPStan\Parallel;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use function function_exists;
-use function getenv;
 use function opcache_get_status;
 use function sprintf;
 
@@ -14,10 +14,22 @@ use function sprintf;
  * Decides whether parallel analysis should fork workers via pcntl_fork()
  * (see ForkedProcess) instead of spawning fresh PHP processes (see SpawnedProcess).
  *
- * Experimental and opt-in: enabled only when PHPSTAN_PARALLEL_FORK=1 is set,
- * the pcntl/posix functions exist, and OPcache + JIT are both off — their
- * shared memory is not safe to populate concurrently from forked children and
- * doing so corrupts analysis results.
+ * Fork is used whenever possible — a forked worker inherits the booted
+ * process and skips the application re-boot a spawned one pays. It requires:
+ *
+ * - pcntl/posix functions (not available on Windows — always spawn there)
+ * - the turbo extension, active with the expected version. A forked worker
+ *   inherits the parent's extensions, so the spawn-time `-d extension=`
+ *   injection cannot reach it — TurboProcessRestarter re-executes the main
+ *   process with the distributed binary loaded when needed. The extension
+ *   also arms the phar-fork-guard: libphar serves phar:// reads through one
+ *   shared per-archive fd whose seek cursor forked processes race on,
+ *   corrupting reads — the guard gives each forked child a private cursor.
+ *   Without it, running from a phar would corrupt analysis, so no turbo
+ *   means spawn.
+ * - OPcache + JIT off — their shared memory is not safe to populate
+ *   concurrently from forked children and doing so corrupts analysis
+ *   results.
  */
 #[AutowiredService]
 final class ForkParallelChecker implements DiagnoseExtension
@@ -34,15 +46,13 @@ final class ForkParallelChecker implements DiagnoseExtension
 
 		$reason = $this->getDisabledReason();
 		if ($reason === null) {
-			$output->writeLineFormatted('Mechanism:                 fork (pcntl_fork — experimental)');
+			$output->writeLineFormatted('Mechanism:                 fork (pcntl_fork)');
 			$output->writeLineFormatted('');
 			return;
 		}
 
 		$output->writeLineFormatted('Mechanism:                 spawn (react/child-process)');
-		if (getenv('PHPSTAN_PARALLEL_FORK') === '1') {
-			$output->writeLineFormatted(sprintf('Reason fork not used:      %s', $reason));
-		}
+		$output->writeLineFormatted(sprintf('Reason fork not used:      %s', $reason));
 		$output->writeLineFormatted('');
 	}
 
@@ -58,8 +68,8 @@ final class ForkParallelChecker implements DiagnoseExtension
 			return 'pcntl/posix functions are not available';
 		}
 
-		if (getenv('PHPSTAN_PARALLEL_FORK') !== '1') {
-			return 'PHPSTAN_PARALLEL_FORK environment variable is not set to "1"';
+		if (!TurboExtensionEnabler::isActive()) {
+			return 'the turbo extension is not active (see the Turbo extension section)';
 		}
 
 		if ($this->isOpcacheOrJitEnabled()) {

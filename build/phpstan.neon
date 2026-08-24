@@ -150,6 +150,11 @@ parameters:
 			path: PHPStan/Build/TurboAttributeCollector.php
 			reportUnmatched: false
 		-
+			# called from bin/phpstan before the autoloader, outside the analysed paths
+			identifier: shipmonk.deadMethod
+			message: '#^Unused PHPStan\\Turbo\\TurboProcessRestarter::restartIfSuitable#'
+			reportUnmatched: false
+		-
 			# the turbo extension shadows this seam class; the nullable returns
 			# are the contract of the pair, the PHP twin honestly never hits
 			message: '#^Method PHPStan\\Cache\\ArenaCache\:\:(?:create|lookupHashAll)\(\) never returns .+ so it can be removed from the return type\.$#'

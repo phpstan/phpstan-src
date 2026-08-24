@@ -2,7 +2,9 @@
 
 namespace PHPStan\Turbo;
 
+use Phar;
 use PHPStanTurbo\Runtime;
+use function class_exists;
 use function dirname;
 use function extension_loaded;
 use function file_get_contents;
@@ -20,7 +22,7 @@ final class TurboExtensionEnabler
 	 * version is the short SHA of the last commit touching turbo-ext/src/,
 	 * enforced by the phar.yml turbo-version job.
 	 */
-	public const EXPECTED_EXTENSION_VERSION = '83f3b7a';
+	public const EXPECTED_EXTENSION_VERSION = 'f529bad';
 
 	private static bool $typeCombinatorCacheEnabled = false;
 
@@ -149,6 +151,18 @@ final class TurboExtensionEnabler
 		// autoloader registers, so later references to the original names
 		// resolve to them.
 		require_once $stubsFile;
+
+		// When running from a phar, arm the pthread_atfork hooks that keep
+		// phar:// reads safe in pcntl_fork()ed workers — libphar serves them
+		// through one shared archive fd whose seek cursor forked processes
+		// would otherwise race on. Fork mode requires the guard, and
+		// ForkParallelChecker only allows fork with the extension active.
+		if (class_exists('Phar', false)) {
+			$pharPath = Phar::running(false);
+			if ($pharPath !== '') {
+				Runtime::enablePharForkGuard($pharPath);
+			}
+		}
 
 		self::$typeCombinatorCacheEnabled = true;
 		self::$enabled = true;

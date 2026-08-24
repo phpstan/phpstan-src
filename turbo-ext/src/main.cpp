@@ -60,6 +60,20 @@ static void ZEND_FASTCALL runtimeClassRefs(INTERNAL_FUNCTION_PARAMETERS)
 	pt_class_refs_dump(return_value);
 }
 
+/* PHPStanTurbo\Runtime::enablePharForkGuard() — TurboExtensionEnabler passes
+ * Phar::running(false) when PHPStan runs from a phar, arming the
+ * pthread_atfork hooks that keep phar:// reads safe in pcntl_fork()ed
+ * workers (see PharForkGuard.cpp). */
+static void ZEND_FASTCALL runtimeEnablePharForkGuard(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zend_string *path;
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_STR(path)
+	ZEND_PARSE_PARAMETERS_END();
+
+	pt_phar_fork_guard_register(path);
+}
+
 static PHP_MINIT_FUNCTION(phpstan_turbo)
 {
 #ifdef ZTS
@@ -69,6 +83,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	reg::Class runtime("PHPStanTurbo\\Runtime");
 	runtime.method("configure", reg::PublicStatic, 1, { reg::arrayArg("classMap") }, runtimeConfigure);
 	runtime.method("classRefs", reg::PublicStatic, 0, {}, runtimeClassRefs);
+	runtime.method("enablePharForkGuard", reg::PublicStatic, 1, { reg::stringArg("pharPath") }, runtimeEnablePharForkGuard);
 	runtime.register_();
 
 	pt_register_trinary_logic();

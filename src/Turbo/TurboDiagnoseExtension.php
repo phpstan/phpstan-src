@@ -43,7 +43,12 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		));
 
 		if (TurboExtensionEnabler::isLoaded()) {
-			$workerBinaryLine = 'loaded via php.ini, workers inherit it';
+			$restartPath = TurboProcessRestarter::getRestartExtensionPath();
+			if ($restartPath !== null) {
+				$workerBinaryLine = sprintf('%s (loaded via process restart)', $restartPath);
+			} else {
+				$workerBinaryLine = 'loaded via php.ini, workers inherit it';
+			}
 		} else {
 			$workerBinaryLine = $workerBinary ?? 'none found';
 		}

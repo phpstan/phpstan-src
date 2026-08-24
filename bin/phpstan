@@ -10,6 +10,7 @@ use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\WorkerCommand;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Turbo\TurboExtensionEnabler;
+use PHPStan\Turbo\TurboProcessRestarter;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 (function () {
@@ -24,6 +25,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	define('__PHPSTAN_RUNNING__', true);
 
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
+	require_once __DIR__ . '/../src/Turbo/TurboExtensionSelector.php';
+	require_once __DIR__ . '/../src/Turbo/TurboProcessRestarter.php';
+	TurboProcessRestarter::restartIfSuitable($_SERVER['argv']);
 	TurboExtensionEnabler::enableIfLoaded();
 
 	$analysisStartTime = microtime(true);

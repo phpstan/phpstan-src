@@ -232,8 +232,22 @@ final class TypeCombinator
 				return $b;
 			}
 
-			// union(X, X) = X (same object identity)
-			if ($a === $b) {
+			// union(X, X) = X — for equal array operands, not just identical
+			// ones. For arrays the general path below is not a no-op on a pair
+			// that already denotes a single type: it rebuilds them from
+			// ArrayType::getIterableKeyType(), which coerces a subtracted key
+			// type down to the plain array-key union, so `array<mixed~'User',
+			// mixed>` unioned with an equal instance came back as plain
+			// `array`. Whether the two operands happen to be the same object
+			// must not decide the result.
+			//
+			// Non-array operands keep taking the general path. It is lossless
+			// for them, and it has to stay in charge because `equals()` is
+			// weaker than interchangeability for some types: a benevolent
+			// `(int|string)` equals a plain `int|string` and `Foo=final` equals
+			// `Foo`, and there the general path deliberately yields the wider
+			// operand rather than whichever one was passed first.
+			if ($a === $b || ($a->equals($b) && $a->isArray()->yes())) {
 				return $a;
 			}
 		}

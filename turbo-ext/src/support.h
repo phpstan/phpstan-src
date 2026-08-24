@@ -161,6 +161,11 @@ void pt_type_combinator_cache_rshutdown();
  * ArenaCache::destroy() on a graceful exit */
 void pt_arena_mshutdown();
 
+/* Runtime::enablePharForkGuard() — privatizes the phar archive's fd cursor
+ * in pcntl_fork()ed children via pthread_atfork (see PharForkGuard.cpp);
+ * a no-op on Windows */
+void pt_phar_fork_guard_register(zend_string *path);
+
 /* }}} */
 
 /* {{{ TrinaryLogic values and singletons */

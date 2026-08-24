@@ -19,4 +19,8 @@ final class Runtime
 	{
 	}
 
+	public static function enablePharForkGuard(string $pharPath): void
+	{
+	}
+
 }

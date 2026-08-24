@@ -83,7 +83,8 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/simPod/BetterReflection"
+			"url": "https://github.com/simPod/BetterReflection",
+			"no-api": true
 		}
 	],
 	"config": {

@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "a8a7b0bc80b76b01d7f6585494d8fd11",
+  "content-hash": "f068d80d8bea78f131bc76a85dbe8f8b",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -2388,7 +2388,7 @@
       "version": "dev-feat/versioned-extension-stubs",
       "source": {
         "type": "git",
-        "url": "https://github.com/simPod/BetterReflection.git",
+        "url": "https://github.com/simPod/BetterReflection",
         "reference": "165422d408bc16a3d8a784886cc4157ae744ba76"
       },
       "dist": {

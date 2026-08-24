@@ -38,8 +38,9 @@ typedef struct _pt_scope_offsets {
 	int32_t scope_out_of_first_level;
 	int32_t scope_with_promoted_native;
 	int32_t walk_scope;          /* NodeCallbackScope */
-	int32_t truthy_value_exprs;  /* NodeCallbackScope */
-	int32_t falsey_value_exprs;  /* NodeCallbackScope */
+	int32_t scope_ops;           /* NodeCallbackScope */
+	int32_t asked_types;         /* NodeCallbackScope */
+	int32_t asked_native_types;  /* NodeCallbackScope */
 } pt_scope_offsets;
 
 static HashTable pt_scope_offsets_cache;
@@ -79,8 +80,9 @@ static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
 	off->scope_out_of_first_level = pt_instance_prop_offset(ce, "scopeOutOfFirstLevelStatement", sizeof("scopeOutOfFirstLevelStatement") - 1);
 	off->scope_with_promoted_native = pt_instance_prop_offset(ce, "scopeWithPromotedNativeTypes", sizeof("scopeWithPromotedNativeTypes") - 1);
 	off->walk_scope = pt_instance_prop_offset(ce, "walkScope", sizeof("walkScope") - 1);
-	off->truthy_value_exprs = pt_instance_prop_offset(ce, "truthyValueExprs", sizeof("truthyValueExprs") - 1);
-	off->falsey_value_exprs = pt_instance_prop_offset(ce, "falseyValueExprs", sizeof("falseyValueExprs") - 1);
+	off->scope_ops = pt_instance_prop_offset(ce, "scopeOps", sizeof("scopeOps") - 1);
+	off->asked_types = pt_instance_prop_offset(ce, "askedTypes", sizeof("askedTypes") - 1);
+	off->asked_native_types = pt_instance_prop_offset(ce, "askedNativeTypes", sizeof("askedNativeTypes") - 1);
 
 	zend_hash_add_ptr(&pt_scope_offsets_cache, ce->name, off);
 	return off;
@@ -303,8 +305,9 @@ public:
 		resetToNull(cloneObj, off->scope_out_of_first_level);
 		resetToNull(cloneObj, off->scope_with_promoted_native);
 		resetToNull(cloneObj, off->walk_scope);
-		resetToEmptyArray(cloneObj, off->truthy_value_exprs);
-		resetToEmptyArray(cloneObj, off->falsey_value_exprs);
+		resetToEmptyArray(cloneObj, off->scope_ops);
+		resetToEmptyArray(cloneObj, off->asked_types);
+		resetToEmptyArray(cloneObj, off->asked_native_types);
 
 		zval out;
 		ZVAL_OBJ(&out, clone);

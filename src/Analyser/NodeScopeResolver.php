@@ -1273,6 +1273,90 @@ class NodeScopeResolver
 		return [];
 	}
 
+	private const REPLAYABLE_BODY_ATTRIBUTE = 'convergenceReplayableBody';
+
+	/**
+	 * Whether a recorded convergence pass over the loop body can replace the
+	 * final walk. A pass runs at deep statement context, the final walk at top
+	 * level - constructs that analyse differently between the two (nested
+	 * loop/label fixpoints run only at top level, statement-level classes are
+	 * skipped at deep context) disqualify the body. Closure bodies process
+	 * context-independently and are not traversed.
+	 *
+	 * @param Node\Stmt[] $bodyStmts
+	 */
+	public function isReplayableConvergenceBody(Node $loopNode, array $bodyStmts): bool
+	{
+		$cached = $loopNode->getAttribute(self::REPLAYABLE_BODY_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$replayable = true;
+		foreach ($bodyStmts as $bodyStmt) {
+			if ($this->hasContextSensitiveConstruct($bodyStmt)) {
+				$replayable = false;
+				break;
+			}
+		}
+		$loopNode->setAttribute(self::REPLAYABLE_BODY_ATTRIBUTE, $replayable);
+
+		return $replayable;
+	}
+
+	private function hasContextSensitiveConstruct(Node $node): bool
+	{
+		if ($node instanceof Expr\Closure) {
+			return false;
+		}
+		if (
+			$node instanceof Node\Stmt\While_
+			|| $node instanceof Node\Stmt\Do_
+			|| $node instanceof Node\Stmt\For_
+			|| $node instanceof Foreach_
+			|| $node instanceof Node\Stmt\Label
+			|| $node instanceof Node\Stmt\ClassLike
+		) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				if ($this->hasContextSensitiveConstruct($subNode)) {
+					return true;
+				}
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $item) {
+					if ($item instanceof Node && $this->hasContextSensitiveConstruct($item)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Replays a recorded convergence pass's emissions through the real node
+	 * callback in place of the final loop walk. The pass's storage was merged
+	 * into $storage by the caller; binding it for the whole replay lets the
+	 * recorded scopes answer rule asks from the stored before-scopes, the
+	 * same way the repeated walk's per-emission binding would.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function replayRecording(RecordingNodeCallback $recording, callable $nodeCallback, ExpressionResultStorage $storage, MutatingScope $scope): void
+	{
+		$scope->pushExpressionResultStorage($storage);
+		try {
+			$recording->replayThrough($nodeCallback);
+		} finally {
+			$scope->popExpressionResultStorage();
+		}
+	}
+
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -1312,6 +1396,13 @@ class NodeScopeResolver
 		}
 
 		if ($nodeCallback instanceof NoopNodeCallback) {
+			return;
+		}
+
+		if ($nodeCallback instanceof RecordingNodeCallback) {
+			// recording never asks about types - the pairs are wrapped and
+			// bound to the storage at replay time instead
+			$nodeCallback($node, $scope);
 			return;
 		}
 
@@ -1491,15 +1582,29 @@ class NodeScopeResolver
 
 		$count = 0;
 		$closureResultScope = null;
+		$replayBodyRecording = null;
+		$replayPassStorage = null;
+		$replayPassResult = null;
+		$replayEntryScope = null;
+		$bodyIsReplayable = $this->isReplayableConvergenceBody($expr, $expr->stmts);
 		do {
 			$prevScope = $closureScope;
 
 			$storage = $originalStorage->duplicate();
+			$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 			// deep context, like the loop handlers' own convergence passes: inner
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
 			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createDeep());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep());
+			// the candidate to replace the final walk when this pass's entry
+			// turns out to be the fixpoint
+			if ($bodyRecording instanceof RecordingNodeCallback) {
+				$replayBodyRecording = $bodyRecording;
+				$replayPassStorage = $storage;
+				$replayPassResult = $intermediaryClosureScopeResult;
+				$replayEntryScope = $prevScope;
+			}
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -1527,7 +1632,24 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		if (
+			$replayBodyRecording !== null && $replayPassStorage !== null
+			&& $replayPassResult !== null && $replayEntryScope !== null
+			&& $closureScope->equals($replayEntryScope)
+		) {
+			// the final walk would repeat the recorded fixpoint pass exactly
+			// (same entry scope, deterministic walk) - adopt the pass's result
+			// and replay its emissions through the gathering callback instead.
+			// The pass's own entry scope takes over: the recorded pairs carry
+			// its anonymous-function reflection, which the gathering filter
+			// compares by identity (the state is equals-identical anyway).
+			$closureScope = $replayEntryScope;
+			$originalStorage->mergeResults($replayPassStorage);
+			$this->replayRecording($replayBodyRecording, $closureStmtsCallback, $originalStorage, $closureScope);
+			$statementResult = $replayPassResult;
+		} else {
+			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		}
 		$publicStatementResult = $statementResult->toPublic();
 		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions, $storage);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(

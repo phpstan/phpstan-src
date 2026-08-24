@@ -8,7 +8,6 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
-use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -53,7 +52,7 @@ final class ExpressionHandler implements StmtHandler
 		}
 		$hasAssign = false;
 		$currentScope = $scope;
-		$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
+		$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
 			if (
 				!($node instanceof VariableAssignNode) && !($node instanceof PropertyAssignNode)
 				|| $scope->getAnonymousFunctionReflection() !== $currentScope->getAnonymousFunctionReflection()
@@ -63,7 +62,13 @@ final class ExpressionHandler implements StmtHandler
 			}
 
 			$hasAssign = true;
-		}, $nodeCallback), ExpressionContext::createTopLevel());
+		});
+		try {
+			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+		} finally {
+			$nodeScopeResolver->popNodeGatherer();
+		}
+
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 		if (

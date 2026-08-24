@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parallel;
 
+use Phar;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
@@ -18,15 +19,17 @@ use function sprintf;
  * process and skips the application re-boot a spawned one pays. It requires:
  *
  * - pcntl/posix functions (not available on Windows — always spawn there)
- * - the turbo extension, active with the expected version. A forked worker
- *   inherits the parent's extensions, so the spawn-time `-d extension=`
- *   injection cannot reach it — TurboProcessRestarter re-executes the main
- *   process with the distributed binary loaded when needed. The extension
- *   also arms the phar-fork-guard: libphar serves phar:// reads through one
- *   shared per-archive fd whose seek cursor forked processes race on,
- *   corrupting reads — the guard gives each forked child a private cursor.
- *   Without it, running from a phar would corrupt analysis, so no turbo
- *   means spawn.
+ * - when running from a phar, the turbo extension, active with the expected
+ *   version. The extension arms the phar-fork-guard: libphar serves phar://
+ *   reads through one shared per-archive fd whose seek cursor forked
+ *   processes race on, corrupting reads — the guard gives each forked child
+ *   a private cursor. TurboProcessRestarter re-executes the main process
+ *   with the distributed binary loaded when needed (a forked worker inherits
+ *   the parent's extensions; the spawn-time `-d extension=` injection cannot
+ *   reach it). Outside a phar there is nothing to guard, and no turbo is
+ *   lost by forking either: the distributed binaries only exist next to a
+ *   phar, so spawned workers of a source checkout run without turbo too —
+ *   an ini-loaded extension is inherited by fork like any other.
  * - OPcache + JIT off — their shared memory is not safe to populate
  *   concurrently from forked children and doing so corrupts analysis
  *   results.
@@ -68,8 +71,8 @@ final class ForkParallelChecker implements DiagnoseExtension
 			return 'pcntl/posix functions are not available';
 		}
 
-		if (!TurboExtensionEnabler::isActive()) {
-			return 'the turbo extension is not active (see the Turbo extension section)';
+		if (Phar::running(false) !== '' && !TurboExtensionEnabler::isActive()) {
+			return 'running from a phar without the active turbo extension (its fork guard protects phar:// reads in forked children)';
 		}
 
 		if ($this->isOpcacheOrJitEnabled()) {

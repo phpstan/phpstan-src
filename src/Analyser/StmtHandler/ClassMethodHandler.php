@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\DeprecatedAttributeResolver;
 use PHPStan\Analyser\ExpressionResultStorage;
-use PHPStan\Analyser\GatheringNodeCallback;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -169,7 +168,7 @@ final class ClassMethodHandler implements StmtHandler
 			$gatheredYieldStatements = [];
 			$executionEnds = [];
 			$methodImpurePoints = [];
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, new GatheringNodeCallback(static function (Node $node, Scope $scope) use ($methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
+				$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
 					}
@@ -207,7 +206,12 @@ final class ClassMethodHandler implements StmtHandler
 					}
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-				}, $nodeCallback), StatementContext::createTopLevel())->toPublic();
+				});
+			try {
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+			} finally {
+				$nodeScopeResolver->popNodeGatherer();
+			}
 
 			$methodReflection = $methodScope->getFunction();
 			if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {

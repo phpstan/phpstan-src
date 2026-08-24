@@ -21,6 +21,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\CatchWithThrownExceptionInTraitNode;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
@@ -208,6 +209,13 @@ final class TryCatchHandler implements StmtHandler
 			// emit error
 			foreach ($matchingCatchTypes as $catchTypeIndex => $matched) {
 				if ($matched) {
+					// A trait's catch can be dead in the context of one class using the
+					// trait and alive in the context of another, so the alive ones have
+					// to be reported there as well for the disagreement to be noticed.
+					if ($scope->isInTrait()) {
+						$nodeScopeResolver->callNodeCallback($nodeCallback, new CatchWithThrownExceptionInTraitNode($catchNode, $originalCatchTypes[$catchTypeIndex]), $scope, $storage);
+					}
+
 					continue;
 				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new CatchWithUnthrownExceptionNode($catchNode, $catchTypes[$catchTypeIndex], $originalCatchTypes[$catchTypeIndex]), $scope, $storage);

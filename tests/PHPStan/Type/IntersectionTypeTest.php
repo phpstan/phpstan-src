@@ -8,6 +8,7 @@ use DoctrineIntersectionTypeIsSupertypeOf\Collection;
 use Iterator;
 use ObjectTypeEnums\FooEnum;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -142,20 +143,20 @@ class IntersectionTypeTest extends PHPStanTestCase
 		// array&callable isAcceptedBy constantArray{stdClass, string} - maybe
 		yield [
 			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
-			new ConstantArrayType(
+			BleedingEdgeToggle::withBleedingEdge(false, static fn (): ConstantArrayType => new ConstantArrayType(
 				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 				[new UnionType([new ObjectType('stdClass'), new StringType()]), new StringType()],
-			),
+			)),
 			TrinaryLogic::createMaybe(),
 		];
 
 		// array&callable isAcceptedBy constantArray{string, string} - maybe
 		yield [
 			new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]),
-			new ConstantArrayType(
+			BleedingEdgeToggle::withBleedingEdge(false, static fn (): ConstantArrayType => new ConstantArrayType(
 				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 				[new StringType(), new StringType()],
-			),
+			)),
 			TrinaryLogic::createMaybe(),
 		];
 
@@ -199,10 +200,10 @@ class IntersectionTypeTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 				new HasOffsetValueType(new ConstantIntegerType(0), new IntegerType()),
 			]),
-			new ConstantArrayType(
+			BleedingEdgeToggle::withBleedingEdge(false, static fn (): ConstantArrayType => new ConstantArrayType(
 				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 				[new IntegerType(), new IntegerType()],
-			),
+			)),
 			TrinaryLogic::createMaybe(),
 		];
 
@@ -213,10 +214,10 @@ class IntersectionTypeTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 				new HasOffsetValueType(new ConstantIntegerType(0), new IntegerType()),
 			]),
-			new ConstantArrayType(
+			BleedingEdgeToggle::withBleedingEdge(false, static fn (): ConstantArrayType => new ConstantArrayType(
 				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 				[new StringType(), new StringType()],
-			),
+			)),
 			TrinaryLogic::createNo(),
 		];
 

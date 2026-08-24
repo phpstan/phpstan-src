@@ -19,19 +19,21 @@ use function usort;
 final class Scheduler implements DiagnoseExtension
 {
 
-	/** @var array{int, int, int, int}|null */
+	public const AUTO = 'auto';
+
+	/** @var array{int, int, int, int, string}|null */
 	private ?array $storedData = null;
 
 	/**
 	 * @param positive-int $jobSize
-	 * @param positive-int $maximumNumberOfProcesses
+	 * @param positive-int|self::AUTO $maximumNumberOfProcesses
 	 * @param positive-int $minimumNumberOfJobsPerProcess
 	 */
 	public function __construct(
 		#[AutowiredParameter(ref: '%parallel.jobSize%')]
 		private int $jobSize,
 		#[AutowiredParameter(ref: '%parallel.maximumNumberOfProcesses%')]
-		private int $maximumNumberOfProcesses,
+		private int|string $maximumNumberOfProcesses,
 		#[AutowiredParameter(ref: '%parallel.minimumNumberOfJobsPerProcess%')]
 		private int $minimumNumberOfJobsPerProcess,
 	)
@@ -78,10 +80,30 @@ final class Scheduler implements DiagnoseExtension
 			$cpuCores,
 		);
 
-		$usedNumberOfProcesses = min($numberOfProcesses, $this->maximumNumberOfProcesses);
-		$this->storedData = [$cpuCores, count($files), count($jobs), $usedNumberOfProcesses];
+		[$maximumNumberOfProcesses, $decision] = $this->resolveMaximumNumberOfProcesses($cpuCores);
+		$usedNumberOfProcesses = min($numberOfProcesses, $maximumNumberOfProcesses);
+		$this->storedData = [$cpuCores, count($files), count($jobs), $usedNumberOfProcesses, $decision];
 
 		return new Schedule($usedNumberOfProcesses, $jobs);
+	}
+
+	/**
+	 * How many workers may run at once, and a human-readable account of why - which
+	 * `diagnose` prints, because a user who thinks the number is wrong needs to see
+	 * which input produced it.
+	 *
+	 * @return array{positive-int, string}
+	 */
+	private function resolveMaximumNumberOfProcesses(int $cpuCores): array
+	{
+		if ($this->maximumNumberOfProcesses !== self::AUTO) {
+			return [$this->maximumNumberOfProcesses, 'configured'];
+		}
+
+		return [
+			max(1, $cpuCores),
+			sprintf('auto, limited by %d usable CPU cores', $cpuCores),
+		];
 	}
 
 	public function print(Output $output): void
@@ -90,13 +112,14 @@ final class Scheduler implements DiagnoseExtension
 			return;
 		}
 
-		[$cpuCores, $filesCount, $jobsCount, $usedNumberOfProcesses] = $this->storedData;
+		[$cpuCores, $filesCount, $jobsCount, $usedNumberOfProcesses, $decision] = $this->storedData;
 
 		$output->writeLineFormatted('<info>Parallel processing scheduler:</info>');
 		$output->writeLineFormatted(sprintf('# of detected CPU cores:   %d', $cpuCores));
 		$output->writeLineFormatted(sprintf('# of analysed files:       %d', $filesCount));
 		$output->writeLineFormatted(sprintf('# of jobs:                 %d', $jobsCount));
 		$output->writeLineFormatted(sprintf('# of spawned processes:    %d', $usedNumberOfProcesses));
+		$output->writeLineFormatted(sprintf('Process limit:             %s', $decision));
 		$output->writeLineFormatted('');
 	}
 

@@ -165,4 +165,32 @@ class SchedulerTest extends TestCase
 		}
 	}
 
+	public function testAutoUsesAllUsableCores(): void
+	{
+		// 12 usable cores, plenty of jobs - auto follows the cores, not the old
+		// fixed default of 8
+		$scheduler = new Scheduler(1, Scheduler::AUTO, 1);
+		$schedule = $scheduler->scheduleWork(12, array_fill(0, 200, 'file.php'), static fn (string $file): int => 0);
+
+		$this->assertSame(12, $schedule->getNumberOfProcesses());
+	}
+
+	public function testAutoIsStillCappedByTheJobCount(): void
+	{
+		// 40 files -> 2 jobs at size 20, at least 2 jobs per process -> a single
+		// worker no matter how many cores the machine has
+		$scheduler = new Scheduler(20, Scheduler::AUTO, 2);
+		$schedule = $scheduler->scheduleWork(32, array_fill(0, 40, 'file.php'), static fn (string $file): int => 0);
+
+		$this->assertSame(1, $schedule->getNumberOfProcesses());
+	}
+
+	public function testAnExplicitLimitStillWins(): void
+	{
+		$scheduler = new Scheduler(1, 20, 1);
+		$schedule = $scheduler->scheduleWork(32, array_fill(0, 200, 'file.php'), static fn (string $file): int => 0);
+
+		$this->assertSame(20, $schedule->getNumberOfProcesses());
+	}
+
 }

@@ -2,11 +2,14 @@
 
 namespace PHPStan\Analyser;
 
+use Closure;
 use PhpParser\Node\Expr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use function array_pop;
 use function count;
@@ -15,11 +18,19 @@ use function spl_object_id;
 final class NodeCallbackScope extends MutatingScope
 {
 
-	/** @var Expr[] */
-	private array $truthyValueExprs = [];
-
-	/** @var Expr[] */
-	private array $falseyValueExprs = [];
+	/**
+	 * Scope-deriving calls a rule made on this scope, in call order. Asks are
+	 * answered from the asked node's stored before-scope (see doGetType()),
+	 * which knows nothing about what the rule derived locally — so every
+	 * deriving call is recorded here and replayed onto the before-scope
+	 * before it answers (preprocessScope()). Only top-level calls are
+	 * recorded: a mutator implemented via other mutators (assignVariable()
+	 * calls assignExpression()) resets the list to its own caller's view and
+	 * appends itself, and the replay re-runs the composition.
+	 *
+	 * @var list<Closure(MutatingScope): MutatingScope>
+	 */
+	private array $scopeOps = [];
 
 	private ?MutatingScope $walkScope = null;
 
@@ -126,8 +137,7 @@ final class NodeCallbackScope extends MutatingScope
 
 		if (
 			!$this->nativeTypesPromoted
-			&& count($this->truthyValueExprs) === 0
-			&& count($this->falseyValueExprs) === 0
+			&& count($this->scopeOps) === 0
 		) {
 			if ($beforeScope !== null) {
 				return $beforeScope->getType($node);
@@ -175,8 +185,7 @@ final class NodeCallbackScope extends MutatingScope
 
 		if (
 			!$this->nativeTypesPromoted
-			&& count($this->truthyValueExprs) === 0
-			&& count($this->falseyValueExprs) === 0
+			&& count($this->scopeOps) === 0
 		) {
 			if ($beforeScope !== null) {
 				return $beforeScope->getNativeType($expr);
@@ -202,9 +211,8 @@ final class NodeCallbackScope extends MutatingScope
 	{
 		/** @var self $scope */
 		$scope = parent::filterByTruthyValue($expr);
-		$scope->truthyValueExprs = $this->truthyValueExprs;
-		$scope->falseyValueExprs = $this->falseyValueExprs;
-		$scope->truthyValueExprs[] = $expr;
+		$scope->scopeOps = $this->scopeOps;
+		$scope->scopeOps[] = static fn (MutatingScope $scope): MutatingScope => $scope->filterByTruthyValue($expr);
 
 		return $scope;
 	}
@@ -213,9 +221,41 @@ final class NodeCallbackScope extends MutatingScope
 	{
 		/** @var self $scope */
 		$scope = parent::filterByFalseyValue($expr);
-		$scope->truthyValueExprs = $this->truthyValueExprs;
-		$scope->falseyValueExprs = $this->falseyValueExprs;
-		$scope->falseyValueExprs[] = $expr;
+		$scope->scopeOps = $this->scopeOps;
+		$scope->scopeOps[] = static fn (MutatingScope $scope): MutatingScope => $scope->filterByFalseyValue($expr);
+
+		return $scope;
+	}
+
+	/**
+	 * @param list<string> $intertwinedPropagatedFrom
+	 */
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self
+	{
+		/** @var self $scope */
+		$scope = parent::assignVariable($variableName, $type, $nativeType, $certainty, $intertwinedPropagatedFrom);
+		$scope->scopeOps = $this->scopeOps;
+		$scope->scopeOps[] = static fn (MutatingScope $scope): MutatingScope => $scope->assignVariable($variableName, $type, $nativeType, $certainty, $intertwinedPropagatedFrom);
+
+		return $scope;
+	}
+
+	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self
+	{
+		/** @var self $scope */
+		$scope = parent::assignExpression($expr, $type, $nativeType);
+		$scope->scopeOps = $this->scopeOps;
+		$scope->scopeOps[] = static fn (MutatingScope $scope): MutatingScope => $scope->assignExpression($expr, $type, $nativeType);
+
+		return $scope;
+	}
+
+	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self
+	{
+		/** @var self $scope */
+		$scope = parent::invalidateExpression($expressionToInvalidate, $requireMoreCharacters, $invalidatingClass);
+		$scope->scopeOps = $this->scopeOps;
+		$scope->scopeOps[] = static fn (MutatingScope $scope): MutatingScope => $scope->invalidateExpression($expressionToInvalidate, $requireMoreCharacters, $invalidatingClass);
 
 		return $scope;
 	}
@@ -230,11 +270,8 @@ final class NodeCallbackScope extends MutatingScope
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		}
 
-		foreach ($this->truthyValueExprs as $expr) {
-			$scope = $scope->filterByTruthyValue($expr);
-		}
-		foreach ($this->falseyValueExprs as $expr) {
-			$scope = $scope->filterByFalseyValue($expr);
+		foreach ($this->scopeOps as $op) {
+			$scope = $op($scope);
 		}
 
 		return $scope;
@@ -247,8 +284,7 @@ final class NodeCallbackScope extends MutatingScope
 	{
 		/** @var self $scope */
 		$scope = parent::pushInFunctionCall($reflection, $parameter, $rememberTypes);
-		$scope->truthyValueExprs = $this->truthyValueExprs;
-		$scope->falseyValueExprs = $this->falseyValueExprs;
+		$scope->scopeOps = $this->scopeOps;
 
 		return $scope;
 	}
@@ -260,8 +296,7 @@ final class NodeCallbackScope extends MutatingScope
 
 		/** @var self $scope */
 		$scope = parent::popInFunctionCall();
-		$scope->truthyValueExprs = $this->truthyValueExprs;
-		$scope->falseyValueExprs = $this->falseyValueExprs;
+		$scope->scopeOps = $this->scopeOps;
 
 		return $scope;
 	}

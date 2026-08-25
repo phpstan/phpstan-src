@@ -202,7 +202,7 @@ final class AnalyseCommand extends Command
 				$insteadOfFile,
 				true,
 			);
-		} catch (InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			return 1;
 		}
 

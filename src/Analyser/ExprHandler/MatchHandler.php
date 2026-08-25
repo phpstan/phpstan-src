@@ -71,7 +71,7 @@ final class MatchHandler implements ExprHandler
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$types = [];
-		foreach ($this->getArmScopesAndTypes($scope, $expr) as [$armScope, $armType]) {
+		foreach ($this->getArmScopesAndTypes($scope, $expr) as [, $armType]) {
 			$types[] = $armType;
 		}
 

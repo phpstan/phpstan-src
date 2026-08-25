@@ -223,7 +223,7 @@ final class TurboAttributeCollector
 		ksort($referenced);
 
 		$manifest = [];
-		foreach ($pairs as $className => [$turboClass, $final, $cppFile]) {
+		foreach ($pairs as $className => [, , $cppFile]) {
 			$fileName = (new ReflectionClass($className))->getFileName();
 			if ($fileName === false) {
 				throw new RuntimeException(sprintf('%s has no source file', $className));
@@ -272,7 +272,7 @@ final class TurboAttributeCollector
 	public function renderStubs(array $pairs): string
 	{
 		$namespaces = [];
-		foreach ($pairs as $className => [$turboClass, $final, $cppFile, $interfaces]) {
+		foreach ($pairs as $className => [$turboClass, $final, , $interfaces]) {
 			$pos = strrpos($className, '\\');
 			if ($pos === false) {
 				throw new RuntimeException(sprintf('%s is not a namespaced class name', $className));

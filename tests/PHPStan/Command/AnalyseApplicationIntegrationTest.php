@@ -78,19 +78,23 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			null,
 			CommandHelper::DEFAULT_LEVEL,
 		);
-		$analysisResult = $analyserApplication->analyse(
-			[$path],
-			true,
-			$symfonyOutput,
-			$symfonyOutput,
-			false,
-			true,
-			null,
-			null,
-			null,
-			null,
-			$this->createStub(InputInterface::class),
-		);
+		try {
+			$analysisResult = $analyserApplication->analyse(
+				[$path],
+				true,
+				$symfonyOutput,
+				$symfonyOutput,
+				false,
+				true,
+				null,
+				null,
+				null,
+				null,
+				$this->createStub(InputInterface::class),
+			);
+		} catch (InceptionNotSuccessfulException) {
+			$this->fail('Inception was not successful.');
+		}
 		$statusCode = $errorFormatter->formatErrors($analysisResult, $symfonyOutput);
 
 		rewind($output->getStream());

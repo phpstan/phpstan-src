@@ -201,6 +201,7 @@ final class AnalyseCommand extends Command
 				$tmpFile,
 				$insteadOfFile,
 				true,
+				deferBootstrapFiles: true,
 			);
 		} catch (InceptionNotSuccessfulException) {
 			return 1;

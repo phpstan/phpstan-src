@@ -1027,7 +1027,15 @@ final class ClassReflection
 
 	public function is(string $className): bool
 	{
-		return $this->getName() === $className || $this->isSubclassOf($className);
+		if ($this->getName() === $className) {
+			return true;
+		}
+
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return false;
+		}
+
+		return $this->isSubclassOfClass($this->reflectionProvider->getClass($className));
 	}
 
 	/**

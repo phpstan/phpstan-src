@@ -28,6 +28,7 @@ use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -449,6 +450,10 @@ final class ResolvedPhpDocBlock
 
 	private function getNameScope(): NameScope
 	{
+		if ($this->nameScope === null) {
+			throw new ShouldNotHappenException();
+		}
+
 		return $this->nameScope;
 	}
 

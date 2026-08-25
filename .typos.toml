@@ -12,10 +12,6 @@ supportsLessOverridenParametersWithVariadic = "supportsLessOverridenParametersWi
 consts = "consts"
 # PHP built-in function (alias of is_writable)
 is_writeable = "is_writeable"
-# TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION is a git short SHA, not
-# a word; it changes on every turbo-ext/src commit and will occasionally
-# collide with a dictionary word fragment like this one.
-873ede9 = "873ede9"
 
 [default.extend-words]
 # override false-positives

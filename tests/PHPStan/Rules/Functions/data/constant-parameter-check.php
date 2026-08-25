@@ -120,3 +120,8 @@ preg_replace_callback_array(['/foo/' => fn ($m) => $m[0]], 'subject', -1, $count
 
 // preg_replace_callback_array: correct constant in $flags
 preg_replace_callback_array(['/foo/' => fn ($m) => $m[0]], 'subject', -1, $count, PREG_UNMATCHED_AS_NULL);
+
+// filter_var/filter_input: FILTER_THROW_ON_FAILURE is a valid flag (PHP 8.5)
+filter_var('foo', FILTER_VALIDATE_INT, FILTER_THROW_ON_FAILURE);
+filter_var('foo', FILTER_VALIDATE_INT, FILTER_THROW_ON_FAILURE | FILTER_FLAG_ALLOW_HEX);
+filter_input(INPUT_GET, 'foo', FILTER_VALIDATE_INT, FILTER_THROW_ON_FAILURE);

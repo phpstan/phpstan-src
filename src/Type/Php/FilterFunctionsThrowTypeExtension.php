@@ -14,13 +14,14 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
-final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExtension
+final class FilterFunctionsThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private PhpVersion $phpVersion,
 		private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper,
+		private FilterFunctionFlagsHelper $filterFunctionFlagsHelper,
 	)
 	{
 	}
@@ -29,7 +30,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 		FunctionReflection $functionReflection,
 	): bool
 	{
-		return $functionReflection->getName() === 'filter_var';
+		return $this->filterFunctionFlagsHelper->isSupported($functionReflection);
 	}
 
 	public function getThrowTypeFromFunctionCall(
@@ -38,10 +39,6 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 		Scope $scope,
 	): ?Type
 	{
-		if (!isset($funcCall->getArgs()[2])) {
-			return null;
-		}
-
 		if (
 			!$this->phpVersion->hasFilterThrowOnFailureConstant()
 			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
@@ -49,10 +46,11 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 			return null;
 		}
 
-		$flagsExpr = $funcCall->getArgs()[2]->value;
-		$flagsType = $scope->getType($flagsExpr);
+		foreach ($this->filterFunctionFlagsHelper->getFlagsTypes($functionReflection, $funcCall, $scope) as $flagsType) {
+			if ($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->no()) {
+				continue;
+			}
 
-		if (!$this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->no()) {
 			return new ObjectType('Filter\FilterFailedException');
 		}
 

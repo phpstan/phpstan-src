@@ -52,10 +52,10 @@ final class ConditionalExpressionHolderHelper
 	): ?DisjunctionBranchUnionAugment
 	{
 		$candidateExprs = [];
-		foreach ($leftTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
+		foreach ($leftTypes->getSureTypes() as $exprString => [$exprNode]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
-		foreach ($rightTypes->getSureTypes() as $exprString => [$exprNode, $type]) {
+		foreach ($rightTypes->getSureTypes() as $exprString => [$exprNode]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
 		// sureNot entries constrain their branch too - the old normalize()
@@ -64,10 +64,10 @@ final class ConditionalExpressionHolderHelper
 		// contribute its subject. The branch-scope reads below price the subject
 		// on each filtered scope, where an impossible branch (a holder-fixpoint
 		// contradiction) collapses to never and drops out of the union.
-		foreach ($leftTypes->getSureNotTypes() as $exprString => [$exprNode, $type]) {
+		foreach ($leftTypes->getSureNotTypes() as $exprString => [$exprNode]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
-		foreach ($rightTypes->getSureNotTypes() as $exprString => [$exprNode, $type]) {
+		foreach ($rightTypes->getSureNotTypes() as $exprString => [$exprNode]) {
 			$candidateExprs[$exprString] = $exprNode;
 		}
 

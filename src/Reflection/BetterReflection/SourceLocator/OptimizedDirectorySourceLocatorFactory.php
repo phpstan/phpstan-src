@@ -186,7 +186,7 @@ final class OptimizedDirectorySourceLocatorFactory
 			$cacheModified = false;
 			$findInFiles = [];
 			if ($cached !== null) {
-				foreach ($cached as $file => [$hash, $classes, $functions, $constants]) {
+				foreach ($cached as $file => [$hash]) {
 					if (!array_key_exists($file, $fileHashes)) {
 						unset($cached[$file]);
 						$cacheModified = true;

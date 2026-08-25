@@ -101,7 +101,7 @@ final class WorkerCommand extends Command
 				$insteadOfFile,
 				false,
 			);
-		} catch (InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			return 1;
 		}
 

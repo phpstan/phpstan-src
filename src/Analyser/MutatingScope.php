@@ -1120,7 +1120,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$parts[] = '---';
 
 		$parts[] = sprintf(':%d', count($this->inFunctionCallsStack));
-		foreach ($this->inFunctionCallsStack as [$method, $parameter]) {
+		foreach ($this->inFunctionCallsStack as [, $parameter]) {
 			if ($parameter === null) {
 				$parts[] = ',null';
 				continue;

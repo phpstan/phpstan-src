@@ -395,8 +395,8 @@ class Foo
 		assertType('\'a\'', min('a', 'b'));
 		assertType('DateTimeImmutable', max(new \DateTimeImmutable("today"), new \DateTimeImmutable("tomorrow")));
 		assertType('1', min(1, 2.2, 3.3));
-		assertType('non-falsy-string', "Hello $world");
-		assertType('non-falsy-string', $string .= "str");
+		assertType('non-decimal-int-string&non-falsy-string', "Hello $world");
+		assertType('non-decimal-int-string&non-falsy-string', $string .= "str");
 		assertType('int', $integer5 <<= 2.2);
 		assertType('int', $float7 >>= 2.2);
 		assertType('3', count($arrayOfIntegers));
@@ -515,7 +515,7 @@ class Foo
 		assertType('\'\'|\'f\'|\'o\'', $fooString[$integer]);
 		assertType('\'foo   bar\'', $foobarString);
 		assertType('\'foo bar\'', "$fooString bar");
-		assertType('non-falsy-string', "$std bar");
+		assertType('non-decimal-int-string&non-falsy-string', "$std bar");
 		assertType('non-empty-array<\'foo\'|int|stdClass>', $arrToPush);
 		assertType('non-empty-array<\'foo\'|int|stdClass>', $arrToPush2);
 		assertType('array{0: \'lorem\', 1: 5, foo: stdClass, 2: \'test\'}', $arrToUnshift);

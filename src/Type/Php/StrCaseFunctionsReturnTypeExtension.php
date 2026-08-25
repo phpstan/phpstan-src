@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -14,7 +15,6 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -154,6 +154,17 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 
+		// mb_convert_kana is the only one of these functions that can change digits,
+		// converting them between their half-width and full-width forms
+		if ($fnName !== 'mb_convert_kana') {
+			$isDecimalIntegerString = $argStringType->isDecimalIntegerString();
+			if ($isDecimalIntegerString->yes()) {
+				$accessoryTypes[] = new AccessoryDecimalIntegerStringType();
+			} elseif ($isDecimalIntegerString->no()) {
+				$accessoryTypes[] = new AccessoryDecimalIntegerStringType(inverse: true);
+			}
+		}
+
 		if ($argStringType->isNumericString()->yes()) {
 			$accessoryTypes[] = new AccessoryNumericStringType();
 		} elseif ($argStringType->isNonFalsyString()->yes()) {
@@ -165,7 +176,7 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 		if (count($accessoryTypes) > 0) {
 			$accessoryTypes[] = new StringType();
 
-			return new IntersectionType($accessoryTypes);
+			return TypeCombinator::intersect(...$accessoryTypes);
 		}
 
 		return new StringType();

@@ -41,7 +41,6 @@ use Throwable;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
-use function array_merge;
 use function array_values;
 use function class_exists;
 use function count;
@@ -57,7 +56,6 @@ use function is_dir;
 use function is_file;
 use function is_readable;
 use function is_string;
-use function PHPStan\collectNewAutoloadFunctions;
 use function register_shutdown_function;
 use function spl_autoload_functions;
 use function sprintf;
@@ -96,6 +94,7 @@ final class CommandHelper
 		?string $singleReflectionFile,
 		?string $singleReflectionInsteadOfFile,
 		bool $cleanupContainerCache,
+		bool $deferBootstrapFiles = false,
 	): InceptionResult
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
@@ -520,23 +519,25 @@ final class CommandHelper
 			$defaultLevelUsed = false;
 		}
 
-		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
-			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
-		}
+		// merges autoloaders registered since the top of begin() - the
+		// --autoload-file require, anything container creation pulled in. This
+		// cannot wait for the bootstrapFiles run: when that run is deferred,
+		// the parent analyses long before it happens, and the source locators
+		// must see these autoloaders throughout. It also cannot fold into
+		// BootstrapFilesRunner::run() - by the time run() snapshots its own
+		// before-list these are already registered, so its diff would exclude
+		// them. run() brackets only the bootstrap files themselves, in
+		// whichever process executes them.
+		BootstrapFilesRunner::mergeNewAutoloadFunctions($autoloadFunctionsBefore);
 
-		/** @var list<callable(string): void>|false $autoloadFunctionsAfter */
-		$autoloadFunctionsAfter = spl_autoload_functions();
-
-		if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {
-			$collectedAutoloadFunctions = collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunctionsAfter);
-			$GLOBALS['__phpstanAutoloadFunctions'] = array_merge(
-				$GLOBALS['__phpstanAutoloadFunctions'] ?? [],
-				$collectedAutoloadFunctions['appended'],
-			);
-			$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] = array_merge(
-				$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] ?? [],
-				$collectedAutoloadFunctions['prepended'],
-			);
+		// the analyse flow defers bootstrapFiles to the exact places that need
+		// them: the main thread right before an in-process analysis, every
+		// worker (spawned or forked - WorkerRunner), and the main thread after
+		// the workers of a parallel analysis (AnalyserRunner) - resources the
+		// files open (database connections!) must not be inherited by forked
+		// children. Every other command runs them here.
+		if (!$deferBootstrapFiles) {
+			$container->getByType(BootstrapFilesRunner::class)->run($errorOutput, $debugEnabled);
 		}
 
 		if (PHP_VERSION_ID >= 80000) {
@@ -627,7 +628,7 @@ final class CommandHelper
 	/**
 	 * @throws InceptionNotSuccessfulException
 	 */
-	private static function executeBootstrapFile(
+	public static function executeBootstrapFile(
 		string $file,
 		Container $container,
 		Output $errorOutput,

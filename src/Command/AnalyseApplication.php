@@ -37,6 +37,7 @@ final class AnalyseApplication
 {
 
 	public function __construct(
+		private BootstrapFilesRunner $bootstrapFilesRunner,
 		private AnalyserRunner $analyserRunner,
 		private AnalyserResultFinalizer $analyserResultFinalizer,
 		private StubValidator $stubValidator,
@@ -50,6 +51,7 @@ final class AnalyseApplication
 	/**
 	 * @param string[] $files
 	 * @param mixed[]|null $projectConfigArray
+	 * @throws InceptionNotSuccessfulException
 	 */
 	public function analyse(
 		array $files,
@@ -214,6 +216,7 @@ final class AnalyseApplication
 	/**
 	 * @param string[] $files
 	 * @param string[] $allAnalysedFiles
+	 * @throws InceptionNotSuccessfulException
 	 */
 	private function runAnalyser(
 		array $files,
@@ -230,6 +233,11 @@ final class AnalyseApplication
 		$filesCount = count($files);
 		$allAnalysedFilesCount = count($allAnalysedFiles);
 		if ($filesCount === 0) {
+			// nothing to analyse, but the deferred bootstrapFiles still must
+			// run in the main thread: the phases that follow may reflect
+			// analysed code (stub validation, collector rules from the result
+			// cache)
+			$this->bootstrapFilesRunner->run($errorOutput, $debug);
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
@@ -296,7 +304,7 @@ final class AnalyseApplication
 			}
 		}
 
-		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
+		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, $tmpFile, $insteadOfFile, $input, $errorOutput);
 
 		if (!$debug) {
 			$errorOutput->getStyle()->progressFinish();

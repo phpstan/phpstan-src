@@ -100,6 +100,7 @@ final class WorkerCommand extends Command
 				$tmpFile,
 				$insteadOfFile,
 				false,
+				deferBootstrapFiles: true,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
@@ -143,14 +144,19 @@ final class WorkerCommand extends Command
 		// child can reuse it without re-booting (see ParallelAnalyser).
 		$workerRunner = $container->getByType(WorkerRunner::class);
 
-		return $workerRunner->run(
-			$output,
-			$analysedFiles,
-			(int) $port,
-			$identifier,
-			$tmpFile,
-			$insteadOfFile,
-		);
+		try {
+			return $workerRunner->run(
+				$output,
+				$analysedFiles,
+				(int) $port,
+				$identifier,
+				$tmpFile,
+				$insteadOfFile,
+			);
+		} catch (InceptionNotSuccessfulException) {
+			// a deferred bootstrap file failed - its error is already printed
+			return 1;
+		}
 	}
 
 }

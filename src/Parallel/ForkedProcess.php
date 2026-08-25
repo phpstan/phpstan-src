@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parallel;
 
+use PHPStan\Command\InceptionNotSuccessfulException;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -88,14 +89,20 @@ final class ForkedProcess extends ProcessBase
 			// the worker on its own fresh event loop and never return.
 			$this->server->close();
 			$output = new StreamOutput($this->stdOut);
-			$exitCode = $this->workerRunner->run(
-				$output,
-				$this->analysedFiles,
-				$this->serverPort,
-				$this->identifier,
-				$this->tmpFile,
-				$this->insteadOfFile,
-			);
+			try {
+				$exitCode = $this->workerRunner->run(
+					$output,
+					$this->analysedFiles,
+					$this->serverPort,
+					$this->identifier,
+					$this->tmpFile,
+					$this->insteadOfFile,
+				);
+			} catch (InceptionNotSuccessfulException) {
+				// a deferred bootstrap file failed - its error is already
+				// printed to the child's collected stdout
+				exit(1);
+			}
 			exit($exitCode);
 		}
 

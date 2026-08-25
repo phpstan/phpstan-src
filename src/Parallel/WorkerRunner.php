@@ -8,6 +8,11 @@ use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\Command\BootstrapFilesRunner;
+use PHPStan\Command\ErrorsConsoleStyle;
+use PHPStan\Command\InceptionNotSuccessfulException;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Registry as RuleRegistry;
@@ -16,6 +21,7 @@ use React\Socket\ConnectionInterface;
 use React\Socket\TcpConnector;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableStreamInterface;
+use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function array_fill_keys;
@@ -43,6 +49,7 @@ final class WorkerRunner
 {
 
 	public function __construct(
+		private BootstrapFilesRunner $bootstrapFilesRunner,
 		private FileAnalyser $fileAnalyser,
 		private RuleRegistry $ruleRegistry,
 		private CollectorRegistry $collectorRegistry,
@@ -56,6 +63,7 @@ final class WorkerRunner
 	/**
 	 * @param string[] $analysedFiles the full analysed-files list (raw, before tmp-file substitution)
 	 * @return int exit code (0 on success, 1 if a worker-communication error occurred)
+	 * @throws InceptionNotSuccessfulException
 	 */
 	public function run(
 		OutputInterface $output,
@@ -66,6 +74,16 @@ final class WorkerRunner
 		?string $insteadOfFile,
 	): int
 	{
+		// every worker - spawned or forked - runs the bootstrapFiles itself,
+		// so resources they open (database connections!) are per-worker. The
+		// one exception is a worker forked from a parent that already ran
+		// them (the fixer flow runs them eagerly): it inherits that execution
+		// and the once-per-process latch skips
+		$this->bootstrapFilesRunner->run(
+			new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle(new StringInput(''), $output))),
+			false,
+		);
+
 		$analysedFiles = $this->switchTmpFile($analysedFiles, $insteadOfFile, $tmpFile);
 		$this->nodeScopeResolver->setAnalysedFiles($analysedFiles);
 		$analysedFiles = array_fill_keys($analysedFiles, true);

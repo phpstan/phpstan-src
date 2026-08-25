@@ -30,6 +30,7 @@ final class AnalyserRunner
 		private Analyser $analyser,
 		private ParallelAnalyser $parallelAnalyser,
 		private CpuCoreCounter $cpuCoreCounter,
+		private BootstrapFilesRunner $bootstrapFilesRunner,
 	)
 	{
 	}
@@ -39,6 +40,7 @@ final class AnalyserRunner
 	 * @param string[] $allAnalysedFiles
 	 * @param Closure(string $file): void|null $preFileCallback
 	 * @param Closure(int, list<string>=): void|null $postFileCallback
+	 * @throws InceptionNotSuccessfulException
 	 */
 	public function runAnalyser(
 		array $files,
@@ -51,6 +53,7 @@ final class AnalyserRunner
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
+		Output $errorOutput,
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -93,9 +96,21 @@ final class AnalyserRunner
 				if ($result === null) {
 					throw new ShouldNotHappenException();
 				}
+				// the parallel analysis is over and no more workers fork - the
+				// main thread runs the deferred bootstrapFiles now, before the
+				// phases that may reflect analysed code (stub validation,
+				// collector rules)
+				$this->bootstrapFilesRunner->run($errorOutput, $debug);
+
 				return $result;
 			}
 		}
+
+		// every path below analyses in-process - including the fall-throughs
+		// from the parallel branch above (no main script, zero-process
+		// schedule) - so the main thread runs the deferred bootstrapFiles
+		// first
+		$this->bootstrapFilesRunner->run($errorOutput, $debug);
 
 		return $this->analyser->analyse(
 			$this->switchTmpFile($files, $insteadOfFile, $tmpFile),

@@ -409,15 +409,6 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/SkipClassAliasSourceLocator.php
 
 		-
-			rawMessage: '''
-				Call to deprecated method isSubclassOf() of class PHPStan\Reflection\ClassReflection:
-				Use isSubclassOfClass instead.
-			'''
-			identifier: method.deprecated
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
 			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3

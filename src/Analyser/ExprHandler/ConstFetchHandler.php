@@ -44,7 +44,7 @@ final class ConstFetchHandler implements ExprHandler
 		return $expr instanceof ConstFetch;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 

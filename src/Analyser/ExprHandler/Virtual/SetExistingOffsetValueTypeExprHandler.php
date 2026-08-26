@@ -35,7 +35,7 @@ final class SetExistingOffsetValueTypeExprHandler implements ExprHandler
 		return $expr instanceof SetExistingOffsetValueTypeExpr;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		// because this is a virtual node handler, the caller will only be interested in the type
 		// we don't need to process the inner expr

@@ -24,10 +24,12 @@ use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
 use function count;
+use function is_int;
 
 /**
  * @implements ExprHandler<Array_>
@@ -72,7 +74,7 @@ final class ArrayHandler implements ExprHandler
 		return $type;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$itemNodes = [];
@@ -80,11 +82,14 @@ final class ArrayHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$nextAutoIndex = 0;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
+			$keyType = new ConstantIntegerType($nextAutoIndex);
 			if ($arrayItem->key !== null) {
-				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$keyType = $scope->getType($arrayItem->key);
+				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 				$hasYield = $hasYield || $keyResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
@@ -92,7 +97,24 @@ final class ArrayHandler implements ExprHandler
 				$scope = $keyResult->getScope();
 			}
 
-			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			// an overridden array type prices each item against the type declared
+			// for its key, so a nested closure is walked with the parameters the
+			// extension announced instead of the declared (contravariant) ones
+			$overriddenValueType = null;
+			if ($overriddenType !== null && $overriddenType->hasOffsetValueType($keyType)->yes()) {
+				$overriddenValueType = $overriddenType->getOffsetValueType($keyType);
+			}
+
+			if ($arrayItem->key === null) {
+				$nextAutoIndex++;
+			} else {
+				$keyIntegers = $keyType->getConstantScalarValues();
+				if (count($keyIntegers) === 1 && is_int($keyIntegers[0])) {
+					$nextAutoIndex = $keyIntegers[0] + 1;
+				}
+			}
+
+			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep(), $overriddenValueType);
 			$hasYield = $hasYield || $valueResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());

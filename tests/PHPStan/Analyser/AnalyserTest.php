@@ -20,6 +20,7 @@ use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -821,6 +822,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			$container->getByType(DynamicParameterTypeResolver::class),
 			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),

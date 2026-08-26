@@ -43,7 +43,7 @@ final class WhileHandler implements StmtHandler
 	{
 		$originalStorage = $storage;
 		$storage = $originalStorage->duplicate();
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(), null);
 		$beforeCondBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 		$condScope = $condResult->getFalseyScope();
 		if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
@@ -83,7 +83,7 @@ final class WhileHandler implements StmtHandler
 				$storage = $originalStorage->duplicate();
 				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep())->getTruthyScope();
+				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep(), null)->getTruthyScope();
 				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -124,7 +124,7 @@ final class WhileHandler implements StmtHandler
 			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
 			$finalScopeResult = $replayPassResult;
 		} else {
-			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep(), null)->getTruthyScope();
 			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 		}
 		$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);

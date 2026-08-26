@@ -118,7 +118,7 @@ final class FuncCallHandler implements ExprHandler
 		return $expr instanceof FuncCall && !$expr->isFirstClassCallable();
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$parametersAcceptor = null;
@@ -131,7 +131,7 @@ final class FuncCallHandler implements ExprHandler
 		if ($expr->name instanceof Expr) {
 			// process the dynamic callee name first, then consume its type rather
 			// than reading it before processExprNode() stores its result
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$nameType = $nameResult->getType();
 			if (!$nameType->isCallable()->no()) {
 				$variants = $nameType->getCallableParametersAcceptors($scope);
@@ -347,6 +347,7 @@ final class FuncCallHandler implements ExprHandler
 					$storage,
 					new NoopNodeCallback(),
 					$context->enterDeep(),
+					null,
 				);
 				$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());

@@ -42,7 +42,7 @@ final class IssetExprHandler implements ExprHandler
 		return $expr instanceof IssetExpr;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		// a virtual node handler - the caller will only be interested in the
 		// type; the inner expr is not processed, its type is just reported

@@ -55,14 +55,14 @@ final class PropertyFetchHandler implements ExprHandler
 		return $expr instanceof PropertyFetch;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$scopeBeforeVar = $scope;
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 		$nameResult = null;
 		if (!$expr->name instanceof Identifier) {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $varResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $varResult->getScope(), $storage, $nodeCallback, $context->enterDeep(), null);
 		}
 
 		return $this->composeResult($nodeScopeResolver, $expr, $varResult, $nameResult, $scopeBeforeVar, $beforeScope);

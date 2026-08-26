@@ -42,7 +42,7 @@ final class ClassConstHandler implements StmtHandler
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		foreach ($stmt->consts as $const) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);
-			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$impurePoints = array_merge($impurePoints, $constResult->getImpurePoints());
 			if ($scope->getClassReflection() === null) {
 				throw new ShouldNotHappenException();

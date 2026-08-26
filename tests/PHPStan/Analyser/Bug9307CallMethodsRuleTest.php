@@ -11,6 +11,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\DynamicParameterTypeResolver;
 
 /**
  * @extends RuleTestCase<CallMethodsRule>
@@ -44,6 +45,7 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$reflectionProvider,
+				self::getContainer()->getByType(DynamicParameterTypeResolver::class),
 				checkArgumentTypes: true,
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,

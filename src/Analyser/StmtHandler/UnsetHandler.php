@@ -57,7 +57,7 @@ final class UnsetHandler implements StmtHandler
 		$impurePoints = [];
 		foreach ($stmt->vars as $var) {
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
-			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$scope = $exprResult->getScope();
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 			$hasYield = $hasYield || $exprResult->hasYield();

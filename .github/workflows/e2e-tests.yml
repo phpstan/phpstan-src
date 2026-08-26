@@ -351,6 +351,10 @@ jobs:
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
           - script: |
+              cd e2e/bug-12585
+              composer install
+              ../../bin/phpstan
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv
@@ -744,6 +748,10 @@ jobs:
                 echo "FAIL: tmp was created by a worker, meaning sys_temp_dir='tmp~1' was incorrectly evaluated to 'tmp'"
                 exit 1
               fi
+          - script: |
+              cd e2e/parameter-type-extension
+              composer install
+              ../../bin/phpstan analyze
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

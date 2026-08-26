@@ -74,6 +74,7 @@ final class CallToFunctionParametersRule implements Rule
 			'Constants %s cannot be combined for %s of function ' . $functionName . '.',
 			'Combining constants with | is not allowed for %s of function ' . $functionName . '.',
 			null,
+			$function,
 		);
 	}
 

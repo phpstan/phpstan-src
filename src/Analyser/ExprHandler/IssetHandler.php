@@ -350,7 +350,7 @@ final class IssetHandler implements ExprHandler
 		return $types;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$hasYield = false;
@@ -362,7 +362,7 @@ final class IssetHandler implements ExprHandler
 		foreach ($expr->vars as $var) {
 			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$varResults[] = $varResult;
 			$scope = $varResult->getScope();
 			$hasYield = $hasYield || $varResult->hasYield();

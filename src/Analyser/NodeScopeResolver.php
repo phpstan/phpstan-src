@@ -76,6 +76,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -170,6 +171,7 @@ class NodeScopeResolver
 		private readonly ExtensionsCollection $methodParameterClosureThisExtensions,
 		#[AutowiredExtensions(of: StaticMethodParameterClosureThisExtension::class)]
 		private readonly ExtensionsCollection $staticMethodParameterClosureThisExtensions,
+		private readonly DynamicParameterTypeResolver $dynamicParameterTypeResolver,
 		#[AutowiredExtensions(of: FunctionParameterClosureTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterClosureTypeExtensions,
 		#[AutowiredExtensions(of: MethodParameterClosureTypeExtension::class)]
@@ -863,6 +865,7 @@ class NodeScopeResolver
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		ExpressionContext $context,
+		?Type $overriddenType,
 	): ExpressionResult
 	{
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
@@ -878,7 +881,7 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
-			$newExprResult = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
+			$newExprResult = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context, null);
 			$expressionResult = $this->expressionResultFactory->create(
 				$newExprResult->getScope(),
 				beforeScope: $scope,
@@ -894,7 +897,7 @@ class NodeScopeResolver
 
 		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
-			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context, $overriddenType);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			// The node's own callback fires AFTER its result is stored, with the
 			// scope captured before processing. Rules observe the same (scope,
@@ -1205,7 +1208,7 @@ class NodeScopeResolver
 					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType, TrinaryLogic::createYes());
 				}
 			}
-			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context);
+			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context, null);
 			if (!$use->byRef) {
 				continue;
 			}
@@ -1284,6 +1287,7 @@ class NodeScopeResolver
 				$publicStatementResult,
 				$executionEnds,
 				array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
+				$passedToType,
 			), $closureReturnStatementsNodeScope, $storage);
 
 			return new ProcessClosureResult(
@@ -1384,6 +1388,7 @@ class NodeScopeResolver
 			$publicStatementResult,
 			$executionEnds,
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
+			$passedToType,
 		), $closureReturnStatementsNodeScope, $storage);
 
 		return new ProcessClosureResult(
@@ -1524,7 +1529,7 @@ class NodeScopeResolver
 
 		$this->pushNodeGatherer($arrowFunctionStmtsGatherer);
 		try {
-			$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel(), null);
 		} finally {
 			$this->popNodeGatherer();
 		}
@@ -1551,7 +1556,7 @@ class NodeScopeResolver
 			false,
 		);
 		$refinedArrowFunctionScope = $arrowFunctionScope->withAnonymousFunctionReflection($refinedArrowFunctionType);
-		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr), $refinedArrowFunctionScope, $storage);
+		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr, $passedToType), $refinedArrowFunctionScope, $storage);
 
 		return new ProcessArrowFunctionResult(
 			$this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints()),
@@ -1692,7 +1697,7 @@ class NodeScopeResolver
 			return;
 		}
 
-		$this->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$this->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 	}
 
 	/**
@@ -1728,7 +1733,7 @@ class NodeScopeResolver
 				}
 
 				foreach ($attr->args as $arg) {
-					$this->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+					$this->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 					$this->callNodeCallback($nodeCallback, $arg, $scope, $storage);
 				}
 				$this->callNodeCallback($nodeCallback, $attr, $scope, $storage);
@@ -1957,6 +1962,7 @@ class NodeScopeResolver
 			$assignByReference = false;
 			$parameter = null;
 			$parameterType = null;
+			$overwritingParameterType = null;
 			$parameterNativeType = null;
 			if ($parameters !== null) {
 				$matchedParameter = null;
@@ -1988,6 +1994,18 @@ class NodeScopeResolver
 						$parameterNativeType = $lastParameter->getNativeType();
 					}
 					$parameter = $lastParameter;
+				}
+			}
+
+			if ($parameter !== null && $calleeReflection !== null) {
+				$overwritingParameterType = $this->dynamicParameterTypeResolver->resolve($callLike, $calleeReflection, $parameter, $scope);
+				if ($overwritingParameterType !== null) {
+					$parameterType = $overwritingParameterType;
+
+					$overwritingParameterNativeType = $this->dynamicParameterTypeResolver->resolve($callLike, $calleeReflection, $parameter, $scope->doNotTreatPhpDocTypesAsCertain());
+					if ($overwritingParameterNativeType !== null) {
+						$parameterNativeType = $overwritingParameterNativeType;
+					}
 				}
 			}
 
@@ -2038,6 +2056,7 @@ class NodeScopeResolver
 					}
 				}
 
+				// @todo remove once the closure type extensions are removed
 				if ($parameter !== null) {
 					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
@@ -2126,6 +2145,7 @@ class NodeScopeResolver
 					}
 				}
 
+				// @todo remove once the closure type extensions are removed
 				if ($parameter !== null) {
 					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
@@ -2166,7 +2186,7 @@ class NodeScopeResolver
 				if ($enterExpressionAssignForByRef) {
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
-				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep(), $parameterType);
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();

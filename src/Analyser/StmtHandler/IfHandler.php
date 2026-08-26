@@ -38,7 +38,7 @@ final class IfHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$entryScope = $scope;
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$conditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 		$ifAlwaysTrue = $conditionType->isTrue()->yes();
@@ -74,7 +74,7 @@ final class IfHandler implements StmtHandler
 
 		$condScope = $scope;
 		foreach ($stmt->elseifs as $elseif) {
-			$condResult = $nodeScopeResolver->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$condResult = $nodeScopeResolver->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
 			$elseIfConditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());

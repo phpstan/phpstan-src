@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Traits;
 
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Classes\ForbiddenClassNameExtension;
@@ -51,6 +52,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
 					$reflectionProvider,
+					self::getContainer()->getByType(DynamicParameterTypeResolver::class),
 					checkArgumentTypes: true,
 					checkArgumentsPassedByReference: true,
 					checkExtraArguments: true,

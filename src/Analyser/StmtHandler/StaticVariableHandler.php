@@ -64,12 +64,12 @@ final class StaticVariableHandler implements StmtHandler
 			}
 
 			if ($var->default !== null) {
-				$defaultExprResult = $nodeScopeResolver->processExprNode($stmt, $var->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$defaultExprResult = $nodeScopeResolver->processExprNode($stmt, $var->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 				$impurePoints = array_merge($impurePoints, $defaultExprResult->getImpurePoints());
 			}
 
 			$scope = $scope->enterExpressionAssign($var->var);
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $scope->exitExpressionAssign($var->var);
 

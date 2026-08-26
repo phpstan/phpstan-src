@@ -11184,7 +11184,7 @@ return [
 'unixtojd' => ['int|false', 'timestamp='=>'int'],
 'unpack' => ['array|false', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
 'unregister_tick_function' => ['void', 'function_name'=>'callable'],
-'unserialize' => ['mixed', 'variable_representation'=>'string', 'allowed_classes='=>'array{allowed_classes?:string[]|bool}'],
+'unserialize' => ['mixed', 'data'=>'string', 'options='=>'array{allowed_classes?:class-string[]|bool}'],
 'untaint' => ['bool', '&rw_string'=>'string', '&...rw_strings='=>'string'],
 'uopz_add_function' => ['bool', 'class'=>'string', 'function'=>'string', 'handler'=>'Closure', '$flags'=>'int', '$all'=>'bool'],
 'uopz_add_function\'1' => ['bool', 'function'=>'string', 'handler'=>'Closure', '$flags'=>'int'],

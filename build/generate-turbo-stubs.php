@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+use PHPStan\Build\TurboAttributeCollector;
+
 /**
  * Generates three files from the ShadowedByTurboExtension and
  * ReferencedByTurboExtension attributes on every autoloader dump
@@ -41,7 +43,7 @@ $root = dirname(__DIR__);
 require_once $root . '/vendor/autoload.php';
 require_once __DIR__ . '/PHPStan/Build/TurboAttributeCollector.php';
 
-$collector = new PHPStan\Build\TurboAttributeCollector($root);
+$collector = new TurboAttributeCollector($root);
 $collected = $collector->collect();
 
 file_put_contents($root . '/vendor/turbo-stubs.php', $collector->renderStubs($collected['pairs']));

@@ -13,6 +13,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
 use function count;
 use function implode;
 use function sprintf;

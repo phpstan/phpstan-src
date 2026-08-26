@@ -8,6 +8,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Php\PhpMinorVersionIterator;
 use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use function in_array;
 use function strtolower;
 
@@ -19,6 +20,7 @@ use function strtolower;
  */
 final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 {
+
 	private ?int $requiredVersionId = null;
 
 	private ?string $reason = null;
@@ -44,64 +46,64 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt\Enum_) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsEnums(), 'enums', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsEnums(), 'enums', $node);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Pipe) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPipeOperator(), 'the pipe operator', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsPipeOperator(), 'the pipe operator', $node);
 		}
 
 		if ($node instanceof Node\PropertyHook) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPropertyHooks(), 'property hooks', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsPropertyHooks(), 'property hooks', $node);
 		}
 
 		if ($node instanceof Node\IntersectionType) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPureIntersectionTypes(), 'pure intersection types', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsPureIntersectionTypes(), 'pure intersection types', $node);
 		}
 
 		if ($node instanceof Node\UnionType) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeUnionTypes(), 'union types', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsNativeUnionTypes(), 'union types', $node);
 			foreach ($node->types as $innerType) {
 				if ($innerType instanceof Node\IntersectionType) {
-					$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsDisjunctiveNormalForm(), 'disjunctive normal form types', $innerType);
+					$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsDisjunctiveNormalForm(), 'disjunctive normal form types', $innerType);
 				}
 				if (!($innerType instanceof Node\Identifier) || strtolower($innerType->name) !== 'true') {
 					continue;
 				}
 
-				$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType(), 'the standalone "true" type', $innerType);
+				$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType(), 'the standalone "true" type', $innerType);
 			}
 		}
 
 		if ($node instanceof Node\Stmt\Class_ && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyClasses(), 'readonly classes', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyClasses(), 'readonly classes', $node);
 		}
 
 		if ($node instanceof Node\Stmt\Property && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties(), 'readonly properties', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties(), 'readonly properties', $node);
 		}
 
 		if ($node instanceof Node\Param && $node->flags !== 0) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsPromotedProperties(), 'promoted properties', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsPromotedProperties(), 'promoted properties', $node);
 		}
 
 		if ($node instanceof Node\Param && ($node->flags & Modifiers::READONLY) !== 0) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties(), 'readonly promoted properties', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsReadOnlyProperties(), 'readonly promoted properties', $node);
 		}
 
 		if (
 			($node instanceof Node\Param || $node instanceof Node\Stmt\Property)
 			&& ($node->flags & Modifiers::VISIBILITY_SET_MASK) !== 0
 		) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsAsymmetricVisibility(), 'asymmetric visibility', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsAsymmetricVisibility(), 'asymmetric visibility', $node);
 		}
 
 		if ($node instanceof Node\Stmt\ClassConst && $node->type !== null) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeTypesInClassConstants(), 'typed class constants', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsNativeTypesInClassConstants(), 'typed class constants', $node);
 		}
 
 		if ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Expr) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsDynamicClassConstantFetch(), 'dynamic class constant fetch', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsDynamicClassConstantFetch(), 'dynamic class constant fetch', $node);
 		}
 
 		if (
@@ -112,14 +114,14 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		) {
 			foreach ($node->args as $arg) {
 				if ($arg instanceof Node\VariadicPlaceholder) {
-					$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsFirstClassCallables(), 'first-class callable syntax', $arg);
+					$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsFirstClassCallables(), 'first-class callable syntax', $arg);
 					break;
 				}
 			}
 		}
 
 		if ($node instanceof Node\Arg && $node->name !== null) {
-			$this->require(fn(PhpVersion $phpVersion) => $phpVersion->supportsNamedArguments(), 'named arguments', $node);
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsNamedArguments(), 'named arguments', $node);
 		}
 
 		$this->checkStandaloneType($node);
@@ -140,9 +142,9 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		$this->require(
-			fn(PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType(),
+			static fn (PhpVersion $phpVersion) => $phpVersion->supportsTrueFalseNullStandaloneType(),
 			'standalone "null", "false" or "true" types',
-			$type
+			$type,
 		);
 	}
 
@@ -158,9 +160,9 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 		}
 
 		$this->require(
-			fn(PhpVersion $phpVersion) => $phpVersion->supportsNativeMixed(),
+			static fn (PhpVersion $phpVersion) => $phpVersion->supportsNativeMixed(),
 			'the mixed type',
-			$type
+			$type,
 		);
 	}
 
@@ -209,16 +211,16 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 	{
 		$minorVersionIterator = new PhpMinorVersionIterator(
 			new PhpVersion(70400),
-			new PhpVersion(80500)
+			new PhpVersion(80500),
 		);
 
-		foreach($minorVersionIterator as $phpVersion) {
+		foreach ($minorVersionIterator as $phpVersion) {
 			if ($callable($phpVersion)) {
 				return $phpVersion->getVersionId();
 			}
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 }

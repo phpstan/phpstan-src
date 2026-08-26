@@ -10,6 +10,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Methods\MethodPrototypeFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 use function str_starts_with;
 
 /**

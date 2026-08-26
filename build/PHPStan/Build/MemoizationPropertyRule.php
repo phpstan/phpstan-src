@@ -18,7 +18,6 @@ use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\FileHelper;
-use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;

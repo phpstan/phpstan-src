@@ -9,6 +9,7 @@
 	<arg name="cache" value="tmp/cache/phpcs"/>
 	<arg value="sp"/>
 	<file>bin</file>
+	<file>build</file>
 	<file>src</file>
 	<file>tests</file>
 	<file>compiler/src</file>
@@ -61,6 +62,7 @@
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>
 			<property name="rootNamespaces" type="array">
+				<element key="build/PHPStan/Build" value="PHPStan\Build"/>
 				<element key="compiler/src" value="PHPStan\Compiler"/>
 				<element key="compiler/tests" value="PHPStan\Compiler"/>
 				<element key="src" value="PHPStan"/>

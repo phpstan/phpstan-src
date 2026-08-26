@@ -126,5 +126,4 @@ final class SkipTestsWithRequiresPhpAttributeRule implements Rule
 		];
 	}
 
-
 }

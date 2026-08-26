@@ -16,7 +16,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt\If_;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\IdentifierRuleError;

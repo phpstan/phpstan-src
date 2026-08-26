@@ -2,19 +2,23 @@
 
 namespace PHPStan\Build;
 
+use Nette\DI\Container;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
+use function in_array;
 
-final class ServiceLocatorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicMethodReturnTypeExtension
+final class ServiceLocatorDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function getClass(): string
 	{
-		return \Nette\DI\Container::class;
+		return Container::class;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool

@@ -2054,7 +2054,6 @@ class NodeScopeResolver
 					}
 				}
 
-				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
 				// the preferred ClosureType read below now answers from this seed
 				// instead of walking the body again (unless a parked fiber may
@@ -2074,6 +2073,10 @@ class NodeScopeResolver
 					throwPoints: [],
 					impurePoints: [],
 				));
+				// the closure node's own callback fires after its result is
+				// stored, mirroring processExprNodeInternal() - callback-side
+				// getType() answers from the stored result
+				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 
 				$uses = [];
 				foreach ($arg->value->uses as $use) {
@@ -2142,7 +2145,6 @@ class NodeScopeResolver
 					}
 				}
 
-				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$processArrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
 				// the invalidation read below now answers from this seed instead
 				// of walking the body again (unless a parked fiber may still
@@ -2160,6 +2162,10 @@ class NodeScopeResolver
 					}
 				}
 				$this->storeExpressionResult($storage, $arg->value, $arrowFunctionResult);
+				// the arrow function node's own callback fires after its result
+				// is stored, mirroring processExprNodeInternal() - callback-side
+				// getType() answers from the stored result
+				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 			} else {
 				$exprType = $scope->getType($arg->value);
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;

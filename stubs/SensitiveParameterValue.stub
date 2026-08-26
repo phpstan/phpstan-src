@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @template-covariant T = mixed
+ */
+final class SensitiveParameterValue
+{
+
+	/**
+	 * @param T $value
+	 */
+	public function __construct(mixed $value) {}
+
+	/**
+	 * @return T
+	 */
+	public function getValue(): mixed {}
+
+}

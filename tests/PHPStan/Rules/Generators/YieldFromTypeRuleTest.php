@@ -65,4 +65,14 @@ class YieldFromTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11517.php'], []);
 	}
 
+	public function testBug6190(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6190-from.php'], [
+			[
+				'Generator expects value type Bug6190From\Food, int given.',
+				23,
+			],
+		]);
+	}
+
 }

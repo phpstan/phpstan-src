@@ -11,6 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\TypeUtils;
 use function sprintf;
 
 /**
@@ -60,9 +61,16 @@ final class YieldInGeneratorRule implements Rule
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 			$isSuperType = TrinaryLogic::createNo();
 		} else {
-			$isSuperType = $returnType->isIterable()->and(TrinaryLogic::createFromBoolean(
-				!$returnType->isArray()->yes(),
-			));
+			// A function containing yield always returns a Generator at runtime, so the
+			// declared return type is valid as long as at least one of its parts can hold
+			// a Generator (iterable but not array). This mirrors PHP's own rule, which
+			// permits nullable and union return types like ?Generator or Iterator|float.
+			$isSuperType = TrinaryLogic::createNo();
+			foreach (TypeUtils::flattenTypes($returnType) as $innerType) {
+				$isSuperType = $isSuperType->or($innerType->isIterable()->and(TrinaryLogic::createFromBoolean(
+					!$innerType->isArray()->yes(),
+				)));
+			}
 		}
 		if ($isSuperType->yes()) {
 			return [];

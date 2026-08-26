@@ -22,7 +22,9 @@ trait BarTrait
 	public function fooMethod(): void
 	{
 		// some code ...
-		$this->fooMethod();
+		if (rand(0, 1) === 1) {
+			$this->fooMethod();
+		}
 		$this->parentFooMethod();
 	}
 

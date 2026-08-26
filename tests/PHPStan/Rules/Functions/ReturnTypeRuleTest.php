@@ -5,18 +5,24 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\ComposerAutoloaderProjectPathsProvider;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ReturnTypeRule>
  */
-class ReturnTypeRuleTest extends RuleTestCase
+class ReturnTypeRuleTest extends RuleTestCase implements ComposerAutoloaderProjectPathsProvider
 {
 
 	private bool $checkNullables;
 
 	private bool $checkExplicitMixed;
+
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/../../Reflection/BetterReflection/SourceStubber/data/ext-ds-v1-platform'];
+	}
 
 	protected function getRule(): Rule
 	{

@@ -1,0 +1,7 @@
+{
+	"config": {
+		"platform": {
+			"ext-ds": "2.0.0"
+		}
+	}
+}

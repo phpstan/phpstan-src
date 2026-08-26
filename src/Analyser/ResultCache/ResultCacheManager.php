@@ -25,6 +25,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
+use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionException;
@@ -99,6 +100,7 @@ final class ResultCacheManager
 		private StubFilesProvider $stubFilesProvider,
 		private FileHelper $fileHelper,
 		private PackageDependencyResolver $packageDependencyResolver,
+		private ExtensionVersionProvider $extensionVersionProvider,
 		#[AutowiredParameter(ref: '%resultCachePath%')]
 		private string $cacheFilePath,
 		#[AutowiredParameter]
@@ -1525,6 +1527,7 @@ return [
 			'composerInstalled' => $this->getComposerInstalled(),
 			'executedFilesHashes' => $this->getExecutedFileHashes(),
 			'phpExtensions' => $extensions,
+			'extensionVersions' => $this->extensionVersionProvider->getExtensionVersions(),
 			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,
 		];

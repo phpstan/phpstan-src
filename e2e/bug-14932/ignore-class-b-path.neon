@@ -4,6 +4,6 @@ parameters:
 	ignoreErrors:
 		-
 			identifier: booleanAnd.rightAlwaysTrue
-			path: src/BMailer.php
+			path: src/Mailers/BMailer.php
 		-
 			identifier: identical.alwaysFalse

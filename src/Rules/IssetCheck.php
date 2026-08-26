@@ -46,7 +46,7 @@ final class IssetCheck
 	public function check(ExpressionResult $exprResult, Scope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback): ?IdentifierRuleError
 	{
 		$walkScope = $scope->toWalkScope();
-		$resolution = $exprResult->getIssetabilityResolution($walkScope, !$this->treatPhpDocTypesAsCertain);
+		$resolution = $exprResult->getIssetabilityResolution($walkScope, !$this->treatPhpDocTypesAsCertain, true);
 
 		return $this->doCheck($resolution, $walkScope, $operatorDescription, $identifier, $typeMessageCallback, null);
 	}

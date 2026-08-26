@@ -102,6 +102,16 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15013(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15013.php'], [
+			[
+				'Offset 1 does not exist on array{\'App/Service::foo\'}.',
+				8,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{

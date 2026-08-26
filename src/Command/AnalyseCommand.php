@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use DateTimeImmutable;
 use OndraM\CiDetector\CiDetector;
 use Override;
 use PHPStan\Analyser\InternalError;
@@ -35,6 +36,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
@@ -64,6 +66,7 @@ use function str_contains;
 use function stream_get_contents;
 use function strlen;
 use function substr;
+use function time;
 use const PATHINFO_BASENAME;
 use const PATHINFO_EXTENSION;
 
@@ -148,6 +151,34 @@ final class AnalyseCommand extends Command
 	#[Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
+		if ($output instanceof ConsoleOutputInterface) {
+			$errorOutput = $output->getErrorOutput();
+			$errorOutput->writeln('');
+			$errorOutput->writeln("⚠️  You're running an old version of PHPStan.️");
+			$errorOutput->writeln('');
+			$errorOutput->writeln('The last release in the 1.12.x series with new features');
+
+			$lastRelease = new DateTimeImmutable('2025-07-17 00:00:00');
+			$daysSince = (time() - $lastRelease->getTimestamp()) / 60 / 60 / 24;
+			$errorOutput->writeln('and bugfixes was released on <fg=red>July 17th 2025</>,');
+			$errorOutput->writeln(sprintf('that\'s <fg=red>%d days ago.</>', (int) $daysSince));
+			$errorOutput->writeln('');
+
+			$errorOutput->writeln('Since then more than <fg=cyan>65 new PHPStan versions</> were released');
+			$errorOutput->writeln('with hundreds of new features, bugfixes, and other');
+			$errorOutput->writeln('quality of life improvements.');
+			$errorOutput->writeln('');
+
+			$errorOutput->writeln("To learn about what you're missing out on, check out");
+			$errorOutput->writeln('this blog with articles about the latest major releases:');
+			$errorOutput->writeln('<options=underscore>https://phpstan.org/blog</>');
+			$errorOutput->writeln('');
+
+			$errorOutput->writeln('Upgrade today to <fg=green>PHPStan 2.2 or newer</> by using');
+			$errorOutput->writeln('<fg=cyan>"phpstan/phpstan": "^2.2"</> in your <fg=cyan>composer.json</>.');
+			$errorOutput->writeln('');
+		}
+
 		$paths = $input->getArgument('paths');
 		$memoryLimit = $input->getOption('memory-limit');
 		$autoloadFile = $input->getOption('autoload-file');

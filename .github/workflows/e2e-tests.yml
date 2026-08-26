@@ -198,6 +198,18 @@ jobs:
               ../bashunit -a contains 'Result cache might not behave correctly' "$OUTPUT"
               ../bashunit -a contains 'ResultCache8E2E\CustomRule' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-symlink/app
+              # https://github.com/phpstan/phpstan/issues/14924
+              # A custom rule provided by a package symlinked into vendor (composer path
+              # repository) and added to the analysed paths must NOT be reported as being
+              # outside of analysed paths, even though reflection reports its realpath.
+              composer install
+              ../../../bin/phpstan
+              echo -en '\n' >> ../ext/src/CustomRule.php
+              OUTPUT=$(../../../bin/phpstan analyze 2>&1 || true)
+              echo "$OUTPUT"
+              ../../bashunit -a not_contains 'Result cache might not behave correctly' "$OUTPUT"
+          - script: |
               cd e2e/env-int-key
               env 1=1 ../../bin/phpstan analyse test.php
           - script: |

@@ -52,6 +52,7 @@ use function is_dir;
 use function is_file;
 use function ksort;
 use function microtime;
+use function realpath;
 use function sort;
 use function sprintf;
 use function str_starts_with;
@@ -78,6 +79,9 @@ final class ResultCacheManager
 
 	/** @var array<string, true> */
 	private array $alreadyProcessed = [];
+
+	/** @var array<string, string>|null */
+	private ?array $analysedFileNamesByRealpath = null;
 
 	/**
 	 * @param string[] $analysedPaths
@@ -1410,6 +1414,7 @@ return [
 	private function getProjectExtensionFiles(?array $projectConfig, array $dependencies): array
 	{
 		$this->alreadyProcessed = [];
+		$this->analysedFileNamesByRealpath = null;
 		$projectExtensionFiles = [];
 		if ($projectConfig !== null) {
 			$vendorDirs = [];
@@ -1448,6 +1453,17 @@ return [
 							continue 2;
 						}
 					}
+
+					// Reflection reports the realpath of the class file, but analysed paths
+					// may reach it through a symlink (e.g. a package symlinked into vendor).
+					// Match the analysed file by realpath before treating it as not analysed.
+					$analysedFileName = $this->findAnalysedFileNameByRealpath($fileName, $dependencies);
+					if ($analysedFileName !== null) {
+						$allServiceFiles = $this->getAllDependencies($analysedFileName, $dependencies);
+					}
+				}
+
+				if (count($allServiceFiles) === 0) {
 					$projectExtensionFiles[$fileName] = [$this->getFileHash($fileName), false, $class];
 					continue;
 				}
@@ -1492,6 +1508,34 @@ return [
 		}
 
 		return $files;
+	}
+
+	/**
+	 * Resolves a class file name (a realpath reported by reflection) to the analysed
+	 * file it was reached through, matching by realpath so symlinked paths still line up.
+	 *
+	 * @param array<string, array<int, string>> $dependencies
+	 */
+	private function findAnalysedFileNameByRealpath(string $fileName, array $dependencies): ?string
+	{
+		$realFileName = realpath($fileName);
+		if ($realFileName === false) {
+			return null;
+		}
+		$realFileName = $this->fileHelper->normalizePath($realFileName);
+
+		if ($this->analysedFileNamesByRealpath === null) {
+			$this->analysedFileNamesByRealpath = [];
+			foreach (array_keys($dependencies) as $dependencyFile) {
+				$realDependencyFile = realpath($dependencyFile);
+				if ($realDependencyFile === false) {
+					continue;
+				}
+				$this->analysedFileNamesByRealpath[$this->fileHelper->normalizePath($realDependencyFile)] = $dependencyFile;
+			}
+		}
+
+		return $this->analysedFileNamesByRealpath[$realFileName] ?? null;
 	}
 
 	/**

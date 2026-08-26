@@ -1,0 +1,19 @@
+{
+	"require-dev": {
+		"phpstan/phpstan": "^1.10"
+	},
+	"require": {
+		"resultcachesymlink/ext": "*"
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../ext"
+		}
+	],
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

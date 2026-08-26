@@ -1,0 +1,6 @@
+{
+	"name": "resultcachesymlink/ext",
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

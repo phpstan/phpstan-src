@@ -175,13 +175,15 @@ final class ExpressionResult
 	 * expression's own type when it is not a chain link (e.g. a method-call-rooted
 	 * base like $this->getFoo()['x']). $useNativeTypes selects native vs phpdoc.
 	 */
-	public function getIssetabilityResolution(MutatingScope $scope, bool $useNativeTypes): IssetabilityResolution
+	public function getIssetabilityResolution(MutatingScope $scope, bool $useNativeTypes, bool $reprocessUntrackedLinks = false): IssetabilityResolution
 	{
 		if ($this->issetabilityDescriptor !== null) {
-			return $this->issetabilityDescriptor->resolve($scope, $useNativeTypes, $this->expr);
+			return $this->issetabilityDescriptor->resolve($scope, $useNativeTypes, $this->expr, $reprocessUntrackedLinks);
 		}
 
-		$type = $this->getTypeOnScope($scope, $useNativeTypes);
+		$type = $reprocessUntrackedLinks && !$scope->hasExpressionType($this->expr)->yes()
+			? ($useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain()->getNativeType($this->expr) : $scope->getType($this->expr))
+			: $this->getTypeOnScope($scope, $useNativeTypes);
 
 		return new IssetabilityResolution(
 			IssetabilityLinkInfo::leaf($type, $this->expr, $this->expr instanceof Expr\NullsafePropertyFetch),

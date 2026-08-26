@@ -258,6 +258,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5009.php'], []);
 	}
 
+	public function testNullableArrayReceiver(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-nullable-array-receiver.php'], []);
+	}
+
 	public function testBug5933(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);

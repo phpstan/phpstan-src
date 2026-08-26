@@ -12,6 +12,7 @@ use function array_keys;
 use function count;
 use function is_array;
 use function is_string;
+use function spl_object_id;
 use function sprintf;
 
 /**
@@ -156,6 +157,7 @@ final class IgnoredErrorHelperResult
 
 		$ignoredErrors = [];
 		$notIgnoredErrors = [];
+		$strippedSurvivors = [];
 		$errorQueue = $errors;
 		for ($errorIndex = 0; $errorIndex < count($errorQueue); $errorIndex++) {
 			$error = $errorQueue[$errorIndex];
@@ -214,7 +216,12 @@ final class IgnoredErrorHelperResult
 
 				if (count($remainingContexts) < count($traitContexts)) {
 					foreach (array_keys($remainingContexts) as $contextFilePath) {
-						$errorQueue[] = $error->asReportedInTraitContext($contextFilePath);
+						$survivor = $error->asReportedInTraitContext($contextFilePath);
+						// the strip phase above already tried this occurrence against its
+						// file's entries and the context-scoped path entries - it must not
+						// be counted against them a second time below
+						$strippedSurvivors[spl_object_id($survivor)] = true;
+						$errorQueue[] = $survivor;
 					}
 					continue;
 				}
@@ -223,8 +230,10 @@ final class IgnoredErrorHelperResult
 				// in the trait and is matched as a whole below
 			}
 
+			$isStrippedSurvivor = isset($strippedSurvivors[spl_object_id($error)]);
+
 			$filePath = $this->fileHelper->normalizePath($error->getFilePath());
-			if (isset($this->ignoreErrorsByFile[$filePath])) {
+			if (!$isStrippedSurvivor && isset($this->ignoreErrorsByFile[$filePath])) {
 				foreach ($this->ignoreErrorsByFile[$filePath] as $ignoreError) {
 					$i = $ignoreError['index'];
 					$ignore = $ignoreError['ignoreError'];
@@ -255,6 +264,18 @@ final class IgnoredErrorHelperResult
 			foreach ($this->otherIgnoreErrors as $ignoreError) {
 				$i = $ignoreError['index'];
 				$ignore = $ignoreError['ignoreError'];
+
+				if (
+					$isStrippedSurvivor
+					&& is_array($ignore)
+					&& isset($ignore['path'])
+					&& $error->getTraitFilePath() !== null
+					&& !(new FileExcluder($this->fileHelper, [$ignore['path']]))->isExcludedFromAnalysing($error->getTraitFilePath())
+				) {
+					// the strip phase already counted this occurrence against
+					// context-scoped path entries
+					continue;
+				}
 
 				$result = $processIgnoreError($error, $i, $ignore);
 				if (!$result) {

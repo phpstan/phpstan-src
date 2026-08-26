@@ -361,7 +361,7 @@ jobs:
               # the same report, the same ignore matching and the same generated baseline on
               # every run, independent of result-cache state (cold/warm/partial) and of
               # worker arrival order.
-              cp AMailer.php.dist src/AMailer.php
+              cp AMailer.php.dist src/Mailers/AMailer.php
               # With no ignores: the deduplicated error is reported once, directly in the
               # trait file (no "in context of"); errors whose message differs per using
               # class stay reported in each class context.
@@ -396,14 +396,24 @@ jobs:
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
+              # A directory path covering the using classes (but not the trait file) accounts
+              # per-context too: without count it hides all contexts...
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-dir-path.neon"
+              # ...and with count: 1 it covers one of the two contexts: the other is reported
+              # in its context, and the count mismatch reports the true occurrence count.
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-dir-count.neon")
+              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit -a contains 'is expected to occur 1 time, but occurred 2 times' "$OUTPUT"
               # The add-a-using-class flicker from the issue: prime the result cache with
               # BMailer as the trait's only user (the class-pathed entry covers the only
               # context), then add AMailer. The AMailer context is reported - on the
               # partial run and identically on every unchanged run after it.
-              rm src/AMailer.php
+              rm src/Mailers/AMailer.php
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon"
-              cp AMailer.php.dist src/AMailer.php
+              cp AMailer.php.dist src/Mailers/AMailer.php
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
               ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
@@ -422,7 +432,7 @@ jobs:
               # context under its class path, and the combination holds on re-run.
               ../../bin/phpstan clear-result-cache
               ../../bin/phpstan analyse -c ignore-class-a-path.neon --generate-baseline=partial-baseline.neon
-              ../bashunit -a contains 'path: src/BMailer.php' "$(cat partial-baseline.neon)"
+              ../bashunit -a contains 'path: src/Mailers/BMailer.php' "$(cat partial-baseline.neon)"
               ../bashunit -a not_contains 'SomeTrait.php' "$(cat partial-baseline.neon)"
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
@@ -431,8 +441,8 @@ jobs:
               # paths for the per-context errors) holds on re-run as well.
               ../../bin/phpstan clear-result-cache
               ../../bin/phpstan --generate-baseline=full-baseline.neon
-              ../bashunit -a contains 'path: src/AMailer.php' "$(cat full-baseline.neon)"
-              ../bashunit -a contains 'path: src/BMailer.php' "$(cat full-baseline.neon)"
+              ../bashunit -a contains 'path: src/Mailers/AMailer.php' "$(cat full-baseline.neon)"
+              ../bashunit -a contains 'path: src/Mailers/BMailer.php' "$(cat full-baseline.neon)"
               ../bashunit -a contains 'path: src/SomeTrait.php' "$(cat full-baseline.neon)"
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"

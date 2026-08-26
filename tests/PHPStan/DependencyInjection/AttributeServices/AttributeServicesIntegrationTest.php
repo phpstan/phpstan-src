@@ -18,7 +18,6 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use function array_filter;
-use function count;
 use function dirname;
 use function md5;
 use function mkdir;

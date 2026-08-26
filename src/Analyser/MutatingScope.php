@@ -1283,16 +1283,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// stored result must NOT win here: a narrowing entry's node sits inside
 		// the condition (the \$a of `'' !== \$a`, walked on a truthy branch), so
 		// its walk-position type carries branch narrowing that would poison the
-		// base the narrowing is applied to.
+		// base the narrowing is applied to. A nullsafe-containing chain is the
+		// exception: deriving it from tracked state re-prices its links on
+		// receiver state an active isset/?? ensure devices non-null, losing the
+		// short-circuit's null - its stored result keeps it.
+		$exprResult = $storage->findExpressionResult($expr);
 		if (
-			($expr instanceof Expr\Variable && is_string($expr->name))
-			|| $expr instanceof PropertyFetch
-			|| $expr instanceof Expr\ArrayDimFetch
-			|| $expr instanceof Expr\StaticPropertyFetch
-			// argument-less instance calls: the shape @phpstan-assert subjects
-			// take (synthetic per-build nodes, never stored - a walk per
-			// application otherwise)
-			|| ($expr instanceof Expr\MethodCall && $expr->name instanceof Identifier && !$expr->isFirstClassCallable() && $expr->getArgs() === [])
+			(
+				($expr instanceof Expr\Variable && is_string($expr->name))
+				|| $expr instanceof PropertyFetch
+				|| $expr instanceof Expr\ArrayDimFetch
+				|| $expr instanceof Expr\StaticPropertyFetch
+				// argument-less instance calls: the shape @phpstan-assert subjects
+				// take (synthetic per-build nodes, never stored - a walk per
+				// application otherwise)
+				|| ($expr instanceof Expr\MethodCall && $expr->name instanceof Identifier && !$expr->isFirstClassCallable() && $expr->getArgs() === [])
+			)
+			&& ($exprResult === null || !$exprResult->containsNullsafe())
 		) {
 			return [
 				$this->resolveScopeStateType($expr, $this->nativeTypesPromoted),
@@ -1300,7 +1307,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			];
 		}
 
-		$result = $storage->findExpressionResult($expr);
+		$result = $exprResult;
 		if ($result === null) {
 			// a call subject (or a synthetic plain-chain variant) is priced on
 			// demand: one walk answers both flavours. Not memoized - a census

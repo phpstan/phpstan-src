@@ -301,9 +301,17 @@ final class MethodCallHandler implements ExprHandler
 				// processArgs() selected (generics resolved against the actual arg
 				// types), falling back to the structural acceptor for dynamic callees.
 				$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
+				$rememberedType = $acceptorForGenerics->getReturnType();
+				if ($varResult->containsNullsafe() && TypeCombinator::containsNull($calledOnType)) {
+					// a call on a nullsafe chain whose receiver is nullable
+					// short-circuits to null - the tracked entry is keyed by the
+					// whole chain, so it must remember the propagated type, or a
+					// later ?? over the same chain reads it as never-null
+					$rememberedType = TypeCombinator::addNull($rememberedType);
+				}
 				$scope = $scope->assignExpression(
 					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-					$acceptorForGenerics->getReturnType(),
+					$rememberedType,
 					new MixedType(),
 				);
 			}

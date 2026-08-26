@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -27,6 +29,7 @@ use const SORT_REGULAR;
  *
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 5, enabledBy: '%featureToggles.sortWithoutEffect%')]
 final class SortWithoutEffectRule implements Rule
 {
 
@@ -55,7 +58,9 @@ final class SortWithoutEffectRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter(ref: '%treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

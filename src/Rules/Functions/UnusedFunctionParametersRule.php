@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<VariableWritesNode>
  */
+#[RegisteredRule(level: 4, enabledBy: '%featureToggles.unusedParameters%')]
 final class UnusedFunctionParametersRule implements Rule
 {
 

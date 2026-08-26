@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -30,6 +32,7 @@ use function strtolower;
  *
  * @implements Rule<FuncCall>
  */
+#[RegisteredRule(level: 4, enabledBy: '%featureToggles.finiteTypesInHaystack%')]
 final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 {
 
@@ -42,6 +45,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		#[AutowiredParameter(ref: '%treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

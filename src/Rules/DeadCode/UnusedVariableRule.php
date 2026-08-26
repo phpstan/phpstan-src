@@ -4,6 +4,7 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableWritesNode;
@@ -22,6 +23,7 @@ use function ucfirst;
 /**
  * @implements Rule<VariableWritesNode>
  */
+#[RegisteredRule(level: 4, enabledBy: '%featureToggles.unusedVariable%')]
 final class UnusedVariableRule implements Rule
 {
 

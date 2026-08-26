@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function ucfirst;
 /**
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
+#[RegisteredRule(level: 0, enabledBy: '%exceptions.check.missingCheckedExceptionInThrows%')]
 final class MissingCheckedExceptionInPropertyHookThrowsRule implements Rule
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
+#[RegisteredRule(level: 0, enabledBy: '%exceptions.check.missingCheckedExceptionInThrows%')]
 final class MissingCheckedExceptionInMethodThrowsRule implements Rule
 {
 

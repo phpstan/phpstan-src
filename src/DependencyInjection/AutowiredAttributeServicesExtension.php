@@ -27,6 +27,8 @@ use function count;
 use function explode;
 use function implode;
 use function is_array;
+use function is_bool;
+use function preg_match;
 use function preg_split;
 use function sprintf;
 use function strcasecmp;
@@ -37,6 +39,9 @@ use const PREG_SPLIT_DELIM_CAPTURE;
 #[ContainerExtension(name: 'autowiredAttributeServices')]
 final class AutowiredAttributeServicesExtension extends CompilerExtension
 {
+
+	/** @var list<array{ServiceDefinition, string, string}> */
+	private array $conditionalTags = [];
 
 	#[Override]
 	public function getConfigSchema(): Schema
@@ -133,9 +138,9 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			$definition = $builder->addDefinition(null)
 				->setFactory($class->name)
-				->setAutowired($class->name)
-				->addTag(LazyRegistry::RULE_TAG);
+				->setAutowired($class->name);
 
+			$this->tag($definition, LazyRegistry::RULE_TAG, $attribute->enabledBy);
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
@@ -147,11 +152,57 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			$definition = $builder->addDefinition(null)
 				->setFactory($class->name)
-				->setAutowired($class->name)
-				->addTag(RegistryFactory::COLLECTOR_TAG);
+				->setAutowired($class->name);
 
+			$this->tag($definition, RegistryFactory::COLLECTOR_TAG, $attribute->enabledBy);
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
+	}
+
+	private function tag(ServiceDefinition $definition, string $tag, ?string $enabledBy): void
+	{
+		if ($enabledBy === null) {
+			$definition->addTag($tag);
+
+			return;
+		}
+
+		$this->conditionalTags[] = [$definition, $tag, $enabledBy];
+	}
+
+	#[Override]
+	public function beforeCompile(): void
+	{
+		$builder = $this->getContainerBuilder();
+		foreach ($this->conditionalTags as [$definition, $tag, $enabledBy]) {
+			if (!self::resolveCondition($builder, $enabledBy)) {
+				continue;
+			}
+
+			$definition->addTag($tag);
+		}
+	}
+
+	private static function resolveCondition(ContainerBuilder $builder, string $enabledBy): bool
+	{
+		if (preg_match('#^%([\w.-]+)%$#D', $enabledBy, $matches) !== 1) {
+			throw new ShouldNotHappenException(sprintf('enabledBy must be a parameter reference, %s given.', $enabledBy));
+		}
+
+		$parameter = $builder->parameters;
+		foreach (explode('.', $matches[1]) as $key) {
+			if (!is_array($parameter) || !array_key_exists($key, $parameter)) {
+				throw new ShouldNotHappenException(sprintf("Missing parameter '%s'.", $matches[1]));
+			}
+
+			$parameter = $parameter[$key];
+		}
+
+		if (!is_bool($parameter)) {
+			throw new ShouldNotHappenException(sprintf('Parameter %s referenced by enabledBy must be bool.', $enabledBy));
+		}
+
+		return $parameter;
 	}
 
 	/**

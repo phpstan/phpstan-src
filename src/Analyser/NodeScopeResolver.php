@@ -76,12 +76,10 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
@@ -2335,11 +2333,6 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$byRefSlots = $this->findByRefArrayItemSlots($scope, $arg->value);
-			if (count($byRefSlots) === 0) {
-				continue;
-			}
-
 			$currentParameter = null;
 			if ($writebackParameters !== null) {
 				if (isset($writebackParameters[$i])) {
@@ -2350,6 +2343,7 @@ class NodeScopeResolver
 			}
 
 			if ($currentParameter !== null && $currentParameter->passedByReference()->createsNewVariable()) {
+				// the by-reference writeback above already propagates through the slots
 				continue;
 			}
 
@@ -2357,7 +2351,7 @@ class NodeScopeResolver
 				$scope,
 				$storage,
 				$stmt,
-				$byRefSlots,
+				$arg->value,
 				$currentParameter !== null ? $currentParameter->getType() : new MixedType(),
 				$nodeCallback,
 			);
@@ -2654,143 +2648,20 @@ class NodeScopeResolver
 	 * the callee, so anything the callee writes into that slot lands in $v. The same holds
 	 * for an array variable built with by-reference items and only then passed to the call.
 	 *
-	 * @return list<array{Expr, list<Type>}> pairs of [referenced expression, offset path]
-	 */
-	private function findByRefArrayItemSlots(MutatingScope $scope, Expr $argValue): array
-	{
-		$slots = [];
-		if ($argValue instanceof Expr\Array_) {
-			$this->collectByRefArrayLiteralSlots($scope, $argValue, [], $slots);
-
-			return $slots;
-		}
-
-		if (!$argValue instanceof Variable || !is_string($argValue->name)) {
-			return $slots;
-		}
-
-		foreach ($scope->getByRefArrayItemSlots($argValue->name) as [$referencedExpr, $slotExpr]) {
-			$offsetPath = $this->resolveByRefArrayOffsetPath($scope, $slotExpr, $argValue->name);
-			if ($offsetPath === null) {
-				continue;
-			}
-
-			$slots[] = [$referencedExpr, $offsetPath];
-		}
-
-		return $slots;
-	}
-
-	/**
-	 * @param list<Type> $offsetPath
-	 * @param list<array{Expr, list<Type>}> $slots
-	 * @param-out list<array{Expr, list<Type>}> $slots
-	 */
-	private function collectByRefArrayLiteralSlots(MutatingScope $scope, Expr\Array_ $array, array $offsetPath, array &$slots): void
-	{
-		$implicitIndex = 0;
-		foreach ($array->items as $item) {
-			if ($item->unpack) {
-				$implicitIndex = null;
-				continue;
-			}
-
-			if ($item->key !== null) {
-				$keyType = $scope->getType($item->key)->toArrayKey();
-
-				if ($implicitIndex !== null) {
-					$keyValues = $keyType->getConstantScalarValues();
-					if (count($keyValues) === 1) {
-						$keyValue = $keyValues[0];
-						if (is_int($keyValue) && $keyValue >= $implicitIndex) {
-							$implicitIndex = $keyValue + 1;
-						}
-					} elseif (!$keyType->isInteger()->no()) {
-						// the key could be an integer, but we do not know which one,
-						// so subsequent implicit indices are unpredictable
-						$implicitIndex = null;
-					}
-				}
-			} elseif ($implicitIndex !== null) {
-				$keyType = new ConstantIntegerType($implicitIndex);
-				$implicitIndex++;
-			} else {
-				$keyType = new IntegerType();
-			}
-
-			$itemOffsetPath = $offsetPath;
-			$itemOffsetPath[] = $keyType;
-
-			if ($item->value instanceof Expr\Array_) {
-				$this->collectByRefArrayLiteralSlots($scope, $item->value, $itemOffsetPath, $slots);
-				continue;
-			}
-
-			if (!$item->byRef || !$this->isByRefArrayItemWritable($item->value)) {
-				continue;
-			}
-
-			$slots[] = [$item->value, $itemOffsetPath];
-		}
-	}
-
-	private function isByRefArrayItemWritable(Expr $expr): bool
-	{
-		if ($expr instanceof Variable) {
-			return is_string($expr->name);
-		}
-
-		return $expr instanceof PropertyFetch
-			|| $expr instanceof StaticPropertyFetch
-			|| $expr instanceof ArrayDimFetch;
-	}
-
-	/**
-	 * Offsets of a by-reference array slot expression rooted at $rootVariableName.
-	 *
-	 * @return list<Type>|null
-	 */
-	private function resolveByRefArrayOffsetPath(MutatingScope $scope, Expr $slotExpr, string $rootVariableName): ?array
-	{
-		if ($slotExpr instanceof Variable && $slotExpr->name === $rootVariableName) {
-			return [];
-		}
-
-		if ($slotExpr instanceof ArrayDimFetch && $slotExpr->dim !== null) {
-			$parentPath = $this->resolveByRefArrayOffsetPath($scope, $slotExpr->var, $rootVariableName);
-			if ($parentPath === null) {
-				return null;
-			}
-
-			$parentPath[] = $scope->getType($slotExpr->dim);
-
-			return $parentPath;
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param list<array{Expr, list<Type>}> $slots
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processByRefArrayItemsPassedByValue(
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		Node\Stmt $stmt,
-		array $slots,
+		Expr $argValue,
 		Type $parameterType,
 		callable $nodeCallback,
 	): MutatingScope
 	{
-		foreach ($slots as [$referencedExpr, $offsetPath]) {
+		foreach ($this->resolveByRefArrayItemTypes($scope, $argValue, $parameterType) as [$referencedExpr, $slotType]) {
 			if ($referencedExpr instanceof Variable && $referencedExpr->name === 'this') {
 				continue;
-			}
-
-			$slotType = $parameterType;
-			foreach ($offsetPath as $offsetType) {
-				$slotType = $slotType->getOffsetValueType($offsetType);
 			}
 
 			if ($scope->hasExpressionType($referencedExpr)->yes()) {
@@ -2809,6 +2680,49 @@ class NodeScopeResolver
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * By-reference array item slots of $argValue, each with the type the callee can
+	 * write through the reference - the slot read off $parameterType.
+	 *
+	 * @return list<array{Expr, Type}> pairs of [referenced expression, slot type]
+	 */
+	private function resolveByRefArrayItemTypes(MutatingScope $scope, Expr $argValue, Type $parameterType): array
+	{
+		if ($argValue instanceof Expr\Array_) {
+			// rooting the slot expressions at the parameter type resolves the offsets
+			// through the usual dim fetch reading
+			$slots = [];
+			foreach (ArrayByRefItemSlots::resolve($scope, $argValue, new TypeExpr($parameterType)) as [$referencedExpr, $slotExpr]) {
+				if (!$this->isByRefArrayItemWritable($referencedExpr)) {
+					continue;
+				}
+
+				$slots[] = [$referencedExpr, $scope->getType($slotExpr)];
+			}
+
+			return $slots;
+		}
+
+		if ($argValue instanceof Variable && is_string($argValue->name)) {
+			// the array was built with by-reference items earlier - the slots are
+			// already recorded in the scope
+			return $scope->resolveByRefArrayItemTypes($argValue->name, $parameterType);
+		}
+
+		return [];
+	}
+
+	private function isByRefArrayItemWritable(Expr $expr): bool
+	{
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+
+		return $expr instanceof PropertyFetch
+			|| $expr instanceof StaticPropertyFetch
+			|| $expr instanceof ArrayDimFetch;
 	}
 
 	/**

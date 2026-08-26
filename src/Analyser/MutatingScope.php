@@ -2881,15 +2881,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
-	 * By-reference array items (`$array = [&$v]`) currently aliasing a slot of $variableName.
-	 * The array slot keeps aliasing the referenced expression even after the array is copied,
-	 * so a write into the slot is a write into the referenced expression.
+	 * Types of the expressions aliased by `&` array items (`$array = [&$v]`) of $variableName,
+	 * resolved from $arrayType as if that was the array's new value. The slot keeps aliasing
+	 * the referenced expression even after the array is copied, so a write into the slot is
+	 * a write into the referenced expression.
 	 *
-	 * @return list<array{Expr, Expr\ArrayDimFetch}> pairs of [referenced expression, slot expression]
+	 * @return list<array{Expr, Type}> pairs of [referenced expression, slot type]
 	 */
-	public function getByRefArrayItemSlots(string $variableName): array
+	public function resolveByRefArrayItemTypes(string $variableName, Type $arrayType): array
 	{
-		$slots = [];
+		$itemTypes = [];
 		foreach ($this->expressionTypes as $expressionType) {
 			$expr = $expressionType->getExpr();
 			if (!$expr instanceof IntertwinedVariableByReferenceWithExpr) {
@@ -2902,14 +2903,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 			$assignedExpr = $expr->getAssignedExpr();
-			if (!$assignedExpr instanceof Expr\ArrayDimFetch) {
+			if (
+				!$assignedExpr instanceof Expr\ArrayDimFetch
+				|| ScopeOps::getIntertwinedRefRootVariableName($assignedExpr) !== $variableName
+			) {
 				continue;
 			}
 
-			$slots[] = [$expr->getExpr(), $assignedExpr];
+			$itemTypes[] = [
+				$expr->getExpr(),
+				$this->resolveIntertwinedAssignedType($this, $arrayType, $assignedExpr, $variableName, false),
+			];
 		}
 
-		return $slots;
+		return $itemTypes;
 	}
 
 	/**

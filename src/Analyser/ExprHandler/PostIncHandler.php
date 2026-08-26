@@ -40,6 +40,20 @@ final class PostIncHandler implements ExprHandler
 	{
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 
+		// processVirtualAssign() emits nodes (PropertyAssignNode) whose rules ask
+		// about this whole expression - store a before-scope anchored result
+		// first so those asks answer from the storage; processExprNode()
+		// overwrites it with the final result after this handler returns
+		$nodeScopeResolver->storeExpressionResult($storage, $expr, $this->expressionResultFactory->create(
+			$varResult->getScope(),
+			$scope,
+			$expr,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+		));
+
 		return $this->expressionResultFactory->create(
 			$nodeScopeResolver->processVirtualAssign(
 				$varResult->getScope(),

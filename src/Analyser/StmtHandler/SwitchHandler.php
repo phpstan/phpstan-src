@@ -44,7 +44,6 @@ final class SwitchHandler implements StmtHandler
 	{
 		$entryScope = $scope;
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$scope = $condResult->getScope();
 		$scopeForBranches = $scope;
 		$finalScope = null;
@@ -116,6 +115,11 @@ final class SwitchHandler implements StmtHandler
 				$prevScope = $branchScope;
 			}
 		}
+
+		// the Switch_ callback is deferred from processStmtNode(): it fires
+		// after every case condition's walk stored its result, with the entry
+		// scope, so rules pricing the case conditions answer from the storage
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
 		if ($switchConditionArms !== []) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new SwitchConditionNode($stmt->cond, $switchConditionArms, $stmt), $scope, $storage);

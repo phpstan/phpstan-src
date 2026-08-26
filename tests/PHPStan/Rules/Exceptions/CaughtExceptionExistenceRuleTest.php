@@ -76,4 +76,14 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
+			[
+				'Class Bug12827Exceptions\MissingRoutingReferenceException referenced with incorrect case: Bug12827Exceptions\MissingRoutingreferenceException.',
+				20,
+			],
+		]);
+	}
+
 }

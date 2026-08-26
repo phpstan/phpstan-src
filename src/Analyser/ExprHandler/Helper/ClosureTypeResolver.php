@@ -661,7 +661,17 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			]);
 		}
 
-		$returnType = $readScope->getKeepVoidType($expr->expr);
+		// prefer the stored result of the single body walk - it carries the
+		// extension-resolved type (dynamic return type extensions), which a
+		// scope re-pricing of the body expression would not consult. The
+		// flavour follows the read scope: a native build promotes it (either
+		// via $native or by walking on an already-promoted scope).
+		$storedBodyResult = $storage !== null ? $storage->findExpressionResult($expr->expr) : null;
+		if ($storedBodyResult !== null) {
+			$returnType = $storedBodyResult->getKeepVoidType($readScope->nativeTypesPromoted);
+		} else {
+			$returnType = $readScope->getKeepVoidType($expr->expr);
+		}
 		if ($expr->returnType !== null) {
 			$nativeReturnType = $scope->getFunctionType($expr->returnType, false, false);
 			$returnType = MutatingScope::intersectButNotNever($nativeReturnType, $returnType);

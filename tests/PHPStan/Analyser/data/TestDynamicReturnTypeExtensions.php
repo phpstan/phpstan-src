@@ -299,3 +299,24 @@ class Bug7391BDynamicStaticMethodReturnTypeExtension implements DynamicStaticMet
 		return $scope->getType(new New_($methodCall->class));
 	}
 }
+
+class BackedEnumGetValueDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
+{
+	public function getClass(): string
+	{
+		return \BackedEnum::class;
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return $methodReflection->getName() === 'getValue';
+	}
+
+	public function getTypeFromMethodCall(
+		MethodReflection $methodReflection,
+		MethodCall $methodCall,
+		Scope $scope
+	): ?Type {
+		return $methodReflection->getDeclaringClass()->getBackedEnumType();
+	}
+}

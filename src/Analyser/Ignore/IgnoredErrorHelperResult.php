@@ -3,11 +3,12 @@
 namespace PHPStan\Analyser\Ignore;
 
 use PHPStan\Analyser\Error;
+use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_fill_keys;
 use function array_key_exists;
-use function array_values;
+use function array_keys;
 use function count;
 use function is_array;
 use function is_string;
@@ -154,7 +155,74 @@ final class IgnoredErrorHelperResult
 		};
 
 		$ignoredErrors = [];
-		foreach ($errors as $errorIndex => $error) {
+		$notIgnoredErrors = [];
+		$errorQueue = $errors;
+		for ($errorIndex = 0; $errorIndex < count($errorQueue); $errorIndex++) {
+			$error = $errorQueue[$errorIndex];
+
+			// An error deduplicated directly into a trait (see ConstantConditionInTraitRule)
+			// stands for one occurrence per using class. An ignoreErrors path pointing at one
+			// of the using classes accounts only for that class's context - it must not hide
+			// the occurrences of the remaining contexts, which are re-queued and reported
+			// (or further ignored) each in its own context.
+			$traitContexts = $error->getTraitContexts();
+			if (count($traitContexts) > 0) {
+				$errorTraitFilePath = $error->getTraitFilePath();
+				$remainingContexts = $traitContexts;
+				foreach (array_keys($traitContexts) as $contextFilePath) {
+					$contextError = $error->asReportedInTraitContext($contextFilePath);
+					$contextIgnored = false;
+					$normalizedContextFilePath = $this->fileHelper->normalizePath($contextFilePath);
+					foreach ($this->ignoreErrorsByFile[$normalizedContextFilePath] ?? [] as $ignoreError) {
+						$i = $ignoreError['index'];
+						$ignore = $ignoreError['ignoreError'];
+						if (!$processIgnoreError($contextError, $i, $ignore)) {
+							$ignoredErrors[] = [$contextError, $ignore];
+							$contextIgnored = true;
+							break;
+						}
+					}
+					if (!$contextIgnored) {
+						foreach ($this->otherIgnoreErrors as $ignoreError) {
+							$i = $ignoreError['index'];
+							$ignore = $ignoreError['ignoreError'];
+							// only entries scoped to a path that does not cover the trait file
+							// itself act per-context - everything else (pathless entries, paths
+							// covering the trait) matches the deduplicated error as a whole below
+							if (!is_array($ignore) || !isset($ignore['path'])) {
+								continue;
+							}
+							if (
+								$errorTraitFilePath !== null
+								&& (new FileExcluder($this->fileHelper, [$ignore['path']]))->isExcludedFromAnalysing($errorTraitFilePath)
+							) {
+								continue;
+							}
+							if (!$processIgnoreError($contextError, $i, $ignore)) {
+								$ignoredErrors[] = [$contextError, $ignore];
+								$contextIgnored = true;
+								break;
+							}
+						}
+					}
+					if (!$contextIgnored) {
+						continue;
+					}
+
+					unset($remainingContexts[$contextFilePath]);
+				}
+
+				if (count($remainingContexts) < count($traitContexts)) {
+					foreach (array_keys($remainingContexts) as $contextFilePath) {
+						$errorQueue[] = $error->asReportedInTraitContext($contextFilePath);
+					}
+					continue;
+				}
+
+				// no class-scoped entry matched any context - the error stays deduplicated
+				// in the trait and is matched as a whole below
+			}
+
 			$filePath = $this->fileHelper->normalizePath($error->getFilePath());
 			if (isset($this->ignoreErrorsByFile[$filePath])) {
 				foreach ($this->ignoreErrorsByFile[$filePath] as $ignoreError) {
@@ -162,7 +230,6 @@ final class IgnoredErrorHelperResult
 					$ignore = $ignoreError['ignoreError'];
 					$result = $processIgnoreError($error, $i, $ignore);
 					if (!$result) {
-						unset($errors[$errorIndex]);
 						$ignoredErrors[] = [$error, $ignore];
 						continue 2;
 					}
@@ -178,7 +245,6 @@ final class IgnoredErrorHelperResult
 						$ignore = $ignoreError['ignoreError'];
 						$result = $processIgnoreError($error, $i, $ignore);
 						if (!$result) {
-							unset($errors[$errorIndex]);
 							$ignoredErrors[] = [$error, $ignore];
 							continue 2;
 						}
@@ -192,14 +258,15 @@ final class IgnoredErrorHelperResult
 
 				$result = $processIgnoreError($error, $i, $ignore);
 				if (!$result) {
-					unset($errors[$errorIndex]);
 					$ignoredErrors[] = [$error, $ignore];
 					continue 2;
 				}
 			}
+
+			$notIgnoredErrors[] = $error;
 		}
 
-		$errors = array_values($errors);
+		$errors = $notIgnoredErrors;
 
 		foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 			if (!is_array($unmatchedIgnoredError) || !isset($unmatchedIgnoredError['count']) || !isset($realCounts[$i])) {

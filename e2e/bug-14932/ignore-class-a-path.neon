@@ -1,0 +1,9 @@
+includes:
+	- phpstan.neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: booleanAnd.rightAlwaysTrue
+			path: src/AMailer.php
+		-
+			identifier: identical.alwaysFalse

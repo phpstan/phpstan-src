@@ -1,0 +1,9 @@
+includes:
+	- phpstan.neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: booleanAnd.rightAlwaysTrue
+			path: src/SomeTrait.php
+		-
+			identifier: identical.alwaysFalse

@@ -1393,6 +1393,38 @@ class UnionType implements CompoundType
 			$myTypes = $this->types;
 		}
 
+		// When every member of the union is a template type (e.g. T1|T2) and the received
+		// type only matches some of them, the unmatched template types cannot be inferred
+		// from this argument. Bind them to never so the union narrows to the matched members
+		// instead of widening each unmatched template to its bound.
+		if (count($myTypes) > 1) {
+			$templateMembers = [];
+			foreach ($myTypes as $type) {
+				if (!$type instanceof TemplateType) {
+					$templateMembers = [];
+					break;
+				}
+				$templateMembers[] = $type;
+			}
+
+			if (count($templateMembers) > 0) {
+				$matchedTypes = TemplateTypeMap::createEmpty();
+				$unmatchedNames = [];
+				foreach ($templateMembers as $type) {
+					$inferred = $type->inferTemplateTypes($receivedType);
+					if ($inferred->isEmpty()) {
+						$unmatchedNames[] = $type->getName();
+						continue;
+					}
+					$matchedTypes = $matchedTypes->union($inferred);
+				}
+
+				if (!$matchedTypes->isEmpty() && count($unmatchedNames) > 0) {
+					return $matchedTypes->union(new TemplateTypeMap(array_fill_keys($unmatchedNames, new NeverType(true))));
+				}
+			}
+		}
+
 		foreach ($myTypes as $type) {
 			if ($type instanceof TemplateType || ($type instanceof GenericClassStringType && $type->getGenericType() instanceof TemplateType)) {
 				continue;

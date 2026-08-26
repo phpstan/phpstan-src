@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Keywords;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Label>
  */
+#[RegisteredRule(level: 4, enabledBy: '%featureToggles.unusedLabel%')]
 final class UnusedLabelRule implements Rule
 {
 

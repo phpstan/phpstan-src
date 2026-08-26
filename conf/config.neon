@@ -260,36 +260,7 @@ parameters:
 autowiredAttributeServices:
 	level: null
 
-conditionalTags:
-	PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule:
-		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
-	PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule:
-		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
-	PHPStan\Rules\Exceptions\MissingCheckedExceptionInPropertyHookThrowsRule:
-		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
-	PHPStan\Rules\Properties\UninitializedPropertyRule:
-		phpstan.rules.rule: %checkUninitializedProperties%
-	PHPStan\Rules\Exceptions\MethodThrowTypeCovarianceRule:
-		phpstan.rules.rule: %exceptions.check.throwTypeCovariance%
-
 services:
-	-
-		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule
-
-	-
-		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule
-
-	-
-		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInPropertyHookThrowsRule
-
-	-
-		class: PHPStan\Rules\Properties\UninitializedPropertyRule
-
-	-
-		class: PHPStan\Rules\Exceptions\MethodThrowTypeCovarianceRule
-		arguments:
-			implicitThrows: %exceptions.implicitThrows%
-
 	# autowired services are now registered with the help of attributes
 	# like #[PHPStan\DependencyInjection\AutowiredService] or #[PHPStan\DependencyInjection\GenerateFactory]
 

@@ -7,6 +7,10 @@ use Attribute;
 /**
  * Registers a rule in the DI container on the set rule level.
  *
+ * Pass enabledBy a `%parameter%` reference to make the registration depend on
+ * configuration, the way a `conditionalTags` entry would. The rule is only
+ * tagged when the parameter is truthy.
+ *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
  * and AutowiredAttributeServicesExtension.
  */
@@ -14,7 +18,7 @@ use Attribute;
 final class RegisteredRule
 {
 
-	public function __construct(public int $level)
+	public function __construct(public int $level, public ?string $enabledBy = null)
 	{
 	}
 

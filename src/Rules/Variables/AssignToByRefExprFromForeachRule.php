@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<NodeAbstract>
  */
+#[RegisteredRule(level: 1, enabledBy: '%featureToggles.assignToByRefForeachExpr%')]
 final class AssignToByRefExprFromForeachRule implements Rule
 {
 

@@ -103,6 +103,7 @@ parameters:
 	mixinExcludeClasses: []
 	scanFiles: []
 	scanDirectories: []
+	autowiredServiceDirectories: []
 	parallel:
 		jobSize: 20
 		processTimeout: 600.0

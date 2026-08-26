@@ -39,6 +39,9 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	/** @var string[] */
 	private array $allConfigFiles = [];
 
+	/** @var string[] */
+	private array $autowiredServiceFiles = [];
+
 	public function __construct(private LoaderFactory $loaderFactory, private bool $journalContainer)
 	{
 		parent::__construct();
@@ -56,6 +59,14 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	public function setAllConfigFiles(array $allConfigFiles): void
 	{
 		$this->allConfigFiles = $allConfigFiles;
+	}
+
+	/**
+	 * @param string[] $autowiredServiceFiles
+	 */
+	public function setAutowiredServiceFiles(array $autowiredServiceFiles): void
+	{
+		$this->autowiredServiceFiles = $autowiredServiceFiles;
 	}
 
 	/**
@@ -103,6 +114,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
 			NeonAdapter::CACHE_KEY,
 			$this->getAllConfigFilesHashes(),
+			self::hashFiles($this->autowiredServiceFiles),
 		];
 
 		$className = $loader->load(
@@ -233,8 +245,17 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	 */
 	private function getAllConfigFilesHashes(): array
 	{
+		return self::hashFiles($this->allConfigFiles);
+	}
+
+	/**
+	 * @param string[] $files
+	 * @return string[]
+	 */
+	private static function hashFiles(array $files): array
+	{
 		$hashes = [];
-		foreach ($this->allConfigFiles as $file) {
+		foreach ($files as $file) {
 			$hash = hash_file('sha256', $file);
 
 			if ($hash === false) {

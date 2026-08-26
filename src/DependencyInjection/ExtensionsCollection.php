@@ -15,6 +15,7 @@ namespace PHPStan\DependencyInjection;
  * )
  * ```
  *
+ * @api
  * @template-covariant T of object
  */
 interface ExtensionsCollection

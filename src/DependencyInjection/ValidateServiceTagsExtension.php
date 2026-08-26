@@ -3,6 +3,7 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\CompilerExtension;
+use Nette\DI\ContainerBuilder;
 use Nette\PhpGenerator\ClassType;
 use olvlvl\ComposerAttributeCollector\Attributes;
 use Override;
@@ -13,6 +14,7 @@ use ReflectionClass;
 use function array_flip;
 use function array_key_exists;
 use function array_keys;
+use function array_merge;
 use function count;
 use function sprintf;
 
@@ -20,27 +22,34 @@ use function sprintf;
 final class ValidateServiceTagsExtension extends CompilerExtension
 {
 
-	/** @var array<class-string, string>|null */
-	private static ?array $interfaceTagMapping = null;
+	/** @var array<string, array<class-string, string>> */
+	private static array $interfaceTagMapping = [];
 
 	/**
-	 * Derived from the #[ExtensionInterface] attribute above each extension interface.
+	 * Derived from the #[ExtensionInterface] attribute above each extension interface,
+	 * both PHPStan's own ones and those found in the autowiredServiceDirectories.
 	 *
 	 * @return array<class-string, string>
 	 */
-	public static function getInterfaceTagMapping(): array
+	public static function getInterfaceTagMapping(ContainerBuilder $builder): array
 	{
-		if (self::$interfaceTagMapping !== null) {
-			return self::$interfaceTagMapping;
-		}
-
 		require_once __DIR__ . '/../../vendor/attributes.php';
+
+		$discoverer = AutowiredServiceDiscoverer::createFromContainerBuilder($builder);
+		$cacheKey = $discoverer->getKey();
+		if (array_key_exists($cacheKey, self::$interfaceTagMapping)) {
+			return self::$interfaceTagMapping[$cacheKey];
+		}
 
 		$mapping = [
 			// vendor interface - cannot carry the #[ExtensionInterface] attribute
 			NodeVisitor::class => RichParser::VISITOR_SERVICE_TAG,
 		];
-		foreach (Attributes::findTargetClasses(ExtensionInterface::class) as $class) {
+		$classes = array_merge(
+			Attributes::findTargetClasses(ExtensionInterface::class),
+			$discoverer->findTargetClasses(ExtensionInterface::class),
+		);
+		foreach ($classes as $class) {
 			// the attribute is not repeatable but the collector does not validate that
 			if (array_key_exists($class->name, $mapping)) {
 				throw new ShouldNotHappenException(sprintf('Interface %s claims multiple tags', $class->name));
@@ -48,7 +57,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 			$mapping[$class->name] = $class->attribute->tag;
 		}
 
-		return self::$interfaceTagMapping = $mapping;
+		return self::$interfaceTagMapping[$cacheKey] = $mapping;
 	}
 
 	/**
@@ -65,7 +74,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 	public function afterCompile(ClassType $class): void
 	{
 		$builder = $this->getContainerBuilder();
-		$mapping = self::getInterfaceTagMapping();
+		$mapping = self::getInterfaceTagMapping($builder);
 		$mappingCount = count($mapping);
 		$flippedMapping = array_flip($mapping);
 

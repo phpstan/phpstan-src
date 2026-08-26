@@ -177,6 +177,7 @@ parametersSchema:
 	mixinExcludeClasses: listOf(string())
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
+	autowiredServiceDirectories: listOf(string())
 	editorUrl: schema(string(), nullable())
 	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
@@ -224,6 +225,7 @@ expandRelativePaths:
 	- '[parameters][bootstrapFiles][]'
 	- '[parameters][scanFiles][]'
 	- '[parameters][scanDirectories][]'
+	- '[parameters][autowiredServiceDirectories][]'
 	- '[parameters][tmpDir]'
 	- '[parameters][pro][tmpDir]'
 	- '[parameters][memoryLimitFile]'

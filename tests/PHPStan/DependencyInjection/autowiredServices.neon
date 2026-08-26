@@ -1,0 +1,6 @@
+parameters:
+	autowiredServiceDirectories:
+		- AutowiredServices
+
+autowiredAttributeServices:
+	level: 0

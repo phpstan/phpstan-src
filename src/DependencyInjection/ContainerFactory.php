@@ -113,14 +113,14 @@ final class ContainerFactory
 		array $additionalParameters = [],
 	): Container
 	{
-		[$allConfigFiles, $projectConfig] = $this->detectDuplicateIncludedFiles(
-			array_merge([__DIR__ . '/../../conf/parametersSchema.neon'], $additionalConfigFiles),
-			[
-				'rootDir' => $this->rootDirectory,
-				'currentWorkingDirectory' => $this->currentWorkingDirectory,
-				'env' => Environment::getCleanedArray(),
-			],
-		);
+		$loaderParameters = [
+			'rootDir' => $this->rootDirectory,
+			'currentWorkingDirectory' => $this->currentWorkingDirectory,
+			'env' => Environment::getCleanedArray(),
+		];
+		$configFiles = array_merge([__DIR__ . '/../../conf/parametersSchema.neon'], $additionalConfigFiles);
+
+		[$allConfigFiles, $projectConfig] = $this->detectDuplicateIncludedFiles($configFiles, $loaderParameters, []);
 
 		$configurator = new Configurator(new LoaderFactory(
 			$this->fileHelper,
@@ -161,6 +161,7 @@ final class ContainerFactory
 		}
 
 		$configurator->setAllConfigFiles($allConfigFiles);
+		$configurator->setAutowiredServiceFiles($this->findAutowiredServiceFiles($configFiles, $loaderParameters, $projectConfig));
 
 		$container = $configurator->createContainer()->getByType(Container::class);
 		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
@@ -230,17 +231,45 @@ final class ContainerFactory
 	}
 
 	/**
+	 * Files with classes registered through PHPStan's dependency injection attributes.
+	 * The container is cached under a key derived from their contents, so that editing
+	 * one of them rebuilds the container the same way editing a config file does.
+	 *
 	 * @param string[] $configFiles
 	 * @param array<string, mixed> $loaderParameters
+	 * @param array<mixed> $projectConfig
+	 * @return list<string>
+	 */
+	private function findAutowiredServiceFiles(array $configFiles, array $loaderParameters, array $projectConfig): array
+	{
+		if (count($projectConfig['parameters']['autowiredServiceDirectories'] ?? []) === 0) {
+			return [];
+		}
+
+		// the first config pass runs without expandRelativePaths - the list is read from the very
+		// same config - so directories relative to the file declaring them are not absolutized yet
+		[, $expandedConfig] = $this->detectDuplicateIncludedFiles($configFiles, $loaderParameters, $projectConfig['expandRelativePaths']);
+
+		/** @var list<string> $directories */
+		$directories = Helpers::expand($expandedConfig['parameters']['autowiredServiceDirectories'], $loaderParameters, true);
+
+		return AutowiredServiceDiscoverer::findFiles($directories);
+	}
+
+	/**
+	 * @param string[] $configFiles
+	 * @param array<string, mixed> $loaderParameters
+	 * @param list<string> $expandRelativePaths
 	 * @return array{list<string>, array<mixed>}
 	 * @throws DuplicateIncludedFilesException
 	 */
 	private function detectDuplicateIncludedFiles(
 		array $configFiles,
 		array $loaderParameters,
+		array $expandRelativePaths,
 	): array
 	{
-		$neonAdapter = new NeonCachedFileReader([]);
+		$neonAdapter = new NeonCachedFileReader($expandRelativePaths);
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
 		$configArray = [];

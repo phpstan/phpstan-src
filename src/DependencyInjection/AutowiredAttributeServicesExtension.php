@@ -22,6 +22,7 @@ use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use stdClass;
 use function array_key_exists;
+use function array_merge;
 use function array_slice;
 use function count;
 use function explode;
@@ -51,8 +52,12 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	{
 		require_once __DIR__ . '/../../vendor/attributes.php';
 		$builder = $this->getContainerBuilder();
+		$discoverer = AutowiredServiceDiscoverer::createFromContainerBuilder($builder);
 
-		$autowiredParameters = Attributes::findTargetMethodParameters(AutowiredParameter::class);
+		$autowiredParameters = array_merge(
+			Attributes::findTargetMethodParameters(AutowiredParameter::class),
+			$discoverer->findTargetMethodParameters(AutowiredParameter::class),
+		);
 		$constructorParameters = [];
 		foreach ($autowiredParameters as $parameter) {
 			if (strcasecmp($parameter->method, '__construct') !== 0) {
@@ -63,7 +68,9 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			$constructorParameters[$lowerClass][] = $parameter;
 		}
 
-		foreach (Attributes::findTargetClasses(AutowiredService::class) as $class) {
+		$interfaceTagMapping = ValidateServiceTagsExtension::getInterfaceTagMapping($builder);
+
+		foreach (array_merge(Attributes::findTargetClasses(AutowiredService::class), $discoverer->findTargetClasses(AutowiredService::class)) as $class) {
 			$reflection = new ReflectionClass($class->name);
 			$attribute = $class->attribute;
 
@@ -82,7 +89,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 				continue;
 			}
 
-			foreach (ValidateServiceTagsExtension::getInterfaceTagMapping() as $interface => $tag) {
+			foreach ($interfaceTagMapping as $interface => $tag) {
 				if (!$reflection->implementsInterface($interface)) {
 					continue;
 				}
@@ -91,7 +98,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			}
 		}
 
-		foreach (Attributes::findTargetClasses(NonAutowiredService::class) as $class) {
+		foreach (array_merge(Attributes::findTargetClasses(NonAutowiredService::class), $discoverer->findTargetClasses(NonAutowiredService::class)) as $class) {
 			$attribute = $class->attribute;
 
 			$definition = $builder->addDefinition($attribute->name)
@@ -106,7 +113,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
-		foreach (Attributes::findTargetClasses(GenerateFactory::class) as $class) {
+		foreach (array_merge(Attributes::findTargetClasses(GenerateFactory::class), $discoverer->findTargetClasses(GenerateFactory::class)) as $class) {
 			$attribute = $class->attribute;
 			$definition = $builder->addFactoryDefinition(null)
 				->setImplement($attribute->interface);
@@ -125,7 +132,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			return;
 		}
 
-		foreach (Attributes::findTargetClasses(RegisteredRule::class) as $class) {
+		foreach (array_merge(Attributes::findTargetClasses(RegisteredRule::class), $discoverer->findTargetClasses(RegisteredRule::class)) as $class) {
 			$attribute = $class->attribute;
 			if ($attribute->level > $config->level) {
 				continue;
@@ -139,7 +146,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
-		foreach (Attributes::findTargetClasses(RegisteredCollector::class) as $class) {
+		foreach (array_merge(Attributes::findTargetClasses(RegisteredCollector::class), $discoverer->findTargetClasses(RegisteredCollector::class)) as $class) {
 			$attribute = $class->attribute;
 			if ($attribute->level > $config->level) {
 				continue;

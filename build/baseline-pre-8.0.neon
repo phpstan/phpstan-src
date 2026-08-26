@@ -25,6 +25,18 @@ parameters:
 			path: PHPStan/Build/TurboAttributeCollector.php
 
 		-
+			rawMessage: 'Call to an undefined method ReflectionClass<object>::getAttributes().'
+			identifier: method.notFound
+			count: 1
+			path: ../src/DependencyInjection/AutowiredServiceDiscoverer.php
+
+		-
+			rawMessage: 'Call to an undefined method ReflectionParameter::getAttributes().'
+			identifier: method.notFound
+			count: 1
+			path: ../src/DependencyInjection/AutowiredServiceDiscoverer.php
+
+		-
 			rawMessage: 'Call to an undefined method ReflectionClass::isReadOnly().'
 			identifier: method.notFound
 			count: 1

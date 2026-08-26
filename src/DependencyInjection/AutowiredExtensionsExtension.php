@@ -12,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 use ReflectionMethod;
 use ReflectionNamedType;
 use function array_key_exists;
+use function array_merge;
 use function is_string;
 use function sprintf;
 use function str_replace;
@@ -40,7 +41,7 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		foreach (ValidateServiceTagsExtension::getInterfaceTagMapping() as $interface => $tag) {
+		foreach (ValidateServiceTagsExtension::getInterfaceTagMapping($builder) as $interface => $tag) {
 			$builder->addDefinition(self::getCollectionServiceName($interface))
 				->setType(LazyExtensionsCollection::class)
 				->setArgument('tagName', $tag)
@@ -53,10 +54,14 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 	{
 		require_once __DIR__ . '/../../vendor/attributes.php';
 		$builder = $this->getContainerBuilder();
-		$mapping = ValidateServiceTagsExtension::getInterfaceTagMapping();
+		$mapping = ValidateServiceTagsExtension::getInterfaceTagMapping($builder);
 
 		$parametersByClass = [];
-		foreach (Attributes::findTargetMethodParameters(AutowiredExtensions::class) as $parameter) {
+		$autowiredExtensions = array_merge(
+			Attributes::findTargetMethodParameters(AutowiredExtensions::class),
+			AutowiredServiceDiscoverer::createFromContainerBuilder($builder)->findTargetMethodParameters(AutowiredExtensions::class),
+		);
+		foreach ($autowiredExtensions as $parameter) {
 			if (strcasecmp($parameter->method, '__construct') !== 0) {
 				throw new ShouldNotHappenException(sprintf('Attribute #[AutowiredExtensions] is only supported on constructor parameters, found on %s::%s() $%s.', $parameter->class, $parameter->method, $parameter->name));
 			}

@@ -731,7 +731,8 @@ class NodeScopeResolver
 		$deferredStmtCallback = $stmt instanceof Return_ || $stmt instanceof Node\Stmt\Expression || $stmt instanceof Echo_
 			|| $stmt instanceof If_ || $stmt instanceof Switch_ || $stmt instanceof Foreach_
 			|| $stmt instanceof Node\Stmt\Unset_ || $stmt instanceof Node\Stmt\ClassConst
-			|| $stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\While_;
+			|| $stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\While_
+			|| $stmt instanceof Node\Stmt\Do_;
 		if (!$deferredStmtCallback) {
 			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		}

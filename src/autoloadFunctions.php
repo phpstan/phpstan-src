@@ -3,10 +3,12 @@
 namespace PHPStan;
 
 use Composer\Autoload\ClassLoader;
+use function array_shift;
 use function count;
 use function get_class;
 use function is_array;
 use function is_object;
+use function spl_object_id;
 
 /**
  * Autoloaders that were registered *after* Composer's class loader in the
@@ -34,11 +36,32 @@ function autoloadFunctionsPrependedToComposer(): array // phpcs:ignore Squiz.Fun
 }
 
 /**
+ * Whether the spl_autoload entry is a Composer ClassLoader's loadClass() callable.
+ *
+ * @param mixed $autoloadFunction
+ */
+function isComposerClassLoader($autoloadFunction): bool // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+{
+	return is_array($autoloadFunction)
+		&& count($autoloadFunction) > 0
+		&& is_object($autoloadFunction[0])
+		&& get_class($autoloadFunction[0]) === ClassLoader::class;
+}
+
+/**
  * Splits the autoload functions registered while loading Composer's autoloader
  * and the bootstrap files into those registered before and after Composer's own
  * class loader in the spl_autoload queue. This lets PHPStan consult them in the
  * same order relative to Composer as PHP does at runtime, instead of always
  * invoking them before (or after) the static Composer source locators.
+ *
+ * When no Composer ClassLoader instance is left in the queue there is no
+ * boundary to split on: a bootstrap file has taken Composer's place, so its
+ * loader carries Composer's runtime priority and belongs before the static
+ * source locators. Bucketing those as appended would demote a loader that
+ * actually resolves the class first, which is what
+ * https://github.com/phpstan/phpstan/issues/15102 reported for
+ * typo3/class-alias-loader.
  *
  * @param list<mixed>|false $autoloadFunctionsBefore
  * @param list<mixed>|false $autoloadFunctionsAfter
@@ -53,16 +76,28 @@ function collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunction
 		return ['prepended' => $prepended, 'appended' => $appended];
 	}
 
+	// The split has to happen at the *analysed project's* class loader. PHPStan's own
+	// loader is a ClassLoader as well and is always registered first - before any project
+	// code runs - so searching the queue for the first ClassLoader instance would make
+	// every bootstrap-registered autoloader look like it came after Composer, and demote
+	// it below the static source locators.
+	$classLoaderIds = [];
+	foreach ($autoloadFunctionsBefore as $before) {
+		if (isComposerClassLoader($before)) {
+			$classLoaderIds[] = spl_object_id($before[0]);
+		}
+	}
+
+	array_shift($classLoaderIds);
+	$projectLoaderId = $classLoaderIds === [] ? null : $classLoaderIds[count($classLoaderIds) - 1];
+
 	$composerIndex = null;
-	foreach ($autoloadFunctionsAfter as $index => $after) {
-		if (
-			is_array($after)
-			&& count($after) > 0
-			&& is_object($after[0])
-			&& get_class($after[0]) === ClassLoader::class
-		) {
-			$composerIndex = $index;
-			break;
+	if ($projectLoaderId !== null) {
+		foreach ($autoloadFunctionsAfter as $index => $after) {
+			if (isComposerClassLoader($after) && spl_object_id($after[0]) === $projectLoaderId) {
+				$composerIndex = $index;
+				break;
+			}
 		}
 	}
 
@@ -85,7 +120,7 @@ function collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunction
 			}
 		}
 
-		if ($composerIndex !== null && $index < $composerIndex) {
+		if ($composerIndex === null || $index < $composerIndex) {
 			$prepended[] = $after;
 		} else {
 			$appended[] = $after;

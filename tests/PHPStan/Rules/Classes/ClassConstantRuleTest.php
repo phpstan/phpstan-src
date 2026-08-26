@@ -569,4 +569,15 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
+			[
+				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
+				25,
+			],
+		]);
+	}
+
 }

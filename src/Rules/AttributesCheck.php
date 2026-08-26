@@ -73,7 +73,7 @@ final class AttributesCheck
 						->build();
 				}
 
-				foreach ($this->classCheck->checkClassNames($scope, [new ClassNameNodePair($name, $attribute)], ClassNameUsageLocation::from(ClassNameUsageLocation::ATTRIBUTE)) as $caseSensitivityError) {
+				foreach ($this->classCheck->checkClassNames($scope, [new ClassNameNodePair($name, $attribute->name)], ClassNameUsageLocation::from(ClassNameUsageLocation::ATTRIBUTE)) as $caseSensitivityError) {
 					$errors[] = $caseSensitivityError;
 				}
 

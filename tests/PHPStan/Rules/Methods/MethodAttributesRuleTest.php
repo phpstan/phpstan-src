@@ -83,4 +83,14 @@ class MethodAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/deprecated-attribute.php'], []);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
+			[
+				'Class Bug12827\Post referenced with incorrect case: Bug12827\POST.',
+				12,
+			],
+		]);
+	}
+
 }

@@ -125,8 +125,6 @@ final class DoWhileHandler implements StmtHandler
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 		}
 
-		$nodeScopeResolver->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints(), $bodyScopeResult->hasYield()), $bodyScope, $storage);
-
 		if ($alwaysIterates) {
 			$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;
 		} else {
@@ -145,6 +143,12 @@ final class DoWhileHandler implements StmtHandler
 		} else {
 			$nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 		}
+
+		// both emissions fire after the condition's final walk stored its
+		// results, so rule-side asks about the condition answer from the
+		// storage; the Do_ callback is deferred from processStmtNode()
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints(), $bodyScopeResult->hasYield()), $bodyScope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
 
 		$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);
 		if (count($breakExitPoints) > 0) {

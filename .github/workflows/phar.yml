@@ -1288,6 +1288,17 @@ jobs:
   commit:
     name: "Commit PHAR"
     if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.2.x' || startsWith(github.ref, 'refs/tags/'))"
+    # Gated on every job that produces or validates the committed bits: the
+    # compile jobs build the staged binaries (and run the differential test
+    # batteries per leg), turbo-version guards the version constant the
+    # staging logic compares, turbo-phpize the build system. The
+    # "Run with Turbo Extension" jobs (turbo-run, turbo-docker-run) are
+    # deliberately not gates: they produce nothing the commit consumes,
+    # their full-suite runs would delay every dev phar by their duration,
+    # and a red leg caused by environment drift (the floating docker-library
+    # tags) would skip the commit and halt phar publication while the
+    # binaries already in dist are equally affected — nothing protective
+    # gained. They still fail the workflow loudly for follow-up.
     needs:
       - compiler-tests
       - turbo-version
@@ -1296,8 +1307,6 @@ jobs:
       - turbo-compile-musl-arm64
       - turbo-compile-windows
       - turbo-macos-universal
-      - turbo-docker-run
-      - turbo-run
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:

@@ -41,9 +41,7 @@ use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
-use function array_slice;
 use function count;
-use function implode;
 use function in_array;
 use function is_string;
 use function sprintf;
@@ -846,30 +844,13 @@ final class FunctionDefinitionCheck
 		}
 
 		if ($typeNode instanceof Name) {
-			$originalName = $typeNode->getAttribute('originalName');
-			if (!$originalName instanceof Name) {
-				return [];
-			}
-
 			$resolvedName = $typeNode->toString();
-			$originalParts = $originalName->getParts();
-			$resolvedParts = $typeNode->getParts();
-
-			$originalPartsCount = count($originalParts);
-			$resolvedPartsCount = count($resolvedParts);
-
-			if ($originalPartsCount <= $resolvedPartsCount) {
-				$prefixParts = array_slice($resolvedParts, 0, $resolvedPartsCount - $originalPartsCount);
-				$originalCaseClassName = implode('\\', array_merge($prefixParts, $originalParts));
-			} else {
-				$originalCaseClassName = $originalName->toString();
-			}
-
-			if ($originalCaseClassName === $resolvedName) {
+			$nameAsWritten = ClassCaseSensitivityCheck::getNameAsWritten($typeNode);
+			if ($nameAsWritten === $resolvedName) {
 				return [];
 			}
 
-			return [strtolower($resolvedName) => new ClassNameNodePair($originalCaseClassName, $typeNode)];
+			return [strtolower($resolvedName) => new ClassNameNodePair($nameAsWritten, $typeNode)];
 		}
 
 		if ($typeNode instanceof NullableType) {

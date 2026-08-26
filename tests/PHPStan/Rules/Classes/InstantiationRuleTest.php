@@ -739,4 +739,14 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15047.php'], []);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
+			[
+				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
+				15,
+			],
+		]);
+	}
+
 }

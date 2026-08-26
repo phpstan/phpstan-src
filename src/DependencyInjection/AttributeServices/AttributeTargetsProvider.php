@@ -50,10 +50,10 @@ final class AttributeTargetsProvider
 				continue;
 			}
 
-			/** @var TargetClass<T> $target */
 			$targets[] = $target;
 		}
 
+		/** @var list<TargetClass<T>> */
 		return $targets;
 	}
 
@@ -75,10 +75,10 @@ final class AttributeTargetsProvider
 				continue;
 			}
 
-			/** @var TargetMethodParameter<T> $target */
 			$targets[] = $target;
 		}
 
+		/** @var list<TargetMethodParameter<T>> */
 		return $targets;
 	}
 

@@ -161,12 +161,14 @@ final class AttributeServicesDiscoverer
 				continue;
 			}
 
-			if ($this->suggestsDiAttributes($file)) {
-				$this->errors[] = sprintf(
-					'File %s in a directory from the attributeServicesDirectories section is not covered by the Composer autoload rules of the directory, so its class cannot be autoloaded.',
-					$file,
-				);
+			if (!$this->suggestsDiAttributes($file)) {
+				continue;
 			}
+
+			$this->errors[] = sprintf(
+				'File %s in a directory from the attributeServicesDirectories section is not covered by the Composer autoload rules of the directory, so its class cannot be autoloaded.',
+				$file,
+			);
 		}
 
 		ksort($candidates);

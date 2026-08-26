@@ -60,6 +60,11 @@ final class PostDecHandler implements ExprHandler
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($virtualExpr, $context),
 		);
 
+		// processVirtualAssign() emits nodes (PropertyAssignNode) carrying the
+		// synthetic pre-inc/dec as the assigned expression - store its result so
+		// rule-side asks about it answer from the storage
+		$nodeScopeResolver->storeExpressionResult($storage, $virtualExpr, $virtualExprResult);
+
 		return $this->expressionResultFactory->create(
 			$nodeScopeResolver->processVirtualAssign(
 				$varResult->getScope(),

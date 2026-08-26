@@ -61,6 +61,12 @@ final class PreIncHandler implements ExprHandler
 			specifyTypesCallback: $specifyTypesCallback,
 		);
 
+		// processVirtualAssign() emits nodes (PropertyAssignNode) whose rules ask
+		// about this whole expression - store its result first so those asks
+		// answer from the storage; processExprNode() overwrites it with the
+		// final result after this handler returns
+		$nodeScopeResolver->storeExpressionResult($storage, $expr, $incDecValueResult);
+
 		return $this->expressionResultFactory->create(
 			$nodeScopeResolver->processVirtualAssign(
 				$varResult->getScope(),

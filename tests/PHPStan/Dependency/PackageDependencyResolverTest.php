@@ -25,6 +25,20 @@ final class PackageDependencyResolverTest extends PHPStanTestCase
 		$this->assertNull($resolver->resolvePackage('/outside/the/project/File.php'));
 	}
 
+	public function testResolveDirectoryPackage(): void
+	{
+		$fixtureRoot = __DIR__ . '/data/package-resolver';
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+		$resolver = new PackageDependencyResolver([$fixtureRoot], $fileHelper);
+
+		// Unlike resolvePackage(), the install path itself matches too.
+		$this->assertSame('acme/widget', $resolver->resolveDirectoryPackage($fixtureRoot . '/vendor/acme/widget'));
+		$this->assertSame('acme/widget', $resolver->resolveDirectoryPackage($fixtureRoot . '/vendor/acme/widget/src'));
+
+		$this->assertNull($resolver->resolveDirectoryPackage($fixtureRoot . '/src'));
+		$this->assertNull($resolver->resolveDirectoryPackage('/outside/the/project'));
+	}
+
 	public function testExtractComposerPackageVersions(): void
 	{
 		$resolver = new PackageDependencyResolver([], self::getContainer()->getByType(FileHelper::class));

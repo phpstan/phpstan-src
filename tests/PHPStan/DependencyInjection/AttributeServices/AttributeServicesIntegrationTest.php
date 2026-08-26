@@ -12,6 +12,7 @@ use AttributeServicesFixtures\DiscoveredValueFactory;
 use PHPStan\Collectors\RegistryFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -107,6 +108,15 @@ class AttributeServicesIntegrationTest extends TestCase
 	{
 		$container = self::createContainer();
 		$this->assertSame([__DIR__ . '/data/services'], $container->getParameter('attributeServicesDirectories'));
+	}
+
+	public function testDerivativeContainerSeesDiscoveredServices(): void
+	{
+		$container = self::createContainer();
+		$derivativeContainer = $container->getByType(DerivativeContainerFactory::class)
+			->create([dirname(__DIR__, 4) . '/conf/config.stubValidator.neon'], ['allStubFiles' => []]);
+		$service = $derivativeContainer->getByType(DiscoveredService::class);
+		$this->assertSame(__DIR__, $service->getCurrentWorkingDirectory());
 	}
 
 	#[DataProvider('dataErrors')]

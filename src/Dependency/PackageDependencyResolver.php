@@ -20,6 +20,7 @@ use function is_array;
 use function is_file;
 use function is_string;
 use function realpath;
+use function rtrim;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -85,6 +86,21 @@ final class PackageDependencyResolver
 	public function isPathPackage(string $package): bool
 	{
 		return array_key_exists($package, $this->getPathPackages());
+	}
+
+	/**
+	 * Unlike resolvePackage(), also matches a directory that IS a package's install path.
+	 */
+	public function resolveDirectoryPackage(string $directory): ?string
+	{
+		$normalizedDirectory = rtrim($this->fileHelper->normalizePath($directory, '/'), '/');
+		foreach ($this->getInstallPathToPackage() as $installPath => $package) {
+			if ($normalizedDirectory === $installPath || str_starts_with($normalizedDirectory, $installPath . '/')) {
+				return $package;
+			}
+		}
+
+		return null;
 	}
 
 	private function doResolvePackage(string $file): ?string

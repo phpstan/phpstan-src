@@ -1314,6 +1314,33 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * Replaces the value type of an already-present offset, keeping the key's
+	 * existing optional status untouched. Unlike setExistingOffsetValueType(),
+	 * this never promotes an optional key to a required one. No-op when the
+	 * offset is not part of the shape.
+	 */
+	public function replaceOffsetValueTypePreservingOptionality(Type $offsetType, Type $valueType): self
+	{
+		$offsetType = $offsetType->toArrayKey();
+		if (!$offsetType instanceof ConstantIntegerType && !$offsetType instanceof ConstantStringType) {
+			return $this;
+		}
+
+		$valueTypes = $this->valueTypes;
+		foreach ($this->keyTypes as $i => $keyType) {
+			if ($keyType->getValue() !== $offsetType->getValue()) {
+				continue;
+			}
+
+			$valueTypes[$i] = $valueType;
+
+			return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $this->unsealed);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Removes or marks as optional the key(s) matching the given offset type from this constant array.
 	 *
 	 * By default, the method assumes an actual `unset()` call was made, which actively modifies the

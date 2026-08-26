@@ -46,6 +46,7 @@ use function array_map;
 use function array_merge;
 use function count;
 use function in_array;
+use function is_string;
 use function strtolower;
 use function substr;
 use const COUNT_NORMAL;
@@ -564,11 +565,23 @@ final class TypeSpecifier
 			!$context->null()
 			&& $expr instanceof Expr\BinaryOp\Coalesce
 		) {
-			if (
-				($context->true() && $type->isSuperTypeOf($scope->getType($expr->right))->no())
-				|| ($context->false() && $type->isSuperTypeOf($scope->getType($expr->right))->yes())
-			) {
+			$rightIsSuperType = $type->isSuperTypeOf($scope->getType($expr->right));
+			if ($context->true() && $rightIsSuperType->no()) {
 				$expr = $expr->left;
+			} elseif ($context->false()) {
+				if ($rightIsSuperType->yes()) {
+					// The default value would be removed too, so the left side is
+					// guaranteed to be set and can be narrowed directly.
+					$expr = $expr->left;
+				} else {
+					// The default value survives, so the left side may still be
+					// absent (e.g. an optional array offset). Narrow its value
+					// without asserting that it exists.
+					$narrowed = $this->narrowCoalesceLeftPreservingExistence($expr->left, $type, $scope);
+					if ($narrowed !== null) {
+						return $narrowed;
+					}
+				}
 			}
 		}
 
@@ -688,6 +701,80 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	/**
+	 * Narrows the value of a null-coalescing left side (e.g. `$a['k']` in
+	 * `($a['k'] ?? $default) !== $type`) by removing $type from it, while
+	 * preserving whether the offset actually exists. Returns null when this
+	 * cannot be done without asserting the existence of a preceding offset,
+	 * which would defeat the purpose of the `??` access.
+	 */
+	private function narrowCoalesceLeftPreservingExistence(Expr $leftExpr, Type $type, Scope $scope): ?SpecifiedTypes
+	{
+		if (!$leftExpr instanceof Expr\ArrayDimFetch || $leftExpr->dim === null) {
+			return null;
+		}
+
+		// Overwriting the container is only safe when doing so does not imply
+		// that a preceding offset exists. A variable or a property access is the
+		// safe case; a nested offset (`$a[$x]['k']`) would memorize `$a[$x]` as
+		// existing, which is exactly what the `??` access guards against.
+		$containerExpr = $leftExpr->var;
+		if (!$this->isSafeCoalesceContainerToOverwrite($containerExpr)) {
+			return null;
+		}
+
+		$containerType = $scope->getType($containerExpr);
+		if (!$containerType->isConstantArray()->yes()) {
+			return null;
+		}
+
+		$dimType = $scope->getType($leftExpr->dim);
+
+		$newParts = [];
+		foreach ($containerType->getConstantArrays() as $constantArray) {
+			$narrowedValueType = TypeCombinator::remove($constantArray->getOffsetValueType($dimType), $type);
+			if ($narrowedValueType instanceof NeverType) {
+				return null;
+			}
+
+			$newParts[] = $constantArray->replaceOffsetValueTypePreservingOptionality($dimType, $narrowedValueType);
+		}
+
+		if ($newParts === []) {
+			return null;
+		}
+
+		$exprString = $this->exprPrinter->printExpr($containerExpr);
+
+		return (new SpecifiedTypes(
+			[$exprString => [$containerExpr, TypeCombinator::union(...$newParts)]],
+			[],
+		))->setAlwaysOverwriteTypes();
+	}
+
+	/**
+	 * Whether the container of a null-coalescing offset access can have its type
+	 * overwritten without implying that a preceding array offset exists. Plain
+	 * variables and property accesses reaching down to one are safe; array
+	 * offsets and dynamic accesses in the chain are not.
+	 */
+	private function isSafeCoalesceContainerToOverwrite(Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Variable && is_string($expr->name)) {
+			return true;
+		}
+
+		if ($expr instanceof PropertyFetch && $expr->name instanceof Node\Identifier) {
+			return $this->isSafeCoalesceContainerToOverwrite($expr->var);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->name instanceof Node\VarLikeIdentifier) {
+			return $expr->class instanceof Name || $this->isSafeCoalesceContainerToOverwrite($expr->class);
+		}
+
+		return false;
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

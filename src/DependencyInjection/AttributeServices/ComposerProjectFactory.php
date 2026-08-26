@@ -69,7 +69,6 @@ final class ComposerProjectFactory
 
 				$packagesByInstallPath[$installPath] = new ComposerPackage(
 					$package['name'],
-					$installPath,
 					$this->createCacheToken($package['name'], $installPath, $vendorDirectory, $versions),
 					$this->extractAutoloadRules($package, 'autoload', $installPath),
 				);

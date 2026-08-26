@@ -39,6 +39,9 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	/** @var string[] */
 	private array $allConfigFiles = [];
 
+	/** @var array<string, string> */
+	private array $attributeServicesDirectoriesCacheKey = [];
+
 	public function __construct(private LoaderFactory $loaderFactory, private bool $journalContainer)
 	{
 		parent::__construct();
@@ -56,6 +59,14 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	public function setAllConfigFiles(array $allConfigFiles): void
 	{
 		$this->allConfigFiles = $allConfigFiles;
+	}
+
+	/**
+	 * @param array<string, string> $cacheKeyComponent
+	 */
+	public function setAttributeServicesDirectoriesCacheKey(array $cacheKeyComponent): void
+	{
+		$this->attributeServicesDirectoriesCacheKey = $cacheKeyComponent;
 	}
 
 	/**
@@ -103,6 +114,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
 			NeonAdapter::CACHE_KEY,
 			$this->getAllConfigFilesHashes(),
+			$this->attributeServicesDirectoriesCacheKey,
 		];
 
 		$className = $loader->load(

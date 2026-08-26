@@ -201,6 +201,53 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$this->assertSame($expectedFile, $error->getFile());
 	}
 
+	public function testIgnoreErrorsReportedInContextOfEachClassUsingTheTrait(): void
+	{
+		$errors = $this->runAnalyseAndFinalize([
+			__DIR__ . '/traits/ignore/IgnoreErrorsClasses.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsTrait.php',
+		]);
+		$this->assertNoErrors($errors);
+	}
+
+	public function testIgnoreErrorsReportedInContextOfClassesLivingInSeparateFiles(): void
+	{
+		$errors = $this->runAnalyseAndFinalize([
+			__DIR__ . '/traits/ignore/IgnoreErrorsSeparateFilesFirst.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsSeparateFilesSecond.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsSeparateFilesTrait.php',
+		]);
+		$this->assertNoErrors($errors);
+	}
+
+	public function testIgnoreErrorsReportedDirectlyInTraitUsedByASingleClass(): void
+	{
+		$errors = $this->runAnalyseAndFinalize([
+			__DIR__ . '/traits/ignore/IgnoreErrorsSingleClass.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsSingleTrait.php',
+		]);
+		$this->assertNoErrors($errors);
+	}
+
+	public function testIgnoreErrorsReportedInContextOfClassUsingNestedTrait(): void
+	{
+		$errors = $this->runAnalyseAndFinalize([
+			__DIR__ . '/traits/ignore/IgnoreErrorsNestedClasses.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsNestedTrait.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsNestedInnerTrait.php',
+		]);
+		$this->assertNoErrors($errors);
+	}
+
+	public function testIgnoreErrorsReportedInContextOfAnonymousClassUsingTrait(): void
+	{
+		$errors = $this->runAnalyseAndFinalize([
+			__DIR__ . '/traits/ignore/IgnoreErrorsAnonymousClasses.php',
+			__DIR__ . '/traits/ignore/IgnoreErrorsAnonymousTrait.php',
+		]);
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[] $files
 	 * @return Error[]
@@ -212,6 +259,20 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$analyser = self::getContainer()->getByType(Analyser::class);
 
 		return $analyser->analyse($files)->getErrors();
+	}
+
+	/**
+	 * @param string[] $files
+	 * @return list<Error>
+	 */
+	private function runAnalyseAndFinalize(array $files): array
+	{
+		$files = array_map(fn (string $file): string => $this->getFileHelper()->normalizePath($file), $files);
+		/** @var Analyser $analyser */
+		$analyser = self::getContainer()->getByType(Analyser::class);
+		$finalizer = self::getContainer()->getByType(AnalyserResultFinalizer::class);
+
+		return $finalizer->finalize($analyser->analyse($files), false, true)->getErrors();
 	}
 
 	public static function getAdditionalConfigFiles(): array

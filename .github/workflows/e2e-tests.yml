@@ -351,6 +351,24 @@ jobs:
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
           - script: |
+              cd e2e/bug-14993
+              # https://github.com/phpstan/phpstan/issues/14993
+              # An inline @phpstan-ignore must also suppress errors reported in the context of
+              # each class using the trait, with both an empty and a primed result cache.
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
+              ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
+              # With the ignore removed, the error is reported once per using class.
+              sed -i 's# // @phpstan-ignore function.alreadyNarrowedType##' src/CheckedTrait.php
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
+              ../bashunit -a contains "CheckedTrait.php (in context of class Bug14993\\First):13:Call to function is_subclass_of() with 'Bug14993\\\\First' and 'Countable' will always evaluate to true." "$OUTPUT"
+              ../bashunit -a contains "CheckedTrait.php (in context of class Bug14993\\Second):13:Call to function is_subclass_of() with 'Bug14993\\\\Second' and 'Countable' will always evaluate to true." "$OUTPUT"
+              # A generated baseline suppresses both errors on re-run.
+              ../../bin/phpstan --generate-baseline=baseline.neon
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv

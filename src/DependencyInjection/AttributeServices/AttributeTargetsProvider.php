@@ -29,7 +29,7 @@ final class AttributeTargetsProvider
 	{
 		require_once __DIR__ . '/../../../vendor/attributes.php';
 
-		return new self(DiscoveredAttributeTargets::createEmpty());
+		return new self(AttributeServicesDiscoveryContext::getTargets());
 	}
 
 	/**

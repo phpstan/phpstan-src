@@ -12,6 +12,12 @@ use Attribute;
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
  * and AutowiredAttributeServicesExtension.
+ *
+ * Extensions and analysed projects can use this attribute on constructor parameters
+ * of classes in directories listed in the `attributeServicesDirectories` section
+ * of their configuration file.
+ *
+ * @api
  */
 #[Attribute(flags: Attribute::TARGET_PARAMETER)]
 final class AutowiredParameter

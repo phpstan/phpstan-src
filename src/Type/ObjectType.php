@@ -1871,6 +1871,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $this;
 		}
 
+		// An interface resolved on this class itself is more specific than the same
+		// interface reached through one of its ancestors.
+		foreach ($this->getInterfaces() as $interface) {
+			if ($interface->getClassName() !== $className) {
+				continue;
+			}
+
+			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $interface;
+		}
+
 		foreach ($this->getInterfaces() as $interface) {
 			$ancestor = $interface->getAncestorWithClassName($className);
 			if ($ancestor !== null) {

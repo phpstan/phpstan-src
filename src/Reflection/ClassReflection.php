@@ -1121,6 +1121,12 @@ final class ClassReflection
 			}
 		}
 
+		// An interface resolved on this class itself is more specific than the same
+		// interface reached through one of its ancestors.
+		foreach ($immediateInterfaces as $name => $immediateInterface) {
+			$interfaces[$name] = $immediateInterface;
+		}
+
 		$this->cachedInterfaces = $interfaces;
 
 		return $interfaces;
@@ -1207,7 +1213,7 @@ final class ClassReflection
 
 			if ($immediateInterface->isGeneric()) {
 				$immediateInterfaces[$immediateInterface->getName()] = $immediateInterface->withTypes(
-					array_values($immediateInterface->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()),
+					$this->getUnspecifiedAncestorTypes($immediateInterface),
 				);
 				continue;
 			}
@@ -1215,7 +1221,42 @@ final class ClassReflection
 			$immediateInterfaces[$immediateInterface->getName()] = $immediateInterface;
 		}
 
+		// PHP implicitly implements BackedEnum on backed enums, so there is no
+		// @implements tag that could carry the backing type.
+		$backedEnumType = $this->getBackedEnumType();
+		if ($backedEnumType !== null && $this->reflectionProvider->hasClass('BackedEnum')) {
+			$immediateInterfaces['BackedEnum'] = $this->reflectionProvider->getClass('BackedEnum')
+				->withTypes([$backedEnumType]);
+		}
+
 		return $immediateInterfaces;
+	}
+
+	/**
+	 * Type arguments for a generic ancestor that is not described by an @implements
+	 * or @extends tag. Declared template defaults are used when the ancestor has
+	 * one for every template type, otherwise the type arguments stay erroneous.
+	 *
+	 * @return list<Type>
+	 */
+	private function getUnspecifiedAncestorTypes(ClassReflection $ancestor): array
+	{
+		$defaults = [];
+		foreach ($ancestor->getTemplateTags() as $templateTag) {
+			$default = $templateTag->getDefault();
+			if ($default === null) {
+				$defaults = null;
+				break;
+			}
+
+			$defaults[] = $default;
+		}
+
+		if ($defaults !== null) {
+			return $defaults;
+		}
+
+		return array_values($ancestor->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes());
 	}
 
 	/**

@@ -9,6 +9,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use function array_values;
 use function count;
 use function sprintf;
 
@@ -58,6 +59,33 @@ final class ValueOfType implements CompoundType, LateResolvableType
 				&& $this->type instanceof TemplateType
 				&& (new ObjectType('BackedEnum'))->isSuperTypeOf($this->type->getBound())->yes()
 			) {
+				$backingTypes = [];
+				foreach ($this->type->getBound()->getObjectClassReflections() as $classReflection) {
+					$ancestor = $classReflection->getAncestorWithClassName('BackedEnum');
+					if ($ancestor === null) {
+						$backingTypes = [];
+						break;
+					}
+
+					$ancestorTypes = $ancestor->getActiveTemplateTypeMap()->getTypes();
+					if (count($ancestorTypes) !== 1) {
+						$backingTypes = [];
+						break;
+					}
+
+					$backingType = array_values($ancestorTypes)[0];
+					if ($backingType instanceof ErrorType) {
+						$backingTypes = [];
+						break;
+					}
+
+					$backingTypes[] = $backingType;
+				}
+
+				if ($backingTypes !== []) {
+					return TypeCombinator::union(...$backingTypes);
+				}
+
 				return new UnionType([new IntegerType(), new StringType()]);
 			}
 

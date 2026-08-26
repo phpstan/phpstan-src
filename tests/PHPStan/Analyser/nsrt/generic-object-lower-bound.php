@@ -45,7 +45,9 @@ class Foo
 	 */
 	function doBar(Collection $c): void
 	{
-		assertType(Cat::class . '|' . Dog::class, $this->doFoo($c, new Cat()));
+		// T is anchored to Dog by the invariant Collection<Dog> argument;
+		// the Cat passed as T $d is a parameter mismatch, not a widening of T.
+		assertType(Dog::class, $this->doFoo($c, new Cat()));
 	}
 
 }

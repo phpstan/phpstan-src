@@ -100,6 +100,20 @@ final class AssignOpHandler implements ExprHandler
 			);
 		}
 
+		// applyWrite() emits nodes (PropertyAssignNode) whose rules ask about
+		// this whole `$lvalue OP= value` expression - store a before-scope
+		// anchored result first so those asks answer from the storage;
+		// processExprNode() overwrites it with the final result after this
+		// handler returns
+		$nodeScopeResolver->storeExpressionResult($storage, $expr, $this->expressionResultFactory->create(
+			$valueResult->getScope(),
+			$beforeScope,
+			$expr,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+		));
 		$assignResult = $this->assignHandler->applyWrite(
 			$nodeScopeResolver,
 			$target,

@@ -1,0 +1,10 @@
+includes:
+	- phpstan.neon
+	- partial-baseline.neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: booleanAnd.rightAlwaysTrue
+			path: src/AMailer.php
+		-
+			identifier: identical.alwaysFalse

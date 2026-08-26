@@ -13,6 +13,7 @@ use function array_key_exists;
 use function array_values;
 use function count;
 use function is_array;
+use function ksort;
 use function var_export;
 
 /**
@@ -88,6 +89,7 @@ final class FunctionCallConstantConditionRule implements Rule
 					}
 
 					$uniquedErrors = [];
+					$traitContexts = [];
 					foreach ($valueData as $errors) {
 						foreach ($errors as $errorObject) {
 							if ($errorObject === null) {
@@ -99,6 +101,7 @@ final class FunctionCallConstantConditionRule implements Rule
 
 							$message = $errorObject->getMessage();
 							$uniquedErrors[$message] = $errorObject;
+							$traitContexts[$errorObject->getFilePath()] = $errorObject->getFile();
 						}
 					}
 
@@ -116,7 +119,8 @@ final class FunctionCallConstantConditionRule implements Rule
 
 					if (count($uniquedErrors) === 1) {
 						// report directly in trait, no "in context of"
-						$transformedErrors[] = new TransformedRuleError($uniquedErrors[0]->removeTraitContext());
+						ksort($traitContexts);
+						$transformedErrors[] = new TransformedRuleError($uniquedErrors[0]->removeTraitContext()->withTraitContexts($traitContexts));
 						continue;
 					}
 

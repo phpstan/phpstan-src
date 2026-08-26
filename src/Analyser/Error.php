@@ -10,6 +10,7 @@ use PhpParser\Node;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use Throwable;
+use function array_key_exists;
 use function is_bool;
 use function sprintf;
 
@@ -26,6 +27,7 @@ final class Error implements JsonSerializable
 	 *
 	 * @param class-string<Node>|null $nodeType
 	 * @param mixed[] $metadata
+	 * @param array<string, string> $traitContexts
 	 */
 	public function __construct(
 		private string $message,
@@ -40,6 +42,7 @@ final class Error implements JsonSerializable
 		private ?string $identifier = null,
 		private array $metadata = [],
 		private ?FixedErrorDiff $fixedErrorDiff = null,
+		private array $traitContexts = [],
 	)
 	{
 		if ($this->identifier !== null && !self::validateIdentifier($this->identifier)) {
@@ -103,6 +106,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->traitContexts,
 		);
 	}
 
@@ -117,6 +121,47 @@ final class Error implements JsonSerializable
 			$this->traitFilePath,
 			$this->line,
 			$this->canBeIgnored,
+			$this->traitFilePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+			$this->traitContexts,
+		);
+	}
+
+	public function getTraitFilePath(): ?string
+	{
+		return $this->traitFilePath;
+	}
+
+	/**
+	 * Using-class contexts of an error deduplicated directly into the trait
+	 * (see ConstantConditionInTraitRule): the file path of each class in whose
+	 * context the error was reported => the "trait.php (in context of class X)"
+	 * file string it was reported with there. An ignoreErrors path pointing at
+	 * one of these files accounts for that class's context only.
+	 *
+	 * @return array<string, string>
+	 */
+	public function getTraitContexts(): array
+	{
+		return $this->traitContexts;
+	}
+
+	/**
+	 * @param array<string, string> $traitContexts
+	 */
+	public function withTraitContexts(array $traitContexts): self
+	{
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
 			$this->filePath,
 			$this->traitFilePath,
 			$this->tip,
@@ -125,12 +170,34 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$traitContexts,
 		);
 	}
 
-	public function getTraitFilePath(): ?string
+	/**
+	 * Rebuilds the per-context error this deduplicated trait error was merged
+	 * from, for the given using-class file path.
+	 */
+	public function asReportedInTraitContext(string $contextFilePath): self
 	{
-		return $this->traitFilePath;
+		if (!array_key_exists($contextFilePath, $this->traitContexts)) {
+			throw new ShouldNotHappenException(sprintf('Unknown trait context %s', $contextFilePath));
+		}
+
+		return new self(
+			$this->message,
+			$this->traitContexts[$contextFilePath],
+			$this->line,
+			$this->canBeIgnored,
+			$contextFilePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+		);
 	}
 
 	/**
@@ -156,6 +223,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->transformTraitContexts($transformPath),
 		);
 	}
 
@@ -198,6 +266,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->traitContexts,
 		);
 	}
 
@@ -220,6 +289,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->traitContexts,
 		);
 	}
 
@@ -242,6 +312,7 @@ final class Error implements JsonSerializable
 			$identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->traitContexts,
 		);
 	}
 
@@ -267,6 +338,7 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$metadata,
 			$this->fixedErrorDiff,
+			$this->traitContexts,
 		);
 	}
 
@@ -337,6 +409,7 @@ final class Error implements JsonSerializable
 			'metadata' => $this->metadata,
 			'fixedErrorDiffHash' => $fixedErrorDiffHash,
 			'fixedErrorDiffDiff' => $fixedErrorDiffDiff,
+			'traitContexts' => $this->traitContexts,
 		];
 	}
 
@@ -363,6 +436,7 @@ final class Error implements JsonSerializable
 			$json['identifier'] ?? null,
 			$json['metadata'] ?? [],
 			$fixedErrorDiff,
+			$json['traitContexts'] ?? [],
 		);
 	}
 
@@ -384,7 +458,22 @@ final class Error implements JsonSerializable
 			$properties['identifier'] ?? null,
 			$properties['metadata'] ?? [],
 			$properties['fixedErrorDiff'] ?? null,
+			$properties['traitContexts'] ?? [],
 		);
+	}
+
+	/**
+	 * @param callable(string): string $transformPath
+	 * @return array<string, string>
+	 */
+	private function transformTraitContexts(callable $transformPath): array
+	{
+		$result = [];
+		foreach ($this->traitContexts as $contextFilePath => $contextFile) {
+			$result[$transformPath($contextFilePath)] = $contextFile;
+		}
+
+		return $result;
 	}
 
 	public static function validateIdentifier(string $identifier): bool

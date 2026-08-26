@@ -23,14 +23,38 @@ class ErrorTest extends PHPStanTestCase
 		$this->assertSame('trait.php', $error->getTraitFilePath());
 
 		$withoutTraitContext = $error->removeTraitContext();
-		// The error is now reported directly in the trait: the displayed file is
-		// the trait, and traitFilePath is kept so the editor URL and the
-		// trait-file ignore lookups resolve to the trait (#14718). filePath stays
-		// the using-class file, so an ignoreErrors path keyed on either the trait
-		// or the using-class file keeps matching (no BC break).
+		// The error is now reported directly in the trait: the displayed file and
+		// filePath are the trait (so a generated baseline records the trait path,
+		// stable across runs and using-class changes - #14932), and traitFilePath
+		// is kept so the editor URL and the trait-file ignore lookups resolve to
+		// the trait (#14718).
 		$this->assertSame('trait.php', $withoutTraitContext->getFile());
-		$this->assertSame('user.php', $withoutTraitContext->getFilePath());
+		$this->assertSame('trait.php', $withoutTraitContext->getFilePath());
 		$this->assertSame('trait.php', $withoutTraitContext->getTraitFilePath());
+	}
+
+	public function testTraitContexts(): void
+	{
+		$error = (new Error('Message', 'trait.php (in context of class B)', 11, true, 'b.php', 'trait.php'))
+			->removeTraitContext()
+			->withTraitContexts([
+				'a.php' => 'trait.php (in context of class A)',
+				'b.php' => 'trait.php (in context of class B)',
+			]);
+
+		// the using-class contexts the deduplicated error was merged from are kept
+		// so ignoreErrors paths pointing at a using class account for that class's
+		// context only (#14932)
+		$this->assertSame([
+			'a.php' => 'trait.php (in context of class A)',
+			'b.php' => 'trait.php (in context of class B)',
+		], $error->getTraitContexts());
+
+		$contextError = $error->asReportedInTraitContext('a.php');
+		$this->assertSame('trait.php (in context of class A)', $contextError->getFile());
+		$this->assertSame('a.php', $contextError->getFilePath());
+		$this->assertSame('trait.php', $contextError->getTraitFilePath());
+		$this->assertSame([], $contextError->getTraitContexts());
 	}
 
 	public static function dataValidIdentifier(): iterable

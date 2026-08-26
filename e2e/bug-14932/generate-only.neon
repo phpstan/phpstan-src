@@ -1,0 +1,6 @@
+includes:
+	- phpstan.neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: identical.alwaysFalse

@@ -338,18 +338,105 @@ jobs:
               ../../bin/phpstan clear-result-cache
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
               ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
-              # An ignoreErrors path may target the error by the trait file or by the using-class
-              # file - both keep working (no BC break).
+              # An ignoreErrors path may target the error by the trait file (hides it for
+              # all using classes) or by a using-class file - a class-pathed entry accounts
+              # only for its own class's context, so the other using class's context is
+              # still reported (see also the e2e/bug-14932 script).
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon")
+              ../bashunit -a contains 'FooTrait.php (in context of class Bug14718\Bar):10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              ../bashunit -a not_contains 'was not matched' "$OUTPUT"
               # A generated baseline suppresses the error on re-run, with both an empty and a
               # primed result cache (the issue reported baseline generation as impossible).
               ../../bin/phpstan --generate-baseline=baseline.neon
               ../../bin/phpstan clear-result-cache
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+          - script: |
+              cd e2e/bug-14932
+              # https://github.com/phpstan/phpstan/issues/14932
+              # An error deduplicated directly into the trait must behave deterministically:
+              # the same report, the same ignore matching and the same generated baseline on
+              # every run, independent of result-cache state (cold/warm/partial) and of
+              # worker arrival order.
+              cp AMailer.php.dist src/AMailer.php
+              # With no ignores: the deduplicated error is reported once, directly in the
+              # trait file (no "in context of"); errors whose message differs per using
+              # class stay reported in each class context.
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              ../bashunit -a contains 'SomeTrait.php:17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit -a not_contains 'SomeTrait.php (in context of' "$OUTPUT"
+              ../bashunit -a contains 'DiffMessageTrait.php (in context of class Bug14932\AMailer):10:Strict comparison' "$OUTPUT"
+              ../bashunit -a contains 'DiffMessageTrait.php (in context of class Bug14932\BMailer):10:Strict comparison' "$OUTPUT"
+              # An ignoreErrors path targeting the trait file hides the error from all
+              # using classes - with both an empty and a primed result cache.
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              # An ignoreErrors path targeting one using class accounts only for that
+              # class's context: the entry matches (no ignore.unmatched), and the error is
+              # still reported in the context of the other class - deterministically, with
+              # both an empty and a primed result cache.
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-a-path.neon")
+              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit -a not_contains 'was not matched' "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-a-path.neon")
+              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../../bin/phpstan clear-result-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
+              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit -a not_contains 'was not matched' "$OUTPUT"
+              # Entries covering every using class hide the error completely - this is what
+              # a baseline generated by PHPStan <= 2.1 recorded (one entry per class
+              # context), so such baselines keep working with no unmatched entries.
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
+              # The add-a-using-class flicker from the issue: prime the result cache with
+              # BMailer as the trait's only user (the class-pathed entry covers the only
+              # context), then add AMailer. The AMailer context is reported - on the
+              # partial run and identically on every unchanged run after it.
+              rm src/AMailer.php
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon"
+              cp AMailer.php.dist src/AMailer.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
+              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
+              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
+              # --generate-baseline attributes the fully deduplicated error to the trait
+              # file, and the baseline holds on re-run with an empty and a primed cache.
+              ../../bin/phpstan clear-result-cache
+              ../../bin/phpstan analyse -c generate-only.neon --generate-baseline=baseline.neon
+              ../bashunit -a contains 'path: src/SomeTrait.php' "$(cat baseline.neon)"
+              ../bashunit -a not_contains 'AMailer.php' "$(cat baseline.neon)"
+              ../bashunit -a not_contains 'BMailer.php' "$(cat baseline.neon)"
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              # Generating a baseline on top of a one-class ignore records the surviving
+              # context under its class path, and the combination holds on re-run.
+              ../../bin/phpstan clear-result-cache
+              ../../bin/phpstan analyse -c ignore-class-a-path.neon --generate-baseline=partial-baseline.neon
+              ../bashunit -a contains 'path: src/BMailer.php' "$(cat partial-baseline.neon)"
+              ../bashunit -a not_contains 'SomeTrait.php' "$(cat partial-baseline.neon)"
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
+              # A full generated baseline (trait path for the deduplicated error, class
+              # paths for the per-context errors) holds on re-run as well.
+              ../../bin/phpstan clear-result-cache
+              ../../bin/phpstan --generate-baseline=full-baseline.neon
+              ../bashunit -a contains 'path: src/AMailer.php' "$(cat full-baseline.neon)"
+              ../bashunit -a contains 'path: src/BMailer.php' "$(cat full-baseline.neon)"
+              ../bashunit -a contains 'path: src/SomeTrait.php' "$(cat full-baseline.neon)"
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
           - script: |
               cd e2e/result-cache-meta-extension
               composer install

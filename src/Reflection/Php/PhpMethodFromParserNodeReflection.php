@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
@@ -18,6 +19,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
@@ -73,6 +75,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		private bool $isConstructor,
 		array $attributes,
 		array $pureUnlessCallableIsImpureParameters,
+		PhpVersion $phpVersion,
 	)
 	{
 		if ($this->classMethod instanceof Node\PropertyHook) {
@@ -87,34 +90,38 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		if ($this->isConstructor) {
 			$realReturnType = new VoidType();
 		}
-		if (in_array($name, ['__destruct', '__unset', '__wakeup', '__clone'], true)) {
-			$realReturnType = new VoidType();
-		}
-		if ($name === '__tostring') {
-			$realReturnType = new StringType();
-		}
-		if ($name === '__isset') {
-			$realReturnType = new BooleanType();
-		}
-		if ($name === '__sleep') {
-			$realReturnType = new ArrayType(new IntegerType(), new StringType());
-		}
-		if ($name === '__set_state') {
-			$realReturnType = TypeCombinator::intersect(new ObjectWithoutClassType(), $realReturnType);
-		}
-		if ($name === '__set') {
-			$realReturnType = new VoidType();
-		}
+		// Since PHP 8.1 "never" is always accepted as the declared return type of a magic method,
+		// even when PHP otherwise mandates a specific one. Before 8.1 "never" is just a class name.
+		if (!$phpVersion->supportsNeverReturnType() || !$realReturnType instanceof NeverType) {
+			if (in_array($name, ['__destruct', '__unset', '__wakeup', '__clone'], true)) {
+				$realReturnType = new VoidType();
+			}
+			if ($name === '__tostring') {
+				$realReturnType = new StringType();
+			}
+			if ($name === '__isset') {
+				$realReturnType = new BooleanType();
+			}
+			if ($name === '__sleep') {
+				$realReturnType = new ArrayType(new IntegerType(), new StringType());
+			}
+			if ($name === '__set_state') {
+				$realReturnType = TypeCombinator::intersect(new ObjectWithoutClassType(), $realReturnType);
+			}
+			if ($name === '__set') {
+				$realReturnType = new VoidType();
+			}
 
-		if ($name === '__debuginfo') {
-			$realReturnType = TypeCombinator::intersect(new UnionType([new ArrayType(new MixedType(true), new MixedType(true)), new NullType()]), $realReturnType);
-		}
+			if ($name === '__debuginfo') {
+				$realReturnType = TypeCombinator::intersect(new UnionType([new ArrayType(new MixedType(true), new MixedType(true)), new NullType()]), $realReturnType);
+			}
 
-		if ($name === '__unserialize') {
-			$realReturnType = new VoidType();
-		}
-		if ($name === '__serialize') {
-			$realReturnType = new ArrayType(new MixedType(true), new MixedType(true));
+			if ($name === '__unserialize') {
+				$realReturnType = new VoidType();
+			}
+			if ($name === '__serialize') {
+				$realReturnType = new ArrayType(new MixedType(true), new MixedType(true));
+			}
 		}
 
 		parent::__construct(

@@ -8,7 +8,9 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
+use function in_array;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<MethodReturnStatementsNode>
@@ -32,6 +34,11 @@ final class MethodNeverRule implements Rule
 		}
 
 		$method = $node->getMethodReflection();
+
+		// PHP does not allow declaring a return type on these at all
+		if (in_array(strtolower($method->getName()), ['__construct', '__destruct'], true)) {
+			return [];
+		}
 
 		$returnType = $method->getReturnType();
 		$helperResult = $this->helper->shouldReturnNever($node, $returnType);

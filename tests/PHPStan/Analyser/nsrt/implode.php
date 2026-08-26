@@ -78,6 +78,49 @@ class Foo
 		assertType('non-falsy-string', implode(',', $unsealed));
 	}
 
+	/**
+	 * @param non-empty-array<string> $arr
+	 * @param non-empty-list<string> $list
+	 */
+	public function nonEmptyArrayOfStrings(array $arr, array $list) {
+		// A non-empty array can have a single element, which drops the
+		// separator entirely (implode(',', ['']) === ''), so the non-falsy
+		// separator must not make the whole result non-falsy.
+		assertType('string', implode(',', $arr));
+		assertType('string', implode('', $arr));
+		assertType('string', implode(',', $list));
+	}
+
+	/**
+	 * @param non-empty-array<non-empty-string> $arr
+	 */
+	public function nonEmptyArrayOfNonEmptyStrings(array $arr) {
+		assertType('non-empty-string', implode(',', $arr));
+		assertType('non-empty-string', implode('', $arr));
+	}
+
+	/**
+	 * @param array{string, string} $arr
+	 * @param array{string, string, string} $arr3
+	 */
+	public function atLeastTwoElements(array $arr, array $arr3) {
+		// At least two elements guarantees the separator appears.
+		assertType('non-falsy-string', implode(',', $arr));
+		assertType('non-falsy-string', implode(',', $arr3));
+		assertType('string', implode('', $arr));
+	}
+
+	public function bug5521() {
+		// https://github.com/phpstan/phpstan/issues/5521
+		// A single-element array drops the separator entirely, so the result
+		// is just the (empty) single value, not a non-empty-string.
+		$foo = [null];
+		assertType("''", implode(',', $foo));
+
+		$bar = [''];
+		assertType("''", implode(',', $bar));
+	}
+
 	/** @param array{'a', 'b', ...<int, string>} $unsealed */
 	public function unsealedConstArrEmptySeparator($unsealed) {
 		// Empty separator + a possibly-empty unsealed value type leaves no

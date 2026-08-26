@@ -5,11 +5,16 @@ namespace PHPStan\Rules;
 use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -38,6 +43,7 @@ final class FunctionReturnTypeCheck
 	): array
 	{
 		$returnType = TypeUtils::resolveLateResolvableTypes($returnType);
+		$returnType = $this->specifyTemplateTypesFromScope($scope, $returnType);
 
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 			return [
@@ -108,6 +114,56 @@ final class FunctionReturnTypeCheck
 		}
 
 		return [];
+	}
+
+	/**
+	 * Resolves template types in the declared return type that have been pinned
+	 * to an exact class by narrowing a `class-string<T>` parameter to a constant
+	 * class-string (e.g. `if ($className === Foo::class)`). In such a branch the
+	 * caller's `T` is known to be exactly that class, so returning a value of that
+	 * class satisfies `@return T`.
+	 */
+	private function specifyTemplateTypesFromScope(Scope $scope, Type $returnType): Type
+	{
+		if (!$returnType->hasTemplateOrLateResolvableType()) {
+			return $returnType;
+		}
+
+		$function = $scope->getFunction();
+		if ($function === null || $scope->isInAnonymousFunction()) {
+			return $returnType;
+		}
+
+		$map = TemplateTypeMap::createEmpty();
+		foreach ($function->getParameters() as $parameter) {
+			$parameterType = $parameter->getType();
+			if (!$parameterType->isClassString()->yes()) {
+				continue;
+			}
+
+			$scopeType = $scope->getType(new Variable($parameter->getName()));
+			$constantStrings = $scopeType->getConstantStrings();
+			if ($constantStrings === [] || !TypeCombinator::union(...$constantStrings)->equals($scopeType)) {
+				continue;
+			}
+
+			$map = $map->union($parameterType->inferTemplateTypes($scopeType));
+		}
+
+		if ($map->isEmpty()) {
+			return $returnType;
+		}
+
+		return TypeTraverser::map($returnType, static function (Type $type, callable $traverse) use ($map): Type {
+			if ($type instanceof TemplateType) {
+				$specifiedType = $map->getType($type->getName());
+				if ($specifiedType !== null && !$specifiedType instanceof ErrorType) {
+					return $specifiedType;
+				}
+			}
+
+			return $traverse($type);
+		});
 	}
 
 }

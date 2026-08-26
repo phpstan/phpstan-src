@@ -4,6 +4,12 @@ extend-exclude = [
 ]
 ignore-hidden = false
 
+[default]
+# TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION is a git short SHA, not a
+# word. It changes on every turbo-ext/src commit, and a hex SHA occasionally
+# spells a dictionary word fragment - '873ede9' reads as "ede" -> "edge".
+extend-ignore-re = ["EXPECTED_EXTENSION_VERSION = '[0-9a-f]+'"]
+
 [default.extend-identifiers]
 # Known typos
 NonRemoveableTypeTrait = "NonRemoveableTypeTrait"

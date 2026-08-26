@@ -76,10 +76,12 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
@@ -2326,6 +2328,41 @@ class NodeScopeResolver
 			}
 		}
 
+		foreach ($args as $i => $arg) {
+			if ($arg->unpack) {
+				// spread elements land on parameters this loop cannot map, and PHP
+				// does not carry the reference through the unpacking anyway
+				continue;
+			}
+
+			$byRefSlots = $this->findByRefArrayItemSlots($scope, $arg->value);
+			if (count($byRefSlots) === 0) {
+				continue;
+			}
+
+			$currentParameter = null;
+			if ($writebackParameters !== null) {
+				if (isset($writebackParameters[$i])) {
+					$currentParameter = $writebackParameters[$i];
+				} elseif (count($writebackParameters) > 0 && $writebackAcceptor->isVariadic()) {
+					$currentParameter = array_last($writebackParameters);
+				}
+			}
+
+			if ($currentParameter !== null && $currentParameter->passedByReference()->createsNewVariable()) {
+				continue;
+			}
+
+			$scope = $this->processByRefArrayItemsPassedByValue(
+				$scope,
+				$storage,
+				$stmt,
+				$byRefSlots,
+				$currentParameter !== null ? $currentParameter->getType() : new MixedType(),
+				$nodeCallback,
+			);
+		}
+
 		// not storing this, it's scope after processing all args
 		return new ArgsResult(
 			$this->expressionResultFactory->create($scope, $scope, $callLike, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints),
@@ -2610,6 +2647,168 @@ class NodeScopeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * A `&$v` item in an array literal keeps aliasing $v after the array is copied into
+	 * the callee, so anything the callee writes into that slot lands in $v. The same holds
+	 * for an array variable built with by-reference items and only then passed to the call.
+	 *
+	 * @return list<array{Expr, list<Type>}> pairs of [referenced expression, offset path]
+	 */
+	private function findByRefArrayItemSlots(MutatingScope $scope, Expr $argValue): array
+	{
+		$slots = [];
+		if ($argValue instanceof Expr\Array_) {
+			$this->collectByRefArrayLiteralSlots($scope, $argValue, [], $slots);
+
+			return $slots;
+		}
+
+		if (!$argValue instanceof Variable || !is_string($argValue->name)) {
+			return $slots;
+		}
+
+		foreach ($scope->getByRefArrayItemSlots($argValue->name) as [$referencedExpr, $slotExpr]) {
+			$offsetPath = $this->resolveByRefArrayOffsetPath($scope, $slotExpr, $argValue->name);
+			if ($offsetPath === null) {
+				continue;
+			}
+
+			$slots[] = [$referencedExpr, $offsetPath];
+		}
+
+		return $slots;
+	}
+
+	/**
+	 * @param list<Type> $offsetPath
+	 * @param list<array{Expr, list<Type>}> $slots
+	 * @param-out list<array{Expr, list<Type>}> $slots
+	 */
+	private function collectByRefArrayLiteralSlots(MutatingScope $scope, Expr\Array_ $array, array $offsetPath, array &$slots): void
+	{
+		$implicitIndex = 0;
+		foreach ($array->items as $item) {
+			if ($item->unpack) {
+				$implicitIndex = null;
+				continue;
+			}
+
+			if ($item->key !== null) {
+				$keyType = $scope->getType($item->key)->toArrayKey();
+
+				if ($implicitIndex !== null) {
+					$keyValues = $keyType->getConstantScalarValues();
+					if (count($keyValues) === 1) {
+						$keyValue = $keyValues[0];
+						if (is_int($keyValue) && $keyValue >= $implicitIndex) {
+							$implicitIndex = $keyValue + 1;
+						}
+					} elseif (!$keyType->isInteger()->no()) {
+						// the key could be an integer, but we do not know which one,
+						// so subsequent implicit indices are unpredictable
+						$implicitIndex = null;
+					}
+				}
+			} elseif ($implicitIndex !== null) {
+				$keyType = new ConstantIntegerType($implicitIndex);
+				$implicitIndex++;
+			} else {
+				$keyType = new IntegerType();
+			}
+
+			$itemOffsetPath = $offsetPath;
+			$itemOffsetPath[] = $keyType;
+
+			if ($item->value instanceof Expr\Array_) {
+				$this->collectByRefArrayLiteralSlots($scope, $item->value, $itemOffsetPath, $slots);
+				continue;
+			}
+
+			if (!$item->byRef || !$this->isByRefArrayItemWritable($item->value)) {
+				continue;
+			}
+
+			$slots[] = [$item->value, $itemOffsetPath];
+		}
+	}
+
+	private function isByRefArrayItemWritable(Expr $expr): bool
+	{
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+
+		return $expr instanceof PropertyFetch
+			|| $expr instanceof StaticPropertyFetch
+			|| $expr instanceof ArrayDimFetch;
+	}
+
+	/**
+	 * Offsets of a by-reference array slot expression rooted at $rootVariableName.
+	 *
+	 * @return list<Type>|null
+	 */
+	private function resolveByRefArrayOffsetPath(MutatingScope $scope, Expr $slotExpr, string $rootVariableName): ?array
+	{
+		if ($slotExpr instanceof Variable && $slotExpr->name === $rootVariableName) {
+			return [];
+		}
+
+		if ($slotExpr instanceof ArrayDimFetch && $slotExpr->dim !== null) {
+			$parentPath = $this->resolveByRefArrayOffsetPath($scope, $slotExpr->var, $rootVariableName);
+			if ($parentPath === null) {
+				return null;
+			}
+
+			$parentPath[] = $scope->getType($slotExpr->dim);
+
+			return $parentPath;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param list<array{Expr, list<Type>}> $slots
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processByRefArrayItemsPassedByValue(
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		Node\Stmt $stmt,
+		array $slots,
+		Type $parameterType,
+		callable $nodeCallback,
+	): MutatingScope
+	{
+		foreach ($slots as [$referencedExpr, $offsetPath]) {
+			if ($referencedExpr instanceof Variable && $referencedExpr->name === 'this') {
+				continue;
+			}
+
+			$slotType = $parameterType;
+			foreach ($offsetPath as $offsetType) {
+				$slotType = $slotType->getOffsetValueType($offsetType);
+			}
+
+			if ($scope->hasExpressionType($referencedExpr)->yes()) {
+				// the callee does not have to write into the slot at all
+				$slotType = TypeCombinator::union($scope->getType($referencedExpr), $slotType);
+			}
+
+			$scope = $this->processVirtualAssign(
+				$scope,
+				$storage,
+				$stmt,
+				$referencedExpr,
+				new TypeExpr($slotType),
+				$nodeCallback,
+			)->getScope();
+		}
+
+		return $scope;
 	}
 
 	/**

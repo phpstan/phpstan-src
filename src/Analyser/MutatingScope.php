@@ -2881,6 +2881,38 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * By-reference array items (`$array = [&$v]`) currently aliasing a slot of $variableName.
+	 * The array slot keeps aliasing the referenced expression even after the array is copied,
+	 * so a write into the slot is a write into the referenced expression.
+	 *
+	 * @return list<array{Expr, Expr\ArrayDimFetch}> pairs of [referenced expression, slot expression]
+	 */
+	public function getByRefArrayItemSlots(string $variableName): array
+	{
+		$slots = [];
+		foreach ($this->expressionTypes as $expressionType) {
+			$expr = $expressionType->getExpr();
+			if (!$expr instanceof IntertwinedVariableByReferenceWithExpr) {
+				continue;
+			}
+			if (!$expressionType->getCertainty()->yes()) {
+				continue;
+			}
+			if ($expr->getVariableName() !== $variableName) {
+				continue;
+			}
+			$assignedExpr = $expr->getAssignedExpr();
+			if (!$assignedExpr instanceof Expr\ArrayDimFetch) {
+				continue;
+			}
+
+			$slots[] = [$expr->getExpr(), $assignedExpr];
+		}
+
+		return $slots;
+	}
+
+	/**
 	 * @param list<string> $intertwinedPropagatedFrom
 	 */
 	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self

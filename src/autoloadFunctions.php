@@ -49,6 +49,31 @@ function isComposerClassLoader($autoloadFunction): bool // phpcs:ignore Squiz.Fu
 }
 
 /**
+ * Index of the given class loader in the queue, or null when it is not registered any more -
+ * a bootstrap file has then taken Composer's place and there is no boundary to split on.
+ *
+ * @param list<mixed> $autoloadFunctions
+ */
+function findClassLoaderIndex(array $autoloadFunctions, ?int $classLoaderId): ?int // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+{
+	if ($classLoaderId === null) {
+		return null;
+	}
+
+	foreach ($autoloadFunctions as $index => $autoloadFunction) {
+		if (!isComposerClassLoader($autoloadFunction)) {
+			continue;
+		}
+
+		if (spl_object_id($autoloadFunction[0]) === $classLoaderId) {
+			return $index;
+		}
+	}
+
+	return null;
+}
+
+/**
  * Splits the autoload functions registered while loading Composer's autoloader
  * and the bootstrap files into those registered before and after Composer's own
  * class loader in the spl_autoload queue. This lets PHPStan consult them in the
@@ -83,23 +108,17 @@ function collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunction
 	// it below the static source locators.
 	$classLoaderIds = [];
 	foreach ($autoloadFunctionsBefore as $before) {
-		if (isComposerClassLoader($before)) {
-			$classLoaderIds[] = spl_object_id($before[0]);
+		if (!isComposerClassLoader($before)) {
+			continue;
 		}
+
+		$classLoaderIds[] = spl_object_id($before[0]);
 	}
 
 	array_shift($classLoaderIds);
 	$projectLoaderId = $classLoaderIds === [] ? null : $classLoaderIds[count($classLoaderIds) - 1];
 
-	$composerIndex = null;
-	if ($projectLoaderId !== null) {
-		foreach ($autoloadFunctionsAfter as $index => $after) {
-			if (isComposerClassLoader($after) && spl_object_id($after[0]) === $projectLoaderId) {
-				$composerIndex = $index;
-				break;
-			}
-		}
-	}
+	$composerIndex = findClassLoaderIndex($autoloadFunctionsAfter, $projectLoaderId);
 
 	foreach ($autoloadFunctionsAfter as $index => $after) {
 		if (is_array($after) && count($after) > 0) {

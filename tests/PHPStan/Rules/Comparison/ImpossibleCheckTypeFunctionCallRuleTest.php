@@ -295,6 +295,18 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7898.php'], []);
 	}
 
+	public function testArrayAllNonEmptyList(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/array-all-non-empty-list.php'], [
+			[
+				'Call to function array_all() with non-empty-list<mixed> and Closure(mixed, mixed): false will always evaluate to false.',
+				20,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testStructExists(): void
 	{

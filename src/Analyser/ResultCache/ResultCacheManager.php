@@ -303,6 +303,21 @@ final class ResultCacheManager
 		$exportedNodesCallback = $data['exportedNodesCallback'];
 		$data['exportedNodesCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($exportedNodesCallback());
 
+		// The stub file hashes get into the meta only at save time, after the analysis - the
+		// only point where the StubFilesExtensions may run, because they can rely on
+		// bootstrapFiles having been executed. Restoring must not run them, so the entry is
+		// taken out of the cached meta here; the freshly computed meta below never contains it,
+		// and isMetaDifferent() never sees it on either side. Instead, the recorded hashes are
+		// verified after the meta comparison - a changed stub file invalidates the whole cache.
+		// A different list coming from an extension is not detected - projectExtensionFiles
+		// cover that.
+		$cachedStubFiles = [];
+		if (array_key_exists('stubFiles', $data['meta']) && is_array($data['meta']['stubFiles'])) {
+			/** @var array<string, string> $cachedStubFiles */
+			$cachedStubFiles = $data['meta']['stubFiles'];
+			unset($data['meta']['stubFiles']);
+		}
+
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
 		// absolutized above, so it is always present here
 		$packageDependencies = $data['packageDependencies'];
@@ -485,6 +500,57 @@ final class ResultCacheManager
 			);
 		}
 
+		foreach ($cachedStubFiles as $stubFile => $stubFileHash) {
+			if (!is_file($stubFile)) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted(sprintf('Result cache not used because stub file %s was not found.', $stubFile));
+				}
+				return new ResultCache(
+					filesToAnalyse: $allAnalysedFiles,
+					fullAnalysis: true,
+					lastFullAnalysisTime: time(),
+					meta: $meta,
+					errors: [],
+					locallyIgnoredErrors: [],
+					linesToIgnore: [],
+					unmatchedLineIgnores: [],
+					collectedData: [],
+					dependencies: [],
+					usedTraitDependencies: [],
+					packageDependencies: [],
+					exportedNodes: [],
+					projectExtensionFiles: [],
+					currentFileHashes: $currentFileHashes,
+				);
+			}
+
+			if ($this->getFileHash($stubFile) === $stubFileHash) {
+				continue;
+			}
+
+			if ($output->isVeryVerbose()) {
+				$output->writeLineFormatted(sprintf('Result cache not used because stub file %s hash does not match.', $stubFile));
+			}
+
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $meta,
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				packageDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
+		}
+
 		$invertedDependencies = $data['dependencies'];
 		$deletedFiles = array_fill_keys(array_keys($invertedDependencies), true);
 		$filesToAnalyse = [];
@@ -504,7 +570,7 @@ final class ResultCacheManager
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
 
-		foreach (array_keys($this->getStubFiles()) as $stubFile) {
+		foreach (array_keys($cachedStubFiles) as $stubFile) {
 			if (!array_key_exists($stubFile, $errors)) {
 				continue;
 			}
@@ -1254,6 +1320,11 @@ final class ResultCacheManager
 
 		ksort($exportedNodes);
 
+		// The only point where the StubFilesExtensions may run: the analysis is over, bootstrapFiles
+		// have been executed, so the extensions can rely on them. restore() reads these hashes back
+		// instead of running the extensions again.
+		$meta['stubFiles'] = $this->getStubFiles();
+
 		// Store paths relative to the anchor so the cache survives a change of the project's absolute
 		// path prefix (a fresh CI checkout dir, a git worktree). projectConfig inside $meta is already a
 		// Neon-encoded string here (encoded in process()), so it is relativized at the array level before
@@ -1525,7 +1596,6 @@ return [
 			'composerInstalled' => $this->getComposerInstalled(),
 			'executedFilesHashes' => $this->getExecutedFileHashes(),
 			'phpExtensions' => $extensions,
-			'stubFiles' => $this->getStubFiles(),
 			'level' => $this->usedLevel,
 		];
 	}

@@ -1,0 +1,12 @@
+parameters:
+	level: 8
+	paths:
+		- src
+	bootstrapFiles:
+		- bootstrap.php
+
+services:
+	-
+		class: Bug15120\FrameworkStubFilesExtension
+		tags:
+			- phpstan.stubFilesExtension

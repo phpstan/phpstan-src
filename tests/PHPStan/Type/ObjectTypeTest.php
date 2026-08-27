@@ -39,6 +39,8 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use ReflectionClassConstant;
+use ReflectionProperty;
 use SimpleXMLElement;
 use stdClass;
 use Throwable;
@@ -794,6 +796,28 @@ class ObjectTypeTest extends PHPStanTestCase
 			$actualResult,
 			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
+	}
+
+	public function testStaticCachesAreBoundedByDescriptionCacheLimit(): void
+	{
+		$limit = (new ReflectionClassConstant(ObjectType::class, 'DESCRIPTION_CACHE_LIMIT'))->getValue();
+		$this->assertIsInt($limit);
+
+		ObjectType::resetCaches();
+		try {
+			for ($i = 0; $i < $limit + 100; $i++) {
+				(new ObjectType(sprintf('DescriptionCacheEviction\Class%d', $i)))->isSuperTypeOf(new ObjectType('DescriptionCacheEviction\Other'));
+			}
+
+			$superTypesProperty = new ReflectionProperty(ObjectType::class, 'superTypes');
+			$superTypesProperty->setAccessible(true);
+			$superTypes = $superTypesProperty->getValue();
+			$this->assertIsArray($superTypes);
+			$this->assertGreaterThan(0, count($superTypes));
+			$this->assertLessThanOrEqual($limit, count($superTypes));
+		} finally {
+			ObjectType::resetCaches();
+		}
 	}
 
 }

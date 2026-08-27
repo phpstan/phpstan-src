@@ -307,8 +307,11 @@ final class ResultCachePathTransformer
 	 */
 	private function transformMeta(array $meta, bool $absolutize): array
 	{
-		if (array_key_exists('analysedPaths', $meta) && is_array($meta['analysedPaths'])) {
-			$meta['analysedPaths'] = $this->transformList($meta['analysedPaths'], $absolutize);
+		foreach (['analysedPaths', 'configStubFiles'] as $listKey) {
+			if (!array_key_exists($listKey, $meta) || !is_array($meta[$listKey])) {
+				continue;
+			}
+			$meta[$listKey] = $this->transformList($meta[$listKey], $absolutize);
 		}
 
 		foreach (['scannedFiles', 'composerLocks', 'executedFilesHashes', 'stubFiles'] as $key) {

@@ -34,6 +34,7 @@ use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -86,6 +87,7 @@ final class ResultCacheManager
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
+	 * @param string[] $configStubFiles
 	 * @param list<string|non-empty-list<string>> $parametersNotInvalidatingCache
 	 * @param array<string, string> $fileReplacements
 	 * @param ExtensionsCollection<ResultCacheMetaExtension> $resultCacheMetaExtensions
@@ -117,6 +119,8 @@ final class ResultCacheManager
 		private array $scanFiles,
 		#[AutowiredParameter]
 		private array $scanDirectories,
+		#[AutowiredParameter(ref: '%stubFiles%')]
+		private array $configStubFiles,
 		private array $fileReplacements,
 		#[AutowiredParameter(ref: '%resultCacheChecksProjectExtensionFilesDependencies%')]
 		private bool $checkDependenciesOfProjectExtensionFiles,
@@ -1596,6 +1600,12 @@ return [
 			'composerInstalled' => $this->getComposerInstalled(),
 			'executedFilesHashes' => $this->getExecutedFileHashes(),
 			'phpExtensions' => $extensions,
+			// only the statically configured stub files - the full list including the ones
+			// from StubFilesExtensions is recorded at save time (see save()), because the
+			// extensions may only run after the bootstrapFiles. This entry catches a changed
+			// list in any config file, including the included ones that are not part of the
+			// projectConfig entry above.
+			'configStubFiles' => array_map(fn (string $stubFile): string => $this->fileHelper->normalizePath($stubFile), $this->configStubFiles),
 			'level' => $this->usedLevel,
 		];
 	}

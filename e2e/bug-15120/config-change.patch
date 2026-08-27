@@ -1,0 +1,7 @@
+--- stub-files.neon
++++ stub-files.neon
+@@ -1,3 +1,4 @@
+ parameters:
+ 	stubFiles:
+ 		- src/BazStub.php
++		- stubs/Bar.stub

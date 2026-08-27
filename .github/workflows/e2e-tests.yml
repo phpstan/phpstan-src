@@ -679,6 +679,13 @@ jobs:
               ../bashunit -a contains 'should return non-empty-string but returns string' "$OUTPUT"
               mv stubs/Foo.stub.orig stubs/Foo.stub
               ../../bin/phpstan analyse -vvv
+              patch -b stub-files.neon < config-change.patch
+              OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because the metadata do not match' "$OUTPUT"
+              ../bashunit -a contains 'configStubFiles' "$OUTPUT"
+              mv stub-files.neon.orig stub-files.neon
+              ../../bin/phpstan analyse -vvv
           - script: |
               cd e2e/nested-trait-use
               ../../bin/phpstan analyze

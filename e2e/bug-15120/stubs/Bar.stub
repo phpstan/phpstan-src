@@ -1,0 +1,14 @@
+<?php
+
+namespace Bug15120;
+
+class Bar
+{
+
+	/** @return non-empty-string */
+	public function name(): string
+	{
+
+	}
+
+}

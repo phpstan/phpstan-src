@@ -1,0 +1,23 @@
+{
+	"require": {
+		"typo3/class-alias-loader": "^1.2"
+	},
+	"autoload": {
+		"psr-4": {
+			"AliasLoaderE2e\\": "src/"
+		}
+	},
+	"extra": {
+		"typo3/class-alias-loader": {
+			"class-alias-maps": [
+				"alias-map.php"
+			],
+			"always-add-alias-loader": true
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"typo3/class-alias-loader": true
+		}
+	}
+}

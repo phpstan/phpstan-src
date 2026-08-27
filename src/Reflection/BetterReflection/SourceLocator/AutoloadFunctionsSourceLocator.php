@@ -11,6 +11,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use function class_exists;
 use function function_exists;
 use function interface_exists;
+use function is_file;
 use function opcache_invalidate;
 use function PHPStan\autoloadFunctions;
 use function PHPStan\autoloadFunctionsPrependedToComposer;
@@ -90,6 +91,26 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 		// https://github.com/phpstan/phpstan/issues/14988 reported.
 		if ($this->autoloadSourceLocator->wouldIncludingFilesRedeclareSymbols($locatedFiles)) {
 			return null;
+		}
+
+		// Include the located files for real first. The probe's pseudo-include succeeds with
+		// dummy data, so an autoloader that memoizes such a require's result - deptrac's
+		// bootstrap caches `$loader = require .../vendor/autoload.php` in a closure static -
+		// is left holding an int and never retries it. This include does what that autoloader
+		// can no longer do itself: an autoload-infrastructure file registers its own class
+		// loader, and locating the class again consults it through the file-read trap.
+		foreach ($locatedFiles as $locatedFile) {
+			if (!is_file($locatedFile)) {
+				continue;
+			}
+			(static function (string $file): void {
+				require $file;
+			})($locatedFile);
+		}
+
+		$reflection = $this->locateWithoutAutoloading($reflector, $identifier);
+		if ($reflection !== null) {
+			return $reflection;
 		}
 
 		foreach ($autoloadFunctions as $autoloadFunction) {

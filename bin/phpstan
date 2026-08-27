@@ -95,15 +95,31 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	$autoloadFunctionsAfter = spl_autoload_functions();
 
 	if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {
-		$collectedAutoloadFunctions = \PHPStan\collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunctionsAfter);
-		$GLOBALS['__phpstanAutoloadFunctions'] = array_merge(
-			$GLOBALS['__phpstanAutoloadFunctions'] ?? [],
-			$collectedAutoloadFunctions['appended'],
-		);
-		$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] = array_merge(
-			$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] ?? [],
-			$collectedAutoloadFunctions['prepended'],
-		);
+		$newAutoloadFunctions = [];
+		foreach ($autoloadFunctionsAfter as $after) {
+			if (
+				is_array($after)
+				&& count($after) > 0
+			) {
+				if (is_object($after[0])
+					&& get_class($after[0]) === \Composer\Autoload\ClassLoader::class
+				) {
+					continue;
+				}
+				if ($after[0] === 'PHPStan\\PharAutoloader') {
+					continue;
+				}
+			}
+			foreach ($autoloadFunctionsBefore as $before) {
+				if ($after === $before) {
+					continue 2;
+				}
+			}
+
+			$newAutoloadFunctions[] = $after;
+		}
+
+		$GLOBALS['__phpstanAutoloadFunctions'] = $newAutoloadFunctions;
 	}
 
 	$devOrPharLoader->register(true);

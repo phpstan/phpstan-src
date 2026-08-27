@@ -4,8 +4,6 @@ namespace PHPStan\Command;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
-use function array_merge;
-use function PHPStan\collectNewAutoloadFunctions;
 use function spl_autoload_functions;
 
 /**
@@ -60,7 +58,7 @@ final class BootstrapFilesRunner
 
 	/**
 	 * Merges autoloaders registered since $autoloadFunctionsBefore into the
-	 * globals the BetterReflection source locators consult lazily (see
+	 * global the BetterReflection source locators consult lazily (see
 	 * autoloadFunctions.php) - late merging in a deferred or forked run is
 	 * picked up by the next reflection ask.
 	 *
@@ -74,15 +72,18 @@ final class BootstrapFilesRunner
 			return;
 		}
 
-		$collectedAutoloadFunctions = collectNewAutoloadFunctions($autoloadFunctionsBefore, $autoloadFunctionsAfter);
-		$GLOBALS['__phpstanAutoloadFunctions'] = array_merge(
-			$GLOBALS['__phpstanAutoloadFunctions'] ?? [],
-			$collectedAutoloadFunctions['appended'],
-		);
-		$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] = array_merge(
-			$GLOBALS['__phpstanAutoloadFunctionsPrependedToComposer'] ?? [],
-			$collectedAutoloadFunctions['prepended'],
-		);
+		$newAutoloadFunctions = $GLOBALS['__phpstanAutoloadFunctions'] ?? [];
+		foreach ($autoloadFunctionsAfter as $after) {
+			foreach ($autoloadFunctionsBefore as $before) {
+				if ($after === $before) {
+					continue 2;
+				}
+			}
+
+			$newAutoloadFunctions[] = $after;
+		}
+
+		$GLOBALS['__phpstanAutoloadFunctions'] = $newAutoloadFunctions;
 	}
 
 }

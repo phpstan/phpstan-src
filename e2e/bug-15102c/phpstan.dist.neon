@@ -1,0 +1,6 @@
+parameters:
+	level: 8
+	bootstrapFiles:
+		- bootstrap.php
+	paths:
+		- test.php

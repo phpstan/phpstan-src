@@ -669,6 +669,17 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Method StubFiles\Foo::doFoo() has no return type specified.' "$OUTPUT"
           - script: |
+              cd e2e/bug-15120
+              composer install
+              ../../bin/phpstan analyse -vvv
+              ../../bin/phpstan analyse -vvv
+              patch -b stubs/Foo.stub < stub-change.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'should return non-empty-string but returns string' "$OUTPUT"
+              mv stubs/Foo.stub.orig stubs/Foo.stub
+              ../../bin/phpstan analyse -vvv
+          - script: |
               cd e2e/nested-trait-use
               ../../bin/phpstan analyze
           - script: |

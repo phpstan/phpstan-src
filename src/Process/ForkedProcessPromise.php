@@ -2,8 +2,10 @@
 
 namespace PHPStan\Process;
 
+use PHPStan\Command\ErrorsConsoleStyle;
 use PHPStan\Command\FixerWorkerRunner;
-use PHPStan\Command\Output;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -11,6 +13,8 @@ use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use React\Socket\TcpServer;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\StreamOutput;
 use function fclose;
 use function pcntl_fork;
 use function pcntl_waitpid;
@@ -44,6 +48,9 @@ final class ForkedProcessPromise implements ProcessPromise
 	/** @var resource|null */
 	private $stdOut = null;
 
+	/** @var resource|null */
+	private $stdErr = null;
+
 	private ?TimerInterface $waitTimer = null;
 
 	private bool $canceled = false;
@@ -56,7 +63,6 @@ final class ForkedProcessPromise implements ProcessPromise
 		private LoopInterface $loop,
 		private FixerWorkerRunner $fixerWorkerRunner,
 		private TcpServer $server,
-		private Output $errorOutput,
 		private array $inceptionFiles,
 		private bool $isOnlyFiles,
 		private ?array $projectConfigArray,
@@ -80,13 +86,18 @@ final class ForkedProcessPromise implements ProcessPromise
 		if ($tmpStdOut === false) {
 			throw new ShouldNotHappenException('Failed creating temp file for stdout.');
 		}
+		$tmpStdErr = tmpfile();
+		if ($tmpStdErr === false) {
+			fclose($tmpStdOut);
+			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
+		}
 		$this->stdOut = $tmpStdOut;
+		$this->stdErr = $tmpStdErr;
 
 		$pid = pcntl_fork();
 
 		if ($pid === -1) {
-			fclose($this->stdOut);
-			$this->stdOut = null;
+			$this->closeCaptureFiles();
 			// Deferred so it runs after FixerApplication has stored the promise.
 			$this->loop->futureTick(function (): void {
 				$this->deferred->reject(new ProcessCrashedException('pcntl_fork() failed.'));
@@ -99,8 +110,12 @@ final class ForkedProcessPromise implements ProcessPromise
 			// Child: drop the inherited listening socket immediately, then run
 			// the worker on its own fresh event loop and never return.
 			$this->server->close();
+			ForkedChildCrashReporter::install($tmpStdErr);
+			// The worker writes its errors into the capture the parent reads,
+			// like a spawned worker whose stderr is the capture itself.
+			$childErrorStream = new StreamOutput($tmpStdErr);
 			$exitCode = $this->fixerWorkerRunner->run(
-				$this->errorOutput,
+				new SymfonyOutput($childErrorStream, new SymfonyStyle(new ErrorsConsoleStyle(new StringInput(''), $childErrorStream))),
 				$this->inceptionFiles,
 				$this->isOnlyFiles,
 				$this->projectConfigArray,
@@ -122,13 +137,17 @@ final class ForkedProcessPromise implements ProcessPromise
 
 			$this->cancelWaitTimer();
 
-			$output = '';
+			$stdOut = '';
 			if ($this->stdOut !== null) {
 				rewind($this->stdOut);
-				$output = (string) stream_get_contents($this->stdOut);
-				fclose($this->stdOut);
-				$this->stdOut = null;
+				$stdOut = (string) stream_get_contents($this->stdOut);
 			}
+			$stdErr = '';
+			if ($this->stdErr !== null) {
+				rewind($this->stdErr);
+				$stdErr = (string) stream_get_contents($this->stdErr);
+			}
+			$this->closeCaptureFiles();
 
 			if ($this->canceled) {
 				// cancel() already rejected the promise; just reap the child.
@@ -144,11 +163,11 @@ final class ForkedProcessPromise implements ProcessPromise
 			}
 
 			if ($exitCode === 0) {
-				$this->deferred->resolve($output);
+				$this->deferred->resolve($stdOut);
 				return;
 			}
 
-			$this->deferred->reject(new ProcessCrashedException($output));
+			$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));
 		});
 
 		return $this->deferred->promise();
@@ -174,6 +193,20 @@ final class ForkedProcessPromise implements ProcessPromise
 
 		$this->loop->cancelTimer($this->waitTimer);
 		$this->waitTimer = null;
+	}
+
+	private function closeCaptureFiles(): void
+	{
+		if ($this->stdOut !== null) {
+			fclose($this->stdOut);
+			$this->stdOut = null;
+		}
+		if ($this->stdErr === null) {
+			return;
+		}
+
+		fclose($this->stdErr);
+		$this->stdErr = null;
 	}
 
 }

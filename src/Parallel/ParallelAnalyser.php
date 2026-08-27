@@ -10,6 +10,7 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Cache\ArenaCache;
+use PHPStan\Command\CommandHelper;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -386,7 +387,7 @@ final class ParallelAnalyser
 					return;
 				}
 
-				$memoryLimitMessage = 'PHPStan process crashed because it reached configured PHP memory limit';
+				$memoryLimitMessage = CommandHelper::MEMORY_LIMIT_CRASH_MESSAGE;
 				if (str_contains($output, $memoryLimitMessage)) {
 					foreach ($internalErrors as $internalError) {
 						if (!str_contains($internalError->getMessage(), $memoryLimitMessage)) {

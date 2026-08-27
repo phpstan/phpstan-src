@@ -3,6 +3,7 @@
 namespace PHPStan\Parallel;
 
 use PHPStan\Command\InceptionNotSuccessfulException;
+use PHPStan\Process\ForkedChildCrashReporter;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -34,6 +35,9 @@ final class ForkedProcess extends ProcessBase
 
 	/** @var resource|null */
 	private $stdOut = null;
+
+	/** @var resource|null */
+	private $stdErr = null;
 
 	private ?TimerInterface $waitTimer = null;
 
@@ -69,13 +73,18 @@ final class ForkedProcess extends ProcessBase
 		if ($tmpStdOut === false) {
 			throw new ShouldNotHappenException('Failed creating temp file for stdout.');
 		}
+		$tmpStdErr = tmpfile();
+		if ($tmpStdErr === false) {
+			fclose($tmpStdOut);
+			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
+		}
 		$this->stdOut = $tmpStdOut;
+		$this->stdErr = $tmpStdErr;
 
 		$pid = pcntl_fork();
 
 		if ($pid === -1) {
-			fclose($this->stdOut);
-			$this->stdOut = null;
+			$this->closeCaptureFiles();
 			// Deferred so it runs after ParallelAnalyser has attached this
 			// process to the pool — otherwise tryQuitProcess() would no-op.
 			$this->loop->futureTick(static function () use ($onExit): void {
@@ -88,7 +97,8 @@ final class ForkedProcess extends ProcessBase
 			// Child: drop the inherited listening socket immediately, then run
 			// the worker on its own fresh event loop and never return.
 			$this->server->close();
-			$output = new StreamOutput($this->stdOut);
+			ForkedChildCrashReporter::install($tmpStdErr);
+			$output = new StreamOutput($tmpStdOut);
 			try {
 				$exitCode = $this->workerRunner->run(
 					$output,
@@ -128,10 +138,13 @@ final class ForkedProcess extends ProcessBase
 			$output = '';
 			if ($this->stdOut !== null) {
 				rewind($this->stdOut);
-				$output = (string) stream_get_contents($this->stdOut);
-				fclose($this->stdOut);
-				$this->stdOut = null;
+				$output .= (string) stream_get_contents($this->stdOut);
 			}
+			if ($this->stdErr !== null) {
+				rewind($this->stdErr);
+				$output .= (string) stream_get_contents($this->stdErr);
+			}
+			$this->closeCaptureFiles();
 
 			$onExit($exitCode, $output);
 		});
@@ -153,6 +166,20 @@ final class ForkedProcess extends ProcessBase
 
 		$this->loop->cancelTimer($this->waitTimer);
 		$this->waitTimer = null;
+	}
+
+	private function closeCaptureFiles(): void
+	{
+		if ($this->stdOut !== null) {
+			fclose($this->stdOut);
+			$this->stdOut = null;
+		}
+		if ($this->stdErr === null) {
+			return;
+		}
+
+		fclose($this->stdErr);
+		$this->stdErr = null;
 	}
 
 }

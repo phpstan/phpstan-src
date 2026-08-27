@@ -56,6 +56,7 @@ parameters:
 		unnecessaryNullCoalesce: false
 		finiteTypesInHaystack: false
 		switchConditionAlwaysFalse: false
+		checkImportedClassNameCase: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

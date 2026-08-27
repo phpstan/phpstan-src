@@ -24,7 +24,7 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 		$container = self::getContainer();
 		return new ExistingClassesInEnumImplementsRule(
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

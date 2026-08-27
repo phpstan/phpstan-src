@@ -59,6 +59,7 @@ class ConstantAttributesRuleTest extends RuleTestCase
 					new ClassCaseSensitivityCheck(
 						$reflectionProvider,
 						checkInternalClassCaseSensitivity: false,
+						checkImportedClassNameCase: true,
 					),
 					new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,

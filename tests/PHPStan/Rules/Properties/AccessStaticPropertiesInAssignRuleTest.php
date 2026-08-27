@@ -37,7 +37,7 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 					discoveringSymbolsTip: true,
 				),
 				new ClassNameCheck(
-					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 					new ClassForbiddenNameCheck(self::getContainer()->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
 					self::getContainer()->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

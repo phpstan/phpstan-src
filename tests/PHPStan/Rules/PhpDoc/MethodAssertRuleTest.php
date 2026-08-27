@@ -26,7 +26,7 @@ class MethodAssertRuleTest extends RuleTestCase
 			$reflectionProvider,
 			new UnresolvableTypeHelper(),
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

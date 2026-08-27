@@ -45,6 +45,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 					new ClassCaseSensitivityCheck(
 						$reflectionProvider,
 						checkInternalClassCaseSensitivity: true,
+						checkImportedClassNameCase: true,
 					),
 					new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,

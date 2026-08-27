@@ -50,7 +50,7 @@ class ParamAttributesRuleTest extends RuleTestCase
 					checkMissingTypehints: true,
 				),
 				new ClassNameCheck(
-					new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: false),
+					new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: false, checkImportedClassNameCase: true),
 					new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
 					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

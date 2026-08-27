@@ -9,12 +9,15 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<CaughtExceptionExistenceRule>
  */
 class CaughtExceptionExistenceRuleTest extends RuleTestCase
 {
+
+	private bool $checkImportedClassNameCase = false;
 
 	protected function getRule(): Rule
 	{
@@ -23,7 +26,7 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 		return new CaughtExceptionExistenceRule(
 			$reflectionProvider,
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassCaseSensitivityCheck($reflectionProvider, true, $this->checkImportedClassNameCase),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
@@ -76,14 +79,28 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug12827(): void
+	public static function dataBug12827(): array
 	{
-		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
-			[
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	#[DataProvider('dataBug12827')]
+	public function testBug12827(bool $checkImportedClassNameCase): void
+	{
+		$this->checkImportedClassNameCase = $checkImportedClassNameCase;
+
+		$expectedErrors = [];
+		if ($checkImportedClassNameCase) {
+			$expectedErrors[] = [
 				'Class Bug12827Exceptions\MissingRoutingReferenceException referenced with incorrect case: Bug12827Exceptions\MissingRoutingreferenceException.',
 				20,
-			],
-		]);
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], $expectedErrors);
 	}
 
 }

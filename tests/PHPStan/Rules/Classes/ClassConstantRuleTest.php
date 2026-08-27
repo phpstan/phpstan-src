@@ -23,6 +23,8 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	private int $phpVersion;
 
+	private bool $checkImportedClassNameCase = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -40,7 +42,7 @@ class ClassConstantRuleTest extends RuleTestCase
 				discoveringSymbolsTip: true,
 			),
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
+				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true, checkImportedClassNameCase: $this->checkImportedClassNameCase),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
@@ -569,15 +571,29 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug12827(): void
+	public static function dataBug12827(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	#[DataProvider('dataBug12827')]
+	public function testBug12827(bool $checkImportedClassNameCase): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;
-		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
-			[
+		$this->checkImportedClassNameCase = $checkImportedClassNameCase;
+
+		$expectedErrors = [];
+		if ($checkImportedClassNameCase) {
+			$expectedErrors[] = [
 				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
 				25,
-			],
-		]);
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], $expectedErrors);
 	}
 
 }

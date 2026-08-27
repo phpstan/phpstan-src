@@ -11,3 +11,9 @@ parameters:
 			identifier: method.deprecated
 			count: 1
 			path: ../src/Testing/TestCaseSourceLocatorFactory.php
+
+		-
+			rawMessage: 'Call to deprecated method setAccessible() of class ReflectionProperty.'
+			identifier: method.deprecated
+			count: 1
+			path: ../tests/PHPStan/Type/ObjectTypeTest.php

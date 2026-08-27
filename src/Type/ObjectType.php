@@ -11,6 +11,7 @@ use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\ClassNotFoundException;
+use PHPStan\Internal\LruCache;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -76,6 +77,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	use NonGeneralizableTypeTrait;
 	use SubstractableTypeTrait;
 
+	private const DESCRIPTION_CACHE_LIMIT = 1024;
+
 	private const EXTRA_OFFSET_CLASSES = [
 		'DOMNamedNodeMap', // Only read and existence
 		'Dom\NamedNodeMap', // Only read and existence
@@ -135,6 +138,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, list<EnumCaseObjectType>> */
 	private static array $enumCases = [];
 
+	/** @var LruCache<true>|null shared LRU over the description keys of the static caches above */
+	private static ?LruCache $descriptionCacheOrder = null;
+
+	/** consecutive lookups mostly touch the same description — skip the LRU bookkeeping for them */
+	private static ?string $lastTouchedDescription = null;
+
 	/** @var array<string, ExtendedMethodReflection> */
 	private array $methodCache = [];
 
@@ -161,6 +170,38 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		self::$staticProperties = [];
 		self::$ancestors = [];
 		self::$enumCases = [];
+		self::$descriptionCacheOrder = null;
+		self::$lastTouchedDescription = null;
+	}
+
+	/**
+	 * Moves the description to the most-recently-used position of the shared LRU
+	 * governing the static caches above; evicts the least recently used description's
+	 * entries from all of them once the limit is reached. Misses are pure recomputation.
+	 */
+	private static function touchDescriptionCacheKey(string $description): void
+	{
+		if ($description === self::$lastTouchedDescription) {
+			return;
+		}
+		self::$lastTouchedDescription = $description;
+
+		self::$descriptionCacheOrder ??= new LruCache(self::DESCRIPTION_CACHE_LIMIT);
+		if (self::$descriptionCacheOrder->get($description) !== null) {
+			return;
+		}
+
+		foreach (self::$descriptionCacheOrder->set($description, true, 0) as $evictKey) {
+			unset(
+				self::$superTypes[$evictKey],
+				self::$methods[$evictKey],
+				self::$properties[$evictKey],
+				self::$instanceProperties[$evictKey],
+				self::$staticProperties[$evictKey],
+				self::$ancestors[$evictKey],
+				self::$enumCases[$evictKey],
+			);
+		}
 	}
 
 	public function getClassName(): string
@@ -204,6 +245,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$canAccessProperty = $scope->getClassReflection()->getName();
 		}
 		$description = $this->describeCache();
+
+		self::touchDescriptionCacheKey($description);
 
 		if (isset(self::$properties[$description][$propertyName][$canAccessProperty])) {
 			return self::$properties[$description][$propertyName][$canAccessProperty];
@@ -311,6 +354,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 		$description = $this->describeCache();
 
+		self::touchDescriptionCacheKey($description);
+
 		if (isset(self::$instanceProperties[$description][$propertyName][$canAccessProperty])) {
 			return self::$instanceProperties[$description][$propertyName][$canAccessProperty];
 		}
@@ -412,6 +457,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$canAccessProperty = $scope->getClassReflection()->getName();
 		}
 		$description = $this->describeCache();
+
+		self::touchDescriptionCacheKey($description);
 
 		if (isset(self::$staticProperties[$description][$propertyName][$canAccessProperty])) {
 			return self::$staticProperties[$description][$propertyName][$canAccessProperty];
@@ -533,6 +580,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		} else {
 			$description = $type->describe(VerbosityLevel::cache());
 		}
+
+		self::touchDescriptionCacheKey($thisDescription);
 
 		if (isset(self::$superTypes[$thisDescription][$description])) {
 			return self::$superTypes[$thisDescription][$description];
@@ -1064,6 +1113,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$canCallMethod = $scope->getClassReflection()->getName();
 		}
 		$description = $this->describeCache();
+		self::touchDescriptionCacheKey($description);
 		if (isset(self::$methods[$description][$methodName][$canCallMethod])) {
 			return self::$methods[$description][$methodName][$canCallMethod];
 		}
@@ -1568,6 +1618,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$cacheKey = $this->describeCache();
+		self::touchDescriptionCacheKey($cacheKey);
 		if (array_key_exists($cacheKey, self::$enumCases)) {
 			return self::$enumCases[$cacheKey];
 		}
@@ -1850,6 +1901,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$description = $this->describeCache();
+		self::touchDescriptionCacheKey($description);
 		if (
 			array_key_exists($description, self::$ancestors)
 			&& array_key_exists($className, self::$ancestors[$description])

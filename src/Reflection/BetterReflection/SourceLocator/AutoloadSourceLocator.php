@@ -168,6 +168,62 @@ final class AutoloadSourceLocator implements SourceLocator
 		return null;
 	}
 
+	/**
+	 * Whether including these files for real would redeclare a class or function that is
+	 * already defined in this process - which is fatal, so the caller must not execute them.
+	 * The check is against the files' statically parsed symbols, not get_included_files():
+	 * a file-read-trap probe pseudo-includes every file it traps (the include succeeds with
+	 * empty content and registers in get_included_files() while defining nothing), so the
+	 * include list overreports what is genuinely loaded.
+	 *
+	 * @param string[] $files
+	 */
+	public function wouldIncludingFilesRedeclareSymbols(array $files): bool
+	{
+		foreach ($files as $file) {
+			if (!is_file($file)) {
+				continue;
+			}
+
+			$result = $this->fileNodesFetcher->fetchNodes($file);
+			foreach (array_keys($result->getClassNodes()) as $className) {
+				if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
+					return true;
+				}
+			}
+
+			foreach (array_keys($result->getFunctionNodes()) as $functionName) {
+				if (function_exists($functionName)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Locates the identifier in the given files without invoking any autoloader - used by
+	 * AutoloadFunctionsSourceLocator with the files its file-read-trap probe recorded.
+	 *
+	 * @param string[] $files
+	 */
+	public function locateIdentifierInFiles(Reflector $reflector, Identifier $identifier, array $files): ?Reflection
+	{
+		foreach ($files as $file) {
+			if (!is_file($file)) {
+				continue;
+			}
+
+			$reflection = $this->findReflection($reflector, $file, $identifier, null);
+			if ($reflection !== null) {
+				return $reflection;
+			}
+		}
+
+		return null;
+	}
+
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier, ?int $startLine): ?Reflection
 	{
 		$result = $this->fileNodesFetcher->fetchNodes($file);

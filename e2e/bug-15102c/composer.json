@@ -1,0 +1,10 @@
+{
+	"autoload": {
+		"psr-4": {
+			"E2eFacadeAlias\\": "src/"
+		},
+		"files": [
+			"helpers.php"
+		]
+	}
+}

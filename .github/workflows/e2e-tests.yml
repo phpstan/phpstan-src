@@ -148,6 +148,10 @@ jobs:
               composer install
               ../../bin/phpstan analyze
           - script: |
+              cd e2e/bug-15102c
+              composer install
+              ../../bin/phpstan analyze
+          - script: |
               cd e2e/bug-14724
               composer install
               ../../bin/phpstan analyze app/

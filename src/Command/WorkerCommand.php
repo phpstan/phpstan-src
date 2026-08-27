@@ -121,7 +121,10 @@ final class WorkerCommand extends Command
 		// The master published the analysed-file list its job schedule was
 		// built from; walking the analysed paths again would just re-derive
 		// the same list. The parser router must still learn it — that is a
-		// side effect of the walk this shortcut skips.
+		// side effect of the walk this shortcut skips. (The router normally
+		// also sees the statically configured stub files the excluder later
+		// removes; those are never analysed, so their ignore-collection
+		// routing is unused either way.)
 		$analysedFiles = ArenaCache::lookup('analysed-files');
 		if (is_array($analysedFiles)) {
 			$pathRoutingParser = $container->getService('pathRoutingParser');

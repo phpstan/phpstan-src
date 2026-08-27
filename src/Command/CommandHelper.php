@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\MissingImplementedInterfaceInServiceWithTagException;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
+use PHPStan\File\FileExcluder;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
@@ -36,8 +37,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function class_exists;
 use function count;
 use function dirname;
@@ -588,7 +591,10 @@ final class CommandHelper
 
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 
-		$filesCallback = static function () use ($fileFinder, $pathRoutingParser, $paths, $errorOutput): array {
+		/** @var string[] $configStubFiles */
+		$configStubFiles = $container->getParameter('stubFiles');
+
+		$filesCallback = static function () use ($currentWorkingDirectoryFileHelper, $configStubFiles, $fileFinder, $pathRoutingParser, $paths, $errorOutput): array {
 			if (count($paths) === 0) {
 				$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');
 				throw new InceptionNotSuccessfulException();
@@ -597,6 +603,12 @@ final class CommandHelper
 			$files = $fileFinderResult->getFiles();
 
 			$pathRoutingParser->setAnalysedFiles($files);
+
+			// only the statically configured stub files can be excluded here - asking
+			// the StubFilesExtensions is not possible before the bootstrapFiles have run
+			$stubFilesExcluder = new FileExcluder($currentWorkingDirectoryFileHelper, $configStubFiles);
+
+			$files = array_values(array_filter($files, static fn (string $file) => !$stubFilesExcluder->isExcludedFromAnalysing($file)));
 
 			return [$files, $fileFinderResult->isOnlyFiles()];
 		};

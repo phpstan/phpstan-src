@@ -361,6 +361,12 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
 
 		-
+			rawMessage: Creating new ReflectionFunction is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.
+			identifier: phpstanApi.runtimeReflection
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/AutoloadFunctionsSourceLocator.php
+
+		-
 			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Stmt\ClassLike given.'
 			identifier: argument.type
 			count: 1

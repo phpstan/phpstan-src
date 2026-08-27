@@ -142,6 +142,7 @@ jobs:
               ../../bin/phpstan analyze
           - script: |
               cd e2e/bug-15102b
+              composer install
               ../../bin/phpstan analyze
           - script: |
               cd e2e/bug-15102

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Override;
+use ReflectionFunction;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
@@ -140,11 +141,25 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 			return false;
 		}
 
+		// Only re-including the file that *declares the function of this name* can redeclare it.
+		// A trapped read of any other file is not the hazard: an aliasing autoloader reads the
+		// file of the class it aliases to, and that file already being loaded is the normal case -
+		// class_alias() includes nothing, it names a class that is there. A built-in function has
+		// no declaring file, so there is nothing it could redeclare.
+		$functionFileName = (new ReflectionFunction($className))->getFileName();
+		if ($functionFileName === false) {
+			return false;
+		}
+
 		// PHP canonicalises the path before it reaches a stream wrapper - a `/./` segment, a
 		// symlinked directory or an include-path-relative name all arrive resolved - so the
 		// trapped paths compare directly against get_included_files().
 		$includedFiles = get_included_files();
 		foreach ($locatedFiles as $locatedFile) {
+			if ($locatedFile !== $functionFileName) {
+				continue;
+			}
+
 			if (in_array($locatedFile, $includedFiles, true)) {
 				return true;
 			}

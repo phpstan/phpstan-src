@@ -12,7 +12,6 @@ use Throwable;
 use function array_fill_keys;
 use function array_merge;
 use function count;
-use function memory_get_peak_usage;
 
 /**
  * @phpstan-import-type CollectorData from CollectedData
@@ -147,7 +146,8 @@ final class Analyser
 			packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
-			peakMemoryUsageBytes: memory_get_peak_usage(true),
+			// analysis ran in this process - its peak is read where the number is printed
+			peakMemoryUsageBytes: 0,
 			processedFiles: $allProcessedFiles,
 		);
 	}

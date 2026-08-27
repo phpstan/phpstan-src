@@ -19,7 +19,6 @@ use function count;
 use function filesize;
 use function function_exists;
 use function is_file;
-use function memory_get_peak_usage;
 
 #[AutowiredService]
 final class AnalyserRunner
@@ -72,7 +71,7 @@ final class AnalyserRunner
 				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
-				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				peakMemoryUsageBytes: 0,
 				processedFiles: [],
 			);
 		}

@@ -11,6 +11,7 @@ use React\Socket\TcpServer;
 use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
 use function fclose;
+use function function_exists;
 use function pcntl_fork;
 use function pcntl_waitpid;
 use function pcntl_wexitstatus;
@@ -97,6 +98,17 @@ final class ForkedProcess extends ProcessBase
 			// Child: drop the inherited listening socket immediately, then run
 			// the worker on its own fresh event loop and never return.
 			$this->server->close();
+			// memory_get_peak_usage() carries over into the child, so without this a
+			// worker would report the main process's peak instead of its own - on an
+			// incremental run, the spike taken while loading the result cache, which
+			// every worker would then repeat. Restarting the peak here keeps the
+			// reported number the worker's own high-water usage, inherited memory it
+			// still holds included.
+			/** phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedName */
+			if (function_exists('memory_reset_peak_usage')) {
+				\memory_reset_peak_usage();
+			}
+			/** phpcs:enable */
 			ForkedChildCrashReporter::install($tmpStdErr);
 			$output = new StreamOutput($tmpStdOut);
 			try {

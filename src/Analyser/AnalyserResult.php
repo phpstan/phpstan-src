@@ -47,8 +47,18 @@ final class AnalyserResult
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
 		private array $processedFiles,
+		private int $workerCount = 0,
 	)
 	{
+	}
+
+	/**
+	 * How many parallel workers produced this result; 0 when the analysis ran in
+	 * the main process.
+	 */
+	public function getWorkerCount(): int
+	{
+		return $this->workerCount;
 	}
 
 	/**

@@ -10,20 +10,15 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use function class_exists;
 use function function_exists;
+use function get_included_files;
+use function in_array;
 use function interface_exists;
-use function opcache_invalidate;
 use function PHPStan\autoloadFunctions;
 use function PHPStan\autoloadFunctionsPrependedToComposer;
 use function restore_error_handler;
 use function set_error_handler;
 use function trait_exists;
 
-/**
- * Consults the autoload functions that bootstrap files registered - spl_autoload_register()
- * callbacks that are not Composer's class loader. Asked for a class, such an autoloader either
- * reads a file (which the file-read trap detects, so the class is located in it statically) or
- * defines the class without one, through class_alias() or eval().
- */
 final class AutoloadFunctionsSourceLocator implements SourceLocator
 {
 
@@ -60,36 +55,17 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 			return null;
 		}
 
-		$locatedFiles = $this->probeAutoloadFunctions($autoloadFunctions, $className);
+		if (function_exists($className)) {
+			if ($this->wouldReIncludeALoadedFile($autoloadFunctions, $className)) {
+				return null;
+			}
 
-		// An autoloader can define the class without reading any file - class_alias() with an
-		// already-loaded target, or eval(). The trap intercepts file reads, not execution, so
-		// such an autoloader has already done its work during the probe.
-		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
-			return $this->locateWithoutAutoloading($reflector, $identifier);
-		}
-
-		if ($locatedFiles === []) {
-			return null;
-		}
-
-		// The autoloaders asked for these files - locate the class in them statically, without
-		// executing anything.
-		$reflection = $this->autoloadSourceLocator->locateIdentifierInFiles($reflector, $identifier, $locatedFiles);
-		if ($reflection !== null) {
-			return $reflection;
-		}
-
-		// The located files do not declare the class under this name. Running the autoloaders
-		// for real can still resolve it: class_alias() whose target Composer has to autoload
-		// first asks for the *target's* file, which never declares the alias name - Laravel's
-		// Redirect alias reads the file of Illuminate\Support\Facades\Redirect. But a real run
-		// is only safe when it cannot redeclare anything: a catch-all autoloader can resolve a
-		// class name to the file of an already-loaded function of the same name and fatally
-		// include it a second time, which is what
-		// https://github.com/phpstan/phpstan/issues/14988 reported.
-		if ($this->autoloadSourceLocator->wouldIncludingFilesRedeclareSymbols($locatedFiles)) {
-			return null;
+			// The trap intercepts file reads, not execution, so the probe ran the autoloaders for
+			// real. One that defines the class without reading a file - class_alias(), eval() -
+			// has already done its work, and calling it again would redeclare what it defined.
+			if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
+				return $this->locateWithoutAutoloading($reflector, $identifier);
+			}
 		}
 
 		foreach ($autoloadFunctions as $autoloadFunction) {
@@ -115,16 +91,22 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 	}
 
 	/**
-	 * Runs the autoload functions under the file-read trap and reports which files they asked
-	 * for. No file content is executed - the trap serves empty data - so the probe is free of
-	 * the side effects that make running bootstrap autoloaders for real hazardous. Mirrors
-	 * spl_autoload_call() by stopping at the first autoloader that defines the name or asks
-	 * for a file.
+	 * Whether running these autoloaders for $className would include a file that is loaded already.
+	 *
+	 * A function of this name exists, so an autoloader that maps names to paths - a catch-all one
+	 * like PHP_CodeSniffer's, falling back to Composer's findFile() - can resolve this *class* name
+	 * to the *function's* own file. Including that file a second time fatally redeclares the
+	 * function, which is what https://github.com/phpstan/phpstan/issues/14988 reported.
+	 *
+	 * Probing under the file-read trap answers which file the autoloaders would read without
+	 * executing it, so only that case is declined. Declining on the name alone would also block
+	 * class names that merely coincide with a function - classes and functions live in separate
+	 * symbol spaces, and Laravel's facade aliases (Cache, File, Str, ...) collide with the global
+	 * helpers cache(), file() and str(). See https://github.com/phpstan/phpstan/issues/15102
 	 *
 	 * @param array<int, callable(string): void> $autoloadFunctions
-	 * @return string[]
 	 */
-	private function probeAutoloadFunctions(array $autoloadFunctions, string $className): array
+	private function wouldReIncludeALoadedFile(array $autoloadFunctions, string $className): bool
 	{
 		set_error_handler(static fn (): bool => true);
 
@@ -154,17 +136,21 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 			restore_error_handler();
 		}
 
-		if (!function_exists('opcache_invalidate')) {
-			return $locatedFiles;
+		if ($locatedFiles === []) {
+			return false;
 		}
 
-		// The pseudo-include may have cached the trap's empty content; running the autoloaders
-		// for real afterwards has to compile the actual file.
+		// PHP canonicalises the path before it reaches a stream wrapper - a `/./` segment, a
+		// symlinked directory or an include-path-relative name all arrive resolved - so the
+		// trapped paths compare directly against get_included_files().
+		$includedFiles = get_included_files();
 		foreach ($locatedFiles as $locatedFile) {
-			opcache_invalidate($locatedFile, true);
+			if (in_array($locatedFile, $includedFiles, true)) {
+				return true;
+			}
 		}
 
-		return $locatedFiles;
+		return false;
 	}
 
 	#[Override]

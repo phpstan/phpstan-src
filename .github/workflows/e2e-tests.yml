@@ -323,6 +323,13 @@ jobs:
               ../bashunit -a contains 'Child process error (exit code 255): PHP Fatal error' "$OUTPUT"
               ../bashunit -a contains 'Result is incomplete because of severe errors.' "$OUTPUT"
           - script: |
+              cd e2e/oom-forked-worker
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --memory-limit=300M")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Child process error: PHPStan process crashed' "$OUTPUT"
+              ../bashunit -a contains 'Result is incomplete because of severe errors.' "$OUTPUT"
+          - script: |
               cd e2e/bug-11857
               composer install
               ../../bin/phpstan

@@ -31,6 +31,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Process\ForkedChildCrashReporter;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use Symfony\Component\Console\Input\InputInterface;
@@ -69,6 +70,8 @@ final class CommandHelper
 {
 
 	public const DEFAULT_LEVEL = '0';
+
+	public const MEMORY_LIMIT_CRASH_MESSAGE = 'PHPStan process crashed because it reached configured PHP memory limit';
 
 	private static ?string $reservedMemory = null;
 
@@ -140,6 +143,16 @@ final class CommandHelper
 		self::$reservedMemory = str_repeat('PHPStan', 1463); // reserve 10 kB of space
 		register_shutdown_function(static function () use ($errorOutput): void {
 			self::$reservedMemory = null;
+			if (ForkedChildCrashReporter::isActive()) {
+				// in a forked worker the crash reporter's own shutdown
+				// function writes the message into the parent-readable
+				// capture file; $errorOutput here is the fork-inherited
+				// parent output whose fd bypasses it, and the formatted
+				// write below allocates enough to die again under OOM,
+				// aborting the shutdown-function queue before the crash
+				// reporter's one runs
+				return;
+			}
 			$error = error_get_last();
 			if ($error === null) {
 				return;
@@ -153,7 +166,7 @@ final class CommandHelper
 			}
 
 			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted(sprintf('<error>PHPStan process crashed because it reached configured PHP memory limit</error>: %s', ini_get('memory_limit')));
+			$errorOutput->writeLineFormatted(sprintf('<error>%s</error>: %s', self::MEMORY_LIMIT_CRASH_MESSAGE, ini_get('memory_limit')));
 			$errorOutput->writeLineFormatted('Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.');
 		});
 

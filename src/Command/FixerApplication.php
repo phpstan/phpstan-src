@@ -601,7 +601,6 @@ final class FixerApplication
 				$loop,
 				$this->fixerWorkerRunner,
 				$server,
-				$inceptionResult->getErrorOutput(),
 				$inceptionFiles,
 				$isOnlyFiles,
 				$inceptionResult->getProjectConfigArray(),

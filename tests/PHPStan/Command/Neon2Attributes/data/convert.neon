@@ -1,0 +1,23 @@
+rules:
+	- Neon2AttributesFixtures\ConvFixtureRule
+
+services:
+	-
+		class: Neon2AttributesFixtures\ConvFixtureService
+		arguments:
+			tmpDir: %tmpDir%
+			level: %usedLevel%
+	-
+		class: Neon2AttributesFixtures\ConvFixtureExtension
+		tags:
+			- phpstan.properties.readWriteExtension
+	-
+		class: Neon2AttributesFixtures\ConvFixtureUntaggedExtension
+	-
+		class: PHPStan\File\FileHelper
+	-
+		class: Nette\Neon\Neon
+	-
+		class: Neon2AttributesFixtures\ConvFixtureService
+		setup:
+			- describe()

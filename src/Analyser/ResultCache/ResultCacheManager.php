@@ -84,6 +84,7 @@ final class ResultCacheManager
 	 * @param string[] $analysedPaths
 	 * @param string[] $analysedPathsFromConfig
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[] $attributeServicesDirectories
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
@@ -109,6 +110,8 @@ final class ResultCacheManager
 		private array $analysedPathsFromConfig,
 		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter]
+		private array $attributeServicesDirectories,
 		#[AutowiredParameter]
 		private string $usedLevel,
 		#[AutowiredParameter]
@@ -1442,6 +1445,15 @@ return [
 	 */
 	private function changedPackagesProvideContainerClass(?array $projectConfig, array $changedPackagesLookup): bool
 	{
+		// Directories from the attributeServicesDirectories section register services straight from
+		// their classes, so a changed package owning one of them can affect the analysis of every file.
+		foreach ($this->attributeServicesDirectories as $attributeServicesDirectory) {
+			$package = $this->packageDependencyResolver->resolveDirectoryPackage($attributeServicesDirectory);
+			if ($package !== null && array_key_exists($package, $changedPackagesLookup)) {
+				return true;
+			}
+		}
+
 		// Extensions registered directly in the project config (services:/rules:) or via an included
 		// extension neon file: resolve each service class to the package that owns its file.
 		if ($projectConfig !== null) {

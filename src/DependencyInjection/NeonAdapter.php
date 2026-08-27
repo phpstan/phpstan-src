@@ -30,7 +30,7 @@ use function substr;
 final class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v32-deferred-autowired-parameters';
+	public const CACHE_KEY = 'v33-attribute-services-directories';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 

@@ -23,6 +23,8 @@ use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStub
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Environment;
+use PHPStan\DependencyInjection\AttributeServices\AttributeServicesDirectoriesResolver;
+use PHPStan\DependencyInjection\AttributeServices\AttributeServicesDiscoveryContext;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
@@ -122,6 +124,10 @@ final class ContainerFactory
 			],
 		);
 
+		$directoriesResolver = new AttributeServicesDirectoriesResolver($this->fileHelper, $composerAutoloaderProjectPaths);
+		$attributeServicesDirectories = $directoriesResolver->resolve($projectConfig['attributeServicesDirectories'] ?? []);
+		AttributeServicesDiscoveryContext::set($attributeServicesDirectories);
+
 		$configurator = new Configurator(new LoaderFactory(
 			$this->fileHelper,
 			$this->rootDirectory,
@@ -147,6 +153,7 @@ final class ContainerFactory
 			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
+			'attributeServicesDirectories' => $attributeServicesDirectories->getDirectoryPaths(),
 			'env' => Environment::getCleanedArray(),
 		], $additionalParameters));
 		$configurator->addDynamicParameters([
@@ -161,6 +168,7 @@ final class ContainerFactory
 		}
 
 		$configurator->setAllConfigFiles($allConfigFiles);
+		$configurator->setAttributeServicesDirectoriesCacheKey($attributeServicesDirectories->getCacheKeyComponent());
 
 		$container = $configurator->createContainer()->getByType(Container::class);
 		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
@@ -240,7 +248,9 @@ final class ContainerFactory
 		array $loaderParameters,
 	): array
 	{
-		$neonAdapter = new NeonCachedFileReader([]);
+		// attributeServicesDirectories must come out absolutized relative to the declaring file
+		// even in this pre-pass - ContainerFactory reads the section before the container compiles
+		$neonAdapter = new NeonCachedFileReader(['[attributeServicesDirectories][]']);
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
 		$configArray = [];

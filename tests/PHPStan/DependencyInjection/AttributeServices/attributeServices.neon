@@ -1,0 +1,5 @@
+attributeServicesDirectories:
+	- data/services
+
+autowiredAttributeServices:
+	level: 5

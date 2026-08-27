@@ -210,12 +210,14 @@ parametersSchema:
 	analysedPathsFromConfig: listOf(string())
 	usedLevel: string()
 	cliAutoloadFile: schema(string(), nullable())
+	attributeServicesDirectories: listOf(string())
 
 	# internal - editor mode
 	singleReflectionFile: schema(string(), nullable())
 	singleReflectionInsteadOfFile: schema(string(), nullable())
 
 expandRelativePaths:
+	- '[attributeServicesDirectories][]'
 	- '[parameters][paths][]'
 	- '[parameters][excludePaths][]'
 	- '[parameters][excludePaths][analyse][]'

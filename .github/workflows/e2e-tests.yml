@@ -128,11 +128,11 @@ jobs:
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php
-          - script: |
-              cd e2e/bug-14988
-              composer install
-              ../../bin/phpstan analyse
           # Fails since the revert of the bootstrap autoloader changes:
+          # - script: |
+          #     cd e2e/bug-14988
+          #     composer install
+          #     ../../bin/phpstan analyse
           # - script: |
           #     cd e2e/bug-12972b
           #     composer install

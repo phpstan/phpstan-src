@@ -82,7 +82,8 @@ final class AnalyseApplication
 			$internalErrors = [];
 			$collectedData = [];
 			$savedResultCache = false;
-			$memoryUsageBytes = memory_get_peak_usage(true);
+			$memoryUsageBytes = 0;
+			$workerCount = 0;
 			$processedFiles = [];
 			if ($errorOutput->isVeryVerbose()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
@@ -127,6 +128,7 @@ final class AnalyseApplication
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
 					processedFiles: $intermediateAnalyserResult->getProcessedFiles(),
+					workerCount: $intermediateAnalyserResult->getWorkerCount(),
 				);
 			}
 
@@ -145,6 +147,7 @@ final class AnalyseApplication
 			);
 			$hasInternalErrors = count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 			$memoryUsageBytes = $analyserResult->getPeakMemoryUsageBytes();
+			$workerCount = $analyserResult->getWorkerCount();
 			$isResultCacheUsed = !$resultCache->isFullAnalysis();
 
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
@@ -194,6 +197,7 @@ final class AnalyseApplication
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$processedFiles,
 			$resultCacheExisted,
+			$workerCount,
 		);
 	}
 
@@ -255,7 +259,7 @@ final class AnalyseApplication
 				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
-				peakMemoryUsageBytes: memory_get_peak_usage(true),
+				peakMemoryUsageBytes: 0,
 				processedFiles: [],
 			);
 		}

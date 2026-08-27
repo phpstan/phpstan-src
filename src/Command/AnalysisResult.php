@@ -40,6 +40,7 @@ final class AnalysisResult
 		private array $changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		private array $processedFiles = [],
 		private bool $resultCacheExisted = true,
+		private int $workerCount = 0,
 	)
 	{
 		usort(
@@ -136,6 +137,15 @@ final class AnalysisResult
 	public function getPeakMemoryUsageBytes(): int
 	{
 		return $this->peakMemoryUsageBytes;
+	}
+
+	/**
+	 * How many parallel workers produced this result; 0 when the analysis ran in
+	 * the main process.
+	 */
+	public function getWorkerCount(): int
+	{
+		return $this->workerCount;
 	}
 
 	public function isResultCacheUsed(): bool

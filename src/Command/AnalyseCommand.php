@@ -496,7 +496,7 @@ final class AnalyseCommand extends Command
 					count($internalErrors) === 1 ? 'An internal error' : 'Internal errors',
 				));
 
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
 			}
 
 			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache);
@@ -535,6 +535,7 @@ final class AnalyseCommand extends Command
 				$exitCode,
 				$analysisResult->getPeakMemoryUsageBytes(),
 				$this->analysisStartTime,
+				$analysisResult->getWorkerCount(),
 			);
 		}
 
@@ -672,7 +673,7 @@ final class AnalyseCommand extends Command
 
 				$errorOutput->writeLineFormatted('');
 
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
 			}
 		}
 
@@ -684,6 +685,7 @@ final class AnalyseCommand extends Command
 			$exitCode,
 			$analysisResult->getPeakMemoryUsageBytes(),
 			$this->analysisStartTime,
+			$analysisResult->getWorkerCount(),
 		);
 	}
 
@@ -798,7 +800,7 @@ final class AnalyseCommand extends Command
 			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
 		}
 
 		$streamOutput = $this->createStreamOutput();
@@ -826,7 +828,7 @@ final class AnalyseCommand extends Command
 		} catch (DirectoryCreatorException $e) {
 			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
 		}
 
 		try {
@@ -834,7 +836,7 @@ final class AnalyseCommand extends Command
 		} catch (CouldNotWriteFileException $e) {
 			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
 		}
 
 		$errorsCount = 0;
@@ -874,7 +876,7 @@ final class AnalyseCommand extends Command
 			$exitCode = 2;
 		}
 
-		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
+		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
 	}
 
 	/**

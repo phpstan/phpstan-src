@@ -25,14 +25,12 @@ use Throwable;
 use function array_map;
 use function array_pop;
 use function array_reverse;
-use function array_sum;
 use function count;
 use function defined;
 use function escapeshellarg;
 use function getenv;
 use function ini_get;
 use function max;
-use function memory_get_usage;
 use function parse_url;
 use function sprintf;
 use function str_contains;
@@ -110,6 +108,7 @@ final class ParallelAnalyser
 		$locallyIgnoredErrors = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
+		/** @var array<string, int> $peakMemoryUsages */
 		$peakMemoryUsages = [];
 		$internalErrors = [];
 		$internalErrorsCount = 0;
@@ -156,8 +155,12 @@ final class ParallelAnalyser
 				packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,
 				exportedNodes: $exportedNodes,
 				reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
-				peakMemoryUsageBytes: array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
+				// The heaviest single worker. Summing the workers' peaks would describe a
+				// moment that never happens - they do not peak at the same time - while
+				// each worker's own peak is what its memory_limit is measured against.
+				peakMemoryUsageBytes: $peakMemoryUsages === [] ? 0 : max($peakMemoryUsages),
 				processedFiles: $allProcessedFiles,
+				workerCount: count($peakMemoryUsages),
 			));
 		});
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs, $arenaName, $expectedWorkerCount, &$helloCount): void {
@@ -372,10 +375,10 @@ final class ParallelAnalyser
 
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $output) use (&$someChildEnded, &$peakMemoryUsages, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
-				if ($someChildEnded === false) {
-					$peakMemoryUsages['main'] = memory_get_usage(true);
-				}
+			}, $handleError, function ($exitCode, string $output) use (&$someChildEnded, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+				// The main process is not sampled here any more: its own peak comes
+				// later (collecting the workers' results, saving the result cache) and
+				// is read where the number is printed. Only worker peaks are summed.
 				$someChildEnded = true;
 
 				if ($exitCode === 0) {

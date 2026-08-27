@@ -20,6 +20,8 @@ final class ClassCaseSensitivityCheck
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter]
 		private bool $checkInternalClassCaseSensitivity,
+		#[AutowiredParameter(ref: '%featureToggles.checkImportedClassNameCase%')]
+		private bool $checkImportedClassNameCase,
 	)
 	{
 	}
@@ -72,6 +74,10 @@ final class ClassCaseSensitivityCheck
 	private function getClassNameAsWritten(ClassNameNodePair $pair): string
 	{
 		$className = $pair->getClassName();
+		if (!$this->checkImportedClassNameCase) {
+			return $className;
+		}
+
 		$node = $pair->getNode();
 		if (!$node instanceof Name || $node->toString() !== $className) {
 			return $className;

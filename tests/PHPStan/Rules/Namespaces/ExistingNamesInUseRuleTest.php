@@ -23,7 +23,7 @@ class ExistingNamesInUseRuleTest extends RuleTestCase
 		return new ExistingNamesInUseRule(
 			$reflectionProvider,
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

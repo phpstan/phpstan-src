@@ -41,7 +41,9 @@ use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_slice;
 use function count;
+use function implode;
 use function in_array;
 use function is_string;
 use function sprintf;
@@ -60,6 +62,8 @@ final class FunctionDefinitionCheck
 		private bool $checkClassCaseSensitivity,
 		#[AutowiredParameter]
 		private bool $checkThisOnly,
+		#[AutowiredParameter(ref: '%featureToggles.checkImportedClassNameCase%')]
+		private bool $checkImportedClassNameCase,
 	)
 	{
 	}
@@ -845,12 +849,38 @@ final class FunctionDefinitionCheck
 
 		if ($typeNode instanceof Name) {
 			$resolvedName = $typeNode->toString();
-			$nameAsWritten = ClassCaseSensitivityCheck::getNameAsWritten($typeNode);
-			if ($nameAsWritten === $resolvedName) {
+			if ($this->checkImportedClassNameCase) {
+				$nameAsWritten = ClassCaseSensitivityCheck::getNameAsWritten($typeNode);
+				if ($nameAsWritten === $resolvedName) {
+					return [];
+				}
+
+				return [strtolower($resolvedName) => new ClassNameNodePair($nameAsWritten, $typeNode)];
+			}
+
+			$originalName = $typeNode->getAttribute('originalName');
+			if (!$originalName instanceof Name) {
 				return [];
 			}
 
-			return [strtolower($resolvedName) => new ClassNameNodePair($nameAsWritten, $typeNode)];
+			$originalParts = $originalName->getParts();
+			$resolvedParts = $typeNode->getParts();
+
+			$originalPartsCount = count($originalParts);
+			$resolvedPartsCount = count($resolvedParts);
+
+			if ($originalPartsCount <= $resolvedPartsCount) {
+				$prefixParts = array_slice($resolvedParts, 0, $resolvedPartsCount - $originalPartsCount);
+				$originalCaseClassName = implode('\\', array_merge($prefixParts, $originalParts));
+			} else {
+				$originalCaseClassName = $originalName->toString();
+			}
+
+			if ($originalCaseClassName === $resolvedName) {
+				return [];
+			}
+
+			return [strtolower($resolvedName) => new ClassNameNodePair($originalCaseClassName, $typeNode)];
 		}
 
 		if ($typeNode instanceof NullableType) {

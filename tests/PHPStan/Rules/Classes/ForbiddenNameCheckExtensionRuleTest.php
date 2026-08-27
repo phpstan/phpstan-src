@@ -52,7 +52,7 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 				checkMissingTypehints: true,
 			),
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
+				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true, checkImportedClassNameCase: true),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

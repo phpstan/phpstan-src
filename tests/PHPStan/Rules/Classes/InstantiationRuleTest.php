@@ -15,6 +15,7 @@ use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -26,6 +27,8 @@ class InstantiationRuleTest extends RuleTestCase
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
+
+	private bool $checkImportedClassNameCase = false;
 
 	protected function getRule(): Rule
 	{
@@ -56,7 +59,7 @@ class InstantiationRuleTest extends RuleTestCase
 				checkMissingTypehints: true,
 			),
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
+				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true, checkImportedClassNameCase: $this->checkImportedClassNameCase),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
@@ -739,14 +742,28 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15047.php'], []);
 	}
 
-	public function testBug12827(): void
+	public static function dataBug12827(): array
 	{
-		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
-			[
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	#[DataProvider('dataBug12827')]
+	public function testBug12827(bool $checkImportedClassNameCase): void
+	{
+		$this->checkImportedClassNameCase = $checkImportedClassNameCase;
+
+		$expectedErrors = [];
+		if ($checkImportedClassNameCase) {
+			$expectedErrors[] = [
 				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
 				15,
-			],
-		]);
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], $expectedErrors);
 	}
 
 }

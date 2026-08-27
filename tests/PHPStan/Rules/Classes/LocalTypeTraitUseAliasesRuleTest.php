@@ -32,7 +32,7 @@ class LocalTypeTraitUseAliasesRuleTest extends RuleTestCase
 				$container->getByType(TypeNodeResolver::class),
 				new MissingTypehintCheck(true, [], true),
 				new ClassNameCheck(
-					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 					new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
 					$reflectionProvider,
 					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),

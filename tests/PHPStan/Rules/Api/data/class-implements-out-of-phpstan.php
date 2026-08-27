@@ -376,3 +376,6 @@ abstract class MyFunctionReflection implements FunctionReflection
 
 abstract class MyMethodReflection implements ExtendedMethodReflection
 {}
+
+abstract class MyResultCacheDependencyExtension implements \PHPStan\Analyser\ResultCache\ResultCacheDependencyExtension
+{}

@@ -1,0 +1,33 @@
+parameters:
+	level: max
+	tmpDir: tmp
+	paths:
+		- src
+	bootstrapFiles:
+		- bootstrap.php
+	parallel:
+		jobSize: 1
+		maximumNumberOfProcesses: 2
+		minimumNumberOfJobsPerProcess: 1
+
+services:
+	-
+		class: ResultCacheE2E\Dependency\ConfigTypeRegistry
+		tags:
+			- phpstan.resultCacheDependencyExtension
+	-
+		class: ResultCacheE2E\Dependency\TenantConfigTypeRegistry
+		tags:
+			- phpstan.resultCacheDependencyExtension
+	-
+		class: ResultCacheE2E\Dependency\ConfigResultCacheDependencyRule
+		tags:
+			- phpstan.rules.rule
+	-
+		class: ResultCacheE2E\Dependency\ConfigValueDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: ResultCacheE2E\Dependency\ResultCacheDependencyDataRule
+		tags:
+			- phpstan.rules.rule

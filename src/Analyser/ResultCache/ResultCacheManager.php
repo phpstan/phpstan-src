@@ -7,6 +7,7 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\ResultCacheDependencyCollector;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
@@ -51,6 +52,7 @@ use function implode;
 use function is_array;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function ksort;
 use function microtime;
 use function sort;
@@ -80,6 +82,9 @@ final class ResultCacheManager
 	/** @var array<string, true> */
 	private array $alreadyProcessed = [];
 
+	/** @var array<string, ResultCacheDependencyExtension>|null */
+	private ?array $resultCacheDependencyExtensionsByKey = null;
+
 	/**
 	 * @param string[] $analysedPaths
 	 * @param string[] $analysedPathsFromConfig
@@ -91,10 +96,13 @@ final class ResultCacheManager
 	 * @param list<string|non-empty-list<string>> $parametersNotInvalidatingCache
 	 * @param array<string, string> $fileReplacements
 	 * @param ExtensionsCollection<ResultCacheMetaExtension> $resultCacheMetaExtensions
+	 * @param ExtensionsCollection<ResultCacheDependencyExtension> $resultCacheDependencyExtensions
 	 */
 	public function __construct(
 		#[AutowiredExtensions(of: ResultCacheMetaExtension::class)]
 		private ExtensionsCollection $resultCacheMetaExtensions,
+		#[AutowiredExtensions(of: ResultCacheDependencyExtension::class)]
+		private ExtensionsCollection $resultCacheDependencyExtensions,
 		private ExportedNodeFetcher $exportedNodeFetcher,
 		#[AutowiredParameter(ref: '@fileFinderScan')]
 		private FileFinder $scanFileFinder,
@@ -162,6 +170,10 @@ final class ResultCacheManager
 			}
 			$currentFileHashes[$analysedFile] = $this->getFileHash($analysedFile);
 		}
+
+		// Validate extension keys even when result-cache use is disabled.
+		$this->getResultCacheDependencyExtensionsByKey();
+
 		if ($debug) {
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
@@ -701,6 +713,18 @@ final class ResultCacheManager
 			$filesToAnalyse[] = $packageSeededFile;
 		}
 
+		$resultCacheDependencySeededFiles = $this->restoreResultCacheDependencies(
+			$filteredCollectedData,
+			array_fill_keys($filesToAnalyse, true),
+		);
+
+		foreach ($resultCacheDependencySeededFiles as $resultCacheDependencySeededFile) {
+			if (!is_file($resultCacheDependencySeededFile)) {
+				continue;
+			}
+			$filesToAnalyse[] = $resultCacheDependencySeededFile;
+		}
+
 		$filesToAnalyse = array_unique($filesToAnalyse);
 		$filesToAnalyseCount = count($filesToAnalyse);
 
@@ -848,7 +872,9 @@ final class ResultCacheManager
 			$freshLocallyIgnoredErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$freshCollectedDataByFile = $analyserResult->getCollectedData();
+		// Hashes are cache metadata. Records received from analysis workers cannot supply them.
+		$freshCollectedDataByFile = $this->removeResultCacheDependencyHashes($analyserResult->getCollectedData());
+		$freshCollectedDataByFile = $this->deduplicateResultCacheDependencies($freshCollectedDataByFile);
 
 		$meta = $resultCache->getMeta();
 		$projectConfigArray = $meta['projectConfig'];
@@ -910,6 +936,7 @@ final class ResultCacheManager
 				}
 			}
 
+			$collectedDataByFile = $this->addResultCacheDependencyHashes($collectedDataByFile);
 			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
 
 			if ($output->isVeryVerbose()) {
@@ -933,12 +960,16 @@ final class ResultCacheManager
 				}
 			}
 
-			return new ResultCacheProcessResult($analyserResult, $saved);
+			return new ResultCacheProcessResult(
+				$analyserResult->withCollectedData($freshCollectedDataByFile),
+				$saved,
+			);
 		}
 
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
 		$locallyIgnoredErrorsByFile = $this->mergeLocallyIgnoredErrors($resultCache, $freshLocallyIgnoredErrorsByFile);
 		$collectedDataByFile = $this->mergeCollectedData($resultCache, $freshCollectedDataByFile);
+		$collectedDataByFile = $this->deduplicateResultCacheDependencies($collectedDataByFile);
 		$dependencies = $this->mergeDependencies($resultCache->getDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getDependencies());
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
 		$packageDependencies = $this->mergePackageDependencies($resultCache->getPackageDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getPackageDependencies());
@@ -984,6 +1015,7 @@ final class ResultCacheManager
 				$flatLocallyIgnoredErrors[] = $fileError;
 			}
 		}
+		$collectedDataByFile = $this->removeResultCacheDependencyHashes($collectedDataByFile);
 
 		return new ResultCacheProcessResult(new AnalyserResult(
 			unorderedErrors: $flatErrors,
@@ -1068,6 +1100,188 @@ final class ResultCacheManager
 		}
 
 		return $collectedDataByFile;
+	}
+
+	/**
+	 * @param array<string, array<string, mixed>> $collectedData
+	 * @param array<string, true> $alreadyScheduledFiles
+	 * @return list<string>
+	 */
+	private function restoreResultCacheDependencies(array $collectedData, array $alreadyScheduledFiles): array
+	{
+		$extensions = $this->getResultCacheDependencyExtensionsByKey();
+
+		$currentHashes = [];
+		$filesToAnalyse = [];
+		foreach ($collectedData as $file => $collectedDataPerFile) {
+			if (isset($alreadyScheduledFiles[$file])) {
+				continue;
+			}
+			if (!array_key_exists(ResultCacheDependencyCollector::class, $collectedDataPerFile)) {
+				continue;
+			}
+			$records = $collectedDataPerFile[ResultCacheDependencyCollector::class];
+			if (!is_array($records)) {
+				$filesToAnalyse[] = $file;
+				continue;
+			}
+
+			foreach ($records as $record) {
+				if (
+					!is_array($record)
+					|| !isset($record['extensionKey'], $record['dependencyKey'], $record['hash'])
+					|| !is_string($record['extensionKey'])
+					|| !is_string($record['dependencyKey'])
+					|| !is_string($record['hash'])
+					|| !isset($extensions[$record['extensionKey']])
+				) {
+					$filesToAnalyse[] = $file;
+					break;
+				}
+
+				$extensionKey = $record['extensionKey'];
+				$dependencyKey = $record['dependencyKey'];
+				$currentHashes[$extensionKey][$dependencyKey] ??= $extensions[$extensionKey]->getHash($dependencyKey);
+				$currentHash = $currentHashes[$extensionKey][$dependencyKey];
+				if ($record['hash'] === $currentHash) {
+					continue;
+				}
+
+				$filesToAnalyse[] = $file;
+				break;
+			}
+		}
+
+		return $filesToAnalyse;
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 * @return CollectorData
+	 */
+	private function addResultCacheDependencyHashes(array $collectedData): array
+	{
+		$extensions = $this->getResultCacheDependencyExtensionsByKey();
+		$currentHashes = [];
+		foreach ($collectedData as $file => $collectedDataPerFile) {
+			if (!isset($collectedDataPerFile[ResultCacheDependencyCollector::class])) {
+				continue;
+			}
+
+			$records = [];
+			foreach ($collectedDataPerFile[ResultCacheDependencyCollector::class] as $record) {
+				if (
+					!is_array($record)
+					|| !isset($record['extensionKey'], $record['dependencyKey'])
+					|| !is_string($record['extensionKey'])
+					|| !is_string($record['dependencyKey'])
+					|| !isset($extensions[$record['extensionKey']])
+					|| (isset($record['hash']) && is_string($record['hash']))
+				) {
+					$records[] = $record;
+					continue;
+				}
+
+				$extensionKey = $record['extensionKey'];
+				$dependencyKey = $record['dependencyKey'];
+				$currentHashes[$extensionKey][$dependencyKey] ??= $extensions[$extensionKey]->getHash($dependencyKey);
+				$record['hash'] = $currentHashes[$extensionKey][$dependencyKey];
+				$records[] = $record;
+			}
+			$collectedData[$file][ResultCacheDependencyCollector::class] = $records;
+		}
+
+		return $collectedData;
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 * @return CollectorData
+	 */
+	private function removeResultCacheDependencyHashes(array $collectedData): array
+	{
+		foreach ($collectedData as $file => $collectedDataPerFile) {
+			if (!isset($collectedDataPerFile[ResultCacheDependencyCollector::class])) {
+				continue;
+			}
+
+			$records = [];
+			foreach ($collectedDataPerFile[ResultCacheDependencyCollector::class] as $record) {
+				if (is_array($record)) {
+					unset($record['hash']);
+				}
+
+				$records[] = $record;
+			}
+			$collectedData[$file][ResultCacheDependencyCollector::class] = $records;
+		}
+
+		return $collectedData;
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 * @return CollectorData
+	 */
+	private function deduplicateResultCacheDependencies(array $collectedData): array
+	{
+		foreach ($collectedData as $file => $collectedDataPerFile) {
+			if (!isset($collectedDataPerFile[ResultCacheDependencyCollector::class])) {
+				continue;
+			}
+
+			$seen = [];
+			$records = [];
+			foreach ($collectedDataPerFile[ResultCacheDependencyCollector::class] as $record) {
+				if (
+					!is_array($record)
+					|| !isset($record['extensionKey'], $record['dependencyKey'])
+					|| !is_string($record['extensionKey'])
+					|| !is_string($record['dependencyKey'])
+				) {
+					$records[] = $record;
+					continue;
+				}
+
+				$extensionKey = $record['extensionKey'];
+				$dependencyKey = $record['dependencyKey'];
+				if (isset($seen[$extensionKey][$dependencyKey])) {
+					continue;
+				}
+
+				$seen[$extensionKey][$dependencyKey] = true;
+				$records[] = $record;
+			}
+			$collectedData[$file][ResultCacheDependencyCollector::class] = $records;
+		}
+
+		return $collectedData;
+	}
+
+	/**
+	 * @return array<string, ResultCacheDependencyExtension>
+	 * @throws ShouldNotHappenException
+	 */
+	private function getResultCacheDependencyExtensionsByKey(): array
+	{
+		if ($this->resultCacheDependencyExtensionsByKey !== null) {
+			return $this->resultCacheDependencyExtensionsByKey;
+		}
+
+		$extensions = [];
+		foreach ($this->resultCacheDependencyExtensions->getAll() as $extension) {
+			$key = $extension->getKey();
+			if (array_key_exists($key, $extensions)) {
+				throw new ShouldNotHappenException(sprintf(
+					'Duplicate ResultCacheDependencyExtension with key "%s" found.',
+					$key,
+				));
+			}
+
+			$extensions[$key] = $extension;
+		}
+
+		return $this->resultCacheDependencyExtensionsByKey = $extensions;
 	}
 
 	/**

@@ -22,6 +22,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConstantTypeHelper;
 use ReflectionClass;
 use ReflectionFunction;
+use Throwable;
 use function array_key_exists;
 use function array_keys;
 use function class_exists;
@@ -343,7 +344,15 @@ final class AutoloadSourceLocator implements SourceLocator
 					}
 
 					foreach ($functions as $preExistingAutoloader) {
-						$preExistingAutoloader($className);
+						try {
+							$preExistingAutoloader($className);
+						} catch (Throwable) {
+							// Asking every registered autoloader for the class is not the order PHP uses,
+							// so an autoloader that throws for names outside its own scope throws here for
+							// names it is never invoked for at runtime. Its exception would abort the
+							// analysis of the file with an internal error, so it is swallowed - the file the
+							// autoloader asked for before throwing is still recorded by the trap below.
+						}
 
 						/**
 						 * This static variable is populated by the side-effect of the stream wrapper

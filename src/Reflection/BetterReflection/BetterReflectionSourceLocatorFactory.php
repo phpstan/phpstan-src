@@ -98,18 +98,12 @@ final class BetterReflectionSourceLocatorFactory
 			}
 
 			$astLocator = new Locator($this->parser);
-
-			// Custom autoloaders that bootstrap files registered *before* Composer's
-			// class loader (e.g. spl_autoload_register($fn, true, true)) run before
-			// Composer resolves the class at runtime, so they are consulted before
-			// the static source locators below - mirroring that runtime order.
 			$locators[] = new AutoloadFunctionsSourceLocator(
 				new AutoloadSourceLocator($this->fileNodesFetcher, false),
 				new ReflectionClassSourceLocator(
 					$astLocator,
 					$this->reflectionSourceStubber,
 				),
-				true,
 			);
 
 			$analysedDirectories = [];
@@ -189,22 +183,6 @@ final class BetterReflectionSourceLocatorFactory
 				$this->cache,
 				$this->phpVersion,
 			));
-
-			// Custom autoloaders registered *after* Composer's class loader are
-			// consulted only as a fallback, after the static locators above
-			// (analysed files, Composer class map/PSR-4, PHP internals). At runtime
-			// Composer's class loader resolves such classes first, so these custom
-			// autoloaders are never invoked for them - invoking them eagerly here
-			// would run code paths that cannot happen at runtime. They remain useful
-			// for classes that only a custom autoloader can produce (e.g. eval'd).
-			$locators[] = new AutoloadFunctionsSourceLocator(
-				new AutoloadSourceLocator($this->fileNodesFetcher, false),
-				new ReflectionClassSourceLocator(
-					$astLocator,
-					$this->reflectionSourceStubber,
-				),
-				false,
-			);
 
 			$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
 			$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

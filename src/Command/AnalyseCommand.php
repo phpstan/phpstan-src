@@ -889,6 +889,17 @@ final class AnalyseCommand extends Command
 			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
+		// this process defers bootstrapFiles like the rest of the analyse flow but never
+		// reaches the points that run them - and FixerApplication asks the
+		// StubFilesExtensions (file monitor), which may rely on bootstrapFiles. Its
+		// workers are spawned, never forked, so no child inherits resources the files open
+		// and the eager run is safe.
+		try {
+			$container->getByType(BootstrapFilesRunner::class)->run($inceptionResult->getErrorOutput(), (bool) $input->getOption('debug'));
+		} catch (InceptionNotSuccessfulException) {
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+		}
+
 		/** @var FixerApplication $fixerApplication */
 		$fixerApplication = $container->getByType(FixerApplication::class);
 

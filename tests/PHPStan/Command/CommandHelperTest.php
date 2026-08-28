@@ -283,6 +283,52 @@ class CommandHelperTest extends TestCase
 					],
 				],
 			],
+			[
+				// paths built out of a %placeholder% are not expanded when the Neon file is read, so
+				// they reach the container with their '..' segments intact unless they get normalized
+				// after the expansion - https://github.com/phpstan/phpstan/issues/15125
+				__DIR__ . '/relative-paths/placeholder-dots.neon',
+				[
+					'bootstrapFiles' => [
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionAttribute.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/Attribute85.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionIntersectionType.php'),
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+					],
+					'scanFiles' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'up.php',
+					],
+					'scanDirectories' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+					],
+					'paths' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+					],
+					'excludePaths' => [
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test',
+						],
+						'analyse' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+						],
+					],
+					'ignoreErrors' => [
+						[
+							'message' => '#aaa#',
+							'path' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'aaa.php',
+						],
+						[
+							'message' => '#bbb#',
+							'paths' => [
+								__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'bbb.php',
+							],
+						],
+					],
+				],
+			],
 		];
 	}
 

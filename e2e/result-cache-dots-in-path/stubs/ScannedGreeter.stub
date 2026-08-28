@@ -1,0 +1,11 @@
+<?php
+
+namespace DotsInPathResultCache;
+
+class ScannedGreeter
+{
+
+	/** @return non-empty-string */
+	public function greet(string $name): string;
+
+}

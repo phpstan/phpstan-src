@@ -1,0 +1,13 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	# every one of these spells an existing file through a '..' segment - the placeholder keeps
+	# NeonAdapter from normalizing them when the file is read
+	scanFiles:
+		- %rootDir%/e2e/result-cache-dots-in-path/src/../scanned/ScannedGreeter.php
+	bootstrapFiles:
+		- %rootDir%/e2e/result-cache-dots-in-path/src/../bootstrap.php
+	stubFiles:
+		- %rootDir%/e2e/result-cache-dots-in-path/src/../stubs/ScannedGreeter.stub

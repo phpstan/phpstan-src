@@ -34,7 +34,6 @@ use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -70,7 +69,7 @@ use const PHP_VERSION_ID;
 final class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v14-relativePaths';
+	private const CACHE_VERSION = 'v15-canonicalPaths';
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
@@ -1588,7 +1587,12 @@ return [
 			ksort($projectConfigArray);
 		}
 
-		return [
+		// The meta is stored relativized and comes back absolutized, which also normalizes every path
+		// in it ('a/b/../c' becomes 'a/c'). Not every path here is normalized to begin with - Composer
+		// records install_path as 'vendor/composer/../foo/bar' in installed.php - so the freshly computed
+		// meta is put through the very same transformation. Otherwise the restored meta could never equal
+		// it and the cache would be discarded on every single run.
+		return $this->getPathTransformer()->absolutizeMeta([
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
@@ -1605,9 +1609,9 @@ return [
 			// extensions may only run after the bootstrapFiles. This entry catches a changed
 			// list in any config file, including the included ones that are not part of the
 			// projectConfig entry above.
-			'configStubFiles' => array_map(fn (string $stubFile): string => $this->fileHelper->normalizePath($stubFile), $this->configStubFiles),
+			'configStubFiles' => $this->configStubFiles,
 			'level' => $this->usedLevel,
-		];
+		]);
 	}
 
 	private function getFileHash(string $path): string

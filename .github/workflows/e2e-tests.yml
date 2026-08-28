@@ -607,9 +607,26 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-dots-in-path
+              # scanFiles/bootstrapFiles/stubFiles built out of %rootDir% with a '..' segment in the
+              # middle: the placeholder keeps NeonAdapter from normalizing them when the Neon file is
+              # read, so nothing may compare that spelling against the normalized one.
+              ../../bin/phpstan analyse
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-package-update
               composer install
               ../../bin/phpstan analyse
+              # Nothing changed at all: the cache must be reused without even reaching the
+              # changed-packages fallback. Composer spells install_path in installed.php with a '..'
+              # segment ('vendor/composer/../test/logger'), so a meta that is not canonicalized the
+              # same way it is restored reports composerInstalled as changed on every single run.
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Composer metadata changed' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               # Update a single Composer package by bumping its version with a patch and letting Composer
               # reinstall it, which changes its recorded reference in vendor/composer/installed.php. The
               # cache must be invalidated only for files depending on that package (src/Foo.php uses

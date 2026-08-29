@@ -112,4 +112,16 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10938.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug15128(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15128.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testConditionalReturnTypeInheritance(): void
+	{
+		$this->analyse([__DIR__ . '/data/conditional-return-type-inheritance.php'], []);
+	}
+
 }

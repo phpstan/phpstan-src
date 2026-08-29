@@ -4,11 +4,14 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node;
 
+/**
+ * @phpstan-type ClassLikeNode = Node\Stmt\Class_|Node\Stmt\Interface_|Node\Stmt\Trait_|Node\Stmt\Enum_
+ */
 final class FetchedNodesResult
 {
 
 	/**
-	 * @param array<string, list<FetchedNode<Node\Stmt\ClassLike>>> $classNodes
+	 * @param array<string, list<FetchedNode<ClassLikeNode>>> $classNodes
 	 * @param array<string, list<FetchedNode<Node\Stmt\Function_>>> $functionNodes
 	 * @param array<string, list<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> $constantNodes
 	 */
@@ -21,7 +24,7 @@ final class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, list<FetchedNode<Node\Stmt\ClassLike>>>
+	 * @return array<string, list<FetchedNode<ClassLikeNode>>>
 	 */
 	public function getClassNodes(): array
 	{

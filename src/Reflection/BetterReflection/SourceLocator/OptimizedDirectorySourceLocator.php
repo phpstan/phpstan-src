@@ -27,6 +27,9 @@ use function current;
 use function sprintf;
 use function strtolower;
 
+/**
+ * @phpstan-import-type ClassLikeNode from FetchedNodesResult
+ */
 final class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
@@ -148,7 +151,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 					return null;
 				}
 
-				/** @var FetchedNode<Node\Stmt\ClassLike> $fetchedClassNode */
+				/** @var FetchedNode<ClassLikeNode> $fetchedClassNode */
 				$fetchedClassNode = current($fetchedClassNodes[$identifierName]);
 				$fetchedFile = $file;
 			}
@@ -217,7 +220,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param FetchedNode<Node\Stmt\ClassLike>|FetchedNode<Node\Stmt\Function_>|FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedNode
+	 * @param FetchedNode<ClassLikeNode>|FetchedNode<Node\Stmt\Function_>|FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedNode
 	 */
 	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode, ?int $positionInNode = null): ReflectionClass|ReflectionConstant|ReflectionFunction
 	{

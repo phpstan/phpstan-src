@@ -7525,7 +7525,7 @@ return [
 'parsekit_compile_string' => ['array', 'phpcode'=>'string', 'errors='=>'array', 'options='=>'int'],
 'parsekit_func_arginfo' => ['array', 'function'=>'mixed'],
 'passthru' => ['void', 'command'=>'string', '&w_return_value='=>'int'],
-'password_get_info' => ['array', 'hash'=>'string'],
+'password_get_info' => ['array{algo: int, algoName: string, options: array<string, mixed>}', 'hash'=>'string'],
 'password_hash' => ['__benevolent<non-empty-string|false|null>', 'password'=>'string', 'algo'=>'string|int', 'options='=>'array'],
 'password_make_salt' => ['bool', 'password'=>'string', 'hash'=>'string'],
 'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'int', 'options='=>'array'],

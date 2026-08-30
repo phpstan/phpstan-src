@@ -275,8 +275,9 @@ final class ExpressionResult
 
 		// The guard above leaves only one way here: the expression is tracked on
 		// beforeScope (typeCallback is set but a holder wins). Read the holder
-		// directly instead of re-entering MutatingScope::getType().
-		return $this->cachedType = $this->beforeScope->getTrackedExpressionType($this->expr);
+		// directly instead of re-entering MutatingScope::getType() - resolving
+		// its late-resolvable types the way that method would have.
+		return $this->cachedType = TypeUtils::resolveLateResolvableTypes($this->beforeScope->getTrackedExpressionType($this->expr));
 	}
 
 	public function getNativeType(): Type
@@ -301,8 +302,9 @@ final class ExpressionResult
 		}
 
 		// Tracked native holder (getNativeType() promotes the scope, so its
-		// expressionTypes are the native ones) - read it directly.
-		return $this->cachedNativeType = $this->beforeScope->doNotTreatPhpDocTypesAsCertain()->getTrackedExpressionType($this->expr);
+		// expressionTypes are the native ones) - read it directly, resolving its
+		// late-resolvable types the way MutatingScope::getType() would have.
+		return $this->cachedNativeType = TypeUtils::resolveLateResolvableTypes($this->beforeScope->doNotTreatPhpDocTypesAsCertain()->getTrackedExpressionType($this->expr));
 	}
 
 	private function consultExpressionTypeResolverExtensions(MutatingScope $readScope): ?Type

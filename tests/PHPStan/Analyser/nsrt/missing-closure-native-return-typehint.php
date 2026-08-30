@@ -7,10 +7,10 @@ class Foo
 
 	public function doFoo()
 	{
-		\PHPStan\Testing\assertType('null', (function () {
+		\PHPStan\Testing\assertType('void', (function () {
 
 		})());
-		\PHPStan\Testing\assertType('null', (function () {
+		\PHPStan\Testing\assertType('void', (function () {
 			return;
 		})());
 		\PHPStan\Testing\assertType('Generator<int, 1, mixed, void>', (function (bool $bool) {

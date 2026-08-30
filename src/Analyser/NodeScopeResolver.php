@@ -1046,6 +1046,28 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * The result processArgs() captured for a call argument. Unlike the storage
+	 * lookup this reads the argument's authoritative result: a closure/arrow
+	 * function argument's captured result is the properly-typed one, not the
+	 * placeholder its body walk stored.
+	 *
+	 * @param array<int, ExpressionResult> $argResults
+	 */
+	private function readArgResult(array $argResults, Expr $argValue): ExpressionResult
+	{
+		$result = $argResults[spl_object_id($argValue)] ?? null;
+		if ($result === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'%s on line %d has no captured ExpressionResult - it was not processed as an argument by processArgs().',
+				get_class($argValue),
+				$argValue->getStartLine(),
+			));
+		}
+
+		return $result;
+	}
+
+	/**
 	 * The type, on the given scope, of a node that may or may not have a stored
 	 * ExpressionResult. Every call site of this method is UNDECIDED about whether
 	 * the node was already analysed - each should eventually either consume the
@@ -2770,7 +2792,7 @@ class NodeScopeResolver
 						$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 					}
 				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
-					$argType = ($argResults[spl_object_id($arg->value)] ?? $this->readStoredResult($arg->value, $storage))->getTypeOnScope($scope, false);
+					$argType = $this->readArgResult($argResults, $arg->value)->getTypeOnScope($scope, false);
 					if (!$argType->isObject()->no()) {
 						$nakedReturnType = null;
 						if ($nakedMethodReflection !== null) {

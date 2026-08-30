@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser\ExprHandler\Helper;
 
 use Closure;
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure as ClosureExpr;
 use PHPStan\Analyser\ArgsResult;
@@ -26,14 +25,15 @@ final class DynamicReturnTypeStoragePrimer
 	/**
 	 * Push a transient storage carrying the argument results (current storage as
 	 * fallback, so every non-argument getType is unchanged) and return the matching
-	 * pop - always call it, in a finally. Closures/arrow functions are excluded:
+	 * pop - always call it, in a finally. The arguments are the results processArgs()
+	 * captured, so each one is primed under the very expression it was processed for -
+	 * no argument list to re-look-up against. Closures/arrow functions are excluded:
 	 * the bridge computes their type directly on the asking scope (getClosureType),
 	 * which a processArgs-time stored result would shadow with a stale type.
 	 *
-	 * @param Arg[] $args
 	 * @return Closure(): void
 	 */
-	public function pushPrimedStorage(MutatingScope $scope, array $args, ?ArgsResult $argsResult): Closure
+	public function pushPrimedStorage(MutatingScope $scope, ?ArgsResult $argsResult): Closure
 	{
 		$noop = static function (): void {
 		};
@@ -44,15 +44,12 @@ final class DynamicReturnTypeStoragePrimer
 		$current = $scope->getCurrentExpressionResultStorage();
 		$primed = $current !== null ? $current->duplicate() : new ExpressionResultStorage();
 		$primedAny = false;
-		foreach ($args as $arg) {
-			if ($arg->value instanceof ClosureExpr || $arg->value instanceof ArrowFunction) {
+		foreach ($argsResult->getArgResults() as $argResult) {
+			$argExpr = $argResult->getExpr();
+			if ($argExpr instanceof ClosureExpr || $argExpr instanceof ArrowFunction) {
 				continue;
 			}
-			$argResult = $argsResult->getArgResult($arg->value);
-			if ($argResult === null) {
-				continue;
-			}
-			$primed->storeExpressionResult($arg->value, $argResult);
+			$primed->storeExpressionResult($argExpr, $argResult);
 			$primedAny = true;
 		}
 

@@ -500,7 +500,7 @@ final class MethodCallHandler implements ExprHandler
 				// runs lazily at narrowing-apply time - prime the storage with the
 				// argument results so the extensions' Scope::getType() asks about
 				// the arguments answer from them instead of re-walking on demand
-				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $args, $argsResult);
+				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $argsResult);
 				try {
 					foreach ($this->typeSpecifier->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
 						if (!$extension->isMethodSupported($methodReflection, $normalizedExpr, $context)) {

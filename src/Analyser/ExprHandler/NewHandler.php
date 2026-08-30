@@ -514,7 +514,7 @@ final class NewHandler implements ExprHandler
 			// runs lazily in the typeCallback - prime the storage with the argument
 			// results so the extensions' Scope::getType() asks about the arguments
 			// answer from them instead of re-walking on demand
-			$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $normalizedMethodCall->getArgs(), $argsResult);
+			$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $argsResult);
 			try {
 				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
 					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {

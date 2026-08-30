@@ -26,18 +26,31 @@ final class ArgsResult
 	public function __construct(
 		private ExpressionResult $expressionResult,
 		private ?ParametersAcceptor $resolvedParametersAcceptor,
-		private array $argResults = [],
+		private array $argResults,
 	)
 	{
 	}
 
 	/**
-	 * The already-processed ExpressionResult of a call argument's value expression,
-	 * so callers read its type via the result instead of re-asking the scope.
+	 * Membership query: the ExpressionResult of the given expression if it is one of
+	 * the call's processed arguments. Null means the expression is not such an
+	 * argument - either it is a different expression altogether (the callee name, a
+	 * synthetic node, a narrowed subexpression), or it is a default-value argument
+	 * ArgumentsNormalizer synthesized for an omitted optional parameter, which has no
+	 * source code behind it and so was never processed. Call sites holding an actual
+	 * argument of the call use requireArgResult() instead.
 	 */
-	public function getArgResult(Expr $argValue): ?ExpressionResult
+	public function findArgResult(Expr $argValue): ?ExpressionResult
 	{
 		return $this->argResults[spl_object_id($argValue)] ?? null;
+	}
+
+	/**
+	 * @return array<int, ExpressionResult> keyed by spl_object_id of each argument's value expression
+	 */
+	public function getArgResults(): array
+	{
+		return $this->argResults;
 	}
 
 	/**

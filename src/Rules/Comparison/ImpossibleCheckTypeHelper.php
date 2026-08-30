@@ -97,12 +97,14 @@ final class ImpossibleCheckTypeHelper
 	 * Reads an argument's type from its already-computed ExpressionResult when the
 	 * caller passed the call's ArgsResult (the engine-side verdict in
 	 * FuncCallHandler); rule-side callers read through the scope, whose asks are
-	 * answered from stored results.
+	 * answered from stored results. The expression is not always an argument of the
+	 * call - the narrowed expressions of a SpecifiedTypes entry are arbitrary
+	 * subexpressions - so the lookup stays a membership query.
 	 */
 	private function getArgumentType(Scope $scope, ?ArgsResult $argsResult, Expr $expr, bool $phpDocFlavour = false): Type
 	{
 		if ($argsResult !== null && $scope instanceof MutatingScope) {
-			$argResult = $argsResult->getArgResult($expr);
+			$argResult = $argsResult->findArgResult($expr);
 			if ($argResult !== null) {
 				$native = $phpDocFlavour
 					? $scope->nativeTypesPromoted

@@ -376,7 +376,7 @@ final class FuncCallHandler implements ExprHandler
 		// function call narrows the call itself - the inside-out equivalent of
 		// createForExpr's FuncCall purity gate + tail entry. An impure call narrows to
 		// nothing.
-		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($nodeScopeResolver, $expr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
+		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($nodeScopeResolver, $expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
 			$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 			if (!$this->isFuncCallNarrowable($nodeScopeResolver, $s, $expr, $nameResult)) {
 				return new SpecifiedTypes([], []);
@@ -391,20 +391,15 @@ final class FuncCallHandler implements ExprHandler
 			if (
 				$expr->name instanceof Name
 				&& !$expr->isFirstClassCallable()
-				&& isset($expr->getArgs()[0])
+				&& isset($normalizedExpr->getArgs()[0])
 				&& $type->isNull()->yes()
 			) {
 				$funcName = $expr->name->toLowerString();
 				$bothDirections = in_array($funcName, ['array_key_first', 'array_key_last'], true);
 				if ($bothDirections || $funcName === 'array_find_key') {
-					$argExpr = $expr->getArgs()[0]->value;
-					// the argument was processed with the call; a rewritten call
-					// (call_user_func) keys its results by the normalized arg nodes,
-					// those fall back to the stored-result read
-					$argResult = $argsResult->getArgResult($argExpr);
-					$argType = $argResult !== null
-						? $argResult->getTypeOnScope($s, $s->nativeTypesPromoted)
-						: $nodeScopeResolver->readTypeOfMaybeStored($argExpr, $s);
+					// the normalized arguments are the ones processArgs() walked
+					$argExpr = $normalizedExpr->getArgs()[0]->value;
+					$argType = $argsResult->requireArgResult($argExpr)->getTypeOnScope($s, $s->nativeTypesPromoted);
 					if ($argType->isArray()->yes() && ($bothDirections || $createContext->falsey())) {
 						$types = $types->unionWith(
 							$this->defaultNarrowingHelper->createForSubject($argExpr, new NonEmptyArrayType(), $createContext->negate(), $s),
@@ -579,7 +574,7 @@ final class FuncCallHandler implements ExprHandler
 				return $nativeTypesPromoted ? $nameResult->getNativeType() : $nameResult->getType();
 			}
 
-			$argResult = $argsResult->getArgResult($e);
+			$argResult = $argsResult->findArgResult($e);
 			if ($argResult !== null) {
 				return $nativeTypesPromoted ? $argResult->getNativeType() : $argResult->getType();
 			}
@@ -724,7 +719,7 @@ final class FuncCallHandler implements ExprHandler
 
 				// runs lazily at narrowing-apply time - prime the storage with the
 				// argument results, see MethodCallHandler::specifyTypes()
-				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $args, $argsResult);
+				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $argsResult);
 				try {
 					foreach ($this->typeSpecifier->getFunctionTypeSpecifyingExtensions() as $extension) {
 						if (!$extension->isFunctionSupported($functionReflection, $normalizedExpr, $context)) {
@@ -882,7 +877,7 @@ final class FuncCallHandler implements ExprHandler
 		// Scope::getType($arg->value) reads the stored result instead of re-walking
 		// the argument on demand (the call's argument storage frame is no longer
 		// current when the return type is asked lazily)
-		$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $normalizedNode->getArgs(), $argsResult);
+		$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $argsResult);
 		try {
 			foreach ($extensions as $dynamicFunctionReturnTypeExtension) {
 				$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(

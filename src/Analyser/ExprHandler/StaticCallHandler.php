@@ -569,7 +569,7 @@ final class StaticCallHandler implements ExprHandler
 				$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
 				// runs lazily at narrowing-apply time - prime the storage with the
 				// argument results, see MethodCallHandler::specifyTypes()
-				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $args, $argsResult);
+				$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $argsResult);
 				try {
 					foreach ($this->typeSpecifier->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
 						if (!$extension->isStaticMethodSupported($staticMethodReflection, $normalizedExpr, $context)) {

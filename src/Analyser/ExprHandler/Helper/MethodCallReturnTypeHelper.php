@@ -61,7 +61,7 @@ final class MethodCallReturnTypeHelper
 		// Scope::getType($arg->value) reads the stored result instead of re-walking
 		// the argument on demand (the call's argument storage frame is no longer
 		// current when the return type is asked lazily)
-		$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $normalizedMethodCall->getArgs(), $argsResult);
+		$popPrimedStorage = $this->storagePrimer->pushPrimedStorage($scope, $argsResult);
 		try {
 			$resolvedTypes = [];
 			$allClassNames = $typeWithMethod->getObjectClassNames();

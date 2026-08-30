@@ -719,6 +719,7 @@ class NodeScopeResolver
 								$endStatementResult->getImpurePoints(),
 							))->toPublic(),
 							$parentNode->getReturnType() !== null,
+							$this->readEndStatementExprResult($endStatement->getStatement(), $storage),
 						), $endStatementResult->getScope(), $storage);
 					}
 				} else {
@@ -733,6 +734,7 @@ class NodeScopeResolver
 							$statementResult->getImpurePoints(),
 						))->toPublic(),
 						$parentNode->getReturnType() !== null,
+						$this->readEndStatementExprResult($stmt, $storage),
 					), $scope, $storage);
 				}
 			}
@@ -756,6 +758,8 @@ class NodeScopeResolver
 			if ($parentNode instanceof Expr\Closure) {
 				$parentNode = new Node\Stmt\Expression($parentNode, $parentNode->getAttributes());
 			}
+			// the body is empty - the statement above is a synthetic wrapper around
+			// the closure, not an expression statement that was processed
 			$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
 				$parentNode,
 				$statementResult->toPublic(),
@@ -1043,6 +1047,22 @@ class NodeScopeResolver
 		}
 
 		return $result;
+	}
+
+	/**
+	 * The result of the expression an ending statement evaluated, for
+	 * ExecutionEndNode. Null when the statement is not an expression statement,
+	 * and when its expression was not processed into this storage - an end
+	 * statement is collected from wherever execution ended, which can be a
+	 * nested walk whose results never reach the frame the end node is built in.
+	 */
+	private function readEndStatementExprResult(Node\Stmt $stmt, ExpressionResultStorage $storage): ?ExpressionResult
+	{
+		if (!$stmt instanceof Node\Stmt\Expression) {
+			return null;
+		}
+
+		return $storage->findExpressionResult($stmt->expr);
 	}
 
 	/**

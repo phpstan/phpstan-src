@@ -86,7 +86,7 @@ final class BooleanOrHandler implements ExprHandler
 			// scope: it carries the left narrowing and the right's by-ref/side-effect
 			// definitions, and does not re-apply the left narrowing over a variable the
 			// right operand reassigned (bug-9400).
-			falseyScopeOverride: $rightResult->getFalseyScope(),
+			falseyScopeOverrideResult: $rightResult,
 			typeCallback: static function (bool $nativeTypesPromoted) use ($leftResult, $rightResult): Type {
 				$leftBooleanType = ($nativeTypesPromoted ? $leftResult->getNativeType() : $leftResult->getType())->toBoolean();
 				if ($leftBooleanType->isTrue()->yes()) {

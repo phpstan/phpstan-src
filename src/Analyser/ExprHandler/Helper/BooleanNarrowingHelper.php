@@ -110,10 +110,10 @@ final class BooleanNarrowingHelper
 			}
 			$result = $types->withoutConditionalExpressionHolders();
 			$recipes = [
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftCondTypes, $rightHolderTypes, false, true, $rightScope, $rightExpr),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightCondTypes, $leftHolderTypes, false, true, null, $leftExpr),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftCondTypes, $rightHolderTypes, true, true, $rightScope, $rightExpr),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightCondTypes, $leftHolderTypes, true, true, null, $leftExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $leftCondTypes, $rightHolderTypes, false, true, $rightScope, $rightExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $rightCondTypes, $leftHolderTypes, false, true, null, $leftExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $leftCondTypes, $rightHolderTypes, true, true, $rightScope, $rightExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $rightCondTypes, $leftHolderTypes, true, true, null, $leftExpr),
 			];
 			return $result->setConditionalExpressionHolderRecipes(array_values(array_filter($recipes)))->setRootExpr($rootExpr);
 		}
@@ -196,10 +196,10 @@ final class BooleanNarrowingHelper
 		if ($context->true()) {
 			$result = $types->withoutConditionalExpressionHolders();
 			$recipes = [
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftTypes, $rightTypes, false, false, $rightScope, $rightExpr),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightTypes, $leftTypes, false, false, null, $leftExpr),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftTypes, $rightTypes, true, false, $rightScope, $rightExpr),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightTypes, $leftTypes, true, false, null, $leftExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $leftTypes, $rightTypes, false, false, $rightScope, $rightExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $rightTypes, $leftTypes, false, false, null, $leftExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $leftTypes, $rightTypes, true, false, $rightScope, $rightExpr),
+				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($s, $rightTypes, $leftTypes, true, false, null, $leftExpr),
 			];
 			return $result->setConditionalExpressionHolderRecipes(array_values(array_filter($recipes)))->setRootExpr($rootExpr);
 		}

@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PHPStan\Analyser\ConditionalExpressionHolderRecipe;
 use PHPStan\Analyser\DisjunctionBranchUnionAugment;
+use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -132,7 +133,7 @@ final class ConditionalExpressionHolderHelper
 	 *        holder targets were tracked on; their types are pinned from it at compose
 	 *        time (null = read every target from the applying scope)
 	 */
-	public function buildConditionalHolderRecipe(SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, ?MutatingScope $nonVariableTargetScope, ?Expr $holderSideExpr = null): ?ConditionalExpressionHolderRecipe
+	public function buildConditionalHolderRecipe(MutatingScope $composeScope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, ?MutatingScope $nonVariableTargetScope, ?Expr $holderSideExpr = null): ?ConditionalExpressionHolderRecipe
 	{
 		// an alternative-form entry (a cross-kind either-branch merge) has no
 		// single condition type; dropping it from the condition set would let
@@ -160,14 +161,14 @@ final class ConditionalExpressionHolderHelper
 				continue;
 			}
 
-			$conditionEntries[] = [(string) $exprString, $expr, true, $type];
+			$conditionEntries[] = [(string) $exprString, $expr, true, $type, $this->findConditionResult($composeScope, $expr)];
 		}
 		foreach ($conditionSpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
 			if (!$this->isTrackableExpression($expr)) {
 				continue;
 			}
 
-			$conditionEntries[] = [(string) $exprString, $expr, false, $type];
+			$conditionEntries[] = [(string) $exprString, $expr, false, $type, $this->findConditionResult($composeScope, $expr)];
 		}
 
 		if ($conditionEntries === []) {
@@ -192,6 +193,20 @@ final class ConditionalExpressionHolderHelper
 		}
 
 		return new ConditionalExpressionHolderRecipe($conditionEntries, $holderEntries, $holdersFromSureTypes);
+	}
+
+	/**
+	 * The result of the operand walk that produced this narrowing subject, so the
+	 * recipe reads the subject's type through its own result. Null for a subject no
+	 * walk produced - a narrowing extension is free to specify a type for an
+	 * expression the source never evaluated on its own (the receiver of an offset
+	 * check, a property an assertion names).
+	 */
+	private function findConditionResult(MutatingScope $composeScope, Expr $expr): ?ExpressionResult
+	{
+		$storage = $composeScope->getCurrentExpressionResultStorage();
+
+		return $storage !== null ? $storage->findExpressionResult($expr) : null;
 	}
 
 	/**

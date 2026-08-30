@@ -103,8 +103,8 @@ final class ConditionalExpressionHolderHelper
 			// scopes - scope state answers without a walk
 			$candidates[] = [
 				$targetExpr,
-				$nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $leftScope),
-				$nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $rightScope),
+				$nodeScopeResolver->requireScopeStateType($targetExpr, $leftScope),
+				$nodeScopeResolver->requireScopeStateType($targetExpr, $rightScope),
 			];
 		}
 

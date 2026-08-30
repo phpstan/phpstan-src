@@ -1131,7 +1131,7 @@ class NodeScopeResolver
 			&& !$expr instanceof Expr\ArrowFunction
 			&& $scope->hasExpressionType($expr)->yes()
 		) {
-			return $scope->getTrackedExpressionType($expr);
+			return TypeUtils::resolveLateResolvableTypes($scope->getTrackedExpressionType($expr));
 		}
 
 		return null;

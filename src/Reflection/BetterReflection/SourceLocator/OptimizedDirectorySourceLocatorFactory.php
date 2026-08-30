@@ -10,9 +10,12 @@ use PHPStan\File\FileContentHasher;
 use PHPStan\File\FileFinder;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Parallel\ForkParallelChecker;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_key_exists;
 use function array_keys;
+use function array_values;
 use function fclose;
 use function flock;
 use function fopen;
@@ -50,6 +53,13 @@ final class OptimizedDirectorySourceLocatorFactory
 	 */
 	private const HASH_LOCK_POLL_INTERVAL_MICROSECONDS = 5_000;
 
+	/**
+	 * Directories collected for a batched scan, null when not batching.
+	 *
+	 * @var list<array{string[], OptimizedDirectorySourceLocator}>|null
+	 */
+	private ?array $batchedScan = null;
+
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
 		#[AutowiredParameter(ref: '@fileFinderScan')]
@@ -58,6 +68,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		private SymbolFinderInFiles $symbolFinderInFiles,
 		private Cache $cache,
 		private FileContentHasher $fileContentHasher,
+		private ForkParallelChecker $forkParallelChecker,
 		#[AutowiredParameter]
 		private string $tmpDir,
 	)
@@ -66,6 +77,10 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	public function createByDirectory(string $directory): OptimizedDirectorySourceLocator
 	{
+		if ($this->scansFresh()) {
+			return $this->createFreshDirectorySourceLocator($directory);
+		}
+
 		$cacheKey = sprintf('odsl-%s', $directory);
 		$hashesRecordKey = 'odsl-filehashes-' . $directory;
 
@@ -124,6 +139,119 @@ final class OptimizedDirectorySourceLocatorFactory
 		}
 
 		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
+	}
+
+	/**
+	 * Whether the symbol index is built outright instead of being cached.
+	 *
+	 * Both halves are needed. The native scan is what makes the cache not
+	 * worth its keep, and forking is what keeps the scan from happening once
+	 * per worker: the parent scans before it forks and the children inherit
+	 * the result (see PreForkDirectorySymbolScanner). Where the extension is
+	 * active but workers are spawned rather than forked - Windows, or OPcache
+	 * left on - there is nothing to inherit, so the cache and its scan lock
+	 * stay in charge.
+	 */
+	private function scansFresh(): bool
+	{
+		return TurboExtensionEnabler::isActive() && $this->forkParallelChecker->isSupported();
+	}
+
+	/**
+	 * With the turbo extension the symbol scan is native and costs about what
+	 * hashing the directory to validate a cache costs, so a cache has nothing
+	 * left to save: the directory is walked and scanned outright, with no file
+	 * hashing, no persisted symbol table, no scan lock and no arena record —
+	 * and therefore no cache that can go stale. PreForkDirectoryScanner runs
+	 * this once in the main process before it forks its workers, so every
+	 * worker inherits the finished locators instead of racing to build them.
+	 */
+	private function createFreshDirectorySourceLocator(string $directory): OptimizedDirectorySourceLocator
+	{
+		return $this->createFreshFileListSourceLocator($this->fileFinder->findFiles([$directory])->getFiles());
+	}
+
+	/**
+	 * Starts collecting the directories asked for instead of scanning each one
+	 * as it comes, so that flushBatchedScan() can cover all of them in a single
+	 * scan: a file reachable from two directories is read once rather than
+	 * twice, and the per-call costs are paid once instead of per directory.
+	 */
+	public function beginBatchedScan(): void
+	{
+		$this->batchedScan = [];
+	}
+
+	/**
+	 * Scans everything collected since beginBatchedScan() at once and fills in
+	 * the locators handed out in the meantime.
+	 */
+	public function flushBatchedScan(): void
+	{
+		$batched = $this->batchedScan;
+		$this->batchedScan = null;
+		if ($batched === null || $batched === []) {
+			return;
+		}
+
+		$allFiles = [];
+		foreach ($batched as [$files]) {
+			foreach ($files as $file) {
+				// a file reachable from two directories is scanned once
+				$allFiles[$file] = $file;
+			}
+		}
+
+		$symbols = $this->symbolFinderInFiles->findSymbols(array_values($allFiles), $this->phpVersion->supportsEnums());
+
+		foreach ($batched as [$files, $locator]) {
+			$directorySymbols = [];
+			foreach ($files as $file) {
+				if (!array_key_exists($file, $symbols)) {
+					continue;
+				}
+
+				$directorySymbols[$file] = $symbols[$file];
+			}
+
+			[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($directorySymbols);
+			$locator->fillBatchedScan($classToFile, $functionToFiles, $constantToFile);
+		}
+	}
+
+	/**
+	 * @param string[] $files
+	 */
+	private function createFreshFileListSourceLocator(array $files): OptimizedDirectorySourceLocator
+	{
+		if ($this->batchedScan !== null) {
+			$locator = new OptimizedDirectorySourceLocator(
+				$this->fileNodesFetcher,
+				$this->cache,
+				$this->phpVersion,
+				$this->fileContentHasher,
+				[],
+				[],
+				[],
+				awaitingBatchedScan: true,
+			);
+			$this->batchedScan[] = [$files, $locator];
+
+			return $locator;
+		}
+
+		$symbols = $this->symbolFinderInFiles->findSymbols($files, $this->phpVersion->supportsEnums());
+		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($symbols);
+
+		return new OptimizedDirectorySourceLocator(
+			$this->fileNodesFetcher,
+			$this->cache,
+			$this->phpVersion,
+			$this->fileContentHasher,
+			$classToFile,
+			$functionToFiles,
+			$constantToFile,
+		);
 	}
 
 	/**
@@ -233,7 +361,12 @@ final class OptimizedDirectorySourceLocatorFactory
 			}
 		}
 
-		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($cached);
+		$symbols = [];
+		foreach ($cached as $file => [, $classes, $functions, $constants]) {
+			$symbols[$file] = [$classes, $functions, $constants];
+		}
+
+		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($symbols);
 
 		// Publication order matters: the reader above requires all three
 		// records, so a partially-published index is never consumed.
@@ -322,6 +455,10 @@ final class OptimizedDirectorySourceLocatorFactory
 	 */
 	public function createByFiles(array $files, string $uniqueCacheIdentifier): OptimizedDirectorySourceLocator
 	{
+		if ($this->scansFresh()) {
+			return $this->createFreshFileListSourceLocator($files);
+		}
+
 		$fileHashes = [];
 		foreach ($files as $file) {
 			$hash = $this->fileContentHasher->hash($file);
@@ -335,7 +472,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	}
 
 	/**
-	 * @param array<string, array{string, string[], string[], string[]}> $symbols
+	 * @param array<string, array{string[], string[], string[]}> $symbols
 	 * @return array{array<string, string>, array<string, array<int, string>>, array<string, string>}
 	 */
 	private function changeStructure(array $symbols): array
@@ -343,7 +480,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		$classToFile = [];
 		$constantToFile = [];
 		$functionToFiles = [];
-		foreach ($symbols as $file => [, $classes, $functions, $constants]) {
+		foreach ($symbols as $file => [$classes, $functions, $constants]) {
 			foreach ($classes as $classInFile) {
 				$classToFile[$classInFile] = $file;
 			}

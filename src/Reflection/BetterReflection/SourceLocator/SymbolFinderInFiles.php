@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_filter;
 use function array_slice;
 use function count;
@@ -19,6 +20,7 @@ use function str_contains;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\SymbolFinderInFiles', implementation: __DIR__ . '/../../../../turbo-ext/src/SymbolFinderInFiles.cpp')]
 final class SymbolFinderInFiles
 {
 
@@ -91,6 +93,7 @@ final class SymbolFinderInFiles
 
 			if ($matches['constant'][$i] !== '') {
 				$constants[] = self::normalizeConstantName(ltrim($namespace . $matches['cname'][$i], '\\'));
+				continue;
 			}
 
 			if ($matches['define'][$i] !== '') {

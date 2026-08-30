@@ -630,6 +630,8 @@ check($matchResults['php'] === $matchResults['native'], 'ScopeOps matchCondition
 $coveredElsewhere = [
 	\PHPStan\Cache\ArenaCache::class => 'arena-smoke.php',
 	\PHPStan\Parser\ParserRunner::class => 'parser-corpus.php',
+	\PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner::class => 'php-file-cleaner-corpus.php',
+	\PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles::class => 'symbol-finder-corpus.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

@@ -148,6 +148,8 @@ void pt_register_parser_runner();
 void pt_register_type_combinator_cache();
 void pt_register_arena_cache();
 void pt_register_expression_result_storage();
+void pt_register_php_file_cleaner();
+void pt_register_symbol_finder_in_files();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();

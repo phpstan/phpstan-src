@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_keys;
 use function implode;
 use function in_array;
@@ -18,6 +19,7 @@ use function substr;
  * @see https://github.com/composer/composer/pull/10107
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\PhpFileCleaner', implementation: __DIR__ . '/../../../../turbo-ext/src/PhpFileCleaner.cpp')]
 final class PhpFileCleaner
 {
 

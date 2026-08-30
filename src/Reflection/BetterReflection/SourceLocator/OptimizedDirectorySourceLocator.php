@@ -63,8 +63,31 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		private array $functionToFiles,
 		private array $constantToFile,
 		private ?string $arenaKeyPrefix = null,
+		private bool $awaitingBatchedScan = false,
 	)
 	{
+	}
+
+	/**
+	 * Fills in the symbol maps of a locator created for a batched scan.
+	 *
+	 * The factory hands these out before the scan that produces their contents
+	 * has run, so that one scan can cover every directory at once
+	 * (see OptimizedDirectorySourceLocatorFactory::flushBatchedScan()). Nothing
+	 * may look a symbol up in between - the maps are empty, so a lookup would
+	 * quietly answer "not found" - which is what the flag guards.
+	 *
+	 * @param array<string, string> $classToFile
+	 * @param array<string, array<int, string>> $functionToFiles
+	 * @param array<string, string> $constantToFile
+	 * @internal
+	 */
+	public function fillBatchedScan(array $classToFile, array $functionToFiles, array $constantToFile): void
+	{
+		$this->classToFile = $classToFile;
+		$this->functionToFiles = $functionToFiles;
+		$this->constantToFile = $constantToFile;
+		$this->awaitingBatchedScan = false;
 	}
 
 	/**
@@ -86,6 +109,10 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
+		if ($this->awaitingBatchedScan) {
+			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batched scan has not been flushed yet.');
+		}
+
 		if ($identifier->isClass()) {
 			$identifierName = strtolower($identifier->getName());
 			$file = $this->findFileByClass($identifierName);
@@ -334,6 +361,10 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
+		if ($this->awaitingBatchedScan) {
+			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batched scan has not been flushed yet.');
+		}
+
 		$this->hydrateSymbolsFromArena();
 
 		$reflections = [];

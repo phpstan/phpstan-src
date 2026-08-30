@@ -15,6 +15,7 @@ use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Process\ProcessHelper;
+use PHPStan\Reflection\BetterReflection\SourceLocator\PreForkDirectorySymbolScanner;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
@@ -54,6 +55,7 @@ final class ParallelAnalyser
 		#[AutowiredParameter(ref: '%parallel.buffer%')]
 		private int $decoderBufferSize,
 		private ForkParallelChecker $forkParallelChecker,
+		private PreForkDirectorySymbolScanner $preForkDirectorySymbolScanner,
 		private WorkerRunner $workerRunner,
 	)
 	{
@@ -215,6 +217,15 @@ final class ParallelAnalyser
 		};
 
 		$useFork = $this->forkParallelChecker->isSupported();
+
+		if ($useFork && $numberOfProcesses > 1) {
+			// Build the directory symbol indexes here, in the parent, so the
+			// children inherit them copy-on-write instead of each scanning the
+			// same directories (see PreForkDirectorySymbolScanner). With a
+			// single worker there is nothing to share, and doing it here would
+			// only take work off the lazy path that worker might never reach.
+			$this->preForkDirectorySymbolScanner->scanBeforeFork();
+		}
 
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
 			if (count($jobs) === 0) {

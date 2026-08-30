@@ -6,6 +6,7 @@ use Override;
 use PHPStan\Cache\ArenaCache;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\Parallel\WorkerRunner;
+use PHPStan\Parser\PathRoutingParser;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -127,6 +128,7 @@ final class WorkerCommand extends Command
 		// routing is unused either way.)
 		$analysedFiles = ArenaCache::lookup('analysed-files');
 		if (is_array($analysedFiles)) {
+			/** @var PathRoutingParser $pathRoutingParser */
 			$pathRoutingParser = $container->getService('pathRoutingParser');
 			$pathRoutingParser->setAnalysedFiles($analysedFiles);
 		} else {

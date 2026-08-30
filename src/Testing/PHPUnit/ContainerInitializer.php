@@ -3,10 +3,14 @@
 namespace PHPStan\Testing\PHPUnit;
 
 use PHPStan\DependencyInjection\InvalidIgnoredErrorExceptionTest;
+use PHPStan\Testing\PHPStanTestCase;
 
 final class ContainerInitializer
 {
 
+	/**
+	 * @param class-string<PHPStanTestCase> $testClassName
+	 */
 	public static function initialize(string $testClassName): void
 	{
 		// This test expects an exception during container initialization

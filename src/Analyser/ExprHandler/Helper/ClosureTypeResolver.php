@@ -801,7 +801,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 		$callableParameters = null;
 		$nativeCallableParameters = null;
+		/** @var Node\Arg[]|null $arrayMapArgs */
 		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+		/** @var Node\Arg[]|null $immediatelyInvokedArgs */
 		$immediatelyInvokedArgs = $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
 		if ($arrayMapArgs !== null) {
 			$callableParameters = [];

@@ -344,6 +344,7 @@ final class ParallelAnalyser
 						continue;
 					}
 					$exportedNodes[$file] = array_map(static function (array $node): RootExportedNode {
+						/** @var class-string<RootExportedNode> $class */
 						$class = $node['type'];
 
 						return $class::decode($node['data']);

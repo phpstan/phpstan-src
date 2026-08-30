@@ -88,8 +88,8 @@ final class ExpressionResult
 		callable $specifyTypesCallback,
 		private bool $containsNullsafe = false,
 		private ?IssetabilityDescriptor $issetabilityDescriptor = null,
-		private ?MutatingScope $truthyScopeOverride = null,
-		private ?MutatingScope $falseyScopeOverride = null,
+		private ?ExpressionResult $truthyScopeOverrideResult = null,
+		private ?ExpressionResult $falseyScopeOverrideResult = null,
 		?callable $createTypesCallback = null,
 		private ?Type $type = null,
 		private ?Type $nativeType = null,
@@ -214,13 +214,16 @@ final class ExpressionResult
 		}
 
 		// && is truthy only when the right operand was evaluated (on the left-truthy
-		// scope) and is itself truthy - that is exactly $rightResult->getTruthyScope(),
-		// which the handler passes as $truthyScopeOverride. It already carries the left
-		// operand's narrowing and the right operand's by-ref/side-effect definitions,
-		// and crucially does NOT re-apply the left narrowing on top of a scope where the
-		// right operand reassigned the narrowed variable (see bug-9400).
-		if ($this->truthyScopeOverride !== null) {
-			return $this->truthyScope = $this->truthyScopeOverride;
+		// scope) and is itself truthy - that is exactly the right operand result's
+		// truthy scope, which the handler passes as $truthyScopeOverrideResult. It
+		// already carries the left operand's narrowing and the right operand's
+		// by-ref/side-effect definitions, and crucially does NOT re-apply the left
+		// narrowing on top of a scope where the right operand reassigned the narrowed
+		// variable (see bug-9400). Held as the RESULT, not the derived scope: a
+		// census showed most overrides are never read, so the derivation
+		// (applySpecifiedTypes) runs only on first use.
+		if ($this->truthyScopeOverrideResult !== null) {
+			return $this->truthyScope = $this->truthyScopeOverrideResult->getTruthyScope();
 		}
 
 		return $this->truthyScope = $this->scope->applySpecifiedTypes(
@@ -235,9 +238,10 @@ final class ExpressionResult
 		}
 
 		// || is falsey only when the right operand was evaluated (on the left-falsey
-		// scope) and is itself falsey - that is exactly $rightResult->getFalseyScope().
-		if ($this->falseyScopeOverride !== null) {
-			return $this->falseyScope = $this->falseyScopeOverride;
+		// scope) and is itself falsey - that is exactly the right operand result's
+		// falsey scope, derived lazily on first use (see getTruthyScope()).
+		if ($this->falseyScopeOverrideResult !== null) {
+			return $this->falseyScope = $this->falseyScopeOverrideResult->getFalseyScope();
 		}
 
 		return $this->falseyScope = $this->scope->applySpecifiedTypes(
@@ -666,8 +670,8 @@ final class ExpressionResult
 		$clone->beforeScope = $scope;
 		$clone->truthyScope = null;
 		$clone->falseyScope = null;
-		$clone->truthyScopeOverride = null;
-		$clone->falseyScopeOverride = null;
+		$clone->truthyScopeOverrideResult = null;
+		$clone->falseyScopeOverrideResult = null;
 		$clone->cachedType = null;
 		$clone->cachedNativeType = null;
 		// a scope-authoritative expression's type is pinned eagerly from the ask

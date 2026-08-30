@@ -3,13 +3,13 @@
 namespace PHPStan\Turbo;
 
 use Phar;
-use function count;
 use function dirname;
+use function file_get_contents;
 use function getenv;
-use function glob;
 use function is_file;
 use function php_uname;
 use function sprintf;
+use function str_contains;
 use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
@@ -115,18 +115,25 @@ final class TurboExtensionSelector
 	}
 
 	/**
-	 * libc has no PHP constant; this is the same filesystem heuristic
-	 * datadog-setup.php uses.
+	 * libc has no PHP constant; this checks what loader is actually
+	 * mapped into the running process rather than whether a musl loader
+	 * merely exists somewhere on disk — a glibc host with musl-tools
+	 * installed has one too, and would otherwise be misdetected as musl.
 	 */
 	public static function isMusl(): bool
 	{
-		if (is_file('/etc/alpine-release')) {
-			return true;
+		return self::resolveIsMusl(@file_get_contents('/proc/self/maps'), is_file('/etc/alpine-release'));
+	}
+
+	public static function resolveIsMusl(string|false $selfMaps, bool $hasAlpineRelease): bool
+	{
+		if ($selfMaps !== false) {
+			return str_contains($selfMaps, '/ld-musl-');
 		}
 
-		$muslLoaders = glob('/lib/ld-musl-*');
-
-		return $muslLoaders !== false && count($muslLoaders) > 0;
+		// no procfs to inspect (non-Linux, or a sandboxed container without
+		// /proc) — Alpine's own musl PHP packages are still worth detecting
+		return $hasAlpineRelease;
 	}
 
 }

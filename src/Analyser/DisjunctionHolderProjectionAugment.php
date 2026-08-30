@@ -80,15 +80,15 @@ final class DisjunctionHolderProjectionAugment implements DeferredSpecifiedTypes
 
 				// the guards above pin the target as tracked on all three scopes -
 				// scope state answers without a walk
-				$origType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $scope);
+				$origType = $this->nodeScopeResolver->requireScopeStateType($targetExpr, $scope);
 
-				$leftType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $leftTruthyScope);
+				$leftType = $this->nodeScopeResolver->requireScopeStateType($targetExpr, $leftTruthyScope);
 				$leftNarrowed = !$leftType->equals($origType) && $origType->isSuperTypeOf($leftType)->yes();
 				if (!$leftNarrowed) {
 					continue;
 				}
 
-				$rightType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $rightTruthyScope);
+				$rightType = $this->nodeScopeResolver->requireScopeStateType($targetExpr, $rightTruthyScope);
 				$rightNarrowed = !$rightType->equals($origType) && $origType->isSuperTypeOf($rightType)->yes();
 				if (!$rightNarrowed) {
 					continue;

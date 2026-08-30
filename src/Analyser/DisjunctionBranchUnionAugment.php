@@ -40,7 +40,7 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 			}
 
 			// the guard above pins the target as tracked on the applying scope
-			$originalType = $this->nodeScopeResolver->readScopeStateOrSyntheticType($targetExpr, $scope);
+			$originalType = $this->nodeScopeResolver->requireScopeStateType($targetExpr, $scope);
 			// re-pinning eagerly priced branch forms of a template-typed subject
 			// stacks the template inside its own bound (`T of T of ...` - the
 			// pin intersects with the declared template); its narrowing already

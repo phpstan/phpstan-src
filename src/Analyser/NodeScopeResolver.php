@@ -1149,6 +1149,26 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * The type the scope knows for an expression the caller has already pinned as
+	 * tracked there (hasExpressionType() yes, or a string-named variable). Unlike
+	 * readScopeStateOrSyntheticType() this never falls back to a synthetic walk -
+	 * the caller decided that the scope answers.
+	 */
+	public function requireScopeStateType(Expr $expr, MutatingScope $scope): Type
+	{
+		$type = $this->findScopeStateType($expr, $scope);
+		if ($type === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'%s on line %d is not tracked on the scope it was pinned as tracked on.',
+				get_class($expr),
+				$expr->getStartLine(),
+			));
+		}
+
+		return $type;
+	}
+
+	/**
 	 * Fires the PHPSTAN_GUARD_NW diagnostic when a real (non-synthetic) AST node
 	 * reaches an on-demand pricing path without having been processed and stored
 	 * by processExprNode() first. Mirrors the guard in MutatingScope::getType():

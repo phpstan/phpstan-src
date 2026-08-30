@@ -395,21 +395,49 @@ final class ExpressionResult
 	private function resolveOwnType(bool $nativeTypesPromoted): Type
 	{
 		if ($nativeTypesPromoted) {
-			return $this->projectedNativeType ??= $this->projectVoidToNull($this->resolveOwnRawType(true));
+			return $this->projectedNativeType ??= $this->projectVoidToNull($this->resolveOwnRawType(true), true);
 		}
 
-		return $this->projectedType ??= $this->projectVoidToNull($this->resolveOwnRawType(false));
+		return $this->projectedType ??= $this->projectVoidToNull($this->resolveOwnRawType(false), false);
 	}
 
-	private function projectVoidToNull(Type $type): Type
+	private function projectVoidToNull(Type $type, bool $nativeTypesPromoted): Type
 	{
-		// void only ever originates from a call return type; the overwhelmingly
-		// common non-void, non-union result skips the traverser entirely
+		// the overwhelmingly common non-void, non-union result skips the
+		// traverser entirely
 		if ($type->isVoid()->no() && !$type instanceof UnionType) {
 			return $type;
 		}
 
+		if (!$this->projectsVoidToNull($nativeTypesPromoted)) {
+			return $type;
+		}
+
 		return TypeTraverser::map($type, new VoidToNullTraverser());
+	}
+
+	/**
+	 * Whether a value read of this expression turns `void` into `null`. Only the
+	 * return type of a call to a resolved function or method does - a call through
+	 * a callable value (`$f()`), and every expression that is not a call at all (a
+	 * `void`-typed parameter), keep `void`, so the rules that flag a void value
+	 * being used still see it.
+	 */
+	private function projectsVoidToNull(bool $nativeTypesPromoted): bool
+	{
+		if ($nativeTypesPromoted) {
+			return false;
+		}
+
+		$expr = $this->expr;
+		if ($expr instanceof Expr\FuncCall) {
+			return $expr->name instanceof Node\Name && !$expr->isFirstClassCallable();
+		}
+
+		return ($expr instanceof Expr\MethodCall
+			|| $expr instanceof Expr\NullsafeMethodCall
+			|| $expr instanceof Expr\StaticCall)
+			&& !$expr->isFirstClassCallable();
 	}
 
 	/**
@@ -528,7 +556,7 @@ final class ExpressionResult
 		if ($this->type === null && $this->isScopeAuthoritative($readScope)) {
 			// the state read is a value read: resolve late-resolvable types and
 			// project void to null exactly like resolveOwnType() does
-			return $this->projectVoidToNull(TypeUtils::resolveLateResolvableTypes($readScope->getStateType($this->expr)));
+			return $this->projectVoidToNull(TypeUtils::resolveLateResolvableTypes($readScope->getStateType($this->expr)), $useNativeTypes);
 		}
 
 		return $this->resolveOwnType($useNativeTypes);

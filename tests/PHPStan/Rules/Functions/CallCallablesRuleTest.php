@@ -346,7 +346,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				24,
 			],
 			[
-				'Parameter #1 $i of callable \'CallCallablePipe…\' expects int, null given.',
+				'Parameter #1 $i of callable \'CallCallablePipe…\' expects int, void given.',
 				26,
 			],
 			[

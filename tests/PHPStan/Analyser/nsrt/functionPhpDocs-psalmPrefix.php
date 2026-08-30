@@ -103,7 +103,7 @@ function doFooPsalmPrefix(
 		assertType('resource', $resource);
 		assertType('mixed', $yetAnotherAnotherMixedParameter);
 		assertType('mixed', $yetAnotherAnotherAnotherMixedParameter);
-		assertType('null', $voidParameter);
+		assertType('void', $voidParameter);
 		assertType('SomeNamespace\Consecteur', $useWithoutAlias);
 		assertType('true', $true);
 		assertType('false', $false);

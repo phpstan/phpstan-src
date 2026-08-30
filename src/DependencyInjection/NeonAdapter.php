@@ -103,6 +103,7 @@ final class NeonAdapter implements Adapter
 				if ($val->value === Neon::CHAIN) {
 					$tmp = null;
 					foreach ($this->process($val->attributes, $fileKeyToPass, $file) as $st) {
+						/** @var Statement $st */
 						$tmp = new Statement(
 							$tmp === null ? $st->getEntity() : [$tmp, ltrim(implode('::', (array) $st->getEntity()), ':')],
 							$st->arguments,

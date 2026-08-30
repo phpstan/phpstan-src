@@ -381,6 +381,7 @@ final class ParallelAnalyser
 					}
 					$decoder = new ExportedNodeDecoder();
 					$exportedNodes[$file] = array_map(static function (array $node) use ($decoder): RootExportedNode {
+						/** @var class-string<RootExportedNode> $class */
 						$class = $node['type'];
 
 						return $class::decode($node['data'], $decoder);

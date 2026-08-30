@@ -30,6 +30,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Parser\PathRoutingParser;
 use PHPStan\Process\ForkedChildCrashReporter;
 use PHPStan\Process\Restart\RestartExtensionRegistry;
 use PHPStan\Process\Restart\RestartManager;
@@ -593,6 +594,7 @@ final class CommandHelper
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getService('fileFinderAnalyse');
 
+		/** @var PathRoutingParser $pathRoutingParser */
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 
 		/** @var string[] $configStubFiles */

@@ -424,6 +424,7 @@ final class FileTypeMapper
 		$cached = $this->cache->load($cacheKey, $variableCacheKey);
 		if ($cached !== null) {
 			/**
+			 * @var array<string, IntermediaryNameScope> $nameScopeMap
 			 * @var array<string, array{string, bool}> $filesWithHashes
 			 */
 			[$nameScopeMap, $filesWithHashes] = $cached;

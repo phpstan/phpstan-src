@@ -122,6 +122,7 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['implements'],
 			array_map(static function (array $node) use ($decoder): ExportedNode {
+				/** @var class-string<ExportedNode> $nodeType */
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data'], $decoder);

@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
+use PHPStan\Parser\PathRoutingParser;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use Throwable;
 use function array_fill_keys;
@@ -53,6 +54,7 @@ final class StubValidator
 			$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 			$nodeScopeResolver->setAnalysedFiles($stubFiles);
 
+			/** @var PathRoutingParser $pathRoutingParser */
 			$pathRoutingParser = $container->getService('pathRoutingParser');
 			$pathRoutingParser->setAnalysedFiles($stubFiles);
 

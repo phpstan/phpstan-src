@@ -1233,6 +1233,19 @@ final class ResultCacheManager
 			$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
+		/**
+		 * @param array<string, list<Error>> $errorsByFile
+		 * @param array<string, list<Error>> $locallyIgnoredErrorsByFile
+		 * @param array<string, LinesToIgnore> $linesToIgnore
+		 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
+		 * @param CollectorData $collectedDataByFile
+		 * @param array<string, array<string>>|null $dependencies
+		 * @param array<string, array<string>>|null $usedTraitDependencies
+		 * @param ValueDependencies|null $valueDependencies
+		 * @param array<string, array<string>>|null $packageDependencies
+		 * @param array<string, array<RootExportedNode>> $exportedNodes
+		 * @param array<string, array{string, bool, string}> $projectExtensionFiles
+		 */
 		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {

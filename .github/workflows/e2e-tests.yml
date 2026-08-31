@@ -707,6 +707,22 @@ jobs:
               mv stub-files.neon.orig stub-files.neon
               ../../bin/phpstan analyse -vvv
           - script: |
+              # Restoring the result cache fetches the exported nodes of every changed file,
+              # and resolving their PHPDocs asks the ReflectionProvider for classes. That
+              # reaches StubPhpDocProvider, which runs the StubFilesExtensions - all in the
+              # main process, before the deferred bootstrapFiles have run.
+              cd e2e/bug-15120b
+              composer install
+              ../../bin/phpstan analyse -vvv
+              # a changed file using a trait - the name scope map reflects the trait
+              patch -b src/Consumer.php < source-change.patch
+              OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1 || true)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Undefined constant' "$OUTPUT"
+              ../bashunit -a contains 'No errors' "$OUTPUT"
+              mv src/Consumer.php.orig src/Consumer.php
+              ../../bin/phpstan analyse -vvv
+          - script: |
               cd e2e/nested-trait-use
               ../../bin/phpstan analyze
           - script: |

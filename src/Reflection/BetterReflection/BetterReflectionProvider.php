@@ -29,6 +29,7 @@ use PHPStan\File\FileReader;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
@@ -156,7 +157,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$adaptedClass,
 			null,
 			null,
-			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
+			fn (): ?ResolvedPhpDocBlock => $this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
 		);
 	}
 
@@ -233,7 +234,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			new ReflectionClass($reflectionClass),
 			$scopeFile,
 			null,
-			$this->stubPhpDocProvider->findClassPhpDoc($className),
+			fn (): ?ResolvedPhpDocBlock => $this->stubPhpDocProvider->findClassPhpDoc($className),
 		);
 	}
 

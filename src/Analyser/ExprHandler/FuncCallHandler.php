@@ -19,6 +19,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
@@ -38,6 +39,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
@@ -97,6 +99,7 @@ final class FuncCallHandler implements ExprHandler
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private ClosureTypeResolver $closureTypeResolver,
 	)
 	{
 	}
@@ -122,6 +125,21 @@ final class FuncCallHandler implements ExprHandler
 		$isEarlyTerminating = $expr->name instanceof Name
 			&& $this->earlyTerminatingHelper->isEarlyTerminatingFunctionCall($expr->name->toString());
 		$isAlwaysTerminating = $isEarlyTerminating;
+		$argumentsWalkedAhead = null;
+		if (
+			($expr->name instanceof Expr\Closure || $expr->name instanceof Expr\ArrowFunction)
+			&& $expr->name->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME) !== null
+		) {
+			// An immediately invoked closure's untyped parameters take the types
+			// of its invocation arguments, so the arguments are walked BEFORE the
+			// callee - on the closure's declared signature - and the closure body
+			// consumes their stored results instead of pricing them ahead of
+			// their turn. The closure is then walked on the post-argument scope.
+			$shallowVariants = $this->closureTypeResolver->getDeclaredClosureType($scope, $expr->name)->getCallableParametersAcceptors($scope);
+			$shallowAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $shallowVariants, null);
+			$argumentsWalkedAhead = $nodeScopeResolver->processArgs($stmt, null, null, $shallowVariants, null, ArgumentsNormalizer::reorderFuncArguments($shallowAcceptor, $expr) ?? $expr, $scope, $storage, $nodeCallback, $context);
+			$scope = $argumentsWalkedAhead->getScope();
+		}
 		if ($expr->name instanceof Expr) {
 			// process the dynamic callee name first, then consume its type (single-pass
 			// inside-out) rather than reading it before processExprNode() stores it

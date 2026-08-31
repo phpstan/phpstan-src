@@ -2444,7 +2444,11 @@ class NodeScopeResolver
 					// price the closure through getClosureType's per-node cache -
 					// a single body walk on miss, none on repeat asks
 					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
-					if ($storedClosureArgResult === null) {
+					// consume mode alone (the nullsafe call's plain-twin walk) is the
+					// FIRST and only walk of these arguments - nothing stored them, so
+					// a miss means "walk it", not "price it silently": pricing skips
+					// the body walk and never fires the closure's node callbacks
+					if ($storedClosureArgResult === null && $this->returnStoredExpressionResults) {
 						$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
@@ -2591,7 +2595,9 @@ class NodeScopeResolver
 				if ($this->returnStoredExpressionResults || $this->consumeStoredExpressionResults) {
 					// see the Closure branch above - consume or price via the cache
 					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
-					if ($storedClosureArgResult === null) {
+					// consume mode alone (the nullsafe call's plain-twin walk) is the
+					// first and only walk of the argument - a miss means walk it
+					if ($storedClosureArgResult === null && $this->returnStoredExpressionResults) {
 						$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,

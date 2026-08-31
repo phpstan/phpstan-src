@@ -14,7 +14,13 @@ final class CpuCoreCounter
 
 	private ?int $count = null;
 
-	private ?int $detectedCount = null;
+	/**
+	 * What fidry/cpu-core-counter found: the raw count, the count left after the
+	 * load limit and KUBERNETES_CPU_LIMIT were applied, and that environment limit.
+	 *
+	 * @var array{int, int, int|null}|null
+	 */
+	private ?array $detected = null;
 
 	public function __construct(
 		#[AutowiredParameter(ref: '%parallel.loadLimit%')]
@@ -25,8 +31,8 @@ final class CpuCoreCounter
 	}
 
 	/**
-	 * Cores PHPStan may actually use: what the machine reports, capped by the CPU
-	 * quota of the cgroup it runs in.
+	 * Cores PHPStan may actually use: what the machine reports, reduced by the load
+	 * limit and capped by the CPU quota of the cgroup it runs in.
 	 */
 	public function getNumberOfCpuCores(): int
 	{
@@ -34,7 +40,7 @@ final class CpuCoreCounter
 			return $this->count;
 		}
 
-		$count = $this->getDetectedNumberOfCpuCores();
+		$count = $this->getNumberOfCpuCoresAfterLimits();
 
 		// fidry/cpu-core-counter has no cgroup finder, and its nproc-based default
 		// honours a cpuset affinity mask but not a CFS bandwidth quota, so inside a
@@ -47,20 +53,38 @@ final class CpuCoreCounter
 		return $this->count = $count;
 	}
 
-	/** What the machine reports before any cgroup quota is applied. */
+	/** What the machine reports, before any limit is applied. */
 	public function getDetectedNumberOfCpuCores(): int
 	{
-		if ($this->detectedCount !== null) {
-			return $this->detectedCount;
+		return $this->detect()[0];
+	}
+
+	/** The detected count after the load limit and KUBERNETES_CPU_LIMIT, before any cgroup quota. */
+	public function getNumberOfCpuCoresAfterLimits(): int
+	{
+		return $this->detect()[1];
+	}
+
+	public function getKubernetesCpuLimit(): ?int
+	{
+		return $this->detect()[2];
+	}
+
+	/** @return array{int, int, int|null} */
+	private function detect(): array
+	{
+		if ($this->detected !== null) {
+			return $this->detected;
 		}
 
 		try {
-			$this->detectedCount = (new FidryCpuCoreCounter())->getAvailableForParallelisation(0, null, $this->loadLimit)->availableCpus;
+			$result = (new FidryCpuCoreCounter())->getAvailableForParallelisation(0, null, $this->loadLimit);
+			$this->detected = [$result->totalCoresCount, $result->availableCpus, $result->correctedCountLimit];
 		} catch (NumberOfCpuCoreNotFound) {
-			$this->detectedCount = 1;
+			$this->detected = [1, 1, null];
 		}
 
-		return $this->detectedCount;
+		return $this->detected;
 	}
 
 }

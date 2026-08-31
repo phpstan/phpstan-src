@@ -3,6 +3,7 @@
 namespace PHPStan\Diagnose;
 
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Process\CpuCoreCounter;
 use PHPStan\Process\SystemResources;
@@ -19,6 +20,8 @@ final class SystemResourcesDiagnoseExtension implements DiagnoseExtension
 	public function __construct(
 		private CpuCoreCounter $cpuCoreCounter,
 		private SystemResources $systemResources,
+		#[AutowiredParameter(ref: '%parallel.loadLimit%')]
+		private ?float $loadLimit,
 	)
 	{
 	}
@@ -27,6 +30,14 @@ final class SystemResourcesDiagnoseExtension implements DiagnoseExtension
 	{
 		$output->writeLineFormatted('<info>System resources:</info>');
 		$output->writeLineFormatted(sprintf('Detected CPU cores:        %d', $this->cpuCoreCounter->getDetectedNumberOfCpuCores()));
+		$output->writeLineFormatted(sprintf('Load limit:                %s', $this->loadLimit === null ? 'none' : (string) $this->loadLimit));
+
+		$kubernetesLimit = $this->cpuCoreCounter->getKubernetesCpuLimit();
+		$output->writeLineFormatted(sprintf(
+			'KUBERNETES_CPU_LIMIT:      %s',
+			$kubernetesLimit === null ? 'none' : sprintf('%d cores', $kubernetesLimit),
+		));
+		$output->writeLineFormatted(sprintf('Available after limits:    %d', $this->cpuCoreCounter->getNumberOfCpuCoresAfterLimits()));
 
 		$quota = $this->systemResources->getCpuQuota();
 		$output->writeLineFormatted(sprintf(

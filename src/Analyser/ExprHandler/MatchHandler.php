@@ -31,6 +31,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\MatchExpressionArm;
 use PHPStan\Node\MatchExpressionArmBody;
 use PHPStan\Node\MatchExpressionArmCondition;
@@ -409,7 +410,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				// stays owned by the in_array type-specifying extension; arms
 				// whose conditions were all skipped keep the empty in_array
 				// (always false)
-				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
+				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs, $filteringCondData);
 				$filteringExprResult = $nodeScopeResolver->processSyntheticOnDemand($filteringExpr, $matchScope);
 				$bodyScope ??= $matchScope->applySpecifiedTypes($filteringExprResult->getSpecifiedTypesForScope($matchScope, TypeSpecifierContext::createTruthy()));
 				$filteringExprType = $filteringExprResult->getTypeOnScope($matchScope, false);
@@ -521,16 +522,24 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 
 	/**
 	 * @param Expr[] $conditions
+	 * @param list<array{Expr, ExpressionResult}> $condData the conditions' walk results, keyed like $conditions
 	 */
-	private function getFilteringExprForMatchArm(Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
+	private function getFilteringExprForMatchArm(Match_ $expr, array $conditions, array $condData = []): BinaryOp\Identical|FuncCall
 	{
 		if (count($conditions) === 1) {
 			return new BinaryOp\Identical($expr->cond, $conditions[0]);
 		}
 
+		// The haystack carries the conditions' walked types, not their nodes: a
+		// condition node is narrowed to never on the arm's own falsey scope
+		// ($subject === $cond specifies both sides), so re-pricing it there would
+		// collapse every condition after the first and stop the arm subtracting.
 		$items = [];
-		foreach ($conditions as $filteringExpr) {
-			$items[] = new Node\ArrayItem($filteringExpr);
+		foreach ($conditions as $i => $filteringExpr) {
+			$condResult = $condData[$i][1] ?? null;
+			$items[] = new Node\ArrayItem(
+				$condResult !== null ? new TypeExpr($condResult->getType()) : $filteringExpr,
+			);
 		}
 
 		return new FuncCall(

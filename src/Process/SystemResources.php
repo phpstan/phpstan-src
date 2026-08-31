@@ -11,10 +11,10 @@ use function ctype_digit;
 use function explode;
 use function file_get_contents;
 use function implode;
+use function in_array;
 use function is_file;
 use function max;
 use function min;
-use function str_contains;
 use function str_starts_with;
 use function substr;
 use function trim;
@@ -171,11 +171,8 @@ final class SystemResources
 				if ($controllers !== '') {
 					continue;
 				}
-			} elseif (
-				$controllers !== $controller
-				&& !str_starts_with($controllers, $controller . ',')
-				&& !str_contains($controllers, ',' . $controller)
-			) {
+			} elseif (!in_array($controller, explode(',', $controllers), true)) {
+				// a substring match would take cpuset or cpuacct for cpu
 				continue;
 			}
 

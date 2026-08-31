@@ -52,6 +52,14 @@ final class SkipTestsWithRequiresPhpAttributeRule implements Rule
 			return [];
 		}
 
+		if (!$firstStmt->cond->left instanceof Node\Expr\ConstFetch || $firstStmt->cond->left->name->toString() !== 'PHP_VERSION_ID') {
+			return [];
+		}
+
+		if (!$firstStmt->cond->right instanceof Node\Scalar\Int_) {
+			return [];
+		}
+
 		switch (get_class($firstStmt->cond)) {
 			case Node\Expr\BinaryOp\SmallerOrEqual::class:
 				$inverseBinaryOpSigil = '>';
@@ -73,14 +81,6 @@ final class SkipTestsWithRequiresPhpAttributeRule implements Rule
 				break;
 			default:
 				throw new ShouldNotHappenException('No inverse comparison specified for ' . get_class($firstStmt->cond));
-		}
-
-		if (!$firstStmt->cond->left instanceof Node\Expr\ConstFetch || $firstStmt->cond->left->name->toString() !== 'PHP_VERSION_ID') {
-			return [];
-		}
-
-		if (!$firstStmt->cond->right instanceof Node\Scalar\Int_) {
-			return [];
 		}
 
 		if (count($firstStmt->stmts) !== 1) {

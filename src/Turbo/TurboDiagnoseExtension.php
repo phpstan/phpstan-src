@@ -5,6 +5,7 @@ namespace PHPStan\Turbo;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
+use PHPStan\Php\PhpVersion;
 use function php_uname;
 use function phpversion;
 use function sprintf;
@@ -12,6 +13,7 @@ use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
 use const PHP_OS_FAMILY;
+use const PHP_VERSION_ID;
 use const PHP_ZTS;
 
 #[AutowiredService]
@@ -48,8 +50,15 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 			} else {
 				$workerBinaryLine = 'loaded via php.ini, workers inherit it';
 			}
+		} elseif ($workerBinary !== null) {
+			$workerBinaryLine = $workerBinary;
+		} elseif (PHP_VERSION_ID < TurboExtensionSelector::MINIMUM_PHP_VERSION_ID) {
+			$workerBinaryLine = sprintf(
+				'none built for PHP < %s',
+				(new PhpVersion(TurboExtensionSelector::MINIMUM_PHP_VERSION_ID))->getVersionString(),
+			);
 		} else {
-			$workerBinaryLine = $workerBinary ?? 'none found';
+			$workerBinaryLine = 'none found';
 		}
 		$output->writeLineFormatted(sprintf(
 			'<info>Turbo worker binary:</info> %s',

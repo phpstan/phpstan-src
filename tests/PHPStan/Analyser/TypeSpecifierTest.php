@@ -1330,6 +1330,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'$fooOrNull' => '~null',
 					'$fooOrNull?->doFoo()' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
+					'$fooOrNull->doFoo()' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[],
 			],
@@ -1354,6 +1355,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'$fooOrNull?->doFoo()' => 'true & ~0|0.0|\'\'|\'0\'|array{}|false|null',
 					'$fooOrNull' => '~null',
+					'$fooOrNull->doFoo()' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 			],
 			[

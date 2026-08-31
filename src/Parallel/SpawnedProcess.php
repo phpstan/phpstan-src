@@ -40,7 +40,7 @@ final class SpawnedProcess extends ProcessBase
 	/**
 	 * @param callable(mixed[] $json) : void $onData
 	 * @param callable(Throwable $exception): void $onError
-	 * @param callable(?int $exitCode, string $output) : void $onExit
+	 * @param callable(?int $exitCode, string $output, ?int $termSignal) : void $onExit
 	 */
 	public function start(callable $onData, callable $onError, callable $onExit): void
 	{
@@ -60,7 +60,7 @@ final class SpawnedProcess extends ProcessBase
 		]);
 		$this->process->start($this->loop);
 		$this->setCallbacks($onData, $onError);
-		$this->process->on('exit', function ($exitCode) use ($onExit): void {
+		$this->process->on('exit', function ($exitCode, $termSignal) use ($onExit): void {
 			$this->cancelTimer();
 
 			$output = '';
@@ -70,7 +70,7 @@ final class SpawnedProcess extends ProcessBase
 			rewind($this->stdErr);
 			$output .= stream_get_contents($this->stdErr);
 
-			$onExit($exitCode, $output);
+			$onExit($exitCode, $output, $termSignal);
 			fclose($this->stdOut);
 			fclose($this->stdErr);
 		});

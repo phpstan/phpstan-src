@@ -15,6 +15,7 @@ use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Process\ProcessHelper;
+use PHPStan\Process\TerminationSignal;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PreForkDirectorySymbolScanner;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
@@ -386,7 +387,7 @@ final class ParallelAnalyser
 
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $output) use (&$someChildEnded, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+			}, $handleError, function ($exitCode, string $output, ?int $termSignal) use (&$someChildEnded, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
 				// The main process is not sampled here any more: its own peak comes
 				// later (collecting the workers' results, saving the result cache) and
 				// is read where the number is printed. Only worker peaks are summed.
@@ -396,7 +397,30 @@ final class ParallelAnalyser
 					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
+
+				// A worker killed by a signal never gets to run any PHP: no error
+				// is printed, no shutdown function runs, and the output the main
+				// process reads back is empty. The signal is the whole report -
+				// without it the run says nothing but "Some parallel worker jobs
+				// have not finished", or, when the dead worker was holding the
+				// last job, nothing at all.
+				if ($termSignal !== null) {
+					$internalErrors[] = new InternalError(sprintf(
+						"Child process was killed by signal %s.\n%s%s",
+						TerminationSignal::describe($termSignal),
+						'The OS kills a worker this way when it runs out of memory (the kernel OOM killer sends SIGKILL) or shared memory (SIGBUS), or when it crashes natively (SIGSEGV).',
+						$output === '' ? '' : "\n" . $output,
+					), 'running parallel worker', trace: [], traceAsString: null, shouldReportBug: false);
+					$internalErrorsCount++;
+					$this->processPool->tryQuitProcess($processIdentifier);
+					return;
+				}
+
 				if ($exitCode === null) {
+					if ($output !== '') {
+						$internalErrors[] = new InternalError(sprintf('Child process ended unexpectedly: %s', $output), 'running parallel worker', trace: [], traceAsString: null, shouldReportBug: true);
+						$internalErrorsCount++;
+					}
 					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}

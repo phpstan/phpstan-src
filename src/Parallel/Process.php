@@ -19,9 +19,13 @@ interface Process
 {
 
 	/**
+	 * $onExit receives the worker's exit code, everything it wrote, and the
+	 * signal it was killed by - a worker killed by one has no exit code and
+	 * writes nothing, so the signal is all there is to report about it.
+	 *
 	 * @param callable(mixed[] $json) : void $onData
 	 * @param callable(Throwable $exception): void $onError
-	 * @param callable(?int $exitCode, string $output) : void $onExit
+	 * @param callable(?int $exitCode, string $output, ?int $termSignal) : void $onExit
 	 */
 	public function start(callable $onData, callable $onError, callable $onExit): void;
 

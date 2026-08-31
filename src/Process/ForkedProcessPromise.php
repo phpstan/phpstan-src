@@ -20,8 +20,11 @@ use function pcntl_fork;
 use function pcntl_waitpid;
 use function pcntl_wexitstatus;
 use function pcntl_wifexited;
+use function pcntl_wifsignaled;
+use function pcntl_wtermsig;
 use function posix_kill;
 use function rewind;
+use function sprintf;
 use function stream_get_contents;
 use function tmpfile;
 use const SIGTERM;
@@ -165,6 +168,20 @@ final class ForkedProcessPromise implements ProcessPromise
 			if ($exitCode === 0) {
 				$this->deferred->resolve($stdOut);
 				return;
+			}
+
+			// A child killed by a signal writes nothing of its own, so naming
+			// the signal is all the crash report there is.
+			if ($result > 0 && pcntl_wifsignaled($status)) {
+				$signal = pcntl_wtermsig($status);
+				if ($signal !== false) {
+					$this->deferred->reject(new ProcessCrashedException(sprintf(
+						"Child process was killed by signal %s.\n%s",
+						TerminationSignal::describe($signal),
+						$stdOut . $stdErr,
+					)));
+					return;
+				}
 			}
 
 			$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));

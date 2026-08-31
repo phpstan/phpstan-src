@@ -16,6 +16,8 @@ use function pcntl_fork;
 use function pcntl_waitpid;
 use function pcntl_wexitstatus;
 use function pcntl_wifexited;
+use function pcntl_wifsignaled;
+use function pcntl_wtermsig;
 use function rewind;
 use function stream_get_contents;
 use function tmpfile;
@@ -63,7 +65,7 @@ final class ForkedProcess extends ProcessBase
 	/**
 	 * @param callable(mixed[] $json) : void $onData
 	 * @param callable(Throwable $exception): void $onError
-	 * @param callable(?int $exitCode, string $output) : void $onExit
+	 * @param callable(?int $exitCode, string $output, ?int $termSignal) : void $onExit
 	 */
 	public function start(callable $onData, callable $onError, callable $onExit): void
 	{
@@ -89,7 +91,7 @@ final class ForkedProcess extends ProcessBase
 			// Deferred so it runs after ParallelAnalyser has attached this
 			// process to the pool — otherwise tryQuitProcess() would no-op.
 			$this->loop->futureTick(static function () use ($onExit): void {
-				$onExit(null, 'pcntl_fork() failed.');
+				$onExit(null, 'pcntl_fork() failed.', null);
 			});
 			return;
 		}
@@ -140,10 +142,16 @@ final class ForkedProcess extends ProcessBase
 			$this->cancelTimer();
 
 			$exitCode = null;
+			$termSignal = null;
 			if ($result > 0 && pcntl_wifexited($status)) {
 				$exitStatus = pcntl_wexitstatus($status);
 				if ($exitStatus !== false) {
 					$exitCode = $exitStatus;
+				}
+			} elseif ($result > 0 && pcntl_wifsignaled($status)) {
+				$signal = pcntl_wtermsig($status);
+				if ($signal !== false) {
+					$termSignal = $signal;
 				}
 			}
 
@@ -158,7 +166,7 @@ final class ForkedProcess extends ProcessBase
 			}
 			$this->closeCaptureFiles();
 
-			$onExit($exitCode, $output);
+			$onExit($exitCode, $output, $termSignal);
 		});
 	}
 

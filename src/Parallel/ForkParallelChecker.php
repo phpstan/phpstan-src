@@ -80,7 +80,7 @@ final class ForkParallelChecker implements DiagnoseExtension
 		}
 
 		if ($this->isJitEnabled()) {
-			return 'OPcache or JIT is enabled (forked workers require both to be off — their shared memory corrupts under concurrent population)';
+			return 'JIT is enabled (forked workers require JIT to be off — their shared memory corrupts under concurrent population)';
 		}
 
 		return null;

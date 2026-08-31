@@ -79,14 +79,14 @@ final class ForkParallelChecker implements DiagnoseExtension
 			return 'running from a phar without the active turbo extension (its fork guard protects phar:// reads in forked children)';
 		}
 
-		if ($this->isOpcacheOrJitEnabled()) {
+		if ($this->isJitEnabled()) {
 			return 'OPcache or JIT is enabled (forked workers require both to be off — their shared memory corrupts under concurrent population)';
 		}
 
 		return null;
 	}
 
-	private function isOpcacheOrJitEnabled(): bool
+	private function isJitEnabled(): bool
 	{
 		if (!function_exists('opcache_get_status')) {
 			return false;
@@ -95,10 +95,6 @@ final class ForkParallelChecker implements DiagnoseExtension
 		$status = opcache_get_status(false);
 		if ($status === false) {
 			return false;
-		}
-
-		if (($status['opcache_enabled'] ?? false) === true) {
-			return true;
 		}
 
 		return ($status['jit']['enabled'] ?? false) === true;

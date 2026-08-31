@@ -749,8 +749,15 @@ final class FuncCallHandler implements ExprHandler
 					));
 					$specifiedTypes = $this->defaultNarrowingHelper->specifyTypesFromAsserts($context, $expr, $asserts, $resolvedParametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
-						return $specifiedTypes
-							->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
+						// the asserts narrow the arguments regardless; the call's OWN
+						// key is a remembered value and gets the same purity gate as
+						// the default narrowing below - an impure call (realpath())
+						// evaluated a second time must not read the first call's
+						// truthiness (mirrors the create() gate the old
+						// specifyTypesInCondition() reached for the self key)
+						return ($this->isFuncCallNarrowable($nodeScopeResolver, $scope, $expr, $nameResult)
+							? $specifiedTypes->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
+							: $specifiedTypes)
 							->setRootExpr($specifiedTypes->getRootExpr());
 					}
 				}

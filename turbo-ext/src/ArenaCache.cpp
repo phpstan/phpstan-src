@@ -729,7 +729,7 @@ static bool findRecord(const char *key, size_t keyLen, RecordView *view)
 }
 
 /* Copies a fully-built record into the arena and CAS-publishes it; loses
- * gracefully to a concurrent publisher of the same key. */
+ * gracefully to a concurrent publisher of the same key, as late as it can. */
 static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const WriteBuffer &payload)
 {
 	if (pt_arena_base == NULL || keyLen > UINT32_MAX) {
@@ -740,6 +740,16 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 	uint64_t offset = atomicFetchAdd(&arenaHeader()->allocCursor, alignUp8(recordSize));
 	if (offset > pt_arena_total || recordSize > pt_arena_total - offset) {
 		return; /* arena full: analysis continues, just unshared */
+	}
+
+	/* The callers checked the index before building the payload; check it once
+	 * more before writing it. Building a record takes long enough for another
+	 * process to have published the same key meanwhile, and every byte written
+	 * here is a page the backing store commits for good - a loser that returns
+	 * now costs nothing but the bump it already took. */
+	RecordView published;
+	if (findRecord(key, keyLen, &published)) {
+		return;
 	}
 
 	char *record = (char *) pt_arena_base + offset;

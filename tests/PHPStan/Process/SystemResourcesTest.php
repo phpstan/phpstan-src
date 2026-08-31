@@ -128,6 +128,15 @@ class SystemResourcesTest extends TestCase
 			4,
 		];
 
+		yield 'v1, a hierarchy whose controller name merely starts with cpu is listed first' => [
+			[
+				'/proc/self/cgroup' => "7:net_cls,cpuset:/other\n4:cpu,cpuacct:/foo\n",
+				'/sys/fs/cgroup/cpu/foo/cpu.cfs_quota_us' => "200000\n",
+				'/sys/fs/cgroup/cpu/foo/cpu.cfs_period_us' => "100000\n",
+			],
+			2,
+		];
+
 		yield 'no cgroup filesystem at all' => [[], null];
 
 		yield 'in the root cgroup, which has no cpu.max' => [

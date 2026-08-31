@@ -306,18 +306,29 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		$scopeBeforeArgs = $scope;
+		if ($parametersAcceptor !== null && $context->getInAssignRightSideExpr() === $expr) {
+			$context = $context->enterAssignRightSideCallArgs($parametersAcceptor);
+		}
 		if ($argsGatherer !== null) {
 			$nodeScopeResolver->pushNodeGatherer($argsGatherer);
 		}
 		try {
-			$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+			$argsResult = $argumentsWalkedAhead !== null
+				// the arguments are processed; the call resolves from the walked
+				// closure's acceptor, which is the sole variant of its type
+				? $argumentsWalkedAhead->withResolvedParametersAcceptor($parametersAcceptor)
+				: $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		} finally {
 			if ($argsGatherer !== null) {
 				$nodeScopeResolver->popNodeGatherer();
 			}
 		}
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
-		$scope = $argsResult->getScope();
+		// arguments walked ahead of the callee: the scope already carries them
+		// and the callee walk's own effects (a closure's by-ref uses) on top
+		if ($argumentsWalkedAhead === null) {
+			$scope = $argsResult->getScope();
+		}
 		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);
 		$hasYield = $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());

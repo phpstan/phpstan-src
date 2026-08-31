@@ -1600,7 +1600,10 @@ class NodeScopeResolver
 					$inAssignRightSideVariableName === $use->var->name
 					&& $inAssignRightSideExpr !== null
 				) {
-					$inAssignRightSideType = $this->resolveCallableTypeForScope($inAssignRightSideExpr, $scope);
+					// a call's type is carried by the context (see
+					// ExpressionContext::enterAssignRightSideCallArgs()); a closure
+					// right side resolves through the closure type resolver
+					$inAssignRightSideType = $context->getInAssignRightSideType() ?? $this->resolveCallableTypeForScope($inAssignRightSideExpr, $scope);
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;
 					} else {
@@ -1611,7 +1614,7 @@ class NodeScopeResolver
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$inAssignRightSideNativeType = $this->resolveCallableTypeForScope($inAssignRightSideExpr, $scope->doNotTreatPhpDocTypesAsCertain());
+					$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType() ?? $this->resolveCallableTypeForScope($inAssignRightSideExpr, $scope->doNotTreatPhpDocTypesAsCertain());
 					if ($inAssignRightSideNativeType instanceof ClosureType) {
 						$variableNativeType = $inAssignRightSideNativeType;
 					} else {

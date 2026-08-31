@@ -150,6 +150,9 @@ final class MethodCallHandler implements ExprHandler
 		}
 
 		$scopeBeforeArgs = $scope;
+		if ($parametersAcceptor !== null && $context->getInAssignRightSideExpr() === $expr) {
+			$context = $context->enterAssignRightSideCallArgs($parametersAcceptor);
+		}
 		$argsResult = $nodeScopeResolver->processArgs(
 			$stmt,
 			$methodReflection,

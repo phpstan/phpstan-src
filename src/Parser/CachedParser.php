@@ -41,8 +41,8 @@ final class CachedParser implements Parser
 	/** @var LruCache<Node\Stmt[]> keyed by source code, weighing the length of that source */
 	private LruCache $cachedNodesByString;
 
-	/** @var array<string, true> */
-	private array $parsedByString = [];
+	/** @var array<string, true> source code parsed into the richest file representation */
+	private array $cachedNodesByStringAreRich = [];
 
 	/** @var LruCache<array{int, int, string}> path => [mtime, size, source code] */
 	private LruCache $cachedSourceByFile;
@@ -78,7 +78,18 @@ final class CachedParser implements Parser
 	{
 		$sourceCode = $this->readFile($file);
 		$cachedNodes = $this->cachedNodesByString->get($sourceCode);
-		if ($cachedNodes !== null && !isset($this->parsedByString[$sourceCode])) {
+		if ($cachedNodes !== null && isset($this->cachedNodesByStringAreRich[$sourceCode])) {
+			return $cachedNodes;
+		}
+
+		// An entry the routing parser produced before the analysed-file list
+		// arrived holds a cleaned AST. Serving it to a request that has to see
+		// the file in full is the bug this marker prevents.
+		$richRequest = !$this->originalParser instanceof PathRoutingParser
+			|| $this->originalParser->shouldUseRichParser($file);
+		if ($cachedNodes !== null && !$richRequest) {
+			// Repeated file parses have to return the same node objects. A fixable rule can
+			// locate a node through another parser caller and match it by object identity.
 			return $cachedNodes;
 		}
 
@@ -87,12 +98,13 @@ final class CachedParser implements Parser
 			// upgrade an entry previously produced by parseString() in place -
 			// no net change to the entry count, just refresh its LRU position
 			$this->cachedNodesByString->replace($sourceCode, $nodes);
-			unset($this->parsedByString[$sourceCode]);
-
-			return $nodes;
+		} else {
+			$this->store($sourceCode, $nodes);
 		}
 
-		$this->store($sourceCode, $nodes);
+		if ($richRequest) {
+			$this->cachedNodesByStringAreRich[$sourceCode] = true;
+		}
 
 		return $nodes;
 	}
@@ -109,7 +121,6 @@ final class CachedParser implements Parser
 
 		$nodes = $this->originalParser->parseString($sourceCode);
 		$this->store($sourceCode, $nodes);
-		$this->parsedByString[$sourceCode] = true;
 
 		return $nodes;
 	}
@@ -120,7 +131,7 @@ final class CachedParser implements Parser
 	private function store(string $sourceCode, array $nodes): void
 	{
 		foreach ($this->cachedNodesByString->set($sourceCode, $nodes, strlen($sourceCode)) as $evictedSourceCode) {
-			unset($this->parsedByString[$evictedSourceCode]);
+			unset($this->cachedNodesByStringAreRich[$evictedSourceCode]);
 		}
 	}
 

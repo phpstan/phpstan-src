@@ -198,6 +198,68 @@ class CachedParserTest extends PHPStanTestCase
 		$this->assertSame(2, $stmts[0]->stmts[1]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
 	}
 
+	public function testParseFileBeforeAnalysedFilesAreSet(): void
+	{
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+		$pathRoutingParser = new PathRoutingParser(
+			$fileHelper,
+			self::getContainer()->getService('currentPhpVersionRichParser'),
+			self::getContainer()->getService('currentPhpVersionSimpleDirectParser'),
+			self::getContainer()->getService('php8Parser'),
+			null,
+		);
+		$parser = new CachedParser($pathRoutingParser, 500, 4194304);
+		$path = $fileHelper->normalizePath(__DIR__ . '/data/test.php');
+
+		$stmts = $parser->parseFile($path);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		$this->assertNull($stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+
+		$pathRoutingParser->setAnalysedFiles([$path]);
+
+		$stmts = $parser->parseFile($path);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		$this->assertSame(1, $stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+	}
+
+	public function testParseStringEntryIsNotUpgradedBeforeAnalysedFilesAreSet(): void
+	{
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+		$pathRoutingParser = new PathRoutingParser(
+			$fileHelper,
+			self::getContainer()->getService('currentPhpVersionRichParser'),
+			self::getContainer()->getService('currentPhpVersionSimpleDirectParser'),
+			self::getContainer()->getService('php8Parser'),
+			null,
+		);
+		$parser = new CachedParser($pathRoutingParser, 500, 4194304);
+		$path = $fileHelper->normalizePath(__DIR__ . '/data/test.php');
+
+		$stringStmts = $parser->parseString(FileReader::read($path));
+		$stmts = $parser->parseFile($path);
+		$this->assertSame($stringStmts, $stmts);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		$this->assertNull($stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+
+		$pathRoutingParser->setAnalysedFiles([$path]);
+
+		$stmts = $parser->parseFile($path);
+		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
+		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		$this->assertSame(1, $stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+	}
+
 	public function testWithExprCacheHelper(): void
 	{
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);

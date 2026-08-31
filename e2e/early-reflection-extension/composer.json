@@ -1,0 +1,8 @@
+{
+	"autoload-dev": {
+		"classmap": [
+			"extension/",
+			"src/"
+		]
+	}
+}

@@ -1,0 +1,11 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+
+services:
+	-
+		class: EarlyReflectionExtension\EarlyReflectionMethodsClassReflectionExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

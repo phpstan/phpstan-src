@@ -21,6 +21,9 @@ final class PathRoutingParser implements Parser
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
+	/** @var array<string, bool> */
+	private array $shouldUseRichParserCache = [];
+
 	public function __construct(
 		private FileHelper $fileHelper,
 		private Parser $currentPhpVersionRichParser,
@@ -38,16 +41,31 @@ final class PathRoutingParser implements Parser
 	public function setAnalysedFiles(array $files): void
 	{
 		$this->analysedFiles = array_fill_keys($files, true);
+		$this->shouldUseRichParserCache = [];
 	}
 
 	public function parseFile(string $file): array
 	{
-		$normalizedPath = $this->fileHelper->normalizePath($file, '/');
-		if (str_contains($normalizedPath, 'vendor/jetbrains/phpstorm-stubs')) {
+		if ($this->isPhp8StubFile($file)) {
 			return $this->php8Parser->parseFile($file);
 		}
-		if (str_contains($normalizedPath, 'vendor/phpstan/php-8-stubs/stubs')) {
-			return $this->php8Parser->parseFile($file);
+
+		$parser = $this->shouldUseRichParser($file)
+			? $this->currentPhpVersionRichParser
+			: $this->currentPhpVersionSimpleParser;
+
+		return $parser->parseFile($this->fileHelper->normalizePath($file));
+	}
+
+	public function shouldUseRichParser(string $file): bool
+	{
+		return $this->shouldUseRichParserCache[$file] ??= $this->resolveShouldUseRichParser($file);
+	}
+
+	private function resolveShouldUseRichParser(string $file): bool
+	{
+		if ($this->isPhp8StubFile($file)) {
+			return false;
 		}
 
 		$file = $this->fileHelper->normalizePath($file);
@@ -64,21 +82,29 @@ final class PathRoutingParser implements Parser
 				if ($realFilePath !== false) {
 					$normalizedRealFilePath = $this->fileHelper->normalizePath($realFilePath);
 					if (isset($this->analysedFiles[$normalizedRealFilePath])) {
-						return $this->currentPhpVersionRichParser->parseFile($file);
+						return true;
 					}
 				}
 				break;
 			}
 
-			return $this->currentPhpVersionSimpleParser->parseFile($file);
+			return false;
 		}
 
-		return $this->currentPhpVersionRichParser->parseFile($file);
+		return true;
 	}
 
 	public function parseString(string $sourceCode): array
 	{
 		return $this->currentPhpVersionSimpleParser->parseString($sourceCode);
+	}
+
+	private function isPhp8StubFile(string $file): bool
+	{
+		$normalizedPath = $this->fileHelper->normalizePath($file, '/');
+
+		return str_contains($normalizedPath, 'vendor/jetbrains/phpstorm-stubs')
+			|| str_contains($normalizedPath, 'vendor/phpstan/php-8-stubs/stubs');
 	}
 
 }

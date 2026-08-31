@@ -347,6 +347,12 @@ jobs:
               composer install
               ../../bin/phpstan
           - script: |
+              cd e2e/early-reflection-extension
+              composer install
+              # The regression happens on the first reflection parse, before the reflection cache under tmp exists.
+              rm -rf tmp
+              ../../bin/phpstan
+          - script: |
               cd e2e/in-trait
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
               ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"

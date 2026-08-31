@@ -2229,7 +2229,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function testTraverseSimultaneouslyVisitsUnsealedValue(): void
+	public function testTraverseSimultaneouslyVisitsUnsealedKeyAndValue(): void
 	{
 		$left = new ConstantArrayType(
 			[new ConstantStringType('a')],
@@ -2254,13 +2254,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			[
 				['int', 'string'],
+				['int', '\'a\'|int'],
 				['int', 'string'],
 			],
 			$visited,
 		);
 
 		$this->assertSame(
-			'array{a: mixed, ...<int, mixed>}',
+			'array{a: mixed, ...}',
 			$result->describe(VerbosityLevel::precise()),
 		);
 	}

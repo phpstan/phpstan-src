@@ -32,6 +32,7 @@ interface ExpressionResultFactory
 		?callable $createTypesCallback = null,
 		?Type $type = null,
 		?Type $nativeType = null,
+		?ArgsResult $argsResult = null,
 	): ExpressionResult;
 
 }

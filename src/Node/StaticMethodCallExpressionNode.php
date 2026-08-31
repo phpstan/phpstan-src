@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\NodeAbstract;
+use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResult;
 
 /**
@@ -21,9 +22,20 @@ final class StaticMethodCallExpressionNode extends NodeAbstract implements Virtu
 	public function __construct(
 		private StaticCall $originalNode,
 		private ExpressionResult $result,
+		private ?ArgsResult $argsResult = null,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
+	}
+
+	/**
+	 * The processed arguments of the call, so rules read an argument's type from
+	 * its own result instead of asking the scope before the argument was stored.
+	 * Null for a call whose arguments were not processed (first-class callable).
+	 */
+	public function getArgsResult(): ?ArgsResult
+	{
+		return $this->argsResult;
 	}
 
 	public function getOriginalNode(): StaticCall

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 use PHPStan\Testing\RuleTestCase;
@@ -18,6 +19,7 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 	{
 		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck(
 			self::createReflectionProvider(),
+			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			$this->reportExactLine,
 		));
 	}

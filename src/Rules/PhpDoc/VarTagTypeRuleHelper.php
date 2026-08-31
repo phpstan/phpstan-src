@@ -12,6 +12,8 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -44,6 +46,7 @@ final class VarTagTypeRuleHelper
 		private bool $checkTypeAgainstPhpDocType,
 		#[AutowiredParameter(ref: '%reportAnyTypeWideningInVarTag%')]
 		private bool $strictWideningCheck,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -100,7 +103,11 @@ final class VarTagTypeRuleHelper
 	public function checkExprType(Scope $scope, Node\Expr $expr, Type $varTagType): array
 	{
 		$errors = [];
-		$exprNativeType = $scope->getScopeNativeType($expr);
+		// a constant expression (a static variable's `= 1` default, a literal) is
+		// position-independent and priced without asking the scope about a node
+		// the walk stores only after the rule fires on its statement
+		$constantType = $this->priceConstantExpr($scope, $expr);
+		$exprNativeType = $constantType ?? $scope->getScopeNativeType($expr);
 		$containsPhpStanType = $this->containsPhpStanType($varTagType);
 
 		$isValidSuperTypeOfExpr = $this->isValidSuperTypeOfExpr($scope, $expr, $exprNativeType, $varTagType);
@@ -112,7 +119,7 @@ final class VarTagTypeRuleHelper
 				$exprNativeType->describe($verbosity),
 			))->acceptsReasonsTip($isValidSuperTypeOfExpr->reasons)->identifier('varTag.nativeType')->build();
 		} elseif ($this->checkTypeAgainstPhpDocType || $containsPhpStanType) {
-			$exprType = $scope->getScopeType($expr);
+			$exprType = $constantType ?? $scope->getScopeType($expr);
 			$isValidSuperTypeOfExpr = $this->isValidSuperTypeOfExpr($scope, $expr, $exprType, $varTagType);
 			if (!$isValidSuperTypeOfExpr->yes()) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
@@ -280,6 +287,26 @@ final class VarTagTypeRuleHelper
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$function !== null ? $function->getName() : null,
 		)->withoutNamespaceAndUses();
+	}
+
+	/**
+	 * A constant expression (a static variable's `= 1` default, a literal) is
+	 * position-independent and priced without asking the scope about a node the
+	 * walk stores only after the rule fires on its statement. Null otherwise.
+	 */
+	private function priceConstantExpr(Scope $scope, Node\Expr $expr): ?Type
+	{
+		if (
+			$expr instanceof Node\Scalar\Int_
+			|| $expr instanceof Node\Scalar\String_
+			|| $expr instanceof Node\Scalar\Float_
+			|| $expr instanceof Node\Expr\ConstFetch
+			|| ($expr instanceof Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name && $expr->name instanceof Node\Identifier)
+		) {
+			return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope));
+		}
+
+		return null;
 	}
 
 }

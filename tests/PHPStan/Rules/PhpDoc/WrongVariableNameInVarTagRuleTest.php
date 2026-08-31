@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -30,6 +31,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				self::createReflectionProvider(),
 				$this->checkTypeAgainstPhpDocType,
 				$this->strictWideningCheck,
+				self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			),
 		);
 	}

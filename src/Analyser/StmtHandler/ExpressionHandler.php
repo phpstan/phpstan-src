@@ -45,6 +45,7 @@ final class ExpressionHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$preAnnotationScope = $scope;
 		$stmtScope = $scope;
 		if ($stmt->expr instanceof Expr\Throw_) {
 			$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
@@ -65,6 +66,10 @@ final class ExpressionHandler implements StmtHandler
 		});
 		try {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			if ($stmt->expr instanceof Expr\Throw_) {
+				// the @var-changed-type node fires now that the thrown expression is stored
+				$nodeScopeResolver->emitVarTagChangedNode($preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
+			}
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();
 		}

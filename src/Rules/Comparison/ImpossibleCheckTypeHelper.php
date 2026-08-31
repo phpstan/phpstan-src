@@ -105,12 +105,26 @@ final class ImpossibleCheckTypeHelper
 	{
 		if ($argsResult !== null && $scope instanceof MutatingScope) {
 			$argResult = $argsResult->findArgResult($expr);
+			$native = $phpDocFlavour
+				? $scope->nativeTypesPromoted
+				: (!$this->treatPhpDocTypesAsCertain || $scope->nativeTypesPromoted);
 			if ($argResult !== null) {
-				$native = $phpDocFlavour
-					? $scope->nativeTypesPromoted
-					: (!$this->treatPhpDocTypesAsCertain || $scope->nativeTypesPromoted);
-
 				return $argResult->getTypeOnScope($scope, $native);
+			}
+			if ($expr instanceof Expr\Variable && is_string($expr->name)) {
+				// the narrowed expression is the variable an argument ASSIGNS
+				// (`is_string($data = json_encode($data))`): the assignment's own
+				// result is what the variable holds - its position-fixed type,
+				// not a re-pricing of the variable on this (callback) scope
+				foreach ($argsResult->getArgResults() as $candidate) {
+					// a chained assignment (`$a = $b = f()`) assigns every variable
+					// on its way down; each one holds the innermost value
+					for ($assign = $candidate->getExpr(); $assign instanceof Expr\Assign; $assign = $assign->expr) {
+						if ($assign->var instanceof Expr\Variable && $assign->var->name === $expr->name) {
+							return $native ? $candidate->getNativeType() : $candidate->getType();
+						}
+					}
+				}
 			}
 		}
 
@@ -142,7 +156,9 @@ final class ImpossibleCheckTypeHelper
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert' && $argsCount >= 1) {
 					$arg = $args[0]->value;
-					$assertValue = ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg) : $scope->getNativeType($arg))->toBoolean();
+					// through the argument's own result (an assign-in-argument
+					// `assert($x = f())` names the variable the argument assigns)
+					$assertValue = $this->getArgumentType($scope, $argsResult, $arg)->toBoolean();
 					$assertValueIsTrue = $assertValue->isTrue()->yes();
 					if (! $assertValueIsTrue && ! $assertValue->isFalse()->yes()) {
 						return null;

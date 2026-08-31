@@ -61,6 +61,7 @@ use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
+use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -1315,11 +1316,11 @@ class NodeScopeResolver
 			// impossible-check rules read its specified types from the result
 			// instead of asking the scope before the call node is processed
 			if ($expr instanceof FuncCall) {
-				$this->callNodeCallbackWithExpression($nodeCallback, new FunctionCallExpressionNode($expr, $expressionResult), $scope, $storage, $context);
+				$this->callNodeCallbackWithExpression($nodeCallback, new FunctionCallExpressionNode($expr, $expressionResult, $expressionResult->getArgsResult()), $scope, $storage, $context);
 			} elseif ($expr instanceof MethodCall) {
-				$this->callNodeCallbackWithExpression($nodeCallback, new MethodCallExpressionNode($expr, $expressionResult), $scope, $storage, $context);
+				$this->callNodeCallbackWithExpression($nodeCallback, new MethodCallExpressionNode($expr, $expressionResult, $expressionResult->getArgsResult()), $scope, $storage, $context);
 			} elseif ($expr instanceof StaticCall) {
-				$this->callNodeCallbackWithExpression($nodeCallback, new StaticMethodCallExpressionNode($expr, $expressionResult), $scope, $storage, $context);
+				$this->callNodeCallbackWithExpression($nodeCallback, new StaticMethodCallExpressionNode($expr, $expressionResult, $expressionResult->getArgsResult()), $scope, $storage, $context);
 			}
 			return $expressionResult;
 		}
@@ -3331,15 +3332,64 @@ class NodeScopeResolver
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
-			$originalType = $this->readTypeOfMaybeStored($defaultExpr, $scope);
-			$varTag = $variableLessTags[0];
-			if (!$originalType->equals($varTag->getType())) {
-				$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
-			}
-			$scope = $scope->assignExpression($defaultExpr, $varTag->getType(), new MixedType());
+			// only the scope effect here: the changed-type node is emitted by the
+			// statement handler AFTER it walked the expression (emitVarTagChangedNode),
+			// so the rule prices the expression from its stored result rather than
+			// asking the scope about a node not processed yet
+			$scope = $scope->assignExpression($defaultExpr, $variableLessTags[0]->getType(), new MixedType());
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * The single variable-less @var tag on the statement's doc comment, or null
+	 * when there is none or more than one - the shape processStmtVarAnnotation()
+	 * applies to $defaultExpr and emitVarTagChangedNode() reports on.
+	 */
+	private function findSingleVariableLessVarTag(MutatingScope $scope, Node\Stmt $stmt): ?VarTag
+	{
+		$function = $scope->getFunction();
+		$variableLessTags = [];
+		foreach ($stmt->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText(),
+			);
+			foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
+				if (!is_int($name)) {
+					continue;
+				}
+
+				$variableLessTags[] = $varTag;
+			}
+		}
+
+		return count($variableLessTags) === 1 ? $variableLessTags[0] : null;
+	}
+
+	/**
+	 * Emits the node the @var-changed-type rule listens to, for a statement with
+	 * a single variable-less @var tag over $defaultExpr - called by the handler
+	 * once the expression has been walked (see processStmtVarAnnotation()).
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function emitVarTagChangedNode(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $defaultExpr, callable $nodeCallback): void
+	{
+		$varTag = $this->findSingleVariableLessVarTag($scope, $stmt);
+		if ($varTag === null) {
+			return;
+		}
+
+		$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
 	}
 
 	/**

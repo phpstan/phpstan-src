@@ -239,7 +239,17 @@ final class ForHandler implements StmtHandler
 		$finalScope = $finalScope->generalizeWith($loopScope);
 
 		if ($lastCondExpr !== null) {
-			$finalScope = $nodeScopeResolver->narrowScopeWithCondition($finalScope, $lastCondExpr, TypeSpecifierContext::createFalsey());
+			// the loop condition narrows the post-loop scope to its falsey branch,
+			// priced on the GENERALIZED exit scope. The condition's stored result
+			// was walked before generalizeWith() widened the counter, so its
+			// verdict is stale here: `$k <= $d` with a literal `$k` reads as
+			// always-true, whose falsey branch is unreachable - and that narrowed
+			// every operand to never, killing the enclosing loop's counter
+			// (a nested loop's counter never widened). Same shape as WhileHandler.
+			$finalScope = $finalScope->applySpecifiedTypes(
+				$nodeScopeResolver->processExprOnDemand($lastCondExpr, $finalScope, $storage->duplicate())
+					->getSpecifiedTypesForScope($finalScope, TypeSpecifierContext::createFalsey()),
+			);
 		}
 
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);

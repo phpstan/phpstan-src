@@ -137,6 +137,23 @@ class SystemResourcesTest extends TestCase
 			2,
 		];
 
+		yield 'v2, docker container in its own cgroup namespace: the root is the container cgroup' => [
+			[
+				'/proc/self/cgroup' => "0::/\n",
+				'/sys/fs/cgroup/cpu.max' => "200000 100000\n",
+			],
+			2,
+		];
+
+		yield 'v1, docker container in the host cgroup namespace: the mount is rooted at the container cgroup' => [
+			[
+				'/proc/self/cgroup' => "4:cpu,cpuacct:/docker/0123abcd\n",
+				'/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us' => "400000\n",
+				'/sys/fs/cgroup/cpu,cpuacct/cpu.cfs_period_us' => "100000\n",
+			],
+			4,
+		];
+
 		yield 'no cgroup filesystem at all' => [[], null];
 
 		yield 'in the root cgroup, which has no cpu.max' => [

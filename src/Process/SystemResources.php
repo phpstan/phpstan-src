@@ -90,9 +90,11 @@ final class SystemResources
 		foreach ($this->getAncestorPaths($cgroupPath) as $path) {
 			$cpuMax = $this->readFile('/sys/fs/cgroup' . $path . '/cpu.max');
 			if ($cpuMax === null) {
-				// the cpu controller is not enabled at this depth - the root cgroup
-				// never has the file and a leaf often does not either - which says
-				// nothing about the ancestors that may still carry a quota
+				// the cpu controller is not enabled at this depth - a host's root
+				// cgroup has no cpu.max and a leaf often does not either - which says
+				// nothing about the ancestors that may still carry a quota. Inside a
+				// cgroup namespace the root is the container's own cgroup and does
+				// carry it, which is why the walk starts there.
 				continue;
 			}
 

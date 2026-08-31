@@ -130,7 +130,7 @@ final class Scheduler implements DiagnoseExtension
 		[$cpuCores, $filesCount, $jobsCount, $usedNumberOfProcesses, $decision] = $this->storedData;
 
 		$output->writeLineFormatted('<info>Parallel processing scheduler:</info>');
-		$output->writeLineFormatted(sprintf('# of detected CPU cores:   %d', $cpuCores));
+		$output->writeLineFormatted(sprintf('# of usable CPU cores:     %d', $cpuCores));
 		$output->writeLineFormatted(sprintf('# of analysed files:       %d', $filesCount));
 		$output->writeLineFormatted(sprintf('# of jobs:                 %d', $jobsCount));
 		$output->writeLineFormatted(sprintf('# of spawned processes:    %d', $usedNumberOfProcesses));

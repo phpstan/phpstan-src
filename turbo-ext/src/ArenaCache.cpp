@@ -60,16 +60,30 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <unistd.h>
 #endif
 
 namespace phpstanturbo {
 
-/* Total mapped size per run. Virtual reservation only: POSIX shm and Windows
+/* Largest mapped size per run. Virtual reservation only: POSIX shm and Windows
  * pagefile sections allocate physical pages on first touch, so an idle arena
  * costs a few pages. When the cursor passes the end, publishing stops and
  * analysis continues unshared. */
 static constexpr uint64_t ARENA_SIZE_LIMIT = 256ULL << 20;
+
+/* POSIX shm is a tmpfs file: ftruncate() to ARENA_SIZE_LIMIT succeeds however
+ * little space that filesystem has, because the file is sparse, and the
+ * shortfall only surfaces as SIGBUS on the first touch of a page it cannot
+ * back. A worker dies on the spot then, with no PHP error and nothing written
+ * - which is what phpstan/phpstan#15131 was: docker gives /dev/shm 64 MB by
+ * default. So the arena is sized to what the backing filesystem can actually
+ * give, and running out of it costs sharing (the cursor passes the end and
+ * publishing stops) instead of workers. The reserve keeps the arena from
+ * claiming the last of a filesystem others are using too, and below the
+ * minimum there is not enough to be worth sharing at all. */
+static constexpr uint64_t ARENA_BACKING_RESERVE_LIMIT = 8ULL << 20;
+static constexpr uint64_t ARENA_MIN_SIZE_LIMIT = 4ULL << 20;
 
 /* Top-level index: open-addressed table of 8-byte slots (record offsets).
  * Sized for the record *count* (records are whole maps/blobs, not entries):
@@ -954,14 +968,46 @@ static bool runIdValid(zend_string *runId)
 	return true;
 }
 
-static bool headerValid(const ArenaHeader *header)
+static bool headerValid(const ArenaHeader *header, uint64_t mappedSize)
 {
 	return header->magic == ARENA_MAGIC
 		&& header->formatVersion == ARENA_FORMAT_VERSION
-		&& header->totalSize == ARENA_SIZE_LIMIT
+		&& header->totalSize == mappedSize
 		&& header->indexOffset == INDEX_OFFSET
 		&& header->indexSlotCount == INDEX_SLOT_COUNT;
 }
+
+#ifndef _WIN32
+/* How much of the shm filesystem the arena may take, or 0 when what is left
+ * is not worth an arena. Failing to stat it is not a reason to give up - the
+ * platform may not report anything useful (macOS shm is not a filesystem at
+ * all), and the pre-existing behaviour of reserving the full limit is no
+ * worse there than it has always been. */
+static uint64_t backedArenaSize(int fd)
+{
+	struct statvfs backing;
+	if (fstatvfs(fd, &backing) != 0) {
+		return ARENA_SIZE_LIMIT;
+	}
+
+	uint64_t blockSize = backing.f_frsize != 0 ? (uint64_t) backing.f_frsize : (uint64_t) backing.f_bsize;
+	uint64_t available = (uint64_t) backing.f_bavail * blockSize;
+	if (blockSize == 0 || available <= ARENA_BACKING_RESERVE_LIMIT) {
+		return 0;
+	}
+
+	uint64_t size = available - ARENA_BACKING_RESERVE_LIMIT;
+	if (size < ARENA_MIN_SIZE_LIMIT) {
+		return 0;
+	}
+	if (size > ARENA_SIZE_LIMIT) {
+		return ARENA_SIZE_LIMIT;
+	}
+
+	/* the index is indexed off page-aligned offsets; keep the tail whole */
+	return size & ~(uint64_t) 4095;
+}
+#endif
 
 class ArenaCache
 {
@@ -974,6 +1020,9 @@ public:
 		}
 
 #ifdef _WIN32
+		// a pagefile-backed section is committed when it is created, so
+		// Windows either backs the whole reservation or fails right here
+		uint64_t size = ARENA_SIZE_LIMIT;
 		char name[64];
 		snprintf(name, sizeof(name), "Local\\phpstan-%s", ZSTR_VAL(runId));
 		HANDLE section = CreateFileMappingA(
@@ -1003,12 +1052,18 @@ public:
 		if (fd < 0) {
 			return;
 		}
-		if (ftruncate(fd, (off_t) ARENA_SIZE_LIMIT) != 0) {
+		uint64_t size = backedArenaSize(fd);
+		if (size == 0) {
 			close(fd);
 			shm_unlink(name);
 			return;
 		}
-		void *base = mmap(NULL, ARENA_SIZE_LIMIT, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (ftruncate(fd, (off_t) size) != 0) {
+			close(fd);
+			shm_unlink(name);
+			return;
+		}
+		void *base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 		close(fd);
 		if (base == MAP_FAILED) {
 			shm_unlink(name);
@@ -1017,7 +1072,7 @@ public:
 #endif
 
 		pt_arena_base = base;
-		pt_arena_total = ARENA_SIZE_LIMIT;
+		pt_arena_total = size;
 		pt_arena_creator = true;
 		pt_arena_name_unlinked = false;
 		snprintf(pt_arena_name, sizeof(pt_arena_name), "%s", name);
@@ -1028,7 +1083,7 @@ public:
 		ArenaHeader *header = arenaHeader();
 		header->magic = ARENA_MAGIC;
 		header->formatVersion = ARENA_FORMAT_VERSION;
-		header->totalSize = ARENA_SIZE_LIMIT;
+		header->totalSize = size;
 		header->indexOffset = INDEX_OFFSET;
 		header->indexSlotCount = INDEX_SLOT_COUNT;
 		header->allocCursor = arenaDataStart();
@@ -1050,6 +1105,7 @@ public:
 		if (strncmp(ZSTR_VAL(name), "Local\\phpstan-", 14) != 0) {
 			return false;
 		}
+		uint64_t size = ARENA_SIZE_LIMIT;
 		HANDLE section = OpenFileMappingA(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, ZSTR_VAL(name));
 		if (section == NULL) {
 			return false;
@@ -1059,7 +1115,7 @@ public:
 			CloseHandle(section);
 			return false;
 		}
-		if (!headerValid((const ArenaHeader *) base)) {
+		if (!headerValid((const ArenaHeader *) base, size)) {
 			UnmapViewOfFile(base);
 			CloseHandle(section);
 			return false;
@@ -1073,24 +1129,31 @@ public:
 		if (fd < 0) {
 			return false;
 		}
+		/* the creator sized the object to what its filesystem could back, so
+		 * the object itself says how much there is to map */
 		struct stat objectStat;
-		if (fstat(fd, &objectStat) != 0 || (uint64_t) objectStat.st_size < ARENA_SIZE_LIMIT) {
+		if (fstat(fd, &objectStat) != 0) {
 			close(fd);
 			return false;
 		}
-		void *base = mmap(NULL, ARENA_SIZE_LIMIT, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		uint64_t size = (uint64_t) objectStat.st_size;
+		if (size < arenaDataStart() || size > ARENA_SIZE_LIMIT) {
+			close(fd);
+			return false;
+		}
+		void *base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 		close(fd);
 		if (base == MAP_FAILED) {
 			return false;
 		}
-		if (!headerValid((const ArenaHeader *) base)) {
-			munmap(base, ARENA_SIZE_LIMIT);
+		if (!headerValid((const ArenaHeader *) base, size)) {
+			munmap(base, size);
 			return false;
 		}
 #endif
 
 		pt_arena_base = base;
-		pt_arena_total = ARENA_SIZE_LIMIT;
+		pt_arena_total = size;
 		pt_arena_creator = false;
 		snprintf(pt_arena_name, sizeof(pt_arena_name), "%s", ZSTR_VAL(name));
 		return true;

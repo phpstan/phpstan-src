@@ -449,7 +449,17 @@ final class ExpressionResult
 	 */
 	public function getKeepVoidType(bool $nativeTypesPromoted): Type
 	{
-		return $this->resolveOwnRawType($nativeTypesPromoted);
+		$rawType = $this->resolveOwnRawType($nativeTypesPromoted);
+		if (!$rawType->isVoid()->no()) {
+			// there is void to keep - the raw type is the answer, and no read that
+			// projects it away may run
+			return $rawType;
+		}
+
+		// nothing to keep, so this is an ordinary value read: it must honour a
+		// holder tracked for the expression (a match arm body narrowed by its own
+		// condition) and the extensions, exactly like getType() does
+		return $nativeTypesPromoted ? $this->getNativeType() : $this->getType();
 	}
 
 	/**

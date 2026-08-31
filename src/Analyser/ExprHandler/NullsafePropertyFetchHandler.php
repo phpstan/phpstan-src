@@ -160,7 +160,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 					static fn (): MutatingScope => $exprResult->getFalseyScope(),
 				)->setRootExpr($expr);
 
-				$nullSafeTypes = $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+				$nullSafeTypes = $this->defaultNarrowingHelper->specifyDefaultTypesWithPlainTwin($expr, $exprResult, $context, $s);
 				return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
 			},
 			// Inside-out copy of TypeSpecifier::createForExpr()'s `?->` handling.

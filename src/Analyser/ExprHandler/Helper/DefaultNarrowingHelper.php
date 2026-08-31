@@ -118,6 +118,36 @@ final class DefaultNarrowingHelper
 	}
 
 	/**
+	 * specifyDefaultTypes() for a chain containing a nullsafe: a truthy chain
+	 * did not short-circuit, so its fully plain twin ($a?->b()?->c() ->
+	 * $a->b()->c()) holds the same value and the source reads it that way once
+	 * every link is known non-null. The twin is keyed through the create path,
+	 * so the impure gate applies to it exactly as to the chain itself - an
+	 * impure call's value is never remembered, plain or nullsafe.
+	 */
+	public function specifyDefaultTypesWithPlainTwin(Expr $expr, ?ExpressionResult $exprResult, TypeSpecifierContext $context, MutatingScope $s): SpecifiedTypes
+	{
+		$default = $this->specifyDefaultTypes($expr, $context);
+		if ($exprResult === null || !$context->truthy() || $context->falsey()) {
+			return $default;
+		}
+
+		// The result is the one-level twin's ($a?->b() walked as $a->b()), and
+		// its impure point is keyed to that very node - so the twin node it
+		// carries is the subject, not a rebuilt one (the impure gate compares
+		// node identity). For a deeper chain the fully plain form differs from
+		// the twin only in its receiver; it is keyed too, through the same gate.
+		$twinNode = $exprResult->getExpr();
+		$twin = $this->createSubjectTypesFromResultState($s, $twinNode, $exprResult, StaticTypeFactory::falsey(), TypeSpecifierContext::createFalse());
+		$plainChain = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr);
+		if ($plainChain !== $expr && $this->exprPrinter->printExpr($plainChain) !== $this->exprPrinter->printExpr($twinNode)) {
+			$twin = $twin->unionWith($this->createSubjectTypesFromResultState($s, $plainChain, $exprResult, StaticTypeFactory::falsey(), TypeSpecifierContext::createFalse()));
+		}
+
+		return $default->unionWith($twin)->setRootExpr($expr);
+	}
+
+	/**
 	 * Converts sure-not entries to sure form against the given evaluation
 	 * scope (position-fixed, captured at compose time) - for the decided
 	 * comparison paths whose consumers need a concrete sure type. This is NOT

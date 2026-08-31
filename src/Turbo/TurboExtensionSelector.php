@@ -5,7 +5,6 @@ namespace PHPStan\Turbo;
 use Phar;
 use function dirname;
 use function file_get_contents;
-use function getenv;
 use function is_file;
 use function php_uname;
 use function sprintf;
@@ -48,9 +47,6 @@ final class TurboExtensionSelector
 			}
 
 			// loaded through php.ini — workers inherit the ini file
-			return null;
-		}
-		if (getenv('PHPSTAN_TURBO') === '0') {
 			return null;
 		}
 

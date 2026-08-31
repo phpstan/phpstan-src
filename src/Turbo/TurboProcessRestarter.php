@@ -5,7 +5,6 @@ namespace PHPStan\Turbo;
 use function extension_loaded;
 use function function_exists;
 use function get_cfg_var;
-use function getenv;
 use function ini_get;
 use function is_string;
 use function pcntl_exec;
@@ -60,9 +59,6 @@ final class TurboProcessRestarter
 	public static function restartIfSuitable(array $argv): void
 	{
 		if (extension_loaded('phpstan_turbo')) {
-			return;
-		}
-		if (getenv('PHPSTAN_TURBO') === '0') {
 			return;
 		}
 		if (self::getRestartExtensionPath() !== null) {

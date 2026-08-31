@@ -90,8 +90,8 @@ final class ParallelAnalyser
 		// no-op otherwise). Workers receive the name via the --arena option and
 		// attach before sending their hello. The spawn loop below starts one
 		// process per available slot unless there are no jobs at all.
-		// PHPSTAN_ARENA=0 disables just the arena, like PHPSTAN_TURBO=0
-		// disables the whole extension.
+		// PHPSTAN_ARENA=0 disables just the arena, leaving the rest of the
+		// extension active.
 		$arenaName = null;
 		if ($numberOfProcesses > 1 && getenv('PHPSTAN_ARENA') !== '0') {
 			$arenaName = ArenaCache::create(Random::generate());

@@ -5,7 +5,6 @@ namespace PHPStan\Turbo;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
-use function getenv;
 use function php_uname;
 use function phpversion;
 use function sprintf;
@@ -67,9 +66,6 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 			}
 
 			return 'not loaded';
-		}
-		if (getenv('PHPSTAN_TURBO') === '0') {
-			return 'disabled via PHPSTAN_TURBO=0';
 		}
 
 		$loadedVersion = phpversion('phpstan_turbo');

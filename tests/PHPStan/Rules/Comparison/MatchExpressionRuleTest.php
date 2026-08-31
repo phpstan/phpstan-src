@@ -530,6 +530,14 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10128.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNullInMultiConditionArm(): void
+	{
+		// every case is handled - a condition after null in the same arm must
+		// still be subtracted from the subject
+		$this->analyse([__DIR__ . '/data/match-null-in-multi-condition-arm.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11453(): void
 	{

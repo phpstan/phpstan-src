@@ -26,12 +26,12 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 		);
 	}
 
-	private static function templateType(Type $bound = new StringType()): Type
+	private static function templateType(?Type $bound = null): Type
 	{
 		return TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('doFoo'),
 			'TKey',
-			$bound,
+			$bound ?? new StringType(),
 			TemplateTypeVariance::createInvariant(),
 		);
 	}

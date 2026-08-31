@@ -9,6 +9,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -19,6 +20,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function sprintf;
 use const COUNT_NORMAL;
 
 /**
@@ -45,13 +47,14 @@ final class CountNarrowingHelper
 		}
 
 		$modeArg = $countFuncCall->getArgs()[1]->value;
+		// the mode argument was processed with the call - a census over the suite
+		// and self-analysis found every ask answered from the stored result
 		$storage = $scope->getCurrentExpressionResultStorage();
 		$modeResult = $storage !== null ? $storage->findExpressionResult($modeArg) : null;
-		// walk-time asks answer from the stored result; the scope read only
-		// remains for rule-facing bridge asks whose scope carries no storage
-		$mode = $modeResult !== null
-			? $modeResult->getTypeOnScope($scope, $scope->nativeTypesPromoted)
-			: $scope->getType($modeArg);
+		if ($modeResult === null) {
+			throw new ShouldNotHappenException(sprintf('count() mode argument on line %d has no stored ExpressionResult.', $modeArg->getStartLine()));
+		}
+		$mode = $modeResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 
 		return (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($typeToCount->getIterableValueType()->isArray()->negate());
 	}

@@ -1,0 +1,7 @@
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- ../../src
+	scanFiles:
+		- ../../turbo-ext/analysis-stub.php

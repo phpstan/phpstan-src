@@ -911,6 +911,17 @@ jobs:
               OUTPUT=$(docker run --rm -v "$PWD:/repo" -w /repo php:8.2-cli-alpine sh -c "rm /etc/alpine-release && $DIAGNOSE")
               echo "$OUTPUT"
               e2e/bashunit -a contains 'Turbo platform: linux-musl-' "$OUTPUT"
+          - script: |
+              # A parallel worker killed by a signal writes nothing of its own -
+              # no PHP error, no shutdown function, an empty capture file. The
+              # main process has to name the signal; treating the dead worker
+              # like one that quit cleanly leaves the whole run with nothing but
+              # "Some parallel worker jobs have not finished", which is what made
+              # https://github.com/phpstan/phpstan/issues/15131 undiagnosable.
+              cd e2e/parallel-worker-signal
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'killed by signal 9 (SIGKILL)' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -938,3 +949,77 @@ jobs:
 
       - name: "Test"
         run: ${{ matrix.script }}
+
+  turbo-arena-e2e-tests:
+    name: "Turbo arena E2E tests"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 30
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          # the extension bakes its version from `git log -- turbo-ext/src`, and
+          # TurboExtensionEnabler activates only the expected version - a shallow
+          # clone hands us a "dev" build, which would skip the whole test
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # 2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Install bashunit"
+        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        with:
+          directory: "e2e"
+
+      - name: "Build the turbo extension"
+        run: make -C turbo-ext -j"$(nproc)"
+
+      - name: "Verify the arena is actually exercised"
+        # Without an active extension ArenaCache is the no-op PHP twin and no
+        # shared memory exists at all; without fork the workers do not publish in
+        # lockstep. Either would make the test below pass for the wrong reason.
+        run: |
+          OUTPUT=$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
+          echo "$OUTPUT"
+          e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
+          e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
+
+      - name: "Test"
+        # The arena is a per-run POSIX shared-memory object: shm_open() plus an
+        # ftruncate() to 256 MB that tmpfs honours sparsely, committing pages on
+        # first touch. When the backing store cannot commit one, the worker that
+        # touches it takes SIGBUS and dies where it stands. 64 MB is what docker
+        # gives /dev/shm by default, which is how
+        # https://github.com/phpstan/phpstan/issues/15131 reached users; 32 MB
+        # makes it deterministic on a 4-core runner. Running out of shared memory
+        # must cost sharing, never results - the analysis has to come out exactly
+        # as it does with the runner's normal /dev/shm.
+        run: |
+          SO="$PWD/turbo-ext/phpstan_turbo.so"
+          cd e2e/turbo-arena
+          rm -rf tmp
+          php -d extension="$SO" ../../bin/phpstan analyse --no-progress > "$RUNNER_TEMP/reference.txt" 2>&1 || true
+          tail -5 "$RUNNER_TEMP/reference.txt"
+          # a warm disk cache is the worst case: every worker loads and publishes
+          # the same entries at the same moment, so duplicates pile up fastest
+          php -d extension="$SO" ../../bin/phpstan clear-result-cache
+          sudo mount -o remount,size=32M /dev/shm
+          df -h /dev/shm
+          php -d extension="$SO" ../../bin/phpstan analyse --no-progress > "$RUNNER_TEMP/small-shm.txt" 2>&1 || true
+          tail -40 "$RUNNER_TEMP/small-shm.txt"
+          # bashunit takes the haystack as a single argv entry, and execve caps
+          # one argument at 128 KB - a few hundred KB of analysis output only
+          # fits through the assertion once grep has narrowed it down
+          ../bashunit -a not_contains 'parallel worker' "$(grep -F 'parallel worker' "$RUNNER_TEMP/small-shm.txt" || true)"
+          diff "$RUNNER_TEMP/reference.txt" "$RUNNER_TEMP/small-shm.txt"

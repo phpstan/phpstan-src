@@ -1,0 +1,6 @@
+parameters:
+	level: 0
+	paths:
+		- test.php
+	bootstrapFiles:
+		- kill-worker.php

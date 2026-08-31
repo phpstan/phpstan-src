@@ -319,15 +319,11 @@ final class ExportedNodeResolver
 			return null;
 		}
 
-		$resolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
-			$file,
-			$className,
-			null,
-			$functionName,
-			$text,
-		);
-
-		$nameScope = $resolvedPhpDocBlock->getNullableNameScope();
+		// Only the namespace and the uses are exported, so the fully resolved PHPDoc block is not
+		// needed - and building it would resolve the surrounding @template bounds through the
+		// ReflectionProvider. The result cache restore fetches exported nodes in the main process
+		// before the deferred bootstrapFiles have run, where reading PHPDocs is not allowed.
+		$nameScope = $this->fileTypeMapper->getIntermediaryNameScope($file, $className, null, $functionName);
 		if ($nameScope === null) {
 			return null;
 		}

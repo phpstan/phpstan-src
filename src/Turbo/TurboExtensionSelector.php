@@ -13,6 +13,7 @@ use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
 use const PHP_OS_FAMILY;
+use const PHP_VERSION_ID;
 use const PHP_ZTS;
 
 /**
@@ -26,7 +27,8 @@ use const PHP_ZTS;
  * Windows) by the phar.yml commit job, so they only exist for phar-based
  * installations —
  * a source checkout loads its locally built extension through php.ini
- * instead. Only non-debug builds are shipped; ZTS variants (-zts filename
+ * instead. Only non-debug builds for PHP >= MINIMUM_PHP_VERSION_ID are
+ * shipped; ZTS variants (-zts filename
  * suffix) exist for linux-gnu and Windows so hosts with a thread-safe PHP
  * (like PMMP's bundled build) are covered too. Workers run the regular
  * entrypoint, so TurboExtensionEnabler still gates activation on the
@@ -38,6 +40,13 @@ use const PHP_ZTS;
  */
 final class TurboExtensionSelector
 {
+
+	/**
+	 * The oldest PHP the extension is built for — the phar.yml turbo-compile
+	 * matrix. Older runtimes have no binary to find, so they skip the lookup
+	 * (and with it the process restart) entirely.
+	 */
+	public const MINIMUM_PHP_VERSION_ID = 80300;
 
 	public static function findExtensionForWorkers(): ?string
 	{
@@ -63,6 +72,9 @@ final class TurboExtensionSelector
 	 */
 	public static function findExtension(): ?string
 	{
+		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID) {
+			return null;
+		}
 		if ((bool) PHP_DEBUG) {
 			return null;
 		}

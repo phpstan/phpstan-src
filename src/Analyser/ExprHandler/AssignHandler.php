@@ -1523,7 +1523,6 @@ final class AssignHandler implements ExprHandler
 					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
 				}
 				$itemScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value);
-				$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemScope, $storage);
 				$keyResult = null;
 				if ($arrayItem->key !== null) {
 					$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $itemScope, $storage, $nodeCallback, $context->enterDeep());
@@ -1533,6 +1532,10 @@ final class AssignHandler implements ExprHandler
 					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
 					$scope = $keyResult->getScope();
 				}
+				// the item fires after its key so a rule reading the key's type
+				// consumes the key's result instead of pricing the node ahead of
+				// its walk (the literal-array handler orders the two the same way)
+				$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemScope, $storage);
 
 				if ($keyResult !== null) {
 					$dimType = $keyResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);

@@ -1126,6 +1126,13 @@ class NodeScopeResolver
 			return $scope->getVariableType($expr->name);
 		}
 
+		// a literal is position-independent: the scope prices it without a walk,
+		// so an argument the walk reaches only later (an IIFE's or a pipe's
+		// operand) never has to be processed ahead of its turn
+		if ($expr instanceof Node\Scalar\String_ || $expr instanceof Node\Scalar\Int_ || $expr instanceof Node\Scalar\Float_) {
+			return $scope->getStateType($expr);
+		}
+
 		// A variable whose name is an expression ($$name) never reaches the read
 		// above, and the scope tracks it like any other expression - so it belongs
 		// here rather than falling through to a walk.

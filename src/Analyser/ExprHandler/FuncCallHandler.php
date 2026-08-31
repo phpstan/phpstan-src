@@ -431,6 +431,7 @@ final class FuncCallHandler implements ExprHandler
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
+			argsResult: $argsResult,
 		);
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $preliminaryResult);
 

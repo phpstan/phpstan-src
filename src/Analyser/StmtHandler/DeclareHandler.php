@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\StmtHandler;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Declare_;
+use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -41,7 +42,9 @@ final class DeclareHandler implements StmtHandler
 		$exitPoints = [];
 		foreach ($stmt->declares as $declare) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $declare, $scope, $storage);
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $declare->value, $scope, $storage);
+			// the value is a constant scalar - process it so its result is stored
+			// before the callback fires on it, like every other expression node
+			$nodeScopeResolver->processExprNode($stmt, $declare->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			if (
 				$declare->key->name !== 'strict_types'
 				|| !($declare->value instanceof Int_)

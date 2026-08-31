@@ -51,7 +51,8 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 		$functionName = (string) $funcCall->name;
 		$reasons = [];
-		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $funcCall, $nodeResult, null, $reasons);
+		$argsResult = $node->getArgsResult();
+		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $funcCall, $nodeResult, $argsResult, $reasons);
 		if ($isAlways === null) {
 			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $funcCall);
 			return [];
@@ -59,7 +60,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 		$this->functionCallConstantConditionHelper->emitImpossibleCheckReported($scope, $funcCall);
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $funcCall, $nodeResult, $reasons): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $funcCall, $nodeResult, $reasons, $argsResult): RuleErrorBuilder {
 			if ($reasons !== []) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder->acceptsReasonsTip($reasons));
 			}
@@ -68,7 +69,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder);
 			}
 
-			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $funcCall, $nodeResult, null, $reasons);
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $funcCall, $nodeResult, $argsResult, $reasons);
 			if ($isAlways !== null) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $funcCall, $ruleErrorBuilder);
 			}

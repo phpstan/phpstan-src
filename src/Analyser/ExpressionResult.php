@@ -93,6 +93,7 @@ final class ExpressionResult
 		?callable $createTypesCallback = null,
 		private ?Type $type = null,
 		private ?Type $nativeType = null,
+		private ?ArgsResult $argsResult = null,
 	)
 	{
 		// A precomputed type and a lazy typeCallback are mutually exclusive, but
@@ -151,6 +152,16 @@ final class ExpressionResult
 	public function getExpr(): Expr
 	{
 		return $this->expr;
+	}
+
+	/**
+	 * The processed arguments of a call result, carried so the rules fired on
+	 * the call read an argument's type from its own result. Null for any
+	 * result that is not a call with processed arguments.
+	 */
+	public function getArgsResult(): ?ArgsResult
+	{
+		return $this->argsResult;
 	}
 
 	public function hasYield(): bool

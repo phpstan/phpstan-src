@@ -7,8 +7,11 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ErrorType;
 use function array_merge;
 use function in_array;
 use function is_array;
@@ -21,6 +24,7 @@ final class UnusedFunctionParametersCheck
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		#[AutowiredParameter(ref: '%featureToggles.reportPreciseLineForUnusedFunctionParameter%')]
 		private bool $reportExactLine,
 	)
@@ -88,7 +92,17 @@ final class UnusedFunctionParametersCheck
 						return [$node->name];
 					}
 				} else {
-					$nameType = $scope->getType($node->name);
+					// a variable-variable's name expression: a literal is priced
+					// without the scope, a variable read is scope state - neither
+					// asks the scope about a node this function body's walk has
+					// not stored yet
+					if ($node->name instanceof Node\Scalar\String_) {
+						$nameType = $this->initializerExprTypeResolver->getType($node->name, InitializerExprContext::fromScope($scope));
+					} elseif ($node->name instanceof Variable && is_string($node->name->name)) {
+						$nameType = $scope->hasVariableType($node->name->name)->no() ? new ErrorType() : $scope->getVariableType($node->name->name);
+					} else {
+						$nameType = $scope->getType($node->name);
+					}
 					if ($nameType->getConstantStrings() === []) {
 						return $scope->getDefinedVariables();
 					}
@@ -108,7 +122,12 @@ final class UnusedFunctionParametersCheck
 				&& (string) $node->name === 'compact'
 			) {
 				foreach ($node->getArgs() as $arg) {
-					$argType = $scope->getType($arg->value);
+					// compact('name') takes literal names - price a constant
+					// argument without asking the scope about a node the walk of
+					// this very function body has not stored yet
+					$argType = $arg->value instanceof Node\Scalar\String_
+						? $this->initializerExprTypeResolver->getType($arg->value, InitializerExprContext::fromScope($scope))
+						: $scope->getType($arg->value);
 					foreach ($argType->getConstantStrings() as $constantStringType) {
 						$variableNames[] = $constantStringType->getValue();
 					}

@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Json;
 use Override;
+use PHPStan\File\FileHelper;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -90,7 +91,12 @@ PHP);
 		$this->assertSame(2, $json['analysedFilesCount']);
 		$this->assertSame(2, $json['filesToAnalyseCount']);
 		$this->assertNull($json['lastFullAnalysisTime']);
-		$this->assertSame($this->projectDir . '/tmp/resultCache.php', $json['resultCachePath']);
+
+		$fileHelper = new FileHelper(__DIR__);
+		$this->assertSame(
+			$fileHelper->normalizePath($this->projectDir . '/tmp/resultCache.php', '/'),
+			$fileHelper->normalizePath($json['resultCachePath'], '/'),
+		);
 
 		[, $exitCode] = $this->runPhpstan(['result-cache-info', '--json', '--fail-without-result-cache']);
 		$this->assertSame(2, $exitCode);
@@ -155,7 +161,11 @@ PHP);
 	{
 		[$output, $exitCode] = $this->runPhpstan(['result-cache-info']);
 		$this->assertSame(0, $exitCode, $output);
-		$this->assertStringContainsString('Result cache file: ' . $this->projectDir . '/tmp/resultCache.php', $output);
+		$fileHelper = new FileHelper(__DIR__);
+		$this->assertStringContainsString(
+			'Result cache file: ' . $fileHelper->normalizePath($this->projectDir . '/tmp/resultCache.php', '/'),
+			$fileHelper->normalizeSeparator($output),
+		);
 		$this->assertStringContainsString('Result cache will not be used.', $output);
 		$this->assertStringContainsString('Reason: Result cache not used because the cache file does not exist.', $output);
 		$this->assertStringContainsString('2 out of 2 files will be analysed.', $output);

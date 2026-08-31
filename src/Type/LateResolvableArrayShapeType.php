@@ -247,7 +247,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 					$builder->setOffsetValueType($unsealedKeyFiniteType, $unsealedValueType, true);
 				}
 			} else {
-				$builder->makeUnsealed($unsealedKeyType, $unsealedValueType);
+				$builder->mergeUnsealed($unsealedKeyType, $unsealedValueType);
 			}
 		}
 

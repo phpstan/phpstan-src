@@ -1,0 +1,14 @@
+<?php
+
+namespace Bug15120b;
+
+class Foo
+{
+
+	/** @return non-empty-string */
+	public function get(): string
+	{
+
+	}
+
+}

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
+use Closure;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
@@ -140,6 +141,8 @@ final class ClassReflection
 
 	private string|false|null $reflectionDocComment = false;
 
+	private false|ResolvedPhpDocBlock|null $stubPhpDocBlock = false;
+
 	private false|ResolvedPhpDocBlock $resolvedPhpDocBlock = false;
 
 	private false|ResolvedPhpDocBlock $traitContextResolvedPhpDocBlock = false;
@@ -169,6 +172,7 @@ final class ClassReflection
 
 	/**
 	 * @param ReflectionClass|ReflectionEnum $reflection
+	 * @param (Closure(): ?ResolvedPhpDocBlock)|null $stubPhpDocBlockCallback
 	 */
 	public function __construct(
 		private ClassReflectionFactory $classReflectionFactory,
@@ -186,7 +190,7 @@ final class ClassReflection
 		private CoreReflectionClass $reflection,
 		private ?string $anonymousFilename,
 		private ?TemplateTypeMap $resolvedTemplateTypeMap,
-		private ?ResolvedPhpDocBlock $stubPhpDocBlock,
+		private ?Closure $stubPhpDocBlockCallback,
 		private ?string $extraCacheKey = null,
 		private ?TemplateTypeVarianceMap $resolvedCallSiteVarianceMap = null,
 		private ?bool $finalByKeywordOverride = null,
@@ -1932,7 +1936,7 @@ final class ClassReflection
 			$this->reflection,
 			$this->anonymousFilename,
 			$this->typeMapFromList($types),
-			$this->stubPhpDocBlock,
+			$this->stubPhpDocBlockCallback,
 			null,
 			$this->resolvedCallSiteVarianceMap,
 			$this->finalByKeywordOverride,
@@ -1949,7 +1953,7 @@ final class ClassReflection
 			$this->reflection,
 			$this->anonymousFilename,
 			$this->resolvedTemplateTypeMap,
-			$this->stubPhpDocBlock,
+			$this->stubPhpDocBlockCallback,
 			null,
 			$this->varianceMapFromList($variances),
 			$this->finalByKeywordOverride,
@@ -1976,7 +1980,7 @@ final class ClassReflection
 			$this->reflection,
 			$this->anonymousFilename,
 			$this->resolvedTemplateTypeMap,
-			$this->stubPhpDocBlock,
+			$this->stubPhpDocBlockCallback,
 			null,
 			$this->resolvedCallSiteVarianceMap,
 			true,
@@ -2003,7 +2007,7 @@ final class ClassReflection
 			$this->reflection,
 			$this->anonymousFilename,
 			$this->resolvedTemplateTypeMap,
-			$this->stubPhpDocBlock,
+			$this->stubPhpDocBlockCallback,
 			null,
 			$this->resolvedCallSiteVarianceMap,
 			false,
@@ -2012,8 +2016,13 @@ final class ClassReflection
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
 	{
-		if ($this->stubPhpDocBlock !== null) {
-			return $this->stubPhpDocBlock;
+		if ($this->stubPhpDocBlockCallback !== null) {
+			if ($this->stubPhpDocBlock === false) {
+				$this->stubPhpDocBlock = ($this->stubPhpDocBlockCallback)();
+			}
+			if ($this->stubPhpDocBlock !== null) {
+				return $this->stubPhpDocBlock;
+			}
 		}
 
 		$fileName = $this->getFileName();

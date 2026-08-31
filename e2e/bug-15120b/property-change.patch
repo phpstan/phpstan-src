@@ -1,0 +1,13 @@
+--- src/Entity.php
++++ src/Entity.php
+@@ -13,4 +13,10 @@
+ 		return $foo->get();
+ 	}
+ 
++	/** @return non-empty-string */
++	public function label(Foo $foo): string
++	{
++		return $this->name . ': ' . $this->describe($foo);
++	}
++
+ }

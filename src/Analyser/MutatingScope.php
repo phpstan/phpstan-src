@@ -3287,6 +3287,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $propertyReflection->getReadableType();
 		}
 
+		// a nullsafe link of a chain being ensured non-null ahead of its walk
+		// (isset()/empty()/?? over `$a?->b()?->c`): its state is the plain
+		// link's state on the receiver's state, plus the short-circuit null -
+		// the same reflection-derived read as the plain fetch/call arms below,
+		// never a walk of the still-unprocessed node
+		if ($expr instanceof Expr\NullsafePropertyFetch && $expr->name instanceof Identifier) {
+			return TypeCombinator::addNull($this->resolveScopeStateType(new PropertyFetch($expr->var, $expr->name), $native));
+		}
+		if (
+			$expr instanceof Expr\NullsafeMethodCall
+			&& $expr->name instanceof Identifier
+			&& !$expr->isFirstClassCallable()
+			&& $expr->getArgs() === []
+		) {
+			return TypeCombinator::addNull($this->resolveScopeStateType(new Expr\MethodCall($expr->var, $expr->name, attributes: $expr->getAttributes()), $native));
+		}
+
 		// an argument-less instance call - the shape @phpstan-assert subjects
 		// take (synthetic nodes built fresh from the assert tag, never stored):
 		// its declared return type on the receiver's state is the narrowing

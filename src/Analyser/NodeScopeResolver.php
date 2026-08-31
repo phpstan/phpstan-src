@@ -32,6 +32,7 @@ use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -145,6 +146,8 @@ class NodeScopeResolver
 	 */
 	private bool $consumeStoredExpressionResults = false;
 
+	private ?NonNullabilityHelper $nonNullabilityHelper = null;
+
 	/**
 	 * Engine-feeding gatherer frames (return statements, execution ends,
 	 * impure points, ...), innermost last. callNodeCallback() feeds every
@@ -251,6 +254,11 @@ class NodeScopeResolver
 	 * wiping the per-file caches there forces the outer file to rebuild them -
 	 * closure types re-converge, narrowing memos recompute.
 	 */
+	private function getNonNullabilityHelper(): NonNullabilityHelper
+	{
+		return $this->nonNullabilityHelper ??= $this->container->getByType(NonNullabilityHelper::class);
+	}
+
 	public function resetPerFileAnalysisState(): void
 	{
 		foreach ($this->perFileAnalysisResettables->getAll() as $resettableService) {
@@ -1310,6 +1318,10 @@ class NodeScopeResolver
 		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
 			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			// a chain link an enclosing isset/empty/?? could not device ahead
+			// of its walk (an untracked call) is deviced now, from the type
+			// the walk produced
+			$expressionResult = $this->getNonNullabilityHelper()->applyPendingEnsure($expr, $expressionResult);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			// The node's own callback fires AFTER its result is stored, with the
 			// scope captured before processing. Rules observe the same (scope,

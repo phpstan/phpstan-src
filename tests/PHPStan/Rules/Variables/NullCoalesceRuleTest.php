@@ -676,4 +676,15 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12780.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
+	public function testReadonlyPropertyOnNullableReceiver(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-readonly-property-nullable-receiver.php'], [
+			[
+				'Property NullCoalesceReadonlyPropertyNullableReceiver\PluginMapping::$snippetName (string) on left side of ?? is not nullable.',
+				57,
+			],
+		]);
+	}
+
 }

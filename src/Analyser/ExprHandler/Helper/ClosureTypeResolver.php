@@ -37,7 +37,6 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -735,16 +734,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	}
 
 	/**
-	 * Builds the closure/arrow function's declared parameters (independent of the
-	 * body walk) and the callable parameter acceptors derived from the call site.
+	 * The declared signature's parameters, independent of the body walk and of
+	 * the call site.
 	 *
-	 * @return array{list<NativeParameterReflection>, bool, ParameterReflection[]|null, ParameterReflection[]|null}
+	 * @return array{list<NativeParameterReflection>, bool}
 	 */
-	private function buildParametersAndAcceptors(
-		MutatingScope $scope,
-		Node\Expr\Closure|ArrowFunction $expr,
-		?ExpressionResultStorage $storage = null,
-	): array
+	private function buildDeclaredParameters(MutatingScope $scope, Node\Expr\Closure|ArrowFunction $expr): array
 	{
 		$parameters = [];
 		$isVariadic = false;
@@ -782,6 +777,41 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			);
 		}
 
+		return [$parameters, $isVariadic];
+	}
+
+	/**
+	 * The closure's declared signature: the parameters as written plus the
+	 * DECLARED return type - no invocation-argument inference, no body walk.
+	 * The call handler walks an immediately invoked closure's arguments on it
+	 * before the closure itself, whose untyped parameters they then type.
+	 */
+	public function getDeclaredClosureType(MutatingScope $scope, Node\Expr\Closure|ArrowFunction $expr): ClosureType
+	{
+		[$parameters, $isVariadic] = $this->buildDeclaredParameters($scope, $expr);
+
+		return new ClosureType(
+			$parameters,
+			$scope->getFunctionType($expr->returnType, false, false),
+			$isVariadic,
+			isStatic: TrinaryLogic::createFromBoolean($expr->static),
+		);
+	}
+
+	/**
+	 * Builds the closure/arrow function's declared parameters (independent of the
+	 * body walk) and the callable parameter acceptors derived from the call site.
+	 *
+	 * @return array{list<NativeParameterReflection>, bool, ParameterReflection[]|null, ParameterReflection[]|null}
+	 */
+	private function buildParametersAndAcceptors(
+		MutatingScope $scope,
+		Node\Expr\Closure|ArrowFunction $expr,
+		?ExpressionResultStorage $storage = null,
+	): array
+	{
+		[$parameters, $isVariadic] = $this->buildDeclaredParameters($scope, $expr);
+
 		$callableParameters = null;
 		$nativeCallableParameters = null;
 		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
@@ -797,31 +827,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			}
 		} elseif ($immediatelyInvokedArgs !== null) {
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
-				// an immediately invoked closure is the callee: its invocation
-				// arguments are walked AFTER the closure itself, so there is no
-				// stored result yet. Constants price through the initializer
-				// resolver and plain variables read scope state by name; the
-				// ask-ahead-of-walk scope read remains the seam for the rest.
+				// an immediately invoked closure is the callee; the call handler
+				// walks its invocation arguments BEFORE the closure, so their
+				// results are stored (see FuncCallHandler)
 				$argValue = $immediatelyInvokedArg->value;
-				if (
-					$argValue instanceof Node\Scalar\String_
-					|| $argValue instanceof Node\Scalar\Int_
-					|| $argValue instanceof Node\Scalar\Float_
-					|| ($argValue instanceof Node\Expr\ClassConstFetch && $argValue->class instanceof Node\Name && $argValue->name instanceof Node\Identifier)
-					|| $argValue instanceof Node\Expr\ConstFetch
-				) {
-					$argType = $this->initializerExprTypeResolver->getType($argValue, InitializerExprContext::fromScope($scope));
-					$argNativeType = $argType;
-				} elseif ($argValue instanceof Node\Expr\Variable && is_string($argValue->name)) {
-					$argType = $scope->hasVariableType($argValue->name)->no() ? new ErrorType() : $scope->getVariableType($argValue->name);
-					$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
-					$argNativeType = $nativeScope->hasVariableType($argValue->name)->no() ? new ErrorType() : $nativeScope->getVariableType($argValue->name);
-				} else {
-					$argType = $scope->getType($argValue);
-					$argNativeType = $scope->getNativeType($argValue);
-				}
-				$callableParameters[] = new DummyParameter('item', $argType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-				$nativeCallableParameters[] = new DummyParameter('item', $argNativeType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				$callableParameters[] = new DummyParameter('item', $this->readExprType($storage, $argValue, $scope, false), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				$nativeCallableParameters[] = new DummyParameter('item', $this->readExprType($storage, $argValue, $scope->doNotTreatPhpDocTypesAsCertain(), true), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} else {
 			$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);

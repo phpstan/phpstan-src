@@ -103,6 +103,19 @@ final class ArgsResult
 		return $this->expressionResult->getImpurePoints();
 	}
 
+	/**
+	 * The same processed arguments under another acceptor: an immediately
+	 * invoked closure's arguments are walked on its declared signature, the
+	 * acceptor the call resolves from is the walked closure's.
+	 */
+	public function withResolvedParametersAcceptor(?ParametersAcceptor $resolvedParametersAcceptor): self
+	{
+		$clone = clone $this;
+		$clone->resolvedParametersAcceptor = $resolvedParametersAcceptor;
+
+		return $clone;
+	}
+
 	public function getResolvedParametersAcceptor(): ?ParametersAcceptor
 	{
 		return $this->resolvedParametersAcceptor;

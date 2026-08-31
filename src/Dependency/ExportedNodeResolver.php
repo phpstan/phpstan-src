@@ -386,11 +386,14 @@ final class ExportedNodeResolver
 			$docComment = $node->getDocComment();
 
 			$names = array_map(static fn (Node\PropertyItem $prop): string => $prop->name->toString(), $node->props);
+			// Virtuality is decided by the native reflection, so it is read straight off it.
+			// PhpPropertyReflection would give the same answer, but building it resolves the
+			// class PHPDoc - see exportPhpDocNode() for why that is not allowed here.
 			$virtual = false;
 			if ($this->reflectionProvider->hasClass($namespacedName)) {
-				$classReflection = $this->reflectionProvider->getClass($namespacedName);
-				if ($classReflection->hasNativeProperty($names[0])) {
-					$virtual = $classReflection->getNativeProperty($names[0])->isVirtual()->yes();
+				$nativeReflection = $this->reflectionProvider->getClass($namespacedName)->getNativeReflection();
+				if ($nativeReflection->hasProperty($names[0])) {
+					$virtual = $nativeReflection->getProperty($names[0])->isVirtual();
 				}
 			}
 

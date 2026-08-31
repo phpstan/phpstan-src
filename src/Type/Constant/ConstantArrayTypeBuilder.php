@@ -98,6 +98,33 @@ final class ConstantArrayTypeBuilder
 		$this->unsealed = [$keyType, $valueType];
 	}
 
+	/**
+	 * Adds unsealed extras on top of the ones the builder already collected
+	 * instead of replacing them.
+	 *
+	 * Offsets the builder could not give a slot of their own (a non-constant
+	 * key like `string`) end up in the unsealed extras, so overwriting them
+	 * would drop their value type.
+	 */
+	public function mergeUnsealed(Type $keyType, Type $valueType): void
+	{
+		if ($this->unsealed === null) {
+			$this->unsealed = [$keyType, $valueType];
+			return;
+		}
+
+		[$existingKey, $existingValue] = $this->unsealed;
+		if ($existingKey instanceof NeverType && $existingKey->isExplicit()) {
+			$this->unsealed = [$keyType, $valueType];
+			return;
+		}
+
+		$this->unsealed = [
+			TypeCombinator::union($existingKey, $keyType),
+			TypeCombinator::union($existingValue, $valueType),
+		];
+	}
+
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
 	{
 		if ($offsetType !== null) {

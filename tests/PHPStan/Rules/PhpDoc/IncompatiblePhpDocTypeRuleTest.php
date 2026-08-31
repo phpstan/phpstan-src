@@ -499,6 +499,17 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11463b.php'], []);
 	}
 
+	public function testArrayShapeTemplateKey(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-shape-template-key.php'], [
+			[
+				// stdClass can never be an array key, so there are no extra keys left
+				'PHPDoc tag @return contains unresolvable type.',
+				33,
+			],
+		]);
+	}
+
 	public function testExplainUnresolvable(): void
 	{
 		$this->analyse([__DIR__ . '/data/explain-unresolvable-method-parameter.php'], [

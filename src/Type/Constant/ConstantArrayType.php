@@ -2802,10 +2802,11 @@ class ConstantArrayType implements Type
 		$unsealed = $this->unsealed;
 		if ($unsealed !== null) {
 			[$unsealedKeyType, $unsealedValueType] = $unsealed;
+			$transformedUnsealedKeyType = $cb($unsealedKeyType);
 			$transformedUnsealedValueType = $cb($unsealedValueType);
-			if ($transformedUnsealedValueType !== $unsealedValueType) {
+			if ($transformedUnsealedKeyType !== $unsealedKeyType || $transformedUnsealedValueType !== $unsealedValueType) {
 				$stillOriginal = false;
-				$unsealed = [$unsealedKeyType, $transformedUnsealedValueType];
+				$unsealed = [$transformedUnsealedKeyType, $transformedUnsealedValueType];
 			}
 		}
 
@@ -2838,10 +2839,11 @@ class ConstantArrayType implements Type
 		$unsealed = $this->unsealed;
 		if ($unsealed !== null) {
 			[$unsealedKeyType, $unsealedValueType] = $unsealed;
+			$transformedUnsealedKeyType = $cb($unsealedKeyType, $right->getIterableKeyType());
 			$transformedUnsealedValueType = $cb($unsealedValueType, $right->getIterableValueType());
-			if ($transformedUnsealedValueType !== $unsealedValueType) {
+			if ($transformedUnsealedKeyType !== $unsealedKeyType || $transformedUnsealedValueType !== $unsealedValueType) {
 				$stillOriginal = false;
-				$unsealed = [$unsealedKeyType, $transformedUnsealedValueType];
+				$unsealed = [$transformedUnsealedKeyType, $transformedUnsealedValueType];
 			}
 		}
 

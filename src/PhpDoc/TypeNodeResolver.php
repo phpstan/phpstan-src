@@ -91,6 +91,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
+use PHPStan\Type\LateResolvableArrayShapeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NewObjectType;
 use PHPStan\Type\NonAcceptingNeverType;
@@ -1139,87 +1140,31 @@ final class TypeNodeResolver
 
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type
 	{
-		$builder = ConstantArrayTypeBuilder::createEmpty();
-		$builder->disableArrayDegradation();
-
-		$explicitKeyValues = [];
+		$items = [];
 		foreach ($typeNode->items as $itemNode) {
-			if ($itemNode->valueType instanceof CallableTypeNode) {
-				$builder->disableClosureDegradation();
-			}
-
-			$offsetType = $this->resolveArrayShapeOffsetType($itemNode, $nameScope);
-			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
-				$explicitKeyValues[] = $offsetType->getValue();
-			}
-			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
+			$items[] = [
+				$this->resolveArrayShapeOffsetType($itemNode, $nameScope),
+				$this->resolve($itemNode->valueType, $nameScope),
+				$itemNode->optional,
+			];
 		}
 
-		$isList = in_array($typeNode->kind, [
-			ArrayShapeNode::KIND_LIST,
-			ArrayShapeNode::KIND_NON_EMPTY_LIST,
-		], true);
-
+		$unsealed = null;
 		if (!$typeNode->sealed) {
-			if ($typeNode->unsealedType === null) {
-				if ($isList) {
-					$unsealedKeyType = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
-				} else {
-					$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-				}
-				$builder->makeUnsealed(
-					$unsealedKeyType,
-					new MixedType(),
-				);
-			} else {
-				if ($typeNode->unsealedType->keyType === null) {
-					if ($isList) {
-						$unsealedKeyType = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
-					} else {
-						$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-					}
-				} else {
-					$unsealedKeyType = $this->transformUnsafeArrayKey($this->resolve($typeNode->unsealedType->keyType, $nameScope));
-				}
-				$unsealedKeyFiniteTypes = $unsealedKeyType->getFiniteTypes();
-				$unsealedValueType = $this->resolve($typeNode->unsealedType->valueType, $nameScope);
-				if (count($unsealedKeyFiniteTypes) > 0) {
-					foreach ($unsealedKeyFiniteTypes as $unsealedKeyFiniteType) {
-						// Explicit keys own their slot — the unsealed extras
-						// describe entries at keys NOT in the explicit set.
-						if (
-							($unsealedKeyFiniteType instanceof ConstantIntegerType || $unsealedKeyFiniteType instanceof ConstantStringType)
-							&& in_array($unsealedKeyFiniteType->getValue(), $explicitKeyValues, true)
-						) {
-							continue;
-						}
-						$builder->setOffsetValueType($unsealedKeyFiniteType, $unsealedValueType, true);
-					}
-				} else {
-					$builder->makeUnsealed($unsealedKeyType, $unsealedValueType);
-				}
-			}
+			// A key type that is not written down is derived from the shape kind
+			// when the shape gets built, so that it can be printed back as `...`.
+			$unsealedKeyType = $typeNode->unsealedType === null || $typeNode->unsealedType->keyType === null
+				? null
+				: $this->transformUnsafeArrayKey($this->resolve($typeNode->unsealedType->keyType, $nameScope));
+
+			$unsealedValueType = $typeNode->unsealedType === null
+				? new MixedType()
+				: $this->resolve($typeNode->unsealedType->valueType, $nameScope);
+
+			$unsealed = [$unsealedKeyType, $unsealedValueType];
 		}
 
-		$arrayType = $builder->getArray();
-
-		$accessories = [];
-		if ($isList) {
-			$accessories[] = new AccessoryArrayListType();
-		}
-
-		if (in_array($typeNode->kind, [
-			ArrayShapeNode::KIND_NON_EMPTY_ARRAY,
-			ArrayShapeNode::KIND_NON_EMPTY_LIST,
-		], true)) {
-			$accessories[] = new NonEmptyArrayType();
-		}
-
-		if (count($accessories) > 0) {
-			return TypeCombinator::intersect($arrayType, ...$accessories);
-		}
-
-		return $arrayType;
+		return LateResolvableArrayShapeType::create($items, $unsealed, $typeNode->kind);
 	}
 
 	private function resolveArrayShapeOffsetType(ArrayShapeItemNode $itemNode, NameScope $nameScope): ?Type
@@ -1227,6 +1172,11 @@ final class TypeNodeResolver
 		if ($itemNode->keyName instanceof ConstExprIntegerNode) {
 			return new ConstantIntegerType((int) $itemNode->keyName->value);
 		} elseif ($itemNode->keyName instanceof IdentifierTypeNode) {
+			$templateType = $nameScope->resolveTemplateTypeName($itemNode->keyName->name);
+			if ($templateType !== null) {
+				return $templateType;
+			}
+
 			return new ConstantStringType($itemNode->keyName->name);
 		} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
 			return new ConstantStringType($itemNode->keyName->value);

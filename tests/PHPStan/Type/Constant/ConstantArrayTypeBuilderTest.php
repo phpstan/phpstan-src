@@ -350,4 +350,35 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 		$this->assertSame('array{a: int, ...<string, string>}', $array->describe(VerbosityLevel::precise()));
 	}
 
+	public function testMergeUnsealedOnFreshBuilder(): void
+	{
+		foreach ([true, false] as $bleedingEdge) {
+			$array = BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): Type {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder->setOffsetValueType(new ConstantStringType('a'), new IntegerType());
+				$builder->mergeUnsealed(new StringType(), new StringType());
+
+				return $builder->getArray();
+			});
+			$this->assertSame('array{a: int, ...<string, string>}', $array->describe(VerbosityLevel::precise()));
+		}
+	}
+
+	public function testMergeUnsealedKeepsTheOffsetsFoldedIntoTheUnsealedExtras(): void
+	{
+		foreach ([true, false] as $bleedingEdge) {
+			$array = BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function (): Type {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder->disableArrayDegradation();
+				// a non-constant offset cannot get a slot of its own, it ends up
+				// among the unsealed extras
+				$builder->setOffsetValueType(new StringType(), new IntegerType());
+				$builder->mergeUnsealed(new StringType(), new BooleanType());
+
+				return $builder->getArray();
+			});
+			$this->assertSame('non-empty-array<string, bool|int>', $array->describe(VerbosityLevel::precise()));
+		}
+	}
+
 }

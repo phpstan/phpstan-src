@@ -315,7 +315,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 3
+			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-

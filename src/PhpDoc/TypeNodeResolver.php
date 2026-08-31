@@ -90,8 +90,8 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
-use PHPStan\Type\LateResolvableArrayShapeType;
 use PHPStan\Type\KeyOfType;
+use PHPStan\Type\LateResolvableArrayShapeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NewObjectType;
 use PHPStan\Type\NonAcceptingNeverType;
@@ -1141,12 +1141,7 @@ final class TypeNodeResolver
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type
 	{
 		$items = [];
-		$hasCallableItem = false;
 		foreach ($typeNode->items as $itemNode) {
-			if ($itemNode->valueType instanceof CallableTypeNode) {
-				$hasCallableItem = true;
-			}
-
 			$items[] = [
 				$this->resolveArrayShapeOffsetType($itemNode, $nameScope),
 				$this->resolve($itemNode->valueType, $nameScope),
@@ -1154,22 +1149,13 @@ final class TypeNodeResolver
 			];
 		}
 
-		$isList = in_array($typeNode->kind, [
-			ArrayShapeNode::KIND_LIST,
-			ArrayShapeNode::KIND_NON_EMPTY_LIST,
-		], true);
-
 		$unsealed = null;
 		if (!$typeNode->sealed) {
-			if ($typeNode->unsealedType === null || $typeNode->unsealedType->keyType === null) {
-				if ($isList) {
-					$unsealedKeyType = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
-				} else {
-					$unsealedKeyType = (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
-				}
-			} else {
-				$unsealedKeyType = $this->transformUnsafeArrayKey($this->resolve($typeNode->unsealedType->keyType, $nameScope));
-			}
+			// A key type that is not written down is derived from the shape kind
+			// when the shape gets built, so that it can be printed back as `...`.
+			$unsealedKeyType = $typeNode->unsealedType === null || $typeNode->unsealedType->keyType === null
+				? null
+				: $this->transformUnsafeArrayKey($this->resolve($typeNode->unsealedType->keyType, $nameScope));
 
 			$unsealedValueType = $typeNode->unsealedType === null
 				? new MixedType()
@@ -1178,7 +1164,7 @@ final class TypeNodeResolver
 			$unsealed = [$unsealedKeyType, $unsealedValueType];
 		}
 
-		return LateResolvableArrayShapeType::create($items, $unsealed, $typeNode->kind, $hasCallableItem);
+		return LateResolvableArrayShapeType::create($items, $unsealed, $typeNode->kind);
 	}
 
 	private function resolveArrayShapeOffsetType(ArrayShapeItemNode $itemNode, NameScope $nameScope): ?Type

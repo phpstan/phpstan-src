@@ -12,11 +12,10 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
@@ -40,14 +39,13 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 
 	/**
 	 * @param list<array{Type|null, Type, bool}> $items keyType (null for auto-index), valueType, optional
-	 * @param array{Type, Type}|null $unsealed
+	 * @param array{Type|null, Type}|null $unsealed keyType (null when not written down), valueType
 	 * @param ArrayShapeNode::KIND_* $kind
 	 */
 	private function __construct(
 		private array $items,
 		private ?array $unsealed,
 		private string $kind,
-		private bool $hasCallableItem,
 	)
 	{
 	}
@@ -57,12 +55,12 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 	 * as some of its keys still contain template types.
 	 *
 	 * @param list<array{Type|null, Type, bool}> $items keyType (null for auto-index), valueType, optional
-	 * @param array{Type, Type}|null $unsealed
+	 * @param array{Type|null, Type}|null $unsealed keyType (null when not written down), valueType
 	 * @param ArrayShapeNode::KIND_* $kind
 	 */
-	public static function create(array $items, ?array $unsealed, string $kind, bool $hasCallableItem): Type
+	public static function create(array $items, ?array $unsealed, string $kind): Type
 	{
-		$self = new self($items, $unsealed, $kind, $hasCallableItem);
+		$self = new self($items, $unsealed, $kind);
 		if ($self->isResolvable()) {
 			return $self->resolve();
 		}
@@ -82,7 +80,10 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 
 		if ($this->unsealed !== null) {
 			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
-			$classes = array_merge($classes, $unsealedKeyType->getReferencedClasses(), $unsealedValueType->getReferencedClasses());
+			if ($unsealedKeyType !== null) {
+				$classes = array_merge($classes, $unsealedKeyType->getReferencedClasses());
+			}
+			$classes = array_merge($classes, $unsealedValueType->getReferencedClasses());
 		}
 
 		return $classes;
@@ -110,11 +111,10 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 
 		if ($this->unsealed !== null) {
 			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
-			$references = array_merge(
-				$references,
-				$unsealedKeyType->getReferencedTemplateTypes($positionVariance),
-				$unsealedValueType->getReferencedTemplateTypes($positionVariance),
-			);
+			if ($unsealedKeyType !== null) {
+				$references = array_merge($references, $unsealedKeyType->getReferencedTemplateTypes($positionVariance));
+			}
+			$references = array_merge($references, $unsealedValueType->getReferencedTemplateTypes($positionVariance));
 		}
 
 		return $references;
@@ -151,8 +151,15 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 		}
 
 		if ($this->unsealed !== null && $type->unsealed !== null) {
-			return $this->unsealed[0]->equals($type->unsealed[0])
-				&& $this->unsealed[1]->equals($type->unsealed[1]);
+			if (($this->unsealed[0] === null) !== ($type->unsealed[0] === null)) {
+				return false;
+			}
+
+			if ($this->unsealed[0] !== null && $type->unsealed[0] !== null && !$this->unsealed[0]->equals($type->unsealed[0])) {
+				return false;
+			}
+
+			return $this->unsealed[1]->equals($type->unsealed[1]);
 		}
 
 		return true;
@@ -160,10 +167,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 
 	public function describe(VerbosityLevel $level): string
 	{
-		if ($this->isResolvable()) {
-			return $this->resolve()->describe($level);
-		}
-
+		// a shape that can be resolved never stays late-resolvable, see create()
 		return (new Printer())->print($this->toPhpDocNode());
 	}
 
@@ -179,7 +183,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 			}
 		}
 
-		if ($this->unsealed !== null && TypeUtils::containsTemplateType($this->unsealed[0])) {
+		if ($this->unsealed !== null && $this->unsealed[0] !== null && TypeUtils::containsTemplateType($this->unsealed[0])) {
 			return false;
 		}
 
@@ -190,36 +194,17 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->disableArrayDegradation();
-		if ($this->hasCallableItem) {
-			$builder->disableClosureDegradation();
-		}
 
 		$explicitKeyValues = [];
 		foreach ($this->items as [$keyType, $valueType, $optional]) {
 			if ($keyType !== null) {
+				$keyType = $this->toArrayKeyType($keyType);
 				if ($keyType instanceof ErrorType) {
 					return $keyType;
 				}
 
-				if (TypeUtils::containsTemplateType($keyType)) {
-					// The template type is never going to be resolved here, so
-					// the shape degrades into a general array. Its key has to be
-					// a valid array key though, which a template type bound by
-					// e.g. mixed is not.
-					$keyType = TemplateTypeHelper::resolveToBounds($keyType);
-				}
-
-				$arrayKeyType = $keyType->toArrayKey();
-				if ($arrayKeyType instanceof ErrorType) {
-					return new ErrorType(sprintf(
-						'Type %s cannot be used as an array shape key.',
-						$keyType->describe(VerbosityLevel::typeOnly()),
-					));
-				}
-
-				$keyType = $arrayKeyType;
-				if ($keyType instanceof ConstantIntegerType || $keyType instanceof ConstantStringType) {
-					$explicitKeyValues[] = $keyType->getValue();
+				foreach ($keyType->getConstantScalarValues() as $keyValue) {
+					$explicitKeyValues[] = $keyValue;
 				}
 			}
 
@@ -232,16 +217,15 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 		], true);
 
 		if ($this->unsealed !== null) {
-			[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+			$unsealedValueType = $this->unsealed[1];
+			$unsealedKeyType = $this->toArrayKeyType($this->getUnsealedKeyType());
 			$unsealedKeyFiniteTypes = $unsealedKeyType->getFiniteTypes();
 			if (count($unsealedKeyFiniteTypes) > 0) {
 				foreach ($unsealedKeyFiniteTypes as $unsealedKeyFiniteType) {
 					// Explicit keys own their slot — the unsealed extras
 					// describe entries at keys NOT in the explicit set.
-					if (
-						($unsealedKeyFiniteType instanceof ConstantIntegerType || $unsealedKeyFiniteType instanceof ConstantStringType)
-						&& in_array($unsealedKeyFiniteType->getValue(), $explicitKeyValues, true)
-					) {
+					$finiteKeyValues = $unsealedKeyFiniteType->getConstantScalarValues();
+					if (count($finiteKeyValues) === 1 && in_array($finiteKeyValues[0], $explicitKeyValues, true)) {
 						continue;
 					}
 					$builder->setOffsetValueType($unsealedKeyFiniteType, $unsealedValueType, true);
@@ -273,6 +257,59 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 	}
 
 	/**
+	 * Turns a type written down as an array shape key into the type of the key
+	 * it actually creates, or an ErrorType when it cannot be an array key.
+	 *
+	 * Template types are resolved to their bounds: at this point they are never
+	 * going to be substituted anymore, so the shape degrades into a general
+	 * array keyed by the bound.
+	 */
+	private function toArrayKeyType(Type $keyType): Type
+	{
+		if ($keyType instanceof ErrorType) {
+			return $keyType;
+		}
+
+		if (TypeUtils::containsTemplateType($keyType)) {
+			$keyType = TemplateTypeHelper::resolveToBounds($keyType);
+		}
+
+		$arrayKeyType = $keyType->toArrayKey();
+		if ($arrayKeyType instanceof ErrorType) {
+			return new ErrorType(sprintf(
+				'Type %s cannot be used as an array shape key.',
+				$keyType->describe(VerbosityLevel::typeOnly()),
+			));
+		}
+
+		return $arrayKeyType;
+	}
+
+	/**
+	 * The unsealed key type as written down, or the implicit one when the
+	 * shape was written as `array{...}` or `array{...<ValueType>}`.
+	 */
+	private function getUnsealedKeyType(): Type
+	{
+		if ($this->unsealed === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		if ($this->unsealed[0] !== null) {
+			return $this->unsealed[0];
+		}
+
+		if (in_array($this->kind, [
+			ArrayShapeNode::KIND_LIST,
+			ArrayShapeNode::KIND_NON_EMPTY_LIST,
+		], true)) {
+			return IntegerRangeType::createAllGreaterThanOrEqualTo(0);
+		}
+
+		return (new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey();
+	}
+
+	/**
 	 * @param callable(Type): Type $cb
 	 */
 	public function traverse(callable $cb): Type
@@ -292,7 +329,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 		$unsealed = $this->unsealed;
 		if ($unsealed !== null) {
 			[$unsealedKeyType, $unsealedValueType] = $unsealed;
-			$newUnsealedKeyType = $cb($unsealedKeyType);
+			$newUnsealedKeyType = $unsealedKeyType !== null ? $cb($unsealedKeyType) : null;
 			$newUnsealedValueType = $cb($unsealedValueType);
 			if ($newUnsealedKeyType !== $unsealedKeyType || $newUnsealedValueType !== $unsealedValueType) {
 				$stillOriginal = false;
@@ -304,7 +341,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 			return $this;
 		}
 
-		return self::create($items, $unsealed, $this->kind, $this->hasCallableItem);
+		return self::create($items, $unsealed, $this->kind);
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
@@ -333,7 +370,9 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 		$unsealed = $this->unsealed;
 		if ($unsealed !== null && $right->unsealed !== null) {
 			[$unsealedKeyType, $unsealedValueType] = $unsealed;
-			$newUnsealedKeyType = $cb($unsealedKeyType, $right->unsealed[0]);
+			$newUnsealedKeyType = $unsealedKeyType !== null && $right->unsealed[0] !== null
+				? $cb($unsealedKeyType, $right->unsealed[0])
+				: $unsealedKeyType;
 			$newUnsealedValueType = $cb($unsealedValueType, $right->unsealed[1]);
 			if ($newUnsealedKeyType !== $unsealedKeyType || $newUnsealedValueType !== $unsealedValueType) {
 				$stillOriginal = false;
@@ -345,7 +384,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 			return $this;
 		}
 
-		return self::create($items, $unsealed, $this->kind, $this->hasCallableItem);
+		return self::create($items, $unsealed, $this->kind);
 	}
 
 	public function toPhpDocNode(): TypeNode
@@ -364,11 +403,21 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 		}
 
 		[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
+		if ($unsealedKeyType === null && $this->isImplicitMixed($unsealedValueType)) {
+			return ArrayShapeNode::createUnsealed($items, null, $this->kind);
+		}
 
 		return ArrayShapeNode::createUnsealed($items, new ArrayShapeUnsealedTypeNode(
-			$unsealedKeyType->toPhpDocNode(),
 			$unsealedValueType->toPhpDocNode(),
+			$unsealedKeyType?->toPhpDocNode(),
 		), $this->kind);
+	}
+
+	private function isImplicitMixed(Type $type): bool
+	{
+		return $type instanceof MixedType
+			&& !$type->isExplicitMixed()
+			&& $type->getSubtractedType() === null;
 	}
 
 	/**

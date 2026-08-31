@@ -61,9 +61,10 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 
 	/**
 	 * Keyed by the match node's spl_object_id() - see
-	 * TernaryHandler::$capturedResults for the lifetime/collision reasoning.
+	 * TernaryHandler::$capturedResults for the lifetime/collision reasoning;
+	 * the entry pins the node it was captured for.
 	 *
-	 * @var array<int, list<array{ExpressionResult, MutatingScope, Expr}>>
+	 * @var array<int, array{Match_, list<array{ExpressionResult, MutatingScope, Expr}>}>
 	 */
 	private array $capturedArmResults = [];
 
@@ -101,12 +102,13 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 	 */
 	public function getCapturedArmScopesAndTypes(Match_ $expr): ?array
 	{
-		if (!isset($this->capturedArmResults[spl_object_id($expr)])) {
+		$entry = $this->capturedArmResults[spl_object_id($expr)] ?? null;
+		if ($entry === null || $entry[0] !== $expr) {
 			return null;
 		}
 
 		$pairs = [];
-		foreach ($this->capturedArmResults[spl_object_id($expr)] as [$armResult, $bodyScope]) {
+		foreach ($entry[1] as [$armResult, $bodyScope]) {
 			$pairs[] = [$bodyScope, $armResult->getType()];
 		}
 
@@ -490,7 +492,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 			$expr->cond = $expr->cond->getExpr();
 		}
 
-		$this->capturedArmResults[spl_object_id($expr)] = $armTypeResults;
+		$this->capturedArmResults[spl_object_id($expr)] = [$expr, $armTypeResults];
 
 		return $this->expressionResultFactory->create(
 			$scope,

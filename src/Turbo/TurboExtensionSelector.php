@@ -8,7 +8,7 @@ use function file_get_contents;
 use function is_file;
 use function php_uname;
 use function sprintf;
-use function str_contains;
+use function strpos;
 use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
@@ -31,6 +31,10 @@ use const PHP_ZTS;
  * (like PMMP's bundled build) are covered too. Workers run the regular
  * entrypoint, so TurboExtensionEnabler still gates activation on the
  * expected extension version.
+ *
+ * bin/phpstan loads this class before the Composer autoloader (for the
+ * process restart), so it must only call functions native to PHP 7.4 - the
+ * symfony polyfills are not registered yet. PreAutoloadFilesTest guards this.
  */
 final class TurboExtensionSelector
 {
@@ -124,7 +128,10 @@ final class TurboExtensionSelector
 	public static function resolveIsMusl(string|false $selfMaps, bool $hasAlpineRelease): bool
 	{
 		if ($selfMaps !== false) {
-			return str_contains($selfMaps, '/ld-musl-');
+			// strpos() rather than str_contains(): this runs before the Composer
+			// autoloader, so the symfony polyfill is not loaded yet and
+			// str_contains() does not exist on PHP < 8.0
+			return strpos($selfMaps, '/ld-musl-') !== false;
 		}
 
 		// no procfs to inspect (non-Linux, or a sandboxed container without

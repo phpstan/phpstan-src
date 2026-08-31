@@ -2219,6 +2219,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayShapeTemplateKey(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/array-shape-template-key.php'], [
+			[
+				'Return type of call to method ArrayShapeTemplateKeyMethods\Foo::objectKey() contains unresolvable type.',
+				45,
+				'Type stdClass cannot be used as an array shape key.',
+			],
+			[
+				'Return type of call to method ArrayShapeTemplateKeyMethods\Foo::arrayKey() contains unresolvable type.',
+				46,
+				'Type array<int, string> cannot be used as an array shape key.',
+			],
+		]);
+	}
+
 	public function testUnableToResolveCallbackParameterType(): void
 	{
 		$this->checkThisOnly = false;

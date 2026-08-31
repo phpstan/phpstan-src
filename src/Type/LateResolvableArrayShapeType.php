@@ -15,6 +15,7 @@ use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -432,6 +433,10 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 
 		if ($node instanceof ConstTypeNode) {
 			$constExpr = $node->constExpr;
+			if ($constExpr instanceof ConstExprStringNode && ConstantArrayType::isValidIdentifier($constExpr->value)) {
+				return new IdentifierTypeNode($constExpr->value);
+			}
+
 			if (
 				$constExpr instanceof ConstExprIntegerNode
 				|| $constExpr instanceof ConstExprStringNode

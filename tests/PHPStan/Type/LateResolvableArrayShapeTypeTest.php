@@ -70,7 +70,7 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 				null,
 				ArrayShapeNode::KIND_ARRAY,
 			),
-			"array{'a': int, TKey: bool}",
+			'array{a: int, TKey: bool}',
 		];
 
 		yield 'auto index' => [
@@ -127,7 +127,7 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 				[$templateType, new BooleanType()],
 				ArrayShapeNode::KIND_ARRAY,
 			),
-			"array{'a': int, ...<TKey, bool>}",
+			'array{a: int, ...<TKey, bool>}',
 		];
 	}
 

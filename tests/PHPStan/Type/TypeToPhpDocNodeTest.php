@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
@@ -20,6 +21,9 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
@@ -603,6 +607,46 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$this->assertSame($typeString, (string) $type->toPhpDocNode());
 
 		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode());
+		$this->assertTrue($type->equals($typeAgain));
+	}
+
+	/**
+	 * @return iterable<array{string}>
+	 */
+	public static function dataLateResolvableArrayShapeToPhpDocNode(): iterable
+	{
+		yield ['array{TKey: int}'];
+		yield ['array{TKey?: int}'];
+		yield ['array{a: int, TKey: bool}'];
+		yield ['array{int, TKey: bool}'];
+		yield ['array{\'0 foo\': int, TKey: bool}'];
+		yield ['non-empty-array{TKey: int}'];
+		yield ['list{TKey: int}'];
+		yield ['array{TKey: array{TKey: int}}'];
+		yield ['array{TKey: int, ...}'];
+		yield ['array{TKey: int, ...<bool>}'];
+		yield ['array{TKey: int, ...<string, bool>}'];
+		yield ['array{a: int, ...<TKey, bool>}'];
+	}
+
+	#[DataProvider('dataLateResolvableArrayShapeToPhpDocNode')]
+	public function testLateResolvableArrayShapeToPhpDocNode(string $typeString): void
+	{
+		$nameScope = new NameScope(null, [], null, 'doFoo', new TemplateTypeMap([
+			'TKey' => TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('doFoo'),
+				'TKey',
+				new StringType(),
+				TemplateTypeVariance::createInvariant(),
+			),
+		]));
+
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		$type = $typeStringResolver->resolve($typeString, $nameScope);
+		$this->assertInstanceOf(LateResolvableArrayShapeType::class, $type);
+		$this->assertSame($typeString, (string) $type->toPhpDocNode());
+
+		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode(), $nameScope);
 		$this->assertTrue($type->equals($typeAgain));
 	}
 

@@ -1027,10 +1027,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		// a variable read is scope state and a literal is a constant - neither
+		// needs the node walked, so asking about them ahead of the walk is not
+		// the on-demand pricing the guard exists to catch
 		if (
 			NodeScopeResolver::$guardNewWorld
 			&& isset(NodeScopeResolver::$guardRealExprIds[spl_object_id($node)])
 			&& !isset(NodeScopeResolver::$guardProcessedExprIds[spl_object_id($node)])
+			&& !($node instanceof Variable && is_string($node->name))
+			&& !$node instanceof Node\Scalar\String_
+			&& !$node instanceof Node\Scalar\Int_
+			&& !$node instanceof Node\Scalar\Float_
 		) {
 			throw new ShouldNotHappenException(sprintf(
 				'getType() asked about non-synthetic %s on line %d before it was processed by processExprNode() - it should consume the node\'s ExpressionResult instead.',

@@ -410,7 +410,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 
 		return ArrayShapeNode::createUnsealed($items, new ArrayShapeUnsealedTypeNode(
 			$unsealedValueType->toPhpDocNode(),
-			$unsealedKeyType?->toPhpDocNode(),
+			$unsealedKeyType !== null ? $unsealedKeyType->toPhpDocNode() : null,
 		), $this->kind);
 	}
 

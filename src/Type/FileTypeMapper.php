@@ -195,6 +195,26 @@ final class FileTypeMapper
 	}
 
 	/**
+	 * The lexical part of a name scope - the namespace and the uses a PHPDoc's names resolve
+	 * against. Unlike getNameScope() it does not resolve the surrounding @template bounds, which
+	 * goes through TypeNodeResolver and the ReflectionProvider. A caller that only needs to know
+	 * how the names in a PHPDoc text are spelled out should ask for this one.
+	 */
+	public function getIntermediaryNameScope(
+		string $fileName,
+		?string $className,
+		?string $traitName,
+		?string $functionName,
+	): ?IntermediaryNameScope
+	{
+		$fileName = $this->fileHelper->normalizePath($fileName);
+		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
+		[$nameScopeMap] = $this->getNameScopeMap($fileName);
+
+		return $nameScopeMap[$nameScopeKey] ?? null;
+	}
+
+	/**
 	 * @throws NameScopeAlreadyBeingCreatedException
 	 */
 	public function getNameScope(

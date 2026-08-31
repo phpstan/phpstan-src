@@ -722,6 +722,15 @@ jobs:
               ../bashunit -a contains 'No errors' "$OUTPUT"
               mv src/Consumer.php.orig src/Consumer.php
               ../../bin/phpstan analyse -vvv
+              # a changed file with a generic @template bound - resolving it reflects the
+              # bound's class to learn whether it is generic
+              patch -b src/Repository.php < generic-change.patch
+              OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1 || true)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Undefined constant' "$OUTPUT"
+              ../bashunit -a contains 'No errors' "$OUTPUT"
+              mv src/Repository.php.orig src/Repository.php
+              ../../bin/phpstan analyse -vvv
           - script: |
               cd e2e/nested-trait-use
               ../../bin/phpstan analyze

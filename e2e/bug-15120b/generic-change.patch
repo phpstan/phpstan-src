@@ -1,0 +1,16 @@
+--- src/Repository.php
++++ src/Repository.php
+@@ -17,4 +17,13 @@
+ 		return $box->get()->get();
+ 	}
+ 
++	/**
++	 * @param T $box
++	 * @return non-empty-string
++	 */
++	public function label($box): string
++	{
++		return 'box: ' . $this->describe($box);
++	}
++
+ }

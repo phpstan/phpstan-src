@@ -1125,9 +1125,11 @@ class NodeScopeResolver
 			return $scope->getVariableType($expr->name);
 		}
 
+		// A variable whose name is an expression ($$name) never reaches the read
+		// above, and the scope tracks it like any other expression - so it belongs
+		// here rather than falling through to a walk.
 		if (
-			!$expr instanceof Expr\Variable
-			&& !$expr instanceof Expr\Closure
+			!$expr instanceof Expr\Closure
 			&& !$expr instanceof Expr\ArrowFunction
 			&& $scope->hasExpressionType($expr)->yes()
 		) {

@@ -21,6 +21,14 @@ final class Scheduler implements DiagnoseExtension
 
 	public const AUTO = 'auto';
 
+	/**
+	 * Where auto scaling stops, because the returns diminish: on a 16c/32t
+	 * workstation going from 8 to 16 workers cut wall time by a third for 20 %
+	 * more CPU time, 16 to 32 bought 6 % for 73 % more, and memory grows with
+	 * every worker (https://github.com/phpstan/phpstan-src/pull/6256).
+	 */
+	private const AUTO_PROCESSES_LIMIT = 20;
+
 	/** @var array{int, int, int, int, string}|null */
 	private ?array $storedData = null;
 
@@ -98,6 +106,13 @@ final class Scheduler implements DiagnoseExtension
 	{
 		if ($this->maximumNumberOfProcesses !== self::AUTO) {
 			return [$this->maximumNumberOfProcesses, 'configured'];
+		}
+
+		if ($cpuCores > self::AUTO_PROCESSES_LIMIT) {
+			return [
+				self::AUTO_PROCESSES_LIMIT,
+				sprintf('auto, capped at %d processes (%d usable CPU cores)', self::AUTO_PROCESSES_LIMIT, $cpuCores),
+			];
 		}
 
 		return [

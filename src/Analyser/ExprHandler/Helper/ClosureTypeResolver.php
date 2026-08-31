@@ -189,7 +189,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 			// the body was processed just above; resolve the return type from its stored
 			// result rather than reading the still-unprocessed body expression
-			$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, storage: $walkStorage);
+			$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, false, $walkStorage);
 
 			return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey);
 		}
@@ -263,7 +263,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$impurePoints,
 			$invalidateExpressions,
 			$cacheKey,
-			storage: $walkStorage,
+			false,
+			$walkStorage,
 		);
 	}
 
@@ -294,7 +295,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	): ClosureType
 	{
 		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
-			return $this->getClosureType($native ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, storage: $storage);
+			return $this->getClosureType($native ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, false, $storage);
 		}
 
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
@@ -320,7 +321,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				$parameters,
 			),
 			$native,
-			storage: $storage,
+			$storage,
 		);
 	}
 
@@ -346,7 +347,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	): ClosureType
 	{
 		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
-			return $this->getClosureType($native ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, storage: $storage);
+			return $this->getClosureType($native ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, false, $storage);
 		}
 
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);

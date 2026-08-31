@@ -1237,7 +1237,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// whose result NodeScopeResolver stores without an eager type.
 		// getClosureType()'s own depth guard answers the self-by-ref ask.
 		if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
-			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, storage: $storage);
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, false, $storage);
 		}
 
 		if (!$counterfactualAsk && $storage !== null && $storage->findExpressionResult($node) !== null) {

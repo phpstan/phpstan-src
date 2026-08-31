@@ -59,7 +59,8 @@ final class ArrowFunctionHandler implements ExprHandler
 			$arrowFunctionResult->getClosureTypeThrowPoints(),
 			$arrowFunctionResult->getClosureTypeImpurePoints(),
 			$arrowFunctionResult->getInvalidateExpressions(),
-			storage: $storage,
+			false,
+			$storage,
 		);
 		$nativeType = $this->closureTypeResolver->buildClosureTypeForArrowFunction(
 			$scope,
@@ -68,8 +69,8 @@ final class ArrowFunctionHandler implements ExprHandler
 			$arrowFunctionResult->getClosureTypeThrowPoints(),
 			$arrowFunctionResult->getClosureTypeImpurePoints(),
 			$arrowFunctionResult->getInvalidateExpressions(),
-			native: true,
-			storage: $storage,
+			true,
+			$storage,
 		);
 
 		return $this->expressionResultFactory->create(

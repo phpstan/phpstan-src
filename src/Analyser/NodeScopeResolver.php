@@ -1835,7 +1835,8 @@ class NodeScopeResolver
 			$throwPoints,
 			$impurePoints,
 			$invalidateExpressions,
-			storage: $storage,
+			false,
+			$storage,
 		);
 
 		return $closureScope->withAnonymousFunctionReflection($refinedClosureType);
@@ -1945,7 +1946,8 @@ class NodeScopeResolver
 			$closureTypeThrowPoints,
 			$closureTypeImpurePoints,
 			$invalidateExpressions,
-			storage: $storage,
+			false,
+			$storage,
 		);
 		$refinedArrowFunctionScope = $arrowFunctionScope->withAnonymousFunctionReflection($refinedArrowFunctionType);
 		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr), $refinedArrowFunctionScope, $storage);
@@ -1999,7 +2001,7 @@ class NodeScopeResolver
 	private function resolveCallableTypeForScope(Expr $expr, MutatingScope $scope): Type
 	{
 		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
-			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, storage: $scope->getCurrentExpressionResultStorage());
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, false, $scope->getCurrentExpressionResultStorage());
 		}
 
 		return $this->readTypeOfMaybeStored($expr, $scope);
@@ -2450,8 +2452,8 @@ class NodeScopeResolver
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, storage: $storage),
-							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, storage: $storage),
+							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
+							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						);
@@ -2515,7 +2517,8 @@ class NodeScopeResolver
 							$closureResult->getThrowPoints(),
 							$closureResult->getClosureTypeImpurePoints(),
 							$closureResult->getInvalidateExpressions(),
-							storage: $storage,
+							false,
+							$storage,
 						),
 						// the native flavour reads the stored native types off the same
 						// single body walk - no second walk on the promoted scope
@@ -2596,8 +2599,8 @@ class NodeScopeResolver
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, storage: $storage),
-							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, storage: $storage),
+							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
+							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						);
@@ -2654,7 +2657,8 @@ class NodeScopeResolver
 						$arrowFunctionResult->getClosureTypeThrowPoints(),
 						$arrowFunctionResult->getClosureTypeImpurePoints(),
 						$arrowFunctionResult->getInvalidateExpressions(),
-						storage: $storage,
+						false,
+						$storage,
 					);
 					$storedArrowResult = $this->expressionResultFactory->create(
 						$arrowFunctionExprResult->getScope(),

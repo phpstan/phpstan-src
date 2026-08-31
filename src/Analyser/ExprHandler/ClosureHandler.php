@@ -63,7 +63,8 @@ final class ClosureHandler implements ExprHandler
 			$processClosureResult->getThrowPoints(),
 			$processClosureResult->getClosureTypeImpurePoints(),
 			$processClosureResult->getInvalidateExpressions(),
-			storage: $storage,
+			false,
+			$storage,
 		);
 		$nativeType = $type;
 

@@ -54,6 +54,7 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
@@ -3314,13 +3315,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// an argument-less instance call - the shape @phpstan-assert subjects
 		// take (synthetic nodes built fresh from the assert tag, never stored):
 		// its declared return type on the receiver's state is the narrowing
-		// base, derived from reflection instead of walking the synthetic node
+		// base, derived from reflection instead of walking the synthetic node.
+		// A call the walk did store answers from that result: the declared
+		// return type lacks what the walk resolved against the arguments (a
+		// conditional return type, a template, a dynamic return type extension)
 		if (
 			$expr instanceof Expr\MethodCall
 			&& $expr->name instanceof Identifier
 			&& !$expr->isFirstClassCallable()
 			&& $expr->getArgs() === []
 		) {
+			$storage = $this->expressionResultStorageStack->getCurrent();
+			if ($storage !== null && $storage->findExpressionResult($expr) !== null) {
+				return $native ? $this->getNativeType($expr) : $this->getType($expr);
+			}
+
 			$methodReflection = $this->getMethodReflection(
 				$this->resolveScopeStateType($expr->var, $native),
 				$expr->name->toString(),
@@ -3329,9 +3338,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				return new ErrorType();
 			}
 
-			$variant = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants());
+			// resolved against the (empty) argument list so a template inferred
+			// from an omitted parameter's default resolves the way a walk
+			// resolves it (Collection::first()'s TFirstDefault -> null)
+			$variant = ParametersAcceptorSelector::selectFromArgs($this, [], $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
 
-			return $native ? $variant->getNativeReturnType() : $variant->getReturnType();
+			return $native && $variant instanceof ExtendedParametersAcceptor ? $variant->getNativeReturnType() : $variant->getReturnType();
 		}
 
 		// position-independent constant expressions (isset()/?? dimensions and

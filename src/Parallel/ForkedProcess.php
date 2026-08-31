@@ -4,6 +4,7 @@ namespace PHPStan\Parallel;
 
 use PHPStan\Command\InceptionNotSuccessfulException;
 use PHPStan\Process\ForkedChildCrashReporter;
+use PHPStan\Process\ForkedChildTerminator;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
@@ -112,6 +113,8 @@ final class ForkedProcess extends ProcessBase
 			}
 			/** phpcs:enable */
 			ForkedChildCrashReporter::install($tmpStdErr);
+			// after the crash reporter: its shutdown function must run first
+			ForkedChildTerminator::install();
 			$output = new StreamOutput($tmpStdOut);
 			try {
 				$exitCode = $this->workerRunner->run(

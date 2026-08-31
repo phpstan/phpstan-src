@@ -293,6 +293,9 @@ jobs:
           TURBO_DLL: ${{ runner.temp }}/turbo-ext/modules/phpstan_turbo.so
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
 
+      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
+        run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/exit-immediately.php
+
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
 
@@ -481,6 +484,9 @@ jobs:
       - name: "Arena smoke test (cross-process shared-memory records)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
 
+      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/exit-immediately.php
+
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
 
@@ -590,6 +596,9 @@ jobs:
 
       - name: "Arena smoke test (cross-process shared-memory records)"
         run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/arena-smoke.php
+
+      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
+        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/exit-immediately.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
@@ -927,6 +936,10 @@ jobs:
       - name: "Arena smoke test (cross-process shared-memory records)"
         shell: bash
         run: php -d extension="$TURBO_DLL" turbo-ext/tests/arena-smoke.php
+
+      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
+        shell: bash
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/exit-immediately.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"
         shell: bash

@@ -79,6 +79,15 @@ native code never instantiates its own classes directly: a referenced class
 that is itself shadowed resolves to its stub subclass, and
 factories/singletons instantiate that.
 
+Two more `Runtime` entry points serve fork mode (see `ForkParallelChecker`):
+`enablePharForkGuard()` gives each pcntl_fork()ed worker a private cursor on
+the running phar's fd (`PharForkGuard.cpp`), and `exitImmediately()` —
+`_exit()` with the engine's exit status — is how `ForkedChildTerminator` ends
+a forked worker. A forked child inherits every loaded extension but none of
+their threads, so PHP's full teardown can wedge in a fork-unsafe extension's
+module shutdown (ext-grpc without `grpc.enable_fork_support`); a forked child
+that does not exec() must `_exit()` instead.
+
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
 a mismatched extension is ignored. There is no runtime kill switch — the only
 way to run without it is not to load it.

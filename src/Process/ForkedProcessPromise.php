@@ -114,6 +114,8 @@ final class ForkedProcessPromise implements ProcessPromise
 			// the worker on its own fresh event loop and never return.
 			$this->server->close();
 			ForkedChildCrashReporter::install($tmpStdErr);
+			// after the crash reporter: its shutdown function must run first
+			ForkedChildTerminator::install();
 			// The worker writes its errors into the capture the parent reads,
 			// like a spawned worker whose stderr is the capture itself.
 			$childErrorStream = new StreamOutput($tmpStdErr);

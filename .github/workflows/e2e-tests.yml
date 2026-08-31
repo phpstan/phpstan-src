@@ -1067,3 +1067,78 @@ jobs:
           # fits through the assertion once grep has narrowed it down
           ../bashunit -a not_contains 'parallel worker' "$(grep -F 'parallel worker' "$RUNNER_TEMP/small-shm.txt" || true)"
           diff "$RUNNER_TEMP/reference.txt" "$RUNNER_TEMP/small-shm.txt"
+
+  turbo-fork-unsafe-extension-e2e-tests:
+    name: "Turbo fork-unsafe extension E2E tests"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 30
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          # the extension bakes its version from `git log -- turbo-ext/src`, and
+          # TurboExtensionEnabler activates only the expected version - a shallow
+          # clone hands us a "dev" build, which would skip the whole test
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # 2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Install bashunit"
+        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        with:
+          directory: "e2e"
+
+      - name: "Build the turbo extension"
+        run: make -C turbo-ext -j"$(nproc)"
+
+      - name: "Build the fork-unsafe extension"
+        # a model of ext-grpc without grpc.enable_fork_support: its module
+        # shutdown waits for a thread that a forked child never has. phpize
+        # builds in place, so a copy keeps the build tree out of the checkout.
+        run: |
+          cp -r e2e/fork-unsafe-extension/ext "$RUNNER_TEMP/forkunsafe"
+          cd "$RUNNER_TEMP/forkunsafe"
+          phpize
+          ./configure
+          make -j"$(nproc)"
+
+      - name: "Verify the extension wedges a forked child on its own"
+        # a plain exit() in a forked child must hang, or the test below would
+        # pass for the wrong reason
+        run: |
+          set +e
+          timeout 10 php -d extension="$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" e2e/fork-unsafe-extension/fork-and-exit.php
+          CODE=$?
+          set -e
+          e2e/bashunit -a equals "124" "$CODE"
+
+      - name: "Verify fork mode is actually used"
+        run: |
+          OUTPUT=$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d extension="$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" bin/phpstan diagnose -c e2e/fork-unsafe-extension/phpstan.neon)
+          echo "$OUTPUT"
+          e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
+          e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
+
+      - name: "Test"
+        # https://github.com/phpstan/phpstan/issues/15138 - the forked worker
+        # delivers its result (100%) and then hangs in the inherited extension's
+        # module shutdown; the run must finish instead
+        run: |
+          cd e2e/fork-unsafe-extension
+          rm -rf tmp
+          OUTPUT=$(../bashunit -a exit_code "0" "timeout 120 php -d extension=$PWD/../../turbo-ext/phpstan_turbo.so -d extension=$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so ../../bin/phpstan analyse --no-progress -vvv")
+          echo "$OUTPUT"
+          ../bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
+          ../bashunit -a contains '[OK] No errors' "$OUTPUT"

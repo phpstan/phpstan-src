@@ -33,6 +33,10 @@ use function sprintf;
  * - OPcache + JIT off — their shared memory is not safe to populate
  *   concurrently from forked children and doing so corrupts analysis
  *   results.
+ *
+ * A forked worker ends with the extension's _exit() instead of PHP's full
+ * teardown (see ForkedChildTerminator): the child inherits every loaded
+ * extension, and a fork-unsafe one wedges its module shutdown.
  */
 #[AutowiredService]
 final class ForkParallelChecker implements DiagnoseExtension

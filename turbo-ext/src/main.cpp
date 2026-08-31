@@ -11,6 +11,12 @@
 #include "support.h"
 #include "reg.h"
 
+#ifdef PHP_WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 /* The short SHA of the last commit touching the watched set: baked from git
  * by the Makefile (quoted string passed directly), or from the VERSION.txt
  * the subsplit workflow commits into phpstan/turbo-ext; "dev" with neither,
@@ -74,6 +80,33 @@ static void ZEND_FASTCALL runtimeEnablePharForkGuard(INTERNAL_FUNCTION_PARAMETER
 	pt_phar_fork_guard_register(path);
 }
 
+/* PHPStanTurbo\Runtime::exitImmediately() — _exit() for a pcntl_fork()ed
+ * worker; ForkedChildTerminator registers it as the child's last shutdown
+ * function.
+ *
+ * A forked child inherits the whole parent process, every loaded extension
+ * with whatever background threads it started included — but fork() copies
+ * only the calling thread. PHP's exit() then runs destructors and each
+ * extension's module shutdown, and an extension whose shutdown waits for
+ * its threads to check out (ext-grpc's grpc_shutdown() without
+ * grpc.enable_fork_support, for one) waits forever for threads the child
+ * never had: the worker has delivered its results, the parent keeps
+ * polling waitpid(), and the run hangs at 100%. A forked child that does
+ * not exec() must end with _exit() — no destructors, no module shutdown, no
+ * atexit handlers; that teardown is the parent's. The shutdown functions
+ * have run by then, so the crash report (ForkedChildCrashReporter) is
+ * written, and everything the parent reads — the results over the socket,
+ * the captured output — went through unbuffered fds.
+ *
+ * The status is the engine's: what exit() was given, 255 after a fatal
+ * error, 0 otherwise. */
+static void ZEND_FASTCALL runtimeExitImmediately(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+
+	_exit(EG(exit_status));
+}
+
 static PHP_MINIT_FUNCTION(phpstan_turbo)
 {
 #ifdef ZTS
@@ -84,6 +117,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	runtime.method("configure", reg::PublicStatic, 1, { reg::arrayArg("classMap") }, runtimeConfigure);
 	runtime.method("classRefs", reg::PublicStatic, 0, {}, runtimeClassRefs);
 	runtime.method("enablePharForkGuard", reg::PublicStatic, 1, { reg::stringArg("pharPath") }, runtimeEnablePharForkGuard);
+	runtime.method("exitImmediately", reg::PublicStatic, 0, {}, runtimeExitImmediately);
 	runtime.register_();
 
 	pt_register_trinary_logic();

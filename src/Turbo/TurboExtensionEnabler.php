@@ -8,7 +8,6 @@ use function class_exists;
 use function dirname;
 use function extension_loaded;
 use function file_get_contents;
-use function getenv;
 use function is_file;
 use function json_decode;
 use function phpversion;
@@ -35,16 +34,12 @@ final class TurboExtensionEnabler
 
 	/**
 	 * The version of the loaded extension when it does not pass the
-	 * enableIfLoaded() version gate. Null when the extension is not loaded,
-	 * deliberately disabled, or compatible.
+	 * enableIfLoaded() version gate. Null when the extension is not loaded
+	 * or compatible.
 	 */
 	public static function getIncompatibleLoadedVersion(): ?string
 	{
 		if (!self::isLoaded()) {
-			return null;
-		}
-
-		if (getenv('PHPSTAN_TURBO') === '0') {
 			return null;
 		}
 
@@ -113,10 +108,6 @@ final class TurboExtensionEnabler
 	public static function enableIfLoaded(): void
 	{
 		if (!self::isLoaded()) {
-			return;
-		}
-
-		if (getenv('PHPSTAN_TURBO') === '0') {
 			return;
 		}
 

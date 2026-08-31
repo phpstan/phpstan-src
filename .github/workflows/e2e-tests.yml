@@ -1029,6 +1029,16 @@ jobs:
           e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
           e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
 
+      - name: "Verify PHPSTAN_TURBO=0 does not disable the extension"
+        # The env var was an escape hatch that users kept in their scripts long
+        # after whatever it worked around got fixed. A loaded, version-matching
+        # extension is now always used, so the variable has to be inert -
+        # https://github.com/phpstan/phpstan/issues/15143
+        run: |
+          OUTPUT=$(PHPSTAN_TURBO=0 php -d extension="$PWD/turbo-ext/phpstan_turbo.so" bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
+          echo "$OUTPUT"
+          e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
+
       - name: "Test"
         # The arena is a per-run POSIX shared-memory object: shm_open() plus an
         # ftruncate() to 256 MB that tmpfs honours sparsely, committing pages on

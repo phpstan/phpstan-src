@@ -81,7 +81,7 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php`
    (arginfo parameter names must match the PHP twin exactly — named arguments),
    full `make tests` with the extension loaded, and byte-identical analysis
-   output with the extension on vs `PHPSTAN_TURBO=0`. Anything touching
+   output with the extension loaded vs. not loaded. Anything touching
    `src/parser/` additionally runs `turbo-ext/tests/parser-corpus.php`
    (byte-identical ASTs over the whole corpus); a php-parser version bump in
    composer.lock requires the same.
@@ -121,8 +121,9 @@ drifts ±1s thermally — never run all A then all B):
 
 ```bash
 bin/phpstan clear-result-cache -c build/phpstan.neon -q
-/usr/bin/time php -d memory_limit=6G bin/phpstan analyse -c build/phpstan.neon --debug -q src
-# baseline runs: prefix with PHPSTAN_TURBO=0 (the ini loads the extension globally)
+/usr/bin/time php -d memory_limit=6G -d extension=$PWD/turbo-ext/phpstan_turbo.so bin/phpstan analyse -c build/phpstan.neon --debug -q src
+# baseline runs: drop the -d extension= flag. Nothing disables a loaded
+# extension, so keep it out of php.ini and load it per run instead
 ```
 
 Output identity: `--error-format=raw` runs in both modes must diff empty.

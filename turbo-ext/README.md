@@ -30,7 +30,8 @@ pie install phpstan/turbo
 Useful to know:
 
 - `vendor/bin/phpstan diagnose` reports the extension's status.
-- `PHPSTAN_TURBO=0` turns it off.
+- There is no switch to turn it off — an installed, matching extension is
+  always used.
 - The extension only activates when its version matches the one your PHPStan
   release expects — on a mismatch PHPStan prints a note and runs without it,
   so an outdated extension can never affect results, only speed.
@@ -79,7 +80,8 @@ that is itself shadowed resolves to its stub subclass, and
 factories/singletons instantiate that.
 
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
-a mismatched extension is ignored. `PHPSTAN_TURBO=0` disables it explicitly.
+a mismatched extension is ignored. There is no runtime kill switch — the only
+way to run without it is not to load it.
 
 The version is the short SHA of the last commit that touched `turbo-ext/src/`.
 The binary's (actual) version is baked in at build time — the Makefile
@@ -409,8 +411,10 @@ php -d extension=$(pwd)/phpstan_turbo.so tests/smoke.php
 php vendor/bin/phpunit ...
 
 # output identity (clear the result cache between runs!)
-bin/phpstan analyse ... --error-format=raw   # with extension
-PHPSTAN_TURBO=0 bin/phpstan analyse ...      # without
+# nothing disables a loaded extension, so keep it out of php.ini and load it
+# per run instead
+php -d extension=$(pwd)/phpstan_turbo.so ../bin/phpstan analyse ... --error-format=raw   # with
+php ../bin/phpstan analyse ... --error-format=raw                                        # without
 ```
 
 ## History

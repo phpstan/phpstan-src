@@ -743,6 +743,28 @@ final class ExpressionResult
 	}
 
 	/**
+	 * This result as if its walk had run on the given deviced scopes - the
+	 * ones a non-nullability ensure applied at the walk's completion tracks
+	 * the expression non-null on. The own type stays untouched: a read on the
+	 * deviced before-scope answers the tracked (non-null) holder, exactly like
+	 * a walk on an ensured-ahead scope did, while getTypeOnScope() on a scope
+	 * without the device (a rule's) still answers the expression's real,
+	 * nullable type. The scope memos derive from the deviced scopes on demand.
+	 */
+	public function onNonNullabilityDevicedScopes(MutatingScope $beforeScope, MutatingScope $scope): self
+	{
+		$clone = clone $this;
+		$clone->beforeScope = $beforeScope;
+		$clone->scope = $scope;
+		$clone->cachedType = null;
+		$clone->cachedNativeType = null;
+		$clone->truthyScope = null;
+		$clone->falseyScope = null;
+
+		return $clone;
+	}
+
+	/**
 	 * @return list<string>
 	 */
 	private function getReadVariableNames(): array

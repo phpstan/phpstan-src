@@ -248,6 +248,9 @@ final class StaticCallHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
 		}
 		$scopeBeforeArgs = $scope;
+		if ($parametersAcceptor !== null && $context->getInAssignRightSideExpr() === $expr) {
+			$context = $context->enterAssignRightSideCallArgs($parametersAcceptor);
+		}
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScopeFactory);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();

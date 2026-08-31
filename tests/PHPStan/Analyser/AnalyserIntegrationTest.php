@@ -1616,6 +1616,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testVariableVariableInDisjunction(): void
+	{
+		// crash - a variable whose name is an expression is tracked on the scope,
+		// but the scope-state read did not look for it among the tracked expressions
+		$errors = $this->runAnalyse(__DIR__ . '/data/variable-variable-disjunction.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

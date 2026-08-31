@@ -175,6 +175,16 @@ class SchedulerTest extends TestCase
 		$this->assertSame(12, $schedule->getNumberOfProcesses());
 	}
 
+	public function testAutoIsCappedAtTheProcessLimit(): void
+	{
+		// 64 usable cores and 5000 files worth of jobs - auto stops where the
+		// returns diminish rather than spawning a worker per core
+		$scheduler = new Scheduler(20, Scheduler::AUTO, 2);
+		$schedule = $scheduler->scheduleWork(64, array_fill(0, 5000, 'file.php'), static fn (string $file): int => 0);
+
+		$this->assertSame(20, $schedule->getNumberOfProcesses());
+	}
+
 	public function testAutoIsStillCappedByTheJobCount(): void
 	{
 		// 40 files -> 2 jobs at size 20, at least 2 jobs per process -> a single

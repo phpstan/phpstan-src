@@ -71,10 +71,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * file's analysis ends - the per-file reset releases the Types and
 	 * throw/impure points with the rest of the file's result graph.
 	 *
-	 * Keyed by the closure node's spl_object_id() - see
-	 * TernaryHandler::$capturedResults for the lifetime/collision reasoning.
+	 * Keyed by the closure node's spl_object_id(), which PHP hands out again
+	 * once a node is freed - a synthetic closure built and dropped mid-file
+	 * (see TernaryHandler::$capturedResults) - so each entry pins the node it
+	 * was built for and findCachedTypes() answers for that very node only.
 	 *
-	 * @var array<int, array<string, array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]}>>
+	 * @var array<int, array{expr: Node\Expr\Closure|ArrowFunction, types: array<string, array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]}>}>
 	 */
 	private array $cachedTypes = [];
 
@@ -88,6 +90,19 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	public function resetFileAnalysisState(): void
 	{
 		$this->cachedTypes = [];
+	}
+
+	/**
+	 * @return array<string, array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]}>
+	 */
+	private function findCachedTypes(Node\Expr\Closure|ArrowFunction $expr): array
+	{
+		$entry = $this->cachedTypes[spl_object_id($expr)] ?? null;
+		if ($entry === null || $entry['expr'] !== $expr) {
+			return [];
+		}
+
+		return $entry['types'];
 	}
 
 	/**
@@ -127,7 +142,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			);
 		}
 
-		$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
+		$cachedTypes = $this->findCachedTypes($expr);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
 		if (array_key_exists($cacheKey, $cachedTypes)) {
 			return $this->createClosureTypeFromCache($expr, $parameters, $isVariadic, $cachedTypes[$cacheKey]);
@@ -903,7 +918,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
 		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 
-		$cachedTypes = $this->cachedTypes[spl_object_id($expr)] ?? [];
+		$cachedTypes = $this->findCachedTypes($expr);
 		$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
 		$cachedTypes[$cacheKey] = [
 			'returnType' => $returnType,
@@ -912,7 +927,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			'invalidateExpressions' => $invalidateExpressions,
 			'usedVariables' => $usedVariables,
 		];
-		$this->cachedTypes[spl_object_id($expr)] = $cachedTypes;
+		$this->cachedTypes[spl_object_id($expr)] = ['expr' => $expr, 'types' => $cachedTypes];
 
 		$mustUseReturnValue = TrinaryLogic::createNo();
 		foreach ($expr->attrGroups as $attrGroup) {

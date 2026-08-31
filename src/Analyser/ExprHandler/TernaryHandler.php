@@ -35,12 +35,13 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 {
 
 	/**
-	 * Keyed by the ternary node's spl_object_id(). The keys are AST nodes that
-	 * live for the whole file's analysis (the parser cache retains them), so
-	 * ids of live entries never collide; the per-file reset empties the map
-	 * before another file could reuse them.
+	 * Keyed by the ternary node's spl_object_id(). The file's own AST nodes
+	 * live for the whole analysis (the parser cache retains them), but a
+	 * synthetic node built and dropped mid-file frees its id for reuse - so
+	 * each entry pins the node it was captured for and answers for that very
+	 * node only; the per-file reset empties the map.
 	 *
-	 * @var array<int, array{ExpressionResult, ExpressionResult, ExpressionResult}>
+	 * @var array<int, array{Ternary, ExpressionResult, ExpressionResult, ExpressionResult}>
 	 */
 	private array $capturedResults = [];
 
@@ -70,7 +71,12 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 	 */
 	public function getCapturedResults(Ternary $expr): ?array
 	{
-		return $this->capturedResults[spl_object_id($expr)] ?? null;
+		$entry = $this->capturedResults[spl_object_id($expr)] ?? null;
+		if ($entry === null || $entry[0] !== $expr) {
+			return null;
+		}
+
+		return [$entry[1], $entry[2], $entry[3]];
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -108,7 +114,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 		}
 
 		if ($ifResult !== null) {
-			$this->capturedResults[spl_object_id($expr)] = [$ternaryCondResult, $ifResult, $elseResult];
+			$this->capturedResults[spl_object_id($expr)] = [$expr, $ternaryCondResult, $ifResult, $elseResult];
 		}
 
 		$condType = $ternaryCondResult->getType();

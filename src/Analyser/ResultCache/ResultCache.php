@@ -32,6 +32,7 @@ final class ResultCache
 	public function __construct(
 		private array $filesToAnalyse,
 		private bool $fullAnalysis,
+		private ?string $fullAnalysisReason,
 		private int $lastFullAnalysisTime,
 		private array $meta,
 		private array $errors,
@@ -60,6 +61,15 @@ final class ResultCache
 	public function isFullAnalysis(): bool
 	{
 		return $this->fullAnalysis;
+	}
+
+	/**
+	 * Human-readable explanation of why the cached results could not be reused,
+	 * null when the result cache is being used.
+	 */
+	public function getFullAnalysisReason(): ?string
+	{
+		return $this->fullAnalysisReason;
 	}
 
 	public function getLastFullAnalysisTime(): int

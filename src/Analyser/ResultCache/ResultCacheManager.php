@@ -149,6 +149,47 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * Builds the "the whole project has to be reanalysed" result, recording the reason
+	 * why the cache could not be used. The reason is both printed in very verbose mode
+	 * and kept on the ResultCache so the result-cache-info command can report it.
+	 *
+	 * @param string[] $allAnalysedFiles
+	 * @param mixed[] $meta
+	 * @param array<string, string> $currentFileHashes
+	 */
+	private function fullAnalysis(
+		string $reason,
+		array $allAnalysedFiles,
+		array $meta,
+		array $currentFileHashes,
+		Output $output,
+	): ResultCache
+	{
+		if ($output->isVeryVerbose()) {
+			$output->writeLineFormatted($reason);
+		}
+
+		return new ResultCache(
+			filesToAnalyse: $allAnalysedFiles,
+			fullAnalysis: true,
+			fullAnalysisReason: $reason,
+			lastFullAnalysisTime: time(),
+			meta: $meta,
+			errors: [],
+			locallyIgnoredErrors: [],
+			linesToIgnore: [],
+			unmatchedLineIgnores: [],
+			collectedData: [],
+			dependencies: [],
+			usedTraitDependencies: [],
+			packageDependencies: [],
+			exportedNodes: [],
+			projectExtensionFiles: [],
+			currentFileHashes: $currentFileHashes,
+		);
+	}
+
+	/**
 	 * @param string[] $allAnalysedFiles
 	 * @param mixed[]|null $projectConfigArray
 	 */
@@ -163,124 +204,58 @@ final class ResultCacheManager
 			$currentFileHashes[$analysedFile] = $this->getFileHash($analysedFile);
 		}
 		if ($debug) {
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted('Result cache not used because of debug mode.');
-			}
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				'Result cache not used because of debug mode.',
+				$allAnalysedFiles,
+				$this->getMeta($allAnalysedFiles, $projectConfigArray),
+				$currentFileHashes,
+				$output,
 			);
 		}
 		if ($onlyFiles) {
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
-			}
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				'Result cache not used because only files were passed as analysed paths.',
+				$allAnalysedFiles,
+				$this->getMeta($allAnalysedFiles, $projectConfigArray),
+				$currentFileHashes,
+				$output,
 			);
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
 		if (!is_file($cacheFilePath)) {
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
-			}
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				'Result cache not used because the cache file does not exist.',
+				$allAnalysedFiles,
+				$this->getMeta($allAnalysedFiles, $projectConfigArray),
+				$currentFileHashes,
+				$output,
 			);
 		}
 
 		try {
 			$data = require $cacheFilePath;
 		} catch (Throwable $e) {
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
-			}
-
 			@unlink($cacheFilePath);
 
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()),
+				$allAnalysedFiles,
+				$this->getMeta($allAnalysedFiles, $projectConfigArray),
+				$currentFileHashes,
+				$output,
 			);
 		}
 
 		if (!is_array($data)) {
 			@unlink($cacheFilePath);
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
-			}
 
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				'Result cache not used because the cache file is corrupted.',
+				$allAnalysedFiles,
+				$this->getMeta($allAnalysedFiles, $projectConfigArray),
+				$currentFileHashes,
+				$output,
 			);
 		}
 
@@ -340,25 +315,12 @@ final class ResultCacheManager
 				: null;
 
 			if ($changedPackages === null) {
-				if ($output->isVeryVerbose()) {
-					$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
-				}
-				return new ResultCache(
-					filesToAnalyse: $allAnalysedFiles,
-					fullAnalysis: true,
-					lastFullAnalysisTime: time(),
-					meta: $meta,
-					errors: [],
-					locallyIgnoredErrors: [],
-					linesToIgnore: [],
-					unmatchedLineIgnores: [],
-					collectedData: [],
-					dependencies: [],
-					usedTraitDependencies: [],
-					packageDependencies: [],
-					exportedNodes: [],
-					projectExtensionFiles: [],
-					currentFileHashes: $currentFileHashes,
+				return $this->fullAnalysis(
+					'Result cache not used because the metadata do not match: ' . implode(', ', $diffs),
+					$allAnalysedFiles,
+					$meta,
+					$currentFileHashes,
+					$output,
 				);
 			}
 
@@ -378,28 +340,15 @@ final class ResultCacheManager
 					// extension, and so on). Such code can affect the analysis of every file, not just the
 					// files that reference it, so the file-granular re-seed below is not enough - re-analyse
 					// everything.
-					if ($output->isVeryVerbose()) {
-						$output->writeLineFormatted(sprintf(
+					return $this->fullAnalysis(
+						sprintf(
 							'Composer packages changed (%s) and register a class in the container; re-analysing everything.',
 							implode(', ', $changedPackages),
-						));
-					}
-					return new ResultCache(
-						filesToAnalyse: $allAnalysedFiles,
-						fullAnalysis: true,
-						lastFullAnalysisTime: time(),
-						meta: $meta,
-						errors: [],
-						locallyIgnoredErrors: [],
-						linesToIgnore: [],
-						unmatchedLineIgnores: [],
-						collectedData: [],
-						dependencies: [],
-						usedTraitDependencies: [],
-						packageDependencies: [],
-						exportedNodes: [],
-						projectExtensionFiles: [],
-						currentFileHashes: $currentFileHashes,
+						),
+						$allAnalysedFiles,
+						$meta,
+						$currentFileHashes,
+						$output,
 					);
 				}
 
@@ -422,27 +371,12 @@ final class ResultCacheManager
 
 		$daysOldForSkip = $this->skipResultCacheIfOlderThanDays;
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * $daysOldForSkip) {
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted(sprintf("Result cache not used because it's more than %d days since last full analysis.", $daysOldForSkip));
-			}
-
-			// run full analysis if the result cache is older than X days
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $meta,
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				sprintf("Result cache not used because it's more than %d days since last full analysis.", $daysOldForSkip),
+				$allAnalysedFiles,
+				$meta,
+				$currentFileHashes,
+				$output,
 			);
 		}
 
@@ -455,25 +389,12 @@ final class ResultCacheManager
 				continue;
 			}
 			if (!is_file($extensionFile)) {
-				if ($output->isVeryVerbose()) {
-					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
-				}
-				return new ResultCache(
-					filesToAnalyse: $allAnalysedFiles,
-					fullAnalysis: true,
-					lastFullAnalysisTime: time(),
-					meta: $meta,
-					errors: [],
-					locallyIgnoredErrors: [],
-					linesToIgnore: [],
-					unmatchedLineIgnores: [],
-					collectedData: [],
-					dependencies: [],
-					usedTraitDependencies: [],
-					packageDependencies: [],
-					exportedNodes: [],
-					projectExtensionFiles: [],
-					currentFileHashes: $currentFileHashes,
+				return $this->fullAnalysis(
+					sprintf('Result cache not used because extension file %s was not found.', $extensionFile),
+					$allAnalysedFiles,
+					$meta,
+					$currentFileHashes,
+					$output,
 				);
 			}
 
@@ -481,50 +402,23 @@ final class ResultCacheManager
 				continue;
 			}
 
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
-			}
-
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $meta,
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile),
+				$allAnalysedFiles,
+				$meta,
+				$currentFileHashes,
+				$output,
 			);
 		}
 
 		foreach ($cachedStubFiles as $stubFile => $stubFileHash) {
 			if (!is_file($stubFile)) {
-				if ($output->isVeryVerbose()) {
-					$output->writeLineFormatted(sprintf('Result cache not used because stub file %s was not found.', $stubFile));
-				}
-				return new ResultCache(
-					filesToAnalyse: $allAnalysedFiles,
-					fullAnalysis: true,
-					lastFullAnalysisTime: time(),
-					meta: $meta,
-					errors: [],
-					locallyIgnoredErrors: [],
-					linesToIgnore: [],
-					unmatchedLineIgnores: [],
-					collectedData: [],
-					dependencies: [],
-					usedTraitDependencies: [],
-					packageDependencies: [],
-					exportedNodes: [],
-					projectExtensionFiles: [],
-					currentFileHashes: $currentFileHashes,
+				return $this->fullAnalysis(
+					sprintf('Result cache not used because stub file %s was not found.', $stubFile),
+					$allAnalysedFiles,
+					$meta,
+					$currentFileHashes,
+					$output,
 				);
 			}
 
@@ -532,26 +426,12 @@ final class ResultCacheManager
 				continue;
 			}
 
-			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted(sprintf('Result cache not used because stub file %s hash does not match.', $stubFile));
-			}
-
-			return new ResultCache(
-				filesToAnalyse: $allAnalysedFiles,
-				fullAnalysis: true,
-				lastFullAnalysisTime: time(),
-				meta: $meta,
-				errors: [],
-				locallyIgnoredErrors: [],
-				linesToIgnore: [],
-				unmatchedLineIgnores: [],
-				collectedData: [],
-				dependencies: [],
-				usedTraitDependencies: [],
-				packageDependencies: [],
-				exportedNodes: [],
-				projectExtensionFiles: [],
-				currentFileHashes: $currentFileHashes,
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because stub file %s hash does not match.', $stubFile),
+				$allAnalysedFiles,
+				$meta,
+				$currentFileHashes,
+				$output,
 			);
 		}
 
@@ -721,6 +601,7 @@ final class ResultCacheManager
 		return new ResultCache(
 			filesToAnalyse: $filesToAnalyse,
 			fullAnalysis: false,
+			fullAnalysisReason: null,
 			lastFullAnalysisTime: $data['lastFullAnalysisTime'],
 			meta: $meta,
 			errors: $filteredErrors,

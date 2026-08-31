@@ -30,9 +30,11 @@ use function sprintf;
  *   lost by forking either: the distributed binaries only exist next to a
  *   phar, so spawned workers of a source checkout run without turbo too —
  *   an ini-loaded extension is inherited by fork like any other.
- * - OPcache + JIT off — their shared memory is not safe to populate
- *   concurrently from forked children and doing so corrupts analysis
- *   results.
+ * - JIT off — its shared code buffer is not safe to populate concurrently
+ *   from forked children. Plain OPcache is fine: concurrent population of
+ *   its SHM under the allocator lock is php-fpm's normal operating model,
+ *   and TurboProcessRestarter deliberately activates it for the restarted
+ *   process (with JIT pinned off).
  *
  * A forked worker ends with the extension's _exit() instead of PHP's full
  * teardown (see ForkedChildTerminator): the child inherits every loaded

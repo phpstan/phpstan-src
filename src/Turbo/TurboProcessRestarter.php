@@ -26,6 +26,10 @@ use const PHP_BINARY;
  * running from a phar) the phar-fork-guard that keeps phar:// reads safe
  * across fork.
  *
+ * The restarted process also gets OPcache activated — with JIT pinned off,
+ * whatever the user's ini says — so forked workers share the parent's warm
+ * opcode cache (see getOpcacheArgs()).
+ *
  * The restart carries a marker ini entry with the extension path. It doubles
  * as the retry stop (a binary that failed to load leaves the extension
  * unloaded — without the marker the restart would loop) and tells
@@ -91,6 +95,10 @@ final class TurboProcessRestarter
 		}
 		$args[] = '-d';
 		$args[] = 'memory_limit=' . ini_get('memory_limit');
+		foreach (self::getOpcacheArgs() as $opcacheArg) {
+			$args[] = '-d';
+			$args[] = $opcacheArg;
+		}
 		$args[] = '-d';
 		$args[] = 'extension=' . $extensionPath;
 		$args[] = '-d';
@@ -101,6 +109,50 @@ final class TurboProcessRestarter
 
 		pcntl_exec(PHP_BINARY, $args);
 		// pcntl_exec() returns only on failure — continue without the extension
+	}
+
+	/**
+	 * OPcache directives for the restarted process, as `name=value` ini entries.
+	 *
+	 * The exec is paid for anyway, so it doubles as the chance to activate
+	 * OPcache, usually dormant on CLI (opcache.enable_cli defaults to off):
+	 * optimized opcodes and the inheritance cache speed up the whole run, and
+	 * the pcntl_fork()ed workers inherit the parent's warm shared memory
+	 * instead of each compiling lazily-loaded classes for itself. Concurrent
+	 * population of that inherited cache is safe — it is php-fpm's normal
+	 * operating model (see ForkParallelChecker).
+	 *
+	 * JIT is always pinned off, even when the user's ini enables it — it is a
+	 * measured slowdown for PHPStan's workload and its shared code buffer is
+	 * not fork-safe, so honoring it would cost twice (the same treatment the
+	 * xdebug-handler restart gives xdebug). Merely flipping
+	 * opcache.enable_cli=1 could also activate it behind the user's back: on
+	 * PHP <= 8.3 opcache.jit defaults to `tracing`, so an ini setting just a
+	 * non-zero opcache.jit_buffer_size (common web-tuning advice) suddenly
+	 * JITs; on PHP >= 8.4 the buffer defaults to 64M, so an ini setting just
+	 * opcache.jit does
+	 * (https://php.watch/versions/8.4/opcache-jit-ini-default-changes).
+	 * Pinning both directives covers both generations of defaults.
+	 *
+	 * The only case adding nothing is OPcache not being loaded at all — real
+	 * on PHP <= 8.4, gone on 8.5+ (always built in and loaded). Loading it
+	 * from here is not worth it: -d zend_extension=opcache emits a startup
+	 * warning on builds without the shared object, and on 8.5+ always.
+	 *
+	 * @return list<string>
+	 */
+	private static function getOpcacheArgs(): array
+	{
+		if (!extension_loaded('Zend OPcache')) {
+			return [];
+		}
+
+		return [
+			'opcache.enable=1',
+			'opcache.enable_cli=1',
+			'opcache.jit=disable',
+			'opcache.jit_buffer_size=0',
+		];
 	}
 
 }

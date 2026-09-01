@@ -710,7 +710,7 @@ final class ForeachHandler implements StmtHandler
 					$valueType,
 					$nativeValueType,
 					TrinaryLogic::createYes(),
-					write: $valueWrite,
+					plantMarkerExprs: $valueWrite !== null ? [$valueWrite->getMarkerExpr()] : [],
 					supersededMarkerExprs: $valueWrite !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($valueVarName) : [],
 				);
 				$iterScope = $iterScope->assignExpression(
@@ -724,7 +724,7 @@ final class ForeachHandler implements StmtHandler
 						$keyType,
 						$nativeKeyType,
 						TrinaryLogic::createYes(),
-						write: $keyWrite,
+						plantMarkerExprs: $keyWrite !== null ? [$keyWrite->getMarkerExpr()] : [],
 						supersededMarkerExprs: $keyWrite !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($keyVarName) : [],
 					);
 					$iterScope = $iterScope->assignExpression(

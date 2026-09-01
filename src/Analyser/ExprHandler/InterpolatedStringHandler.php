@@ -57,7 +57,7 @@ final class InterpolatedStringHandler implements ExprHandler
 			if (!$part instanceof Expr) {
 				continue;
 			}
-			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
 			$partResults[spl_object_id($part)] = $partResult;
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());

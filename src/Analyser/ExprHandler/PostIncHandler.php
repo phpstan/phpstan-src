@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\PostInc;
 use PhpParser\Node\Expr\PreInc;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -20,6 +21,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Type\Type;
+use function is_string;
 
 /**
  * @implements ExprHandler<PostInc>
@@ -43,7 +45,21 @@ final class PostIncHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		// the write site is registered before the variable is walked: as a
+		// statement or as the value of another write, the old value is only what
+		// the new one is computed from; consumed by a sink, it is read
+		$write = $expr->var instanceof Variable && is_string($expr->var->name)
+			? $nodeScopeResolver->recordVariableWrite($expr->var, VariableWrite::KIND_INC_DEC)
+			: null;
+		$varContext = $context->enterDeep();
+		$valueFlowTarget = $context->getValueFlowTarget();
+		if ($write !== null && (!$context->isDeep() || $valueFlowTarget !== null)) {
+			$varContext = $varContext->enterValueFlow($write, false);
+		}
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $varContext);
+		if ($write !== null && $valueFlowTarget !== null) {
+			$nodeScopeResolver->copyVariableWriteDependencies($valueFlowTarget, $write);
+		}
 
 		// the virtual assign writes the incremented value - hand it the synthetic's
 		// result so applyWrite composes off it instead of pricing the

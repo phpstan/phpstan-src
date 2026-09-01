@@ -281,7 +281,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 						$matchArmBodyScope,
 						$storage,
 						$nodeCallback,
-						ExpressionContext::createTopLevel(),
+						$this->createArmBodyContext($context),
 					);
 					$armScope = $armResult->getScope();
 					if (!$armResult->isAlwaysTerminating()) {
@@ -320,7 +320,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$defaultArmBodyScope = $matchScope;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
-				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, $this->createArmBodyContext($context));
 				$matchScope = $armResult->getScope();
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
@@ -426,7 +426,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$bodyScope,
 				$storage,
 				$nodeCallback,
-				ExpressionContext::createTopLevel(),
+				$this->createArmBodyContext($context),
 			);
 			$armScope = $armResult->getScope();
 			if (!$armResult->isAlwaysTerminating()) {
@@ -604,6 +604,17 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 		}
 
 		return false;
+	}
+
+	/**
+	 * An arm's body is the match's value: it computes what the match computes.
+	 */
+	private function createArmBodyContext(ExpressionContext $context): ExpressionContext
+	{
+		$armContext = ExpressionContext::createTopLevel();
+		$valueFlowTarget = $context->getValueFlowTarget();
+
+		return $valueFlowTarget !== null ? $armContext->enterValueFlow($valueFlowTarget, false) : $armContext;
 	}
 
 }

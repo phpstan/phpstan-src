@@ -51,7 +51,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$this->assertSame(10, $error->getLine());
 
 		$error = $errors[1];
-		$this->assertSame('Value assigned to variable $r is never read.', $error->getMessage());
+		$this->assertSame('Value assigned to variable $r is never used.', $error->getMessage());
 		$this->assertSame(
 			sprintf('%s (in context of class AnalyseTraits\Bar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/FooTrait.php')),
 			$error->getFile(),
@@ -76,7 +76,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$this->assertSame(10, $firstError->getLine());
 
 		$unusedError = $errors[1];
-		$this->assertSame('Value assigned to variable $r is never read.', $unusedError->getMessage());
+		$this->assertSame('Value assigned to variable $r is never used.', $unusedError->getMessage());
 		$this->assertSame(
 			sprintf('%s (in context of class AnalyseTraits\NestedBar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/FooTrait.php')),
 			$unusedError->getFile(),

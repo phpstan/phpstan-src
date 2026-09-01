@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -18,6 +19,10 @@ final class ExpressionContext
 		private bool $inThrow = false,
 		private ?Type $inAssignRightSideType = null,
 		private ?Type $inAssignRightSideNativeType = null,
+		private ?VariableWrite $valueFlowTarget = null,
+		private bool $valueFlowDirect = false,
+		private bool $arrayDimFetchRoot = false,
+		private bool $unsetTarget = false,
 	)
 	{
 	}
@@ -32,13 +37,46 @@ final class ExpressionContext
 		return new self(isDeep: true, inAssignRightSideVariableName: null, inAssignRightSideExpr: null);
 	}
 
+	/**
+	 * The context of a sub-expression whose value does not flow into the
+	 * enclosing expression's value (a call argument, a condition, a receiver):
+	 * a value-flow target and the read flavours are dropped.
+	 */
 	public function enterDeep(): self
 	{
-		if ($this->isDeep) {
+		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget) {
 			return $this;
 		}
 
 		return new self(true, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType);
+	}
+
+	/**
+	 * The context of an operand of a pure combinator (arithmetic, concat, a
+	 * cast, a literal array item...): its value flows into the enclosing
+	 * expression's value, so the value-flow target is kept.
+	 */
+	public function enterDeepKeepingValueFlow(): self
+	{
+		if ($this->valueFlowTarget === null) {
+			return $this->enterDeep();
+		}
+
+		return new self(true, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $this->valueFlowTarget, false);
+	}
+
+	/**
+	 * The context of a sub-expression at the same depth whose value does not
+	 * flow into the enclosing expression's value (the right operand of && / ||,
+	 * a piped call, a closure use, the receiver of an assignment target).
+	 */
+	public function withoutValueFlow(): self
+	{
+		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget) {
+			return $this;
+		}
+
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType);
 	}
 
 	public function isDeep(): bool
@@ -98,6 +136,55 @@ final class ExpressionContext
 	public function getInAssignRightSideNativeType(): ?Type
 	{
 		return $this->inAssignRightSideNativeType;
+	}
+
+	/**
+	 * The expression computes the value of $target: variable reads inside it
+	 * are not sinks, the target's value depends on them. $direct marks the
+	 * assigned expression itself (a literal array there gets per-offset
+	 * writes), an operand of a combinator is not direct.
+	 */
+	public function enterValueFlow(VariableWrite $target, bool $direct): self
+	{
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $target, $direct);
+	}
+
+	public function getValueFlowTarget(): ?VariableWrite
+	{
+		return $this->valueFlowTarget;
+	}
+
+	public function isValueFlowDirect(): bool
+	{
+		return $this->valueFlowDirect;
+	}
+
+	/**
+	 * The expression is the receiver of an offset read or write: a variable
+	 * there is read as a container - its offsets are not.
+	 */
+	public function enterArrayDimFetchRoot(): self
+	{
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $this->valueFlowTarget, false, true);
+	}
+
+	public function isArrayDimFetchRoot(): bool
+	{
+		return $this->arrayDimFetchRoot;
+	}
+
+	/**
+	 * The expression is an unset() target: its variable (or offset) is not
+	 * read, the writes reaching it are discarded.
+	 */
+	public function enterUnsetTarget(): self
+	{
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, null, false, false, true);
+	}
+
+	public function isUnsetTarget(): bool
+	{
+		return $this->unsetTarget;
 	}
 
 }

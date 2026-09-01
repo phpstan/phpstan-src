@@ -4,11 +4,16 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\VerbosityLevel;
+use function is_int;
 use function sprintf;
 use function str_starts_with;
 
@@ -18,7 +23,10 @@ use function str_starts_with;
 final class UnusedVariableRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion)
+	public function __construct(
+		private PhpVersion $phpVersion,
+		private ExprPrinter $exprPrinter,
+	)
 	{
 	}
 
@@ -39,7 +47,7 @@ final class UnusedVariableRule implements Rule
 			if ($node->isUntracked($name)) {
 				continue;
 			}
-			if ($node->isRead($write)) {
+			if ($node->isUsed($write)) {
 				continue;
 			}
 			if (str_starts_with($name, '_')) {
@@ -52,9 +60,33 @@ final class UnusedVariableRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Value assigned to variable $%s is never read.', $name))
+			$parentId = $write->getParentId();
+			if ($parentId !== null) {
+				// an item of a literal array: reported on its own only when the
+				// array as a whole is used, otherwise the assignment is reported
+				$parent = $node->getWrite($parentId);
+				if ($parent === null || !$node->isUsed($parent)) {
+					continue;
+				}
+				$offset = $write->getOffset();
+				if ($offset === null) {
+					continue;
+				}
+				$offsetType = is_int($offset) ? new ConstantIntegerType($offset) : new ConstantStringType($offset);
+				$message = sprintf('Offset %s of array assigned to variable $%s is never used.', $offsetType->describe(VerbosityLevel::value()), $name);
+			} elseif ($write->isOffsetWrite()) {
+				$target = $write->getNode();
+				if (!$target instanceof Node\Expr) {
+					continue;
+				}
+				$message = sprintf('Value assigned to %s is never used.', $this->exprPrinter->printExpr($target));
+			} else {
+				$message = sprintf('Value assigned to variable $%s is never used.', $name);
+			}
+
+			$errors[] = RuleErrorBuilder::message($message)
 				->identifier('variable.unused')
-				->line($write->getVariable()->getStartLine())
+				->line($write->getNode()->getStartLine())
 				->build();
 		}
 

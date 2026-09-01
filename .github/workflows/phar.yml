@@ -103,6 +103,13 @@ jobs:
         working-directory: "compiler/build"
         run: "php ../box/vendor/bin/box compile --no-parallel --sort-compiled-files"
 
+      # Box leaves the members with mtime 0 here, which OPcache refuses to
+      # cache at all; the commit date also keeps consecutive builds apart for
+      # opcache.validate_timestamps (see TurboProcessRestarter::resolveOpcacheArgs()).
+      # resign.php fails if any member is left at mtime 0.
+      - name: "Stamp PHAR member timestamps"
+        run: php compiler/build/resign.php tmp/phpstan.phar "$(git log -1 --format=%cI)"
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: phar-file

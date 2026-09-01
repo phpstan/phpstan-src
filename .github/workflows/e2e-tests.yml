@@ -309,6 +309,17 @@ jobs:
               ../bashunit -a contains 'changed and belongs to a Composer package.' "$OUTPUT"
               ../bashunit -a contains 'Foo.php:12:Method ResultCacheE2EScannedVendor\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-bootstrap
+              ../../bin/phpstan analyse
+              # A bootstrapFile is executed, not just read, so it can change anything about the
+              # analysis. It stays part of the executedFilesHashes metadata and keeps invalidating the
+              # whole result cache - the scanned file tracking does not apply to it.
+              patch -b bootstrap.php < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because the metadata do not match: executedFilesHashes' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EBootstrap\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-traits
               ../../bin/phpstan analyse
               patch -b src/FooTrait.php < renameFooTraitMethod.patch

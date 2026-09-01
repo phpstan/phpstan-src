@@ -7,6 +7,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use function array_values;
+use function str_starts_with;
 
 final class NodeDependencies
 {
@@ -64,20 +65,34 @@ final class NodeDependencies
 	}
 
 	/**
-	 * Project packages this file's reflections depend on. Mirrors getFileDependencies() but keeps the
-	 * vendor files it drops, resolved to the analysed project's Composer package, so a composer.lock
-	 * change can re-analyse only the files that depend on a package whose version changed.
+	 * The dependency files getFileDependencies() drops because they are not analysed, split into the
+	 * two ways the result cache tracks them:
+	 *
+	 * - "packages": files of an installed Composer package, resolved to the package name, so that a
+	 *   composer.lock change re-analyses only the files depending on a package whose version changed.
+	 * - "files": the remaining project files - listed in scanFiles/scanDirectories, excluded from the
+	 *   analysis but living in an analysed directory, or simply reached through the autoloader -
+	 *   recorded as regular file dependencies, so that editing one of them re-analyses only the files
+	 *   depending on it instead of invalidating the whole result cache.
+	 *
+	 * Files inside a PHAR belong to the running PHPStan itself and cannot change without its version
+	 * changing, so they are left out of both.
 	 *
 	 * @param array<string, true> $analysedFiles
-	 * @return list<string>
+	 * @return array{packages: list<string>, files: list<string>}
 	 */
-	public function getPackageDependencies(string $currentFile, array $analysedFiles, PackageDependencyResolver $packageDependencyResolver): array
+	public function getNonAnalysedDependencies(string $currentFile, array $analysedFiles, PackageDependencyResolver $packageDependencyResolver): array
 	{
 		$packages = [];
+		$files = [];
 
 		foreach ($this->reflections as $dependencyReflection) {
 			$dependencyFile = $dependencyReflection->getFileName();
 			if ($dependencyFile === null) {
+				continue;
+			}
+
+			if (str_starts_with($dependencyFile, 'phar://')) {
 				continue;
 			}
 
@@ -88,19 +103,23 @@ final class NodeDependencies
 			}
 
 			if (isset($analysedFiles[$dependencyFile])) {
-				// Analysed file: already tracked as a file-to-file dependency.
+				// already returned by getFileDependencies()
 				continue;
 			}
 
 			$package = $packageDependencyResolver->resolvePackage($dependencyFile);
-			if ($package === null) {
+			if ($package !== null) {
+				$packages[$package] = $package;
 				continue;
 			}
 
-			$packages[$package] = $package;
+			$files[$dependencyFile] = $dependencyFile;
 		}
 
-		return array_values($packages);
+		return [
+			'packages' => array_values($packages),
+			'files' => array_values($files),
+		];
 	}
 
 	public function getExportedNode(): ?RootExportedNode

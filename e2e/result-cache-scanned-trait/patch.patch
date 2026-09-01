@@ -1,0 +1,14 @@
+--- scanned/DepTrait.php	2026-09-01 10:00:00
++++ scanned/DepTrait.php	2026-09-01 10:01:00
+@@ -5,9 +5,9 @@
+ trait DepTrait
+ {
+ 
+-	public function doDep(): int
++	public function doDep(): string
+ 	{
+-		return 1;
++		return 'foo';
+ 	}
+ 
+ }

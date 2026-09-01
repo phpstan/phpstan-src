@@ -80,6 +80,21 @@ static void ZEND_FASTCALL runtimeEnablePharForkGuard(INTERNAL_FUNCTION_PARAMETER
 	pt_phar_fork_guard_register(path);
 }
 
+/* PHPStanTurbo\Runtime::trustTypesUnder() — TurboExtensionEnabler passes the
+ * phar:// prefix of the running phar, arming the optimizer pass that drops
+ * the engine's argument and return type checks from PHPStan's own code as
+ * it is compiled (see TrustedTypes.cpp). Returns whether the pass is armed —
+ * false without opcache. */
+static void ZEND_FASTCALL runtimeTrustTypesUnder(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zend_string *prefix;
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_STR(prefix)
+	ZEND_PARSE_PARAMETERS_END();
+
+	RETURN_BOOL(pt_trusted_types_set_prefix(prefix));
+}
+
 /* PHPStanTurbo\Runtime::exitImmediately() — _exit() for a pcntl_fork()ed
  * worker; ForkedChildTerminator registers it as the child's last shutdown
  * function.
@@ -113,10 +128,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	ZEND_TSRMLS_CACHE_UPDATE();
 #endif
 
+	static const reg::Arg returnsBool = reg::boolArg("");
 	reg::Class runtime("PHPStanTurbo\\Runtime");
 	runtime.method("configure", reg::PublicStatic, 1, { reg::arrayArg("classMap") }, runtimeConfigure);
 	runtime.method("classRefs", reg::PublicStatic, 0, {}, runtimeClassRefs);
 	runtime.method("enablePharForkGuard", reg::PublicStatic, 1, { reg::stringArg("pharPath") }, runtimeEnablePharForkGuard);
+	runtime.method("trustTypesUnder", reg::PublicStatic, 1, { reg::stringArg("prefix") }, runtimeTrustTypesUnder, &returnsBool);
 	runtime.method("exitImmediately", reg::PublicStatic, 0, {}, runtimeExitImmediately);
 	runtime.register_();
 

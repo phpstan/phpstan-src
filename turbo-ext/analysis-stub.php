@@ -23,6 +23,10 @@ final class Runtime
 	{
 	}
 
+	public static function trustTypesUnder(string $prefix): bool
+	{
+	}
+
 	public static function exitImmediately(): never
 	{
 	}

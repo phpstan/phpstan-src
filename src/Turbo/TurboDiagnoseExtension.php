@@ -2,6 +2,7 @@
 
 namespace PHPStan\Turbo;
 
+use Phar;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
@@ -64,7 +65,26 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 			'<info>Turbo worker binary:</info> %s',
 			$workerBinaryLine,
 		));
+		$output->writeLineFormatted(sprintf(
+			'<info>Turbo trusted types:</info> %s',
+			$this->describeTrustedTypes(),
+		));
 		$output->writeLineFormatted('');
+	}
+
+	private function describeTrustedTypes(): string
+	{
+		if (TurboExtensionEnabler::isTrustingOwnTypes()) {
+			return 'on (PHPStan\'s own argument and return type checks are dropped; --debug keeps them)';
+		}
+		if (!TurboExtensionEnabler::isActive()) {
+			return 'off (extension inactive)';
+		}
+		if (Phar::running(false) === '') {
+			return 'off (not running from a phar)';
+		}
+
+		return 'off (--debug, or OPcache is not active)';
 	}
 
 	private function describeStatus(?string $workerBinary): string

@@ -8,6 +8,7 @@ use function class_exists;
 use function dirname;
 use function extension_loaded;
 use function file_get_contents;
+use function in_array;
 use function is_file;
 use function json_decode;
 use function phpversion;
@@ -26,6 +27,8 @@ final class TurboExtensionEnabler
 	private static bool $typeCombinatorCacheEnabled = false;
 
 	private static bool $enabled = false;
+
+	private static bool $trustingOwnTypes = false;
 
 	public static function isLoaded(): bool
 	{
@@ -157,6 +160,59 @@ final class TurboExtensionEnabler
 
 		self::$typeCombinatorCacheEnabled = true;
 		self::$enabled = true;
+	}
+
+	/**
+	 * Whether the extension drops the engine's argument and return type
+	 * checks from PHPStan's own code in this process, see
+	 * trustOwnTypesIfSuitable().
+	 */
+	public static function isTrustingOwnTypes(): bool
+	{
+		return self::$trustingOwnTypes;
+	}
+
+	/**
+	 * PHPStan's code is verified by PHPStan itself at the strictest level, so
+	 * the engine's run-time checks of its parameter and return types re-check
+	 * what analysis already proved — at about 8% of the analysis CPU: a
+	 * class-typed parameter costs a class lookup and an instanceof on every
+	 * call, a typed return the same on the way out. With the extension active
+	 * and PHPStan running from a phar, its optimizer pass (TrustedTypes.cpp)
+	 * drops those checks from the code compiled out of the phar. Nothing else
+	 * is touched: extensions, bootstrap files and the analysed project keep
+	 * their checks, including on what they receive from PHPStan and return to
+	 * it — a check sits in the callee.
+	 *
+	 * What is lost is the TypeError at the boundary when such code passes a
+	 * wrong value into PHPStan: it surfaces later, deeper. That is why --debug
+	 * keeps the checks — the "run with --debug" advice on internal errors then
+	 * yields the original error. PHPUnit never gets here, so the test suites
+	 * of PHPStan and of extensions always run fully checked.
+	 *
+	 * Must run right after enableIfLoaded(), before the Composer autoloader
+	 * and preload.php are compiled: the pass rewrites scripts as they are
+	 * compiled, so whatever was compiled earlier keeps its checks.
+	 *
+	 * @param list<string> $argv
+	 */
+	public static function trustOwnTypesIfSuitable(array $argv): void
+	{
+		if (!self::$enabled) {
+			return;
+		}
+		if (in_array('--debug', $argv, true)) {
+			return;
+		}
+		if (!class_exists('Phar', false)) {
+			return;
+		}
+		$pharPath = Phar::running(false);
+		if ($pharPath === '') {
+			return;
+		}
+
+		self::$trustingOwnTypes = Runtime::trustTypesUnder('phar://' . $pharPath . '/');
 	}
 
 }

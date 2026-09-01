@@ -54,12 +54,12 @@ class Foo
 		assertType('mixed', json_decode($mixed));
 		assertType('mixed', json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK));
 		assertType('mixed', json_decode($mixed, false, 512, $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK));
-		assertType('int|string|null', array_key_first($mixedArray));
-		assertType('int|string|null', array_key_last($mixedArray));
+		assertType('(int|string|null)', array_key_first($mixedArray));
+		assertType('(int|string|null)', array_key_last($mixedArray));
 		assertType('(int|string)', array_key_first($nonEmptyArray));
 		assertType('(int|string)', array_key_last($nonEmptyArray));
-		assertType('string|null', array_key_first($arrayWithStringKeys));
-		assertType('string|null', array_key_last($arrayWithStringKeys));
+		assertType('(int|string|null)', array_key_first($arrayWithStringKeys));
+		assertType('(int|string|null)', array_key_last($arrayWithStringKeys));
 		assertType('null', array_key_first($emptyArray));
 		assertType('null', array_key_last($emptyArray));
 		assertType('0|1|2', array_key_first($literalArray));

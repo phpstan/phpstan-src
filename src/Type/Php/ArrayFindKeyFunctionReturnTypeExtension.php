@@ -8,8 +8,8 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
+use PHPStan\Type\Traverser\UnsafeArrayStringKeyCastingTraverser;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 
 #[AutowiredService]
@@ -33,7 +33,7 @@ final class ArrayFindKeyFunctionReturnTypeExtension implements DynamicFunctionRe
 			return null;
 		}
 
-		return TypeCombinator::union($arrayType->getIterableKeyType(), new NullType());
+		return UnsafeArrayStringKeyCastingTraverser::unionWithReadKeyType($arrayType->getIterableKeyType(), new NullType());
 	}
 
 }

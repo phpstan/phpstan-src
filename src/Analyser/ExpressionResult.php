@@ -2,12 +2,8 @@
 
 namespace PHPStan\Analyser;
 
-use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor;
-use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\Traverser\VoidToNullTraverser;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
@@ -19,6 +15,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_keys;
+use function is_array;
 use function is_string;
 use function spl_object_id;
 
@@ -769,44 +766,71 @@ final class ExpressionResult
 	 */
 	private function getReadVariableNames(): array
 	{
-		if ($this->readVariableNames !== null) {
-			return $this->readVariableNames;
+		return $this->readVariableNames ??= self::collectReadVariableNames($this->expr);
+	}
+
+	/**
+	 * The names are pure syntax, so they cache on the AST node itself as an
+	 * attribute (sharing the node's own lifetime) - a deep fetch/call chain
+	 * composes each link's set from its child's cached set in O(1) amortized
+	 * instead of re-traversing the whole subtree per link (and per
+	 * loop-convergence pass, which recreates the results).
+	 */
+	private const READ_VARIABLE_NAMES_ATTRIBUTE = 'readVariableNames';
+
+	/**
+	 * @return list<string>
+	 */
+	private static function collectReadVariableNames(Node $node): array
+	{
+		if ($node instanceof Expr) {
+			/** @var list<string>|null $cached */
+			$cached = $node->getAttribute(self::READ_VARIABLE_NAMES_ATTRIBUTE);
+			if ($cached !== null) {
+				return $cached;
+			}
 		}
 
-		$visitor = new class extends NodeVisitorAbstract {
-
-			/** @var array<string, true> */
-			public array $names = [];
-
-			#[Override]
-			public function enterNode(Node $node): ?int
-			{
-				if ($node instanceof Expr\Variable && is_string($node->name) && $node->name !== 'this') {
-					$this->names[$node->name] = true;
+		$names = [];
+		if ($node instanceof Expr\Variable && is_string($node->name) && $node->name !== 'this') {
+			$names[$node->name] = true;
+		}
+		if ($node instanceof Expr\Closure) {
+			// a closure body's variables live in its own scope - only the
+			// use() clause reads the enclosing position. Arrow functions
+			// capture implicitly and are traversed.
+			foreach ($node->uses as $use) {
+				if (!is_string($use->var->name)) {
+					continue;
 				}
-				// a closure body's variables live in its own scope - only the
-				// use() clause reads the enclosing position. Arrow functions
-				// capture implicitly and are traversed.
-				if ($node instanceof Expr\Closure) {
-					foreach ($node->uses as $use) {
-						if (!is_string($use->var->name)) {
+				$names[$use->var->name] = true;
+			}
+		} else {
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					foreach (self::collectReadVariableNames($subNode) as $name) {
+						$names[$name] = true;
+					}
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
 							continue;
 						}
-						$this->names[$use->var->name] = true;
+						foreach (self::collectReadVariableNames($item) as $name) {
+							$names[$name] = true;
+						}
 					}
-
-					return NodeVisitor::DONT_TRAVERSE_CHILDREN;
 				}
-
-				return null;
 			}
+		}
 
-		};
-		$traverser = new NodeTraverser();
-		$traverser->addVisitor($visitor);
-		$traverser->traverse([$this->expr]);
+		$result = array_keys($names);
+		if ($node instanceof Expr) {
+			$node->setAttribute(self::READ_VARIABLE_NAMES_ATTRIBUTE, $result);
+		}
 
-		return $this->readVariableNames = array_keys($visitor->names);
+		return $result;
 	}
 
 }

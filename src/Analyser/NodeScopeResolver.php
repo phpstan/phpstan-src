@@ -34,6 +34,7 @@ use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -229,6 +230,8 @@ class NodeScopeResolver
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly ExpressionResultFactory $expressionResultFactory,
+		#[AutowiredParameter(ref: '%featureToggles.unresolvedTemplateArguments%')]
+		private readonly bool $unresolvedTemplateArguments,
 	)
 	{
 		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
@@ -644,124 +647,28 @@ class NodeScopeResolver
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$exitPoints = [];
-		$throwPoints = [];
-		$impurePoints = [];
-		$alreadyTerminated = false;
-		$hasYield = false;
 		$stmtCount = count($stmts);
 		$shouldCheckLastStatement = $parentNode instanceof Node\Stmt\Function_
 			|| $parentNode instanceof Node\Stmt\ClassMethod
 			|| $parentNode instanceof PropertyHookStatementNode
 			|| $parentNode instanceof Expr\Closure;
 
-		foreach ($stmts as $i => $stmt) {
-			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
-				continue;
-			}
-
-			$isLast = $i === $stmtCount - 1;
-
-			$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
-			if ($nestedLabelNames !== null && $context->isTopLevel()) {
-				$scope = $this->resolveBackwardGotoScope(
-					$parentNode,
-					[$stmt],
-					$scope,
-					$storage,
-					$context->enterDeep(),
-					static fn (string $name): bool => isset($nestedLabelNames[$name]),
-					false,
-				);
-			}
-
-			$statementResult = $this->processStmtNode(
-				$stmt,
-				$scope,
-				$storage,
-				$nodeCallback,
-				$context,
-			);
-			$scope = $statementResult->getScope();
-			$hasYield = $hasYield || $statementResult->hasYield();
-
-			if ($stmt instanceof Node\Stmt\Label) {
-				$labelName = $stmt->name->toString();
-
-				[$scope, $alreadyTerminated, $exitPoints] = $this->mergeForwardGotoExitPoints(
-					$labelName,
-					$scope,
-					$alreadyTerminated,
-					$exitPoints,
-				);
-
-				if ($alreadyTerminated) {
-					continue;
-				}
-
-				if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
-					$scope = $this->resolveBackwardGotoScope(
-						$parentNode,
-						array_slice($stmts, $i + 1),
-						$scope,
-						$storage,
-						$context->enterDeep(),
-						static fn (string $name): bool => $name === $labelName,
-						true,
-					);
-				}
-			}
-
-			if ($shouldCheckLastStatement && $isLast) {
-				$endStatements = $statementResult->getEndStatements();
-				if (count($endStatements) > 0) {
-					foreach ($endStatements as $endStatement) {
-						$endStatementResult = $endStatement->getResult();
-						$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
-							$endStatement->getStatement(),
-							(new InternalStatementResult(
-								$endStatementResult->getScope(),
-								$hasYield,
-								$endStatementResult->isAlwaysTerminating(),
-								$endStatementResult->getExitPoints(),
-								$endStatementResult->getThrowPoints(),
-								$endStatementResult->getImpurePoints(),
-							))->toPublic(),
-							$parentNode->getReturnType() !== null,
-							$this->readEndStatementExprResult($endStatement->getStatement(), $storage),
-						), $endStatementResult->getScope(), $storage);
-					}
-				} else {
-					$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
-						$stmt,
-						(new InternalStatementResult(
-							$scope,
-							$hasYield,
-							$statementResult->isAlwaysTerminating(),
-							$statementResult->getExitPoints(),
-							$statementResult->getThrowPoints(),
-							$statementResult->getImpurePoints(),
-						))->toPublic(),
-						$parentNode->getReturnType() !== null,
-						$this->readEndStatementExprResult($stmt, $storage),
-					), $scope, $storage);
-				}
-			}
-
-			$exitPoints = array_merge($exitPoints, $statementResult->getExitPoints());
-			$throwPoints = array_merge($throwPoints, $statementResult->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $statementResult->getImpurePoints());
-
-			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
-				continue;
-			}
-
-			$alreadyTerminated = true;
-			$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
-			$this->processUnreachableStatement($nextStmts, $scope, $storage, $nodeCallback);
+		if (
+			$shouldCheckLastStatement
+			&& $stmtCount > 0
+			&& $this->unresolvedTemplateArguments
+			&& !$nodeCallback instanceof RecordingNodeCallback
+			&& !$nodeCallback instanceof NoopNodeCallback
+		) {
+			return $this->processBodyStmtNodesTwoPass($parentNode, $stmts, $scope, $storage, $nodeCallback, $context);
 		}
 
-		$statementResult = new InternalStatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);
+		$state = new StatementListWalkState($scope);
+		foreach ($stmts as $i => $stmt) {
+			$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, $shouldCheckLastStatement);
+		}
+
+		$statementResult = $state->toResult();
 		if ($stmtCount === 0 && $shouldCheckLastStatement) {
 			$returnTypeNode = $parentNode->getReturnType();
 			if ($parentNode instanceof Expr\Closure) {
@@ -777,6 +684,188 @@ class NodeScopeResolver
 		}
 
 		return $statementResult;
+	}
+
+	/**
+	 * One statement of a statement list, advancing $state past it.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processStatementStep(
+		Node $parentNode,
+		array $stmts,
+		int $i,
+		Node\Stmt $stmt,
+		StatementListWalkState $state,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		bool $shouldCheckLastStatement,
+	): void
+	{
+		if ($state->alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
+			return;
+		}
+
+		$isLast = $i === count($stmts) - 1;
+
+		$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
+		if ($nestedLabelNames !== null && $context->isTopLevel()) {
+			$state->scope = $this->resolveBackwardGotoScope(
+				$parentNode,
+				[$stmt],
+				$state->scope,
+				$storage,
+				$context->enterDeep(),
+				static fn (string $name): bool => isset($nestedLabelNames[$name]),
+				false,
+			);
+		}
+
+		$statementResult = $this->processStmtNode(
+			$stmt,
+			$state->scope,
+			$storage,
+			$nodeCallback,
+			$context,
+		);
+		$state->scope = $statementResult->getScope();
+		$state->hasYield = $state->hasYield || $statementResult->hasYield();
+
+		if ($stmt instanceof Node\Stmt\Label) {
+			$labelName = $stmt->name->toString();
+
+			[$state->scope, $state->alreadyTerminated, $state->exitPoints] = $this->mergeForwardGotoExitPoints(
+				$labelName,
+				$state->scope,
+				$state->alreadyTerminated,
+				$state->exitPoints,
+			);
+
+			if ($state->alreadyTerminated) {
+				return;
+			}
+
+			if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
+				$state->scope = $this->resolveBackwardGotoScope(
+					$parentNode,
+					array_slice($stmts, $i + 1),
+					$state->scope,
+					$storage,
+					$context->enterDeep(),
+					static fn (string $name): bool => $name === $labelName,
+					true,
+				);
+			}
+		}
+
+		if ($shouldCheckLastStatement && $isLast) {
+			$hasDeclaredReturnType = ($parentNode instanceof Node\FunctionLike || $parentNode instanceof PropertyHookStatementNode)
+				&& $parentNode->getReturnType() !== null;
+			$endStatements = $statementResult->getEndStatements();
+			if (count($endStatements) > 0) {
+				foreach ($endStatements as $endStatement) {
+					$endStatementResult = $endStatement->getResult();
+					$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
+						$endStatement->getStatement(),
+						(new InternalStatementResult(
+							$endStatementResult->getScope(),
+							$state->hasYield,
+							$endStatementResult->isAlwaysTerminating(),
+							$endStatementResult->getExitPoints(),
+							$endStatementResult->getThrowPoints(),
+							$endStatementResult->getImpurePoints(),
+						))->toPublic(),
+						$hasDeclaredReturnType,
+						$this->readEndStatementExprResult($endStatement->getStatement(), $storage),
+					), $endStatementResult->getScope(), $storage);
+				}
+			} else {
+				$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
+					$stmt,
+					(new InternalStatementResult(
+						$state->scope,
+						$state->hasYield,
+						$statementResult->isAlwaysTerminating(),
+						$statementResult->getExitPoints(),
+						$statementResult->getThrowPoints(),
+						$statementResult->getImpurePoints(),
+					))->toPublic(),
+					$hasDeclaredReturnType,
+					$this->readEndStatementExprResult($stmt, $storage),
+				), $state->scope, $storage);
+			}
+		}
+
+		$state->exitPoints = array_merge($state->exitPoints, $statementResult->getExitPoints());
+		$state->throwPoints = array_merge($state->throwPoints, $statementResult->getThrowPoints());
+		$state->impurePoints = array_merge($state->impurePoints, $statementResult->getImpurePoints());
+
+		if ($state->alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
+			return;
+		}
+
+		$state->alreadyTerminated = true;
+		$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
+		$this->processUnreachableStatement($nextStmts, $state->scope, $storage, $nodeCallback);
+	}
+
+	/**
+	 * A function-like body under the unresolvedTemplateArguments toggle is
+	 * walked in two passes. The observation pass walks every statement
+	 * recording the rule-facing emissions instead of firing them, with a
+	 * TemplateArgumentFrame collecting what the body does with the generic
+	 * objects it creates (see the frame). A body that created no unresolved
+	 * template argument - the common case - then just replays the recording
+	 * through the real callback: the recorded scopes are what the walk
+	 * produced. Otherwise the frame resolves its observations and the second
+	 * pass re-walks, with the real callback, only the statements the
+	 * resolutions can influence.
+	 *
+	 * The outer gatherer frames (the method's return statements, execution
+	 * ends, impure points) are suspended during the observation pass and fed
+	 * by the replay and the re-walk, so each emission reaches them once.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processBodyStmtNodesTwoPass(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+	): InternalStatementResult
+	{
+		$statementStartTokenPositions = [];
+		foreach ($stmts as $stmt) {
+			$statementStartTokenPositions[] = $stmt->getStartTokenPos();
+		}
+		$frame = new TemplateArgumentFrame($scope->getCurrentTemplateArgumentFrame(), $statementStartTokenPositions);
+		$scope->pushTemplateArgumentFrame($frame);
+		try {
+			$recording = new RecordingNodeCallback();
+			$state = new StatementListWalkState($scope);
+			$suspendedGatherers = $this->nodeGatherers;
+			$this->nodeGatherers = [];
+			try {
+				foreach ($stmts as $i => $stmt) {
+					$frame->setCurrentStatementIndex($i);
+					$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $context, true);
+				}
+			} finally {
+				$this->nodeGatherers = $suspendedGatherers;
+			}
+			$frame->finishObserving();
+
+			$this->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+
+			return $state->toResult();
+		} finally {
+			$scope->popTemplateArgumentFrame();
+		}
 	}
 
 	/**
@@ -1475,18 +1564,29 @@ class NodeScopeResolver
 	 */
 	public function replayRecording(RecordingNodeCallback $recording, callable $nodeCallback, ExpressionResultStorage $storage, MutatingScope $scope): void
 	{
+		$this->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+	}
+
+	/**
+	 * Replays the recorded pairs [$from, $to) the way callNodeCallback() would
+	 * have emitted them: gatherer frames observe them exactly like live ones
+	 * (with the raw walk scope), a real callback gets the callback scope - and
+	 * a recording callback records them again (a loop's fixpoint replay running
+	 * inside a body's observation pass).
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function replayRecordingRange(RecordingNodeCallback $recording, int $from, int $to, callable $nodeCallback, ExpressionResultStorage $storage, MutatingScope $scope): void
+	{
+		$pairs = $recording->getPairs();
 		$scope->pushExpressionResultStorage($storage);
 		try {
-			foreach ($recording->getPairs() as [$node, $pairScope]) {
+			for ($i = $from; $i < $to; $i++) {
+				[$node, $pairScope] = $pairs[$i];
 				if (!$pairScope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();
 				}
-				// gatherer frames observe replayed emissions exactly like live
-				// ones - with the raw walk scope
-				foreach ($this->nodeGatherers as $gatherer) {
-					$gatherer($node, $pairScope);
-				}
-				$nodeCallback($node, $pairScope->toNodeCallbackScope());
+				$this->callNodeCallback($nodeCallback, $node, $pairScope, $storage);
 			}
 		} finally {
 			$scope->popExpressionResultStorage();

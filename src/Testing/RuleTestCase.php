@@ -105,6 +105,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
+			self::getContainer()->getParameter('featureToggles')['unresolvedTemplateArguments'],
 		);
 	}
 

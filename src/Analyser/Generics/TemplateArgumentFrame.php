@@ -74,11 +74,6 @@ final class TemplateArgumentFrame
 	{
 	}
 
-	public function getParent(): ?self
-	{
-		return $this->parent;
-	}
-
 	public function isObserving(): bool
 	{
 		return $this->observing;

@@ -94,12 +94,6 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return new self($this->site, $this->templateType, $initialType);
 	}
 
-	/** Re-keys a marker produced by a synthetic node onto the real site and its template. */
-	public function withSite(Expr $site, TemplateType $templateType): self
-	{
-		return new self($site, $templateType, $this->initialType);
-	}
-
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self

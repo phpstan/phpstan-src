@@ -3041,14 +3041,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 		if ($write !== null) {
+			// markers live in the phpDoc-typed map only: reads are recorded on walk
+			// scopes, never on a promoted one, and keeping them out of the native
+			// map halves their share of every merge, generalization and invalidation
 			foreach ($supersededMarkerExprs as $supersededMarkerExpr) {
-				$supersededMarkerKey = $this->getNodeKey($supersededMarkerExpr);
-				unset($scope->expressionTypes[$supersededMarkerKey], $scope->nativeExpressionTypes[$supersededMarkerKey]);
+				unset($scope->expressionTypes[$this->getNodeKey($supersededMarkerExpr)]);
 			}
-			$markerHolder = ExpressionTypeHolder::createYes($write->getMarkerExpr(), new MixedType());
-			$markerKey = $this->getNodeKey($write->getMarkerExpr());
-			$scope->expressionTypes[$markerKey] = $markerHolder;
-			$scope->nativeExpressionTypes[$markerKey] = $markerHolder;
+			$scope->expressionTypes[$this->getNodeKey($write->getMarkerExpr())] = ExpressionTypeHolder::createYes($write->getMarkerExpr(), new MixedType());
 		}
 
 		foreach ($scope->expressionTypes as $exprString => $expressionType) {

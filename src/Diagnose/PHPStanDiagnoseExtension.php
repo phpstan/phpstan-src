@@ -12,6 +12,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Process\PcovHelper;
 use ReflectionClass;
 use function array_count_values;
 use function array_key_exists;
@@ -67,6 +68,13 @@ final class PHPStanDiagnoseExtension
 			'<info>PHP runtime version:</info> %s',
 			$phpRuntimeVersion->getVersionString(),
 		));
+
+		if (PcovHelper::isLoaded()) {
+			$output->writeLineFormatted(sprintf(
+				'<info>pcov extension:</info> %s',
+				$this->describePcovStatus(),
+			));
+		}
 
 		if (
 			$this->phpVersion->getSource() === PhpVersion::SOURCE_CONFIG
@@ -232,6 +240,26 @@ final class PHPStanDiagnoseExtension
 			));
 		}
 		$output->writeLineFormatted('');
+	}
+
+	private function describePcovStatus(): string
+	{
+		$version = PcovHelper::getVersion() ?? 'unknown version';
+
+		if (PcovHelper::isAllowed()) {
+			return sprintf(
+				'%s, %s - kept everywhere because %s=1',
+				$version,
+				PcovHelper::isActive() ? 'active' : 'not active (pcov.enabled=0)',
+				PcovHelper::ALLOW_ENV_VARIABLE,
+			);
+		}
+
+		if (!PcovHelper::isActive()) {
+			return sprintf('%s, not active in this process (pcov.enabled=0), disabled in worker processes', $version);
+		}
+
+		return sprintf('%s, active - it slows down every function call, disabled in worker processes', $version);
 	}
 
 	/**

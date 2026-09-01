@@ -1175,10 +1175,106 @@ jobs:
           php -r 'exit(function_exists("pcntl_exec") && function_exists("pcntl_fork") ? 0 : 1);'
 
       - name: "Run PHAR"
+        # No turbo binary sits next to this phar (the turbo-* jobs cover
+        # those), so ForkParallelChecker spawns the two workers phpstan.neon
+        # asks for. At -vvv each reports what it runs with: the OPcache
+        # setup its command line carries (see ProcessHelper) took effect.
         run: |
           php tmp/phpstan.phar --version
           cd e2e/phar-run
-          php ../../tmp/phpstan.phar analyse -vvv
+          php ../../tmp/phpstan.phar analyse -vvv 2>&1 | tee output.txt
+          OPCACHE="$(php -r 'echo extension_loaded("Zend OPcache") ? "on" : "off";')"
+          grep -F "Spawned worker 1/2 checked in: turbo off, OPcache $OPCACHE, trusted types off" output.txt
+          grep -F "Spawned worker 2/2 checked in: turbo off, OPcache $OPCACHE, trusted types off" output.txt
+
+  phar-run-windows:
+    name: "Run PHAR on Windows, PHP ${{ matrix.php-version }}"
+    needs:
+      - compiler-tests
+      - turbo-compile-windows
+    runs-on: "windows-latest"
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # below TurboExtensionSelector::MINIMUM_PHP_VERSION_ID there is no
+          # binary to find: the workers get the OPcache entries alone
+          - php-version: "8.2"
+            turbo: "off"
+          - php-version: "8.5"
+            turbo: "on"
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          extensions: "opcache"
+
+      - name: "Download PHAR"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: phar-file
+          path: tmp
+
+      - name: "Download extension artifact"
+        if: matrix.turbo == 'on'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}"
+          path: "tmp/turbo-artifact"
+
+      - name: "Place the extension next to the PHAR"
+        # the distribution layout TurboExtensionSelector looks for, see the
+        # turbo-artifact job
+        if: matrix.turbo == 'on'
+        env:
+          PHP_VERSION: ${{ matrix.php-version }}
+        run: |
+          mkdir -p tmp/turbo-ext/windows-x86_64
+          cp tmp/turbo-artifact/php_phpstan_turbo.dll "tmp/turbo-ext/windows-x86_64/phpstan_turbo-$PHP_VERSION.dll"
+
+      - name: "Diagnose"
+        # Without pcntl the main process cannot restart itself, so the
+        # workers are spawned and their command line is where the extension
+        # and OPcache come in - each worker with its own OPcache instance
+        # (see ProcessHelper).
+        env:
+          TURBO: ${{ matrix.turbo }}
+        run: |
+          cd e2e/phar-run
+          php ../../tmp/phpstan.phar diagnose --no-ansi 2>&1 | tee diagnose.txt
+          grep -F "Mechanism:                 spawn (react/child-process)" diagnose.txt
+          grep -F "opcache.enable_cli=1" diagnose.txt
+          grep -E "opcache\.cache_id=phpstan-[0-9]+-1" diagnose.txt
+          grep -F "phpstan.restarted=1" diagnose.txt
+          if [ "$TURBO" = on ]; then
+            grep -F "Turbo extension: enabled in worker processes" diagnose.txt
+          else
+            grep -F "Turbo extension: not loaded" diagnose.txt
+          fi
+
+      - name: "Run PHAR"
+        env:
+          TURBO: ${{ matrix.turbo }}
+        run: |
+          php tmp/phpstan.phar --version
+          cd e2e/phar-run
+          php ../../tmp/phpstan.phar analyse -vvv --no-ansi 2>&1 | tee output.txt
+          grep -F "Spawned worker 1/2 checked in: turbo $TURBO, OPcache on, trusted types $TURBO" output.txt
+          grep -F "Spawned worker 2/2 checked in: turbo $TURBO, OPcache on, trusted types $TURBO" output.txt
 
   integration-tests:
     if: github.event_name == 'pull_request'

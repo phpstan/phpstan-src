@@ -44,14 +44,19 @@ use const PHP_BINARY;
  * stop (a binary that failed to load, or an OPcache that could not start,
  * would otherwise restart forever), and EXTENSION_PATH_INI tells
  * TurboExtensionSelector that spawned workers still need the -d flag
- * (command-line -d flags, unlike php.ini, are not inherited).
+ * (command-line -d flags, unlike php.ini, are not inherited). ProcessHelper
+ * sets both on the workers it spawns, along with the OPcache entries: a
+ * worker's configuration is decided by the process spawning it, so it never
+ * restarts itself — before that, every spawned worker on a pcntl host
+ * re-executed itself once to activate OPcache, rebuilding its command line
+ * without the sys_temp_dir and extension entries of the spawn.
  */
 final class TurboProcessRestarter
 {
 
 	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';
 
-	/** Set by the restart so the restarted process never restarts again */
+	/** Set by the restart, and by ProcessHelper on spawned workers, so the process never restarts itself */
 	public const RESTARTED_INI = 'phpstan.restarted';
 
 	/** Shared memory reserved (not touched) for the opcode cache, in MB — see resolveOpcacheArgs() for the sizing */
@@ -75,8 +80,9 @@ final class TurboProcessRestarter
 	];
 
 	/**
-	 * The extension path this process was restarted with, null when the
-	 * process was not restarted.
+	 * The extension path this process was given through -d — by the restart,
+	 * or by ProcessHelper when spawned as a worker. Null when the extension
+	 * came from the php.ini or is not loaded at all.
 	 */
 	public static function getRestartExtensionPath(): ?string
 	{
@@ -210,8 +216,9 @@ final class TurboProcessRestarter
 	}
 
 	/**
-	 * `-d` entries activating OPcache for the restarted process — see
-	 * resolveOpcacheArgs() for the reasoning behind each of them.
+	 * `-d` entries activating OPcache for the restarted process, and for the
+	 * workers ProcessHelper spawns — see resolveOpcacheArgs() for the
+	 * reasoning behind each of them.
 	 *
 	 * Nothing is added when OPcache is not loaded at all — real on PHP <= 8.4,
 	 * gone on 8.5+ (always built in and loaded). Loading it from here is not
@@ -220,7 +227,7 @@ final class TurboProcessRestarter
 	 *
 	 * @return list<string>
 	 */
-	private static function getOpcacheArgs(): array
+	public static function getOpcacheArgs(): array
 	{
 		if (!extension_loaded('Zend OPcache')) {
 			return [];

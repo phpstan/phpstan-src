@@ -370,6 +370,7 @@ final class FixerWorkerRunner
 			null,
 			$input,
 			$onFileAnalysisHandler,
+			null,
 		);
 	}
 

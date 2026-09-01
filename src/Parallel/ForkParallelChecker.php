@@ -6,10 +6,15 @@ use Phar;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
+use PHPStan\Process\ProcessHelper;
 use PHPStan\Turbo\TurboExtensionEnabler;
+use PHPStan\Turbo\TurboProcessRestarter;
 use function function_exists;
+use function getmypid;
 use function opcache_get_status;
 use function sprintf;
+use function str_starts_with;
+use const PHP_OS_FAMILY;
 
 /**
  * Decides whether parallel analysis should fork workers via pcntl_fork()
@@ -62,6 +67,18 @@ final class ForkParallelChecker implements DiagnoseExtension
 
 		$output->writeLineFormatted('Mechanism:                 spawn (react/child-process)');
 		$output->writeLineFormatted(sprintf('Reason fork not used:      %s', $reason));
+
+		// what a spawned worker's command line adds on top of the php.ini
+		// (see ProcessHelper); the extension path is on the turbo lines
+		$parentPid = getmypid();
+		$output->writeLineFormatted('Worker -d entries:');
+		foreach (ProcessHelper::resolveWorkerIniEntries(TurboProcessRestarter::getOpcacheArgs(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, 1) as $iniEntry) {
+			$output->writeLineFormatted(sprintf(
+				'  %s%s',
+				$iniEntry,
+				str_starts_with($iniEntry, 'opcache.cache_id=') ? ' (numbered per worker)' : '',
+			));
+		}
 		$output->writeLineFormatted('');
 	}
 

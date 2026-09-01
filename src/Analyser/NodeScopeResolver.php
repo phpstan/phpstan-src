@@ -1529,11 +1529,15 @@ class NodeScopeResolver
 
 	/**
 	 * Synthetic nodes priced on demand re-read real variables outside their
-	 * own walk - those reads (and writes) never count.
+	 * own walk - those reads (and writes) never count. A consume-stored walk is
+	 * different: it re-enters an already-walked subtree and answers the walked
+	 * nodes from the storage, so a handler running there processes a node for
+	 * the first time (the arguments of a nullsafe call's plain twin) and its
+	 * reads are genuine.
 	 */
 	private function isProcessingOnDemand(): bool
 	{
-		return $this->returnStoredExpressionResults || $this->consumeStoredExpressionResults;
+		return $this->returnStoredExpressionResults;
 	}
 
 	/**

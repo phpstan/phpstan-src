@@ -152,6 +152,10 @@ class UnusedVariableRuleTest extends RuleTestCase
 				'Value assigned to variable $e is never read.',
 				23,
 			],
+			[
+				'Value assigned to variable $nightsFrom is never read.',
+				98,
+			],
 		]);
 	}
 

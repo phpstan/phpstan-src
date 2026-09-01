@@ -493,4 +493,26 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10419(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10419.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug10290(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10290.php'], []);
+	}
+
+	public function testBug5741(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-5741.php'], []);
+	}
+
 }

@@ -1344,4 +1344,62 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14893.php'], []);
 	}
 
+	public function testBug12704(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12704.php'], []);
+	}
+
+	public function testBug12576(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12576.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug14647(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-14647.php'], []);
+	}
+
+	public function testBug12601(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12601.php'], []);
+	}
+
+	public function testBug12490(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12490.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug12420(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12420.php'], [
+			[
+				'Method Bug12420\Test::testFailingArray() should return array<\'bar\'|\'foo\'> but returns array{\'foo\', \'bar\', \'wrong\'}.',
+				66,
+			],
+		]);
+	}
+
+	public function testBug11835(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-11835.php'], []);
+	}
+
+	public function testBug11435(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11435.php'], []);
+	}
+
+	public function testBug10289(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10289.php'], []);
+	}
+
 }

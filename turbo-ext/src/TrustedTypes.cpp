@@ -187,9 +187,11 @@ static void pt_tt_pass(zend_script *script, void *ctx)
 	} ZEND_HASH_FOREACH_END();
 }
 
-/* opcache exports the registration under ZEND_API; it is a shared
- * zend_extension loaded RTLD_GLOBAL or linked into the binary, and absent
- * altogether on some hosts, so it is resolved by name instead of linked. */
+/* The registration is exported under ZEND_API by whichever module the
+ * optimizer is built into — opcache.so (shared, loaded RTLD_GLOBAL) or the
+ * php binary on Unix, the engine DLL on Windows (win32/build/config.w32
+ * compiles Zend/Optimizer into php8.dll, not into php_opcache.dll) — and it
+ * is absent on hosts without OPcache, so it is resolved by name, not linked. */
 static bool pt_tt_register_pass()
 {
 	if (pt_tt_pass_registered) {
@@ -198,9 +200,17 @@ static bool pt_tt_register_pass()
 
 	pt_tt_register_pass_t register_pass = NULL;
 #ifdef PHP_WIN32
-	HMODULE opcache = GetModuleHandleA("php_opcache.dll");
-	if (opcache != NULL) {
-		register_pass = reinterpret_cast<pt_tt_register_pass_t>(GetProcAddress(opcache, "zend_optimizer_register_pass"));
+	/* the engine DLL is php8.dll, php8ts.dll or a renamed embed build: find it
+	 * by the address of an engine symbol rather than by name */
+	HMODULE engine = NULL;
+	if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCSTR>(&zend_vm_set_opcode_handler), &engine) && engine != NULL) {
+		register_pass = reinterpret_cast<pt_tt_register_pass_t>(GetProcAddress(engine, "zend_optimizer_register_pass"));
+	}
+	if (register_pass == NULL) {
+		HMODULE opcache = GetModuleHandleA("php_opcache.dll");
+		if (opcache != NULL) {
+			register_pass = reinterpret_cast<pt_tt_register_pass_t>(GetProcAddress(opcache, "zend_optimizer_register_pass"));
+		}
 	}
 #else
 	register_pass = reinterpret_cast<pt_tt_register_pass_t>(dlsym(RTLD_DEFAULT, "zend_optimizer_register_pass"));

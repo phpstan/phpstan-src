@@ -108,7 +108,13 @@ function check(string $label, array $expected, array $actual): bool
 	return $ok;
 }
 
-$trustedPrefix = __DIR__ . '/trusted-types-fixtures/trusted/';
+// compiled filenames are resolved paths (backslashes on Windows) — derive the prefix the same way
+$trustedDir = realpath(__DIR__ . '/trusted-types-fixtures/trusted');
+if ($trustedDir === false) {
+	fwrite(STDERR, "fixture directory not found\n");
+	exit(1);
+}
+$trustedPrefix = $trustedDir . DIRECTORY_SEPARATOR;
 
 $ok = true;
 

@@ -6,7 +6,6 @@ use Override;
 use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Throwable;
 
 final class BleedingEdgeToggleTest extends TestCase
 {
@@ -56,17 +55,15 @@ final class BleedingEdgeToggleTest extends TestCase
 	{
 		BleedingEdgeToggle::setBleedingEdge(false);
 
-		$thrown = false;
+		$this->expectException(RuntimeException::class);
+		$this->expectExceptionMessage('boom');
 		try {
 			BleedingEdgeToggle::withBleedingEdge(true, static function (): void {
 				throw new RuntimeException('boom');
 			});
-		} catch (Throwable $e) {
-			$thrown = $e instanceof RuntimeException && $e->getMessage() === 'boom';
+		} finally {
+			$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
 		}
-
-		$this->assertTrue($thrown);
-		$this->assertFalse(BleedingEdgeToggle::isBleedingEdge());
 	}
 
 	public function testThrowsAndRestoresWhenCallbackYields(): void

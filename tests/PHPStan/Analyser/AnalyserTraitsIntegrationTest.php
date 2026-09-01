@@ -41,7 +41,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 			__DIR__ . '/traits/Bar.php',
 			__DIR__ . '/traits/FooTrait.php',
 		]);
-		$this->assertCount(1, $errors);
+		$this->assertCount(2, $errors);
 		$error = $errors[0];
 		$this->assertSame('Call to an undefined method AnalyseTraits\Bar::doFoo().', $error->getMessage());
 		$this->assertSame(
@@ -49,6 +49,14 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 			$error->getFile(),
 		);
 		$this->assertSame(10, $error->getLine());
+
+		$error = $errors[1];
+		$this->assertSame('Value assigned to variable $r is never read.', $error->getMessage());
+		$this->assertSame(
+			sprintf('%s (in context of class AnalyseTraits\Bar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/FooTrait.php')),
+			$error->getFile(),
+		);
+		$this->assertSame(15, $error->getLine());
 	}
 
 	public function testNestedTraits(): void
@@ -58,7 +66,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 			__DIR__ . '/traits/NestedFooTrait.php',
 			__DIR__ . '/traits/FooTrait.php',
 		]);
-		$this->assertCount(2, $errors);
+		$this->assertCount(3, $errors);
 		$firstError = $errors[0];
 		$this->assertSame('Call to an undefined method AnalyseTraits\NestedBar::doFoo().', $firstError->getMessage());
 		$this->assertSame(
@@ -67,7 +75,15 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		);
 		$this->assertSame(10, $firstError->getLine());
 
-		$secondError = $errors[1];
+		$unusedError = $errors[1];
+		$this->assertSame('Value assigned to variable $r is never read.', $unusedError->getMessage());
+		$this->assertSame(
+			sprintf('%s (in context of class AnalyseTraits\NestedBar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/FooTrait.php')),
+			$unusedError->getFile(),
+		);
+		$this->assertSame(15, $unusedError->getLine());
+
+		$secondError = $errors[2];
 		$this->assertSame('Call to an undefined method AnalyseTraits\NestedBar::doNestedFoo().', $secondError->getMessage());
 		$this->assertSame(
 			sprintf('%s (in context of class AnalyseTraits\NestedBar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/NestedFooTrait.php')),

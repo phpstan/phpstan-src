@@ -216,11 +216,13 @@ final class ClassMethodHandler implements StmtHandler
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 				});
+				$nodeScopeResolver->pushVariableWritesFrame($stmt->params);
 				try {
 					$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
 				} finally {
 					$nodeScopeResolver->popNodeGatherer();
 				}
+				$variableWritesFrame = $nodeScopeResolver->popVariableWritesFrame();
 
 				$methodReflection = $methodScope->getFunction();
 				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
@@ -237,6 +239,7 @@ final class ClassMethodHandler implements StmtHandler
 					$classReflection,
 					$methodReflection,
 				), $methodScope, $bodyStorage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, $variableWritesFrame->createNode($stmt), $methodScope, $bodyStorage);
 			} finally {
 				$scope->popExpressionResultStorage();
 			}

@@ -73,6 +73,7 @@ final class StaticVariableHandler implements StmtHandler
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $scope->exitExpressionAssign($var->var);
 
+			$nodeScopeResolver->markVariableUntracked($var->var->name);
 			$scope = $scope->assignVariable($var->var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
 			$vars[] = $var->var->name;
 		}

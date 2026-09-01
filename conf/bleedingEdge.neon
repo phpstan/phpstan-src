@@ -26,3 +26,4 @@ parameters:
 		finiteTypesInHaystack: true
 		switchConditionAlwaysFalse: true
 		checkImportedClassNameCase: true
+		unusedVariable: true

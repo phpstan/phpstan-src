@@ -25,6 +25,7 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Node\Expr\VariableWrittenExpr;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\IssetExpr;
@@ -146,6 +147,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_PropertyInitializationExpr(PropertyInitializationExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanPropertyInitialization(%s)', $expr->getPropertyName());
+	}
+
+	protected function pPHPStan_Node_VariableWrittenExpr(VariableWrittenExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanVariableWritten($%s, %d)', $expr->getVariableName(), $expr->getWriteId());
 	}
 
 	protected function pPHPStan_Node_CloneReinitializationExpr(CloneReinitializationExpr $expr): string // phpcs:ignore

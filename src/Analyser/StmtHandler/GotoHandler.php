@@ -34,6 +34,9 @@ final class GotoHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		// a jump defeats reaching-write tracking for the whole body
+		$nodeScopeResolver->markVariableWritesOpaque();
+
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: true, exitPoints: [
 			new InternalStatementExitPoint($stmt, $scope),
 		], throwPoints: [], impurePoints: []);

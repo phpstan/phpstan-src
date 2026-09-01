@@ -2866,7 +2866,7 @@ class ConstantArrayType implements Type
 		$otherHasExtras = $otherArray->isUnsealed()->yes();
 
 		$otherHasRequiredKeys = false;
-		foreach ($otherArray->keyTypes as $j => $keyType) {
+		foreach (array_keys($otherArray->keyTypes) as $j) {
 			if ($otherArray->isOptionalKey($j)) {
 				continue;
 			}
@@ -2878,7 +2878,7 @@ class ConstantArrayType implements Type
 		// already accepts []. i.e., all of $this's known keys are optional. Otherwise
 		// merge would add [] as a new instance.
 		if (!$otherHasRequiredKeys && !$otherHasExtras && count($otherArray->keyTypes) === 0) {
-			foreach ($this->keyTypes as $i => $keyType) {
+			foreach (array_keys($this->keyTypes) as $i) {
 				if (!$this->isOptionalKey($i)) {
 					return false;
 				}
@@ -3028,7 +3028,6 @@ class ConstantArrayType implements Type
 		$keyTypes = [];
 		$valueTypes = [];
 		$optionalKeys = [];
-		$nextAutoIndexes = [0];
 
 		$otherKeyIndexMap = $otherArray->getKeyIndexMap();
 		$processed = [];

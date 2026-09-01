@@ -252,7 +252,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 				$keyword = 'class';
 				break;
 			default:
-				$keyword = self::fail();
+				self::fail();
 		}
 
 		$verbosityLevel = VerbosityLevel::precise();

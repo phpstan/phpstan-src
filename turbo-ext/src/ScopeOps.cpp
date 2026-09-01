@@ -748,6 +748,9 @@ public:
 			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
 				return zv::Val();
 			}
+			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
+				continue;
+			}
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());
@@ -1619,6 +1622,7 @@ private:
 			{ "__phpstanPossiblyImpure(", sizeof("__phpstanPossiblyImpure(") - 1 },
 			{ "__phpstanPropertyInitialization(", sizeof("__phpstanPropertyInitialization(") - 1 },
 			{ "__phpstanRemembered(", sizeof("__phpstanRemembered(") - 1 },
+			{ "__phpstanVariableWritten(", sizeof("__phpstanVariableWritten(") - 1 },
 		};
 
 		const char *pos = ZSTR_VAL(key);

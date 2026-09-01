@@ -33,7 +33,7 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 	public function testGenerateBaselineAndRunAgainWithIt(): void
 	{
 		$baselineFile = __DIR__ . '/../../../../baseline.neon';
-		$output = $this->runPhpStan(__DIR__ . '/data/', __DIR__ . '/empty.neon', 'json', $baselineFile);
+		$this->runPhpStan(__DIR__ . '/data/', __DIR__ . '/empty.neon', 'json', $baselineFile);
 
 		$output = $this->runPhpStan(__DIR__ . '/data/', $baselineFile);
 		@unlink($baselineFile);

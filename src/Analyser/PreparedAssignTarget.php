@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
@@ -39,6 +40,7 @@ final class PreparedAssignTarget
 	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetTypes
 	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetNativeTypes
 	 * @param ExpressionResult[] $targetChainResults
+	 * @param VariableWrite::KIND_*|null $writeSiteKind
 	 */
 	public function __construct(
 		private string $kind,
@@ -67,6 +69,7 @@ final class PreparedAssignTarget
 		private ?ExpressionResult $targetReadResult = null,
 		private array $targetChainResults = [],
 		private ?ExpressionResult $variableNameResult = null,
+		private ?int $writeSiteKind = null,
 	)
 	{
 	}
@@ -288,6 +291,17 @@ final class PreparedAssignTarget
 	public function getVariableNameResult(): ?ExpressionResult
 	{
 		return $this->variableNameResult;
+	}
+
+	/**
+	 * The kind of local-variable write site this write records, null when it
+	 * is not a source-level write (by-ref write-backs, scope effects of calls).
+	 *
+	 * @return VariableWrite::KIND_*|null
+	 */
+	public function getWriteSiteKind(): ?int
+	{
+		return $this->writeSiteKind;
 	}
 
 }

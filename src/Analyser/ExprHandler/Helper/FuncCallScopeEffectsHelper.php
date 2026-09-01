@@ -282,6 +282,21 @@ final class FuncCallScopeEffectsHelper
 			)->getScope();
 		}
 
+		if ($functionReflection !== null) {
+			if ($functionReflection->getName() === 'compact') {
+				$compactedNames = $this->findCompactVariableNames($normalizedExpr, $argsResult, $scope);
+				if ($compactedNames === null) {
+					$nodeScopeResolver->markAllReachingVariablesRead($scope);
+				} else {
+					foreach ($compactedNames as $compactedName) {
+						$nodeScopeResolver->markVariableRead($compactedName, $scope);
+					}
+				}
+			} elseif (in_array($functionReflection->getName(), ['get_defined_vars', 'extract'], true)) {
+				$nodeScopeResolver->markAllReachingVariablesRead($scope);
+			}
+		}
+
 		if (
 			$functionReflection !== null
 			&& $functionReflection->getName() === 'extract'
@@ -504,6 +519,69 @@ final class FuncCallScopeEffectsHelper
 		);
 
 		return $arrayType;
+	}
+
+	/**
+	 * The variable names a compact() call reads, null when they cannot be
+	 * enumerated (mirrors CompactFunctionReturnTypeExtension).
+	 *
+	 * @return list<string>|null
+	 */
+	private function findCompactVariableNames(FuncCall $funcCall, ArgsResult $argsResult, MutatingScope $scope): ?array
+	{
+		$names = [];
+		foreach ($funcCall->getArgs() as $arg) {
+			if ($arg->unpack) {
+				return null;
+			}
+			$argNames = $this->findConstantStringValues($argsResult->requireArgResult($arg->value)->getTypeOnScope($scope, false));
+			if ($argNames === null) {
+				return null;
+			}
+			foreach ($argNames as $argName) {
+				$names[] = $argName;
+			}
+		}
+
+		return $names;
+	}
+
+	/**
+	 * @return list<string>|null
+	 */
+	private function findConstantStringValues(Type $type): ?array
+	{
+		$constantStrings = $type->getConstantStrings();
+		if (count($constantStrings) > 0) {
+			$values = [];
+			foreach ($constantStrings as $constantString) {
+				$values[] = $constantString->getValue();
+			}
+
+			return $values;
+		}
+
+		$constantArrays = $type->getConstantArrays();
+		if (count($constantArrays) === 0) {
+			return null;
+		}
+		$values = [];
+		foreach ($constantArrays as $constantArray) {
+			if ($constantArray->isUnsealed()->yes()) {
+				return null;
+			}
+			foreach ($constantArray->getValueTypes() as $valueType) {
+				$valueNames = $this->findConstantStringValues($valueType);
+				if ($valueNames === null) {
+					return null;
+				}
+				foreach ($valueNames as $valueName) {
+					$values[] = $valueName;
+				}
+			}
+		}
+
+		return $values;
 	}
 
 }

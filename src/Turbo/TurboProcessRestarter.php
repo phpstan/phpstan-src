@@ -2,38 +2,47 @@
 
 namespace PHPStan\Turbo;
 
+use function explode;
 use function extension_loaded;
 use function function_exists;
 use function get_cfg_var;
+use function in_array;
 use function ini_get;
 use function is_string;
 use function max;
 use function pcntl_exec;
 use function php_ini_loaded_file;
+use function strtolower;
+use function trim;
 use const PHP_BINARY;
 
 /**
- * Restarts the main PHPStan process via pcntl_exec() with the distributed
- * turbo extension loaded through -d extension=.
+ * Restarts the main PHPStan process via pcntl_exec() when the process it
+ * was started as is not the one PHPStan wants to run — for either of two
+ * reasons, checked independently.
  *
- * Parallel analysis prefers pcntl_fork()ed workers over spawned ones (see
+ * The distributed turbo extension is available but not loaded. Parallel
+ * analysis prefers pcntl_fork()ed workers over spawned ones (see
  * ForkParallelChecker) — a forked worker inherits the booted process instead
  * of paying a full re-boot. But a forked worker also inherits the parent's
  * loaded extensions: the spawn-time `-d extension=` injection
  * (ProcessHelper) cannot reach it, and dl() cannot load a binary from next
- * to the phar. So when the extension binary is available but not loaded,
- * the whole process is re-executed with it before anything else runs —
- * forked workers then inherit the extension, its stub shadowing, and (when
- * running from a phar) the phar-fork-guard that keeps phar:// reads safe
- * across fork.
+ * to the phar. So the whole process is re-executed with the extension
+ * before anything else runs — forked workers then inherit the extension,
+ * its stub shadowing, and (when running from a phar) the phar-fork-guard
+ * that keeps phar:// reads safe across fork.
  *
- * The restarted process also gets OPcache activated — with JIT pinned off,
- * whatever the user's ini says — so forked workers share the parent's warm
- * opcode cache (see resolveOpcacheArgs()).
+ * The OPcache configuration in effect is not the one PHPStan wants (see
+ * resolveOpcacheArgs()) — usually because OPcache is dormant on CLI, or has
+ * JIT on. The restarted process runs with it activated, JIT pinned off, and
+ * forked workers share the parent's warm opcode cache. This reason stands
+ * on its own so that a php.ini which already loads turbo (a source checkout
+ * with a locally built extension, say) does not leave OPcache dormant just
+ * because there is no extension left to restart for.
  *
- * The restart carries a marker ini entry with the extension path. It doubles
- * as the retry stop (a binary that failed to load leaves the extension
- * unloaded — without the marker the restart would loop) and tells
+ * The restart carries two marker ini entries: RESTARTED_INI is the retry
+ * stop (a binary that failed to load, or an OPcache that could not start,
+ * would otherwise restart forever), and EXTENSION_PATH_INI tells
  * TurboExtensionSelector that spawned workers still need the -d flag
  * (command-line -d flags, unlike php.ini, are not inherited).
  */
@@ -41,6 +50,9 @@ final class TurboProcessRestarter
 {
 
 	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';
+
+	/** Set by the restart so the restarted process never restarts again */
+	public const RESTARTED_INI = 'phpstan.restarted';
 
 	/** Shared memory reserved (not touched) for the opcode cache, in MB — see resolveOpcacheArgs() for the sizing */
 	private const OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT = 256;
@@ -80,11 +92,10 @@ final class TurboProcessRestarter
 	 */
 	public static function restartIfSuitable(array $argv): void
 	{
-		if (extension_loaded('phpstan_turbo')) {
-			return;
-		}
-		if (self::getRestartExtensionPath() !== null) {
-			// already restarted and the extension still did not load
+		if (get_cfg_var(self::RESTARTED_INI) !== false) {
+			// already restarted — whatever did not take effect (a binary that
+			// failed to load, an OPcache that could not start) will not on a
+			// second try either
 			return;
 		}
 		if (
@@ -100,8 +111,12 @@ final class TurboProcessRestarter
 			return;
 		}
 
-		$extensionPath = TurboExtensionSelector::findExtension();
-		if ($extensionPath === null) {
+		$extensionPath = extension_loaded('phpstan_turbo') ? null : TurboExtensionSelector::findExtension();
+		$opcacheArgs = self::getOpcacheArgs();
+		if (
+			$extensionPath === null
+			&& !self::resolveOpcacheRestartNeeded($opcacheArgs, self::getCurrentIniValues($opcacheArgs))
+		) {
 			return;
 		}
 
@@ -113,20 +128,82 @@ final class TurboProcessRestarter
 		}
 		$args[] = '-d';
 		$args[] = 'memory_limit=' . ini_get('memory_limit');
-		foreach (self::getOpcacheArgs() as $opcacheArg) {
+		foreach ($opcacheArgs as $opcacheArg) {
 			$args[] = '-d';
 			$args[] = $opcacheArg;
 		}
+		if ($extensionPath !== null) {
+			$args[] = '-d';
+			$args[] = 'extension=' . $extensionPath;
+			$args[] = '-d';
+			$args[] = self::EXTENSION_PATH_INI . '=' . $extensionPath;
+		}
 		$args[] = '-d';
-		$args[] = 'extension=' . $extensionPath;
-		$args[] = '-d';
-		$args[] = self::EXTENSION_PATH_INI . '=' . $extensionPath;
+		$args[] = self::RESTARTED_INI . '=1';
 		foreach ($argv as $arg) {
 			$args[] = $arg;
 		}
 
 		pcntl_exec(PHP_BINARY, $args);
-		// pcntl_exec() returns only on failure — continue without the extension
+		// pcntl_exec() returns only on failure — continue as we are
+	}
+
+	/**
+	 * Whether the OPcache configuration the restart would set differs from
+	 * the one in effect — the second reason to restart, independent of turbo:
+	 * with the extension already loaded through php.ini there would be
+	 * nothing else to restart for, and OPcache would stay dormant.
+	 *
+	 * @param list<string> $opcacheArgs `name=value` entries, see resolveOpcacheArgs()
+	 * @param array<string, string|false> $currentIniValues ini_get() of each of those names
+	 */
+	public static function resolveOpcacheRestartNeeded(array $opcacheArgs, array $currentIniValues): bool
+	{
+		foreach ($opcacheArgs as $opcacheArg) {
+			[$name, $value] = explode('=', $opcacheArg, 2);
+			$current = $currentIniValues[$name] ?? false;
+			if ($current === false) {
+				// unknown directive on this PHP (opcache.jit before 8.0) — nothing a restart could change
+				continue;
+			}
+			if (self::normalizeIniValue($current) !== self::normalizeIniValue($value)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param list<string> $opcacheArgs
+	 * @return array<string, string|false>
+	 */
+	private static function getCurrentIniValues(array $opcacheArgs): array
+	{
+		$values = [];
+		foreach ($opcacheArgs as $opcacheArg) {
+			$name = explode('=', $opcacheArg, 2)[0];
+			$values[$name] = ini_get($name);
+		}
+
+		return $values;
+	}
+
+	/**
+	 * The ini parser stores booleans as "1" / "" for php.ini and -d values
+	 * alike; ini_set()-style spellings are folded the same way.
+	 */
+	private static function normalizeIniValue(string $value): string
+	{
+		$value = strtolower(trim($value));
+		if (in_array($value, ['', '0', 'off', 'false', 'no', 'none'], true)) {
+			return '0';
+		}
+		if (in_array($value, ['1', 'on', 'true', 'yes'], true)) {
+			return '1';
+		}
+
+		return $value;
 	}
 
 	/**

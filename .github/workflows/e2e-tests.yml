@@ -1019,12 +1019,20 @@ jobs:
       - name: "Build the turbo extension"
         run: make -C turbo-ext -j"$(nproc)"
 
+      - name: "Load the turbo extension through php.ini"
+        # TurboProcessRestarter re-executes the process with the loaded php.ini
+        # to activate OPcache; an extension passed as -d would not survive that,
+        # one from the ini scan dir is loaded again
+        run: |
+          echo "extension=$PWD/turbo-ext/phpstan_turbo.so" | sudo tee "$(php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;')/99-phpstan-turbo.ini"
+          php -r 'exit(extension_loaded("phpstan_turbo") ? 0 : 1);'
+
       - name: "Verify the arena is actually exercised"
         # Without an active extension ArenaCache is the no-op PHP twin and no
         # shared memory exists at all; without fork the workers do not publish in
         # lockstep. Either would make the test below pass for the wrong reason.
         run: |
-          OUTPUT=$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
+          OUTPUT=$(php bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
           echo "$OUTPUT"
           e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
           e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
@@ -1035,7 +1043,7 @@ jobs:
         # extension is now always used, so the variable has to be inert -
         # https://github.com/phpstan/phpstan/issues/15143
         run: |
-          OUTPUT=$(PHPSTAN_TURBO=0 php -d extension="$PWD/turbo-ext/phpstan_turbo.so" bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
+          OUTPUT=$(PHPSTAN_TURBO=0 php bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
           echo "$OUTPUT"
           e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
 
@@ -1050,17 +1058,16 @@ jobs:
         # must cost sharing, never results - the analysis has to come out exactly
         # as it does with the runner's normal /dev/shm.
         run: |
-          SO="$PWD/turbo-ext/phpstan_turbo.so"
           cd e2e/turbo-arena
           rm -rf tmp
-          php -d extension="$SO" ../../bin/phpstan analyse --no-progress > "$RUNNER_TEMP/reference.txt" 2>&1 || true
+          php ../../bin/phpstan analyse --no-progress > "$RUNNER_TEMP/reference.txt" 2>&1 || true
           tail -5 "$RUNNER_TEMP/reference.txt"
           # a warm disk cache is the worst case: every worker loads and publishes
           # the same entries at the same moment, so duplicates pile up fastest
-          php -d extension="$SO" ../../bin/phpstan clear-result-cache
+          php ../../bin/phpstan clear-result-cache
           sudo mount -o remount,size=32M /dev/shm
           df -h /dev/shm
-          php -d extension="$SO" ../../bin/phpstan analyse --no-progress > "$RUNNER_TEMP/small-shm.txt" 2>&1 || true
+          php ../../bin/phpstan analyse --no-progress > "$RUNNER_TEMP/small-shm.txt" 2>&1 || true
           tail -40 "$RUNNER_TEMP/small-shm.txt"
           # bashunit takes the haystack as a single argv entry, and execve caps
           # one argument at 128 KB - a few hundred KB of analysis output only
@@ -1114,19 +1121,27 @@ jobs:
           ./configure
           make -j"$(nproc)"
 
+      - name: "Load both extensions through php.ini"
+        # TurboProcessRestarter re-executes the process with the loaded php.ini
+        # to activate OPcache; extensions passed as -d would not survive that,
+        # ones from the ini scan dir are loaded again
+        run: |
+          printf 'extension=%s\nextension=%s\n' "$PWD/turbo-ext/phpstan_turbo.so" "$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" | sudo tee "$(php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;')/99-phpstan-turbo.ini"
+          php -r 'exit(extension_loaded("phpstan_turbo") && extension_loaded("forkunsafe") ? 0 : 1);'
+
       - name: "Verify the extension wedges a forked child on its own"
         # a plain exit() in a forked child must hang, or the test below would
         # pass for the wrong reason
         run: |
           set +e
-          timeout 10 php -d extension="$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" e2e/fork-unsafe-extension/fork-and-exit.php
+          timeout 10 php e2e/fork-unsafe-extension/fork-and-exit.php
           CODE=$?
           set -e
           e2e/bashunit -a equals "124" "$CODE"
 
       - name: "Verify fork mode is actually used"
         run: |
-          OUTPUT=$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d extension="$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" bin/phpstan diagnose -c e2e/fork-unsafe-extension/phpstan.neon)
+          OUTPUT=$(php bin/phpstan diagnose -c e2e/fork-unsafe-extension/phpstan.neon)
           echo "$OUTPUT"
           e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
           e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
@@ -1138,7 +1153,7 @@ jobs:
         run: |
           cd e2e/fork-unsafe-extension
           rm -rf tmp
-          OUTPUT=$(../bashunit -a exit_code "0" "timeout 120 php -d extension=$PWD/../../turbo-ext/phpstan_turbo.so -d extension=$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so ../../bin/phpstan analyse --no-progress -vvv")
+          OUTPUT=$(../bashunit -a exit_code "0" "timeout 120 php ../../bin/phpstan analyse --no-progress -vvv")
           echo "$OUTPUT"
           ../bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
           ../bashunit -a contains '[OK] No errors' "$OUTPUT"

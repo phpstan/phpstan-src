@@ -3099,4 +3099,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testGenericBackedEnumAcceptance(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-backed-enum-acceptance.php'], [
+			[
+				'Parameter #1 $e of function GenericBackedEnumAcceptance\acceptsStringBacked expects BackedEnum<string>, GenericBackedEnumAcceptance\IntEnum given.',
+				62,
+			],
+			[
+				'Parameter #1 $e of function GenericBackedEnumAcceptance\acceptsStringBacked expects BackedEnum<string>, GenericBackedEnumAcceptance\HasLabel given.',
+				63,
+			],
+		]);
+	}
+
 }

@@ -11,7 +11,11 @@ use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
 use function sprintf;
@@ -64,8 +68,15 @@ final class EnumAncestorsRule implements Rule
 			'',
 		);
 
+		$implementsNames = $originalNode->implements;
+		if ($classReflection->isBackedEnum()) {
+			// PHP implicitly implements BackedEnum on backed enums, so an
+			// @implements tag for it has no counterpart in the declared list.
+			$implementsNames[] = new Node\Name\FullyQualified('BackedEnum');
+		}
+
 		$implementsErrors = $this->genericAncestorsCheck->check(
-			$originalNode->implements,
+			$implementsNames,
 			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
 			sprintf('Enum %s @implements tag contains incompatible type %%s.', $escapedEnumName),
 			sprintf('Enum %s @implements tag contains unresolvable type.', $enumName),
@@ -80,6 +91,30 @@ final class EnumAncestorsRule implements Rule
 			sprintf('Enum %s implements generic interface %%s but does not specify its types: %%s', $escapedEnumName),
 			sprintf('in implemented type %%s of enum %s', $escapedEnumName),
 		);
+
+		$backedEnumType = $classReflection->getBackedEnumType();
+		if ($backedEnumType !== null) {
+			$expectedTagType = new GenericObjectType('BackedEnum', [$backedEnumType]);
+			$bareTagType = new ObjectType('BackedEnum');
+			foreach ($classReflection->getImplementsTags() as $implementsTag) {
+				$implementsTagType = $implementsTag->getType();
+				if ($implementsTagType->getObjectClassNames() !== ['BackedEnum']) {
+					continue;
+				}
+				if ($implementsTagType->equals($bareTagType) || $implementsTagType->equals($expectedTagType)) {
+					continue;
+				}
+
+				$implementsErrors[] = RuleErrorBuilder::message(sprintf(
+					'The @implements tag of enum %s specifies %s but the enum is backed by %s.',
+					$enumName,
+					$implementsTagType->describe(VerbosityLevel::typeOnly()),
+					$backedEnumType->describe(VerbosityLevel::typeOnly()),
+				))
+					->identifier('enum.implementsBackingType')
+					->build();
+			}
+		}
 
 		foreach ($this->crossCheckInterfacesHelper->check($classReflection) as $error) {
 			$implementsErrors[] = $error;

@@ -156,6 +156,7 @@ parameters:
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub
 		- ../stubs/SensitiveParameterValue.stub
+		- ../stubs/BackedEnum.stub
 		- ../stubs/ext-ds.stub
 		- ../stubs/ImagickPixel.stub
 		- ../stubs/PDOStatement.stub

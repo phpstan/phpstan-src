@@ -41,6 +41,14 @@ final class TurboProcessRestarter
 
 	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';
 
+	/** Shared memory reserved (not touched) for the opcode cache, in MB — see getOpcacheArgs() for the sizing */
+	private const OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT = 256;
+
+	/** Carved out of the memory above for interned strings, in MB */
+	private const OPCACHE_INTERNED_STRINGS_BUFFER_MB_LIMIT = 64;
+
+	private const OPCACHE_MAX_ACCELERATED_FILES_LIMIT = 20000;
+
 	/**
 	 * The extension path this process was restarted with, null when the
 	 * process was not restarted.
@@ -134,6 +142,30 @@ final class TurboProcessRestarter
 	 * (https://php.watch/versions/8.4/opcache-jit-ini-default-changes).
 	 * Pinning both directives covers both generations of defaults.
 	 *
+	 * Timestamp checks are switched off, or nothing of PHPStan itself would be
+	 * cached: opcache_compile_file() refuses any file whose mtime it reads as
+	 * 0, and the members of the distributed phar carry exactly that (the
+	 * build normalizes them for reproducibility). It reads the mtime whenever
+	 * opcache.validate_timestamps *or* opcache.file_update_protection is on,
+	 * so both go — for a private cache that dies with the process they
+	 * revalidate nothing anyway, and skipping them also drops a stat() per
+	 * include. The uncached state is what made OPcache *slower* than no
+	 * OPcache for phar runs: code compiled under an active OPcache but not
+	 * persisted never gets its strings interned into SHM, so its type names
+	 * have no class-entry cache slot and every class-typed parameter, return
+	 * and property check falls back to a lowercased-copy class-table lookup
+	 * (measured at +27% CPU on slevomat).
+	 *
+	 * The buffers are raised above the stock 128M/8M/10000 for the same
+	 * reason: once any of them is exhausted, everything compiled afterwards
+	 * lands in that same uncached, uninterned state. PHPStan's own phar needs
+	 * about 35M of code; project bootstraps loaded by extensions (a Doctrine
+	 * objectManagerLoader booting the whole app, say) add hundreds of MB, and
+	 * the shared memory is only reserved, not touched, until used. It is not
+	 * sized for the largest possible project, though — an SHM reservation that
+	 * cannot be satisfied is fatal (exit code 254) in the restarted process,
+	 * with no parent left to fall back to.
+	 *
 	 * The only case adding nothing is OPcache not being loaded at all — real
 	 * on PHP <= 8.4, gone on 8.5+ (always built in and loaded). Loading it
 	 * from here is not worth it: -d zend_extension=opcache emits a startup
@@ -152,6 +184,11 @@ final class TurboProcessRestarter
 			'opcache.enable_cli=1',
 			'opcache.jit=disable',
 			'opcache.jit_buffer_size=0',
+			'opcache.validate_timestamps=0',
+			'opcache.file_update_protection=0',
+			'opcache.memory_consumption=' . self::OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT,
+			'opcache.interned_strings_buffer=' . self::OPCACHE_INTERNED_STRINGS_BUFFER_MB_LIMIT,
+			'opcache.max_accelerated_files=' . self::OPCACHE_MAX_ACCELERATED_FILES_LIMIT,
 		];
 	}
 

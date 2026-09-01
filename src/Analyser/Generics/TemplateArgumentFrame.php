@@ -139,6 +139,9 @@ final class TemplateArgumentFrame
 			$statementIndex = $this->locateStatement($site->getStartTokenPos());
 			$this->sites[$siteId] = [$site, $statementIndex];
 			$this->siteStatementIndexes[$statementIndex] = true;
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('sitesCreated');
+			}
 		}
 
 		$this->observation($marker);
@@ -335,12 +338,20 @@ final class TemplateArgumentFrame
 				}
 				// invariant: the first send that accepts what was inferred resolves the
 				// argument; a later incompatible send is reported by the second pass
-				if ($acceptsAnything || $sent->isSuperTypeOf($initial)->yes()) {
-					return $sent;
+				if (!$acceptsAnything && !$sent->isSuperTypeOf($initial)->yes()) {
+					continue;
 				}
+
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('resolvedBySend');
+				}
+				return $sent;
 			}
 
 			if ($covariantFallback !== null) {
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('resolvedBySend');
+				}
 				return $covariantFallback;
 			}
 		}
@@ -350,9 +361,15 @@ final class TemplateArgumentFrame
 			$parts[] = $initial;
 		}
 		if (count($parts) === 0) {
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('resolvedUnconstrained');
+			}
 			return $this->resolveUnconstrained($observation['marker']);
 		}
 
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment(count($lowerBounds) > 0 ? 'resolvedWithLowerBounds' : 'resolvedToInitial');
+		}
 		return TypeCombinator::union(...$parts);
 	}
 

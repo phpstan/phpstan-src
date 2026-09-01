@@ -36,6 +36,7 @@ use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -245,6 +246,7 @@ class NodeScopeResolver
 	{
 		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
 		self::$debugTemplateArguments = getenv('PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG') === '1';
+		TemplateArgumentStats::enableFromEnvironment();
 	}
 
 	/**
@@ -854,6 +856,10 @@ class NodeScopeResolver
 			$statementStartTokenPositions[] = $stmt->getStartTokenPos();
 		}
 		$frame = new TemplateArgumentFrame($scope->getCurrentTemplateArgumentFrame(), $statementStartTokenPositions);
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment('bodiesWalked');
+			TemplateArgumentStats::increment('statementsTotal', count($stmts));
+		}
 		$scope->pushTemplateArgumentFrame($frame);
 		try {
 			$recording = new RecordingNodeCallback();
@@ -882,6 +888,10 @@ class NodeScopeResolver
 				return $state->toResult();
 			}
 
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('bodiesWithSites');
+				TemplateArgumentStats::increment('statementsReplayed', $firstSiteStatementIndex);
+			}
 			// the second pass: the statements before the first site stand as
 			// recorded; from there on a statement is re-walked only when it
 			// created a site or mentions a variable whose tracked state the
@@ -906,6 +916,10 @@ class NodeScopeResolver
 					: null;
 				if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
 					// converged with the observation pass: the rest of its recording stands
+					if (TemplateArgumentStats::$enabled) {
+						TemplateArgumentStats::increment('earlyExits');
+						TemplateArgumentStats::increment('statementsReplayed', $stmtCount - $i);
+					}
 					$this->replayRecordingRange($recording, $offset, $recording->count(), $nodeCallback, $storage, $scope);
 					$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
 					$state->scope = $entries[$stmtCount][0]->scope;
@@ -929,10 +943,16 @@ class NodeScopeResolver
 					);
 				}
 				if ($reWalk) {
+					if (TemplateArgumentStats::$enabled) {
+						TemplateArgumentStats::increment('statementsReWalked');
+					}
 					$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, true);
 					continue;
 				}
 
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('statementsReplayed');
+				}
 				$this->replayRecordingRange($recording, $offset, $nextOffset, $nodeCallback, $storage, $scope);
 				$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
 				$state->scope = $state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope);

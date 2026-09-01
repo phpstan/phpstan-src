@@ -33,7 +33,6 @@ class DynamicClassConstantFetchRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$errors = [];
 		if (PHP_VERSION_ID < 80300) {
 			$errors = [
 				[

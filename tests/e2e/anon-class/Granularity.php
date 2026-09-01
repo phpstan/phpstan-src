@@ -10,7 +10,7 @@ class Granularity
 	{
 		$myclass = new class() extends Granularity { };
 
-		return [];
+		return [$myclass];
 	}
 
 }

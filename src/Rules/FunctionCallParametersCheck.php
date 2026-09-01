@@ -265,7 +265,7 @@ final class FunctionCallParametersCheck
 
 		if (!$hasNamedArguments) {
 			$invokedParametersCount = count($arguments);
-			foreach ($arguments as [$argumentValue, $argumentValueType, $unpack, $argumentName]) {
+			foreach ($arguments as [2 => $unpack]) {
 				if ($unpack) {
 					$invokedParametersCount = max($functionParametersMinCount, $functionParametersMaxCount);
 					break;

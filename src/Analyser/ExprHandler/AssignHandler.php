@@ -1084,7 +1084,6 @@ final class AssignHandler implements ExprHandler
 				$storedAssignedExprResult = $assignedExpr === $target->getAssignedExpr()
 					? $assignedValueResult ?? $storage->findExpressionResult($assignedExpr)
 					: $storage->findExpressionResult($assignedExpr);
-				$assignedValueResult = $storedAssignedExprResult;
 				$type = $this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scopeBeforeAssignEval);
 
 				$conditionalExpressions = [];

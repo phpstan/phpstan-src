@@ -181,7 +181,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 					];
 				}
 			} else {
-				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
+				foreach ($offsetTypes as $key => [$hasOffsetValue]) {
 					// more precise values-types will be calculated elsewhere.
 					// just remember the offset key.
 					$offsetTypes[$key] = [

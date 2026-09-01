@@ -2048,7 +2048,7 @@ final class TypeCombinator
 
 						if ($constArrayIsI) {
 							$types[$i] = $newArrayType;
-							array_splice($types, $j--, 1);
+							array_splice($types, $j, 1);
 						} else {
 							$types[$j] = $newArrayType;
 							array_splice($types, $i--, 1);

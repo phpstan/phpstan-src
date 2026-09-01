@@ -14,6 +14,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Throwable;
 use function count;
 use function in_array;
 
@@ -47,7 +48,7 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 			try {
 				$dateTime = new DateTime();
 				$dateTime->modify($constantString->getValue());
-			} catch (\Exception $e) { // phpcs:ignore
+			} catch (Throwable) {
 				return $this->exceptionType();
 			}
 

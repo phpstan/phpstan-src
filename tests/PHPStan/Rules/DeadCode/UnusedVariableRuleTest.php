@@ -207,4 +207,14 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11483(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11483.php'], [
+			[
+				'Value assigned to variable $hello is never read.',
+				9,
+			],
+		]);
+	}
+
 }

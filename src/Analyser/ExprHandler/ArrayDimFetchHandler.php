@@ -7,6 +7,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
@@ -22,6 +23,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -31,6 +33,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function is_string;
 
 /**
  * @implements ExprHandler<ArrayDimFetch>
@@ -56,16 +59,38 @@ final class ArrayDimFetchHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$beforeScope = $scope;
+		// the receiver is read as a container - the offset read itself is
+		// recorded below, once the dimension is known; both flow into the value
 		if ($expr->dim === null) {
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow()->enterArrayDimFetchRoot());
+			$this->markOffsetRead($nodeScopeResolver, $expr, null, $scope, $context);
 
 			return $this->composeResult($nodeScopeResolver, $stmt, $expr, null, $varResult, $storage, $context, $beforeScope);
 		}
 
-		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
+		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeepKeepingValueFlow()->enterArrayDimFetchRoot());
+		$this->markOffsetRead($nodeScopeResolver, $expr, VariableWriteOffset::fromType($dimResult->getType()), $dimResult->getScope(), $context);
 
 		return $this->composeResult($nodeScopeResolver, $stmt, $expr, $dimResult, $varResult, $storage, $context, $beforeScope);
+	}
+
+	/**
+	 * Records the read of one offset of a local variable for the
+	 * unused-variable check; an unset() target discards the offset's writes
+	 * instead of reading them.
+	 *
+	 * @param int|string|null $offset
+	 */
+	private function markOffsetRead(NodeScopeResolver $nodeScopeResolver, ArrayDimFetch $expr, $offset, MutatingScope $scope, ExpressionContext $context): void
+	{
+		if ($context->isUnsetTarget()) {
+			return;
+		}
+		if (!$expr->var instanceof Variable || !is_string($expr->var->name)) {
+			return;
+		}
+		$nodeScopeResolver->markVariableOffsetRead($expr->var->name, $offset, $scope, $context->getValueFlowTarget());
 	}
 
 	/**

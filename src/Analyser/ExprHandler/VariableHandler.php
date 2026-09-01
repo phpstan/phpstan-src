@@ -22,6 +22,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
@@ -130,7 +131,7 @@ final class VariableHandler implements ExprHandler
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 		}
 
-		return $this->composeResult($nodeScopeResolver, $expr, $nameResult, $storage, $beforeScope);
+		return $this->composeResult($nodeScopeResolver, $expr, $nameResult, $storage, $beforeScope, $context->getValueFlowTarget(), $context->isArrayDimFetchRoot(), $context->isUnsetTarget());
 	}
 
 	/**
@@ -138,8 +139,12 @@ final class VariableHandler implements ExprHandler
 	 * no node processing happens here. processExpr() routes through this after
 	 * walking a dynamic name; AssignHandler::prepareTarget() calls it to price a
 	 * read-modify-write target without re-walking it.
+	 *
+	 * The read is recorded for the unused-variable check: as a sink read, as
+	 * what $valueFlowTarget is computed from, as a container read (the receiver
+	 * of an offset access, $containerReadOnly), or not at all ($unsetTarget).
 	 */
-	public function composeResult(NodeScopeResolver $nodeScopeResolver, Variable $expr, ?ExpressionResult $nameResult, ExpressionResultStorage $storage, MutatingScope $beforeScope): ExpressionResult
+	public function composeResult(NodeScopeResolver $nodeScopeResolver, Variable $expr, ?ExpressionResult $nameResult, ExpressionResultStorage $storage, MutatingScope $beforeScope, ?VariableWrite $valueFlowTarget = null, bool $containerReadOnly = false, bool $unsetTarget = false): ExpressionResult
 	{
 		$scope = $beforeScope;
 		$hasYield = false;
@@ -152,7 +157,13 @@ final class VariableHandler implements ExprHandler
 			}
 			// the one place a source-level variable read is priced - record it
 			// for the unused-variable check
-			$nodeScopeResolver->markVariableRead($expr->name, $beforeScope);
+			if (!$unsetTarget) {
+				if ($containerReadOnly) {
+					$nodeScopeResolver->markVariableContainerRead($expr->name, $beforeScope, $valueFlowTarget);
+				} else {
+					$nodeScopeResolver->markVariableRead($expr->name, $beforeScope, $valueFlowTarget);
+				}
+			}
 		} elseif ($nameResult !== null) {
 			$nameConstantStrings = $nameResult->getType()->getConstantStrings();
 			if (count($nameConstantStrings) > 0) {

@@ -16,9 +16,11 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CallableType;
@@ -27,6 +29,8 @@ use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function array_merge;
 use function count;
+use function is_int;
+use function max;
 use function spl_object_id;
 
 /**
@@ -35,6 +39,9 @@ use function spl_object_id;
 #[AutowiredService]
 final class ArrayHandler implements ExprHandler
 {
+
+	/** Offsets of a literal array tracked as separate writes of the assigned variable. */
+	private const TRACKED_LITERAL_ITEMS_LIMIT = 32;
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -57,11 +64,22 @@ final class ArrayHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		// a literal assigned straight to a variable writes each of its constant
+		// offsets: the items become offset writes of that variable, so a read of
+		// one offset leaves the others unused
+		$literalWrite = $context->getValueFlowTarget();
+		if ($literalWrite !== null && (!$context->isValueFlowDirect() || $literalWrite->isOffsetWrite())) {
+			$literalWrite = null;
+		}
+		$nextIndex = 0;
+		$nextIndexKnown = true;
+		$trackedItems = 0;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
 			$itemCallbackScope = $scope;
+			$keyResult = null;
 			if ($arrayItem->key !== null) {
-				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
 				$itemResults[spl_object_id($arrayItem->key)] = $keyResult;
 				$hasYield = $hasYield || $keyResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
@@ -70,7 +88,30 @@ final class ArrayHandler implements ExprHandler
 				$scope = $keyResult->getScope();
 			}
 
-			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$valueContext = $context->enterDeepKeepingValueFlow();
+			if ($literalWrite !== null) {
+				if ($arrayItem->unpack) {
+					$itemOffset = null;
+					$nextIndexKnown = false;
+				} elseif ($keyResult === null) {
+					$itemOffset = $nextIndexKnown ? $nextIndex++ : null;
+				} else {
+					$itemOffset = VariableWriteOffset::fromType($keyResult->getType());
+					if (is_int($itemOffset)) {
+						$nextIndex = max($nextIndex, $itemOffset + 1);
+					} elseif ($itemOffset === null) {
+						$nextIndexKnown = false;
+					}
+				}
+				if ($trackedItems < self::TRACKED_LITERAL_ITEMS_LIMIT) {
+					$trackedItems++;
+					$itemWrite = $nodeScopeResolver->recordVariableOffsetWrite($arrayItem, $literalWrite->getVariableName(), VariableWrite::KIND_ARRAY_LITERAL_ITEM, $itemOffset, $literalWrite);
+					if ($itemWrite !== null) {
+						$valueContext = $context->enterDeep()->enterValueFlow($itemWrite, false);
+					}
+				}
+			}
+			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $valueContext);
 			$itemResults[spl_object_id($arrayItem->value)] = $valueResult;
 			$hasYield = $hasYield || $valueResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());

@@ -2774,7 +2774,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$valueType,
 			$nativeValueType,
 			TrinaryLogic::createYes(),
-			write: $valueWrite,
+			plantMarkerExprs: $valueWrite !== null ? [$valueWrite->getMarkerExpr()] : [],
 			supersededMarkerExprs: $valueSupersededMarkerExprs,
 		);
 		// Track the original foreach value so narrowings applied to the value
@@ -2828,7 +2828,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$keyType,
 			$nativeKeyType,
 			TrinaryLogic::createYes(),
-			write: $write,
+			plantMarkerExprs: $write !== null ? [$write->getMarkerExpr()] : [],
 			supersededMarkerExprs: $supersededMarkerExprs,
 		);
 
@@ -2859,7 +2859,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 			TrinaryLogic::createYes(),
-			write: $write,
+			plantMarkerExprs: $write !== null ? [$write->getMarkerExpr()] : [],
 			supersededMarkerExprs: $supersededMarkerExprs,
 		);
 	}
@@ -3021,15 +3021,51 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
-	 * A write site ($write) plants its VariableWrittenExpr marker and kills the
+	 * unset() discards the writes reaching the variable (or one of its offsets):
+	 * their markers go without being read - see assignVariable().
+	 *
+	 * @param list<Expr> $markerExprs
+	 */
+	public function withoutVariableWriteMarkers(array $markerExprs): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$changed = false;
+		foreach ($markerExprs as $markerExpr) {
+			$exprString = $this->getNodeKey($markerExpr);
+			if (!array_key_exists($exprString, $expressionTypes)) {
+				continue;
+			}
+			unset($expressionTypes[$exprString]);
+			$changed = true;
+		}
+		if (!$changed) {
+			return $this;
+		}
+
+		return $this->duplicateWith(
+			$expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->inFirstLevelStatement,
+			$this->afterExtractCall,
+		);
+	}
+
+	/**
+	 * A write site plants its VariableWrittenExpr markers ($plantMarkerExprs: the
+	 * write's own and those of the literal items it assigns) and kills the
 	 * markers of the variable's earlier write sites ($supersededMarkerExprs) -
-	 * the scope is told what to kill, it never consults engine state. Writes
-	 * that are not source-level sites leave the markers alone.
+	 * the scope is told what to plant and kill, it never consults engine state.
+	 * Writes that are not source-level sites leave the markers alone.
 	 *
 	 * @param list<string> $intertwinedPropagatedFrom
+	 * @param list<Expr> $plantMarkerExprs
 	 * @param list<Expr> $supersededMarkerExprs
 	 */
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = [], ?VariableWrite $write = null, array $supersededMarkerExprs = []): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = [], array $plantMarkerExprs = [], array $supersededMarkerExprs = []): self
 	{
 		$node = new Variable($variableName);
 		$scope = $this->assignExpression($node, $type, $nativeType);
@@ -3040,14 +3076,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder($node, $type, $certainty);
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
-		if ($write !== null) {
+		if (count($plantMarkerExprs) > 0 || count($supersededMarkerExprs) > 0) {
 			// markers live in the phpDoc-typed map only: reads are recorded on walk
 			// scopes, never on a promoted one, and keeping them out of the native
 			// map halves their share of every merge, generalization and invalidation
 			foreach ($supersededMarkerExprs as $supersededMarkerExpr) {
 				unset($scope->expressionTypes[$this->getNodeKey($supersededMarkerExpr)]);
 			}
-			$scope->expressionTypes[$this->getNodeKey($write->getMarkerExpr())] = ExpressionTypeHolder::createYes($write->getMarkerExpr(), new MixedType());
+			foreach ($plantMarkerExprs as $plantMarkerExpr) {
+				$scope->expressionTypes[$this->getNodeKey($plantMarkerExpr)] = ExpressionTypeHolder::createYes($plantMarkerExpr, new MixedType());
+			}
 		}
 
 		foreach ($scope->expressionTypes as $exprString => $expressionType) {

@@ -22,6 +22,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -61,6 +62,12 @@ final class AssignOpHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 
+		// the write site is registered before the target's old value and the
+		// right side are walked, so both are recorded as what the write is
+		// computed from (a ??= target is read with isset() semantics - a sink)
+		$targetWrite = $expr->var instanceof Expr\Variable && is_string($expr->var->name)
+			? $nodeScopeResolver->recordVariableWrite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE)
+			: null;
 		$target = $this->assignHandler->prepareTarget(
 			$nodeScopeResolver,
 			$scope,
@@ -71,7 +78,9 @@ final class AssignOpHandler implements ExprHandler
 			$nodeCallback,
 			$context,
 			$expr instanceof Expr\AssignOp\Coalesce ? AssignTargetWalkMode::coalesceReadModifyWrite() : AssignTargetWalkMode::readModifyWrite(),
+			$expr instanceof Expr\AssignOp\Coalesce ? null : $targetWrite,
 		);
+		$valueFlowWrite = $targetWrite ?? $this->assignHandler->registerWriteSite($nodeScopeResolver, $target, VariableWrite::KIND_READ_MODIFY_WRITE);
 		$targetReadResult = $target->getTargetReadResult();
 		$condResult = $expr instanceof Expr\AssignOp\Coalesce ? $targetReadResult : null;
 		$chainResults = $target->getTargetChainResults();
@@ -97,7 +106,11 @@ final class AssignOpHandler implements ExprHandler
 			}
 		}
 
-		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueFlowWrite !== null ? $valueContext->enterDeep()->enterValueFlow($valueFlowWrite, false) : $valueContext->enterDeep());
+		if ($valueFlowWrite !== null && $context->getValueFlowTarget() !== null) {
+			// `$a = ($b OP= ...)`: the value flows into both targets
+			$nodeScopeResolver->copyVariableWriteDependencies($context->getValueFlowTarget(), $valueFlowWrite);
+		}
 		$rhsResult = $valueResult;
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			$rightResult = $valueResult;

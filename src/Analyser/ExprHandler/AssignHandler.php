@@ -46,6 +46,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
+use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -185,8 +186,20 @@ final class AssignHandler implements ExprHandler
 				$expr->expr,
 			);
 		}
+		$valueContext = $valueContext->enterDeep();
+		// the write site is registered before its value is walked, so the
+		// variable reads in the value are recorded as what the write is
+		// computed from rather than as sinks
+		$valueFlowWrite = $expr instanceof AssignRef ? null : $this->registerWriteSite($nodeScopeResolver, $target, VariableWrite::KIND_ASSIGN);
+		if ($valueFlowWrite !== null) {
+			$valueContext = $valueContext->enterValueFlow($valueFlowWrite, true);
+		}
 
-		$assignedExprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		$assignedExprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext);
+		if ($valueFlowWrite !== null && $context->getValueFlowTarget() !== null) {
+			// `$a = $b = ...`: the value flows into both targets
+			$nodeScopeResolver->copyVariableWriteDependencies($context->getValueFlowTarget(), $valueFlowWrite);
+		}
 		$valueImpurePoints = array_merge($valueImpurePoints, $assignedExprResult->getImpurePoints());
 		$valueScope = $assignedExprResult->getScope();
 
@@ -534,6 +547,7 @@ final class AssignHandler implements ExprHandler
 		callable $nodeCallback,
 		ExpressionContext $context,
 		AssignTargetWalkMode $mode,
+		?VariableWrite $valueFlowTarget = null,
 	): PreparedAssignTarget
 	{
 		// The raw target's node callback fires after the walk below composed and
@@ -541,7 +555,7 @@ final class AssignHandler implements ExprHandler
 		// a synchronously invoked rule (the plain resolver, PHP < 8.1) then
 		// answers its asks from the storage instead of re-walking on demand,
 		// same as NodeScopeResolver::processExprNodeInternal().
-		$prepared = $this->doPrepareTarget($nodeScopeResolver, $scope, $storage, $stmt, $var, $assignedExpr, $nodeCallback, $context, $mode);
+		$prepared = $this->doPrepareTarget($nodeScopeResolver, $scope, $storage, $stmt, $var, $assignedExpr, $nodeCallback, $context, $mode, $valueFlowTarget);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $mode->enterExpressionAssign() ? $scope->enterExpressionAssign($var) : $scope, $storage);
 
 		return $prepared;
@@ -560,6 +574,7 @@ final class AssignHandler implements ExprHandler
 		callable $nodeCallback,
 		ExpressionContext $context,
 		AssignTargetWalkMode $mode,
+		?VariableWrite $valueFlowTarget = null,
 	): PreparedAssignTarget
 	{
 		$enterExpressionAssign = $mode->enterExpressionAssign();
@@ -582,7 +597,7 @@ final class AssignHandler implements ExprHandler
 				if (!is_string($var->name)) {
 					// `$$name OP= ...` evaluates the name before reading the old
 					// value: walk it once here, the write flow consumes the result
-					$variableNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+					$variableNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 					$hasYield = $variableNameResult->hasYield();
 					$throwPoints = $variableNameResult->getThrowPoints();
 					$impurePoints = $variableNameResult->getImpurePoints();
@@ -594,7 +609,7 @@ final class AssignHandler implements ExprHandler
 					$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 					$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 				}
-				$targetReadResult = $this->variableHandler->composeResult($nodeScopeResolver, $var, $variableNameResult, $storage, $readScope);
+				$targetReadResult = $this->variableHandler->composeResult($nodeScopeResolver, $var, $variableNameResult, $storage, $readScope, $valueFlowTarget);
 				if ($mode->issetSemanticsForRead()) {
 					$targetChainResults[spl_object_id($var)] = $targetReadResult;
 				}
@@ -635,7 +650,7 @@ final class AssignHandler implements ExprHandler
 			if ($enterExpressionAssign) {
 				$scope = $scope->enterExpressionAssign($var, false);
 			}
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep()->enterArrayDimFetchRoot());
 			$hasYield = $varResult->hasYield();
 			$throwPoints = $varResult->getThrowPoints();
 			$impurePoints = $varResult->getImpurePoints();
@@ -821,7 +836,7 @@ final class AssignHandler implements ExprHandler
 
 		if ($var instanceof PropertyFetch) {
 			$scopeBeforeVar = $scope;
-			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
+			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 			$hasYield = $objectResult->hasYield();
 			$throwPoints = $objectResult->getThrowPoints();
 			$impurePoints = $objectResult->getImpurePoints();
@@ -833,7 +848,7 @@ final class AssignHandler implements ExprHandler
 			if ($var->name instanceof Node\Identifier) {
 				$propertyName = $var->name->name;
 			} else {
-				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 				$hasYield = $hasYield || $propertyNameResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $propertyNameResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $propertyNameResult->getImpurePoints());
@@ -890,7 +905,7 @@ final class AssignHandler implements ExprHandler
 			if ($var->class instanceof Node\Name) {
 				$propertyHolderType = $scope->resolveTypeByName($var->class);
 			} else {
-				$classResult = $nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context);
+				$classResult = $nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 				$propertyHolderType = $classResult->getType();
 			}
 
@@ -899,7 +914,7 @@ final class AssignHandler implements ExprHandler
 			if ($var->name instanceof Node\Identifier) {
 				$propertyName = $var->name->name;
 			} else {
-				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 				$hasYield = $propertyNameResult->hasYield();
 				$throwPoints = $propertyNameResult->getThrowPoints();
 				$impurePoints = $propertyNameResult->getImpurePoints();
@@ -1014,7 +1029,7 @@ final class AssignHandler implements ExprHandler
 			);
 		}
 
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context);
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 		$hasYield = $varResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
@@ -1231,7 +1246,7 @@ final class AssignHandler implements ExprHandler
 					$type,
 					$this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain()),
 					TrinaryLogic::createYes(),
-					write: $write,
+					plantMarkerExprs: $write !== null ? $nodeScopeResolver->getVariableWriteMarkersToPlant($write) : [],
 					supersededMarkerExprs: $write !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($var->name) : [],
 				);
 				foreach ($conditionalExpressions as $exprString => $holders) {
@@ -1245,7 +1260,7 @@ final class AssignHandler implements ExprHandler
 				// a plain assignment does not read the target, so the dynamic name
 				// is walked here; read-modify-write targets walked it in
 				// prepareTarget() and already carry its state
-				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context->withoutValueFlow());
 				$hasYield = $hasYield || $nameExprResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $nameExprResult->getImpurePoints());
@@ -1334,15 +1349,19 @@ final class AssignHandler implements ExprHandler
 					// an offset write on an object (ArrayAccess, mixed) mutates a shared
 					// handle - only a value container (array, string) makes it a write site
 					$write = $target->getWriteSiteKind() !== null && ($varType->isArray()->yes() || $varType->isString()->yes())
-						? $nodeScopeResolver->recordVariableWrite($var, VariableWrite::KIND_ARRAY_DIM_WRITE)
+						? $this->registerArrayDimWriteSite($nodeScopeResolver, $target)
 						: null;
+					if ($write !== null && $target->getWriteSiteKind() === VariableWrite::KIND_READ_MODIFY_WRITE) {
+						// `$a['k'] OP= ...` and `$a['k'] ??= ...` read the offset's old value
+						$nodeScopeResolver->markVariableOffsetRead($var->name, $write->getOffset(), $scopeBeforeAssignEval);
+					}
 					$scope = $scope->assignVariable(
 						$var->name,
 						$valueToWrite,
 						$nativeValueToWrite,
 						TrinaryLogic::createYes(),
-						write: $write,
-						supersededMarkerExprs: $write !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($var->name) : [],
+						plantMarkerExprs: $write !== null ? [$write->getMarkerExpr()] : [],
+						supersededMarkerExprs: $write !== null ? $this->getArrayDimWriteMarkersToKill($nodeScopeResolver, $target, $write) : [],
 					);
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
@@ -2096,6 +2115,71 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return count($rhsImpurePoints) === 0;
+	}
+
+	/**
+	 * Registers the write site of a prepared plain-variable or offset target
+	 * before its value is walked, so the reads in the value are recorded as
+	 * what the write is computed from; null when the target is not a site (a
+	 * dynamic name, an offset of an object or of a value of unknown type).
+	 *
+	 * @param VariableWrite::KIND_* $kind
+	 */
+	public function registerWriteSite(NodeScopeResolver $nodeScopeResolver, PreparedAssignTarget $target, int $kind): ?VariableWrite
+	{
+		$var = $target->getVar();
+		if ($var instanceof Variable) {
+			return is_string($var->name) ? $nodeScopeResolver->recordVariableWrite($var, $kind) : null;
+		}
+		if (!$var instanceof ArrayDimFetch) {
+			return null;
+		}
+		$rootType = $target->getVarResult()->getType();
+		if (
+			!$rootType->isArray()->yes()
+			&& !$rootType->isString()->yes()
+			&& !$this->isImplicitArrayCreation($target->getDimFetchStack(), $target->getScope())->yes()
+		) {
+			return null;
+		}
+
+		return $this->registerArrayDimWriteSite($nodeScopeResolver, $target);
+	}
+
+	/**
+	 * `$a['k'] = ...` writes offset 'k' of $a. `$a['k']['j'] = ...` extends the
+	 * value of offset 'k' instead: that value is read and the earlier writes of
+	 * the offset stay alive (the site kills nothing).
+	 */
+	private function registerArrayDimWriteSite(NodeScopeResolver $nodeScopeResolver, PreparedAssignTarget $target): ?VariableWrite
+	{
+		$rootVar = $target->getRootVar();
+		if (!$rootVar instanceof Variable || !is_string($rootVar->name)) {
+			return null;
+		}
+		$offsetTypes = $target->getOffsetTypes();
+		$offset = $offsetTypes[0][0] !== null ? VariableWriteOffset::fromType($offsetTypes[0][0]) : null;
+		if (count($target->getDimFetchStack()) > 1) {
+			$nodeScopeResolver->markVariableOffsetRead($rootVar->name, $offset, $target->getBeforeScope());
+		}
+
+		return $nodeScopeResolver->recordVariableOffsetWrite($target->getVar(), $rootVar->name, VariableWrite::KIND_ARRAY_DIM_WRITE, $offset);
+	}
+
+	/**
+	 * The markers an offset write kills: the earlier writes of the same
+	 * constant offset - see MutatingScope::assignVariable().
+	 *
+	 * @return list<Expr>
+	 */
+	private function getArrayDimWriteMarkersToKill(NodeScopeResolver $nodeScopeResolver, PreparedAssignTarget $target, VariableWrite $write): array
+	{
+		$offset = $write->getOffset();
+		if ($offset === null || count($target->getDimFetchStack()) > 1) {
+			return [];
+		}
+
+		return $nodeScopeResolver->getVariableOffsetWriteMarkersToKill($write->getVariableName(), $offset);
 	}
 
 	/**

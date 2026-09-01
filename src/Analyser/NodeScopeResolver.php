@@ -1548,20 +1548,46 @@ class NodeScopeResolver
 	 */
 	public function recordVariableWrite(Variable $variable, int $kind): ?VariableWrite
 	{
+		if (!is_string($variable->name)) {
+			return null;
+		}
+
+		return $this->recordWriteSite($variable, $variable->name, $kind, false, null, null);
+	}
+
+	/**
+	 * Registers a write of one offset of a local variable's array: `$a['k'] = ...`
+	 * ($node is the ArrayDimFetch) or an item of a literal array assigned to the
+	 * variable ($node is the ArrayItem, $parent the whole-variable write).
+	 *
+	 * @param VariableWrite::KIND_* $kind
+	 * @param int|string|null $offset null when not statically known
+	 */
+	public function recordVariableOffsetWrite(Node $node, string $variableName, int $kind, $offset, ?VariableWrite $parent = null): ?VariableWrite
+	{
+		return $this->recordWriteSite($node, $variableName, $kind, true, $offset, $parent !== null ? $parent->getId() : null);
+	}
+
+	/**
+	 * @param VariableWrite::KIND_* $kind
+	 * @param int|string|null $offset
+	 */
+	private function recordWriteSite(Node $node, string $variableName, int $kind, bool $isOffsetWrite, $offset, ?int $parentId): ?VariableWrite
+	{
 		$frame = $this->getVariableWritesFrame();
 		if ($frame === null || $this->isProcessingOnDemand()) {
 			return null;
 		}
-		$newFrame = $frame->withWrite($variable, $kind, ++$this->variableWriteIdCounter);
+		$newFrame = $frame->withWrite($node, $variableName, $kind, ++$this->variableWriteIdCounter, $isOffsetWrite, $offset, $parentId);
 		if ($newFrame !== $frame) {
 			$this->replaceVariableWritesFrame($newFrame);
 		}
 
-		return $newFrame->getWrite($variable);
+		return $newFrame->getWrite($node);
 	}
 
 	/**
-	 * The markers a new write of the variable kills - see
+	 * The markers a whole-variable write (or unset) of the variable kills - see
 	 * MutatingScope::assignVariable().
 	 *
 	 * @return list<Expr>
@@ -1577,16 +1603,78 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * A source-level read of the variable on $scope: every write whose marker
-	 * still reaches $scope has now been read.
+	 * The markers a write (or unset) of one constant offset of the variable kills.
+	 *
+	 * @param int|string $offset
+	 * @return list<Expr>
 	 */
-	public function markVariableRead(string $variableName, MutatingScope $scope): void
+	public function getVariableOffsetWriteMarkersToKill(string $variableName, $offset): array
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null) {
+			return [];
+		}
+
+		return $frame->getMarkerExprsForOffset($variableName, $offset);
+	}
+
+	/**
+	 * The markers a write plants: its own and those of the literal items it
+	 * assigns - see MutatingScope::assignVariable().
+	 *
+	 * @return list<Expr>
+	 */
+	public function getVariableWriteMarkersToPlant(VariableWrite $write): array
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null) {
+			return [$write->getMarkerExpr()];
+		}
+
+		return $frame->getMarkerExprsToPlant($write);
+	}
+
+	/**
+	 * A source-level read of the variable on $scope. A sink read marks every
+	 * write whose marker still reaches $scope as read; a read computing the
+	 * value of $valueFlowTarget makes that write depend on them instead.
+	 */
+	public function markVariableRead(string $variableName, MutatingScope $scope, ?VariableWrite $valueFlowTarget = null): void
+	{
+		$this->markVariableUses($variableName, $scope, VariableWritesFrame::READ_WHOLE, null, $valueFlowTarget);
+	}
+
+	/**
+	 * A read of the variable as the container of an offset access: only its
+	 * whole-variable writes are read, its offsets are not.
+	 */
+	public function markVariableContainerRead(string $variableName, MutatingScope $scope, ?VariableWrite $valueFlowTarget = null): void
+	{
+		$this->markVariableUses($variableName, $scope, VariableWritesFrame::READ_CONTAINER, null, $valueFlowTarget);
+	}
+
+	/**
+	 * A read of one offset of the variable; an offset that is not statically
+	 * known (null) reads the whole variable.
+	 *
+	 * @param int|string|null $offset
+	 */
+	public function markVariableOffsetRead(string $variableName, $offset, MutatingScope $scope, ?VariableWrite $valueFlowTarget = null): void
+	{
+		$this->markVariableUses($variableName, $scope, $offset === null ? VariableWritesFrame::READ_WHOLE : VariableWritesFrame::READ_OFFSET, $offset, $valueFlowTarget);
+	}
+
+	/**
+	 * @param VariableWritesFrame::READ_* $selection
+	 * @param int|string|null $offset
+	 */
+	private function markVariableUses(string $variableName, MutatingScope $scope, int $selection, $offset, ?VariableWrite $valueFlowTarget): void
 	{
 		$frame = $this->getVariableWritesFrame();
 		if ($frame === null || $this->isProcessingOnDemand()) {
 			return;
 		}
-		$newFrame = $frame->withReadsFor($variableName, $scope);
+		$newFrame = $frame->withUsesFor($variableName, $scope, $selection, $offset, $valueFlowTarget);
 		if ($newFrame === $frame) {
 			return;
 		}
@@ -1603,6 +1691,22 @@ class NodeScopeResolver
 			return;
 		}
 		$newFrame = $frame->withAllReachingRead($scope);
+		if ($newFrame === $frame) {
+			return;
+		}
+		$this->replaceVariableWritesFrame($newFrame);
+	}
+
+	/**
+	 * The value of $from also flows into $to (`$a = $b = $c + 1`, `$a = $i++`).
+	 */
+	public function copyVariableWriteDependencies(VariableWrite $to, VariableWrite $from): void
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null || $this->isProcessingOnDemand()) {
+			return;
+		}
+		$newFrame = $frame->withDependenciesCopied($to, $from);
 		if ($newFrame === $frame) {
 			return;
 		}
@@ -1821,7 +1925,7 @@ class NodeScopeResolver
 					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType, TrinaryLogic::createYes());
 				}
 			}
-			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context);
+			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context->withoutValueFlow());
 			if (!$use->byRef) {
 				continue;
 			}

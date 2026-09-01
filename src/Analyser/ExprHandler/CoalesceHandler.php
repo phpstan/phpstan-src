@@ -58,7 +58,7 @@ final class CoalesceHandler implements ExprHandler
 		// the falsey narrowing of this very node - asking the scope about it
 		// mid-processing would take the on-demand path and recurse
 		$rightScope = $scope->applySpecifiedTypes($this->coalesceCompositionHelper->getFalseySpecifiedTypes($scope, $scope, $expr->left, $condResult, $expr, TypeSpecifierContext::createFalsey()));
-		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeep());
+		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
 		// the left-is-set narrowing, composed from the already-processed chain
 		// results - the inside-out equivalent of narrowing by isset($expr->left)
 		// without synthesizing an Isset_ node and re-walking the chain on demand

@@ -32,6 +32,7 @@ use Throwable;
 use function array_diff;
 use function array_fill_keys;
 use function array_filter;
+use function array_intersect;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -83,7 +84,13 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v14-relativePaths';
+	private const CACHE_VERSION = 'v15-scannedFileDependencies';
+
+	/**
+	 * Metadata keys whose change does not invalidate the whole result cache: the analysed files they
+	 * affect can be pinpointed and re-analysed on their own. See restore().
+	 */
+	private const PARTIALLY_INVALIDATING_META_KEYS = ['composerLocks', 'composerInstalled', 'scannedFiles'];
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
@@ -314,18 +321,76 @@ final class ResultCacheManager
 		// absolutized above, so it is always present here
 		$packageDependencies = $data['packageDependencies'];
 		$packageSeededFiles = [];
+		$scannedFileAddedOrEdited = false;
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 
-			// If the metadata differ ONLY in the Composer lock/installed files, the generated container
-			// and analysis are unchanged except for code coming from packages whose version actually
-			// changed. Re-analyse just the files depending on a changed package instead of everything;
-			// the existing incremental loop below then propagates to their dependents on signature change.
-			// Any other meta difference, or an undetermined change set (installed.php cannot be parsed),
+			// Some metadata differences do not invalidate the whole analysis, because the code they
+			// affect can be pinpointed: a Composer lock change only affects the files depending on a
+			// package whose version changed, and a scanned file change only affects the files depending
+			// on that file. Any other difference falls back to a full re-analysis.
+			if (array_diff($diffs, self::PARTIALLY_INVALIDATING_META_KEYS) !== []) {
+				return $this->fullAnalysis(
+					'Result cache not used because the metadata do not match: ' . implode(', ', $diffs),
+					$allAnalysedFiles,
+					$meta,
+					$currentFileHashes,
+					$output,
+				);
+			}
+
+			if (in_array('scannedFiles', $diffs, true)) {
+				// Files that are scanned but not analysed are recorded as regular file dependencies
+				// (NodeDependencies::getNonAnalysedDependencies()), so the incremental loop below
+				// re-analyses the files depending on the edited ones. Only a scanned file that appeared
+				// or was edited needs anything extra: it may define a symbol that was reported as unknown
+				// somewhere, so the files with errors are re-analysed the same way a new analysed file
+				// makes them re-analysed.
+				$changedScannedFiles = $this->getChangedScannedFiles($data['meta'], $meta);
+				foreach ($changedScannedFiles as $changedScannedFile => $stillScanned) {
+					// The scanned files getNonAnalysedDependencies() leaves out: nothing would
+					// re-analyse the files depending on them, so the whole cache has to go.
+					$notTrackedReason = null;
+					if (str_starts_with($changedScannedFile, 'phar://')) {
+						$notTrackedReason = 'is inside a PHAR';
+					} elseif ($this->packageDependencyResolver->resolvePackage($changedScannedFile) !== null) {
+						$notTrackedReason = 'belongs to a Composer package';
+					}
+
+					if ($notTrackedReason !== null) {
+						return $this->fullAnalysis(
+							sprintf('Result cache not used because scanned file %s changed and %s.', $changedScannedFile, $notTrackedReason),
+							$allAnalysedFiles,
+							$meta,
+							$currentFileHashes,
+							$output,
+						);
+					}
+
+					if (!$stillScanned) {
+						continue;
+					}
+
+					$scannedFileAddedOrEdited = true;
+				}
+
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted(sprintf(
+						'Scanned files changed (%d); re-analysing only the files depending on them.',
+						count($changedScannedFiles),
+					));
+				}
+			}
+
+			// The generated container and the analysis are unchanged except for code coming from packages
+			// whose version actually changed. Re-analyse just the files depending on a changed package
+			// instead of everything; the existing incremental loop below then propagates to their
+			// dependents on signature change. An undetermined change set (installed.php cannot be parsed)
 			// falls back to a full re-analysis.
-			$changedPackages = array_diff($diffs, ['composerLocks', 'composerInstalled']) === []
+			$composerMetaChanged = array_intersect($diffs, ['composerLocks', 'composerInstalled']) !== [];
+			$changedPackages = $composerMetaChanged
 				? $this->packageDependencyResolver->getChangedComposerPackages($data['meta'], $meta)
-				: null;
+				: [];
 
 			if ($changedPackages === null) {
 				return $this->fullAnalysis(
@@ -337,7 +402,7 @@ final class ResultCacheManager
 				);
 			}
 
-			if ($changedPackages === []) {
+			if ($composerMetaChanged && $changedPackages === []) {
 				// The Composer lock/installed metadata changed but no installed package's version or
 				// reference did (e.g. a composer.lock regenerated with different formatting or dist/time
 				// metadata, common in CI where composer.lock is not committed). Nothing analysis-relevant
@@ -346,7 +411,7 @@ final class ResultCacheManager
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Composer metadata changed but no package versions changed; keeping the result cache.');
 				}
-			} else {
+			} elseif ($changedPackages !== []) {
 				$changedPackagesLookup = array_fill_keys($changedPackages, true);
 				if ($this->changedPackagesProvideContainerClass($projectConfigArray, $changedPackagesLookup)) {
 					// One of the changed packages registers a class in the PHPStan container (a rule,
@@ -449,7 +514,10 @@ final class ResultCacheManager
 		}
 
 		$invertedDependencies = $data['dependencies'];
-		$deletedFiles = array_fill_keys(array_keys($invertedDependencies), true);
+		// Every file the cached graph knows about; the loop over the analysed files below takes out the
+		// ones that are still analysed, leaving the deleted files and the files that are depended on
+		// without being analysed themselves (scanned files, other project files).
+		$notAnalysedFiles = array_fill_keys(array_keys($invertedDependencies), true);
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
 		$invertedUsedTraitDependenciesToReturn = [];
@@ -501,7 +569,7 @@ final class ResultCacheManager
 				continue;
 			}
 
-			unset($deletedFiles[$analysedFile]);
+			unset($notAnalysedFiles[$analysedFile]);
 
 			$analysedFileData = $invertedDependencies[$analysedFile];
 			$cachedFileHash = $analysedFileData['fileHash'];
@@ -566,13 +634,32 @@ final class ResultCacheManager
 			}
 		}
 
-		foreach (array_keys($deletedFiles) as $deletedFile) {
-			if (!array_key_exists($deletedFile, $invertedDependencies)) {
+		foreach (array_keys($notAnalysedFiles) as $notAnalysedFile) {
+			if (!array_key_exists($notAnalysedFile, $invertedDependencies)) {
 				continue;
 			}
 
-			$deletedFileData = $invertedDependencies[$deletedFile];
-			$dependentFiles = $deletedFileData['dependentFiles'];
+			$notAnalysedFileData = $invertedDependencies[$notAnalysedFile];
+			$dependentFiles = $notAnalysedFileData['dependentFiles'];
+			$usedTraitDependentFiles = $notAnalysedFileData['usedTraitDependentFiles'] ?? [];
+
+			if (is_file($notAnalysedFile)) {
+				// Not analysed but still on disk: a scanned file, or another project file the analysed
+				// code depends on. Its edges are not carried over by the loop above (that one only walks
+				// the analysed files), so they are preserved here - and its dependents are re-analysed
+				// only when its contents actually changed.
+				$invertedDependenciesToReturn[$notAnalysedFile] = $dependentFiles;
+				if (count($usedTraitDependentFiles) > 0) {
+					$invertedUsedTraitDependenciesToReturn[$notAnalysedFile] = $usedTraitDependentFiles;
+				}
+
+				if ($this->getFileHash($notAnalysedFile) === $notAnalysedFileData['fileHash']) {
+					continue;
+				}
+
+				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
+			}
+
 			foreach ($dependentFiles as $dependentFile) {
 				if (!is_file($dependentFile)) {
 					continue;
@@ -581,7 +668,7 @@ final class ResultCacheManager
 			}
 		}
 
-		if ($newFileAppeared) {
+		if ($newFileAppeared || $scannedFileAddedOrEdited) {
 			foreach (array_keys($filteredErrors) as $fileWithError) {
 				$filesToAnalyse[] = $fileWithError;
 			}
@@ -1488,6 +1575,38 @@ return [
 		}
 
 		return $files;
+	}
+
+	/**
+	 * Scanned files that differ between two metadata snapshots, each mapped to whether it is still
+	 * scanned now (a file that appeared or was edited) or not (a file that is gone).
+	 *
+	 * @param mixed[] $cachedMeta
+	 * @param mixed[] $currentMeta
+	 * @return array<string, bool>
+	 */
+	private function getChangedScannedFiles(array $cachedMeta, array $currentMeta): array
+	{
+		$cached = is_array($cachedMeta['scannedFiles'] ?? null) ? $cachedMeta['scannedFiles'] : [];
+		$current = is_array($currentMeta['scannedFiles'] ?? null) ? $currentMeta['scannedFiles'] : [];
+
+		$changed = [];
+		foreach ($current as $file => $hash) {
+			if (array_key_exists($file, $cached) && $cached[$file] === $hash) {
+				continue;
+			}
+
+			$changed[$file] = true;
+		}
+		foreach (array_keys($cached) as $file) {
+			if (array_key_exists($file, $current)) {
+				continue;
+			}
+
+			$changed[$file] = false;
+		}
+
+		return $changed;
 	}
 
 	/**

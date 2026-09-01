@@ -220,7 +220,11 @@ final class FileAnalyserCallback
 			foreach ($dependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
 				$this->fileDependencies[] = $dependentFile;
 			}
-			foreach ($dependencies->getPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver) as $package) {
+			$nonAnalysedDependencies = $dependencies->getNonAnalysedDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
+			foreach ($nonAnalysedDependencies['files'] as $dependentFile) {
+				$this->fileDependencies[] = $dependentFile;
+			}
+			foreach ($nonAnalysedDependencies['packages'] as $package) {
 				$this->filePackageDependencies[] = $package;
 			}
 			if ($dependencies->getExportedNode() !== null) {
@@ -242,7 +246,11 @@ final class FileAnalyserCallback
 		foreach ($usedTraitDependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
 			$this->usedTraitFileDependencies[] = $dependentFile;
 		}
-		foreach ($usedTraitDependencies->getPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver) as $package) {
+		$nonAnalysedTraitDependencies = $usedTraitDependencies->getNonAnalysedDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
+		foreach ($nonAnalysedTraitDependencies['files'] as $dependentFile) {
+			$this->usedTraitFileDependencies[] = $dependentFile;
+		}
+		foreach ($nonAnalysedTraitDependencies['packages'] as $package) {
 			$this->filePackageDependencies[] = $package;
 		}
 	}

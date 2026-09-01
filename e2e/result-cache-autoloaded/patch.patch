@@ -1,0 +1,14 @@
+--- other/Dep.php	2026-09-01 10:00:00
++++ other/Dep.php	2026-09-01 10:01:00
+@@ -5,9 +5,9 @@
+ class Dep
+ {
+ 
+-	public function doDep(): int
++	public function doDep(): string
+ 	{
+-		return 1;
++		return 'foo';
+ 	}
+ 
+ }

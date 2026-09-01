@@ -55,6 +55,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionClass as CoreReflectionClass;
 use ReflectionException;
@@ -1861,12 +1862,26 @@ final class ClassReflection
 		$className = $this->getName();
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
 			$type = $types[$i] ?? $tag->getDefault() ?? $tag->getBound();
-			if ($type instanceof TemplateType && $type->getScope()->getClassName() === $className) {
+			// A template default may reference other template types of the same
+			// class, possibly nested inside a composite type like `TValue|null`.
+			// Never descend into a TemplateType's bound - bounds may be
+			// self-referential (`@template T of Foo<T>`).
+			$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($map, $className): Type {
+				if (!$type instanceof TemplateType) {
+					return $traverse($type);
+				}
+
+				if ($type->getScope()->getClassName() !== $className) {
+					return $type;
+				}
+
 				$resolved = $map[$type->getName()] ?? null;
 				if ($resolved !== null && !$resolved instanceof TemplateType) {
-					$type = $resolved;
+					return $resolved;
 				}
-			}
+
+				return $type;
+			});
 			$map[$tag->getName()] = $type;
 			$i++;
 		}

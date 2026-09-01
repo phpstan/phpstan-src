@@ -2934,11 +2934,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				110,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(mixed): array{non-falsy-string, int<-1, max>} given.',
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(mixed): array{non-falsy-string, int<0, max>} given.',
 				113,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(mixed): array{non-falsy-string|null, int<-1, max>} given.',
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<string>): string, Closure(mixed): array{non-falsy-string|null, int<0, max>} given.',
 				116,
 			],
 			[

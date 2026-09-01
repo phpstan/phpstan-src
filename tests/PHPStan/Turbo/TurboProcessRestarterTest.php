@@ -108,4 +108,64 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 		return $args;
 	}
 
+	/**
+	 * @return iterable<string, array{array<string, string|false>, bool}>
+	 */
+	public static function dataResolveOpcacheRestartNeeded(): iterable
+	{
+		// what the restarted process reads back through ini_get() for the stock args
+		$inEffect = [
+			'opcache.enable' => '1',
+			'opcache.enable_cli' => '1',
+			'opcache.jit' => 'disable',
+			'opcache.jit_buffer_size' => '0',
+			'opcache.validate_timestamps' => '0',
+			'opcache.file_update_protection' => '0',
+			'opcache.max_file_size' => '0',
+			'opcache.file_cache' => '',
+			'opcache.save_comments' => '1',
+			'opcache.memory_consumption' => '256',
+			'opcache.interned_strings_buffer' => '64',
+			'opcache.max_accelerated_files' => '20000',
+		];
+
+		yield 'already in effect' => [$inEffect, false];
+
+		// php.ini spellings the ini parser leaves as-is versus its "1"/"" for booleans
+		yield 'already in effect, php.ini spellings' => [
+			['opcache.enable' => 'On', 'opcache.validate_timestamps' => '', 'opcache.jit' => 'Disable'] + $inEffect,
+			false,
+		];
+
+		yield 'stock CLI: OPcache dormant' => [
+			['opcache.enable_cli' => '', 'opcache.validate_timestamps' => '1', 'opcache.file_update_protection' => '2', 'opcache.memory_consumption' => '128', 'opcache.interned_strings_buffer' => '8', 'opcache.max_accelerated_files' => '10000'] + $inEffect,
+			true,
+		];
+
+		yield 'OPcache active but JIT on' => [
+			['opcache.jit' => 'tracing', 'opcache.jit_buffer_size' => '64M'] + $inEffect,
+			true,
+		];
+
+		yield 'OPcache active with a file cache' => [
+			['opcache.file_cache' => '/tmp/opcache'] + $inEffect,
+			true,
+		];
+
+		// PHP < 8.0 has no JIT directives — nothing a restart could change there
+		yield 'directive unknown on this PHP' => [
+			['opcache.jit' => false, 'opcache.jit_buffer_size' => false] + $inEffect,
+			false,
+		];
+	}
+
+	/**
+	 * @param array<string, string|false> $currentIniValues
+	 */
+	#[DataProvider('dataResolveOpcacheRestartNeeded')]
+	public function testResolveOpcacheRestartNeeded(array $currentIniValues, bool $expected): void
+	{
+		$this->assertSame($expected, TurboProcessRestarter::resolveOpcacheRestartNeeded(self::STOCK_ARGS, $currentIniValues));
+	}
+
 }
